@@ -126,8 +126,7 @@ export const useReportsTabController = () => {
     };
 
     return sortItems(reportData as (ReportStat | DailyReportItem)[], sortConfig) as
-      | ReportStat[]
-      | DailyReportItem[];
+      ReportStat[] | DailyReportItem[];
   }, [reportData, sortConfig]);
 
   const requestSort = useCallback(

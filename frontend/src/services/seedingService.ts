@@ -3,12 +3,7 @@ import { authService } from "./authService";
 import { API_BASE_URL } from "./apiBase";
 
 export type SeedPhase2JobStatus =
-  | "pending"
-  | "running"
-  | "paused"
-  | "completed"
-  | "failed"
-  | "stopped";
+  "pending" | "running" | "paused" | "completed" | "failed" | "stopped";
 
 export interface SeedPhase2Job {
   id: string;

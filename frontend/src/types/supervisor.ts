@@ -137,12 +137,7 @@ export interface SupervisorFilterState {
 }
 
 export type SupervisorEmployeeStatus =
-  | "present"
-  | "absent"
-  | "late"
-  | "on_break"
-  | "overtime"
-  | "off_duty";
+  "present" | "absent" | "late" | "on_break" | "overtime" | "off_duty";
 
 export interface SupervisorViewState {
   currentTab: SupervisorTab;
@@ -165,12 +160,7 @@ export const SUPERVISOR_TABS = {
 export type SupervisorTab = (typeof SUPERVISOR_TABS)[keyof typeof SUPERVISOR_TABS];
 
 export type SupervisorSortField =
-  | "name"
-  | "status"
-  | "lastActivity"
-  | "totalHours"
-  | "efficiency"
-  | "createdAt";
+  "name" | "status" | "lastActivity" | "totalHours" | "efficiency" | "createdAt";
 
 // ============================================================================
 // REPORTES Y ANALYTICS

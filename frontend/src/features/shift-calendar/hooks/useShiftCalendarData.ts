@@ -168,8 +168,7 @@ export const useShiftCalendarData = () => {
       const getCellContent = (date: Date) => {
         const dateStr = formatDateUTCISO(date);
         const dayData = scheduleMap.get(dateStr) as
-          | { type: CalendarEntryType; data: unknown }
-          | undefined;
+          { type: CalendarEntryType; data: unknown } | undefined;
 
         if (!dayData) return "";
 

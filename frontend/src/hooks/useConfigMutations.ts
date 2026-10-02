@@ -6,13 +6,7 @@ export const useConfigMutations = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
   type ConfigValue =
-    | string
-    | number
-    | boolean
-    | string[]
-    | number[]
-    | Record<string, unknown>
-    | null;
+    string | number | boolean | string[] | number[] | Record<string, unknown> | null;
 
   const updateConfigMutation = useMutation({
     mutationFn: ({ key, value }: { key: string; value: ConfigValue }) =>

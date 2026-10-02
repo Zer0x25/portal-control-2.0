@@ -132,11 +132,7 @@ export const useTimeControlModals = () => {
     async (
       id: string,
       resolution:
-        | "ABSENCE_MARK"
-        | "SHIFT_HOURS_ACK"
-        | "PERMIT_MARK"
-        | "DAY_OFF_MARK"
-        | "VACATION_MARK",
+        "ABSENCE_MARK" | "SHIFT_HOURS_ACK" | "PERMIT_MARK" | "DAY_OFF_MARK" | "VACATION_MARK",
     ) => {
       try {
         await resolveAnomalyMutation.mutateAsync({ id, resolution });

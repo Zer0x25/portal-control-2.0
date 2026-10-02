@@ -251,11 +251,7 @@ export const useTimeRecordMutations = () => {
     mutationFn: async (data: {
       id: string;
       resolution:
-        | "ABSENCE_MARK"
-        | "SHIFT_HOURS_ACK"
-        | "PERMIT_MARK"
-        | "DAY_OFF_MARK"
-        | "VACATION_MARK";
+        "ABSENCE_MARK" | "SHIFT_HOURS_ACK" | "PERMIT_MARK" | "DAY_OFF_MARK" | "VACATION_MARK";
     }) => {
       return await timeRecordService.resolveAnomaly(data.id, data.resolution);
     },

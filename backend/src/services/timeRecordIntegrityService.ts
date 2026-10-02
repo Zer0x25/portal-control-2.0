@@ -74,8 +74,7 @@ type TxLike = {
     findFirst(args: {
       where: Prisma.TimeRecordWhereInput;
       orderBy?:
-        | Prisma.TimeRecordOrderByWithRelationInput
-        | Prisma.TimeRecordOrderByWithRelationInput[];
+        Prisma.TimeRecordOrderByWithRelationInput | Prisma.TimeRecordOrderByWithRelationInput[];
       select?: Prisma.TimeRecordSelect;
     }): Promise<Pick<TimeRecord, "integrityHash"> | null>;
     findUnique(args: { where: Prisma.TimeRecordWhereUniqueInput }): Promise<TimeRecord | null>;

@@ -166,12 +166,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: prettier-${{ runner.os }}-3.8.1
+          key: prettier-${{ runner.os }}-3.9.9
           restore-keys: |
             prettier-${{ runner.os }}-
 
       - name: Check Prettier formatting (docs/adr + specs)
-        run: npx --yes prettier@3.8.1 --check "docs/adr/*.md" "specs/**/*.md"
+        run: npx --yes prettier@3.9.9 --check "docs/adr/*.md" "specs/**/*.md"
 
   verify-backend:
     name: Verify backend

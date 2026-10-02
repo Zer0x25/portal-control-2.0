@@ -7019,20 +7019,20 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
   ],
   "tags": [
     {
-      "description": "Endpoints para exportación de archivos PDF y Excel",
-      "name": "Exports",
-    },
-    {
-      "description": "Gestión de feriados nacionales y regionales",
-      "name": "Holidays",
+      "description": "Gestión de usuarios y permisos",
+      "name": "Users",
     },
     {
       "description": "Gestión de turnos, patrones y programación de personal",
       "name": "Shifts",
     },
     {
-      "description": "Gestión de usuarios y permisos",
-      "name": "Users",
+      "description": "Gestión de feriados nacionales y regionales",
+      "name": "Holidays",
+    },
+    {
+      "description": "Endpoints para exportación de archivos PDF y Excel",
+      "name": "Exports",
     },
   ],
 }

@@ -8,8 +8,7 @@ import type { AuthRequest } from "../middleware/authMiddleware";
 const EMPLOYEE_ID_PREFIX = "EMP-";
 const EMPLOYEE_ID_BASE = 1000;
 type EmployeeDbClient =
-  | Pick<Prisma.TransactionClient, "employee">
-  | Pick<typeof prisma, "employee">;
+  Pick<Prisma.TransactionClient, "employee"> | Pick<typeof prisma, "employee">;
 
 /** Authenticated principal as attached by `authenticateToken`. */
 type AuthUser = NonNullable<AuthRequest["user"]>;

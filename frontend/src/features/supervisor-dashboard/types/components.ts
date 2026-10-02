@@ -263,12 +263,7 @@ export type SupervisorNotificationType = "success" | "error" | "warning" | "info
 
 export type SupervisorComponentSize = "sm" | "md" | "lg";
 export type SupervisorComponentVariant =
-  | "default"
-  | "primary"
-  | "secondary"
-  | "success"
-  | "warning"
-  | "danger";
+  "default" | "primary" | "secondary" | "success" | "warning" | "danger";
 
 // Type helpers
 export type SupervisorComponentBaseProps = {

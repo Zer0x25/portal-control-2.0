@@ -118,12 +118,7 @@ export interface UserClockingInfo {
 
 // --- Dashboard Customization Types ---
 export type WidgetId =
-  | "myStatus"
-  | "quickActions"
-  | "tools"
-  | "alerts"
-  | "teamStatus"
-  | "latestReports";
+  "myStatus" | "quickActions" | "tools" | "alerts" | "teamStatus" | "latestReports";
 
 export interface DashboardWidget {
   id: WidgetId;

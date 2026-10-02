@@ -40,11 +40,7 @@ export interface LeaveDisplayRecord {
   employeeName: string;
   employeeArea: string;
   justificationType:
-    | LeaveRecord["type"]
-    | "Feriado"
-    | "AUTO_CLOSE"
-    | "MANUAL_REPAIR"
-    | "SYSTEM_ANOMALY";
+    LeaveRecord["type"] | "Feriado" | "AUTO_CLOSE" | "MANUAL_REPAIR" | "SYSTEM_ANOMALY";
 }
 
 export type DisplayRecord = EnrichedTimeRecord | LeaveDisplayRecord;

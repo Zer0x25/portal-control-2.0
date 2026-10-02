@@ -5,12 +5,7 @@ import { UserRole } from "../../../types";
  */
 
 export type WidgetId =
-  | "myStatus"
-  | "quickActions"
-  | "tools"
-  | "alerts"
-  | "teamStatus"
-  | "latestReports";
+  "myStatus" | "quickActions" | "tools" | "alerts" | "teamStatus" | "latestReports";
 
 export interface DashboardWidget {
   id: WidgetId;

@@ -84,8 +84,7 @@ function createExtendedClient(client: PrismaClient) {
                 const modelKey = model.charAt(0).toLowerCase() + model.slice(1);
                 const txAny = tx as Record<string, unknown>;
                 const modelClient = (txAny[modelKey] || txAny[model]) as
-                  | Record<string, unknown>
-                  | undefined;
+                  Record<string, unknown> | undefined;
 
                 if (!modelClient || typeof modelClient[operation] !== "function") {
                   return query(args); // Fallback to original query if lookup fails (should not happen for valid models)
