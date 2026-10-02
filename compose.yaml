@@ -52,7 +52,7 @@ services:
       - default
 
   backend:
-    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend}:latest
+    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend}:sha-ebd58e9
     restart: always
     ports:
       - "4000:4000"
@@ -104,7 +104,7 @@ services:
       - proxy_net
 
   frontend:
-    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-frontend}:latest
+    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-frontend}:sha-ebd58e9
     restart: always
     # ports:
     #   - "80:80"
@@ -127,7 +127,7 @@ services:
       - proxy_net
 
   gateway:
-    image: ${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-gateway}:latest
+    image: ${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-gateway}:sha-ebd58e9
     restart: always
     depends_on:
       - frontend
