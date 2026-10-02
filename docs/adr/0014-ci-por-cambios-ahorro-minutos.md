@@ -55,13 +55,19 @@ desperdicio confirmados en `.github/workflows/ci.yml`:
    health reducida de ~10 min a ~3 min; `timeout-minutes: 25`.
 5. Los PRs de release-please (`head.ref` con prefijo `release-please--`)
    solo corren `changes` + `gates` (~40 s).
-6. `npm ci --no-audit --no-fund` en CI y `timeout-minutes` en todos los
+6. Dependabot desactivado: se elimina `.github/dependabot.yml` (sus 5
+   entradas semanales generaban hasta 25 PRs, cada uno con CI completo)
+   y los jobs pesados excluyen ramas `dependabot/`. Las dependencias se
+   actualizan manualmente con `npm outdated` + `npm update` por paquete,
+   validando con `npm run validate:ci` local (el hook `pre-push` lo
+   exige igual).
+7. `npm ci --no-audit --no-fund` en CI y `timeout-minutes` en todos los
    jobs pesados (15 verifys, 25 e2e, 30 publish, 5 pineo).
-7. Deploy con cache GHA por imagen (`cache-from/to type=gha` con scope
+8. Deploy con cache GHA por imagen (`cache-from/to type=gha` con scope
    de la matriz + `setup-buildx`): los merges que no tocan dependencias
    reutilizan las capas de `npm ci`. Deploys encolados (`concurrency:
 deploy-main`, sin cancelacion) para no correr sobre `compose.yaml`.
-8. `pin-stack-images` usa `${{ github.repository_owner }}` en el patron
+9. `pin-stack-images` usa `${{ github.repository_owner }}` en el patron
    del `sed` en vez del owner hardcodeado.
 
 ## Alternativas consideradas

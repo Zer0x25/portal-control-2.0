@@ -14,18 +14,19 @@ name: Portal Control CI
 #   ETAPA 1 `gates`   -> secret scan + guardrails + spec + docs en UN job
 #     (~30 s, un checkout). Antes eran 3 jobs con 3 checkouts y 3 colas.
 #   ETAPA 2 `verify-*`-> backend/frontend en paralelo, SOLO si su area cambio
-#     y el PR no es de release-please. La cobertura con thresholds (ratchet)
+#     y el PR no es de release-please ni dependabot. La cobertura con thresholds (ratchet)
 #     corre DENTRO de cada verify: backend anade `test:coverage` (su
 #     validate:ci solo corre el subset de schemas) y frontend usa
 #     `validate:ci:coverage` (suite completa con --coverage). El antiguo job
 #     `coverage-ratchet` duplicaba los `npm ci` y re-corria la suite de
 #     frontend una segunda vez (~193 s medidos en ADR-0013).
 #   ETAPA 3 `e2e-smoke` -> SOLO si backend/frontend/stack cambio, el PR no es
-#     de release-please, y los verifys terminaron en success o skipped. En un
+#     de release-please ni dependabot, y los verifys terminaron en success o skipped. En un
 #     PR rojo el e2e ya no quema ~176 s sobre codigo que no pasa validacion.
 #
 # Ahorro estimado por PR verde completo: ~35% (651 s -> ~400 s). PRs de
-# release-please o solo-docs pasan de ~11 min a ~40 s (changes + gates).
+# release-please, dependabot o solo-docs pasan de ~11 min a ~40 s
+# (changes + gates).
 #
 # Nota: sin branch protection (plan gratis, ver ADR-0013), los jobs en
 # `skipped` no bloquean el merge.
@@ -178,7 +179,7 @@ jobs:
     # Solo en PR con cambios en el area y fuera de PRs de release-please
     # (solo bumpean versiones/changelogs). `!cancelled()` evita que un
     # `needs` en skipped cancele la evaluacion del resto de la condicion.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' }}
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/') && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -246,7 +247,7 @@ jobs:
     name: Verify frontend
     needs: [gates, changes]
     # Solo en PR con cambios en el area y fuera de PRs de release-please.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' }}
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/') && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -292,7 +293,7 @@ jobs:
     # Solo si toco backend/frontend/stack y los verifys no fallaron (success
     # o skipped cuando su area no cambio). En un PR rojo el e2e ya no quema
     # ~176 s sobre codigo que no pasa validacion.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && needs.gates.result == 'success' && (needs.verify-backend.result == 'success' || needs.verify-backend.result == 'skipped') && (needs.verify-frontend.result == 'success' || needs.verify-frontend.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.stack == 'true') }}
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/') && needs.gates.result == 'success' && (needs.verify-backend.result == 'success' || needs.verify-backend.result == 'skipped') && (needs.verify-frontend.result == 'success' || needs.verify-frontend.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.stack == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
