@@ -11,6 +11,12 @@ permissions:
   contents: write
   packages: write
 
+# Los deploys se encolan en vez de competir: dos merges seguidos a main
+# publican y pinean en orden, sin carreras sobre compose.yaml.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_OWNER: ${{ github.repository_owner }}
@@ -20,6 +26,7 @@ jobs:
     name: Publish images
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.actor.login != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -46,6 +53,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Extract image metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -64,12 +74,18 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Cache GHA por imagen (scope aislado por la matriz): las capas de
+          # `npm ci` se reutilizan cuando no cambian los lockfiles y cada
+          # deploy solo reconstruye lo que cambio.
+          cache-from: type=gha,scope=${{ matrix.image_name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image_name }}
 
   pin-stack-images:
     name: Pin stack images
     needs: publish-images
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.actor.login != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -79,14 +95,17 @@ jobs:
       - name: Pin compose images to published SHA
         env:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          # Sin hardcodear el owner: el patron debe coincidir tambien en
+          # clones/forks cuyo compose.yaml apunte a otro namespace de GHCR.
+          OWNER: ${{ github.repository_owner }}
         run: |
           SHORT_SHA="${HEAD_SHA::7}"
           TAG="sha-${SHORT_SHA}"
 
           sed -i \
-            -e "s|image: \${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-backend}:.*|image: \${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-backend}:${TAG}|" \
-            -e "s|image: \${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-frontend}:.*|image: \${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-frontend}:${TAG}|" \
-            -e "s|image: \${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-gateway}:.*|image: \${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-gateway}:${TAG}|" \
+            -e "s|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER}/portal-control-backend}:.*|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER}/portal-control-backend}:${TAG}|" \
+            -e "s|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER}/portal-control-frontend}:.*|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER}/portal-control-frontend}:${TAG}|" \
+            -e "s|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER}/portal-control-gateway}:.*|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER}/portal-control-gateway}:${TAG}|" \
             compose.yaml
 
       - name: Commit pinned compose

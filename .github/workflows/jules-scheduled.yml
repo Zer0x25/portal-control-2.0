@@ -1,5 +1,16 @@
 name: Jules Scheduled Maintenance
 
+# El workflow en si cuesta ~10 s de runner; el costo real esta aguas abajo:
+# cada sesion de Jules abre PRs que disparan el CI completo. Los filtros por
+# cambios de ci.yml (ADR-0014) hacen que esos PRs solo corran los jobs de las
+# areas que tocaron.
+permissions:
+  contents: read
+
+concurrency:
+  group: jules-scheduled
+  cancel-in-progress: false
+
 on:
   schedule:
     # Lunes 08:00 UTC -> Auditoría de Seguridad Sentinel
@@ -36,6 +47,7 @@ jobs:
   trigger-jules:
     name: Trigger Jules Agent Task
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Determine prompt based on trigger or input
         id: select-prompt

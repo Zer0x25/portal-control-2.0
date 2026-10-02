@@ -1,37 +1,34 @@
 name: Portal Control CI
 
-# Reparto de responsabilidades entre PR y main:
+# Reparto de responsabilidades entre PR y main (ver ADR-0013):
 #
-#   `pull_request` -> VALIDACION COMPLETA. Los 3 gates rapidos y los 4 jobs
-#     pesados (verify-backend, verify-frontend, coverage, e2e). Corre sobre el
-#     *merge ref* (rama + main), que es el unico escenario donde tiene sentido
-#     validar la fusion antes de aceptar el codigo.
+#   `pull_request` -> VALIDACION POR CAMBIOS. `changes` detecta que areas
+#     tocaron backend/frontend/stack y solo esos jobs pesados corren, siempre
+#     despues de `gates`. Corre sobre el *merge ref*.
+#   `push` a main  -> SOLO GATES (~0.5 runner-min). La bateria pesada ya corrio
+#     en el PR sobre el mismo codigo (ADR-0013); el hook `pre-push` cubre los
+#     pushes directos en la maquina del autor.
 #
-#   `push` a main  -> SOLO GATES. Corre unicamente agentic/spec/docs (~25 s de
-#     runner en total). Los 4 jobs pesados NO se relanzan.
+# Etapas (ver ADR-0014):
+#   ETAPA 0 `changes` -> paths-filter, sin npm ci (~15 s). Solo en PR.
+#   ETAPA 1 `gates`   -> secret scan + guardrails + spec + docs en UN job
+#     (~30 s, un checkout). Antes eran 3 jobs con 3 checkouts y 3 colas.
+#   ETAPA 2 `verify-*`-> backend/frontend en paralelo, SOLO si su area cambio
+#     y el PR no es de release-please. La cobertura con thresholds (ratchet)
+#     corre DENTRO de cada verify: backend anade `test:coverage` (su
+#     validate:ci solo corre el subset de schemas) y frontend usa
+#     `validate:ci:coverage` (suite completa con --coverage). El antiguo job
+#     `coverage-ratchet` duplicaba los `npm ci` y re-corria la suite de
+#     frontend una segunda vez (~193 s medidos en ADR-0013).
+#   ETAPA 3 `e2e-smoke` -> SOLO si backend/frontend/stack cambio, el PR no es
+#     de release-please, y los verifys terminaron en success o skipped. En un
+#     PR rojo el e2e ya no quema ~176 s sobre codigo que no pasa validacion.
 #
-# Por que no se repite la validacion pesada post-merge: el PR ya la ejecuto
-# sobre el mismo codigo, asi que volver a correr verify/coverage/e2e gastaba
-# ~12 runner-min por merge sin obtener informacion nueva. Medido sobre las 4
-# etapas 1 de una corrida verde de main: 737 runner-segundos reportando el
-# mismo codigo que los checks del PR ya habian validado.
+# Ahorro estimado por PR verde completo: ~35% (651 s -> ~400 s). PRs de
+# release-please o solo-docs pasan de ~11 min a ~40 s (changes + gates).
 #
-# Que NO se pierde calidad:
-#   - Los gates de main siguen validando gobernanza (secretos, specs, docs) en
-#     el commit que se va a desplegar.
-#   - `deploy.yml` sigue exigiendo `conclusion == 'success'` sobre `main`, asi
-#     que el CD continua bloqueado por una corrida real de CI, no por una
-#     confianza implicita en el PR.
-#   - Los pushes directos a main (commits que no pasan por PR) NO pierden
-#     validacion: el hook `pre-push` del repo ejecuta `validate:ci` de backend
-#     y frontend antes de dejar salir el commit, con lo cual la bateria pesada
-#     sigue corriendose, solo que en la maquina del autor y no consumiendo
-#     minutos de GitHub.
-#
-# La unica garantia que se relaja es que `main` no vuelve a correr la bateria
-# pesada. Se acepta porque el CD publica el estado final de main y los merges
-# son secuenciales (cada commit de main es descendiente del anterior), de modo
-# que la ultima publicacion ya incluye todos los cambios anteriores.
+# Nota: sin branch protection (plan gratis, ver ADR-0013), los jobs en
+# `skipped` no bloquean el merge.
 on:
   pull_request:
   push:
@@ -42,33 +39,57 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   # Cancelar siempre es correcto: el codigo mas nuevo invalida al anterior.
   # En `main` el ref es identico para todos los merges, asi que un merge
-  # rapido cancela la corrida del previo. Antes eso costaba 6.3 runner-min
-  # porque la etapa 1 estaba corriendo; ahora main solo ejecuta los 3 gates
-  # (~0.4 runner-min), de modo que cancelar es casi gratis.
+  # rapido cancela la corrida del previo. Main solo ejecuta gates
+  # (~0.5 runner-min), de modo que cancelar es casi gratis.
   cancel-in-progress: true
 
-# Estrategia de fail-fast en 2 etapas (medida sobre 20 corridas reales):
-#
-#   ETAPA 0 "gates"   -> agentic, spec, docs              (7-10 s c/u, sin npm ci)
-#   ETAPA 1 "pesados" -> verify-backend, verify-frontend, coverage, e2e
-#
-# Los 3 gates corren SIN `needs` entre ellos: arrancan a la vez y comparten una
-# sola espera en cola. Los 4 pesados dependen de los gates, asi que si un gate
-# falla la etapa 1 ni se lanza.
-#
-# Por que 2 etapas y no una cadena verify -> coverage -> e2e: en las corridas
-# medidas, 8 jobs simultaneos producían 81-178 s de espera EN COLA por job. La
-# contencion era el costo dominante, mas que la ejecucion. Bajar de 8 a 4 jobs
-# contendiendo reduce la cola, y como los pesados siguen en paralelo el wall
-# clock baja de ~370 s a ~255 s. Una cadena total costaria ~650 s.
-#
-# No se serializa mas: el ahorro extra solo se materializa cuando falla un job
-# pesado (caso raro), a costa de +minutos de latencia en CADA PR verde.
+permissions:
+  contents: read
+
 jobs:
-  agentic-guardrails:
-    name: Agentic & Security Guardrails
+  changes:
+    name: Detect changes
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      stack: ${{ steps.filter.outputs.stack }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'scripts/**'
+              - '.github/workflows/ci.yml'
+            frontend:
+              - 'frontend/**'
+              - 'scripts/**'
+              - 'backend/docs/swagger.json'
+              - '.github/workflows/ci.yml'
+            stack:
+              - 'compose.dev.yaml'
+              - 'compose.yaml'
+              - 'nginx/**'
+              - 'backend/Dockerfile*'
+              - 'frontend/Dockerfile*'
+              - 'frontend/e2e/**'
+              - 'frontend/playwright.config.*'
+
+  gates:
+    name: Gates (agentic, spec, docs)
     if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -127,20 +148,6 @@ jobs:
             exit 1
           fi
 
-  # El job `lint-budget` se elimino como job propio: `backend/frontend validate:ci`
-  # ya corren `node ../scripts/lint-budget.cjs --only <pkg>` internamente, asi que
-  # el job standalone re-ejecutaba ESLint sobre el mismo codigo una segunda vez.
-  # Misma garantia, un job menos y ~62 s de runner liberados por PR. El ratchet
-  # sigue aplicando via validate:ci (ver AGENTS.md seccion 2.1).
-
-  spec-check:
-    name: Spec Gate
-    if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -149,13 +156,31 @@ jobs:
       - name: Check specs carry acceptance criteria
         run: npm run spec:check
 
+      - name: Check markdown links and ADR index
+        run: npm run docs:check
+
+      # `npx --yes` descarga prettier en cada corrida (~15 s). El cache de npm
+      # conserva el tarball entre corridas; el job no instala dependencias.
+      - name: Cache prettier download
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: prettier-${{ runner.os }}-3.8.1
+          restore-keys: |
+            prettier-${{ runner.os }}-
+
+      - name: Check Prettier formatting (docs/adr + specs)
+        run: npx --yes prettier@3.8.1 --check "docs/adr/*.md" "specs/**/*.md"
+
   verify-backend:
     name: Verify backend
-    needs: [agentic-guardrails, spec-check, docs-check]
-    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
-    # como parte de la revision del PR.
-    if: ${{ github.event_name == 'pull_request' }}
+    needs: [gates, changes]
+    # Solo en PR con cambios en el area y fuera de PRs de release-please
+    # (solo bumpean versiones/changelogs). `!cancelled()` evita que un
+    # `needs` en skipped cancele la evaluacion del resto de la condicion.
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
@@ -181,12 +206,12 @@ jobs:
             prisma-${{ runner.os }}-
 
       - name: Install backend dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       # `npm run check:sdk` (part of validate:ci) regenerates the frontend SDK
       # with openapi-typescript, so the frontend toolchain must be available.
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
         working-directory: frontend
 
       - name: Generate Prisma client
@@ -196,13 +221,22 @@ jobs:
         id: validate
         run: npm run validate:ci
 
+      # La cobertura con thresholds (ratchet) corre aqui dentro en vez de en
+      # un job separado: evita un checkout + doble `npm ci` + espera en cola
+      # extra por PR. validate:ci solo corre el subset de schemas, asi que no
+      # hay doble ejecucion de la suite completa.
+      - name: Backend coverage (thresholds en vitest.config.ts)
+        env:
+          JWT_SECRET: test-secret
+        run: npm run test:coverage
+
       - name: Generate Backend Summary
         if: always()
         run: |
           echo "### ⚙️ Backend CI Validation" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.validate.outcome }}" = "success" ]; then
             echo "- **Estado:** ✅ APROBADO" >> $GITHUB_STEP_SUMMARY
-            echo "- **Validaciones:** Formato Prettier, ESLint, TypeScript Check, SDK Sync, Snapshot Schemas y Build pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
+            echo "- **Validaciones:** Formato Prettier, ESLint, TypeScript Check, SDK Sync, Snapshot Schemas, cobertura y Build pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
           else
             echo "- **Estado:** ❌ FALLIDO" >> $GITHUB_STEP_SUMMARY
             echo "- **Diagnóstico:** Revisa el paso 'Run backend CI validation'. Si eres un agente AI, consulta \`AGENTS.md\` para ejecutar \`npm run check\` y \`npm run lint\` localmente." >> $GITHUB_STEP_SUMMARY
@@ -210,11 +244,11 @@ jobs:
 
   verify-frontend:
     name: Verify frontend
-    needs: [agentic-guardrails, spec-check, docs-check]
-    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
-    # como parte de la revision del PR.
-    if: ${{ github.event_name == 'pull_request' }}
+    needs: [gates, changes]
+    # Solo en PR con cambios en el area y fuera de PRs de release-please.
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
@@ -230,11 +264,15 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
-      - name: Run frontend CI validation
+      # validate:ci:coverage == validate:ci pero con `test:coverage` en vez de
+      # `test:run:ci`: la suite completa corre UNA vez con thresholds
+      # (ratchet). El antiguo job `coverage-ratchet` la corria una segunda
+      # vez en otro runner con otro `npm ci`.
+      - name: Run frontend CI validation with coverage
         id: validate
-        run: npm run validate:ci
+        run: npm run validate:ci:coverage
 
       - name: Generate Frontend Summary
         if: always()
@@ -242,74 +280,21 @@ jobs:
           echo "### 🎨 Frontend CI Validation" >> $GITHUB_STEP_SUMMARY
           if [ "${{ steps.validate.outcome }}" = "success" ]; then
             echo "- **Estado:** ✅ APROBADO" >> $GITHUB_STEP_SUMMARY
-            echo "- **Validaciones:** ESLint, Prettier Check y Type Check pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
+            echo "- **Validaciones:** ESLint, Prettier Check, Type Check, cobertura y Build pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
           else
             echo "- **Estado:** ❌ FALLIDO" >> $GITHUB_STEP_SUMMARY
             echo "- **Diagnóstico:** Revisa el paso 'Run frontend CI validation'. Si eres un agente AI, ejecuta \`npm run check\` y \`npm run format:check\` en \`frontend/\`." >> $GITHUB_STEP_SUMMARY
           fi
 
-  coverage-ratchet:
-    name: Coverage Ratchet
-    needs: [agentic-guardrails, spec-check, docs-check]
-    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
-    # como parte de la revision del PR.
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Backend coverage (thresholds en vitest.config.ts)
-        working-directory: backend
-        env:
-          JWT_SECRET: test-secret
-        run: npm run test:coverage
-
-      - name: Frontend coverage (thresholds en vite.config.ts)
-        working-directory: frontend
-        run: npm run test:coverage
-
-  docs-check:
-    name: Docs as Code Check
-    if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Check markdown links and ADR index
-        run: npm run docs:check
-
-      - name: Check Prettier formatting (docs/adr + specs)
-        run: npx --yes prettier@3.8.1 --check "docs/adr/*.md" "specs/**/*.md"
-
   e2e-smoke:
     name: E2E Smoke (compose.dev)
-    needs: [agentic-guardrails, spec-check, docs-check]
-    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
-    # como parte de la revision del PR.
-    if: ${{ github.event_name == 'pull_request' }}
+    needs: [gates, changes, verify-backend, verify-frontend]
+    # Solo si toco backend/frontend/stack y los verifys no fallaron (success
+    # o skipped cuando su area no cambio). En un PR rojo el e2e ya no quema
+    # ~176 s sobre codigo que no pasa validacion.
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && needs.gates.result == 'success' && (needs.verify-backend.result == 'success' || needs.verify-backend.result == 'skipped') && (needs.verify-frontend.result == 'success' || needs.verify-frontend.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.stack == 'true') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -326,21 +311,32 @@ jobs:
       # no existe, y el npm ci posterior falla con EACCES. Instalar primero.
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm ci --no-audit --no-fund
+
+      # Los binarios del navegador (~150 MB) se cachean entre corridas; la
+      # instalacion de dependencias OS via apt (`--with-deps`) sigue
+      # corriendo sobre la VM fresca.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
 
       - name: Start compose.dev stack
         run: docker compose -f compose.dev.yaml up -d --build
 
       - name: Wait for backend health
         run: |
-          for i in $(seq 1 60); do
+          for i in $(seq 1 36); do
             if curl -sf http://127.0.0.1:4000/api/health > /dev/null; then
               echo "backend healthy"
               exit 0
             fi
-            sleep 10
+            sleep 5
           done
-          echo "::error::backend no alcanzó /api/health en ~10 min"
+          echo "::error::backend no alcanzó /api/health en ~3 min"
           docker compose -f compose.dev.yaml logs backend --tail=100
           exit 1
 

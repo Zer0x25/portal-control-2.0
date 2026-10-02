@@ -271,7 +271,7 @@ Both are set to zero. Raise them only with a deliberate, explained edit:
 |---|---|---|
 | ESLint warnings | `lint-budget.json` | `validate:ci`, pre-commit, CI |
 | Unvalidated mutating routes | `ALLOWED_UNVALIDATED_ROUTES` in `tests/architecture-guard.test.ts` | `test:unit` |
-| Coverage thresholds | `coverage` en `backend/vitest.config.ts` y `frontend/vite.config.ts` | `coverage-ratchet` CI |
+| Coverage thresholds | `coverage` en `backend/vitest.config.ts` y `frontend/vite.config.ts` | `verify-backend` (`test:coverage`) y `verify-frontend` (`validate:ci:coverage`) |
 
 Coverage, docs y smoke (spec 003, ADR-0012):
 
