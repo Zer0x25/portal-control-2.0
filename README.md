@@ -46,9 +46,9 @@ Para mayor seguridad y compatibilidad GitOps, las variables de entorno se gestio
 ### 3.1 Variables recomendadas para Portainer
 
 - `IMAGE_TAG`: tag a desplegar. Default recomendado: `latest` para `main`.
-- `BACKEND_IMAGE`: opcional; por defecto `ghcr.io/zer0x25/portal-control-backend`
-- `FRONTEND_IMAGE`: opcional; por defecto `ghcr.io/zer0x25/portal-control-frontend`
-- `GATEWAY_IMAGE`: opcional; por defecto `ghcr.io/zer0x25/portal-control-gateway`
+- `BACKEND_IMAGE`: opcional; por defecto `ghcr.io/zer0x25/portal-control-2-0-backend`
+- `FRONTEND_IMAGE`: opcional; por defecto `ghcr.io/zer0x25/portal-control-2-0-frontend`
+- `GATEWAY_IMAGE`: opcional; por defecto `ghcr.io/zer0x25/portal-control-2-0-gateway`
 - `BACKUP_HOST_PATH`: opcional; por defecto `/srv/server-lab/data/portal-control/backups`
 - `UPLOADS_HOST_PATH`: opcional; por defecto `/srv/server-lab/data/portal-control/uploads`
 

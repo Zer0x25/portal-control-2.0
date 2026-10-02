@@ -31,13 +31,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image_name: portal-control-backend
+          - image_name: portal-control-2-0-backend
             context: ./backend
             dockerfile: ./backend/Dockerfile
-          - image_name: portal-control-frontend
+          - image_name: portal-control-2-0-frontend
             context: ./frontend
             dockerfile: ./frontend/Dockerfile
-          - image_name: portal-control-gateway
+          - image_name: portal-control-2-0-gateway
             context: ./nginx
             dockerfile: ./nginx/Dockerfile
     steps:
@@ -70,7 +70,7 @@ jobs:
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          build-args: ${{ matrix.image_name == 'portal-control-frontend' && format('VITE_SENTRY_DSN={0}', secrets.VITE_SENTRY_DSN) || '' }}
+          build-args: ${{ matrix.image_name == 'portal-control-2-0-frontend' && format('VITE_SENTRY_DSN={0}', secrets.VITE_SENTRY_DSN) || '' }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -97,15 +97,19 @@ jobs:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           # Sin hardcodear el owner: el patron debe coincidir tambien en
           # clones/forks cuyo compose.yaml apunte a otro namespace de GHCR.
+          # GHCR normaliza el namespace a minusculas (compose.yaml usa
+          # `zer0x25` aunque el login sea `Zer0x25`), asi que se compara en
+          # minusculas.
           OWNER: ${{ github.repository_owner }}
         run: |
           SHORT_SHA="${HEAD_SHA::7}"
           TAG="sha-${SHORT_SHA}"
+          OWNER_LC="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
 
           sed -i \
-            -e "s|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER}/portal-control-backend}:.*|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER}/portal-control-backend}:${TAG}|" \
-            -e "s|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER}/portal-control-frontend}:.*|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER}/portal-control-frontend}:${TAG}|" \
-            -e "s|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER}/portal-control-gateway}:.*|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER}/portal-control-gateway}:${TAG}|" \
+            -e "s|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-backend}:.*|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-backend}:${TAG}|" \
+            -e "s|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-frontend}:.*|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-frontend}:${TAG}|" \
+            -e "s|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-gateway}:.*|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-gateway}:${TAG}|" \
             compose.yaml
 
       - name: Commit pinned compose
