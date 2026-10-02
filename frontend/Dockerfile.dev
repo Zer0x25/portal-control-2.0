@@ -1,0 +1,14 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+# Vite usa el puerto 5173 por defecto
+EXPOSE 5173
+
+# Correr con --host para que sea accesible desde fuera del contenedor
+CMD ["npm", "run", "dev", "--", "--host"]

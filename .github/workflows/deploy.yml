@@ -1,0 +1,106 @@
+name: Portal Control CD
+
+on:
+  workflow_run:
+    workflows:
+      - Portal Control CI
+    types:
+      - completed
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: ${{ github.repository_owner }}
+
+jobs:
+  publish-images:
+    name: Publish images
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.actor.login != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: portal-control-backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
+          - image_name: portal-control-frontend
+            context: ./frontend
+            dockerfile: ./frontend/Dockerfile
+          - image_name: portal-control-gateway
+            context: ./nginx
+            dockerfile: ./nginx/Dockerfile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.image_name }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          build-args: ${{ matrix.image_name == 'portal-control-frontend' && format('VITE_SENTRY_DSN={0}', secrets.VITE_SENTRY_DSN) || '' }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  pin-stack-images:
+    name: Pin stack images
+    needs: publish-images
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.actor.login != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Pin compose images to published SHA
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          SHORT_SHA="${HEAD_SHA::7}"
+          TAG="sha-${SHORT_SHA}"
+
+          sed -i \
+            -e "s|image: \${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-backend}:.*|image: \${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-backend}:${TAG}|" \
+            -e "s|image: \${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-frontend}:.*|image: \${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-frontend}:${TAG}|" \
+            -e "s|image: \${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-gateway}:.*|image: \${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-gateway}:${TAG}|" \
+            compose.yaml
+
+      - name: Commit pinned compose
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if git diff --quiet -- compose.yaml; then
+            echo "compose.yaml already pinned to target SHA"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add compose.yaml
+          git commit -m "chore(deploy): pin portal images to ${HEAD_SHA::7} [skip ci]"
+          git push origin HEAD:main
+

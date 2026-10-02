@@ -1,0 +1,296 @@
+# Developer & AI Agent Guidelines (AGENTS.md)
+
+This document provides conventions, operational commands, and architectural constraints for AI agents (including Google Jules) and contributors working on `portal-control`.
+
+---
+
+## 1. Project Structure
+
+- **`backend/`**: Node.js (v24), Express, TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
+- **`frontend/`**: React 18, Vite, TypeScript, Redux Toolkit, Tailwind CSS.
+- **`compose.yaml`**: Multi-container stack (PostgreSQL 15, PgBouncer, backend, frontend, Nginx).
+- **`.jules/`**: Institutional memory journals:
+  - `bolt.md`: Performance guidelines (N+1 prevention, batch fetching).
+  - `sentinel.md`: Security constraints (safe command execution, SQL parametrization, strict secrets).
+
+---
+
+## 2. Validation & Build Commands
+
+Always run these commands inside the respective package directories to verify changes:
+
+### Backend (`cd backend`)
+
+```bash
+# 1. Install dependencies
+npm ci
+
+# 2. Generate Prisma Client (Mandatory after modifying schema.prisma)
+npx prisma generate
+
+# 3. Type check
+npm run check
+
+# 4. Code style & Lint
+npm run format:check
+npm run lint
+
+# 5. Verify docs/swagger.json and the frontend SDK are in sync
+npm run check:sdk
+
+# 6. Full CI validation suite (format check, lint, lint budget, tsc, SDK sync,
+#    schema tests, and tsc build)
+npm run validate:ci
+```
+
+### Frontend (`cd frontend`)
+
+```bash
+# 1. Install dependencies
+npm ci
+
+# 2. Type check
+npm run check
+
+# 3. Lint & format check
+npm run lint
+npm run format:check
+
+# 4. Full CI validation suite
+npm run validate:ci
+```
+
+---
+
+## 2.1 Lint Warning Budget (Ratchet)
+
+ESLint warnings do not fail the build, so they accumulate silently. The repo
+enforces a **ratchet**: the allowed warning count lives in `lint-budget.json`
+and CI fails if the real count is higher.
+
+```bash
+# From the repo root — run the ratchet (fails if over budget)
+npm run lint:budget
+
+# Show the current state with a per-rule breakdown
+npm run lint:budget:rules
+
+# After deliberately removing warnings, tighten the budget to the new count
+npm run lint:budget:update
+```
+
+Key points:
+
+- The budget is **committed** and currently pinned at **0 warnings / 0 errors**
+  in both packages. Any new warning fails CI.
+- Run `npm run lint:budget:update` **only after** actually removing warnings, and
+  include the updated `lint-budget.json` in the same commit.
+- `lint:fix` / `--fix-dry-run` fixes **0** of these warnings — they are all
+  "remove dead code" or "retype" problems, not formatting. There is no autofix
+  shortcut; budget the work per file.
+- Test files (`src/**/*.test.*`, `src/**/*.spec.*`, `src/tests/**`) have
+  `@typescript-eslint/no-explicit-any` turned **off** on purpose: mock doubles
+  are not a production type-safety concern. Do not re-enable it or extend the
+  exemption to production `src` code.
+
+Status: the campaign is **complete — 389 → 0**.
+
+| Rule                                 | Before | After |
+| ------------------------------------ | ------ | ----- |
+| `@typescript-eslint/no-explicit-any` | 298    | 0     |
+| `@typescript-eslint/no-unused-vars`  | 78     | 0     |
+| `no-restricted-syntax`               | 5      | 0     |
+| `no-console`                         | 7      | 0     |
+| `no-restricted-imports`              | 1      | 0     |
+
+To raise the budget again (a deliberate decision, not an accident), edit
+`lint-budget.json` by hand and say why in the commit message.
+
+---
+
+## 3. Database & Architecture Constraints
+
+1. **PgBouncer & Transactions**:
+   - PgBouncer runs with `POOL_MODE: transaction`.
+   - Any interactive transaction or operation setting PostgreSQL session variables (`set_config`) **must** use `withDirectTransaction` from `backend/src/services/db.ts` to ensure execution over the direct database connection (`DIRECT_URL`).
+2. **N+1 Query Prevention (Bolt Journal)**:
+   - Never execute iterative `findUnique` or `findFirst` in loops over collections of records.
+   - Always batch-fetch dependencies using `findMany` with `{ in: [...] }` or use `schedulingService.getSchedulingContext(...)` prior to mapping.
+3. **Security Standards (Sentinel Journal)**:
+   - Never use `child_process.exec` with string interpolation. Always use `execFile` or `spawn` with argument arrays.
+   - Never concatenate strings in `$executeRawUnsafe`. Use parameterized `$executeRaw` with PostgreSQL's `set_config`.
+   - Never provide weak fallback defaults for sensitive cryptographic secrets (e.g. `JWT_SECRET`).
+   - Validate batch operations over the entire collection (never use partial slices like `records.slice(0, 10)` for security/locking checks).
+4. **Code Quality**:
+   - Avoid explicit `any` bypasses. Use strict interfaces or generics `<T>`.
+   - Do not leave debugging `console.log` statements in production services or Redux store slices.
+   - For console output, use the structured loggers instead of raw `console`:
+     `backend/src/utils/logger.ts` (JSON to stdout) and
+     `frontend/src/utils/logger.ts`. `no-console` only permits `warn`/`error`,
+     and `frontend/src/utils/logger.ts` is the one sanctioned place where
+     `console` output is allowed.
+
+---
+
+## 4. Removing Lint Warnings Efficiently
+
+`no-explicit-any` is the dominant warning class. Do **not** rewrite all of them
+in one pass: the blast radius is the whole codebase. Instead, work in this order.
+
+### Order of attack
+
+1. **`no-restricted-syntax` / `no-restricted-imports`** — these are architecture
+   guardrails, not style. Fix them first because they are few and often mask
+   real bugs. Watch out: the date anti-patterns (`new Date(x + "T00:00:00Z")`)
+   are an **off-by-one bug** in `America/Santiago`. Midnight in Santiago is not
+   midnight UTC, so `new Date("2026-01-01T00:00:00Z")` formats to
+   `2025-12-31` in business time. Use `parseBusinessDateCL` (instant) or
+   `differenceInCalendarDaysCL` (day delta) from `src/utils/timePolicy.ts`.
+2. **`no-console`** — mechanical, low risk. Use the loggers.
+3. **`no-unused-vars`** — mechanical, low risk, high count. Split by directory
+   and batch several files per change. The config only allows unused _args_
+   matching `/^_/`, so rename those; for destructured props, simply omit them
+   from the destructuring pattern instead of touching the type or the caller.
+4. **`no-explicit-any`** — the long tail. Attack by density, see below.
+
+### Batching `no-explicit-any`
+
+Ranked by occurrences, group by file and go highest-density first; low-density
+files finish the job and are quick wins. Patterns that recur, with the fix that
+worked here:
+
+- **`prisma as any`** — do **not** use `PrismaClient` from `@prisma/client`; it
+  does not compile, because the client in `src/services/db.ts` is `$extends`-wrapped
+  and the extended type lacks `$on`. Use
+  `import type { default as extendedPrisma } from "./db"` and
+  `type DbClient = typeof extendedPrisma | Prisma.TransactionClient`.
+  Prefer a TYPE-ONLY import so nothing is emitted and no cycle appears. Some
+  helpers accept a narrower structural type (`TxLike`) that the extended client
+  already satisfies — in that case just delete the cast.
+- **`catch (error: any)`** — use `src/utils/caughtError.ts`:
+  `toCaughtError(value: unknown)` returns `{ message, code?, message_display?,
+details?, statusCode, isAppError }`. Keep `throw x` rethrows and raw logger
+  arguments pointing at the ORIGINAL error, never the narrowed object, so
+  stacks and `instanceof` survive.
+- **`const where: any = {}`** as a Prisma filter — use `Prisma.XWhereInput`;
+  build it per branch or use `Prisma.XWhereInput[]` with `AND`.
+- **`(req as any).user`** — import `AuthRequest` from
+  `src/middleware/authMiddleware.ts`. Note some controllers pass a narrowed
+  literal, so `NonNullable<AuthRequest["user"]>` may be too strict; declare the
+  precise fields actually read instead of falling back to `any`.
+- **JSON Prisma columns** — `Prisma.InputJsonValue` for writes, `Prisma.JsonValue`
+  for reads. Prisma serializes, so no `JSON.stringify` is needed.
+- **Generic components** — a component that maps over caller-supplied rows is
+  usually better as `Component<T extends Row>` than as a prop typed `any`.
+- **Unconstrained JSON** — use a recursive `JsonValue` type instead of `any`.
+
+Two useful distinctions:
+
+- **Production code vs tests.** ~70 `any` lived in test files, mostly mock casts.
+  The rule is now off for test globs; keep it on for production `src`.
+- **Do not "fix" behavior silently.** If an unused variable or loose `any` looks
+  like a real bug, keep the current runtime behavior and surface the finding.
+
+Always re-run `npx tsc --noEmit` and `npx prettier --check` after each batch;
+`prettier/prettier` is an **error** and will fail the ratchet immediately. When
+tightening an exported type, expect the compiler to surface real callers (e.g.
+`ValidationError` now takes `TIssue[]` so both `ZodIssue` and
+`ZodFormattedError` payloads are accepted) — fix the callers' types rather than
+widening back to `any`.
+
+### Bugs the compiler found while removing `any`
+
+Replacing `any` with a real type is a review in disguise. These were genuine
+defects that only became visible once the types stopped lying:
+
+- **`Employee.status` sent unvalidated.** `streamEmployeesToExcel` forwarded a
+  raw `?status=` string straight into a Prisma **enum** column, so any value
+  outside `Activo` / `Archivado` threw at runtime. Now narrowed with
+  `toEmployeeStatus()`, which skips the filter on unrecognized input.
+- **`"Licencia Médica"` was missing from `TimeRecordStatus`.** The backend does
+  emit it, and `justificationType` fed it into `status`, but the frontend union
+  omitted it and `TIME_RECORD_STATUS_CONFIG` had no label for it. Adding the
+  member made the `Record<TimeRecordStatus, …>` exhaustiveness check fire, which
+  is how the missing UI entry was found.
+- **`exportShiftScheduleToICS` could crash.** It called `event.startTime.split(…)`
+  although `startTime` is optional in `IcsShiftEvent`. Events missing a bound are
+  now skipped.
+- **Query params were cast, not checked.** `as string` on `req.query` values
+  lets `?area[a]=b` through as an object. Added `queryString()` in
+  `backend/src/utils/stringUtils.ts`; prefer it over `as string` on query values.
+
+### Known upstream escape hatch
+
+`backend/src/controllers/ImportController.ts` keeps one narrow
+`as unknown as XlsxLoadBuffer` cast. exceljs ships an ambient
+`interface Buffer extends ArrayBuffer` that shadows Node's real `Buffer` and
+rejects it outright — even a direct `as Buffer` fails. The type is derived via
+`Parameters<ExcelJS.Xlsx["load"]>[0]` so it survives an exceljs upgrade. This is
+the **only** sanctioned cast; do not add others without the same justification.
+
+---
+
+## 5. Route Guards & API Contract
+
+Both route-introspection guards used to pass **vacuously**. Express 5 removed
+`layer.regexp` and leaves `layer.path` `undefined` for mounted routers, so
+`app._router.stack` no longer resolves and the route list was always empty.
+
+1. **Declare mounts, do not rediscover them.** `src/app.ts` exports
+   `ROUTE_MOUNTS` (`{ prefix, router }[]`). `tests/helpers/routeManifest.ts`
+   joins those prefixes with each router's own routes. Never walk
+   `app._router`/`app.router` to recover prefixes again.
+2. **`/api/health` is mounted separately** in `app.ts` because it must bypass
+   the global rate limiter and the maintenance gate. It still appears in
+   `ROUTE_MOUNTS` so guards see it.
+3. **Detect `validate` with a marker, not `fn.name`.** The middleware factory
+   returns anonymous arrows, so the runtime name is `middleware`. Use
+   `isValidateMiddleware()` from `backend/src/middleware/validate.ts`.
+4. **Anti-vacuity assertions are mandatory.** Any guard that enumerates
+   collections must assert the collection is non-empty, otherwise a broken
+   enumerator silently passes forever.
+5. **OpenAPI paths must match the mount prefix exactly.** `@openapi` blocks
+   were written as `/api/emails`, `/api/configs`, `/api/exports` while the
+   routers mount at `/api/email`, `/api/configs`, `/api/export`. Documented
+   paths are now singularized and the `api-contract` guard enforces it.
+6. **Keep the contract in sync.** `npm run check:sdk` (backend) regenerates
+   `docs/swagger.json` and `frontend/src/types/api-schema.ts` and fails if
+   either changes. It runs inside `validate:ci`. Its `FRONTEND_DIR` used to be
+   `Frontend` (capital F), which made the command unrunnable on Linux.
+7. **Validation ratchet.** `tests/architecture-guard.test.ts` compares the
+   unvalidated mutating routes against `ALLOWED_UNVALIDATED_ROUTES`. Each
+   baseline entry is justified inline (no JSON body, path-only, or multipart
+   with a controller-side parse). Adding an unvalidated route fails until it is
+   validated or justified.
+
+### Ratchet baselines
+
+Both are set to zero. Raise them only with a deliberate, explained edit:
+
+| Ratchet | File | Enforced by |
+|---|---|---|
+| ESLint warnings | `lint-budget.json` | `validate:ci`, pre-commit, CI |
+| Unvalidated mutating routes | `ALLOWED_UNVALIDATED_ROUTES` in `tests/architecture-guard.test.ts` | `test:unit` |
+| Coverage thresholds | `coverage` en `backend/vitest.config.ts` y `frontend/vite.config.ts` | `coverage-ratchet` CI |
+
+Coverage, docs y smoke (spec 003, ADR-0012):
+
+- Cobertura: `npm run test:coverage` en cada paquete (vitest `--coverage`,
+  thresholds como ratchet: solo suben).
+- Docs: `npm run docs:check` desde la raíz (enlaces + índice ADR).
+- Smoke: `npx playwright test e2e/smoke.spec.ts` en `frontend/` contra
+  `compose.dev` (ver `README.md` §5).
+
+---
+
+## 6. Commit Discipline (Humans and Agents, including Jules)
+
+`release-please` parses the subject with `tipo(scope opcional): mensaje`.
+The type must be at position 0. Emoji prefixes (`🔒 Fix ...`,
+`⚡ perf: ...`) break parsing and silently skip the release notes entry.
+
+1. Pure Conventional Commits subjects, no emoji, no extra prefixes.
+2. The `commit-msg` hook (`scripts/commit-conventional.cjs`) enforces this
+   locally. Do not bypass it with `--no-verify`.
+3. History already contains emoji-prefixed subjects (grandfathered, see
+   spec 003 G-01). Do not imitate them.

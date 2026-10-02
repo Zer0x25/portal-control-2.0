@@ -1,0 +1,363 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                    String          @id @default(uuid())
+  username              String          @unique
+  passwordHash          String          @map("password_hash")
+  role                  UserRole        @default(Usuario)
+  employeeId            String?         @unique @map("employee_id")
+  createdAt             DateTime        @default(now()) @map("created_at")
+  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
+  lastLogin             DateTime?       @map("last_login")
+  isForcePasswordChange Boolean         @default(false) @map("is_force_password_change")
+  mfaEnabled            Boolean         @default(false) @map("mfa_enabled")
+  mfaSecret             String?         @map("mfa_secret")
+  sessions              ActiveSession[]
+  employee              Employee?       @relation(fields: [employeeId], references: [id])
+
+  @@index([updatedAt])
+  @@map("users")
+}
+
+model ActiveSession {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  tokenHash  String   @unique @map("token_hash")
+  deviceInfo String?  @map("device_info")
+  lastActive DateTime @default(now()) @map("last_active")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("active_sessions")
+}
+
+model Employee {
+  id                String         @id
+  name              String
+  rut               String         @unique
+  email             String?
+  position          String
+  area              String
+  workdayType       String         @map("workday_type")
+  status            EmployeeStatus @default(Activo)
+  pin               String?
+  isPinBlocked      Boolean        @default(false) @map("is_pin_blocked")
+  pinFailedAttempts Int            @default(0) @map("pin_failed_attempts")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  user              User?
+
+  @@index([updatedAt])
+  @@map("employees")
+}
+
+model TimeRecord {
+  id                       String              @id @default(uuid())
+  employeeId               String              @map("employee_id")
+  employeeName             String              @map("employee_name")
+  employeePosition         String?             @map("employee_position")
+  employeeArea             String?             @map("employee_area")
+  employeeWorkdayType      String?             @map("employee_workday_type")
+  date                     String
+  entrada                  String?
+  inicioColacion           String?             @map("inicio_colacion")
+  finColacion              String?             @map("fin_colacion")
+  salida                   String?
+  status                   String              @default("Laborando")
+  source                   String              @default("SELF_SERVICE")
+  justification            String?             @map("justification")
+  entradaLatitude          Float?              @map("entrada_latitude")
+  entradaLongitude         Float?              @map("entrada_longitude")
+  salidaLatitude           Float?              @map("salida_latitude")
+  salidaLongitude          Float?              @map("salida_longitude")
+  createdAt                DateTime            @default(now()) @map("created_at")
+  updatedAt                DateTime            @updatedAt @map("updated_at")
+  scheduledStartTime       String?             @map("scheduled_start_time")
+  scheduledEndTime         String?             @map("scheduled_end_time")
+  scheduledHours           Float?              @map("scheduled_hours")
+  scheduledColacionMinutes Int?                @map("scheduled_colacion_minutes")
+  shiftPatternId           String?             @map("shift_pattern_id")
+  shiftPatternName         String?             @map("shift_pattern_name")
+  isDeleted                Boolean             @default(false) @map("is_deleted")
+  deletedAt                DateTime?           @map("deleted_at")
+  integrityHash            String?             @map("integrity_hash")
+  integrityPrevHash        String?             @map("integrity_prev_hash")
+  integrityAlgo            String              @default("SHA256") @map("integrity_algo")
+  integrityVersion         Int                 @default(1) @map("integrity_version")
+  integrityCheckedAt       DateTime?           @map("integrity_checked_at")
+  correctionRequests       CorrectionRequest[]
+
+  @@index([updatedAt])
+  @@index([date])
+  @@index([employeeId])
+  @@index([employeeId, date])
+  @@index([employeeId, updatedAt, id], map: "idx_time_records_integrity_order")
+  @@index([integrityHash])
+  @@map("time_records")
+}
+
+model ShiftReport {
+  id              String    @id @default(uuid())
+  folio           String    @unique
+  shiftName       String    @map("shift_name")
+  responsibleUser String    @map("responsible_user")
+  startTime       DateTime  @map("start_time")
+  endTime         DateTime? @map("end_time")
+  status          String    @default("open")
+  date            DateTime
+  logEntries      String    @default("[]") @map("log_entries")
+  supplierEntries String    @default("[]") @map("supplier_entries")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at")
+
+  @@map("shift_reports")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  timestamp     DateTime @default(now())
+  actorUsername String?  @map("actor_username")
+  action        String
+  category      String?
+  severity      String?
+  outcome       String?
+  ipAddress     String?  @map("ip_address")
+  details       Json?
+  metadata      Json?
+
+  @@index([timestamp])
+  @@index([category])
+  @@index([actorUsername])
+  @@map("audit_logs")
+}
+
+model ShiftPattern {
+  id              String    @id @default(uuid())
+  name            String
+  cycleLengthDays Int       @map("cycle_length_days")
+  startDayOfWeek  Int?      @map("start_day_of_week")
+  dailySchedules  String    @map("daily_schedules")
+  color           String?
+  maxHoursPattern Float?    @map("max_hours_pattern")
+  worksOnHolidays Boolean   @default(false) @map("works_on_holidays")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  isDeleted       Boolean   @default(false) @map("is_deleted")
+  deletedAt       DateTime? @map("deleted_at")
+
+  @@index([updatedAt])
+  @@map("shift_patterns")
+}
+
+model AssignedShift {
+  id               String    @id @default(uuid())
+  employeeId       String    @map("employee_id")
+  shiftPatternId   String    @map("shift_pattern_id")
+  startDate        String    @map("start_date")
+  endDate          String?   @map("end_date")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  isDeleted        Boolean   @default(false) @map("is_deleted")
+  deletedAt        DateTime? @map("deleted_at")
+  employeeName     String?   @map("employee_name")
+  shiftPatternName String?   @map("shift_pattern_name")
+
+  @@index([updatedAt])
+  @@index([employeeId])
+  @@index([startDate])
+  @@index([employeeId, startDate])
+  @@map("assigned_shifts")
+}
+
+model Holiday {
+  id        String   @id @default(uuid())
+  date      String   @unique
+  name      String
+  type      String   @default("Nacional")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("holidays")
+}
+
+model LeaveRecord {
+  id         String    @id @default(uuid())
+  employeeId String    @map("employee_id")
+  type       String
+  startDate  String    @map("start_date")
+  endDate    String    @map("end_date")
+  notes      String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  isDeleted  Boolean   @default(false) @map("is_deleted")
+  deletedAt  DateTime? @map("deleted_at")
+
+  @@index([updatedAt])
+  @@index([employeeId])
+  @@map("leave_records")
+}
+
+model CorrectionRequest {
+  id              String     @id @default(uuid())
+  employeeId      String     @map("employee_id")
+  timeRecordId    String     @map("time_record_id")
+  recordField     String     @map("record_field")
+  originalValue   String     @map("original_value")
+  requestedValue  String     @map("requested_value")
+  reason          String
+  status          String     @default("pending")
+  rejectionReason String?    @map("rejection_reason")
+  resolvedBy      String?    @map("resolved_by")
+  resolvedAt      DateTime?  @map("resolved_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  isDeleted       Boolean    @default(false) @map("is_deleted")
+  deletedAt       DateTime?  @map("deleted_at")
+  timeRecord      TimeRecord @relation(fields: [timeRecordId], references: [id], onDelete: Cascade)
+
+  @@index([updatedAt])
+  @@index([employeeId])
+  @@map("correction_requests")
+}
+
+model MeterReading {
+  id             String   @id @default(uuid())
+  meterConfigId  String   @map("meter_config_id")
+  authorUsername String   @map("author_username")
+  value          Float
+  timestamp      DateTime @default(now())
+  isRecharge     Boolean  @default(false) @map("is_recharge")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("meter_readings")
+}
+
+model QuickNote {
+  id              String   @id @default(uuid())
+  content         String
+  authorUsername  String   @map("author_username")
+  isArchived      Boolean  @default(false) @map("is_archived")
+  color           String?  @default("amber")
+  reminderEnabled Boolean  @default(true) @map("reminder_enabled")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("quick_notes")
+}
+
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}
+
+model ScheduledReport {
+  id             String    @id @default(uuid())
+  name           String
+  description    String?
+  reportType     String    @map("report_type")
+  frequency      String
+  cronExpression String    @map("cron_expression")
+  recipients     String
+  filters        String?
+  isActive       Boolean   @default(true) @map("is_active")
+  lastRunAt      DateTime? @map("last_run_at")
+  nextRunAt      DateTime? @map("next_run_at")
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("scheduled_reports")
+}
+
+model SeedingJob {
+  id           String          @id @default(uuid())
+  type         String
+  status       String
+  config       Json
+  progress     Json
+  createdBy    String          @map("created_by")
+  errorSummary String?         @map("error_summary")
+  startedAt    DateTime?       @map("started_at")
+  finishedAt   DateTime?       @map("finished_at")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  logs         SeedingJobLog[]
+
+  @@index([type, status])
+  @@index([createdAt])
+  @@map("seeding_jobs")
+}
+
+model SeedingJobLog {
+  id        String     @id @default(uuid())
+  jobId     String     @map("job_id")
+  level     String     @default("INFO")
+  message   String
+  payload   Json?
+  createdAt DateTime   @default(now()) @map("created_at")
+  job       SeedingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@map("seeding_job_logs")
+}
+
+model MonthlyEmployeeStats {
+  id               String   @id @default(uuid())
+  employeeId       String   @map("employee_id")
+  month            String
+  totalWorkedHours Decimal  @map("total_worked_hours")
+  totalOvertime    Decimal  @map("total_overtime")
+  totalScheduled   Decimal  @map("total_scheduled")
+  tardinessCount   Int      @map("tardiness_count")
+  absenceCount     Int      @map("absence_count")
+  vacationDays     Int      @map("vacation_days")
+  medicalLeaveDays Int      @map("medical_leave_days")
+  dailyBreakdown   String?  @map("daily_breakdown")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@unique([employeeId, month])
+  @@index([month])
+  @@map("monthly_employee_stats")
+}
+
+enum UserRole {
+  Administrador
+  Supervisor_Elevado
+  Supervisor
+  Reloj_Control
+  Fiscalizador
+  Usuario
+  Archivado
+}
+
+enum EmployeeStatus {
+  Activo
+  Archivado
+}
+
+model SystemLock {
+  key             String   @id
+  ownerInstanceId String   @map("owner_instance_id")
+  acquiredAt      DateTime @default(now()) @map("acquired_at")
+  expiresAt       DateTime @map("expires_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([expiresAt])
+  @@map("system_locks")
+}

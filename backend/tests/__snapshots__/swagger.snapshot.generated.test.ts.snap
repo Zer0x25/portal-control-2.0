@@ -1,0 +1,7039 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Swagger Generated Contract > generated swagger.json should match snapshot 1`] = `
+{
+  "components": {
+    "parameters": {},
+    "schemas": {
+      "ApiResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+          },
+          "success": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "success",
+        ],
+        "type": "object",
+      },
+      "AssignedShift": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "nullable": true,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "shiftPatternId": {
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "shiftPatternId",
+          "startDate",
+        ],
+        "type": "object",
+      },
+      "AttendanceRecordResponse": {
+        "properties": {
+          "attendanceStatus": {
+            "$ref": "#/components/schemas/AttendanceStatus",
+          },
+          "clockingStatus": {
+            "$ref": "#/components/schemas/ClockingStatus",
+          },
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "employeeArea": {
+            "type": "string",
+          },
+          "employeeId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "employeeName": {
+            "type": "string",
+          },
+          "employeePosition": {
+            "type": "string",
+          },
+          "employeeWorkdayType": {
+            "type": "string",
+          },
+          "entrada": {
+            "nullable": true,
+            "type": "string",
+          },
+          "entradaTimestamp": {
+            "nullable": true,
+            "type": "number",
+          },
+          "finColacion": {
+            "nullable": true,
+            "type": "string",
+          },
+          "finColacionTimestamp": {
+            "nullable": true,
+            "type": "number",
+          },
+          "id": {
+            "type": "string",
+          },
+          "inicioColacion": {
+            "nullable": true,
+            "type": "string",
+          },
+          "inicioColacionTimestamp": {
+            "nullable": true,
+            "type": "number",
+          },
+          "isDayOffWorked": {
+            "type": "boolean",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "isLate": {
+            "type": "boolean",
+          },
+          "justification": {
+            "nullable": true,
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "lateMinutes": {
+            "type": "number",
+          },
+          "overtimeHours": {
+            "type": "number",
+          },
+          "salida": {
+            "nullable": true,
+            "type": "string",
+          },
+          "salidaTimestamp": {
+            "nullable": true,
+            "type": "number",
+          },
+          "scheduledColacionMinutes": {
+            "nullable": true,
+            "type": "number",
+          },
+          "scheduledEndTime": {
+            "nullable": true,
+            "type": "string",
+          },
+          "scheduledHours": {
+            "nullable": true,
+            "type": "number",
+          },
+          "scheduledStartTime": {
+            "nullable": true,
+            "type": "string",
+          },
+          "shiftPatternId": {
+            "nullable": true,
+            "type": "string",
+          },
+          "shiftPatternName": {
+            "nullable": true,
+            "type": "string",
+          },
+          "source": {
+            "type": "string",
+          },
+          "status": {
+            "$ref": "#/components/schemas/TimeRecordStatus",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "workedHours": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "employeeId",
+          "date",
+        ],
+        "type": "object",
+      },
+      "AttendanceStatus": {
+        "enum": [
+          "Normal",
+          "Atraso",
+          "Ausente",
+          "Vacaciones",
+          "Licencia Médica",
+          "Permiso Especial",
+          "Feriado",
+          "DiaLibre",
+        ],
+        "type": "string",
+      },
+      "AuditLog": {
+        "properties": {
+          "action": {
+            "type": "string",
+          },
+          "actorUsername": {
+            "type": "string",
+          },
+          "category": {
+            "type": "string",
+          },
+          "details": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "id": {
+            "type": "string",
+          },
+          "ipAddress": {
+            "nullable": true,
+            "type": "string",
+          },
+          "metadata": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "outcome": {
+            "type": "string",
+          },
+          "severity": {
+            "type": "string",
+          },
+          "timestamp": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "timestamp",
+          "actorUsername",
+          "action",
+          "category",
+          "severity",
+          "outcome",
+        ],
+        "type": "object",
+      },
+      "AuditLogCleanup": {
+        "properties": {
+          "months": {
+            "default": 6,
+            "maximum": 120,
+            "minimum": 1,
+            "type": "integer",
+          },
+        },
+        "type": "object",
+      },
+      "AuditLogListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/AuditLog",
+                },
+                "type": "array",
+              },
+              "pagination": {
+                "properties": {
+                  "page": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                  "totalPages": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "total",
+                  "page",
+                  "totalPages",
+                ],
+                "type": "object",
+              },
+            },
+            "required": [
+              "pagination",
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "AuditLogQuery": {
+        "properties": {
+          "action": {
+            "type": "string",
+          },
+          "actor": {
+            "type": "string",
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            ],
+          },
+          "cursor": {
+            "type": "string",
+          },
+          "endDate": {
+            "type": "string",
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            ],
+          },
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "recordId": {
+            "type": "string",
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "items": {
+                  "type": "string",
+                },
+                "type": "array",
+              },
+            ],
+          },
+          "since": {
+            "type": "string",
+          },
+          "sortBy": {
+            "type": "string",
+          },
+          "sortOrder": {
+            "enum": [
+              "asc",
+              "desc",
+            ],
+            "type": "string",
+          },
+          "startDate": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "BulkAssignedShift": {
+        "items": {
+          "$ref": "#/components/schemas/AssignedShift",
+        },
+        "type": "array",
+      },
+      "BulkEmployee": {
+        "items": {
+          "$ref": "#/components/schemas/Employee",
+        },
+        "type": "array",
+      },
+      "BulkHoliday": {
+        "items": {
+          "$ref": "#/components/schemas/Holiday",
+        },
+        "type": "array",
+      },
+      "BulkMeterReading": {
+        "items": {
+          "$ref": "#/components/schemas/MeterReading",
+        },
+        "type": "array",
+      },
+      "BulkShiftPattern": {
+        "items": {
+          "$ref": "#/components/schemas/ShiftPattern",
+        },
+        "type": "array",
+      },
+      "BulkTimeRecord": {
+        "items": {
+          "$ref": "#/components/schemas/TimeRecordWrite",
+        },
+        "type": "array",
+      },
+      "CalendarMatrixRequest": {
+        "properties": {
+          "employeeIds": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "startDate",
+          "endDate",
+          "employeeIds",
+        ],
+        "type": "object",
+      },
+      "ClockingStatus": {
+        "enum": [
+          "fuera",
+          "por_iniciar",
+          "en_jornada",
+          "en_colacion",
+          "en_jornada_post_colacion",
+          "terminada",
+          "jornada_terminada_anomalia",
+          "no_programado",
+          "ausente",
+        ],
+        "type": "string",
+      },
+      "ConfigEntry": {
+        "properties": {
+          "group": {
+            "type": "string",
+          },
+          "key": {
+            "type": "string",
+          },
+          "updatedAt": {
+            "type": "string",
+          },
+          "value": {
+            "nullable": true,
+          },
+        },
+        "required": [
+          "key",
+        ],
+        "type": "object",
+      },
+      "ConflictValidation": {
+        "properties": {
+          "employeeId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "excludeAssignmentId": {
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "startDate",
+          "endDate",
+        ],
+        "type": "object",
+      },
+      "CorrectionRequest": {
+        "properties": {
+          "attachment": {
+            "nullable": true,
+          },
+          "currentValue": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "reason": {
+            "type": "string",
+          },
+          "recordField": {
+            "enum": [
+              "entrada",
+              "inicioColacion",
+              "finColacion",
+              "salida",
+            ],
+            "type": "string",
+          },
+          "requestedValue": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "timeRecordId": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "timeRecordId",
+          "recordField",
+          "requestedValue",
+          "reason",
+        ],
+        "type": "object",
+      },
+      "CorrectionRequestListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/CorrectionRequest",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "CreateUser": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "password": {
+            "minLength": 6,
+            "type": "string",
+          },
+          "role": {
+            "enum": [
+              "Usuario",
+              "Reloj_Control",
+              "Supervisor",
+              "Administrador",
+              "Supervisor_Elevado",
+              "Fiscalizador",
+            ],
+            "type": "string",
+          },
+          "username": {
+            "minLength": 3,
+            "type": "string",
+          },
+        },
+        "required": [
+          "username",
+          "password",
+          "role",
+        ],
+        "type": "object",
+      },
+      "DashboardOverview": {
+        "properties": {
+          "activeShifts": {
+            "type": "number",
+          },
+          "alerts": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "dailyAttendanceRatio": {
+            "type": "number",
+          },
+          "pendingLeaves": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "dailyAttendanceRatio",
+          "activeShifts",
+          "pendingLeaves",
+          "alerts",
+        ],
+        "type": "object",
+      },
+      "Department": {
+        "properties": {
+          "budget": {
+            "type": "number",
+          },
+          "code": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "managerId": {
+            "type": "string",
+          },
+          "name": {
+            "minLength": 2,
+            "type": "string",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+        ],
+        "type": "object",
+      },
+      "EmailConfig": {
+        "properties": {
+          "auth": {
+            "properties": {
+              "pass": {
+                "minLength": 1,
+                "type": "string",
+              },
+              "user": {
+                "minLength": 1,
+                "type": "string",
+              },
+            },
+            "required": [
+              "user",
+              "pass",
+            ],
+            "type": "object",
+          },
+          "from": {
+            "format": "email",
+            "type": "string",
+          },
+          "host": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "port": {
+            "type": "integer",
+          },
+          "secure": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "host",
+          "port",
+          "secure",
+          "auth",
+          "from",
+        ],
+        "type": "object",
+      },
+      "EmailRules": {
+        "properties": {
+          "digestFrequency": {
+            "enum": [
+              "daily",
+              "weekly",
+              "none",
+            ],
+            "type": "string",
+          },
+          "notifyOnAbsence": {
+            "type": "boolean",
+          },
+          "notifyOnLate": {
+            "type": "boolean",
+          },
+          "notifyOnLeaveRequest": {
+            "type": "boolean",
+          },
+          "recipients": {
+            "items": {
+              "format": "email",
+              "type": "string",
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "notifyOnAbsence",
+          "notifyOnLate",
+          "notifyOnLeaveRequest",
+          "digestFrequency",
+          "recipients",
+        ],
+        "type": "object",
+      },
+      "Employee": {
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+          },
+          "accountType": {
+            "type": "string",
+          },
+          "address": {
+            "type": "string",
+          },
+          "bankName": {
+            "type": "string",
+          },
+          "birthDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "commune": {
+            "type": "string",
+          },
+          "contractType": {
+            "type": "string",
+          },
+          "createUserAccount": {
+            "type": "boolean",
+          },
+          "department": {
+            "type": "string",
+          },
+          "email": {
+            "format": "email",
+            "type": "string",
+          },
+          "emergencyContact": {
+            "type": "string",
+          },
+          "gender": {
+            "type": "string",
+          },
+          "hireDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "name": {
+            "minLength": 2,
+            "type": "string",
+          },
+          "phone": {
+            "type": "string",
+          },
+          "position": {
+            "type": "string",
+          },
+          "region": {
+            "type": "string",
+          },
+          "rut": {
+            "minLength": 8,
+            "type": "string",
+          },
+          "shiftPatternId": {
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "Activo",
+              "Archivado",
+            ],
+            "type": "string",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "terminationDate": {
+            "nullable": true,
+            "type": "string",
+          },
+        },
+        "required": [
+          "rut",
+          "name",
+        ],
+        "type": "object",
+      },
+      "EmployeeQuery": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "search": {
+            "type": "string",
+          },
+          "since": {
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "ExportQuery": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "cargo": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "mode": {
+            "enum": [
+              "summary",
+              "detailed",
+              "compiled_detailed",
+            ],
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "viewMode": {
+            "enum": [
+              "month",
+              "week",
+              "day",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "startDate",
+          "endDate",
+        ],
+        "type": "object",
+      },
+      "HealthStatus": {
+        "properties": {
+          "database": {
+            "type": "string",
+          },
+          "services": {
+            "additionalProperties": {
+              "type": "string",
+            },
+            "type": "object",
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "error",
+            ],
+            "type": "string",
+          },
+          "timestamp": {
+            "type": "string",
+          },
+          "uptime": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "status",
+          "uptime",
+          "timestamp",
+          "database",
+        ],
+        "type": "object",
+      },
+      "Holiday": {
+        "properties": {
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "isRenounceable": {
+            "type": "boolean",
+          },
+          "name": {
+            "minLength": 2,
+            "type": "string",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "type": {
+            "enum": [
+              "Civil",
+              "Religioso",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "date",
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "HolidayQuery": {
+        "properties": {
+          "since": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "IntegrityVerifyQuery": {
+        "properties": {
+          "employeeId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "from": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "to": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "from",
+          "to",
+        ],
+        "type": "object",
+      },
+      "KioskLogin": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "pin": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "pin",
+        ],
+        "type": "object",
+      },
+      "KpiSummaryRequest": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "departmentId": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "employeeIds": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "endDateExclusive": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "startDate",
+        ],
+        "type": "object",
+      },
+      "LeaveListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/LeaveRecord",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "LeaveQuery": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "type": "string",
+          },
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "showArchived": {
+            "type": "string",
+          },
+          "since": {
+            "type": "string",
+          },
+          "startDate": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "LeaveRecord": {
+        "properties": {
+          "createdAt": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "type": {
+            "type": "string",
+          },
+          "updatedAt": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "type",
+          "startDate",
+          "endDate",
+        ],
+        "type": "object",
+      },
+      "LeaveResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/LeaveRecord",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "Login": {
+        "properties": {
+          "password": {
+            "type": "string",
+          },
+          "username": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "username",
+          "password",
+        ],
+        "type": "object",
+      },
+      "MFALogin": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Login",
+          },
+          {
+            "properties": {
+              "mfaToken": {
+                "type": "string",
+              },
+            },
+            "type": "object",
+          },
+        ],
+      },
+      "MFAValidate": {
+        "properties": {
+          "code": {
+            "maxLength": 6,
+            "minLength": 6,
+            "type": "string",
+          },
+          "mfaToken": {
+            "minLength": 1,
+            "type": "string",
+          },
+        },
+        "required": [
+          "mfaToken",
+          "code",
+        ],
+        "type": "object",
+      },
+      "MFAVerify": {
+        "properties": {
+          "token": {
+            "minLength": 1,
+            "type": "string",
+          },
+        },
+        "required": [
+          "token",
+        ],
+        "type": "object",
+      },
+      "MeterReading": {
+        "properties": {
+          "authorUsername": {
+            "type": "string",
+          },
+          "createdAt": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "isRecharge": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "meterConfigId": {
+            "type": "string",
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "timestamp": {
+            "type": "string",
+          },
+          "value": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "meterConfigId",
+          "authorUsername",
+          "value",
+        ],
+        "type": "object",
+      },
+      "MeterReadingListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/MeterReading",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "MeterReadingQuery": {
+        "properties": {
+          "month": {
+            "pattern": "^\\d{4}-\\d{2}$",
+            "type": "string",
+          },
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "since": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "MeterReadingResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/MeterReading",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "MonthlyPlanDay": {
+        "properties": {
+          "day": {
+            "maximum": 31,
+            "minimum": 1,
+            "type": "integer",
+          },
+          "endTime": {
+            "type": "string",
+          },
+          "hours": {
+            "type": "number",
+          },
+          "startTime": {
+            "type": "string",
+          },
+          "type": {
+            "enum": [
+              "work",
+              "rest",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "day",
+          "type",
+        ],
+        "type": "object",
+      },
+      "MonthlyPlanRequest": {
+        "properties": {
+          "dailySchedules": {
+            "items": {
+              "properties": {
+                "day": {
+                  "maximum": 31,
+                  "minimum": 1,
+                  "type": "integer",
+                },
+                "endTime": {
+                  "type": "string",
+                },
+                "hours": {
+                  "type": "number",
+                },
+                "startTime": {
+                  "type": "string",
+                },
+                "type": {
+                  "enum": [
+                    "work",
+                    "rest",
+                  ],
+                  "type": "string",
+                },
+              },
+              "required": [
+                "day",
+                "type",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "employeeId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "month": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "patternName": {
+            "type": "string",
+          },
+          "year": {
+            "minLength": 4,
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "month",
+          "year",
+          "dailySchedules",
+        ],
+        "type": "object",
+      },
+      "MonthlyScheduleView": {
+        "properties": {
+          "dateIso": {
+            "type": "string",
+          },
+          "dayOfMonth": {
+            "type": "number",
+          },
+          "dayOfWeek": {
+            "type": "string",
+          },
+          "isWorkDay": {
+            "type": "boolean",
+          },
+          "scheduleText": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "dateIso",
+          "dayOfWeek",
+          "dayOfMonth",
+          "scheduleText",
+          "isWorkDay",
+        ],
+        "type": "object",
+      },
+      "PaginatedLeaveResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/LeaveRecord",
+                },
+                "type": "array",
+              },
+              "meta": {
+                "properties": {
+                  "page": {
+                    "type": "number",
+                  },
+                  "pageSize": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                  "totalPages": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "total",
+                  "page",
+                  "pageSize",
+                  "totalPages",
+                ],
+                "type": "object",
+              },
+            },
+            "required": [
+              "data",
+              "meta",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "PaginatedMeterReadingResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/MeterReading",
+                },
+                "type": "array",
+              },
+              "pagination": {
+                "properties": {
+                  "page": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                  "totalPages": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "total",
+                  "page",
+                  "totalPages",
+                ],
+                "type": "object",
+              },
+            },
+            "required": [
+              "pagination",
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "PaginatedResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "pagination": {
+                "properties": {
+                  "page": {
+                    "type": "number",
+                  },
+                  "total": {
+                    "type": "number",
+                  },
+                  "totalPages": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "total",
+                  "page",
+                  "totalPages",
+                ],
+                "type": "object",
+              },
+            },
+            "required": [
+              "pagination",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "PatternSchedule": {
+        "properties": {
+          "colacionMinutes": {
+            "type": "number",
+          },
+          "dayIndex": {
+            "maximum": 6,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "endTime": {
+            "nullable": true,
+            "type": "string",
+          },
+          "hasColacion": {
+            "type": "boolean",
+          },
+          "hours": {
+            "type": "number",
+          },
+          "isOffDay": {
+            "type": "boolean",
+          },
+          "startTime": {
+            "nullable": true,
+            "type": "string",
+          },
+        },
+        "required": [
+          "dayIndex",
+          "isOffDay",
+        ],
+        "type": "object",
+      },
+      "Punch": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "forcedType": {
+            "enum": [
+              "entrada",
+              "salida",
+              "inicioColacion",
+              "finColacion",
+            ],
+            "type": "string",
+          },
+          "latitude": {
+            "type": "number",
+          },
+          "longitude": {
+            "type": "number",
+          },
+          "source": {
+            "type": "string",
+          },
+          "timestamp": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+        ],
+        "type": "object",
+      },
+      "PunchResponse": {
+        "properties": {
+          "action": {
+            "type": "string",
+          },
+          "record": {
+            "$ref": "#/components/schemas/AttendanceRecordResponse",
+          },
+          "success": {
+            "type": "boolean",
+          },
+          "timestamp": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "success",
+          "action",
+          "timestamp",
+        ],
+        "type": "object",
+      },
+      "PurgeSessions": {
+        "properties": {
+          "username": {
+            "minLength": 1,
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "QuickNote": {
+        "properties": {
+          "authorUsername": {
+            "type": "string",
+          },
+          "color": {
+            "type": "string",
+          },
+          "content": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "createdAt": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isArchived": {
+            "type": "boolean",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "reminderEnabled": {
+            "type": "boolean",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "updatedAt": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "content",
+          "authorUsername",
+        ],
+        "type": "object",
+      },
+      "QuickNoteListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/QuickNote",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "QuickNoteQuery": {
+        "properties": {
+          "since": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "QuickNoteResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/QuickNote",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "ResetPassword": {
+        "properties": {
+          "newPassword": {
+            "minLength": 6,
+            "type": "string",
+          },
+          "username": {
+            "minLength": 1,
+            "type": "string",
+          },
+        },
+        "required": [
+          "username",
+          "newPassword",
+        ],
+        "type": "object",
+      },
+      "ResolveAnomaly": {
+        "properties": {
+          "resolution": {
+            "enum": [
+              "ABSENCE_MARK",
+              "SHIFT_HOURS_ACK",
+              "PERMIT_MARK",
+              "DAY_OFF_MARK",
+              "VACATION_MARK",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "resolution",
+        ],
+        "type": "object",
+      },
+      "RestoreBackup": {
+        "properties": {
+          "filename": {
+            "minLength": 1,
+            "type": "string",
+          },
+        },
+        "required": [
+          "filename",
+        ],
+        "type": "object",
+      },
+      "ScheduleInfo": {
+        "properties": {
+          "colacionMinutes": {
+            "type": "number",
+          },
+          "endTime": {
+            "type": "string",
+          },
+          "hasColacion": {
+            "type": "boolean",
+          },
+          "holidayName": {
+            "type": "string",
+          },
+          "hours": {
+            "type": "number",
+          },
+          "isHoliday": {
+            "type": "boolean",
+          },
+          "isWorkDay": {
+            "type": "boolean",
+          },
+          "justificationType": {
+            "type": "string",
+          },
+          "patternColor": {
+            "type": "string",
+          },
+          "planningStatus": {
+            "type": "string",
+          },
+          "scheduleText": {
+            "type": "string",
+          },
+          "shiftPatternId": {
+            "type": "string",
+          },
+          "shiftPatternName": {
+            "type": "string",
+          },
+          "startTime": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "scheduleText",
+          "isWorkDay",
+        ],
+        "type": "object",
+      },
+      "ScheduledReport": {
+        "properties": {
+          "active": {
+            "type": "boolean",
+          },
+          "config": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "id": {
+            "type": "string",
+          },
+          "lastRun": {
+            "nullable": true,
+            "type": "string",
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "nextRun": {
+            "nullable": true,
+            "type": "string",
+          },
+          "recipients": {
+            "items": {
+              "format": "email",
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "type": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+          "active",
+          "recipients",
+        ],
+        "type": "object",
+      },
+      "ScheduledReportListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/ScheduledReport",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "SecurityInsights": {
+        "properties": {
+          "failedLogins24h": {
+            "type": "number",
+          },
+          "lastAuditTimestamp": {
+            "type": "string",
+          },
+          "lockedAccounts": {
+            "type": "number",
+          },
+          "suspiciousIPs": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "failedLogins24h",
+          "lockedAccounts",
+          "suspiciousIPs",
+          "lastAuditTimestamp",
+        ],
+        "type": "object",
+      },
+      "SeedOptions": {
+        "properties": {
+          "adminPassword": {
+            "type": "string",
+          },
+          "basePatternsCount": {
+            "minimum": 1,
+            "type": "integer",
+          },
+          "clearExisting": {
+            "type": "boolean",
+          },
+          "correctionRequestRatio": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number",
+          },
+          "days": {
+            "minimum": 0,
+            "type": "integer",
+          },
+          "employees": {
+            "minimum": 0,
+            "type": "integer",
+          },
+          "leaveRatio": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number",
+          },
+          "monthsToSeed": {
+            "maximum": 12,
+            "minimum": 1,
+            "type": "integer",
+          },
+          "quickNotesCount": {
+            "minimum": 0,
+            "type": "integer",
+          },
+          "seedEmployees": {
+            "type": "boolean",
+          },
+          "seedRecords": {
+            "type": "boolean",
+          },
+          "seedShifts": {
+            "type": "boolean",
+          },
+          "shiftReportsPerDay": {
+            "maximum": 6,
+            "minimum": 0,
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+      "SeedPhase2Job": {
+        "properties": {
+          "jobId": {
+            "minLength": 1,
+            "type": "string",
+          },
+        },
+        "required": [
+          "jobId",
+        ],
+        "type": "object",
+      },
+      "SeedPhase2Start": {
+        "properties": {
+          "batchSize": {
+            "maximum": 2000,
+            "minimum": 50,
+            "type": "integer",
+          },
+          "correctionRequestRatio": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number",
+          },
+          "days": {
+            "maximum": 3650,
+            "minimum": 1,
+            "type": "integer",
+          },
+          "leaveRatio": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+      "SeedStatus": {
+        "properties": {
+          "currentPhase": {
+            "type": "string",
+          },
+          "error": {
+            "type": "string",
+          },
+          "processed": {
+            "type": "number",
+          },
+          "progress": {
+            "type": "number",
+          },
+          "startTime": {
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "idle",
+              "running",
+              "paused",
+              "completed",
+              "error",
+            ],
+            "type": "string",
+          },
+          "total": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "status",
+          "progress",
+          "processed",
+          "total",
+        ],
+        "type": "object",
+      },
+      "SendTestEmail": {
+        "properties": {
+          "recipient": {
+            "format": "email",
+            "type": "string",
+          },
+        },
+        "required": [
+          "recipient",
+        ],
+        "type": "object",
+      },
+      "ServerTime": {
+        "properties": {
+          "businessDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "iso": {
+            "type": "string",
+          },
+          "timestamp": {
+            "type": "number",
+          },
+          "timezone": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "iso",
+          "timestamp",
+          "timezone",
+          "businessDate",
+        ],
+        "type": "object",
+      },
+      "ShiftPattern": {
+        "properties": {
+          "color": {
+            "type": "string",
+          },
+          "cycleLengthDays": {
+            "minimum": 1,
+            "type": "integer",
+          },
+          "dailySchedules": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PatternSchedule",
+                },
+                "type": "array",
+              },
+            ],
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "maxHoursPattern": {
+            "type": "number",
+          },
+          "name": {
+            "minLength": 2,
+            "type": "string",
+          },
+          "startDayOfWeek": {
+            "maximum": 6,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "worksOnHolidays": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "name",
+          "cycleLengthDays",
+          "startDayOfWeek",
+          "dailySchedules",
+          "color",
+          "maxHoursPattern",
+        ],
+        "type": "object",
+      },
+      "ShiftQuery": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "type": "string",
+          },
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "startDate": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "ShiftReport": {
+        "properties": {
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "endTime": {
+            "nullable": true,
+            "type": "string",
+          },
+          "folio": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "logEntries": {
+            "items": {
+              "properties": {
+                "annotation": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "id": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "time": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "timestamp": {
+                  "type": "number",
+                },
+              },
+              "required": [
+                "id",
+                "time",
+                "annotation",
+                "timestamp",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+          "responsibleUser": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "shiftName": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "startTime": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "open",
+              "closed",
+            ],
+            "type": "string",
+          },
+          "supplierEntries": {
+            "items": {
+              "properties": {
+                "company": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "driverName": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "id": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "licensePlate": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "paxCount": {
+                  "type": "number",
+                },
+                "reason": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "time": {
+                  "minLength": 1,
+                  "type": "string",
+                },
+                "timestamp": {
+                  "type": "number",
+                },
+              },
+              "required": [
+                "id",
+                "time",
+                "licensePlate",
+                "driverName",
+                "paxCount",
+                "company",
+                "reason",
+                "timestamp",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "date",
+          "folio",
+          "shiftName",
+          "responsibleUser",
+          "startTime",
+          "status",
+          "logEntries",
+          "supplierEntries",
+        ],
+        "type": "object",
+      },
+      "ShiftReportListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse",
+          },
+          {
+            "properties": {
+              "data": {
+                "items": {
+                  "$ref": "#/components/schemas/ShiftReport",
+                },
+                "type": "array",
+              },
+            },
+            "required": [
+              "data",
+            ],
+            "type": "object",
+          },
+        ],
+      },
+      "SuggestedPatternName": {
+        "properties": {
+          "suggestedName": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "suggestedName",
+        ],
+        "type": "object",
+      },
+      "SystemStats": {
+        "properties": {
+          "activeUsers": {
+            "type": "number",
+          },
+          "memoryUsage": {
+            "properties": {
+              "heapTotal": {
+                "type": "number",
+              },
+              "heapUsed": {
+                "type": "number",
+              },
+              "rss": {
+                "type": "number",
+              },
+            },
+            "required": [
+              "rss",
+              "heapTotal",
+              "heapUsed",
+            ],
+            "type": "object",
+          },
+          "pendingCorrections": {
+            "type": "number",
+          },
+          "pendingLeaves": {
+            "type": "number",
+          },
+          "totalEmployees": {
+            "type": "number",
+          },
+          "uptime": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "activeUsers",
+          "totalEmployees",
+          "pendingLeaves",
+          "pendingCorrections",
+          "uptime",
+          "memoryUsage",
+        ],
+        "type": "object",
+      },
+      "TimeRecordListResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AttendanceRecordResponse",
+            },
+            "type": "array",
+          },
+          "page": {
+            "type": "number",
+          },
+          "total": {
+            "type": "number",
+          },
+          "totalPages": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "totalPages",
+        ],
+        "type": "object",
+      },
+      "TimeRecordQuery": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "desde": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "hasta": {
+            "type": "string",
+          },
+          "name": {
+            "type": "string",
+          },
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "since": {
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+          "workdayType": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "TimeRecordStatus": {
+        "enum": [
+          "Laborando",
+          "Colacion",
+          "Completado",
+          "AnomaliaManual",
+          "Ausente",
+          "Permiso Especial",
+          "Vacaciones",
+          "DiaLibre",
+          "SinMarcajeTurnoAsignado",
+          "Feriado",
+        ],
+        "type": "string",
+      },
+      "TimeRecordWrite": {
+        "properties": {
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "employeeId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "entrada": {
+            "nullable": true,
+            "type": "string",
+          },
+          "finColacion": {
+            "nullable": true,
+            "type": "string",
+          },
+          "inicioColacion": {
+            "nullable": true,
+            "type": "string",
+          },
+          "justification": {
+            "nullable": true,
+            "type": "string",
+          },
+          "salida": {
+            "nullable": true,
+            "type": "string",
+          },
+          "source": {
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "employeeId",
+          "date",
+        ],
+        "type": "object",
+      },
+      "UpdateCorrectionStatus": {
+        "properties": {
+          "rejectionReason": {
+            "type": "string",
+          },
+          "resolvedBy": {
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "approved",
+              "rejected",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "status",
+          "resolvedBy",
+        ],
+        "type": "object",
+      },
+      "UpdateUser": {
+        "properties": {
+          "employeeId": {
+            "type": "string",
+          },
+          "password": {
+            "minLength": 6,
+            "type": "string",
+          },
+          "role": {
+            "enum": [
+              "Usuario",
+              "Reloj_Control",
+              "Supervisor",
+              "Administrador",
+              "Supervisor_Elevado",
+              "Fiscalizador",
+            ],
+            "type": "string",
+          },
+          "username": {
+            "minLength": 3,
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "User": {
+        "properties": {
+          "createdAt": {
+            "type": "string",
+          },
+          "employeeId": {
+            "nullable": true,
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "lastLogin": {
+            "nullable": true,
+            "type": "string",
+          },
+          "lastModified": {
+            "type": "number",
+          },
+          "mustChangePassword": {
+            "type": "boolean",
+          },
+          "role": {
+            "enum": [
+              "Usuario",
+              "Reloj_Control",
+              "Supervisor",
+              "Administrador",
+              "Supervisor_Elevado",
+              "Fiscalizador",
+              "Archivado",
+            ],
+            "type": "string",
+          },
+          "syncStatus": {
+            "type": "string",
+          },
+          "updatedAt": {
+            "type": "string",
+          },
+          "username": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "username",
+          "role",
+        ],
+        "type": "object",
+      },
+      "UserQuery": {
+        "properties": {
+          "page": {
+            "type": "string",
+          },
+          "pageSize": {
+            "type": "string",
+          },
+          "role": {
+            "type": "string",
+          },
+          "search": {
+            "type": "string",
+          },
+          "since": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http",
+      },
+    },
+  },
+  "info": {
+    "description": "Documentación técnica de la API de PORTAL - Sistema de Gestión de Personal y Horarios.",
+    "title": "PORTAL API Documentation",
+    "version": "1.0.0",
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/admin/backups": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "properties": {
+                      "createdAt": {
+                        "format": "date-time",
+                        "type": "string",
+                      },
+                      "filename": {
+                        "type": "string",
+                      },
+                      "size": {
+                        "type": "number",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Lista de archivos de respaldo",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener lista de respaldos",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/diagnose-autoclose": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "anomalies": {
+                      "items": {
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                    "count": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Reporte de diagnóstico",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Diagnosticar cierre automático de turnos",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/integrity-status": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Estado de integridad",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener estado de integridad de datos",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/purge-sessions": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeSessions",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "description": "Sesiones purgadas",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Purgar sesiones de usuario",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/reset-password": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPassword",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse",
+                },
+              },
+            },
+            "description": "Contraseña restablecida",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Restablecer contraseña de usuario",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/restart": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Reinicio solicitado",
+          },
+          "500": {
+            "description": "No se pudo reiniciar el backend",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Reiniciar el proceso del backend",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/restore": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Restauración exitosa",
+          },
+          "500": {
+            "description": "Error crítico en restauración",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Restaurar base de datos desde backup",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/security-insights": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityInsights",
+                },
+              },
+            },
+            "description": "Análisis de seguridad",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener insights de seguridad",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/stats": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStats",
+                },
+              },
+            },
+            "description": "Estadísticas del sistema",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener estadísticas del sistema",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/trigger-accounting-autoclose": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Cierre contable ejecutado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Disparar cierre contable automático manualmente",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/trigger-autoclose": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Cierre ejecutado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Disparar cierre automático de turnos manualmente",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/admin/trigger-backup": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Respaldo iniciado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Disparar respaldo de base de datos",
+        "tags": [
+          "Admin",
+        ],
+      },
+    },
+    "/api/audit-logs": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogListResponse",
+                },
+              },
+            },
+            "description": "Lista de logs de auditoría",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener logs de auditoría paginados",
+        "tags": [
+          "AuditLogs",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditLog",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "Log creado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crear log de auditoría manual",
+        "tags": [
+          "AuditLogs",
+        ],
+      },
+    },
+    "/api/audit-logs/cleanup": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Limpieza realizada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Limpiar logs de auditoría antiguos",
+        "tags": [
+          "AuditLogs",
+        ],
+      },
+    },
+    "/api/audit-logs/export": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Archivo de auditoría generado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar logs de auditoría",
+        "tags": [
+          "AuditLogs",
+        ],
+      },
+    },
+    "/api/audit-logs/integrity-status": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Reporte de integridad",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener estado de integridad de la auditoría",
+        "tags": [
+          "AuditLogs",
+        ],
+      },
+    },
+    "/api/audit-logs/verify-integrity": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Verificación iniciada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Verificar integridad de la auditoría (Elevado)",
+        "tags": [
+          "AuditLogs",
+        ],
+      },
+    },
+    "/api/auth/kiosk-login": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KioskLogin",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "employee": {
+                      "$ref": "#/components/schemas/Employee",
+                    },
+                    "token": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Login de Kiosko exitoso",
+          },
+        },
+        "summary": "Inicia sesión modo Kiosko (Reloj Control)",
+        "tags": [
+          "Auth",
+        ],
+      },
+    },
+    "/api/auth/login": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "mustChangePassword": {
+                      "type": "boolean",
+                    },
+                    "requiresMFA": {
+                      "type": "boolean",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                    "token": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Login exitoso o requerimiento de MFA",
+          },
+          "401": {
+            "description": "Credenciales inválidas",
+          },
+        },
+        "summary": "Inicia sesión de usuario (Soporta MFA)",
+        "tags": [
+          "Auth",
+        ],
+      },
+    },
+    "/api/auth/logout": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Sesión cerrada",
+          },
+        },
+        "summary": "Cierra sesión del usuario",
+        "tags": [
+          "Auth",
+        ],
+      },
+    },
+    "/api/auth/mfa/setup": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "qrCode": {
+                      "type": "string",
+                    },
+                    "secret": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Secreto generado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Genera secreto MFA y QR",
+        "tags": [
+          "Auth",
+        ],
+      },
+    },
+    "/api/auth/mfa/validate": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "mustChangePassword": {
+                      "type": "boolean",
+                    },
+                    "token": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Autenticación de dos pasos exitosa",
+          },
+        },
+        "summary": "Valida código MFA durante login",
+        "tags": [
+          "Auth",
+        ],
+      },
+    },
+    "/api/auth/mfa/verify": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "token": {
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "MFA habilitado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Habilita MFA tras verificar primer código",
+        "tags": [
+          "Auth",
+        ],
+      },
+    },
+    "/api/configs": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/ConfigEntry",
+                      },
+                      "type": "array",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Lista de configuraciones",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Listar configuraciones del sistema",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/company-policy": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Politica corporativa actualizada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Subcribir la politica corporativa en PDF",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/public/company-policy": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Politica corporativa vigente",
+          },
+        },
+        "summary": "Obtener la politica corporativa publica",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/public/company-policy/file": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "Archivo PDF de la politica corporativa",
+          },
+        },
+        "summary": "Descargar el PDF de la politica corporativa",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/server-time": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerTime",
+                },
+              },
+            },
+            "description": "Hora del servidor",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener hora actual del servidor",
+        "tags": [
+          "Config",
+        ],
+      },
+    },
+    "/api/configs/validate-closure": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Resultado de la validacion de cierre",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Validar si una fecha puede cerrar el periodo contable",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/{key}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigEntry",
+                },
+              },
+            },
+            "description": "Entrada de configuración",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener una configuración por llave",
+        "tags": [
+          "Config",
+        ],
+      },
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "value": {
+                    "type": "any",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Configuración guardada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Establecer una configuración por llave",
+        "tags": [
+          "Config",
+        ],
+      },
+    },
+    "/api/corrections": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionRequestListResponse",
+                },
+              },
+            },
+            "description": "Lista de solicitudes",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener solicitudes de corrección",
+        "tags": [
+          "Corrections",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionRequest",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "Solicitud creada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crear una nueva solicitud de corrección",
+        "tags": [
+          "Corrections",
+        ],
+      },
+    },
+    "/api/corrections/stats": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Estadísticas agregadas",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener estadísticas de solicitudes de corrección",
+        "tags": [
+          "Corrections",
+        ],
+      },
+    },
+    "/api/corrections/{id}/history": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "additionalProperties": true,
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Historial de la solicitud",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener historial de una solicitud de corrección",
+        "tags": [
+          "Corrections",
+        ],
+      },
+    },
+    "/api/corrections/{id}/status": {
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCorrectionStatus",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Actualizar estado de una solicitud de corrección",
+        "tags": [
+          "Corrections",
+        ],
+      },
+    },
+    "/api/email/config": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailConfig",
+                },
+              },
+            },
+            "description": "Configuración de correo",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener configuración de correo",
+        "tags": [
+          "Email",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailConfig",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Configuración guardada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Guardar configuración de correo",
+        "tags": [
+          "Email",
+        ],
+      },
+    },
+    "/api/email/rules": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailRules",
+                },
+              },
+            },
+            "description": "Reglas de notificación",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener reglas de notificación por correo",
+        "tags": [
+          "Email",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailRules",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Reglas guardadas exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Guardar reglas de notificación por correo",
+        "tags": [
+          "Email",
+        ],
+      },
+    },
+    "/api/email/send-test": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendTestEmail",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Correo de prueba enviado exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Enviar correo de prueba",
+        "tags": [
+          "Email",
+        ],
+      },
+    },
+    "/api/email/verify": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse",
+                },
+              },
+            },
+            "description": "Configuración verificada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Verificar configuración de correo",
+        "tags": [
+          "Email",
+        ],
+      },
+    },
+    "/api/employees": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtiene todos los empleados",
+        "tags": [
+          "Employees",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Employee",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee",
+                },
+              },
+            },
+            "description": "Empleado creado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crea un nuevo empleado",
+        "tags": [
+          "Employees",
+        ],
+      },
+    },
+    "/api/employees/bulk": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/Employee",
+                },
+                "type": "array",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "Empleados creados exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Importación masiva de empleados",
+        "tags": [
+          "Employees",
+        ],
+      },
+    },
+    "/api/employees/export": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "Activo",
+                "Archivado",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "Archivo generado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar empleados en formato Excel/CSV",
+        "tags": [
+          "Employees",
+        ],
+      },
+    },
+    "/api/employees/kiosk": {
+      "get": {
+        "summary": "Obtiene lista de empleados para modo Kiosko",
+        "tags": [
+          "Employees",
+        ],
+      },
+    },
+    "/api/employees/{id}": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Employee",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Employee",
+                },
+              },
+            },
+            "description": "Empleado actualizado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Actualiza un empleado existente",
+        "tags": [
+          "Employees",
+        ],
+      },
+    },
+    "/api/export/calendar-pdf": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "viewMode",
+            "schema": {
+              "default": "month",
+              "enum": [
+                "month",
+                "week",
+                "day",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "Archivo PDF",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar calendario de turnos a PDF",
+        "tags": [
+          "Exports",
+        ],
+      },
+    },
+    "/api/export/report-excel": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "detailed",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo Excel",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar reporte de asistencia a Excel",
+        "tags": [
+          "Exports",
+        ],
+      },
+    },
+    "/api/export/report-pdf": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "Archivo PDF",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar reporte detallado de asistencia a PDF",
+        "tags": [
+          "Exports",
+        ],
+      },
+    },
+    "/api/export/shift-report-pdf/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "Archivo PDF",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar bitácora de turno a PDF",
+        "tags": [
+          "Exports",
+        ],
+      },
+    },
+    "/api/health": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus",
+                },
+              },
+            },
+            "description": "Servidor saludable",
+          },
+          "500": {
+            "description": "Error en el servidor o base de datos",
+          },
+        },
+        "summary": "Verificar estado de salud del servidor",
+        "tags": [
+          "Health",
+        ],
+      },
+    },
+    "/api/health/ready": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Servidor listo",
+          },
+        },
+        "summary": "Verificar si el servidor está listo (Readiness Probe)",
+        "tags": [
+          "Health",
+        ],
+      },
+    },
+    "/api/holidays": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Timestamp para consulta delta",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Holiday",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Lista de feriados",
+          },
+        },
+        "summary": "Obtiene la lista de feriados registrados",
+        "tags": [
+          "Holidays",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Holiday",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "Feriado creado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crea un feriado manualmente",
+        "tags": [
+          "Holidays",
+        ],
+      },
+    },
+    "/api/holidays/bulk": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/Holiday",
+                },
+                "type": "array",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "Feriados creados",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Carga masiva de feriados",
+        "tags": [
+          "Holidays",
+        ],
+      },
+    },
+    "/api/holidays/sync": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "year": {
+                    "type": "integer",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la sincronización",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Sincroniza feriados con una API externa (Boostr)",
+        "tags": [
+          "Holidays",
+        ],
+      },
+    },
+    "/api/holidays/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Feriado eliminado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Elimina un feriado",
+        "tags": [
+          "Holidays",
+        ],
+      },
+    },
+    "/api/import/preview": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string",
+                  },
+                  "schema": {
+                    "description": "JSON string of the mapping schema",
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "description": "Datos extraídos del archivo",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Previsualizar contenido de un archivo Excel",
+        "tags": [
+          "Import",
+        ],
+      },
+    },
+    "/api/kpis/daily-planning": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "date": {
+                      "format": "date",
+                      "type": "string",
+                    },
+                    "stats": {
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Planificación diaria",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener resumen de planificación diaria",
+        "tags": [
+          "KPIs",
+        ],
+      },
+    },
+    "/api/kpis/detailed-report": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KpiSummaryRequest",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "report": {
+                      "items": {
+                        "type": "object",
+                      },
+                      "type": "array",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Reporte detallado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Generar reporte detallado de KPIs",
+        "tags": [
+          "KPIs",
+        ],
+      },
+    },
+    "/api/kpis/overview": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardOverview",
+                },
+              },
+            },
+            "description": "Vista general",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener vista general del dashboard",
+        "tags": [
+          "KPIs",
+        ],
+      },
+    },
+    "/api/kpis/summary": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KpiSummaryRequest",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Resumen de KPIs",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener resumen de KPIs",
+        "tags": [
+          "KPIs",
+        ],
+      },
+    },
+    "/api/leaves": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Timestamp para obtener ausencias desde una fecha (ms)",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "showArchived",
+            "schema": {
+              "type": "boolean",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedLeaveResponse",
+                },
+              },
+            },
+            "description": "Lista de ausencias obtenida exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtiene lista de ausencias/permisos",
+        "tags": [
+          "Leaves",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaveRecord",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaveResponse",
+                },
+              },
+            },
+            "description": "Ausencia registrada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Registra una nueva ausencia o permiso",
+        "tags": [
+          "Leaves",
+        ],
+      },
+    },
+    "/api/leaves/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse",
+                },
+              },
+            },
+            "description": "Ausencia eliminada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Elimina un registro de ausencia",
+        "tags": [
+          "Leaves",
+        ],
+      },
+    },
+    "/api/maintenance/clear-database": {
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Base de datos limpiada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Limpiar toda la base de datos (Admin)",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedOptions",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "description": "Siembra completada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Sembrar base de datos completa",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase1": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Fase 1 completada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Ejecutar Fase 1 de siembra (Maestros)",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase2/logs": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Lista de logs",
+          },
+        },
+        "summary": "Obtener logs de siembra Fase 2",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase2/pause": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Pausado",
+          },
+        },
+        "summary": "Pausar siembra Fase 2",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase2/resume": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Reanudado",
+          },
+        },
+        "summary": "Reanudar siembra Fase 2",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase2/start": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Proceso iniciado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Iniciar Fase 2 de siembra (Transaccional)",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase2/status": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeedStatus",
+                },
+              },
+            },
+            "description": "Estado actual",
+          },
+        },
+        "summary": "Obtener estado de siembra Fase 2",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/maintenance/seed/phase2/stop": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Detenido",
+          },
+        },
+        "summary": "Detener siembra Fase 2",
+        "tags": [
+          "Maintenance",
+        ],
+      },
+    },
+    "/api/meters": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "meterId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "description": "Timestamp para consulta delta",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/PaginatedMeterReadingResponse",
+                    },
+                    {
+                      "$ref": "#/components/schemas/MeterReadingListResponse",
+                    },
+                  ],
+                },
+              },
+            },
+            "description": "Lista de lecturas",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtiene lecturas de medidores (soporta paginación)",
+        "tags": [
+          "Meters",
+        ],
+      },
+    },
+    "/api/meters/bulk": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/MeterReading",
+                },
+                "type": "array",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeterReadingListResponse",
+                },
+              },
+            },
+            "description": "Lecturas registradas",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Registra lecturas de medidores en lote",
+        "tags": [
+          "Meters",
+        ],
+      },
+    },
+    "/api/notes": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Timestamp para obtener notas desde una fecha",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickNoteListResponse",
+                },
+              },
+            },
+            "description": "Lista de notas obtenida exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener notas rápidas",
+        "tags": [
+          "Notes",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickNote",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickNoteResponse",
+                },
+              },
+            },
+            "description": "Nota creada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crear una nueva nota rápida",
+        "tags": [
+          "Notes",
+        ],
+      },
+    },
+    "/api/notes/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse",
+                },
+              },
+            },
+            "description": "Nota eliminada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Eliminar una nota rápida",
+        "tags": [
+          "Notes",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickNoteResponse",
+                },
+              },
+            },
+            "description": "Nota archivada exitosamente",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Archivar/Marcar nota como leída",
+        "tags": [
+          "Notes",
+        ],
+      },
+    },
+    "/api/records": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimeRecordListResponse",
+                },
+              },
+            },
+            "description": "Lista paginada de registros",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtiene historial de marcaciones",
+        "tags": [
+          "Records",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TimeRecordWrite",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceRecordResponse",
+                },
+              },
+            },
+            "description": "Registro guardado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crea o actualiza un registro individual",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/auto-close": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Proceso ejecutado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Dispara proceso de cierre automático de jornadas",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/bulk": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/TimeRecordWrite",
+                },
+                "type": "array",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "description": "Carga masiva exitosa",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crea múltiples registros manualmente",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/export": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "schema": {
+              "enum": [
+                "json",
+                "csv",
+                "xml",
+                "excel",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo exportado o JSON",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportación masiva de marcaciones para nómina",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/integrity/verify": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado de la verificación",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Verifica la integridad de la cadena de marcajes",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/punch": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Punch",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PunchResponse",
+                },
+              },
+            },
+            "description": "Marcaje exitoso",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Registra una nueva marcación (entrada/salida)",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Registro eliminado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Elimina un registro de marcación",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/{id}/resolve-anomaly": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "resolution": {
+                    "enum": [
+                      "ABSENCE_MARK",
+                      "SHIFT_HOURS_ACK",
+                      "PERMIT_MARK",
+                      "DAY_OFF_MARK",
+                      "VACATION_MARK",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Anomalía resuelta",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Resuelve una anomalía (Ausencia, Omitir Salida, Permiso Especial, Día Libre o Vacaciones)",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/scheduled-reports": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduledReportListResponse",
+                },
+              },
+            },
+            "description": "Lista de reportes programados",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener todos los reportes programados",
+        "tags": [
+          "ScheduledReports",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduledReport",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "Reporte creado",
+          },
+        },
+        "summary": "Crear un nuevo reporte programado",
+        "tags": [
+          "ScheduledReports",
+        ],
+      },
+    },
+    "/api/scheduled-reports/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Reporte eliminado",
+          },
+        },
+        "summary": "Eliminar un reporte programado",
+        "tags": [
+          "ScheduledReports",
+        ],
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduledReport",
+                },
+              },
+            },
+            "description": "Reporte programado",
+          },
+        },
+        "summary": "Obtener un reporte programado por ID",
+        "tags": [
+          "ScheduledReports",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduledReport",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Reporte actualizado",
+          },
+        },
+        "summary": "Actualizar un reporte programado",
+        "tags": [
+          "ScheduledReports",
+        ],
+      },
+    },
+    "/api/scheduled-reports/{id}/toggle": {
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse",
+                },
+              },
+            },
+            "description": "Estado alternado",
+          },
+        },
+        "summary": "Alternar estado activo/inactivo del reporte",
+        "tags": [
+          "ScheduledReports",
+        ],
+      },
+    },
+    "/api/shift-reports": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReportListResponse",
+                },
+              },
+            },
+            "description": "Lista de bitácoras",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Obtener todas las bitácoras de turno",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftReport",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Bitácora guardada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crear o actualizar una bitácora de turno",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+    },
+    "/api/shift-reports/export/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Archivo Excel",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Exportar bitácora de turno a Excel",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+    },
+    "/api/shifts/assignments": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "showArchived",
+            "schema": {
+              "type": "boolean",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "items": {
+                        "$ref": "#/components/schemas/AssignedShift",
+                      },
+                      "type": "array",
+                    },
+                    "meta": {
+                      "properties": {
+                        "page": {
+                          "type": "integer",
+                        },
+                        "pageSize": {
+                          "type": "integer",
+                        },
+                        "total": {
+                          "type": "integer",
+                        },
+                        "totalPages": {
+                          "type": "integer",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Lista de asignaciones",
+          },
+        },
+        "summary": "Obtiene turnos asignados a empleados",
+        "tags": [
+          "Shifts",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignedShift",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedShift",
+                },
+              },
+            },
+            "description": "Asignación creada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Asigna un turno a un empleado",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/assignments/bulk": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AssignedShift",
+                },
+                "type": "array",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "count": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Resumen de asignaciones",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Asignación masiva de turnos",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/assignments/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Asignación eliminada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Elimina una asignación de turno",
+        "tags": [
+          "Shifts",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignedShift",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignedShift",
+                },
+              },
+            },
+            "description": "Asignación actualizada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Actualiza una asignación de turno",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/monthly-plan": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "dailySchedules": {
+                    "items": {
+                      "properties": {
+                        "day": {
+                          "type": "integer",
+                        },
+                        "endTime": {
+                          "type": "string",
+                        },
+                        "hours": {
+                          "type": "number",
+                        },
+                        "startTime": {
+                          "type": "string",
+                        },
+                        "type": {
+                          "enum": [
+                            "work",
+                            "rest",
+                          ],
+                          "type": "string",
+                        },
+                      },
+                      "type": "object",
+                    },
+                    "type": "array",
+                  },
+                  "employeeId": {
+                    "type": "string",
+                  },
+                  "month": {
+                    "type": "string",
+                  },
+                  "patternName": {
+                    "type": "string",
+                  },
+                  "year": {
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Resultado de la operación",
+          },
+        },
+        "summary": "Guarda planificación mensual completa",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/monthly-plan/{employeeId}/{year}/{month}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employeeId",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "year",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "month",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MonthlyScheduleView",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Planificación mensual actual",
+          },
+        },
+        "summary": "Obtiene asistente de planificación mensual",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/patterns": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "showArchived",
+            "schema": {
+              "type": "boolean",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShiftPattern",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Lista de patrones",
+          },
+        },
+        "summary": "Obtiene los patrones de turno teóricos",
+        "tags": [
+          "Shifts",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftPattern",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftPattern",
+                },
+              },
+            },
+            "description": "Patrón creado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crea un nuevo patrón de turno",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/patterns/bulk": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/ShiftPattern",
+                },
+                "type": "array",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "count": {
+                      "type": "number",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Resumen de carga",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Carga masiva de patrones de turno",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/patterns/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Patrón eliminado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Elimina un patrón de turno",
+        "tags": [
+          "Shifts",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShiftPattern",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftPattern",
+                },
+              },
+            },
+            "description": "Patrón actualizado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Actualiza un patrón existente",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/schedule/employee/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleInfo",
+                },
+              },
+            },
+            "description": "Detalles del horario",
+          },
+        },
+        "summary": "Obtiene horario de un empleado para una fecha",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/schedule/employee/{id}/month": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "required": true,
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "required": true,
+            "schema": {
+              "type": "integer",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MonthlyScheduleView",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Calendario mensual",
+          },
+        },
+        "summary": "Obtiene horario mensual de un empleado",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/schedule/employees-on-date": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "properties": {
+                      "employeeId": {
+                        "type": "string",
+                      },
+                      "employeeName": {
+                        "type": "string",
+                      },
+                      "endTime": {
+                        "type": "string",
+                      },
+                      "patternColor": {
+                        "type": "string",
+                      },
+                      "shiftPatternName": {
+                        "type": "string",
+                      },
+                      "startTime": {
+                        "type": "string",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "type": "array",
+                },
+              },
+            },
+            "description": "Lista de empleados programados",
+          },
+        },
+        "summary": "Lista empleados programados en una fecha",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/schedule/matrix": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "employeeIds": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                  "endDate": {
+                    "format": "date",
+                    "type": "string",
+                  },
+                  "startDate": {
+                    "format": "date",
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "additionalProperties": {
+                      "$ref": "#/components/schemas/ScheduleInfo",
+                    },
+                    "type": "object",
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Matriz de horarios",
+          },
+        },
+        "summary": "Genera matriz de calendario para vista grupal",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/suggest-pattern-name": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "employeeId",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "year",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "month",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestedPatternName",
+                },
+              },
+            },
+            "description": "Nombre sugerido",
+          },
+        },
+        "summary": "Sugiere nombres para nuevos patrones de turno",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/shifts/validate-conflicts": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "employeeId": {
+                    "type": "string",
+                  },
+                  "endDate": {
+                    "format": "date",
+                    "type": "string",
+                  },
+                  "excludeAssignmentId": {
+                    "type": "string",
+                  },
+                  "startDate": {
+                    "format": "date",
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "conflicts": {
+                      "items": {
+                        "$ref": "#/components/schemas/AssignedShift",
+                      },
+                      "type": "array",
+                    },
+                    "hasConflicts": {
+                      "type": "boolean",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Resultado de validación",
+          },
+        },
+        "summary": "Valida conflictos de solapamiento de turnos",
+        "tags": [
+          "Shifts",
+        ],
+      },
+    },
+    "/api/users": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Timestamp para consulta delta",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Número de página",
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "description": "Cantidad de items por página",
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+            },
+          },
+          {
+            "description": "Término de búsqueda (nombre o username)",
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Filtro por rol",
+            "in": "query",
+            "name": "role",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "items": {
+                        "$ref": "#/components/schemas/User",
+                      },
+                      "type": "array",
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/User",
+                          },
+                          "type": "array",
+                        },
+                        "pagination": {
+                          "properties": {
+                            "page": {
+                              "type": "integer",
+                            },
+                            "total": {
+                              "type": "integer",
+                            },
+                            "totalPages": {
+                              "type": "integer",
+                            },
+                          },
+                          "type": "object",
+                        },
+                      },
+                      "type": "object",
+                    },
+                  ],
+                },
+              },
+            },
+            "description": "Lista de usuarios o respuesta paginada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Lista todos los usuarios (Admin only)",
+        "tags": [
+          "Users",
+        ],
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "employeeId": {
+                    "type": "string",
+                  },
+                  "password": {
+                    "type": "string",
+                  },
+                  "role": {
+                    "type": "string",
+                  },
+                  "username": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "username",
+                  "role",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User",
+                },
+              },
+            },
+            "description": "Usuario creado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Crea un nuevo usuario",
+        "tags": [
+          "Users",
+        ],
+      },
+    },
+    "/api/users/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Usuario eliminado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Elimina un usuario",
+        "tags": [
+          "Users",
+        ],
+      },
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User",
+              },
+            },
+          },
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User",
+                },
+              },
+            },
+            "description": "Usuario actualizado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Actualiza un usuario existente",
+        "tags": [
+          "Users",
+        ],
+      },
+    },
+  },
+  "security": [
+    {
+      "bearerAuth": [],
+    },
+  ],
+  "servers": [
+    {
+      "description": "Servidor de Desarrollo",
+      "url": "http://localhost:4000",
+    },
+  ],
+  "tags": [
+    {
+      "description": "Endpoints para exportación de archivos PDF y Excel",
+      "name": "Exports",
+    },
+    {
+      "description": "Gestión de feriados nacionales y regionales",
+      "name": "Holidays",
+    },
+    {
+      "description": "Gestión de turnos, patrones y programación de personal",
+      "name": "Shifts",
+    },
+    {
+      "description": "Gestión de usuarios y permisos",
+      "name": "Users",
+    },
+  ],
+}
+`;

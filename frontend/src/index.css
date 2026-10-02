@@ -1,0 +1,307 @@
+/* Inter Font Family */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+}
+
+/* Roboto Mono Font Family */
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./assets/fonts/RobotoMono-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./assets/fonts/RobotoMono-Bold.woff2") format("woff2");
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-size: 14px;
+  /* Default for Notebooks/Laptops */
+
+  /* Shared Design Tokens */
+  --surface-app: #f0f2f5;
+  --surface-card: #fdfbf7;
+  --surface-stripe: rgba(0, 0, 0, 0.02);
+
+  /* Layout Shell Tokens (Diferenciación del Marco) */
+  --surface-header: #ffffff;
+  --surface-sidebar: #f8fafc; /* Slate 50 - Un tono más frío que el fondo app */
+  --sidebar-text-active: #005792;
+  --sidebar-item-hover: rgba(0, 87, 146, 0.05);
+
+  --border-technical: rgba(0, 0, 0, 0.15);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-focus: #005792;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+  --text-on-accent: #ffffff;
+
+  /* State Colors - Reverted to HEX for solid visibility */
+  --status-success: #10b981; /* emerald-500 */
+  --status-error: #ef4444; /* red-500 */
+  --status-warning: #f59e0b; /* amber-500 */
+  --status-info: #0ea5e9; /* sky-500 */
+
+  --accent-professional: #005792;
+}
+.dark {
+  --surface-app: #020617; /* Navy profunda */
+  --surface-card: #0f172a;
+  --surface-stripe: rgba(255, 255, 255, 0.02);
+
+  /* Layout Shell Tokens - Dark */
+  --surface-header: #050816; /* Más oscuro que el fondo app para profundidad */
+  --surface-sidebar: #0f172a; /* Mismo que cards para integridad lateral */
+  --sidebar-text-active: #38bdf8;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.04);
+
+  --border-technical: rgba(255, 255, 255, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-focus: #38bdf8;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+
+  --accent-professional: #38bdf8;
+}
+
+/* Global Typography and Contrast */
+body {
+  @apply bg-token-surface-app dark:bg-[var(--surface-app)] font-sans font-medium text-token-text-primary antialiased;
+}
+
+@layer components {
+  /* Typography tokens for reusable UI text hierarchy */
+  .typo-ui-tab {
+    @apply text-[15px] leading-tight font-bold tracking-tight;
+  }
+
+  .typo-ui-title {
+    @apply text-[1.05rem] leading-tight font-semibold tracking-tight;
+  }
+
+  .typo-ui-label {
+    @apply text-xs leading-tight font-medium tracking-wide;
+  }
+
+  .typo-ui-badge {
+    @apply text-[10px] leading-none font-semibold tracking-wide;
+  }
+
+  .typo-ui-meta {
+    @apply text-[12px] leading-tight font-medium tracking-normal;
+  }
+
+  .typo-ui-caption {
+    @apply text-[11px] leading-tight font-semibold tracking-wide;
+  }
+}
+
+/* Allow selection in specific administrative/input elements for usability */
+input,
+textarea,
+[contenteditable="true"],
+.selectable-text {
+  @apply select-text;
+}
+
+/* 6" Smartphone */
+@media (max-width: 400px) {
+  :root {
+    font-size: 12px;
+  }
+}
+
+/* 7" - 10" Tablets/Phablets */
+@media (min-width: 401px) and (max-width: 1023px) {
+  :root {
+    font-size: 13px;
+  }
+}
+
+/* Large Desktop / 19"+ Monitors */
+@media (min-width: 1536px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+/* 4K / Ultra-wide */
+@media (min-width: 1920px) {
+  :root {
+    font-size: 18px;
+  }
+}
+
+/* Keyframes for blinking alerts */
+@keyframes blinker {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Blinker class to apply the animation */
+.blinker {
+  animation: blinker 1.5s linear infinite;
+}
+
+/* Custom extra-small text size for calendar */
+.text-xxs {
+  font-size: 0.65rem;
+  /* 10.4px */
+  line-height: 0.85rem;
+  /* 13.6px */
+}
+
+/* --- Global Minimalist Scrollbar --- */
+/* For Webkit-based browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  /* Width for vertical scrollbars */
+  height: 6px;
+  /* Height for horizontal scrollbars */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  /* Makes the track invisible */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #a0aec0;
+  /* cool-gray-400 */
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #718096;
+  /* cool-gray-500 */
+}
+
+/* Dark mode scrollbar styles */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #718096;
+  /* cool-gray-500 */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #a0aec0;
+  /* cool-gray-400 */
+}
+
+/* --- Global Autofill Fix for Dark Theme --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #020617 inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* For Firefox */
+input:autofill {
+  background-color: #020617 !important;
+  color: white !important;
+}
+
+/* --- Performance Overrides for Mobile and Low-Power Devices --- */
+/* Disable expensive backdrop filters and complex animations on small screens */
+@media (max-width: 768px) {
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Honor system preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High performance UI mode */
+html[data-ui-perf="high"] * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+html[data-ui-perf="high"] .shadow-sm,
+html[data-ui-perf="high"] .shadow,
+html[data-ui-perf="high"] .shadow-md,
+html[data-ui-perf="high"] .shadow-lg,
+html[data-ui-perf="high"] .shadow-xl,
+html[data-ui-perf="high"] .shadow-2xl,
+html[data-ui-perf="high"] [class*="shadow-["] {
+  box-shadow: none !important;
+}
+/* --- Utility: Hide Scrollbars --- */
+.scrollbar-hide::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide,
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

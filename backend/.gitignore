@@ -1,0 +1,20 @@
+node_modules
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
+/src/generated/backups
+/dist/
+
+# Local backup artifacts
+/backups/
+
+# Vitest coverage (spec 003 ratchet; thresholds enforce, files don't commit)
+/coverage/
+/logs/
+/uploads/
+
+# Local simulation/temp helpers
+/temp_gfs_simulation/
+/check_configs.ts
+/fix_configs.ts

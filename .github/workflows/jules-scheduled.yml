@@ -1,0 +1,144 @@
+name: Jules Scheduled Maintenance
+
+on:
+  schedule:
+    # Lunes 08:00 UTC -> Auditoría de Seguridad Sentinel
+    - cron: "0 8 * * 1"
+    # Martes 08:00 UTC -> Testing y cobertura
+    - cron: "0 8 * * 2"
+    # Miércoles 08:00 UTC -> Optimización de Rendimiento Bolt
+    - cron: "0 8 * * 3"
+    # Jueves 08:00 UTC -> Mejora de código / refactor
+    - cron: "0 8 * * 4"
+    # Viernes 18:00 UTC -> Higiene de Código y Limpieza
+    - cron: "0 18 * * 5"
+
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: "Tipo de tarea para Jules"
+        required: true
+        default: "sentinel"
+        type: choice
+        options:
+          - "sentinel"
+          - "testing"
+          - "bolt"
+          - "refactor"
+          - "code_health"
+          - "custom"
+      custom_prompt:
+        description: "Prompt personalizado (solo si task_type es custom)"
+        required: false
+        type: string
+
+jobs:
+  trigger-jules:
+    name: Trigger Jules Agent Task
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine prompt based on trigger or input
+        id: select-prompt
+        run: |
+          DAY_OF_WEEK=$(date -u +%u)
+          HOUR=$(date -u +%H)
+
+          TASK_TYPE="${{ github.event.inputs.task_type }}"
+
+          # Si fue disparado por cron (schedule), seleccionar según el día
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            if [ "$DAY_OF_WEEK" = "1" ]; then
+              TASK_TYPE="sentinel"
+            elif [ "$DAY_OF_WEEK" = "2" ]; then
+              TASK_TYPE="testing"
+            elif [ "$DAY_OF_WEEK" = "3" ]; then
+              TASK_TYPE="bolt"
+            elif [ "$DAY_OF_WEEK" = "4" ]; then
+              TASK_TYPE="refactor"
+            elif [ "$DAY_OF_WEEK" = "5" ]; then
+              TASK_TYPE="code_health"
+            else
+              TASK_TYPE="sentinel"
+            fi
+          fi
+
+          echo "Selected task type: $TASK_TYPE"
+
+          if [ "$TASK_TYPE" = "sentinel" ]; then
+            PROMPT="Audita exhaustivamente el backend y frontend en busca de riesgos de seguridad. Verifica: (1) no usar concatenación de comandos de shell (usar execFile/spawn con arreglos), (2) parametrizar todas las consultas SQL con \$executeRaw o Prisma tipado, (3) validar que secrets críticos (JWT_SECRET, credenciales) fallen de inmediato si faltan, (4) validar completamente entradas en endpoints y lotes masivos. Revisa y actualiza .jules/sentinel.md con los aprendizajes críticos y correcciones realizadas. Asegúrate de que 'npm run validate:ci' pase. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos (rompen release-please y el hook commit-msg los rechaza)."
+          elif [ "$TASK_TYPE" = "testing" ]; then
+            PROMPT="Aumenta la cobertura de tests sin bajar thresholds. Busca controladores/servicios sin unit tests en backend/tests/unit y frontend, agrega casos happy + error + bordes con Vitest. No toques snapshots salvo que el contrato cambie de verdad, verifica 'npm run test:coverage' y 'npm run validate:ci' en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos."
+          elif [ "$TASK_TYPE" = "bolt" ]; then
+            PROMPT="Revisa los servicios en backend/src/services/ (especialmente TimeRecordService, LeaveService, MonthlyShiftService, shiftService y kpiService) buscando patrones de consultas o mutaciones N+1 sobre Prisma dentro de bucles. Refactoriza para batch-fetching o batch-mutations donde sea posible. Consulta y actualiza .jules/bolt.md con los hallazgos y verifica que 'npm run validate:ci' pase. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos (rompen release-please y el hook commit-msg los rechaza)."
+          elif [ "$TASK_TYPE" = "refactor" ]; then
+            PROMPT="Mejora de codigo sin cambiar comportamiento: elimina dead code, estrecha tipos (evita any, usa Prisma.XWhereInput, AuthRequest, JsonValue), simplifica duplicaciones y respeta lint-budget 0 y arquitectura (PgBouncer transaction mode, no exec con interpolacion). Mantiene contrato API/SDK sincronizado con 'npm run check:sdk'. Verifica 'npm run validate:ci' en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos."
+          elif [ "$TASK_TYPE" = "code_health" ]; then
+            PROMPT="Revisa el código en backend/src/ y frontend/src/ en busca de problemas de higiene: elimina console.log de depuración residuales no permitidos en producción y sustituye usos explícitos de 'any' en TypeScript por tipos concretos o genéricos seguros <T>. Asegúrate de que 'npm run validate:ci' pase en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos (rompen release-please y el hook commit-msg los rechaza)."
+          elif [ "$TASK_TYPE" = "custom" ]; then
+            PROMPT="${{ github.event.inputs.custom_prompt }}"
+          fi
+
+          # Exportar prompt escapando caracteres para el JSON
+          python3 -c "
+          import json, os
+          prompt = os.environ.get('PROMPT_TEXT', '')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write('prompt_json=' + json.dumps(prompt) + '\n')
+              f.write('task_type=' + os.environ.get('TASK_TYPE', 'sentinel') + '\n')
+          "
+        env:
+          PROMPT_TEXT: ${{ github.event.inputs.custom_prompt != '' && github.event.inputs.task_type == 'custom' && github.event.inputs.custom_prompt || '' }}
+          TASK_TYPE: ${{ github.event.inputs.task_type }}
+
+      - name: Send task to Google Jules API
+        env:
+          JULES_API_KEY: ${{ secrets.JULES_API_KEY }}
+          REPO_NAME: ${{ github.repository }}
+          PROMPT_JSON: ${{ steps.select-prompt.outputs.prompt_json }}
+          TASK_TYPE: ${{ steps.select-prompt.outputs.task_type }}
+        run: |
+          if [ -z "$JULES_API_KEY" ]; then
+            echo "::error::JULES_API_KEY no está configurado en los secretos del repositorio."
+            exit 1
+          fi
+
+          PAYLOAD=$(python3 -c "
+          import json, os
+          prompt = json.loads(os.environ['PROMPT_JSON']) if os.environ.get('PROMPT_JSON') else 'Auditoría de mantenimiento rutinario'
+          repo = os.environ['REPO_NAME']
+          payload = {
+              'prompt': prompt,
+              'sourceContext': {
+                  'source': f'sources/github/{repo}',
+                  'githubRepoContext': {
+                      'startingBranch': 'main'
+                  }
+              }
+          }
+          print(json.dumps(payload))
+          ")
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "x-goog-api-key: ${JULES_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}" \
+            "https://jules.googleapis.com/v1alpha/sessions")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response code: $HTTP_CODE"
+          echo "Response body: $BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            SESSION_ID=$(echo "$BODY" | jq -r '.id // empty')
+            SESSION_URL=$(echo "$BODY" | jq -r '.url // empty')
+            echo "::notice title=Jules Task Created::Sesión iniciada con éxito: $SESSION_URL"
+            echo "### 🚀 Tarea de Jules Disparada" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tipo:** \`$TASK_TYPE\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **ID de Sesión:** \`$SESSION_ID\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Enlace de Seguimiento:** [$SESSION_URL]($SESSION_URL)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "::error::Fallo al crear la sesión en Jules API (HTTP $HTTP_CODE): $BODY"
+            exit 1
+          fi

@@ -1,0 +1,86 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-pweb3_dev}
+      POSTGRES_INITDB_ARGS: --auth-host=md5 --auth-local=md5
+    ports:
+      - "${DB_HOST_PORT:-5433}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pweb3_dev}?schema=public
+      DIRECT_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pweb3_dev}?schema=public
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-999.666}
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-false}
+      BACKUP_PATH: /app/backups
+      DISABLE_INTEGRITY_AUDIT: ${DISABLE_INTEGRITY_AUDIT:-true}
+      DISABLE_HOLIDAY_AUTOSYNC: ${DISABLE_HOLIDAY_AUTOSYNC:-true}
+      DISABLE_SHIFT_ROTATION: ${DISABLE_SHIFT_ROTATION:-true}
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+      - backend_uploads:/app/uploads
+      - backend_backups:/app/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:4000/api}
+      VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://backend:4000}
+      VITE_NODE_ENV: development
+      VITE_ENABLE_UI_ANIMATIONS: ${VITE_ENABLE_UI_ANIMATIONS:-true}
+      VITE_UI_PERF_MODE: ${VITE_UI_PERF_MODE:-high}
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5173 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres_data_dev:
+  backend_node_modules:
+  backend_uploads:
+  backend_backups:
+  frontend_node_modules:

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "packages": {
+    "backend": {
+      "warnings": 0,
+      "errors": 0
+    },
+    "frontend": {
+      "warnings": 0,
+      "errors": 0
+    }
+  }
+}

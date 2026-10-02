@@ -1,0 +1,29 @@
+{
+  "smoke": {
+    "employees": 20,
+    "days": 2,
+    "workers": 4,
+    "batchSize": 20,
+    "delayMs": 120,
+    "rampUp": 2,
+    "partialFlowRatio": 0.05
+  },
+  "medium": {
+    "employees": 100,
+    "days": 7,
+    "workers": 12,
+    "batchSize": 80,
+    "delayMs": 80,
+    "rampUp": 6,
+    "partialFlowRatio": 0.1
+  },
+  "high": {
+    "employees": 300,
+    "days": 15,
+    "workers": 24,
+    "batchSize": 150,
+    "delayMs": 50,
+    "rampUp": 10,
+    "partialFlowRatio": 0.15
+  }
+}

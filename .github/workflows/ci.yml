@@ -1,0 +1,364 @@
+name: Portal Control CI
+
+# Reparto de responsabilidades entre PR y main:
+#
+#   `pull_request` -> VALIDACION COMPLETA. Los 3 gates rapidos y los 4 jobs
+#     pesados (verify-backend, verify-frontend, coverage, e2e). Corre sobre el
+#     *merge ref* (rama + main), que es el unico escenario donde tiene sentido
+#     validar la fusion antes de aceptar el codigo.
+#
+#   `push` a main  -> SOLO GATES. Corre unicamente agentic/spec/docs (~25 s de
+#     runner en total). Los 4 jobs pesados NO se relanzan.
+#
+# Por que no se repite la validacion pesada post-merge: el PR ya la ejecuto
+# sobre el mismo codigo, asi que volver a correr verify/coverage/e2e gastaba
+# ~12 runner-min por merge sin obtener informacion nueva. Medido sobre las 4
+# etapas 1 de una corrida verde de main: 737 runner-segundos reportando el
+# mismo codigo que los checks del PR ya habian validado.
+#
+# Que NO se pierde calidad:
+#   - Los gates de main siguen validando gobernanza (secretos, specs, docs) en
+#     el commit que se va a desplegar.
+#   - `deploy.yml` sigue exigiendo `conclusion == 'success'` sobre `main`, asi
+#     que el CD continua bloqueado por una corrida real de CI, no por una
+#     confianza implicita en el PR.
+#   - Los pushes directos a main (commits que no pasan por PR) NO pierden
+#     validacion: el hook `pre-push` del repo ejecuta `validate:ci` de backend
+#     y frontend antes de dejar salir el commit, con lo cual la bateria pesada
+#     sigue corriendose, solo que en la maquina del autor y no consumiendo
+#     minutos de GitHub.
+#
+# La unica garantia que se relaja es que `main` no vuelve a correr la bateria
+# pesada. Se acepta porque el CD publica el estado final de main y los merges
+# son secuenciales (cada commit de main es descendiente del anterior), de modo
+# que la ultima publicacion ya incluye todos los cambios anteriores.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Cancelar siempre es correcto: el codigo mas nuevo invalida al anterior.
+  # En `main` el ref es identico para todos los merges, asi que un merge
+  # rapido cancela la corrida del previo. Antes eso costaba 6.3 runner-min
+  # porque la etapa 1 estaba corriendo; ahora main solo ejecuta los 3 gates
+  # (~0.4 runner-min), de modo que cancelar es casi gratis.
+  cancel-in-progress: true
+
+# Estrategia de fail-fast en 2 etapas (medida sobre 20 corridas reales):
+#
+#   ETAPA 0 "gates"   -> agentic, spec, docs              (7-10 s c/u, sin npm ci)
+#   ETAPA 1 "pesados" -> verify-backend, verify-frontend, coverage, e2e
+#
+# Los 3 gates corren SIN `needs` entre ellos: arrancan a la vez y comparten una
+# sola espera en cola. Los 4 pesados dependen de los gates, asi que si un gate
+# falla la etapa 1 ni se lanza.
+#
+# Por que 2 etapas y no una cadena verify -> coverage -> e2e: en las corridas
+# medidas, 8 jobs simultaneos producían 81-178 s de espera EN COLA por job. La
+# contencion era el costo dominante, mas que la ejecucion. Bajar de 8 a 4 jobs
+# contendiendo reduce la cola, y como los pesados siguen en paralelo el wall
+# clock baja de ~370 s a ~255 s. Una cadena total costaria ~650 s.
+#
+# No se serializa mas: el ahorro extra solo se materializa cuando falla un job
+# pesado (caso raro), a costa de +minutos de latencia en CADA PR verde.
+jobs:
+  agentic-guardrails:
+    name: Agentic & Security Guardrails
+    if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Secret scan (no new credentials in tree)
+        run: npm run secrets:scan
+
+      - name: Audit Repository Conventions & Guardrails
+        run: |
+          echo "### 🛡️ Agentic Guardrails Audit" >> $GITHUB_STEP_SUMMARY
+          FAILED=0
+
+          # 1. Verificar existencia de AGENTS.md y diarios de memoria
+          echo "Verificando archivos de gobernanza agéntica..."
+          if [ ! -f "AGENTS.md" ]; then
+            echo "- ❌ Falta \`AGENTS.md\` en la raíz del repositorio." >> $GITHUB_STEP_SUMMARY
+            FAILED=1
+          else
+            echo "- ✅ \`AGENTS.md\` presente." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ ! -f ".jules/sentinel.md" ] || [ ! -f ".jules/bolt.md" ]; then
+            echo "- ⚠️ Uno o más diarios de memoria (.jules/bolt.md, .jules/sentinel.md) no encontrados." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ✅ Diarios de memoria institucional (.jules/) presentes." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 2. Guardrail de Seguridad: Prohibir child_process.exec con string interpolation
+          echo "Auditoria de comandos del sistema (Sentinel)..."
+          UNSAFE_EXEC=$(git grep -n -E "child_process.*exec\(|execAsync\(\`" backend/src/ || true)
+          if [ -n "$UNSAFE_EXEC" ]; then
+            echo "- ❌ Detectado uso potencialmente inseguro de \`exec\` con plantillas de texto:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "$UNSAFE_EXEC" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            FAILED=1
+          else
+            echo "- ✅ No se detectaron ejecuciones de shell con interpolación de cadenas." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 3. Guardrail de Seguridad: Prohibir SQL Injection vía $executeRawUnsafe con templates
+          echo "Auditoría de consultas SQL crudas (Sentinel)..."
+          UNSAFE_SQL=$(git grep -n "\$executeRawUnsafe(\`" backend/src/ || true)
+          if [ -n "$UNSAFE_SQL" ]; then
+            echo "- ❌ Detectada consulta con \`\$executeRawUnsafe\` interpolando cadenas (usar \$executeRaw parametrizado):" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "$UNSAFE_SQL" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            FAILED=1
+          else
+            echo "- ✅ No se detectaron consultas SQL concatenadas inseguras." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$FAILED" -ne 0 ]; then
+            echo "::error::Guardrails agénticos fallaron. Consulta el resumen de la ejecución para más detalles."
+            exit 1
+          fi
+
+  # El job `lint-budget` se elimino como job propio: `backend/frontend validate:ci`
+  # ya corren `node ../scripts/lint-budget.cjs --only <pkg>` internamente, asi que
+  # el job standalone re-ejecutaba ESLint sobre el mismo codigo una segunda vez.
+  # Misma garantia, un job menos y ~62 s de runner liberados por PR. El ratchet
+  # sigue aplicando via validate:ci (ver AGENTS.md seccion 2.1).
+
+  spec-check:
+    name: Spec Gate
+    if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check specs carry acceptance criteria
+        run: npm run spec:check
+
+  verify-backend:
+    name: Verify backend
+    needs: [agentic-guardrails, spec-check, docs-check]
+    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
+    # como parte de la revision del PR.
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Cache Prisma Schema & Engines
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/prisma
+            node_modules/.prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('backend/prisma/schema.prisma') }}
+          restore-keys: |
+            prisma-${{ runner.os }}-
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      # `npm run check:sdk` (part of validate:ci) regenerates the frontend SDK
+      # with openapi-typescript, so the frontend toolchain must be available.
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run backend CI validation
+        id: validate
+        run: npm run validate:ci
+
+      - name: Generate Backend Summary
+        if: always()
+        run: |
+          echo "### ⚙️ Backend CI Validation" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.validate.outcome }}" = "success" ]; then
+            echo "- **Estado:** ✅ APROBADO" >> $GITHUB_STEP_SUMMARY
+            echo "- **Validaciones:** Formato Prettier, ESLint, TypeScript Check, SDK Sync, Snapshot Schemas y Build pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Estado:** ❌ FALLIDO" >> $GITHUB_STEP_SUMMARY
+            echo "- **Diagnóstico:** Revisa el paso 'Run backend CI validation'. Si eres un agente AI, consulta \`AGENTS.md\` para ejecutar \`npm run check\` y \`npm run lint\` localmente." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  verify-frontend:
+    name: Verify frontend
+    needs: [agentic-guardrails, spec-check, docs-check]
+    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
+    # como parte de la revision del PR.
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend CI validation
+        id: validate
+        run: npm run validate:ci
+
+      - name: Generate Frontend Summary
+        if: always()
+        run: |
+          echo "### 🎨 Frontend CI Validation" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.validate.outcome }}" = "success" ]; then
+            echo "- **Estado:** ✅ APROBADO" >> $GITHUB_STEP_SUMMARY
+            echo "- **Validaciones:** ESLint, Prettier Check y Type Check pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Estado:** ❌ FALLIDO" >> $GITHUB_STEP_SUMMARY
+            echo "- **Diagnóstico:** Revisa el paso 'Run frontend CI validation'. Si eres un agente AI, ejecuta \`npm run check\` y \`npm run format:check\` en \`frontend/\`." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  coverage-ratchet:
+    name: Coverage Ratchet
+    needs: [agentic-guardrails, spec-check, docs-check]
+    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
+    # como parte de la revision del PR.
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Backend coverage (thresholds en vitest.config.ts)
+        working-directory: backend
+        env:
+          JWT_SECRET: test-secret
+        run: npm run test:coverage
+
+      - name: Frontend coverage (thresholds en vite.config.ts)
+        working-directory: frontend
+        run: npm run test:coverage
+
+  docs-check:
+    name: Docs as Code Check
+    if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check markdown links and ADR index
+        run: npm run docs:check
+
+      - name: Check Prettier formatting (docs/adr + specs)
+        run: npx --yes prettier@3.8.1 --check "docs/adr/*.md" "specs/**/*.md"
+
+  e2e-smoke:
+    name: E2E Smoke (compose.dev)
+    needs: [agentic-guardrails, spec-check, docs-check]
+    # Solo en PR: en `main` la bateria pesada ya corrio sobre el mismo codigo
+    # como parte de la revision del PR.
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # El orden importa: con `./frontend:/app` bind + volumen anidado en
+      # /app/node_modules, Docker crea el mountpoint en el HOST como root si
+      # no existe, y el npm ci posterior falla con EACCES. Instalar primero.
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Start compose.dev stack
+        run: docker compose -f compose.dev.yaml up -d --build
+
+      - name: Wait for backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:4000/api/health > /dev/null; then
+              echo "backend healthy"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::backend no alcanzó /api/health en ~10 min"
+          docker compose -f compose.dev.yaml logs backend --tail=100
+          exit 1
+
+      - name: Install Playwright chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke spec
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: http://127.0.0.1:5173
+          E2E_API_URL: http://127.0.0.1:4000/api
+        run: npx playwright test e2e/smoke.spec.ts
+
+      - name: Dump stack logs on failure
+        if: failure()
+        run: docker compose -f compose.dev.yaml logs --tail=200
+
+      - name: Stop stack
+        if: always()
+        run: docker compose -f compose.dev.yaml down

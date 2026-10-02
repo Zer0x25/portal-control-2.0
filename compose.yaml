@@ -1,0 +1,143 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-pweb3}
+      POSTGRES_INITDB_ARGS: --auth-host=md5 --auth-local=md5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    restart: always
+    environment:
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-pweb3}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: ${PGB_MAX_CLIENT_CONN:-300}
+      DEFAULT_POOL_SIZE: ${PGB_DEFAULT_POOL_SIZE:-25}
+      RESERVE_POOL_SIZE: ${PGB_RESERVE_POOL_SIZE:-5}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-backend}:sha-89086bc
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-4000}
+      JWT_SECRET: ${JWT_SECRET}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@pgbouncer:5432/${DB_NAME:-pweb3}?schema=public&pgbouncer=true&connection_limit=1
+      DIRECT_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pweb3}?schema=public
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      # Email Config
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      # Auditoria e Integridad
+      DISABLE_INTEGRITY_AUDIT: ${DISABLE_INTEGRITY_AUDIT:-false}
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-true}
+    # tini (-s) como entrypoint (PID 1) hace reaps de procesos hijos (evita zombies de prisma/seed/backup).
+    # Requiere tini instalado en la imagen del backend (apk add tini en el Dockerfile).
+    entrypoint: ["tini", "-s", "--"]
+    command: >
+      sh -c "echo '>>> [DOCKER] Aplicando migraciones (conexion directa)...' &&
+      DATABASE_URL=$${DIRECT_URL} npx prisma migrate deploy &&
+      echo '>>> [DOCKER] Ejecutando seed (idempotente, conexion directa)...' &&
+      DATABASE_URL=$${DIRECT_URL} npx prisma db seed &&
+      echo '>>> [DOCKER] Servidor iniciando (via PgBouncer)...' &&
+      npm start"
+    volumes:
+      - ${BACKUP_HOST_PATH:-/srv/server-lab/data/portal-control/backups}:/app/backups
+      - ${UPLOADS_HOST_PATH:-/srv/server-lab/data/portal-control/uploads}:/app/uploads
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 80s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+      - proxy_net
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-frontend}:sha-89086bc
+    restart: always
+    # ports:
+    #   - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - default
+      - proxy_net
+
+  gateway:
+    image: ${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-gateway}:sha-89086bc
+    restart: always
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - default
+      - proxy_net
+
+volumes:
+  postgres_data:
+networks:
+  proxy_net:
+    external: true

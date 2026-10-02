@@ -1,0 +1,18 @@
+FROM node:24-alpine
+
+RUN apk add --no-cache postgresql-client
+
+WORKDIR /app
+
+# Instalar dependencias primero para aprovechar el caché de capas
+COPY package*.json ./
+RUN npm ci
+
+# Copiar el resto del código
+COPY . .
+RUN npx prisma generate
+
+EXPOSE 4000
+
+# En desarrollo, corremos migraciones + seed idempotente y luego el servidor con auto-reload
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm run dev"]

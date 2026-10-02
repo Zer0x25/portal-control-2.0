@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.git
+.vscode
+*.log
+*.tsbuildinfo
+.env*
+uploads/
+backups/

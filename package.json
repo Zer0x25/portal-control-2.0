@@ -1,0 +1,18 @@
+{
+  "name": "portal-control-workspace",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint:budget": "node scripts/lint-budget.cjs",
+    "lint:budget:update": "node scripts/lint-budget.cjs --update",
+    "lint:budget:rules": "node scripts/lint-budget.cjs --rules",
+    "hooks:pre-commit": "npm --prefix backend run format:check && npm --prefix frontend run format:check && npm --prefix backend run lint && npm --prefix frontend run lint && npm run lint:budget",
+    "hooks:pre-push": "npm --prefix backend run validate:ci && npm --prefix frontend run validate:ci",
+    "spec:check": "node scripts/spec-check.cjs",
+    "docs:check": "node scripts/docs-check.cjs",
+    "secrets:scan": "node scripts/secret-scan.cjs"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

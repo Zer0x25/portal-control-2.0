@@ -1,0 +1,3 @@
+# Owner por defecto. Owner inferido de backend/Dockerfile (label) y
+# compose.yaml (ghcr.io/zer0x25). Ajustar si cambia el owner del repo.
+* @Zer0x25

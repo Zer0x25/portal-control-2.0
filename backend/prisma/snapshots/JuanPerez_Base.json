@@ -1,0 +1,41 @@
+[
+  {
+    "table": "Employee",
+    "data": [
+      {
+        "id": "EMP001",
+        "name": "Juan Perez",
+        "rut": "12.345.678-9",
+        "position": "Operador",
+        "area": "Producción",
+        "workdayType": "Ordinaria",
+        "status": "Activo",
+        "pin": "1234"
+      }
+    ]
+  },
+  {
+    "table": "User",
+    "data": [
+      {
+        "username": "juan.perez",
+        "passwordHash": "$2a$10$7vI8L9k6q9mX4bH.V6pY.O1F6Gv7H8I9J0K1L2M3N4O5P6Q7R8S9T",
+        "role": "Usuario",
+        "employeeId": "EMP001"
+      }
+    ]
+  },
+  {
+    "table": "TimeRecord",
+    "data": [
+      {
+        "employeeId": "EMP001",
+        "employeeName": "Juan Perez",
+        "date": "2026-02-21",
+        "entrada": "08:00",
+        "status": "Abierto",
+        "source": "SELF_SERVICE"
+      }
+    ]
+  }
+]
