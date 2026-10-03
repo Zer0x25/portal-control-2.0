@@ -4,6 +4,17 @@ import { shiftService } from "../../src/services/shiftService";
 import { PunchService } from "../../src/services/PunchService";
 import { ulid } from "ulid";
 import { SocketService } from "../../src/services/socketService";
+import { toBusinessDateChile, addBusinessDaysChile } from "../../src/utils/timeUtils";
+
+// Fechas ancladas al dia de ejecucion: assignShift rechaza startDate con mas
+// de 7 dias de antiguedad, asi que los literales fijos se pudren por
+// calendario. Los bloques van separados (+10/+20/+30) para no solaparse
+// entre si (el turno tardio del dia 1 queda asignado durante el suite).
+const DAY1 = toBusinessDateChile();
+const DAY2 = addBusinessDaysChile(DAY1, 1);
+const WEEK7_START = addBusinessDaysChile(DAY1, 10);
+const WEEK6_START = addBusinessDaysChile(DAY1, 20);
+const X77_START = addBusinessDaysChile(DAY1, 30);
 
 describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
   let testEmployeeId = ulid();
@@ -122,21 +133,21 @@ describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
         {
           employeeId: testEmployeeId,
           shiftPatternId: pattern8hRestId,
-          startDate: "2026-06-01",
-          endDate: "2026-06-01",
+          startDate: DAY1,
+          endDate: DAY1,
         },
         "admin",
       );
 
       // 2. Try to assign Early Shift on Day 2
-      // Late Shift ends at 22:00 on June 1st.
-      // Early Shift starts at 05:00 on June 2nd.
+      // Late Shift ends at 22:00 on Day 1.
+      // Early Shift starts at 05:00 on Day 2.
       // Gap is 7 hours (< 8h).
       const assignmentData = {
         employeeId: testEmployeeId,
         shiftPatternId: patternNormalId,
-        startDate: "2026-06-02",
-        endDate: "2026-06-02",
+        startDate: DAY2,
+        endDate: DAY2,
       };
 
       await expect(shiftService.assignShift(assignmentData, "admin")).rejects.toThrow(
@@ -147,7 +158,7 @@ describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
     it("should pass when the rest period is exactly 8h or more", async () => {
       // Cleanup previous failed attempt residuals if any
       await prisma.assignedShift.deleteMany({
-        where: { employeeId: testEmployeeId, startDate: "2026-06-02" },
+        where: { employeeId: testEmployeeId, startDate: DAY2 },
       });
 
       // Create a pattern that starts at 06:00 (Exactly 8h gap from 22:00)
@@ -174,8 +185,8 @@ describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
       const assignmentData = {
         employeeId: testEmployeeId,
         shiftPatternId: pattern8hGapId,
-        startDate: "2026-06-02",
-        endDate: "2026-06-02",
+        startDate: DAY2,
+        endDate: DAY2,
       };
 
       const assignment = await shiftService.assignShift(assignmentData, "admin");
@@ -192,7 +203,7 @@ describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
       const assignmentData = {
         employeeId: testEmployeeId,
         shiftPatternId: pattern7DayId,
-        startDate: "2026-07-01",
+        startDate: WEEK7_START,
         endDate: null,
       };
 
@@ -205,7 +216,7 @@ describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
       const assignmentData = {
         employeeId: testEmployeeId,
         shiftPatternId: pattern6DayId,
-        startDate: "2026-07-01",
+        startDate: WEEK6_START,
         endDate: null,
       };
 
@@ -238,7 +249,7 @@ describe("Advanced Shift Validation Integration (v8.9.0 Rules)", () => {
       const assignmentData = {
         employeeId: testEmployeeId,
         shiftPatternId: pattern7x7Id,
-        startDate: "2026-08-01",
+        startDate: X77_START,
         endDate: null,
       };
 

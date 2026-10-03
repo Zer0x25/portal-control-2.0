@@ -128,11 +128,17 @@ describe("System Security and Audit Integration", () => {
       });
       await timeRecordIntegrityService.sealRecord(prisma, r2.id);
 
-      // 3. Manually alter Record 1's hash (simulating tampering)
+      // 3. Manually alter Record 1's hash (simulating tampering).
+      // updatedAt se pinea explicito: @updatedAt lo bumpearia a now(),
+      // reordenando la cadena (r1 pasaria despues de r2) y el test dejaria
+      // de probar adulteracion de hash para probar reorden temporal.
       await requestContext.run({ skipTrigger: true }, async () => {
         await prisma.timeRecord.update({
           where: { id: r1.id },
-          data: { integrityHash: "tampered-hash" },
+          data: {
+            integrityHash: "tampered-hash",
+            updatedAt: new Date("2026-06-01T10:00:00Z"),
+          },
         });
       });
 
