@@ -13,19 +13,19 @@ export default defineConfig({
     sequence: {
       concurrent: false,
     },
-    // Ratchet de cobertura (spec 003 G-02, AC2). Baseline medido 2026-10-02
-    // sobre `npm run test:coverage` (unit, sin DB): 16.47% líneas, 19.1%
-    // funciones, 9.48% ramas, 15.84% statements. Umbrales con ~2pts de
-    // margen anti-flakiness: solo pueden subir. Subir cobertura real va
-    // por spec aparte (fuera de alcance de 003).
+    // Ratchet de cobertura (spec 003 G-02, AC2). Baseline remedido
+    // 2026-10-03 sobre `npm run test:coverage` (unit, sin DB) con Vitest 5:
+    // 17.1% líneas, 20.16% funciones, 10.45% ramas, 16.44% statements.
+    // Umbrales con ~2pts de margen anti-flakiness: solo pueden subir.
+    // Subir cobertura real va por spec aparte (fuera de alcance de 003).
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary"],
       include: ["src/**/*.ts"],
       exclude: ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "scripts/**"],
       thresholds: {
-        lines: 14,
-        functions: 17,
+        lines: 15,
+        functions: 18,
         branches: 8,
         statements: 14,
       },
