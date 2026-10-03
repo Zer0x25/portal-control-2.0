@@ -35,6 +35,26 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
 
 ## Fase 3 — Reescritura e2e
 
-- [ ] 3.1 Reescribir specs podridas contra UI actual.
-- [ ] 3.2 Suite completa verde en local.
-- [ ] 3.3 Decisión: gatear en CI o no (costo en minutos).
+- [x] 3.1 Reescribir specs podridas contra UI actual.
+      Causas raíz (todas verificadas contra `src/`, ninguna suposición):
+      HashRouter (`/#/` faltante en goto), presupuestos 10-15s vs boot
+      real ~14-30s, tabs en Title Case con uppercase solo-CSS, redirects
+      (`/audit-logs`, `/admin/tools` -> governance `?tab=`), LeaveManager
+      tras tab Permisos (`?tab=leaves`), saludo partido en dos nodos +
+      display-name (no username), auditoría con divs virtualizados (no
+      trs), `Usuarios` ambiguo con sidebar colapsado, `integrity-status`
+      envuelto en `data`, OmniSearch inexistente (test eliminado,
+      reemplazado por tab-switch perf), attendance no-idempotente
+      (reset vía API + ciclo entrada->salida), workers paralelos
+      expulsándose (límite 1 sesión Usuario + rate-limit login).
+- [x] 3.2 Suite completa verde en local.
+      2026-10-03, dev (`compose.dev.yaml`), serial (`workers: 1`
+      fijado en `playwright.config.ts`): **16 passed / 0 failed en
+      5.0 min** (`/tmp/e2e-final.log`, EXIT 0). Commits: helper +
+      user-flows, admin-tools, governance-hub, data-validation,
+      performance+workers.
+- [x] 3.3 Decisión: gatear en CI o no (costo en minutos).
+      Decisión: NO gatear la suite completa; solo el smoke sigue
+      gateado (spec 003 G-03). La suite completa (5 min serial +
+      stack dev con seed) corre local pre-release. Reevaluar si baja
+      de 3 min o aparece runner con caché.

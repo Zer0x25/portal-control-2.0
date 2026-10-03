@@ -37,4 +37,4 @@ y nunca corrió en CI (solo `smoke.spec.ts` está gateado).
 - [x] AC1: staging levanta con `compose.staging.yaml` y el smoke pasa headless.
 - [x] AC2: informe de baseline e2e (qué specs pasan/fallan y por qué).
 - [x] AC3: thresholds de cobertura suben al menos una vez por paquete.
-- [ ] AC4: suite e2e completa verde en local (staging o dev).
+- [x] AC4: suite e2e completa verde en local (staging o dev).
