@@ -106,7 +106,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
         currentSyncStep: "",
         syncProgress: 0,
       });
-      throw new Error(errorMessage);
+      throw new Error(errorMessage, { cause: error });
     }
   },
 

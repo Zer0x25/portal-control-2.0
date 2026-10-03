@@ -155,7 +155,7 @@ export const useUserClockingStatus = (employeeId?: string) => {
   });
 
   const lastRecord = query.data;
-  let status: "in" | "out" | "not_employee" | "unknown" = "unknown";
+  let status: "in" | "out" | "not_employee" | "unknown";
   let time = "";
 
   if (!employeeId) {

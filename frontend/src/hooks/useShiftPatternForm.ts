@@ -375,7 +375,7 @@ export const useShiftPatternForm = () => {
       worksOnHolidays: patternWorksOnHolidays,
     };
 
-    let success = false;
+    let success: boolean;
     try {
       if (editingPattern) {
         const payloadWithId: TheoreticalShiftPattern = {

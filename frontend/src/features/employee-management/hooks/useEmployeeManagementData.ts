@@ -201,7 +201,7 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   const handleSave = async (): Promise<boolean> => {
     const { createUserAccount, ...dataToSave } = employeeData;
 
-    let success = false;
+    let success: boolean;
     if (editingEmployee) {
       success = await updateEmployee({
         ...editingEmployee,

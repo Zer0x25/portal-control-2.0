@@ -62,7 +62,7 @@ export const useShiftAssignmentForm = () => {
     if (!dataToProcess) return false;
 
     const { assignmentData, isEditing } = dataToProcess;
-    let success = false;
+    let success: boolean;
     try {
       if (resolutionMode === "SMART_TERMINATE" && conflictingAssignment) {
         // Smart Resolution: Terminate old, Create new

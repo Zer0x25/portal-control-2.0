@@ -69,7 +69,7 @@ export const useChangePasswordModalController = ({
     }
 
     setIsLoading(true);
-    let success = false;
+    let success: boolean;
 
     if (isSelfChange) {
       success = await changeOwnPassword({ newPassword });

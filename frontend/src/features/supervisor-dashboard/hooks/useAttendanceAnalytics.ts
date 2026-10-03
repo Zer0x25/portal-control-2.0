@@ -156,7 +156,7 @@ export function useAttendanceAnalytics(days: number = 30) {
     queryFn: async (): Promise<AttendanceData[]> => {
       const pageSize = 500;
       let page = 1;
-      let totalPages = 1;
+      let totalPages: number;
       const records: AttendanceRecord[] = [];
 
       do {

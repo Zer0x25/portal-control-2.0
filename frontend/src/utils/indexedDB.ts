@@ -238,7 +238,7 @@ export const idbPut = async <T>(storeName: string, item: T): Promise<IDBValidKey
     } catch (e) {
       if (e instanceof z.ZodError) {
         console.error(`Validation failed for store '${storeName}':`, e.issues);
-        throw new Error(`Invalid data structure for '${storeName}'.`);
+        throw new Error(`Invalid data structure for '${storeName}'.`, { cause: e });
       }
       throw e;
     }
@@ -482,7 +482,7 @@ export const exportDB = async (): Promise<void> => {
     URL.revokeObjectURL(url);
   } catch (error) {
     console.error("Error exporting database:", error);
-    throw new Error("Failed to export database.");
+    throw new Error("Failed to export database.", { cause: error });
   }
 };
 
