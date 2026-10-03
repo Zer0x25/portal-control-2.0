@@ -58,3 +58,20 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
       gateado (spec 003 G-03). La suite completa (5 min serial +
       stack dev con seed) corre local pre-release. Reevaluar si baja
       de 3 min o aparece runner con caché.
+
+## Post-004 — Eficiencia + paridad staging (2026-10-03)
+
+- [x] E1: `loginFast` (auth por API + siembra de `sessionStorage`,
+      replica `_verifyAuth`): suite dev 5.0 min -> 1.2 min, 16/16.
+      Smoke mantiene login UI real como gate.
+- [x] E2: crash React #185 en dashboard (selector objeto zustand sin
+      `useShallow` en `useQuickNotes`, idem latente en `useTimeControl`):
+      loop bajo writes del sync inicial -> ErrorBoundary. Fix con
+      `useShallow`, verificado con sonda (seeded session a `/#/dashboard`).
+- [x] E3: seed worker en staging (`SEED_E2E_USERS=1` opt-in,
+      `E2E_WORKER_PASSWORD`): prod-mode solo creaba admin, worker e2e
+      imposible. No-destructivo, solo staging local.
+- [x] E4: suite completa contra staging (build prod) 16/16 en 1.1 min
+      (~2s/test vs ~3-4s en dev: confirma que Vite dev penaliza).
+      Nota: `juan.perez` se había bloqueado 21h por reintentos contra
+      password inexistente; restart del backend limpia limiters en memoria.
