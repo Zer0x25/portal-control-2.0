@@ -23,10 +23,15 @@ test.describe("smoke @smoke", () => {
     await expect(page.locator("#username")).toBeVisible({ timeout: 30000 });
     await page.fill("#username", process.env.E2E_ADMIN_USERNAME || "admin");
     await page.fill("#password", process.env.E2E_ADMIN_PASSWORD || "999.666");
+    // Guardia anti-regresión (2026-10-03): el login UI real se colgaba ~28s
+    // tras el click porque wipeAllData() no cerraba el handle IDB abierto y
+    // deleteDB quedaba "blocked". Click->redirect debe ser segundos.
+    const clickedAt = Date.now();
     await page.getByRole("button", { name: /acceder al portal/i }).click();
     await expect(page).toHaveURL(
       /(dashboard|time-control|configuration|admin\/tools|worker-portal|theoretical-shifts|shift-calendar)/,
       { timeout: 60000 },
     );
+    expect(Date.now() - clickedAt).toBeLessThan(20000);
   });
 });

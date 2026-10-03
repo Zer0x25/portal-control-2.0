@@ -601,8 +601,19 @@ export const idbGetPagedAndFiltered = async <T>(
  */
 export const wipeAllData = async (): Promise<void> => {
   try {
-    // 1. Reset the cached promise to force a clean reconnect
+    // Cerrar la conexión viva ANTES de deleteDB: sin esto el borrado queda
+    // "blocked" sobre nuestro propio handle abierto (misma página) y el
+    // llamador (login con usuario nuevo) se cuelga ~28s hasta que el
+    // navegador lo desbloquea. Nular solo la promesa no cierra el handle.
+    const open = dbPromise;
     dbPromise = null;
+    if (open) {
+      try {
+        (await open).close();
+      } catch {
+        // Ya cerrada o nunca abrió: el borrado igual procede.
+      }
+    }
 
     // 2. Use deleteDB for a guaranteed fresh start
     console.warn("🧨 Wiping IndexedDB data via deleteDB...");
