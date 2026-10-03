@@ -75,3 +75,18 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
       (~2s/test vs ~3-4s en dev: confirma que Vite dev penaliza).
       Nota: `juan.perez` se había bloqueado 21h por reintentos contra
       password inexistente; restart del backend limpia limiters en memoria.
+- [x] E5: login UI real 31s -> 4s (`wipeAllData` no cerraba el handle IDB
+      y `deleteDB` quedaba `blocked` ~28s en perfiles frescos; afectaba a
+      usuarios reales con usuario nuevo, no solo al smoke). Smoke aserta
+      click->redirect < 20s como guardia.
+- [x] E6: logins concurrentes 409/404 (`iat` en segundos firmaba JWT
+      idénticos -> choque en `token_hash` unique; evicciones concurrentes
+      raceaban el delete-oldest -> P2025). `createSession` lleva `jti`
+      nonce y `manageSessionLimit` tolera P2025. Test de ráfaga en
+      `auth.login-flow.test.ts` (falla sin `jti`, verificado).
+- [x] E7: suite en paralelo (workers 4 local, CI en 1): solo el rol
+      Usuario es single-slot (`user-flows` serial); rate-limit se limpia
+      en cada éxito. Sin `networkidle` (assertions explícitas bastan).
+      Perf en proyecto dependiente serial (la contención CPU invalida
+      mediciones). 16/16 en ~35s (`npm run e2e:staging`), 2 corridas
+      verdes seguidas.
