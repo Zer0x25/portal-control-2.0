@@ -109,7 +109,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
               placeholder="Buscar folio, responsable o turno..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="!pl-12 !bg-white dark:!bg-gray-800/50 !rounded-md !h-12 !border-gray-200 dark:!border-gray-700 shadow-sm focus:!ring-4 focus:!ring-indigo-700/10 font-bold"
+              className="pl-12! bg-white! dark:bg-gray-800/50! rounded-md! h-12! border-gray-200! dark:border-gray-700! shadow-sm focus:ring-4! focus:ring-indigo-700/10! font-bold"
             />
             {searchTerm && (
               <button
@@ -145,7 +145,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
             variant="secondary"
             onClick={clearFilters}
             disabled={!searchTerm && !dateFilter}
-            className="h-12 px-6 rounded-md flex items-center gap-2 !bg-white dark:!bg-gray-800/50 border-gray-200 dark:border-gray-700 shadow-sm disabled:opacity-30 active:scale-95 transition-all"
+            className="h-12 px-6 rounded-md flex items-center gap-2 bg-white! dark:bg-gray-800/50! border-gray-200 dark:border-gray-700 shadow-sm disabled:opacity-30 active:scale-95 transition-all"
           >
             <ArrowPathIcon
               className={`w-4 h-4 text-gray-400 ${searchTerm || dateFilter ? "animate-spin-slow" : ""}`}
@@ -207,7 +207,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.02 }}
                       onDoubleClick={() => onPreview(report)}
-                      className="group hover:bg-indigo-700/[0.03] dark:hover:bg-indigo-700/[0.06] transition-all cursor-pointer"
+                      className="group hover:bg-indigo-700/3 dark:hover:bg-indigo-700/6 transition-all cursor-pointer"
                     >
                       <td className="px-6 py-5">
                         <div className="flex flex-col">

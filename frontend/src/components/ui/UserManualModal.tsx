@@ -84,7 +84,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -126,7 +126,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
               </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-8 scrollbar-premium">
+            <div className="grow overflow-y-auto p-8 scrollbar-premium">
               {isLoading ? (
                 <div className="h-full flex flex-col items-center justify-center gap-4 py-20">
                   <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />

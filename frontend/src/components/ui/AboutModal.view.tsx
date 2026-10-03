@@ -51,7 +51,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
           <div className="text-center space-y-4 relative">
             <div
               onClick={onLogoClick}
-              className="w-20 h-20 bg-gradient-to-br from-sap-blue to-indigo-600 rounded-3xl mx-auto flex items-center justify-center shadow-22xl shadow-blue-500/20 group hover:scale-110 transition-transform duration-500 cursor-pointer"
+              className="w-20 h-20 bg-linear-to-br from-sap-blue to-indigo-600 rounded-3xl mx-auto flex items-center justify-center shadow-22xl shadow-blue-500/20 group hover:scale-110 transition-transform duration-500 cursor-pointer"
             >
               <span className="text-white font-black text-4xl italic tracking-tighter">P</span>
             </div>
@@ -67,7 +67,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
 
           <div className="space-y-4 relative">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50/50 dark:bg-white/[0.02] p-4 rounded-3xl border border-gray-100 dark:border-white/5 group hover:border-sap-blue/20 transition-all">
+              <div className="bg-gray-50/50 dark:bg-white/2 p-4 rounded-3xl border border-gray-100 dark:border-white/5 group hover:border-sap-blue/20 transition-all">
                 <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 italic">
                   Versión Nucleus
                 </span>
@@ -75,7 +75,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
                   3.0.4-STABLE
                 </span>
               </div>
-              <div className="bg-gray-50/50 dark:bg-white/[0.02] p-4 rounded-3xl border border-gray-100 dark:border-white/5 group hover:border-sap-blue/20 transition-all">
+              <div className="bg-gray-50/50 dark:bg-white/2 p-4 rounded-3xl border border-gray-100 dark:border-white/5 group hover:border-sap-blue/20 transition-all">
                 <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 italic">
                   Estado Kernel
                 </span>
@@ -88,7 +88,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
               </div>
             </div>
 
-            <div className="bg-white/40 dark:bg-white/[0.02] p-6 rounded-4xl border border-gray-100 dark:border-white/5 space-y-4">
+            <div className="bg-white/40 dark:bg-white/2 p-6 rounded-4xl border border-gray-100 dark:border-white/5 space-y-4">
               <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic border-b border-gray-100 dark:border-white/5 pb-2">
                 Créditos de Desarrollo
               </h4>
@@ -123,7 +123,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
 
       <AnimatePresence>
         {showMonkey && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

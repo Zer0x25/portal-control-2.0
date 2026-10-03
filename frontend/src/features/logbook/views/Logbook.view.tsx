@@ -141,8 +141,8 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                 {activeShift.shiftName}
               </h1>
               <div className="flex items-center gap-2.5 mt-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-[var(--sidebar-text-active)] animate-pulse" />
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--sidebar-text-active)]">
+                <div className="w-1.5 h-1.5 rounded-full bg-(--sidebar-text-active) animate-pulse" />
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-(--sidebar-text-active)">
                   Turno en Curso · Folio #{activeShift.folio}
                 </p>
               </div>
@@ -175,7 +175,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                     variant="danger"
                     size="sm"
                     disabled={!canCurrentUserCloseActiveShift}
-                    className="w-full sm:w-auto px-10 h-11 bg-[var(--status-error)] hover:bg-[var(--status-error)]/90 text-white font-bold text-[11px] uppercase tracking-widest rounded-sm flex items-center justify-center gap-2.5 shadow-md shadow-[var(--status-error)]/10"
+                    className="w-full sm:w-auto px-10 h-11 bg-(--status-error) hover:bg-(--status-error)/90 text-white font-bold text-[11px] uppercase tracking-widest rounded-sm flex items-center justify-center gap-2.5 shadow-md shadow-(--status-error)/10"
                   >
                     <CloseIcon className="w-4 h-4" />
                     Cerrar Guardía
@@ -229,7 +229,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
               onClick={handleStartShift}
               size="lg"
               disabled={isStartingShift}
-              className="bg-[var(--sidebar-text-active)] text-white shadow-lg shadow-[var(--sidebar-text-active)]/20 px-10 py-4 rounded-sm font-bold uppercase text-[11px] tracking-widest"
+              className="bg-(--sidebar-text-active) text-white shadow-lg shadow-(--sidebar-text-active)/20 px-10 py-4 rounded-sm font-bold uppercase text-[11px] tracking-widest"
             >
               {isStartingShift ? "Habilitando..." : "Iniciar Registro de Guardia"}
             </Button>
@@ -247,7 +247,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
 
       {showLogoutCountdownModal && (
         <div
-          className="fixed inset-0 z-[101] flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
+          className="fixed inset-0 z-101 flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
           aria-modal="true"
         >
           <div className="p-10 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical text-center max-w-sm w-full">
@@ -257,7 +257,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
             <p className="my-4 text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary">
               Cierre de sesión automático en...
             </p>
-            <div className="text-6xl font-black font-mono tracking-tighter text-[var(--sidebar-text-active)] tabular-nums">
+            <div className="text-6xl font-black font-mono tracking-tighter text-(--sidebar-text-active) tabular-nums">
               {countdown}
             </div>
           </div>
@@ -276,7 +276,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
       )}
       {/* Floating Action Button for Mobile */}
       {isMobile && activeShift && (
-        <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-3">
+        <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-3">
           <motion.div
             initial={false}
             animate={showFabMenu ? "open" : "closed"}
@@ -304,7 +304,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                   setShowSupplierEntryModal(true);
                   setShowFabMenu(false);
                 }}
-                className="w-12 h-12 rounded-sm bg-[var(--status-success)] text-white flex items-center justify-center shadow-lg shadow-[var(--status-success)]/20 border border-[var(--status-success)]/20"
+                className="w-12 h-12 rounded-sm bg-(--status-success) text-white flex items-center justify-center shadow-lg shadow-(--status-success)/20 border border-(--status-success)/20"
               >
                 <PlusCircleIcon className="w-6 h-6" />
               </motion.button>
@@ -332,7 +332,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                   setShowLogEntryModal(true);
                   setShowFabMenu(false);
                 }}
-                className="w-12 h-12 rounded-sm bg-[var(--sidebar-text-active)] text-white flex items-center justify-center shadow-lg shadow-[var(--sidebar-text-active)]/20 border border-[var(--sidebar-text-active)]/20"
+                className="w-12 h-12 rounded-sm bg-(--sidebar-text-active) text-white flex items-center justify-center shadow-lg shadow-(--sidebar-text-active)/20 border border-(--sidebar-text-active)/20"
               >
                 <PlusCircleIcon className="w-6 h-6" />
               </motion.button>
@@ -345,7 +345,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
             onClick={() => setShowFabMenu(!showFabMenu)}
             className={`
               w-14 h-14 rounded-sm flex items-center justify-center shadow-2xl transition-all duration-300 border
-              ${showFabMenu ? "bg-token-text-primary border-token-border-technical text-white rotate-45" : "bg-[var(--sidebar-text-active)] border-[var(--sidebar-text-active)]/20 text-white"}
+              ${showFabMenu ? "bg-token-text-primary border-token-border-technical text-white rotate-45" : "bg-(--sidebar-text-active) border-(--sidebar-text-active)/20 text-white"}
             `}
           >
             <PlusCircleIcon className="w-7 h-7" />

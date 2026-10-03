@@ -39,7 +39,7 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
               </div>
             }
             onDoubleClick={() => openReportDetailsModal(report)}
-            className="flex-col !items-start gap-1"
+            className="flex-col items-start! gap-1"
           />
         ))}
 

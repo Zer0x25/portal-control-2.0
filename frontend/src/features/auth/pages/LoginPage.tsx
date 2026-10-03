@@ -70,13 +70,13 @@ const LoginPage: React.FC = () => {
       {/* Crystal Clear Spotlight Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none bg-token-surface-stripe">
         {/* Main Spotlight */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.08)_0%,transparent_70%)] z-0" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.08)_0%,transparent_70%)] z-0" />
 
         {/* Inner Glow behind the card */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] z-0" />
 
         {/* Technical Grid - Pure CSS & Sharp */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
 
         {/* Edge Vignette */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-70"></div>
@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
           className="overflow-hidden bg-token-surface-card md:backdrop-blur-2xl border border-token-border-subtle shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative group rounded-3xl"
         >
           {/* Top colored line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-sap-blue to-transparent opacity-50"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-sap-blue to-transparent opacity-50"></div>
 
           <div className="px-8 py-10 sm:px-10 sm:py-8 relative z-10">
             {/* Header Section */}
@@ -117,13 +117,13 @@ const LoginPage: React.FC = () => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <h1 className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-token-text-primary via-sap-blue to-sap-light-blue uppercase tracking-[0.2em] mb-1">
+                <h1 className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-linear-to-r from-token-text-primary via-sap-blue to-sap-light-blue uppercase tracking-[0.2em] mb-1">
                   {APP_TITLE}
                 </h1>
                 <div className="flex items-center justify-center gap-2 opacity-60">
-                  <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-token-text-primary/50"></div>
+                  <div className="h-px w-8 bg-linear-to-r from-transparent to-token-text-primary/50"></div>
                   <LiberalitasSignature className="text-[10px] tracking-[0.3em] text-token-text-primary" />
-                  <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-token-text-primary/50"></div>
+                  <div className="h-px w-8 bg-linear-to-l from-transparent to-token-text-primary/50"></div>
                 </div>
               </motion.div>
             </div>
@@ -182,7 +182,7 @@ const LoginPage: React.FC = () => {
                   className="w-full h-12 rounded-xl bg-sap-blue text-white hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all duration-300"
                   disabled={loading}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
+                  <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
 
                   {loading ? (
                     <div className="flex items-center gap-3">
@@ -222,10 +222,10 @@ const LoginPage: React.FC = () => {
                 to={ROUTES.KIOSK}
                 className="group inline-flex flex-col items-center gap-2 py-2 px-4 rounded-lg hover:bg-token-surface-active transition-colors"
               >
-                <span className="text-[10px] font-black bg-clip-text text-transparent bg-gradient-to-r from-sap-blue via-sap-light-blue to-token-text-primary uppercase tracking-[0.25em] transition-all">
+                <span className="text-[10px] font-black bg-clip-text text-transparent bg-linear-to-r from-sap-blue via-sap-light-blue to-token-text-primary uppercase tracking-[0.25em] transition-all">
                   Acceder como Kiosko
                 </span>
-                <div className="h-[1px] w-0 bg-sap-blue group-hover:w-full transition-all duration-300"></div>
+                <div className="h-px w-0 bg-sap-blue group-hover:w-full transition-all duration-300"></div>
               </Link>
             </motion.div>
           </div>

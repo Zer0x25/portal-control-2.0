@@ -74,7 +74,7 @@ const PendingRequestCard: FC<{
             {formatDisplayDateTime(req.originalValue)}
           </p>
         </div>
-        <div className="p-3.5 rounded-sm bg-sap-blue/[0.03] border border-sap-blue/20 relative overflow-hidden group-hover:border-sap-blue/40 transition-colors">
+        <div className="p-3.5 rounded-sm bg-sap-blue/3 border border-sap-blue/20 relative overflow-hidden group-hover:border-sap-blue/40 transition-colors">
           <div className="absolute top-0 right-0 w-8 h-8 bg-sap-blue/5 rounded-bl-full" />
           <p className="text-[10px] font-semibold text-sap-blue uppercase tracking-wider mb-1.5">
             Valor Solicitado

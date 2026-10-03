@@ -101,7 +101,7 @@ const HolidayForm: React.FC<HolidayFormProps> = ({
           onChange={(e) => setName(e.target.value)}
           required
           placeholder="Ej: Año Nuevo"
-          className="!rounded-xl"
+          className="rounded-xl!"
         />
 
         {/* Type Select */}

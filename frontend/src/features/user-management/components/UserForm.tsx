@@ -86,12 +86,12 @@ const UserForm: React.FC<UserFormProps> = ({
               onChange={handleUsernameChange}
               required
               disabled={!!editingUser}
-              className="!mb-0 font-black"
+              className="mb-0! font-black"
               placeholder="Ej: j.perez"
             />
           </div>
           {!editingUser && (
-            <div className="flex flex-col justify-center px-6 py-4 bg-gradient-to-br from-token-surface-stripe to-token-surface-card border border-token-border-technical rounded-md shadow-sm relative overflow-hidden group">
+            <div className="flex flex-col justify-center px-6 py-4 bg-linear-to-br from-token-surface-stripe to-token-surface-card border border-token-border-technical rounded-md shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-16 h-16 bg-sap-blue/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary">
                 Contraseña Temporal

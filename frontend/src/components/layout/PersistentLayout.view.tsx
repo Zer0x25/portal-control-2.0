@@ -53,7 +53,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
               onDragEnd={(_, info) => {
                 onOpenSidebarFromSwipe(info.offset.x, info.velocity.x);
               }}
-              className="fixed top-0 left-0 w-4 h-full z-[40] lg:hidden cursor-pointer touch-none"
+              className="fixed top-0 left-0 w-4 h-full z-40 lg:hidden cursor-pointer touch-none"
               title="Desliza para abrir el menú"
             />
           )}

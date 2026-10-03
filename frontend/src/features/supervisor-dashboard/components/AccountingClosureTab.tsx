@@ -58,7 +58,7 @@ const AccountingClosureTab: React.FC = () => {
               <div className="w-14 h-14 rounded-sm bg-sap-blue/5 flex items-center justify-center text-sap-blue shrink-0 shadow-inner border border-sap-blue/10">
                 <KeyIcon className="w-7 h-7" />
               </div>
-              <div className="flex-grow text-center md:text-left">
+              <div className="grow text-center md:text-left">
                 <h3 className="text-[11px] font-semibold text-sap-blue uppercase tracking-wider mb-2">
                   Protocolo de Seguridad Operativa
                 </h3>
@@ -332,7 +332,7 @@ const AccountingClosureTab: React.FC = () => {
                     })}
                   </span>
                 </p>
-                <div className="h-[1px] w-full bg-rose-600/10" />
+                <div className="h-px w-full bg-rose-600/10" />
                 <p className="text-[11px] font-semibold text-token-text-tertiary leading-relaxed text-center uppercase tracking-wider">
                   ESTA OPERACIÓN BLINDARÁ LOS REGISTROS HISTÓRICOS. <br />
                   SE DESACTIVARÁ CUALQUIER PERMISO DE ESCRITURA PARA ESTE RANGO TEMPORAL EN LA DB
@@ -350,7 +350,7 @@ const AccountingClosureTab: React.FC = () => {
       />
 
       {isHistoryModalOpen && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-4">
+        <div className="fixed inset-0 z-120 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-4xl rounded-sm border border-token-border-technical bg-token-surface-card shadow-2xl">
             <div className="flex items-center justify-between border-b border-token-border-technical px-5 py-4">
               <div>

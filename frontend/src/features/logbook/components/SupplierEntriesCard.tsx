@@ -224,7 +224,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
           </thead>
           <tbody className="divide-y divide-token-border-subtle">
             {activeShift.supplierEntries.map((se) => (
-              <tr key={se.id} className="group hover:bg-emerald-600/[0.02] transition-colors">
+              <tr key={se.id} className="group hover:bg-emerald-600/2 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-[13px] font-bold text-token-text-tertiary font-mono w-20">
                   {se.time}
                 </td>
@@ -301,7 +301,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
 
   return (
     <>
-      <Card className="!p-0 flex flex-col overflow-hidden bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm relative">
+      <Card className="p-0! flex flex-col overflow-hidden bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm relative">
         <div className="p-6 pb-0 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="w-1 h-8 bg-emerald-600 rounded-full" />

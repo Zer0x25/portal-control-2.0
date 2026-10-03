@@ -67,7 +67,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
       }).map((_, i) => (
         <div
           key={`ph-${i}`}
-          className="p-4 border-2 border-dashed rounded-2xl dark:border-gray-700/50 bg-gray-50/20 dark:bg-gray-800/10 min-h-[16rem] hidden lg:flex items-center justify-center"
+          className="p-4 border-2 border-dashed rounded-2xl dark:border-gray-700/50 bg-gray-50/20 dark:bg-gray-800/10 min-h-64 hidden lg:flex items-center justify-center"
         >
           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300 dark:text-gray-600 rotate-90">
             Anterior
@@ -129,7 +129,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
             value={patternForm.patternName}
             onChange={(e) => patternForm.setPatternName(e.target.value)}
             placeholder="Ej: Turno Mañana 5x2"
-            className="!rounded-xl"
+            className="rounded-xl!"
           />
         </div>
         <div className="md:col-span-4 lg:col-span-2">
@@ -140,7 +140,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
             max="99"
             value={String(patternForm.patternCycleLength)}
             onChange={(e) => patternForm.setPatternCycleLength(parseInt(e.target.value, 10) || 1)}
-            className="!rounded-xl"
+            className="rounded-xl!"
           />
         </div>
         <div className="md:col-span-4 lg:col-span-2">
@@ -168,7 +168,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
             value={String(patternForm.patternMaxHoursInput)}
             onChange={(e) => patternForm.setPatternMaxHoursInput(parseInt(e.target.value, 10) || 0)}
             title={`Máx. legal: ${patternForm.globalMaxWeeklyHours} hrs.`}
-            className="!rounded-xl"
+            className="rounded-xl!"
           />
         </div>
         <div className="md:col-span-12 lg:col-span-1">
@@ -209,7 +209,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
       <div>
         <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 mb-6 flex items-center gap-3">
           Definición de Jornadas Diarias
-          <div className="flex-1 h-px bg-gradient-to-r from-gray-200 dark:from-gray-800 to-transparent"></div>
+          <div className="flex-1 h-px bg-linear-to-r from-gray-200 dark:from-gray-800 to-transparent"></div>
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
@@ -248,7 +248,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                 </div>
               </div>
 
-              <div className="space-y-4 flex-grow">
+              <div className="space-y-4 grow">
                 <label className="flex items-center group cursor-pointer">
                   <div className="relative">
                     <input
@@ -360,12 +360,12 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
       </div>
 
       <div className="flex flex-wrap gap-4 pt-4 border-t border-white/20 dark:border-gray-700/50 justify-end">
-        <Button variant="secondary" onClick={onCancel} className="px-8 !rounded-xl">
+        <Button variant="secondary" onClick={onCancel} className="px-8 rounded-xl!">
           Cancelar
         </Button>
         <Button
           onClick={onSave}
-          className="px-10 shadow-lg shadow-sap-blue/20 !rounded-xl flex items-center gap-2"
+          className="px-10 shadow-lg shadow-sap-blue/20 rounded-xl! flex items-center gap-2"
         >
           {patternForm.editingPattern ? (
             <EditIcon className="w-5 h-5" />

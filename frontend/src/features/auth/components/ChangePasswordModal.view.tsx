@@ -31,7 +31,7 @@ const ChangePasswordModalView: React.FC<ChangePasswordModalViewProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-60 p-4"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-60 p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

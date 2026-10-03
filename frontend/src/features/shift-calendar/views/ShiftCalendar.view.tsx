@@ -140,13 +140,13 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
       const holiday = dayData.data;
       return (
         <div className="p-12 text-center flex flex-col items-center justify-center">
-          <div className="w-16 h-16 bg-[var(--status-warning)]/10 rounded-full flex items-center justify-center mb-6">
-            <CalendarDaysIcon className="w-8 h-8 text-[var(--status-warning)]" />
+          <div className="w-16 h-16 bg-(--status-warning)/10 rounded-full flex items-center justify-center mb-6">
+            <CalendarDaysIcon className="w-8 h-8 text-(--status-warning)" />
           </div>
           <h4 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
             {holiday.name}
           </h4>
-          <p className="text-[11px] font-bold text-[var(--status-warning)] mt-2 uppercase tracking-widest">
+          <p className="text-[11px] font-bold text-(--status-warning) mt-2 uppercase tracking-widest">
             Feriado {holiday.type}
           </p>
         </div>
@@ -185,10 +185,10 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
               <div
                 key={emp.employeeId}
                 onClick={() => onNavigateToEmployeeMonth(emp.employeeId)}
-                className="p-5 bg-token-surface-card border border-token-border-technical rounded-sm hover:border-[var(--sidebar-text-active)] hover:shadow-lg hover:shadow-[var(--sidebar-text-active)]/5 transition-all group cursor-pointer select-none"
+                className="p-5 bg-token-surface-card border border-token-border-technical rounded-sm hover:border-(--sidebar-text-active) hover:shadow-lg hover:shadow-(--sidebar-text-active)/5 transition-all group cursor-pointer select-none"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-[12px] font-black text-token-text-primary uppercase truncate pr-2 group-hover:text-[var(--sidebar-text-active)] transition-colors">
+                  <span className="text-[12px] font-black text-token-text-primary uppercase truncate pr-2 group-hover:text-(--sidebar-text-active) transition-colors">
                     {emp.employeeName}
                   </span>
                   <span className="text-[11px] font-bold text-token-text-secondary bg-token-surface-stripe px-2 py-0.5 rounded-sm font-mono">
@@ -206,7 +206,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     </span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[9px] font-black text-[var(--sidebar-text-active)] uppercase tracking-[0.2em]">
+                    <span className="text-[9px] font-black text-(--sidebar-text-active) uppercase tracking-[0.2em]">
                       Ver Mes →
                     </span>
                   </div>
@@ -222,7 +222,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
   if (isShiftPatternsLoading || isAssignedShiftsLoading || isLoadingEmployees) {
     return (
       <div
-        className="py-20 text-center text-[var(--sidebar-text-active)] font-bold uppercase tracking-widest animate-pulse"
+        className="py-20 text-center text-(--sidebar-text-active) font-bold uppercase tracking-widest animate-pulse"
         data-ui-protected
       >
         Sincronizando malla de turnos...
@@ -250,7 +250,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   onClick={() => setViewMode(mode)}
                   className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     viewMode === mode
-                      ? "bg-[var(--sidebar-text-active)] text-white shadow-sm"
+                      ? "bg-(--sidebar-text-active) text-white shadow-sm"
                       : "text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-active"
                   }`}
                 >
@@ -279,7 +279,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   <select
                     value={selectedArea}
                     onChange={handleAreaChange}
-                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-[var(--sidebar-text-active)]/20 text-token-text-primary outline-none"
+                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
                   >
                     <option value="">TODAS LAS ÁREAS</option>
                     {uniqueAreas.map((area) => (
@@ -296,7 +296,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   <select
                     value={selectedCargo}
                     onChange={handleCargoChange}
-                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-[var(--sidebar-text-active)]/20 text-token-text-primary outline-none"
+                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
                   >
                     <option value="">TODOS LOS CARGOS</option>
                     {uniqueCargosInArea.map((cargo) => (
@@ -315,7 +315,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     onChange={(e) =>
                       setSelectedEmployeeId(e.target.value === "ALL" ? null : e.target.value)
                     }
-                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-[var(--sidebar-text-active)]/20 text-token-text-primary outline-none"
+                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
                   >
                     <option value="ALL">DOTACIÓN COMPLETA</option>
                     {filteredEmployeesForCalendar.map((emp) => (
@@ -339,7 +339,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   disabled={!selectedEmployeeId || isPrinting || isDownloading}
                   className="flex flex-auto h-11 bg-token-surface-card border-token-border-technical hover:bg-token-surface-active rounded-sm"
                 >
-                  <CalendarDaysIcon className="w-4 h-4 mr-2 text-[var(--sidebar-text-active)]" />
+                  <CalendarDaysIcon className="w-4 h-4 mr-2 text-(--sidebar-text-active)" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-token-text-primary">
                     ICS
                   </span>
@@ -352,7 +352,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   className="flex flex-auto h-11 bg-token-surface-card border-token-border-technical hover:bg-token-surface-active rounded-sm"
                 >
                   <PrinterIcon
-                    className={`w-4 h-4 mr-2 text-[var(--sidebar-text-active)] flex-shrink-0 ${isPrinting ? "animate-spin" : ""}`}
+                    className={`w-4 h-4 mr-2 text-(--sidebar-text-active) shrink-0 ${isPrinting ? "animate-spin" : ""}`}
                   />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-token-text-primary">
                     {isPrinting ? "..." : "Imprimir"}
@@ -366,7 +366,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   className="flex flex-auto h-11 bg-token-surface-card border-token-border-technical hover:bg-token-surface-active rounded-sm"
                 >
                   <DocumentArrowDownIcon
-                    className={`w-4 h-4 mr-2 text-[var(--sidebar-text-active)] flex-shrink-0 ${isDownloading ? "animate-spin" : ""}`}
+                    className={`w-4 h-4 mr-2 text-(--sidebar-text-active) shrink-0 ${isDownloading ? "animate-spin" : ""}`}
                   />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-token-text-primary">
                     {isDownloading ? "..." : "PDF"}

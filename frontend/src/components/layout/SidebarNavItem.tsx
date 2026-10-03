@@ -19,14 +19,14 @@ const SidebarNavItem = React.memo(
           group flex items-center px-4 py-2.5 mb-1 mx-2 rounded-md transition-all duration-150
           ${
             isActive
-              ? "bg-[var(--sidebar-text-active)] text-white shadow-sm"
-              : "text-token-text-secondary hover:bg-[var(--sidebar-item-hover)] hover:text-[var(--sidebar-text-active)]"
+              ? "bg-(--sidebar-text-active) text-white shadow-sm"
+              : "text-token-text-secondary hover:bg-(--sidebar-item-hover) hover:text-(--sidebar-text-active)"
           }
       `}
         >
           {({ isActive }) => (
             <>
-              <div className="flex-shrink-0 flex items-center justify-center w-6 h-6">
+              <div className="shrink-0 flex items-center justify-center w-6 h-6">
                 <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "text-white" : ""}`} />
               </div>
               <span

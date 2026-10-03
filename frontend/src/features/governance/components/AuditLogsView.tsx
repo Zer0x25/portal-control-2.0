@@ -39,18 +39,18 @@ const MOBILE_PAGE_SIZE = 20;
 const getCategoryStyles = (category: string) => {
   switch (category.toUpperCase()) {
     case "AUTH":
-      return "bg-[var(--sidebar-text-active)]/10 text-[var(--sidebar-text-active)] border-[var(--sidebar-text-active)]/20";
+      return "bg-(--sidebar-text-active)/10 text-(--sidebar-text-active) border-(--sidebar-text-active)/20";
     case "SYSTEM":
       return "bg-purple-500/10 text-purple-600 border-purple-500/20";
     case "DATA":
     case "DATABASE":
-      return "bg-[var(--status-success)]/10 text-[var(--status-success)] border-[var(--status-success)]/20";
+      return "bg-(--status-success)/10 text-(--status-success) border-(--status-success)/20";
     case "TIME":
     case "CTRL_HOURS":
-      return "bg-[var(--status-warning)]/10 text-[var(--status-warning)] border-[var(--status-warning)]/20";
+      return "bg-(--status-warning)/10 text-(--status-warning) border-(--status-warning)/20";
     case "SECURITY":
     case "SEGURIDAD":
-      return "bg-[var(--status-error)]/10 text-[var(--status-error)] border-[var(--status-error)]/20";
+      return "bg-(--status-error)/10 text-(--status-error) border-(--status-error)/20";
     default:
       return "bg-token-surface-stripe text-token-text-tertiary border-token-border-technical";
   }
@@ -94,7 +94,7 @@ const AuditLogDesktopRow = React.memo(({ log, virtualRow, onSelect }: AuditLogRo
         height: `${virtualRow.size}px`,
         transform: `translateY(${virtualRow.start}px)`,
       }}
-      className="flex border-b border-token-border-technical hover:bg-[var(--sidebar-text-active)]/5 transition-all duration-150 items-center group/row cursor-pointer"
+      className="flex border-b border-token-border-technical hover:bg-(--sidebar-text-active)/5 transition-all duration-150 items-center group/row cursor-pointer"
     >
       <div
         style={{ width: "15%" }}
@@ -353,7 +353,7 @@ const AuditLogsView: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={() => setIsExportModalOpen(true)}
-          className="px-6 h-10 font-bold uppercase text-[11px] tracking-widest bg-[var(--sidebar-text-active)] text-white rounded-sm shadow-lg shadow-[var(--sidebar-text-active)]/20"
+          className="px-6 h-10 font-bold uppercase text-[11px] tracking-widest bg-(--sidebar-text-active) text-white rounded-sm shadow-lg shadow-(--sidebar-text-active)/20"
         >
           <ExportIcon className="mr-2.5 h-4 w-4" /> Exportar Reporte
         </Button>
@@ -368,7 +368,7 @@ const AuditLogsView: React.FC = () => {
 
       <Card
         variant="premium"
-        className="!p-0 border-token-border-technical shadow-sm overflow-hidden rounded-sm"
+        className="p-0! border-token-border-technical shadow-sm overflow-hidden rounded-sm"
         noPadding
       >
         <div className="px-6 py-4 border-b border-token-border-technical flex justify-between items-center bg-token-surface-stripe">

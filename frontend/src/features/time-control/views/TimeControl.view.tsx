@@ -114,7 +114,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
           actions={
             <div className="bg-token-surface-header p-3 sm:p-4 rounded-sm flex items-center gap-6 border border-token-border-technical shadow-sm overflow-hidden relative group transition-all">
               <ServerClock
-                containerClassName="flex flex-col items-start text-left flex-shrink-0"
+                containerClassName="flex flex-col items-start text-left shrink-0"
                 dateClassName="font-bold text-[11px] text-token-text-tertiary uppercase tracking-widest mb-0.5 leading-none"
                 timeClassName="font-bold text-2xl sm:text-3xl text-token-text-primary leading-none tabular-nums font-mono tracking-tighter"
               />

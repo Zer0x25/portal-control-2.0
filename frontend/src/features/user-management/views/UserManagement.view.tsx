@@ -120,9 +120,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                       {user.username}
                     </span>
                     {user.mfaEnabled && (
-                      <div className="flex items-center gap-1.5 w-fit mt-1 px-1.5 py-0.5 bg-[var(--status-success)]/10 border border-[var(--status-success)]/20 rounded-sm">
-                        <ShieldIcon className="w-2.5 h-2.5 text-[var(--status-success)]" />
-                        <span className="text-[8px] font-bold text-[var(--status-success)] uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5 w-fit mt-1 px-1.5 py-0.5 bg-(--status-success)/10 border border-(--status-success)/20 rounded-sm">
+                        <ShieldIcon className="w-2.5 h-2.5 text-(--status-success)" />
+                        <span className="text-[8px] font-bold text-(--status-success) uppercase tracking-widest">
                           MFA PROTECTED
                         </span>
                       </div>
@@ -152,7 +152,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                         onClick={() => handleEditUser(user)}
                         className="bg-token-surface-card border-token-border-technical"
                       >
-                        <EditIcon className="w-4 h-4 text-[var(--sidebar-text-active)]" />
+                        <EditIcon className="w-4 h-4 text-(--sidebar-text-active)" />
                       </Button>
                       <Button
                         size="xs"
@@ -160,7 +160,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                         onClick={() => setUserToResetPassword(user)}
                         className="bg-token-surface-card border-token-border-technical"
                       >
-                        <KeyIcon className="w-4 h-4 text-[var(--status-warning)]" />
+                        <KeyIcon className="w-4 h-4 text-(--status-warning)" />
                       </Button>
                       <Button
                         size="xs"
@@ -185,7 +185,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                         size="xs"
                         variant="danger"
                         onClick={() => setUserToDelete(user)}
-                        className="bg-[var(--status-error)]/10 text-[var(--status-error)] border border-[var(--status-error)]/20"
+                        className="bg-(--status-error)/10 text-(--status-error) border border-(--status-error)/20"
                       >
                         <DeleteIcon className="w-4 h-4" />
                       </Button>
@@ -211,7 +211,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           key={user.id}
           className="p-5 bg-token-surface-card border border-token-border-technical rounded-sm relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-[var(--sidebar-text-active)]" />
+          <div className="absolute top-0 left-0 w-1 h-full bg-(--sidebar-text-active)" />
           <div className="flex justify-between items-start">
             <div>
               <h3 className="text-sm font-bold text-token-text-primary uppercase">
@@ -249,7 +249,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           actions={
             <Button
               onClick={handleOpenNewForm}
-              className="px-6 h-11 bg-[var(--sidebar-text-active)] text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-[var(--sidebar-text-active)]/20 rounded-sm"
+              className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm"
             >
               <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
             </Button>
@@ -275,7 +275,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
             {isMobile ? renderMobileView() : renderDesktopView()}
             <div ref={sentinelRef} className="py-10 text-center">
               {isLoadingUsers && (
-                <span className="text-[10px] font-bold uppercase text-[var(--sidebar-text-active)] animate-pulse">
+                <span className="text-[10px] font-bold uppercase text-(--sidebar-text-active) animate-pulse">
                   Sincronizando...
                 </span>
               )}
@@ -289,7 +289,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
         onClose={() => setIsFormVisible(false)}
         title={
           <div className="flex items-center gap-3">
-            <ShieldIcon className="w-5 h-5 text-[var(--sidebar-text-active)]" />{" "}
+            <ShieldIcon className="w-5 h-5 text-(--sidebar-text-active)" />{" "}
             <span className="font-bold uppercase tracking-tight">Configuración de Usuario</span>
           </div>
         }

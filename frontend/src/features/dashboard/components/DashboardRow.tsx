@@ -60,7 +60,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
         </div>
       </div>
 
-      {indicator && <div className="flex-shrink-0 ml-3">{indicator}</div>}
+      {indicator && <div className="shrink-0 ml-3">{indicator}</div>}
     </div>
   );
 };

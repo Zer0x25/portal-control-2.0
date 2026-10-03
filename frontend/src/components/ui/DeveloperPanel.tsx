@@ -261,7 +261,7 @@ export const DeveloperPanel: React.FC = () => {
   return (
     <div className="relative" ref={panelRef}>
       {isResetting && (
-        <div className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/90 z-9999 flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center">
             <div
               className={`animate-spin rounded-full h-16 w-16 border-b-4 ${resetError ? "border-red-500" : "border-purple-500"} mx-auto mb-6`}
@@ -289,7 +289,7 @@ export const DeveloperPanel: React.FC = () => {
       )}
       <div className="relative z-50">
         {isDevPanelOpen && (
-          <div className="absolute bottom-full right-0 mb-4 w-80 bg-gray-900/80 backdrop-blur-2xl text-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 overflow-hidden">
+          <div className="absolute bottom-full right-0 mb-4 w-80 bg-gray-900/80 backdrop-blur-2xl text-white rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 bg-white/5">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center">
                 <CodeBracketSquareIcon className="w-4 h-4 mr-2 text-purple-400" /> Dev Panel
@@ -311,7 +311,7 @@ export const DeveloperPanel: React.FC = () => {
               <Button
                 onClick={() => setIsSeedingOptionsOpen(true)}
                 size="sm"
-                className="w-full h-11 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-purple-500/20"
+                className="w-full h-11 rounded-2xl bg-linear-to-r from-purple-500 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-purple-500/20"
               >
                 <SparklesIcon className="w-4 h-4 mr-2" /> Seeder por Fases
               </Button>

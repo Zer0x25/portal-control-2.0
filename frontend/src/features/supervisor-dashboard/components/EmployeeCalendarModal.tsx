@@ -37,7 +37,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -98,7 +98,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="px-6 py-2.5 rounded-sm border border-sap-blue/20 bg-sap-blue/[0.03] text-[9px] font-black text-sap-blue uppercase tracking-[0.3em] flex items-center gap-3">
+                <div className="px-6 py-2.5 rounded-sm border border-sap-blue/20 bg-sap-blue/3 text-[9px] font-black text-sap-blue uppercase tracking-[0.3em] flex items-center gap-3">
                   <ShieldCheckIcon className="w-4 h-4" />
                   SISTEMA SINCRONIZADO
                 </div>

@@ -136,7 +136,7 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
                 value={data.licensePlate}
                 onChange={handleLicensePlateChange}
                 placeholder="AA-BB-11"
-                className="!pl-12 !bg-white dark:!bg-gray-800/50 !rounded-2xl !h-20 !font-black !tracking-[0.2em] !text-2xl !text-gray-950 dark:!text-white shadow-inner uppercase italic border-none"
+                className="pl-12! bg-white! dark:bg-gray-800/50! rounded-2xl! h-20! font-black! tracking-[0.2em]! text-2xl! text-gray-950! dark:text-white! shadow-inner uppercase italic border-none"
               />
             </div>
           </div>
@@ -154,7 +154,7 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
               value={data.driverName}
               onChange={(e) => setData((s) => ({ ...s, driverName: e.target.value }))}
               placeholder="Nombre completo del conductor"
-              className="!pl-12 !bg-white dark:!bg-gray-800/50 !rounded-2xl !h-12 !text-gray-950 dark:!text-white font-bold italic border-none shadow-sm"
+              className="pl-12! bg-white! dark:bg-gray-800/50! rounded-2xl! h-12! text-gray-950! dark:text-white! font-bold italic border-none shadow-sm"
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
                 value={data.company}
                 onChange={(e) => setData((s) => ({ ...s, company: e.target.value }))}
                 placeholder="Nombre de la empresa"
-                className="!pl-12 !bg-white dark:!bg-gray-800/50 !rounded-2xl !h-12 !text-gray-950 dark:!text-white font-bold italic border-none shadow-sm"
+                className="pl-12! bg-white! dark:bg-gray-800/50! rounded-2xl! h-12! text-gray-950! dark:text-white! font-bold italic border-none shadow-sm"
               />
             </div>
           </div>
@@ -193,7 +193,7 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
                   setData((s) => ({ ...s, paxCount: val === "" ? 0 : parseInt(val, 10) }));
                 }}
                 onFocus={(e) => e.target.select()}
-                className="!pl-12 !bg-white dark:!bg-gray-800/50 !rounded-2xl !h-12 !text-gray-950 dark:!text-white font-black italic border-none shadow-sm"
+                className="pl-12! bg-white! dark:bg-gray-800/50! rounded-2xl! h-12! text-gray-950! dark:text-white! font-black italic border-none shadow-sm"
                 placeholder="0"
               />
             </div>
@@ -245,7 +245,7 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
             disabled={
               !data.time || !data.licensePlate || !data.driverName || !data.company || !data.reason
             }
-            className="bg-emerald-500 !text-white px-8 h-11 rounded-xl font-black uppercase text-[11px] tracking-[0.15em] border-none shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+            className="bg-emerald-500 text-white! px-8 h-11 rounded-xl font-black uppercase text-[11px] tracking-[0.15em] border-none shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
           >
             {isEditing ? "Actualizar Registro" : "Guardar Registro"}
           </Button>

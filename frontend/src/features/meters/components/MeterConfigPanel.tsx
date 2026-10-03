@@ -141,13 +141,13 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
               onClick={onClose}
               variant="secondary"
               size="sm"
-              className="p-1 !bg-transparent hover:!bg-token-surface-active"
+              className="p-1 bg-transparent! hover:bg-token-surface-active!"
             >
               <CloseIcon className="w-5 h-5 text-token-text-secondary" />
             </Button>
           </div>
 
-          <div className="p-4 overflow-y-auto flex-grow">
+          <div className="p-4 overflow-y-auto grow">
             {editingConfig ? (
               <div className="p-6 border rounded-md border-token-border-subtle bg-token-surface-stripe space-y-4">
                 <Input

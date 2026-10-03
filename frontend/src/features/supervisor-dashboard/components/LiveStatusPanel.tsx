@@ -84,7 +84,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             placeholder="Filtrar por nombre..."
-            className="!py-2.5 text-[11px] bg-token-surface-stripe border-token-border-technical focus:border-sap-blue font-semibold rounded-sm placeholder:text-token-text-tertiary placeholder:opacity-50"
+            className="py-2.5! text-[11px] bg-token-surface-stripe border-token-border-technical focus:border-sap-blue font-semibold rounded-sm placeholder:text-token-text-tertiary placeholder:opacity-50"
           />
           {selectedStatuses.length > 0 && !selectedStatuses.includes("all") && (
             <div className="mt-3 flex items-center gap-3">

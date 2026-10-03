@@ -24,7 +24,7 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
 
     if (isLoading) {
       return (
-        <div className="py-20 text-center text-[var(--sidebar-text-active)] font-bold uppercase tracking-widest animate-pulse">
+        <div className="py-20 text-center text-(--sidebar-text-active) font-bold uppercase tracking-widest animate-pulse">
           Sincronizando comunicados...
         </div>
       );
@@ -45,7 +45,7 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
                 onClick={() => setIsEditing(true)}
                 className="h-10 px-4 bg-token-surface-card border-token-border-technical hover:bg-token-surface-active rounded-sm"
               >
-                <EditIcon className="w-4 h-4 mr-2 text-[var(--sidebar-text-active)]" />
+                <EditIcon className="w-4 h-4 mr-2 text-(--sidebar-text-active)" />
                 <span className="text-[11px] font-bold uppercase tracking-widest">
                   Editar Comunicado
                 </span>
@@ -58,7 +58,7 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
           {isEditing ? (
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-b border-token-border-technical pb-4">
-                <div className="w-1.5 h-6 bg-[var(--sidebar-text-active)] rounded-full"></div>
+                <div className="w-1.5 h-6 bg-(--sidebar-text-active) rounded-full"></div>
                 <h2 className="text-[12px] font-bold uppercase tracking-[0.2em] text-token-text-primary">
                   Editor de Contenido
                 </h2>
@@ -68,14 +68,14 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
                 onChange={(e) => setContent(e.target.value)}
                 className="block w-full h-[400px] p-6 bg-token-surface-stripe border border-token-border-technical rounded-sm shadow-inner 
                          text-token-text-primary font-bold text-sm tracking-tight leading-relaxed
-                         focus:ring-2 focus:ring-[var(--sidebar-text-active)]/20 outline-none
+                         focus:ring-2 focus:ring-(--sidebar-text-active)/20 outline-none
                          resize-none"
                 placeholder="Escriba aquí el comunicado institucional..."
               />
               <div className="flex gap-3 pt-4 border-t border-token-border-technical">
                 <Button
                   onClick={handleSave}
-                  className="h-11 px-8 bg-[var(--sidebar-text-active)] text-white font-bold rounded-sm border-none"
+                  className="h-11 px-8 bg-(--sidebar-text-active) text-white font-bold rounded-sm border-none"
                 >
                   <CheckIcon className="w-4 h-4 mr-2" />
                   Publicar Cambios

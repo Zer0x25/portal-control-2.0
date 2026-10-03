@@ -84,7 +84,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
       `}
     >
       <div className="flex-1 px-5 py-4 flex items-center gap-4">
-        <div className={`flex-shrink-0`}>
+        <div className={`shrink-0`}>
           <Icon className={`w-6 h-6 ${color}`} />
         </div>
         <div className="flex-1">

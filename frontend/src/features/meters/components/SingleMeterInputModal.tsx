@@ -119,7 +119,7 @@ const SingleMeterInputModal: React.FC<SingleMeterInputModalProps> = ({
             onClick={onClose}
             variant="secondary"
             size="sm"
-            className="p-1 !bg-transparent hover:!bg-gray-200 dark:hover:!bg-gray-700"
+            className="p-1 bg-transparent! hover:bg-gray-200! dark:hover:bg-gray-700!"
           >
             <CloseIcon className="text-gray-600 dark:text-gray-300" />
           </Button>

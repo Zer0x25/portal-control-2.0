@@ -19,7 +19,7 @@ const WelcomePanel: React.FC = () => {
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold text-token-text-primary leading-tight tracking-tight">
             Hola,{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-sap-blue to-sap-light-blue">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-sap-blue to-sap-light-blue">
               {welcomeName}
             </span>
           </h1>
@@ -31,7 +31,7 @@ const WelcomePanel: React.FC = () => {
           <div className="w-px h-10 bg-token-border-subtle hidden xs:block"></div>
 
           <ServerClock
-            containerClassName="text-right flex-shrink-0"
+            containerClassName="text-right shrink-0"
             dateClassName="font-semibold text-[12px] text-token-text-tertiary uppercase tracking-wider mb-0.5 leading-none"
             timeClassName="font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabular-nums font-mono tracking-tighter"
           />

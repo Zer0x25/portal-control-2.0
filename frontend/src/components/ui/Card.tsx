@@ -41,7 +41,7 @@ const Card = React.memo(
                   {title}
                 </h3>
               </div>
-              {badge && <div className="flex-shrink-0">{badge}</div>}
+              {badge && <div className="shrink-0">{badge}</div>}
             </div>
           )}
           <div className={`${paddingClass} text-token-text-primary h-full`}>{children}</div>

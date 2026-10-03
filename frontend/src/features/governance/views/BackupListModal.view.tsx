@@ -63,7 +63,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
             {backups.map((backup) => (
               <div
                 key={backup.name}
-                className="group flex items-center justify-between p-4 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 rounded-2xl hover:border-indigo-500/30 transition-all"
+                className="group flex items-center justify-between p-4 bg-gray-50 dark:bg-white/2 border border-gray-100 dark:border-white/5 rounded-2xl hover:border-indigo-500/30 transition-all"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm text-gray-400 group-hover:text-indigo-500 transition-colors">

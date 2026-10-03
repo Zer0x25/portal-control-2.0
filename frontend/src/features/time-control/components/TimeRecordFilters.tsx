@@ -257,14 +257,14 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                         onClick={onApplyCustomFilters}
                         disabled={!isApplyButtonEnabled}
                         variant="primary"
-                        className="col-span-1 md:w-auto h-10 px-4 md:px-6 rounded-md font-black uppercase tracking-widest text-[10px] mb-[1px]"
+                        className="col-span-1 md:w-auto h-10 px-4 md:px-6 rounded-md font-black uppercase tracking-widest text-[10px] mb-px"
                       >
                         Aplicar
                       </Button>
                       <Button
                         onClick={onClearFilters}
                         variant="secondary"
-                        className="col-span-1 md:w-auto h-10 px-4 rounded-md font-black uppercase tracking-widest text-[10px] bg-token-surface-card border border-token-border-technical hover:bg-token-surface-active shadow-sm mb-[1px]"
+                        className="col-span-1 md:w-auto h-10 px-4 rounded-md font-black uppercase tracking-widest text-[10px] bg-token-surface-card border border-token-border-technical hover:bg-token-surface-active shadow-sm mb-px"
                         title="Limpiar Filtros"
                       >
                         Limpiar

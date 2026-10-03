@@ -506,7 +506,7 @@ export const SupervisorEmployeeCard: React.FC<SupervisorEmployeeCardProps> = ({
     >
       <SupervisorCard title={employee.name}>
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {employee.avatar ? (
               <img src={employee.avatar} alt={employee.name} className="w-10 h-10 rounded-full" />
             ) : (
@@ -534,7 +534,7 @@ export const SupervisorEmployeeCard: React.FC<SupervisorEmployeeCardProps> = ({
           </div>
 
           {showActions && (
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <svg
                 className="w-5 h-5 text-gray-400"
                 fill="none"

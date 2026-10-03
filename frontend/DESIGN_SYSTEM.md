@@ -77,7 +77,7 @@ Para elevar la calidad visual sin añadir carga cognitiva, se utilizan acentos d
 
 | Elemento                 | Clase Sugerida / Estructura                            | Uso                                                 |
 | :----------------------- | :----------------------------------------------------- | :-------------------------------------------------- |
-| **Top Cinematic Accent** | `absolute top-0 left-0 w-full h-1 bg-gradient-to-r`    | Borde superior de cards principales (opacidad 50%). |
+| **Top Cinematic Accent** | `absolute top-0 left-0 w-full h-1 bg-linear-to-r`    | Borde superior de cards principales (opacidad 50%). |
 | **Industrial Indicator** | `w-1.5 h-10 bg-[color] rounded-full shadow-[color]/30` | Sustituye iconos en headers de sección/fichas.      |
 | **Active Pulse**         | `w-1.5 h-1.5 rounded-full bg-[color] animate-pulse`    | Indica que un motor o sesión está en ejecución.     |
 | **Vertical Indicator**   | `w-1.5 h-full bg-[color] rounded-full`                 | Para items de lista, logs (vía móvil) o jerarquía.  |
@@ -219,7 +219,7 @@ Placeholder de carga pulsante.
 Standard header for all main pages. Uses high-impact typography and subtle gradients.
 
 - **Path**: `src/components/ui/PageHeader.tsx`
-- **Title**: `text-4xl font-black italic` with `bg-gradient-to-r from-sap-blue to-blue-500` (Dark: `from-white to-gray-400`).
+- **Title**: `text-4xl font-black italic` with `bg-linear-to-r from-sap-blue to-blue-500` (Dark: `from-white to-gray-400`).
 - **Subtitle**: `text-[10px] uppercase font-black tracking-[0.3em] text-gray-400`.
 
 #### `TabNav`
@@ -266,7 +266,7 @@ Real-time system presence indicator. Used to reassure the user of active connect
 Standardized data presentation using specialized cards.
 
 - **Header**: Texto `xxs` uppercase con mucho tracking.
-- **Filas**: Hover sutil solo para guiar la vista (`bg-black/[0.02]`).
+- **Filas**: Hover sutil solo para guiar la vista (`bg-black/2`).
 
 ### 5.3. Oracle AI Chat (Asistente de Trabajo)
 

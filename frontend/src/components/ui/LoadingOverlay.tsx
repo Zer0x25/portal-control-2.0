@@ -13,16 +13,16 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = t
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="z-[100] flex flex-col items-center justify-center p-12 bg-token-surface-card border border-token-border-technical rounded-sm shadow-2xl relative overflow-hidden"
+      className="z-100 flex flex-col items-center justify-center p-12 bg-token-surface-card border border-token-border-technical rounded-sm shadow-2xl relative overflow-hidden"
     >
       {/* Subtle tech background for the card */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.03)_0%,transparent_100%)] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center">
         <div className="relative w-10 h-10 mb-8">
-          <div className="absolute inset-0 border-[2px] border-token-border-subtle rounded-full opacity-20"></div>
+          <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full opacity-20"></div>
           <motion.div
-            className="absolute inset-0 border-[2px] border-transparent border-t-sap-blue rounded-full"
+            className="absolute inset-0 border-2 border-transparent border-t-sap-blue rounded-full"
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           />
@@ -51,7 +51,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = t
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-token-surface-stripe/60 backdrop-blur-sm p-4">
+      <div className="fixed inset-0 z-99999 flex items-center justify-center bg-token-surface-stripe/60 backdrop-blur-sm p-4">
         {content}
       </div>
     );

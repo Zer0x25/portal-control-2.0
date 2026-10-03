@@ -63,7 +63,7 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
               onClick={() => handleTabChange(tab.id)}
               className={`pb-4 px-1 flex items-center gap-2.5 transition-all relative ${
                 isActive
-                  ? "text-[var(--sidebar-text-active)]"
+                  ? "text-(--sidebar-text-active)"
                   : "text-token-text-tertiary hover:text-token-text-primary"
               }`}
             >
@@ -72,7 +72,7 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--sidebar-text-active)] shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)]"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)]"
                 />
               )}
             </button>

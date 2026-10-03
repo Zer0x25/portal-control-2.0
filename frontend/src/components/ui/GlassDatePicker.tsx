@@ -186,7 +186,7 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute left-0 right-0 md:right-auto md:w-80 z-[100] mt-2 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl overflow-hidden"
+            className="absolute left-0 right-0 md:right-auto md:w-80 z-100 mt-2 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl overflow-hidden"
           >
             {renderHeader()}
             <div className="p-3">

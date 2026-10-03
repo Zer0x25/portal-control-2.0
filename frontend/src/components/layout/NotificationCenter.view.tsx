@@ -35,7 +35,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
       case "request":
         return <CheckCircleIcon className="w-5 h-5 text-amber-500" />;
       case "communication":
-        return <InformationCircleIcon className="w-5 h-5 text-[var(--sidebar-text-active)]" />;
+        return <InformationCircleIcon className="w-5 h-5 text-(--sidebar-text-active)" />;
     }
   };
 
@@ -58,14 +58,14 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
         <BellIcon
           className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors ${
             isOpen
-              ? "text-[var(--sidebar-text-active)]"
-              : "text-token-text-tertiary group-hover:text-[var(--sidebar-text-active)]"
+              ? "text-(--sidebar-text-active)"
+              : "text-token-text-tertiary group-hover:text-(--sidebar-text-active)"
           }`}
         />
         {unreadCount > 0 && (
           <span className="absolute top-1.5 right-1.5 flex h-4 w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-rose-600 text-white text-[9px] font-black border border-[var(--surface-header)]">
+            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-rose-600 text-white text-[9px] font-black border border-(--surface-header)">
               {unreadCount}
             </span>
           </span>
@@ -73,7 +73,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-[70] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-3 w-80 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
           <div className="px-6 py-4 border-b border-token-border-subtle bg-token-surface-stripe">
             <h3 className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.2em] leading-none">
               Notificaciones del Sistema
@@ -87,7 +87,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
                   onClick={() => onNotificationClick(n.id, n.link, n.type)}
                   className="px-6 py-4 flex items-start gap-4 hover:bg-token-surface-active cursor-pointer transition-colors group border-b border-token-border-subtle/30 last:border-b-0"
                 >
-                  <div className="flex-shrink-0 mt-0.5">{getIconForType(n.type)}</div>
+                  <div className="shrink-0 mt-0.5">{getIconForType(n.type)}</div>
                   <div className="flex-1">
                     <p className="text-xs font-black text-token-text-primary leading-tight mb-1 uppercase tracking-tight">
                       {n.title}

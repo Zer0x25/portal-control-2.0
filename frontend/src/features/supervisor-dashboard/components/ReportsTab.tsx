@@ -59,7 +59,7 @@ const ReportsTab: FC = () => {
       />
 
       {isLoading && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none">
+        <div className="fixed inset-0 z-200 flex items-center justify-center pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -100,7 +100,7 @@ const ReportsTab: FC = () => {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     {sortedReportData.length} Registros Validados
                   </p>
-                  <div className="h-4 w-[1px] bg-token-border-subtle" />
+                  <div className="h-4 w-px bg-token-border-subtle" />
                   <p className="text-[11px] font-semibold text-sap-blue uppercase tracking-wider">
                     Ventana: {filters.startDateISO} al {filters.endDateISO}
                   </p>
@@ -137,7 +137,7 @@ const ReportsTab: FC = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 4 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical z-[150] p-2"
+                        className="absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical z-150 p-2"
                       >
                         <button
                           onClick={() => handleExport("csv")}
@@ -183,7 +183,7 @@ const ReportsTab: FC = () => {
       {/* Premium PDF Mode Modal */}
       <AnimatePresence>
         {showPdfModeModal && (
-          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-300 flex items-center justify-center p-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

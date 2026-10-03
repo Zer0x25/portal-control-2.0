@@ -81,7 +81,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
           </span>
           {editInfo && (
             <div
-              className="p-0.5 bg-token-status-warning/10 rounded-full cursor-help flex-shrink-0"
+              className="p-0.5 bg-token-status-warning/10 rounded-full cursor-help shrink-0"
               title={`Editado por ${editInfo.actor} el ${formatLogTimestamp(editInfo.timestamp)}. Valor original: ${formatDisplayDateTime(editInfo.oldValue)}`}
             >
               <ExclamationTriangleIcon className="w-3 h-3 text-token-status-warning" />
@@ -98,7 +98,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
     };
 
     const rowClassName = `
-      transition-[background-color,transform,opacity] duration-200 group w-full flex-shrink-0
+      transition-[background-color,transform,opacity] duration-200 group w-full shrink-0
       ${
         isLocked
           ? "bg-token-surface-stripe cursor-not-allowed opacity-60"
@@ -128,10 +128,10 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
           </div>
           {/* Nombre - 20% */}
           <div className="w-[20%] px-4 py-4 flex items-center gap-2 overflow-hidden">
-            <div className="relative flex-shrink-0">
+            <div className="relative shrink-0">
               {statusConfig && (
                 <span
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusConfig.dot} shadow-lg shadow-current/20 border border-white/20`}
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusConfig.dot} shadow-lg shadow-current/20 border border-white/20`}
                   title={statusConfig.label}
                 />
               )}
@@ -180,7 +180,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                     onAddComment(record);
                   }}
                   disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
-                  className="!p-1.5"
+                  className="p-1.5!"
                 >
                   <ChatBubbleLeftRightIcon className="w-4 h-4" />
                 </Button>
@@ -192,7 +192,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                   e.stopPropagation();
                   onViewHistory(record);
                 }}
-                className="!p-1.5"
+                className="p-1.5!"
               >
                 <ArrowPathIcon className="w-4 h-4" />
               </Button>
@@ -204,7 +204,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                   onDelete(record);
                 }}
                 disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
-                className="!p-1.5"
+                className="p-1.5!"
               >
                 <DeleteIcon className="w-4 h-4" />
               </Button>
@@ -227,7 +227,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 title={`${progressPercent}% de jornada completada`}
               >
                 <div
-                  className="h-full bg-gradient-to-r from-sap-blue to-blue-400 shadow-[0_0_8px_rgba(0,102,204,0.4)] transition-all duration-500"
+                  className="h-full bg-linear-to-r from-sap-blue to-blue-400 shadow-[0_0_8px_rgba(0,102,204,0.4)] transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -239,7 +239,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
             <div className="relative">
               {statusConfig && (
                 <span
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusConfig.dot} shadow-lg shadow-current/20 border border-white/20`}
+                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${statusConfig.dot} shadow-lg shadow-current/20 border border-white/20`}
                   title={statusConfig.label}
                 />
               )}
@@ -284,7 +284,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 }}
                 disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
                 title="Agregar novedad"
-                className="!p-2 shadow-md rounded-md border-sap-blue/30 bg-blue-50 dark:bg-sap-blue/20 text-sap-blue hover:bg-sap-blue hover:text-white transition-all"
+                className="p-2! shadow-md rounded-md border-sap-blue/30 bg-blue-50 dark:bg-sap-blue/20 text-sap-blue hover:bg-sap-blue hover:text-white transition-all"
               >
                 <ChatBubbleLeftRightIcon className="w-4 h-4 stroke-[2.5px]" />
               </Button>
@@ -297,7 +297,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 onViewHistory(record);
               }}
               title="Ver historial de cambios"
-              className="!p-2 shadow-md rounded-md border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+              className="p-2! shadow-md rounded-md border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
             >
               <ArrowPathIcon className="w-4 h-4 stroke-[2.5px]" />
             </Button>
@@ -310,7 +310,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
               }}
               disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
               title="Eliminar registro"
-              className="!p-2 shadow-md rounded-md border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-600 hover:text-white transition-all"
+              className="p-2! shadow-md rounded-md border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-600 hover:text-white transition-all"
             >
               <DeleteIcon className="w-4 h-4 stroke-[2.5px]" />
             </Button>

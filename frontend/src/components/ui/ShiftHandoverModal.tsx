@@ -21,7 +21,7 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
   return createPortal(
     <AnimatePresence>
       {isOpen && data && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -63,9 +63,9 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
               </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-8 space-y-8 scrollbar-premium">
+            <div className="grow overflow-y-auto p-8 space-y-8 scrollbar-premium">
               {/* Turno Info Card */}
-              <div className="bg-gray-50/50 dark:bg-white/5 p-6 rounded-[2rem] border border-gray-100 dark:border-white/5 relative overflow-hidden group">
+              <div className="bg-gray-50/50 dark:bg-white/5 p-6 rounded-4xl border border-gray-100 dark:border-white/5 relative overflow-hidden group">
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <h4 className="text-[10px] font-black text-sap-blue uppercase tracking-widest mb-1">
@@ -92,7 +92,7 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
 
               {/* Automatic Closures / Alerts */}
               {data.automaticClosures.length > 0 && (
-                <div className="bg-red-500/5 dark:bg-red-500/10 p-6 rounded-[2rem] border border-red-500/20">
+                <div className="bg-red-500/5 dark:bg-red-500/10 p-6 rounded-4xl border border-red-500/20">
                   <h4 className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <ExclamationTriangleIcon className="w-4 h-4 animate-pulse" />
                     Alertas Críticas del Sistema

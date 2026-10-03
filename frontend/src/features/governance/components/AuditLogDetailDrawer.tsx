@@ -66,7 +66,7 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
               {isDiff ? (
                 <div className="space-y-2">
                   <div className="flex items-start gap-3 opacity-60">
-                    <div className="w-4 h-4 rounded-xs bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-4 h-4 rounded-xs bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-[10px] text-red-600 font-bold">-</span>
                     </div>
                     <pre className="text-[11px] font-mono text-token-text-tertiary whitespace-pre-wrap break-all">
@@ -74,7 +74,7 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
                     </pre>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-xs bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-4 h-4 rounded-xs bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
                       <span className="text-[10px] text-green-600 font-bold">+</span>
                     </div>
                     <pre className="text-[11px] font-mono text-token-text-primary whitespace-pre-wrap break-all font-bold">
@@ -106,7 +106,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[90]"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90"
           />
 
           {/* Drawer */}
@@ -115,7 +115,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl z-[100] border-l border-token-border-technical flex flex-col"
+            className="fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl z-100 border-l border-token-border-technical flex flex-col"
           >
             {/* Header */}
             <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">

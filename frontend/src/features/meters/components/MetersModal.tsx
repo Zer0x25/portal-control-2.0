@@ -113,7 +113,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
                       value={readingValues[config.id] || ""}
                       onChange={(e) => handleInputChange(config.id, e.target.value)}
                       placeholder="00.00"
-                      className="!rounded-2xl !h-12 !bg-white dark:!bg-gray-800/50 !border-gray-100 dark:!border-gray-700 focus:!ring-4 focus:!ring-sap-blue/10 !transition-all font-mono text-center text-lg active:scale-[0.98]"
+                      className="rounded-2xl! h-12! bg-white! dark:bg-gray-800/50! border-gray-100! dark:border-gray-700! focus:ring-4! focus:ring-sap-blue/10! transition-all! font-mono text-center text-lg active:scale-[0.98]"
                       autoComplete="off"
                     />
                   </div>
@@ -166,7 +166,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
                   return (
                     <div
                       key={readingItem.id}
-                      className="flex items-center justify-between p-4 bg-white/40 dark:bg-white/[0.02] rounded-2xl border border-gray-100 dark:border-white/5 hover:border-sap-blue/20 transition-all group"
+                      className="flex items-center justify-between p-4 bg-white/40 dark:bg-white/2 rounded-2xl border border-gray-100 dark:border-white/5 hover:border-sap-blue/20 transition-all group"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">

@@ -117,7 +117,7 @@ const AddNoveltyModal: React.FC<AddNoveltyModalProps> = ({
           <Button
             type="submit"
             disabled={!annotation.trim() || !time.trim()}
-            className="bg-sap-blue !text-white px-8 h-11 rounded-xl font-black uppercase text-[11px] tracking-[0.15em] border-none shadow-lg shadow-sap-blue/20"
+            className="bg-sap-blue text-white! px-8 h-11 rounded-xl font-black uppercase text-[11px] tracking-[0.15em] border-none shadow-lg shadow-sap-blue/20"
           >
             {isEditing ? "Actualizar Registro" : "Guardar Registro"}
           </Button>

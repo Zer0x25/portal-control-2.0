@@ -190,7 +190,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
               </div>
             </div>
           ) : (
-            <div className="bg-sap-blue/[0.03] border border-sap-blue/10 p-5 rounded-sm flex flex-col justify-center min-w-[200px] h-[78px] animate-in fade-in duration-500">
+            <div className="bg-sap-blue/3 border border-sap-blue/10 p-5 rounded-sm flex flex-col justify-center min-w-[200px] h-[78px] animate-in fade-in duration-500">
               <span className="text-[10px] font-black text-sap-blue uppercase tracking-widest opacity-60">
                 Periodo Automático
               </span>
@@ -203,7 +203,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           )}
         </div>
 
-        <div className="flex-grow grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grow grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
           <div className="relative group">
             <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
               Tipo de Jornada

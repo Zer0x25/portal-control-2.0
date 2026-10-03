@@ -200,7 +200,7 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
             animate={{ opacity: 1, y: 4, x: "-50%" }}
             exit={{ opacity: 0, y: 10, x: "-50%" }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-1/2 top-full z-[100] w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden"
+            className="absolute left-1/2 top-full z-100 w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden"
             style={{ transformOrigin: "top center" }}
           >
             <div className="space-y-6">

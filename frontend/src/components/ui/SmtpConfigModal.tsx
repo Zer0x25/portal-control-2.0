@@ -136,7 +136,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -409,7 +409,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     </button>
                     <button
                       type="submit"
-                      className="px-8 h-12 rounded-2xl bg-gradient-to-r from-sap-blue to-indigo-600 text-white shadow-lg shadow-sap-blue/20 text-[10px] font-black uppercase tracking-widest hover:shadow-sap-blue/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                      className="px-8 h-12 rounded-2xl bg-linear-to-r from-sap-blue to-indigo-600 text-white shadow-lg shadow-sap-blue/20 text-[10px] font-black uppercase tracking-widest hover:shadow-sap-blue/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
                     >
                       Guardar Todo
                     </button>

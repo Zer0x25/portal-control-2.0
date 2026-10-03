@@ -65,7 +65,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 flex-shrink-0">
+      <div className="flex items-center gap-2.5 shrink-0">
         {extra && <div className="text-right">{extra}</div>}
         {indicator && <div className="flex items-center">{indicator}</div>}
       </div>

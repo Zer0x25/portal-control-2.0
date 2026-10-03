@@ -34,7 +34,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -92,7 +92,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
                       <div className="absolute left-[19px] top-10 bottom-[-32px] w-px bg-gray-200 dark:bg-gray-800" />
                     )}
 
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center">
                         <ActivityIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                       </div>

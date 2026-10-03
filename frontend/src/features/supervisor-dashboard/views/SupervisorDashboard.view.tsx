@@ -57,7 +57,7 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
                     onClick={() => handleTabClick(tab.id)}
                     className={`pb-4 px-1 flex items-center gap-2.5 transition-all relative ${
                       isActive
-                        ? "text-[var(--sidebar-text-active)]"
+                        ? "text-(--sidebar-text-active)"
                         : "text-token-text-tertiary hover:text-token-text-primary"
                     }`}
                   >
@@ -66,14 +66,14 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
                       {tab.label}
                     </span>
                     {tab.badge !== undefined && tab.badge > 0 && (
-                      <span className="bg-[var(--sidebar-text-active)] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                      <span className="bg-(--sidebar-text-active) text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
                         {tab.badge}
                       </span>
                     )}
                     {isActive && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--sidebar-text-active)] shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)]"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)]"
                       />
                     )}
                   </button>

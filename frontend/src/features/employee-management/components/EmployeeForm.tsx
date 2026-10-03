@@ -181,7 +181,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               onChange={(e) => setEmployeeData((prev) => ({ ...prev, name: e.target.value }))}
               required
               placeholder="Ej: Juan Pérez"
-              className="!mb-0 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
             />
           </div>
           <div className="relative group/field">
@@ -197,7 +197,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               placeholder="Ej: 12345678-9"
               maxLength={10}
               error={rutError}
-              className="!mb-0 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-mono font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-mono font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
             />
           </div>
         </div>
@@ -219,7 +219,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               }
               required
               placeholder="Ej: Desarrollador Frontend"
-              className="!mb-0 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
             />
           </div>
           <div className="relative group/field">
@@ -257,7 +257,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               onChange={handleEmailChange}
               placeholder="ejemplo@dominio.com"
               error={emailError}
-              className="!mb-0 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
             />
           </div>
           <div className="relative group/field">

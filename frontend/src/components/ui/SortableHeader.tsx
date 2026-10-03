@@ -25,7 +25,7 @@ const SortableHeader = <T,>({
 
   const Component = as;
 
-  const thSortableClass = `px-4 h-[48px] text-left text-[13px] font-bold uppercase tracking-[0.1em] cursor-pointer group select-none transition-all duration-150 hover:bg-token-surface-active ${className}`;
+  const thSortableClass = `px-4 h-[48px] text-left text-[13px] font-bold uppercase tracking-widest cursor-pointer group select-none transition-all duration-150 hover:bg-token-surface-active ${className}`;
 
   const renderSortIndicator = () => {
     if (!isSorted) {

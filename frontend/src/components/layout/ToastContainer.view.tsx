@@ -13,7 +13,7 @@ const ToastContainerView: React.FC<ToastContainerViewProps> = ({ toasts, onDismi
     <div
       aria-live="polite"
       aria-atomic="true"
-      className="fixed bottom-6 right-6 pointer-events-none flex flex-col items-end justify-end space-y-4 z-[100000] w-full max-w-sm"
+      className="fixed bottom-6 right-6 pointer-events-none flex flex-col items-end justify-end space-y-4 z-100000 w-full max-w-sm"
     >
       <AnimatePresence>
         {toasts.map((toast) => (

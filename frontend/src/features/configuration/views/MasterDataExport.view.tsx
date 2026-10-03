@@ -44,11 +44,11 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[11px] font-bold text-token-text-primary uppercase tracking-[0.2em] flex items-center gap-2">
-          <DocumentArrowDownIcon className="w-4 h-4 text-[var(--sidebar-text-active)]" />
+          <DocumentArrowDownIcon className="w-4 h-4 text-(--sidebar-text-active)" />
           Módulo de Exportación
         </h3>
         <div className="flex items-center gap-3 bg-token-surface-card px-4 py-2 rounded-sm border border-token-border-technical shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-[var(--status-success)] animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-(--status-success) animate-pulse" />
           <span className="text-[10px] font-bold text-token-text-secondary uppercase tracking-widest">
             Server: Online
           </span>
@@ -59,7 +59,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
         <div className="lg:col-span-8">
           <Card variant="premium" className="p-8 border-token-border-technical">
             <div className="flex items-center gap-3 border-b border-token-border-technical pb-6 mb-8">
-              <div className="w-1.5 h-6 bg-[var(--sidebar-text-active)] rounded-full"></div>
+              <div className="w-1.5 h-6 bg-(--sidebar-text-active) rounded-full"></div>
               <h2 className="text-[12px] font-bold uppercase tracking-[0.2em] text-token-text-primary">
                 Configuración del Periodo
               </h2>
@@ -136,7 +136,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                 onClick={() => handleExport("csv")}
                 loading={exporting === "csv"}
                 disabled={!!exporting}
-                className="flex-1 h-14 bg-[var(--sidebar-text-active)] text-white font-bold uppercase text-[11px] tracking-[0.2em] shadow-lg shadow-[var(--sidebar-text-active)]/20 rounded-sm border-none"
+                className="flex-1 h-14 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-[0.2em] shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm border-none"
               >
                 <DocumentTextIcon className="w-5 h-5 mr-3" />
                 Planilla Operativa (CSV)
@@ -147,7 +147,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                 onClick={() => handleExport("xml")}
                 loading={exporting === "xml"}
                 disabled={!!exporting}
-                className="flex-1 h-14 bg-token-surface-card border border-[var(--sidebar-text-active)] text-[var(--sidebar-text-active)] hover:bg-[var(--sidebar-text-active)] hover:text-white font-bold uppercase text-[11px] tracking-[0.2em] transition-all rounded-sm"
+                className="flex-1 h-14 bg-token-surface-card border border-(--sidebar-text-active) text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white font-bold uppercase text-[11px] tracking-[0.2em] transition-all rounded-sm"
               >
                 <CodeBracketSquareIcon className="w-5 h-5 mr-3" />
                 Integración ERP (XML)
@@ -166,7 +166,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
             </h3>
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-[10px] font-bold text-[var(--sidebar-text-active)] uppercase tracking-[0.2em]">
+                <p className="text-[10px] font-bold text-(--sidebar-text-active) uppercase tracking-[0.2em]">
                   Formato CSV
                 </p>
                 <p className="text-[11px] font-semibold text-token-text-secondary leading-relaxed">
@@ -175,7 +175,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                 </p>
               </div>
               <div className="space-y-2">
-                <p className="text-[10px] font-bold text-[var(--sidebar-text-active)] uppercase tracking-[0.2em]">
+                <p className="text-[10px] font-bold text-(--sidebar-text-active) uppercase tracking-[0.2em]">
                   Formato XML
                 </p>
                 <p className="text-[11px] font-semibold text-token-text-secondary leading-relaxed">

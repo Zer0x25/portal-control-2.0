@@ -66,7 +66,7 @@ const AttachmentViewerModal: React.FC<AttachmentViewerModalProps> = ({
             </button>
           </div>
         </div>
-        <div className="flex-grow overflow-auto p-6 bg-token-surface-card">
+        <div className="grow overflow-auto p-6 bg-token-surface-card">
           {isImage ? (
             <img
               src={attachment.data}

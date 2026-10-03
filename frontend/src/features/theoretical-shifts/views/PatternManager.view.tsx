@@ -139,7 +139,7 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar patrones por nombre..."
-          className="!pl-12 !py-3 !bg-white/30 dark:!bg-gray-800/20 !border-white/20 dark:!border-gray-700/50 !rounded-2xl w-full"
+          className="pl-12! py-3! bg-white/30! dark:bg-gray-800/20! border-white/20! dark:border-gray-700/50! rounded-2xl! w-full"
         />
       </div>
 

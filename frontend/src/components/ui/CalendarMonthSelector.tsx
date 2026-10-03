@@ -190,7 +190,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
             animate={{ opacity: 1, y: 4, x: "-50%" }}
             exit={{ opacity: 0, y: 10, x: "-50%" }}
             transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-1/2 top-full z-[100] w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden"
+            className="absolute left-1/2 top-full z-100 w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden"
             style={{ transformOrigin: "top center" }}
           >
             <div className="space-y-6">

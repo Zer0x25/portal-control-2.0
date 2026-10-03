@@ -45,12 +45,12 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
   return (
     <motion.div
       layout
-      className="group relative p-6 rounded-sm bg-token-surface-card border border-token-border-technical hover:border-[var(--sidebar-text-active)]/30 transition-all duration-300 shadow-sm"
+      className="group relative p-6 rounded-sm bg-token-surface-card border border-token-border-technical hover:border-(--sidebar-text-active)/30 transition-all duration-300 shadow-sm"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h4 className="text-[11px] font-bold text-token-text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
-            <BellIcon className="w-4 h-4 text-[var(--sidebar-text-active)]" />
+            <BellIcon className="w-4 h-4 text-(--sidebar-text-active)" />
             {title}
           </h4>
           <p className="text-[10px] text-token-text-tertiary font-bold leading-relaxed uppercase tracking-tight opacity-70">
@@ -65,7 +65,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
             checked={rule.enabled}
             onChange={(e) => onFieldChange("enabled", e.target.checked)}
           />
-          <div className="w-10 h-5 bg-token-surface-stripe peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-token-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--sidebar-text-active)] shadow-inner"></div>
+          <div className="w-10 h-5 bg-token-surface-stripe peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-token-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-(--sidebar-text-active) shadow-inner"></div>
         </label>
       </div>
 
@@ -84,7 +84,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
               <select
                 value={rule.recipient}
                 onChange={(e) => onFieldChange("recipient", e.target.value)}
-                className="w-full h-11 pl-4 pr-10 rounded-sm bg-token-surface-card border border-token-border-technical text-[12px] font-bold uppercase tracking-tight text-token-text-primary focus:ring-1 focus:ring-[var(--sidebar-text-active)] outline-none appearance-none transition-all"
+                className="w-full h-11 pl-4 pr-10 rounded-sm bg-token-surface-card border border-token-border-technical text-[12px] font-bold uppercase tracking-tight text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none appearance-none transition-all"
               >
                 <option value="" className="bg-token-surface-card">
                   SELECCIONAR CORREO...
@@ -153,14 +153,14 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
           onClick={() => setIsConfigModalOpen(true)}
           className="h-10 px-4 bg-token-surface-card border-token-border-technical hover:bg-token-surface-active rounded-sm"
         >
-          <CogIcon className="w-4 h-4 mr-2 text-[var(--sidebar-text-active)]" />
+          <CogIcon className="w-4 h-4 mr-2 text-(--sidebar-text-active)" />
           <span className="text-[11px] font-bold uppercase tracking-widest">Configurar SMTP</span>
         </Button>
         <Button
           variant="primary"
           onClick={checkStatus}
           disabled={status.loading}
-          className="h-10 px-4 bg-[var(--sidebar-text-active)] text-white shadow-lg shadow-[var(--sidebar-text-active)]/20 rounded-sm border-none"
+          className="h-10 px-4 bg-(--sidebar-text-active) text-white shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm border-none"
         >
           <ArrowPathIcon className={`w-4 h-4 mr-2 ${status.loading ? "animate-spin" : ""}`} />
           <span className="text-[11px] font-bold uppercase tracking-widest">Verificar</span>
@@ -171,7 +171,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
         <div className="p-6 md:p-8 flex items-center justify-between flex-wrap gap-6 bg-token-surface-stripe">
           <div className="flex items-center gap-6">
             <div
-              className={`p-4 rounded-sm border ${status.success ? "bg-[var(--status-success)]/10 border-[var(--status-success)]/20 text-[var(--status-success)]" : "bg-[var(--status-error)]/10 border-[var(--status-error)]/20 text-[var(--status-error)]"}`}
+              className={`p-4 rounded-sm border ${status.success ? "bg-(--status-success)/10 border-(--status-success)/20 text-(--status-success)" : "bg-(--status-error)/10 border-(--status-error)/20 text-(--status-error)"}`}
             >
               {status.loading ? (
                 <ArrowPathIcon className="w-8 h-8 animate-spin" />
@@ -186,7 +186,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 Estado de Conexión
               </p>
               <h3
-                className={`text-2xl font-black uppercase tracking-tighter ${status.success ? "text-[var(--status-success)]" : "text-[var(--status-error)]"}`}
+                className={`text-2xl font-black uppercase tracking-tighter ${status.success ? "text-(--status-success)" : "text-(--status-error)"}`}
               >
                 {status.loading
                   ? "VALIDANDO..."
@@ -201,8 +201,8 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
           </div>
 
           {status.success && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-sm bg-[var(--status-success)]/10 border border-[var(--status-success)]/20 text-[var(--status-success)] text-[10px] font-bold uppercase tracking-widest">
-              <div className="w-2 h-2 rounded-full bg-[var(--status-success)] animate-pulse" />
+            <div className="flex items-center gap-2 px-4 py-2 rounded-sm bg-(--status-success)/10 border border-(--status-success)/20 text-(--status-success) text-[10px] font-bold uppercase tracking-widest">
+              <div className="w-2 h-2 rounded-full bg-(--status-success) animate-pulse" />
               Conectividad Certificada
             </div>
           )}
@@ -217,14 +217,14 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
         >
           <div className="bg-token-surface-header border-b border-token-border-technical px-8 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-sm bg-[var(--sidebar-text-active)]/10 flex items-center justify-center border border-[var(--sidebar-text-active)]/20">
-                <PaperAirplaneIcon className="w-5 h-5 text-[var(--sidebar-text-active)] transform -rotate-45" />
+              <div className="w-10 h-10 rounded-sm bg-(--sidebar-text-active)/10 flex items-center justify-center border border-(--sidebar-text-active)/20">
+                <PaperAirplaneIcon className="w-5 h-5 text-(--sidebar-text-active) transform -rotate-45" />
               </div>
               <div>
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-primary">
                   Nueva Comunicación
                 </h2>
-                <p className="text-[9px] text-token-text-tertiary font-bold uppercase tracking-[0.1em] mt-0.5 opacity-60">
+                <p className="text-[9px] text-token-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-60">
                   DRAFT COMPOSER
                 </p>
               </div>
@@ -252,7 +252,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 placeholder="DESTINATARIO@DOMINIO.COM"
                 className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
               />
-              <EnvelopeIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-[var(--sidebar-text-active)] transition-colors" />
+              <EnvelopeIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-(--sidebar-text-active) transition-colors" />
             </div>
 
             <div className="px-8 py-4 border-b border-token-border-technical flex items-center group/field hover:bg-token-surface-active transition-colors">
@@ -267,7 +267,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 placeholder="TÍTULO DE LA COMUNICACIÓN"
                 className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
               />
-              <DocumentTextIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-[var(--sidebar-text-active)] transition-colors" />
+              <DocumentTextIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-(--sidebar-text-active) transition-colors" />
             </div>
 
             <div className="flex-1 min-h-[300px] p-8 bg-token-surface-card">
@@ -288,7 +288,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
               <Button
                 type="submit"
                 disabled={isSending || !status.success}
-                className="h-11 px-8 bg-[var(--sidebar-text-active)] text-white font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-[var(--sidebar-text-active)]/20 rounded-sm disabled:opacity-30 border-none"
+                className="h-11 px-8 bg-(--sidebar-text-active) text-white font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm disabled:opacity-30 border-none"
               >
                 {isSending ? (
                   <ArrowPathIcon className="w-5 h-5 animate-spin" />
@@ -307,7 +307,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
           noPadding
         >
           <div className="flex items-center gap-3 border-b border-token-border-technical pb-6 mb-8">
-            <div className="w-1 h-6 bg-[var(--sidebar-text-active)] rounded-full"></div>
+            <div className="w-1 h-6 bg-(--sidebar-text-active) rounded-full"></div>
             <h2 className="text-[12px] font-bold uppercase tracking-[0.2em] text-token-text-primary">
               Notificaciones Automáticas
             </h2>
@@ -315,7 +315,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
 
           {isLoadingRules || isEmailListLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 text-token-text-tertiary">
-              <ArrowPathIcon className="w-10 h-10 animate-spin text-[var(--sidebar-text-active)]" />
+              <ArrowPathIcon className="w-10 h-10 animate-spin text-(--sidebar-text-active)" />
               <p className="text-[10px] font-bold uppercase tracking-widest">
                 Sincronizando Motor de Reglas
               </p>
@@ -347,7 +347,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
               <div className="mt-8 pt-6 border-t border-token-border-technical">
                 <Button
                   onClick={handleSaveRules}
-                  className="w-full h-14 bg-token-surface-card border border-[var(--sidebar-text-active)] text-[var(--sidebar-text-active)] hover:bg-[var(--sidebar-text-active)] hover:text-white text-[11px] font-bold uppercase tracking-[0.2em] transition-all rounded-sm"
+                  className="w-full h-14 bg-token-surface-card border border-(--sidebar-text-active) text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white text-[11px] font-bold uppercase tracking-[0.2em] transition-all rounded-sm"
                 >
                   Guardar Configuraciones de Alerta
                 </Button>

@@ -176,7 +176,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
             {historyEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="group p-5 rounded-2xl bg-white dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 hover:border-sap-blue/20 transition-all flex items-start gap-4 shadow-sm"
+                className="group p-5 rounded-2xl bg-white dark:bg-white/3 border border-gray-100 dark:border-white/5 hover:border-sap-blue/20 transition-all flex items-start gap-4 shadow-sm"
               >
                 <IndustrialIndicator height="h-full" color="bg-sap-blue/20" className="mt-1" />
                 <div className="flex-1 min-w-0">

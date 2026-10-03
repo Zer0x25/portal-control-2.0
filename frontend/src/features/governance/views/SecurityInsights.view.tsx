@@ -66,7 +66,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card
-          className="!p-6 cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
+          className="p-6! cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
           onClick={fetchInsights}
           title="Haz clic para actualizar insights"
         >
@@ -101,7 +101,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
         </Card>
 
         <Card
-          className="!p-6 cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
+          className="p-6! cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
           onClick={fetchInsights}
           title="Haz clic para actualizar insights"
         >
@@ -124,7 +124,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
         </Card>
 
         <Card
-          className="!p-6 cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
+          className="p-6! cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
           onClick={fetchInsights}
           title="Haz clic para actualizar insights"
         >
@@ -149,7 +149,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
         </Card>
       </div>
 
-      <Card className="!p-0 overflow-hidden" noPadding>
+      <Card className="p-0! overflow-hidden" noPadding>
         <div className="p-4 border-b border-token-border-technical bg-token-surface-stripe">
           <h3 className="text-xs font-bold text-token-text-primary uppercase tracking-widest flex items-center gap-2">
             <ShieldIcon className="w-3.5 h-3.5 opacity-50" />

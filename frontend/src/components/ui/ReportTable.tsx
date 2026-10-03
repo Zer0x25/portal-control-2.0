@@ -330,7 +330,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 return (
                   <tr
                     key={`total - ${item.weekId} `}
-                    className="bg-gradient-to-r from-sap-blue to-indigo-700 text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl relative overflow-hidden"
+                    className="bg-linear-to-r from-sap-blue to-indigo-700 text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl relative overflow-hidden"
                   >
                     <td colSpan={4} className="px-8 py-6 text-right opacity-80 italic">
                       Corte de Periodo Finalizado
@@ -359,7 +359,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
             return (
               <tr
                 key={String(dailyItem.isoDate) + index}
-                className={`group hover: bg - sap - blue / 5 dark: hover: bg - white / 5 transition - all duration - 300 ${isJustified ? "bg-gray-50/20 dark:bg-white/[0.02]" : ""} `}
+                className={`group hover: bg - sap - blue / 5 dark: hover: bg - white / 5 transition - all duration - 300 ${isJustified ? "bg-gray-50/20 dark:bg-white/2" : ""} `}
               >
                 <td className="px-8 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400 font-mono">
                   {dailyItem.date}
@@ -415,7 +415,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 return (
                   <div
                     key={`subtotal - mob - ${item.weekId} `}
-                    className="p-5 rounded-[2rem] bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-xl"
+                    className="p-5 rounded-4xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-xl"
                   >
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-sap-blue block text-center mb-4 italic">
                       CORTE SEMANAL
@@ -446,7 +446,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 return (
                   <div
                     key={`total - mob - ${item.weekId} `}
-                    className="p-8 rounded-[2.5rem] bg-gradient-to-br from-sap-blue to-indigo-800 text-white shadow-2xl relative overflow-hidden group"
+                    className="p-8 rounded-[2.5rem] bg-linear-to-br from-sap-blue to-indigo-800 text-white shadow-2xl relative overflow-hidden group"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000"></div>
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] opacity-80 block text-center mb-6 italic">

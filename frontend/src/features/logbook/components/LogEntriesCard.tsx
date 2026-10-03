@@ -159,7 +159,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
           </thead>
           <tbody className="divide-y divide-token-border-subtle">
             {activeShift.logEntries.map((le) => (
-              <tr key={le.id} className="group hover:bg-sap-blue/[0.02] transition-colors">
+              <tr key={le.id} className="group hover:bg-sap-blue/2 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap text-[13px] font-bold text-sap-blue font-mono w-24">
                   {le.time}
                 </td>
@@ -204,7 +204,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
 
   return (
     <>
-      <Card className="!p-0 flex flex-col overflow-hidden bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm relative">
+      <Card className="p-0! flex flex-col overflow-hidden bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm relative">
         <div className="p-6 pb-0 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="w-1 h-8 bg-sap-blue rounded-full" />

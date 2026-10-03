@@ -139,8 +139,8 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   const renderRutInput = () => (
     <div key="rut" className="flex flex-col items-center">
       <div className="relative mb-5 sm:hidden">
-        <div className="absolute inset-0 bg-sap-blue/40 rounded-[2rem] blur-2xl animate-pulse" />
-        <div className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-sap-blue via-indigo-600 to-sap-blue flex items-center justify-center text-white relative z-10 border border-white/20 shadow-2xl">
+        <div className="absolute inset-0 bg-sap-blue/40 rounded-4xl blur-2xl animate-pulse" />
+        <div className="w-16 h-16 rounded-4xl bg-linear-to-br from-sap-blue via-indigo-600 to-sap-blue flex items-center justify-center text-white relative z-10 border border-white/20 shadow-2xl">
           <FingerPrintIcon className="w-8 h-8" />
         </div>
       </div>
@@ -367,8 +367,8 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-token-surface-stripe overflow-hidden relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.1)_0%,transparent_70%)] z-0" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-40"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.1)_0%,transparent_70%)] z-0" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-40"></div>
         </div>
 
         <div className="z-10 text-center relative">
@@ -382,11 +382,11 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   }
 
   return (
-    <div className="min-h-[100dvh] lg:min-h-[100vh] bg-token-surface-stripe flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-sap-blue/30 selection:text-white">
+    <div className="min-h-dvh lg:min-h-screen bg-token-surface-stripe flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-sap-blue/30 selection:text-white">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] z-0" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] z-0" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] z-0" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-70"></div>
       </div>
 

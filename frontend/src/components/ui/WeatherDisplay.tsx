@@ -71,7 +71,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
 
   return (
     <div className="flex items-center gap-2 sm:gap-3">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <WeatherIcon
           condition={weather.condition}
           className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-300 dark:text-yellow-200"

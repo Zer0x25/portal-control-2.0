@@ -20,13 +20,13 @@ const InitialSyncOverlay: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.02, filter: "blur(20px)" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-token-surface-app overflow-hidden"
+          className="fixed inset-0 z-99999 flex flex-col items-center justify-center bg-token-surface-app overflow-hidden"
         >
           {/* Decorative Technical Background - Unified with Login */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute inset-0 bg-token-surface-app/95 z-0" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.12)_0%,transparent_70%)] z-0" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-45"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.12)_0%,transparent_70%)] z-0" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-45"></div>
           </div>
 
           <div className="z-10 text-center relative max-w-md w-full px-8">
@@ -41,9 +41,9 @@ const InitialSyncOverlay: React.FC = () => {
 
               {/* Technical Spinner */}
               <div className="relative w-20 h-20 mx-auto">
-                <div className="absolute inset-0 border-[2px] border-token-border-subtle rounded-full"></div>
+                <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full"></div>
                 <motion.div
-                  className="absolute inset-0 border-[2px] border-transparent border-t-sap-blue rounded-full"
+                  className="absolute inset-0 border-2 border-transparent border-t-sap-blue rounded-full"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                 />
@@ -97,11 +97,11 @@ const InitialSyncOverlay: React.FC = () => {
           {/* Footer Version Info */}
           <div className="fixed bottom-10 left-0 w-full text-center">
             <div className="flex items-center justify-center gap-4 opacity-20">
-              <div className="h-[1px] w-12 bg-token-text-tertiary"></div>
+              <div className="h-px w-12 bg-token-text-tertiary"></div>
               <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
                 Enterprise Portal v3.0
               </span>
-              <div className="h-[1px] w-12 bg-token-text-tertiary"></div>
+              <div className="h-px w-12 bg-token-text-tertiary"></div>
             </div>
           </div>
         </motion.div>

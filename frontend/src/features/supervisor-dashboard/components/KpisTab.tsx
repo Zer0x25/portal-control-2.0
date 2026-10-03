@@ -51,7 +51,7 @@ const KpisTab: React.FC = React.memo(() => {
           <motion.div
             key="error"
             {...animationConfig}
-            className="flex flex-col items-center justify-center p-16 bg-rose-500/[0.03] border border-rose-500/20 rounded-sm"
+            className="flex flex-col items-center justify-center p-16 bg-rose-500/3 border border-rose-500/20 rounded-sm"
           >
             <div className="w-14 h-14 rounded-full bg-rose-500/10 flex items-center justify-center mb-5">
               <ExclamationTriangleIcon className="w-7 h-7 text-rose-500" />

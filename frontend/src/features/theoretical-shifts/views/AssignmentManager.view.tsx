@@ -192,7 +192,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="absolute z-[60] left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm"
+                            className="absolute z-60 left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm"
                           >
                             {filteredEmployeesForSearch.map((e) => (
                               <button
@@ -295,7 +295,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por empleado o patrón..."
-            className="!pl-12 !py-3 !bg-white/30 dark:!bg-gray-800/20 !border-white/20 dark:!border-gray-700/50 !rounded-2xl w-full"
+            className="pl-12! py-3! bg-white/30! dark:bg-gray-800/20! border-white/20! dark:border-gray-700/50! rounded-2xl! w-full"
           />
         </div>
 

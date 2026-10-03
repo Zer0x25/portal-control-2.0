@@ -209,7 +209,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
             paginatedEmployees.map((emp) => (
               <tr
                 key={emp.id}
-                className="group hover:bg-sap-blue/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                className="group hover:bg-sap-blue/2 dark:hover:bg-white/2 transition-colors"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
@@ -259,7 +259,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="secondary"
                           onClick={() => onEdit(emp)}
-                          className="!p-2 shadow-sm rounded-md border-gray-200 dark:border-gray-700 hover:bg-sap-blue hover:text-white"
+                          className="p-2! shadow-sm rounded-md border-gray-200 dark:border-gray-700 hover:bg-sap-blue hover:text-white"
                           title="Editar"
                         >
                           <EditIcon className="w-4 h-4" />
@@ -268,7 +268,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="secondary"
                           onClick={() => {}}
-                          className="!p-2 shadow-sm rounded-md border-gray-200 dark:border-gray-700 hover:bg-purple-500 hover:text-white"
+                          className="p-2! shadow-sm rounded-md border-gray-200 dark:border-gray-700 hover:bg-purple-500 hover:text-white"
                           title="Cambiar PIN (Simulado)"
                         >
                           <KeyIcon className="w-4 h-4" />
@@ -278,7 +278,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                             size="sm"
                             variant="danger"
                             onClick={() => onArchive(emp)}
-                            className="!p-2 shadow-sm rounded-md border-red-200 dark:border-red-900/30 text-red-500 hover:bg-red-500 hover:text-white"
+                            className="p-2! shadow-sm rounded-md border-red-200 dark:border-red-900/30 text-red-500 hover:bg-red-500 hover:text-white"
                             title="Archivar"
                           >
                             <ArchiveBoxIcon className="w-4 h-4" />
@@ -291,7 +291,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="primary"
                           onClick={() => onReactivate(emp.id)}
-                          className="!px-4 bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-md font-bold uppercase text-[10px] tracking-widest"
+                          className="px-4! bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-md font-bold uppercase text-[10px] tracking-widest"
                         >
                           <ArrowUturnLeftIcon className="w-4 h-4 mr-2" />
                           Reactivar

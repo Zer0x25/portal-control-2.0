@@ -22,7 +22,7 @@ const LiveStatus: React.FC<LiveStatusProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/40 dark:bg-white/[0.03] border border-white/20 dark:border-white/5 backdrop-blur-md shadow-sm ${className}`}
+      className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/40 dark:bg-white/3 border border-white/20 dark:border-white/5 backdrop-blur-md shadow-sm ${className}`}
     >
       <div className="relative flex h-2 w-2">
         <motion.span

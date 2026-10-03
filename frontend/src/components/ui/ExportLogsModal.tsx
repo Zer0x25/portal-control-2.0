@@ -74,7 +74,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -96,7 +96,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sap-blue/60">
                   Seguridad de Datos
                 </p>
-                <h3 className="text-2xl font-black bg-gradient-to-r from-gray-900 to-gray-500 bg-clip-text text-transparent dark:from-white dark:to-gray-400 uppercase tracking-tight">
+                <h3 className="text-2xl font-black bg-linear-to-r from-gray-900 to-gray-500 bg-clip-text text-transparent dark:from-white dark:to-gray-400 uppercase tracking-tight">
                   Exportar Auditoría
                 </h3>
               </div>

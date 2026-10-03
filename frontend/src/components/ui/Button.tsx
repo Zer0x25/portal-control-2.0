@@ -80,7 +80,7 @@ const Button = React.memo(
         <button
           ref={ref}
           type={type}
-          className={`${baseStyles} ${variantStyles} ${sizeStyles} ${className} ${loading ? "relative !text-transparent pointer-events-none" : ""}`}
+          className={`${baseStyles} ${variantStyles} ${sizeStyles} ${className} ${loading ? "relative text-transparent! pointer-events-none" : ""}`}
           disabled={disabled || loading}
           {...props}
         >

@@ -138,8 +138,8 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   garantizar la coherencia de reportes.
                 </p>
               </div>
-              <div className="p-3 bg-[var(--sidebar-text-active)]/10 rounded-sm">
-                <ActivityIcon className="w-8 h-8 text-[var(--sidebar-text-active)]" />
+              <div className="p-3 bg-(--sidebar-text-active)/10 rounded-sm">
+                <ActivityIcon className="w-8 h-8 text-(--sidebar-text-active)" />
               </div>
             </div>
 
@@ -147,7 +147,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
               <Button
                 onClick={handleDiagnose}
                 loading={loading}
-                className="h-11 px-8 bg-[var(--sidebar-text-active)] text-white font-bold uppercase text-[10px] tracking-widest rounded-sm shadow-lg shadow-[var(--sidebar-text-active)]/20"
+                className="h-11 px-8 bg-(--sidebar-text-active) text-white font-bold uppercase text-[10px] tracking-widest rounded-sm shadow-lg shadow-(--sidebar-text-active)/20"
               >
                 <ArrowPathIcon className="w-4 h-4 mr-3" />
                 Iniciar Diagnóstico
@@ -167,7 +167,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
 
             {diagnosis && (
               <div
-                className={`mt-6 p-6 rounded-sm border ${diagnosis.summary.needingAction > 0 ? "bg-[var(--status-warning)]/5 border-[var(--status-warning)]/20 text-[var(--status-warning)]" : "bg-[var(--status-success)]/5 border-[var(--status-success)]/20 text-[var(--status-success)]"}`}
+                className={`mt-6 p-6 rounded-sm border ${diagnosis.summary.needingAction > 0 ? "bg-(--status-warning)/5 border-(--status-warning)/20 text-(--status-warning)" : "bg-(--status-success)/5 border-(--status-success)/20 text-(--status-success)"}`}
               >
                 <div className="flex items-center gap-4">
                   <ActivityIcon className="w-6 h-6 opacity-40" />
@@ -215,7 +215,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     value={resetUsername}
                     onChange={(e) => setResetUsername(e.target.value)}
                     placeholder="USERNAME"
-                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-[var(--sidebar-text-active)]/30"
+                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
                   />
                   <input
                     type="password"
@@ -224,7 +224,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="NUEVA PASSWORD"
-                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-[var(--sidebar-text-active)]/30"
+                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
                   />
                   <Button
                     type="submit"
@@ -264,7 +264,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     value={purgeUsername}
                     onChange={(e) => setPurgeUsername(e.target.value)}
                     placeholder="USERNAME (VACÍO = GLOBAL)"
-                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-[var(--sidebar-text-active)]/30"
+                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
                   />
                   <Button
                     type="submit"
@@ -286,7 +286,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
             className="bg-token-surface-stripe border border-token-border-technical p-8 relative overflow-hidden group shadow-sm"
           >
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-700 pointer-events-none">
-              <ShieldIcon className="w-32 h-32 text-[var(--status-error)]" />
+              <ShieldIcon className="w-32 h-32 text-(--status-error)" />
             </div>
             <div className="relative z-10 space-y-6">
               <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-widest border-b border-token-border-technical pb-4">

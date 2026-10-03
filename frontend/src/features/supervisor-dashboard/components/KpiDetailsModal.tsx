@@ -102,7 +102,7 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -125,7 +125,7 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
             <CloseIcon className="w-5 h-5" />
           </button>
         </div>
-        <div className="overflow-y-auto custom-scrollbar flex-grow bg-token-surface-card">
+        <div className="overflow-y-auto custom-scrollbar grow bg-token-surface-card">
           <ul className="divide-y divide-token-border-subtle">{renderContent()}</ul>
         </div>
         <div className="p-5 bg-token-surface-stripe border-t border-token-border-technical shrink-0 flex justify-end">

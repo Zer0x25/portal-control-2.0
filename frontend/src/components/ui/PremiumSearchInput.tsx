@@ -33,7 +33,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
     <div className={`relative group ${className}`}>
       {/* Background Glow Effect */}
       <div
-        className={`absolute -inset-0.5 bg-gradient-to-r from-sap-blue to-sap-light-blue rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500 ${isFocused ? "opacity-60 scale-[1.01]" : ""}`}
+        className={`absolute -inset-0.5 bg-linear-to-r from-sap-blue to-sap-light-blue rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500 ${isFocused ? "opacity-60 scale-[1.01]" : ""}`}
       ></div>
 
       <div className="relative flex items-center">

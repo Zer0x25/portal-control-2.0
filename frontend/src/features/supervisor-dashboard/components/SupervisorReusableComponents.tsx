@@ -212,7 +212,7 @@ const SupervisorMetricCard: React.FC<SupervisorMetricCardProps> = ({ metric }) =
           )}
         </div>
         {Icon && (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <Icon className="w-8 h-8 opacity-75" />
           </div>
         )}
@@ -435,7 +435,7 @@ export const SupervisorPermissionWrapper: React.FC<SupervisorPermissionWrapperPr
       return (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
           <div className="flex">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"

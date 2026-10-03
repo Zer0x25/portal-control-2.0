@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const SessionExpiredOverlay: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-900/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-gray-900/80 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -43,7 +43,7 @@ const SessionExpiredOverlay: React.FC = () => {
           initial={{ width: "0%" }}
           animate={{ width: "100%" }}
           transition={{ duration: 3, ease: "linear" }}
-          className="absolute bottom-0 left-0 h-1.5 bg-gradient-to-r from-red-500 to-orange-500"
+          className="absolute bottom-0 left-0 h-1.5 bg-linear-to-r from-red-500 to-orange-500"
         />
       </motion.div>
     </div>

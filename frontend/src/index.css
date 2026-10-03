@@ -1,150 +1,219 @@
 /* Inter Font Family */
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-xs: 375px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-3xl: 1920px;
+
+  --color-sap-blue: var(--accent-professional);
+  --color-sap-light-blue: #007bff;
+  --color-sap-gray: var(--surface-app);
+  --color-sap-bone: var(--surface-card);
+  --color-sap-dark-gray: #343a40;
+  --color-sap-medium-gray: #6c757d;
+  --color-sap-border: var(--border-technical);
+  --color-sap-success: var(--status-success);
+  --color-sap-error: var(--status-error);
+  --color-sap-warning: var(--status-warning);
+  --color-sap-info: var(--status-info);
+
+  --color-token-surface-app: var(--surface-app);
+  --color-token-surface-card: var(--surface-card);
+  --color-token-surface-header: var(--surface-header);
+  --color-token-surface-hover: var(--surface-hover);
+  --color-token-surface-active: var(--surface-active);
+  --color-token-surface-stripe: var(--surface-stripe);
+
+  --color-token-border-technical: var(--border-technical);
+  --color-token-border-subtle: var(--border-subtle);
+  --color-token-border-focus: var(--border-focus);
+
+  --color-token-text-primary: var(--text-primary);
+  --color-token-text-secondary: var(--text-secondary);
+  --color-token-text-tertiary: var(--text-tertiary);
+  --color-token-text-onAccent: var(--text-on-accent);
+
+  --color-token-status-success: var(--status-success);
+  --color-token-status-error: var(--status-error);
+  --color-token-status-warning: var(--status-warning);
+  --color-token-status-info: var(--status-info);
+
+  --color-token-accent-brand: var(--accent-professional);
+
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: "Roboto Mono", monospace;
 }
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
 }
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+
+@utility typo-ui-tab {
+  /* Typography tokens for reusable UI text hierarchy */
+  @apply text-[15px] leading-tight font-bold tracking-tight;
 }
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+
+@utility typo-ui-title {
+  @apply text-[1.05rem] leading-tight font-semibold tracking-tight;
 }
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+
+@utility typo-ui-label {
+  @apply text-xs leading-tight font-medium tracking-wide;
 }
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+
+@utility typo-ui-badge {
+  @apply text-[10px] leading-none font-semibold tracking-wide;
+}
+
+@utility typo-ui-meta {
+  @apply text-[12px] leading-tight font-medium tracking-normal;
+}
+
+@utility typo-ui-caption {
+  @apply text-[11px] leading-tight font-semibold tracking-wide;
+}
+
+@layer base {
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Roboto Mono";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./assets/fonts/RobotoMono-Regular.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Roboto Mono";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./assets/fonts/RobotoMono-Bold.woff2") format("woff2");
+  }
 }
 
 /* Roboto Mono Font Family */
-@font-face {
-  font-family: "Roboto Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("./assets/fonts/RobotoMono-Regular.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Roboto Mono";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("./assets/fonts/RobotoMono-Bold.woff2") format("woff2");
-}
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer utilities {
+  :root {
+    font-size: 14px;
+    /* Default for Notebooks/Laptops */
 
-:root {
-  font-size: 14px;
-  /* Default for Notebooks/Laptops */
+    /* Shared Design Tokens */
+    --surface-app: #f0f2f5;
+    --surface-card: #fdfbf7;
+    --surface-stripe: rgba(0, 0, 0, 0.02);
 
-  /* Shared Design Tokens */
-  --surface-app: #f0f2f5;
-  --surface-card: #fdfbf7;
-  --surface-stripe: rgba(0, 0, 0, 0.02);
+    /* Layout Shell Tokens (Diferenciación del Marco) */
+    --surface-header: #ffffff;
+    --surface-sidebar: #f8fafc; /* Slate 50 - Un tono más frío que el fondo app */
+    --sidebar-text-active: #005792;
+    --sidebar-item-hover: rgba(0, 87, 146, 0.05);
 
-  /* Layout Shell Tokens (Diferenciación del Marco) */
-  --surface-header: #ffffff;
-  --surface-sidebar: #f8fafc; /* Slate 50 - Un tono más frío que el fondo app */
-  --sidebar-text-active: #005792;
-  --sidebar-item-hover: rgba(0, 87, 146, 0.05);
+    --border-technical: rgba(0, 0, 0, 0.15);
+    --border-subtle: rgba(0, 0, 0, 0.06);
+    --border-focus: #005792;
 
-  --border-technical: rgba(0, 0, 0, 0.15);
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-focus: #005792;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --text-on-accent: #ffffff;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
-  --text-on-accent: #ffffff;
+    /* State Colors - Reverted to HEX for solid visibility */
+    --status-success: #10b981; /* emerald-500 */
+    --status-error: #ef4444; /* red-500 */
+    --status-warning: #f59e0b; /* amber-500 */
+    --status-info: #0ea5e9; /* sky-500 */
 
-  /* State Colors - Reverted to HEX for solid visibility */
-  --status-success: #10b981; /* emerald-500 */
-  --status-error: #ef4444; /* red-500 */
-  --status-warning: #f59e0b; /* amber-500 */
-  --status-info: #0ea5e9; /* sky-500 */
+    --accent-professional: #005792;
+  }
+  .dark {
+    --surface-app: #020617; /* Navy profunda */
+    --surface-card: #0f172a;
+    --surface-stripe: rgba(255, 255, 255, 0.02);
 
-  --accent-professional: #005792;
-}
-.dark {
-  --surface-app: #020617; /* Navy profunda */
-  --surface-card: #0f172a;
-  --surface-stripe: rgba(255, 255, 255, 0.02);
+    /* Layout Shell Tokens - Dark */
+    --surface-header: #050816; /* Más oscuro que el fondo app para profundidad */
+    --surface-sidebar: #0f172a; /* Mismo que cards para integridad lateral */
+    --sidebar-text-active: #38bdf8;
+    --sidebar-item-hover: rgba(255, 255, 255, 0.04);
 
-  /* Layout Shell Tokens - Dark */
-  --surface-header: #050816; /* Más oscuro que el fondo app para profundidad */
-  --surface-sidebar: #0f172a; /* Mismo que cards para integridad lateral */
-  --sidebar-text-active: #38bdf8;
-  --sidebar-item-hover: rgba(255, 255, 255, 0.04);
+    --border-technical: rgba(255, 255, 255, 0.15);
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-focus: #38bdf8;
 
-  --border-technical: rgba(255, 255, 255, 0.15);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-focus: #38bdf8;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #64748b;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-
-  --accent-professional: #38bdf8;
-}
-
-/* Global Typography and Contrast */
-body {
-  @apply bg-token-surface-app dark:bg-[var(--surface-app)] font-sans font-medium text-token-text-primary antialiased;
-}
-
-@layer components {
-  /* Typography tokens for reusable UI text hierarchy */
-  .typo-ui-tab {
-    @apply text-[15px] leading-tight font-bold tracking-tight;
+    --accent-professional: #38bdf8;
   }
 
-  .typo-ui-title {
-    @apply text-[1.05rem] leading-tight font-semibold tracking-tight;
-  }
-
-  .typo-ui-label {
-    @apply text-xs leading-tight font-medium tracking-wide;
-  }
-
-  .typo-ui-badge {
-    @apply text-[10px] leading-none font-semibold tracking-wide;
-  }
-
-  .typo-ui-meta {
-    @apply text-[12px] leading-tight font-medium tracking-normal;
-  }
-
-  .typo-ui-caption {
-    @apply text-[11px] leading-tight font-semibold tracking-wide;
+  /* Global Typography and Contrast */
+  body {
+    @apply bg-token-surface-app dark:bg-(--surface-app) font-sans font-medium text-token-text-primary antialiased;
   }
 }
 

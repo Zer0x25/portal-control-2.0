@@ -77,7 +77,7 @@ const IntegritySummaryView: React.FC = () => {
             variant="primary"
             onClick={handleManualVerify}
             loading={verifyIntegrity.isPending}
-            className="rounded-sm font-semibold uppercase tracking-wider text-[11px] px-6 h-10 shadow-lg shadow-[var(--sidebar-text-active)]/20"
+            className="rounded-sm font-semibold uppercase tracking-wider text-[11px] px-6 h-10 shadow-lg shadow-(--sidebar-text-active)/20"
           >
             {!verifyIntegrity.isPending && <ArrowPathIcon className="w-4 h-4 mr-2" />}
             Ejecutar Auditoría Profunda
@@ -212,7 +212,7 @@ const IntegritySummaryView: React.FC = () => {
         </Card>
 
         {/* Anomalies Table Card */}
-        <Card ref={tableRef} className="lg:col-span-2 !p-0 overflow-hidden" noPadding>
+        <Card ref={tableRef} className="lg:col-span-2 p-0! overflow-hidden" noPadding>
           <div className="p-4 bg-token-surface-stripe border-b token-border-technical flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ExclamationTriangleIcon className="w-4 h-4 text-sap-error" />

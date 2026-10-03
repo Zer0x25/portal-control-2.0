@@ -40,9 +40,9 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-token-surface-stripe">
+      <div className="fixed inset-0 z-9999 flex items-center justify-center bg-token-surface-stripe">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.05)_0%,transparent_70%)] z-0" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.05)_0%,transparent_70%)] z-0" />
         </div>
         <div className="relative z-10 transition-all duration-700 ease-in-out">{spinner}</div>
       </div>

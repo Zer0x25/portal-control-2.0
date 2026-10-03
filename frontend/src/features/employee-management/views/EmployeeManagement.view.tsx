@@ -185,7 +185,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
           actions={
             <Button
               onClick={handleOpenNewForm}
-              className="hidden md:flex h-12 px-6 bg-[var(--sidebar-text-active)] hover:bg-[var(--sidebar-text-active)]/90 text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-[var(--sidebar-text-active)]/20 rounded-sm"
+              className="hidden md:flex h-12 px-6 bg-(--sidebar-text-active) hover:bg-(--sidebar-text-active)/90 text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm"
             >
               <UserPlusIcon className="w-5 h-5 md:mr-2" />
               <span className="hidden md:inline">Nuevo Registro</span>
@@ -212,7 +212,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                   onClick={() => handleViewChange("active")}
                   className={`px-3 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     view === "active"
-                      ? "bg-[var(--sidebar-text-active)] text-white shadow-sm"
+                      ? "bg-(--sidebar-text-active) text-white shadow-sm"
                       : "text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-active"
                   }`}
                 >
@@ -222,7 +222,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                   onClick={() => handleViewChange("archived")}
                   className={`px-3 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     view === "archived"
-                      ? "bg-[var(--sidebar-text-active)] text-white shadow-sm"
+                      ? "bg-(--sidebar-text-active) text-white shadow-sm"
                       : "text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-active"
                   }`}
                 >
@@ -236,7 +236,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                   onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
                   className="h-10 px-4 bg-token-surface-card border-token-border-technical hover:bg-token-surface-hover shadow-sm rounded-sm"
                 >
-                  <ExportIcon className="w-5 h-5 md:mr-2 text-[var(--sidebar-text-active)]" />
+                  <ExportIcon className="w-5 h-5 md:mr-2 text-(--sidebar-text-active)" />
                   <span className="hidden md:inline text-[11px] font-bold uppercase tracking-widest">
                     Utilitarios
                   </span>
@@ -257,7 +257,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                           setIsExportMenuOpen(false);
                           setIsImportModalOpen(true);
                         }}
-                        className="flex w-full items-center text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-[var(--sidebar-text-active)] hover:bg-[var(--sidebar-text-active)] hover:text-white rounded-sm transition-colors"
+                        className="flex w-full items-center text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white rounded-sm transition-colors"
                       >
                         <DocumentArrowUpIcon className="w-4 h-4 mr-3" /> Importar Excel
                       </button>
@@ -314,8 +314,8 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
               <div ref={sentinelRef} className="h-4 w-full" />
               {isLoadingEmployees ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-[var(--sidebar-text-active)] border-t-transparent animate-spin" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--sidebar-text-active)]">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-(--sidebar-text-active) border-t-transparent animate-spin" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--sidebar-text-active)">
                     Sincronizando expedientes...
                   </span>
                 </div>
@@ -351,8 +351,8 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         onClose={handleCancel}
         title={
           <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-[var(--sidebar-text-active)]/10 rounded-sm">
-              <ArchiveBoxIcon className="w-6 h-6 text-[var(--sidebar-text-active)]" />
+            <div className="p-2.5 bg-(--sidebar-text-active)/10 rounded-sm">
+              <ArchiveBoxIcon className="w-6 h-6 text-(--sidebar-text-active)" />
             </div>
             <span className="font-bold uppercase tracking-tight">
               {editingEmployee ? "Actualización de Expediente" : "Alta de Nuevo Personal"}
@@ -402,7 +402,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
       <div className="fixed bottom-6 right-6 z-50 md:hidden">
         <Button
           onClick={handleOpenNewForm}
-          className="w-14 h-14 rounded-full bg-[var(--sidebar-text-active)] text-white shadow-2xl flex items-center justify-center p-0 border-none active:scale-95 transition-transform"
+          className="w-14 h-14 rounded-full bg-(--sidebar-text-active) text-white shadow-2xl flex items-center justify-center p-0 border-none active:scale-95 transition-transform"
           title="Nuevo Registro"
         >
           <UserPlusIcon className="w-8 h-8" />
