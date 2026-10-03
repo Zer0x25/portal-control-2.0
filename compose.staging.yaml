@@ -1,0 +1,152 @@
+# Staging LOCAL: ensayo del despliegue de producción en tu máquina.
+#
+# - Misma topología que compose.yaml (db -> pgbouncer -> backend -> frontend -> gateway),
+#   NODE_ENV=production y migraciones/seed por DIRECT_URL.
+# - Las imágenes se CONSTRUYEN localmente con los Dockerfiles de producción
+#   (no se usa GHCR ni Portainer, no se tocan los tags pineados de compose.yaml).
+# - Aislado de dev (compose.dev.yaml) y de prod (compose.yaml): proyecto, volúmenes,
+#   red y base de datos propios; sin proxy_net ni rutas /srv del servidor.
+# - Único punto de entrada: el gateway en http://localhost:${STAGING_PORT:-8080}.
+#
+# Uso (siempre con env-file dedicado para no compartir `.env` con dev):
+#   cp .env.staging.example .env.staging   # y completar JWT_SECRET / SEED_ADMIN_PASSWORD
+#   docker compose --env-file .env.staging -f compose.staging.yaml up --build -d
+name: portal-control-staging
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-pweb3_staging}
+      POSTGRES_INITDB_ARGS: --auth-host=md5 --auth-local=md5
+    ports:
+      - "127.0.0.1:${STAGING_DB_HOST_PORT:-5434}:5432"
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3_staging}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    restart: unless-stopped
+    environment:
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-pweb3_staging}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: ${PGB_MAX_CLIENT_CONN:-300}
+      DEFAULT_POOL_SIZE: ${PGB_DEFAULT_POOL_SIZE:-25}
+      RESERVE_POOL_SIZE: ${PGB_RESERVE_POOL_SIZE:-5}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3_staging}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Sin `ports`: solo se accede vía gateway (igual que en producción).
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      # Fail-fast: sin secretos reales el stack no arranca (ADR-0004, sin fallbacks débiles).
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.staging}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Define SEED_ADMIN_PASSWORD en .env.staging}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@pgbouncer:5432/${DB_NAME:-pweb3_staging}?schema=public&pgbouncer=true&connection_limit=1
+      DIRECT_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pweb3_staging}?schema=public
+      # Correo vacío por defecto: staging local no debe enviar correos reales.
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      DISABLE_INTEGRITY_AUDIT: ${DISABLE_INTEGRITY_AUDIT:-false}
+      BACKUP_ENABLED: ${BACKUP_ENABLED:-false}
+      BACKUP_PATH: /app/backups
+    entrypoint: ["tini", "-s", "--"]
+    command: >
+      sh -c "echo '>>> [STAGING] Aplicando migraciones (conexion directa)...' &&
+      DATABASE_URL=$${DIRECT_URL} npx prisma migrate deploy &&
+      echo '>>> [STAGING] Ejecutando seed (idempotente, conexion directa)...' &&
+      DATABASE_URL=$${DIRECT_URL} npx prisma db seed &&
+      echo '>>> [STAGING] Servidor iniciando (via PgBouncer)...' &&
+      npm start"
+    volumes:
+      - backend_uploads_staging:/app/uploads
+      - backend_backups_staging:/app/backups
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 80s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  gateway:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${STAGING_PORT:-8080}:80"
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data_staging:
+  backend_uploads_staging:
+  backend_backups_staging:

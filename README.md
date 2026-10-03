@@ -121,6 +121,34 @@ docker compose -f compose.dev.yaml up --build
 docker compose -f compose.dev.yaml down
 ```
 
+### 5.4 Staging local (ensayo del deploy de producción)
+
+`compose.staging.yaml` replica la topología de producción (`db` → `pgbouncer` → `backend` → `frontend` → `gateway`, `NODE_ENV=production`) en tu máquina, construyendo las imágenes con los Dockerfiles de producción. Está aislado de dev y de prod: proyecto Compose `portal-control-staging`, volúmenes, red y base de datos (`pweb3_staging`) propios, sin `proxy_net` ni rutas `/srv/...`.
+
+|                  | **Dev**                              | **Staging local**                           | **Producción**        |
+| ---------------- | ------------------------------------ | ------------------------------------------- | --------------------- |
+| Manifiesto       | `compose.dev.yaml`                   | `compose.staging.yaml`                      | `compose.yaml`        |
+| Proyecto Compose | `portal-control-dev`                 | `portal-control-staging`                    | (Portainer)           |
+| Imágenes         | build `Dockerfile.dev` + bind mounts | build `Dockerfile` de prod                  | GHCR `sha-*` prebuild |
+| `NODE_ENV`       | `development`                        | `production`                                | `production`          |
+| Base de datos    | `pweb3_dev` directa (host `5433`)    | `pweb3_staging` vía PgBouncer (host `5434`) | `pweb3` vía PgBouncer |
+| Acceso           | `:5173` (Vite) y `:4000` (API)       | `http://localhost:8080` (gateway)           | dominio vía Caddy     |
+| Secretos         | defaults de dev                      | obligatorios en `.env.staging`              | Portainer             |
+
+```bash
+cp .env.staging.example .env.staging   # completar JWT_SECRET y SEED_ADMIN_PASSWORD
+npm run staging:up                     # build + arranque en segundo plano
+npm run staging:logs
+npm run staging:down                   # conserva datos; añadir -v al comando para borrarlos
+```
+
+Notas:
+
+- Usa siempre `--env-file .env.staging` (los scripts `npm run staging:*` ya lo hacen) para no mezclar el `.env` de dev.
+- Dev y staging pueden correr a la vez: no comparten puertos ni volúmenes.
+- Si `ALLOWED_ORIGINS`/`STAGING_PORT` cambian, mantenlos coherentes (el origen debe coincidir con la URL del gateway).
+- Atajos de dev: `npm run dev:up` / `npm run dev:down`.
+
 ## 6. Preparación en WSL
 
 Si vas a levantar el stack desde WSL, prepara el entorno Linux dentro de la propia distro:
@@ -184,6 +212,7 @@ Los modelos de lenguaje resetean su contexto entre sesiones. Para garantizar que
 ### 7.3 Estándar `AGENTS.md`
 
 El archivo [`AGENTS.md`](./AGENTS.md) en la raíz del repositorio define la especificación canónica para agentes de IA:
+
 - Comandos deterministas de instalación y validación (`npm ci`, `npx prisma generate`, `npm run validate:ci`).
 - Restricciones de base de datos (PgBouncer en `transaction mode`, transacciones directas vía `withDirectTransaction`).
 - Reglas de calidad y estilo de código.
@@ -192,21 +221,21 @@ El archivo [`AGENTS.md`](./AGENTS.md) en la raíz del repositorio define la espe
 
 El repositorio cuenta con mantenimiento preventivo continuo orquestado mediante GitHub Actions y la API REST de Google Jules:
 
-| Día / Horario | Agente | Misión |
-| :--- | :--- | :--- |
-| **Lunes 08:00 UTC** | 🛡️ **Sentinel** | Auditoría integral de seguridad, validación de endpoints y prevención de inyecciones. |
-| **Miércoles 08:00 UTC** | ⚡ **Bolt** | Detección y refactorización de consultas N+1 y mutaciones lentas en Prisma. |
-| **Viernes 18:00 UTC** | 🧹 **Code Health** | Limpieza de `console.log` de depuración y eliminación de tipos `any`. |
+| Día / Horario           | Agente             | Misión                                                                                |
+| :---------------------- | :----------------- | :------------------------------------------------------------------------------------ |
+| **Lunes 08:00 UTC**     | 🛡️ **Sentinel**    | Auditoría integral de seguridad, validación de endpoints y prevención de inyecciones. |
+| **Miércoles 08:00 UTC** | ⚡ **Bolt**        | Detección y refactorización de consultas N+1 y mutaciones lentas en Prisma.           |
+| **Viernes 18:00 UTC**   | 🧹 **Code Health** | Limpieza de `console.log` de depuración y eliminación de tipos `any`.                 |
 
 ### 7.5 Gates de CI (spec 003, ADR-0012)
 
 Además de `verify-backend` / `verify-frontend`, cada PR/push pasa:
 
-| Job | Qué blinda | Cómo correrlo en local |
-| :--- | :--- | :--- |
-| `coverage-ratchet` | La cobertura no baja (ratchet) | `npm run test:coverage` en cada paquete |
-| `docs-check` | Sin links rotos en `docs/adr/`/`specs/`, ADR indexado, Prettier | `npm run docs:check` (raíz) |
-| `e2e-smoke` | El stack levanta y el login funciona | `docker compose -f compose.dev.yaml up` + `npx playwright test e2e/smoke.spec.ts` (en `frontend/`) |
+| Job                | Qué blinda                                                      | Cómo correrlo en local                                                                             |
+| :----------------- | :-------------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `coverage-ratchet` | La cobertura no baja (ratchet)                                  | `npm run test:coverage` en cada paquete                                                            |
+| `docs-check`       | Sin links rotos en `docs/adr/`/`specs/`, ADR indexado, Prettier | `npm run docs:check` (raíz)                                                                        |
+| `e2e-smoke`        | El stack levanta y el login funciona                            | `docker compose -f compose.dev.yaml up` + `npx playwright test e2e/smoke.spec.ts` (en `frontend/`) |
 
 Umbrales de cobertura (solo suben, ver ADR-0012): backend líneas 14 / funciones 17 / ramas 8 / statements 14; frontend líneas 17 / funciones 35 / ramas 60 / statements 17.
 

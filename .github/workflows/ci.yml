@@ -79,6 +79,7 @@ jobs:
               - '.github/workflows/ci.yml'
             stack:
               - 'compose.dev.yaml'
+              - 'compose.staging.yaml'
               - 'compose.yaml'
               - 'nginx/**'
               - 'backend/Dockerfile*'

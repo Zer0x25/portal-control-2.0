@@ -10,7 +10,12 @@
     "hooks:pre-push": "node scripts/pre-push.cjs",
     "spec:check": "node scripts/spec-check.cjs",
     "docs:check": "node scripts/docs-check.cjs",
-    "secrets:scan": "node scripts/secret-scan.cjs"
+    "secrets:scan": "node scripts/secret-scan.cjs",
+    "dev:up": "docker compose -f compose.dev.yaml up --build",
+    "dev:down": "docker compose -f compose.dev.yaml down",
+    "staging:up": "docker compose --env-file .env.staging -f compose.staging.yaml up --build -d",
+    "staging:logs": "docker compose --env-file .env.staging -f compose.staging.yaml logs -f --tail=100",
+    "staging:down": "docker compose --env-file .env.staging -f compose.staging.yaml down"
   },
   "lint-staged": {
     "backend/src/**/*.ts": [

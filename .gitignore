@@ -4,3 +4,4 @@
 /frontend/.env
 /node_modules/
 /scripts/logs/
+/.env.staging
