@@ -76,6 +76,10 @@ services:
       # Fail-fast: sin secretos reales el stack no arranca (ADR-0004, sin fallbacks débiles).
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.staging}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Define SEED_ADMIN_PASSWORD en .env.staging}
+      # E2E contra build prod: crea juan.perez/EMP001 (idempotente).
+      # Solo staging local; jamás en prod real.
+      SEED_E2E_USERS: ${SEED_E2E_USERS:-1}
+      E2E_WORKER_PASSWORD: ${E2E_WORKER_PASSWORD:-123456}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@pgbouncer:5432/${DB_NAME:-pweb3_staging}?schema=public&pgbouncer=true&connection_limit=1
       DIRECT_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pweb3_staging}?schema=public

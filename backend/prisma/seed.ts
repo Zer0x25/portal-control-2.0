@@ -40,7 +40,11 @@ async function main() {
     });
   }
 
-  if (isProd) {
+  // Staging runs NODE_ENV=production but still needs the e2e worker to
+  // run the suite against a prod build. Opt-in only via SEED_E2E_USERS=1
+  // (compose.staging.yaml); never on real prod. Idempotent + non-destructive.
+  const seedE2eUsers = (process.env.SEED_E2E_USERS || "").trim() === "1";
+  if (isProd && !seedE2eUsers) {
     console.log("Production mode: seeded admin user only.");
     console.log({ adminUsername: admin.username, adminRole: admin.role });
     return;
@@ -67,7 +71,8 @@ async function main() {
     where: { username: "juan.perez" },
   });
 
-  const userRolePassword = bcrypt.hashSync("123456", 10);
+  const workerPassword = (process.env.E2E_WORKER_PASSWORD || "").trim() || "123456";
+  const userRolePassword = bcrypt.hashSync(workerPassword, 10);
   const testUser = existingTestUser
     ? await prisma.user.update({
         where: { username: "juan.perez" },
