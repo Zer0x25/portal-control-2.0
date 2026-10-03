@@ -1,3 +1,9 @@
+# Entorno de DESARROLLO (hot reload, bind mounts, NODE_ENV=development).
+# Aislado del staging local (compose.staging.yaml) y de prod (compose.yaml):
+# proyecto, volúmenes y puertos propios (4000 / 5173 / 5433).
+#   docker compose -f compose.dev.yaml up --build
+name: portal-control-dev
+
 services:
   db:
     image: postgres:15-alpine
