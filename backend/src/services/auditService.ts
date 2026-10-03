@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import { Request } from "express";
 import { AppError } from "../utils/AppError";
@@ -60,8 +60,10 @@ export const auditService = {
           category: entry.category,
           severity: entry.severity || "INFO",
           outcome: entry.outcome || "SUCCESS",
-          details: entry.details || null, // Prisma handles objects directly for Json fields
-          metadata: entry.metadata || null,
+          // Prisma 7 tipa los Json con Exact<...>: se castea al tipo de
+          // escritura documentado en lugar de relajar el tipo de entrada.
+          details: (entry.details ?? null) as Prisma.InputJsonValue,
+          metadata: (entry.metadata ?? null) as Prisma.InputJsonValue,
           ipAddress: entry.ipAddress,
         },
       });

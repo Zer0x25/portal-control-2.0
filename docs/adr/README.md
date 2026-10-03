@@ -22,6 +22,7 @@ con Prettier (`printWidth: 100`).
 | [0012](0012-rock-solid-governance.md)              | Aceptado  | Cobertura, e2e smoke, docs check      |
 | [0013](0013-ci-pr-full-deploy-main-gates.md)       | Aceptado  | CI completa en PR, solo gates en main |
 | [0014](0014-ci-por-cambios-ahorro-minutos.md)      | Propuesto | CI por cambios para ahorrar minutos   |
+| [0015](0015-prisma-7-driver-adapters.md)           | Propuesto | Prisma 7 con driver adapters          |
 | [0000](0000-template.md)                           | Plantilla | No usar como decisión                 |
 
 ## Ciclo de vida

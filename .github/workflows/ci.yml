@@ -216,6 +216,10 @@ jobs:
         working-directory: frontend
 
       - name: Generate Prisma client
+        # Prisma 7 evalua prisma.config.ts (exige DIRECT_URL) en todo comando
+        # del CLI. El codegen no abre conexiones: dummy a proposito.
+        env:
+          DIRECT_URL: postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-codegen
         run: npx prisma generate
 
       - name: Run backend CI validation

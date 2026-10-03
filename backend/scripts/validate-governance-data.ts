@@ -7,9 +7,7 @@
  * Uso: npx ts-node scripts/validate-governance-data.ts
  */
 
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "./prismaClient.cjs";
 
 async function validateIntegrityData() {
   console.log("\n🔍 VALIDANDO INTEGRITY TAB...\n");

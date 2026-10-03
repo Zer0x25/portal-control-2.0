@@ -1,7 +1,7 @@
 import prisma from "./db";
 import { NotFoundError } from "../utils/AppError";
 import { safeJsonParse } from "../utils/configUtils";
-import type { ScheduledReport } from "@prisma/client";
+import type { ScheduledReport } from "../generated/prisma/client";
 
 export interface ScheduledReportData {
   name: string;

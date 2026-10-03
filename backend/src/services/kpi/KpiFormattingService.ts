@@ -1,4 +1,4 @@
-import { Employee, TimeRecord } from "@prisma/client";
+import { Employee, TimeRecord } from "../../generated/prisma/client";
 import {
   DailyMetric,
   EnrichedRecord,

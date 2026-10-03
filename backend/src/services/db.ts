@@ -1,11 +1,31 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "../generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { requestContext } from "../utils/context";
 import { SocketService } from "./socketService";
 
 const prismaLogConfig: Prisma.PrismaClientOptions["log"] = ["error", "warn"];
 
+// Prisma 7 exige driver adapter: la conexion la provee un pg.Pool propio
+// en lugar del pool interno del cliente v6. Paridad con v6:
+//   - max 10 ~= connection_limit por defecto de v6 (nucleos*2+1).
+//   - connectionTimeoutMillis 5000 = connect_timeout de v6 (pg por defecto
+//     no tiene timeout: 0). Importante via PgBouncer para no colgar.
+// Los pools son lazy (pg no conecta en el constructor), igual que el
+// cliente v6: sin DATABASE_URL el fallo aparece al primer query, no al
+// importar este modulo (los unit tests mockean servicios sin DB).
+function createPool(connectionString: string | undefined): Pool {
+  return new Pool({
+    connectionString,
+    max: 10,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000,
+  });
+}
+
 // Runtime client via PgBouncer
 const basePrisma = new PrismaClient({
+  adapter: new PrismaPg(createPool(process.env.DATABASE_URL?.trim())),
   log: prismaLogConfig,
 });
 
@@ -14,12 +34,8 @@ const directDatabaseUrl = process.env.DIRECT_URL?.trim();
 const directPrisma =
   directDatabaseUrl && directDatabaseUrl.length > 0
     ? new PrismaClient({
+        adapter: new PrismaPg(createPool(directDatabaseUrl)),
         log: prismaLogConfig,
-        datasources: {
-          db: {
-            url: directDatabaseUrl,
-          },
-        },
       })
     : basePrisma;
 

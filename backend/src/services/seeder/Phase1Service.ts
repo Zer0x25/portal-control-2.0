@@ -1,4 +1,4 @@
-import { EmployeeStatus, Prisma } from "@prisma/client";
+import { EmployeeStatus, Prisma } from "../../generated/prisma/client";
 import prisma from "../db";
 import bcrypt from "bcryptjs";
 import { ulid } from "ulid";

@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { ulid } from "ulid";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";

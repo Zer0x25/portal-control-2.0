@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import type { MeterReadingSchema } from "../models/schemas/meter.schemas";
 import type { z } from "zod";

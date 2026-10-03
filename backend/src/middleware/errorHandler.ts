@@ -6,7 +6,7 @@ import {
   DatabaseError,
   ValidationError,
 } from "../utils/AppError";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import multer from "multer";
 import { auditService } from "../services/auditService";
 import { toCaughtError } from "../utils/caughtError";

@@ -6,7 +6,7 @@ import { parseBusinessDateChile } from "../utils/timeUtils";
 import { AppError } from "../utils/AppError";
 import { auditService } from "./auditService";
 import { TimeRecordService } from "./TimeRecordService";
-import { Prisma, TimeRecord } from "@prisma/client";
+import { Prisma, TimeRecord } from "../generated/prisma/client";
 
 export interface CorrectionListParams {
   since?: string;

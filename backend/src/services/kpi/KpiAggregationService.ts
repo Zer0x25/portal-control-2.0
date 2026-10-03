@@ -1,4 +1,4 @@
-import { Employee } from "@prisma/client";
+import { Employee } from "../../generated/prisma/client";
 import { KpiSummaryAccumulator, KpiSummaryDetails, PeriodStats } from "./types";
 
 export class KpiAggregationService {

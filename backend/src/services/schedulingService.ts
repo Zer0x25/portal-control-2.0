@@ -5,7 +5,7 @@ import {
   LeaveRecord,
   ShiftPattern,
   EmployeeStatus,
-} from "@prisma/client";
+} from "../generated/prisma/client";
 import prisma from "./db";
 import {
   formatDateUTCISO,

@@ -113,6 +113,7 @@ To raise the budget again (a deliberate decision, not an accident), edit
 1. **PgBouncer & Transactions**:
    - PgBouncer runs with `POOL_MODE: transaction`.
    - Any interactive transaction or operation setting PostgreSQL session variables (`set_config`) **must** use `withDirectTransaction` from `backend/src/services/db.ts` to ensure execution over the direct database connection (`DIRECT_URL`).
+   - Prisma 7 (ADR-0015): import the client/types from `backend/src/generated/prisma/client`, never from `@prisma/client`. Pools live in `db.ts` (`pg.Pool` + `PrismaPg` adapter). Any Prisma CLI command evaluates `backend/prisma.config.ts` and requires `DIRECT_URL` in the environment (codegen/build without DB use a documented dummy).
 2. **N+1 Query Prevention (Bolt Journal)**:
    - Never execute iterative `findUnique` or `findFirst` in loops over collections of records.
    - Always batch-fetch dependencies using `findMany` with `{ in: [...] }` or use `schedulingService.getSchedulingContext(...)` prior to mapping.

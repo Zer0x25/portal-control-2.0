@@ -1,4 +1,4 @@
-import { AssignedShift } from "@prisma/client";
+import { AssignedShift } from "../../generated/prisma/client";
 import prisma from "../db";
 import {
   PatternSchedule,

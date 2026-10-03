@@ -10,7 +10,9 @@ RUN npm ci
 
 # Copiar el resto del código
 COPY . .
-RUN npx prisma generate
+# Ver backend/Dockerfile: Prisma 7 exige DIRECT_URL para evaluar su config
+# incluso en generate (codegen sin conexion; dummy a proposito).
+RUN DIRECT_URL=postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-codegen npx prisma generate
 
 EXPOSE 4000
 

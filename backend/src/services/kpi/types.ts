@@ -1,4 +1,4 @@
-import { TimeRecord } from "@prisma/client";
+import { TimeRecord } from "../../generated/prisma/client";
 
 export interface KpiFilters {
   startDate: string; // YYYY-MM-DD

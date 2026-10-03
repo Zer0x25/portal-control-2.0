@@ -1,4 +1,4 @@
-import { TimeRecord } from "@prisma/client";
+import { TimeRecord } from "../../generated/prisma/client";
 import { ScheduleInfo } from "../schedulingService";
 
 export interface DailyHours {

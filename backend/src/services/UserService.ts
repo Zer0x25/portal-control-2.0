@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { ulid } from "ulid";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
-import { UserRole, Prisma } from "@prisma/client";
+import { UserRole, Prisma } from "../generated/prisma/client";
 
 export interface CreateUserDto {
   id?: string;

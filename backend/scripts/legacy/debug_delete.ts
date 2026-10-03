@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../prismaClient.cjs";
 
 async function main() {
   const id = "00739e99-e408-4749-b9af-3b3e9bb351b7";

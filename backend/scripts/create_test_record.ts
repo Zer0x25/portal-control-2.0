@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "./prismaClient.cjs";
 
 async function createTestRecord() {
   console.log("Creando registro de prueba > 14h...");

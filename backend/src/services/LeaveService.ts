@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { LeaveRecord, Prisma, TimeRecord } from "@prisma/client";
+import { LeaveRecord, Prisma, TimeRecord } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";

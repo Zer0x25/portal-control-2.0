@@ -1,4 +1,4 @@
-import { Prisma, ShiftPattern, Holiday } from "@prisma/client";
+import { Prisma, ShiftPattern, Holiday } from "../../generated/prisma/client";
 import prisma from "../db";
 import { ulid } from "ulid";
 import {

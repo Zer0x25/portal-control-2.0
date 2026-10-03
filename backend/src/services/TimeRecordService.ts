@@ -7,7 +7,7 @@ import {
 } from "../utils/timeUtils";
 import { normalizeString } from "../utils/stringUtils";
 import { safeJsonParse } from "../utils/configUtils";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { auditService } from "./auditService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { OvertimeValidationService } from "./OvertimeValidationService";
@@ -15,7 +15,7 @@ import { schedulingService } from "./schedulingService";
 import { KpiEngine } from "./kpi/KpiEngine";
 import { KpiFormattingService } from "./kpi/KpiFormattingService";
 import { AppError } from "../utils/AppError";
-import type { TimeRecord } from "@prisma/client";
+import type { TimeRecord } from "../generated/prisma/client";
 import type { SchedulingContext } from "./schedulingService";
 import type { VerifyFilters } from "./timeRecordIntegrityService";
 

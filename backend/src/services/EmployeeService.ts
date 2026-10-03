@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { Prisma, EmployeeStatus } from "@prisma/client";
+import { Prisma, EmployeeStatus } from "../generated/prisma/client";
 import bcryptjs from "bcryptjs";
 import { auditService } from "./auditService";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";

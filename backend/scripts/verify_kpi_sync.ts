@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./prismaClient.cjs";
 import { KpiService } from "../src/services/kpiService";
 
-const prisma = new PrismaClient();
 const kpiService = new KpiService();
 const kpiCache = new KpiCache();
 

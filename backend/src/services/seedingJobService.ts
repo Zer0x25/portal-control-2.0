@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import prisma from "./db";
 import { requestContext } from "../utils/context";
 import { seedingEngine as seedingService } from "./seeder/SeederEngine";

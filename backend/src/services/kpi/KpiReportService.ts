@@ -1,4 +1,4 @@
-import { Employee, TimeRecord, MonthlyEmployeeStats } from "@prisma/client";
+import { Employee, TimeRecord, MonthlyEmployeeStats } from "../../generated/prisma/client";
 import prisma from "../db";
 import { schedulingService, SchedulingContext } from "../schedulingService";
 import { KpiCache } from "./KpiCache";

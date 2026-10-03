@@ -16,7 +16,7 @@ import {
   PunchStatus,
 } from "../domain/attendanceRules";
 import { getChileDateISO, getMinutesFromMidnightChile } from "../utils/timeUtils";
-import { TimeRecord, Prisma } from "@prisma/client";
+import { TimeRecord, Prisma } from "../generated/prisma/client";
 
 /** Narrow guard for spreading untyped JSON lifted from a `justification` column. */
 const isRecord = (value: unknown): value is Record<string, unknown> =>

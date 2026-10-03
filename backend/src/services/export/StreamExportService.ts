@@ -1,10 +1,10 @@
 import { Response } from "express";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "../../generated/prisma/client";
 import { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
 import { promisify } from "util";
 import ExcelJS from "exceljs";
-import { EmployeeStatus } from "@prisma/client";
+import { EmployeeStatus } from "../../generated/prisma/client";
 
 /**
  * Narrows a free-form filter value to a real `EmployeeStatus` member.

@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./prismaClient.cjs";
 import fs from "fs";
 import path from "path";
-
-const prisma = new PrismaClient();
 
 async function main() {
   const state = process.env.STATE || process.argv[2];

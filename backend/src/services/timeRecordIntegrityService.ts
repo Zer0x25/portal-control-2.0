@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { Prisma, TimeRecord } from "@prisma/client";
+import { Prisma, TimeRecord } from "../generated/prisma/client";
 import type { prisma as extendedPrisma } from "./db";
 import { auditService } from "./auditService";
 import { integrityStatusService } from "./integrityStatusService";

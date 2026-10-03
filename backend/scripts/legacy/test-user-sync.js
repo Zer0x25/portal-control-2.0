@@ -1,4 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
+const { prisma } = require("../prismaClient.cjs");
 const { z } = require("zod");
 
 const SyncableSchema = z.object({
@@ -25,7 +25,6 @@ const UserSchema = SyncableSchema.extend({
   mustChangePassword: z.boolean().nullable().optional(),
 });
 
-const prisma = new PrismaClient();
 
 async function check() {
   const users = await prisma.user.findMany();

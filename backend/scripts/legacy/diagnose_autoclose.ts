@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../prismaClient.cjs";
 
-const prisma = new PrismaClient();
 const FOURTEEN_HOURS_MS = 14 * 60 * 60 * 1000;
 
 async function diagnose() {

@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import prisma from "./db";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
@@ -11,7 +11,7 @@ import {
   PaginatedResponse,
   PatternPaginationOptions,
 } from "./shift/types";
-import { AssignedShift } from "@prisma/client";
+import { AssignedShift } from "../generated/prisma/client";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
 
 export class ShiftService {

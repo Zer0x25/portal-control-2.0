@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./prismaClient.cjs";
 import { shiftService } from "../src/services/shiftService";
-
-const prisma = new PrismaClient();
 
 async function main() {
   console.log("=== Verificando Regla de 6 Días Consecutivos ===");

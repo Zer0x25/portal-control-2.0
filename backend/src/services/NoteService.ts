@@ -1,5 +1,5 @@
 import prisma from "./db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 
 export interface NoteListParams {

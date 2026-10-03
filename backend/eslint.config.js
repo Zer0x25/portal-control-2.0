@@ -5,6 +5,8 @@ const prettierConfig = require("eslint-config-prettier");
 const globals = require("globals");
 
 module.exports = [
+  // Codigo generado por Prisma: no se lintea (tambien ignorado en git).
+  { ignores: ["src/generated/**"] },
   {
     files: ["src/**/*.ts"],
     languageOptions: {

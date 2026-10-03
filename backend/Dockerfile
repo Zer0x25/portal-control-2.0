@@ -11,7 +11,10 @@ RUN npm ci
 
 # Copiar código y compilar
 COPY . .
-RUN npx prisma generate
+# Prisma 7 evalua prisma.config.ts (exige DIRECT_URL) en todo comando del
+# CLI, incluido generate. El codegen no abre conexiones: dummy imposible de
+# conectar a proposito (localhost:1) solo para satisfacer la evaluacion.
+RUN DIRECT_URL=postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-codegen npx prisma generate
 RUN npm run build
 
 # Production Stage

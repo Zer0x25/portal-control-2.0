@@ -1,8 +1,15 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import process from "process";
 
-const prisma = new PrismaClient();
+// Seed explicito (Prisma 7 ya no auto-ejecuta seed en migrate). Misma
+// conexion que el datasource v6 (DATABASE_URL, via PgBouncer para
+// statements simples; el seed no usa transacciones interactivas).
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL || "",
+});
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const isProd = process.env.NODE_ENV === "production";
