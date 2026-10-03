@@ -40,7 +40,10 @@ const ROLE_CREDS: Record<E2ERole, { username: string; password: string }> = {
     username: process.env.E2E_ADMIN_USERNAME || "admin",
     password: process.env.E2E_ADMIN_PASSWORD || "999.666",
   },
-  worker: { username: "juan.perez", password: "123456" },
+  worker: {
+    username: process.env.E2E_WORKER_USERNAME || "juan.perez",
+    password: process.env.E2E_WORKER_PASSWORD || "123456",
+  },
 };
 
 // Login rápido (post-004): autentica por API (~200ms) y siembra
