@@ -1,0 +1,103 @@
+# Fase 1 spec 005 (v1, solo lecturas): ráfaga de sync matinal contra
+# staging. Los tokens llegan por env (LOAD_ADMIN_TOKEN / LOAD_WORKER_TOKEN
+# + LOAD_TODAY) desde run-staging.cjs: el login NO va en el escenario
+# porque el rate-limit de login en prod (5/min por ip:user) tumbaría la
+# rampa y ensuciaría el reporte. Endpoints verificados por rol
+# (worker recibe 403 en kpis/users/notes/leaves: no van en su flujo).
+config:
+  target: "{{ $env.LOAD_TARGET }}"
+  variables:
+    adminToken: "{{ $env.LOAD_ADMIN_TOKEN }}"
+    workerToken: "{{ $env.LOAD_WORKER_TOKEN }}"
+    today: "{{ $env.LOAD_TODAY }}"
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      name: "calentamiento"
+    - duration: 90
+      arrivalRate: 2
+      rampTo: 4
+      name: "pico de turno"
+  ensure:
+    maxErrorRate: 1
+
+scenarios:
+  - name: "sync dashboard admin"
+    weight: 70
+    flow:
+      - get:
+          url: "/api/kpis/overview"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/employees"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/users"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/records?employeeId=EMP001&desde={{ today }}&hasta={{ today }}"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/holidays"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/corrections/stats"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/shifts/assignments"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "sync portal worker"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/records?employeeId=EMP001&desde={{ today }}&hasta={{ today }}"
+          headers:
+            Authorization: "Bearer {{ workerToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/employees"
+          headers:
+            Authorization: "Bearer {{ workerToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/holidays"
+          headers:
+            Authorization: "Bearer {{ workerToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/shifts/patterns"
+          headers:
+            Authorization: "Bearer {{ workerToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/configs/accounting_lock_date"
+          headers:
+            Authorization: "Bearer {{ workerToken }}"
+          expect:
+            - statusCode: 200
