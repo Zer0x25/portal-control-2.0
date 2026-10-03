@@ -34,7 +34,6 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
     // Explicit navigation to the hash route
     await page.goto("/#/admin/governance?tab=integrity");
     await expect(page).toHaveURL(/tab=integrity/, { timeout: 30000 });
-    await page.waitForLoadState("networkidle");
 
     // Wait for content to appear (even if it takes a bit)
     await expect(page.getByText(/INTEGRA|DEGRADADA/)).toBeVisible({ timeout: 30000 });
@@ -62,7 +61,6 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
 
     await page.goto("/#/admin/governance?tab=security");
     await expect(page).toHaveURL(/tab=security/, { timeout: 30000 });
-    await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(/Vigilancia & Riesgos/i)).toBeVisible({ timeout: 30000 });
 
@@ -86,7 +84,6 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
 
     await page.goto("/#/admin/governance?tab=system");
     await expect(page).toHaveURL(/tab=system/, { timeout: 30000 });
-    await page.waitForLoadState("networkidle");
 
     // Wait for the stats section to actually have content (KpiCard title
     // is a heading; plain text also matches a collapsed sidebar entry)
@@ -104,7 +101,6 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
   test("Audit Tab - some logs are displayed", async ({ page }) => {
     await page.goto("/#/admin/governance?tab=audit");
     await expect(page).toHaveURL(/tab=audit/, { timeout: 30000 });
-    await page.waitForLoadState("networkidle");
 
     await expect(page.getByText(/Visor de Auditoría/i)).toBeVisible({ timeout: 30000 });
 

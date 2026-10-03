@@ -7,8 +7,16 @@ import { loginFast } from "./helpers/auth-helper";
 // titula "Mi Calendario" con vistas "Mes/Semana/Día". El flujo de ausencia
 // no hace submit: ensaya apertura, selección de colaborador y llenado,
 // y cancela para no ensuciar la BD de dev en cada corrida.
+//
+// Serial (no parallel): los 2 tests de worker comparten el único slot de
+// sesión del rol Usuario (el backend evicta la anterior) y el flujo de
+// asistencia muta los records de hoy de EMP001.
 
-test.describe("Critical User Flows", () => {
+// Sin networkidle a propósito: las assertions explícitas (toBeVisible /
+// toBeEnabled con timeout) ya gatean readiness, y networkidle con el
+// websocket abierto suma ~1s por navegación sin aportar señal.
+
+test.describe.serial("Critical User Flows", () => {
   test.setTimeout(120000);
   test("Attendance Flow: Clock In and Clock Out (Worker)", async ({ page, request }) => {
     // Deterministic reset: delete today's records for the e2e employee via
@@ -50,7 +58,7 @@ test.describe("Critical User Flows", () => {
     // Let the daily records settle: buttons enable from server state, and
     // the pre-load default ("fuera") would offer a stale enabled action
     // that the backend rejects (duplicate punch fails silently, no toast).
-    await page.waitForLoadState("networkidle");
+    // (Sin networkidle: los toBeEnabled de abajo ya esperan al servidor.)
 
     const startButton = page.getByRole("button", { name: /inicio jornada/i });
     const endButton = page.getByRole("button", { name: /fin jornada/i });

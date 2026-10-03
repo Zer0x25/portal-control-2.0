@@ -17,6 +17,7 @@
     "test:guardrails": "vitest run src/tests/guardrails/frontendAuditGuardrails.test.ts",
     "test:run:ci": "node scripts/run-frontend-tests.cjs",
     "e2e": "playwright test",
+    "e2e:staging": "E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:ui": "playwright test --ui",
     "e2e:install": "playwright install",

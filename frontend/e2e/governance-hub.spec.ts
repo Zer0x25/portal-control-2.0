@@ -11,11 +11,12 @@ test.describe("Governance Hub Verification", () => {
   test.beforeEach(async ({ page, request }) => {
     await loginFast(page, request, "admin");
 
-    // Navigate to Governance Hub using HashRouter format
+    // Navigate to Governance Hub using HashRouter format (sin networkidle:
+    // el toBeVisible de abajo ya espera al contenido; networkidle con el
+    // websocket abierto solo suma ~1s).
     await page.goto("/#/admin/governance");
 
     // Wait for Governance Hub to load
-    await page.waitForLoadState("networkidle");
     await expect(page.getByText(/centro de gobernanza/i)).toBeVisible({
       timeout: 30000,
     });
@@ -66,10 +67,11 @@ test.describe("Governance Hub Verification", () => {
     await page.getByRole("button", { name: "Mantenimiento", exact: true }).click();
     await expect(page).toHaveURL(/tab=system/);
 
-    // Wait for stats to load
-    await page.waitForLoadState("networkidle");
-
-    // Check for specific stats text
+    // Check for specific stats text: anchor on a proven-visible KpiStat
+    // ("Total activos", same as admin-tools) then count all stat hits.
+    // (first() is wrong here: plain text also matches collapsed sidebar
+    // entries and .first() picks the hidden one.)
+    await expect(page.getByText(/total activos/i)).toBeVisible({ timeout: 30000 });
     const hasStats = await page
       .locator("text=/BD Productiva|Uptime|Memoria|Usuarios|Empleados|Registros/i")
       .count();

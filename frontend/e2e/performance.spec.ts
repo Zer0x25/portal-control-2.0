@@ -13,7 +13,7 @@ import { loginFast } from "./helpers/auth-helper";
 //   generosos), no presupuestos de frames; los tiempos se reportan
 //   al terminal para seguimiento.
 
-test.describe("Render Performance", () => {
+test.describe.serial("Render Performance", () => {
   test.setTimeout(120000);
   test.beforeEach(async ({ page, request }) => {
     await loginFast(page, request, "admin");
