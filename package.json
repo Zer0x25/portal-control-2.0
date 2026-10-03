@@ -6,13 +6,26 @@
     "lint:budget": "node scripts/lint-budget.cjs",
     "lint:budget:update": "node scripts/lint-budget.cjs --update",
     "lint:budget:rules": "node scripts/lint-budget.cjs --rules",
-    "hooks:pre-commit": "npm --prefix backend run format:check && npm --prefix frontend run format:check && npm --prefix backend run lint && npm --prefix frontend run lint && npm run lint:budget",
-    "hooks:pre-push": "npm --prefix backend run validate:ci && npm --prefix frontend run validate:ci",
+    "hooks:pre-commit": "node scripts/check-hook-deps.cjs && lint-staged && npm run lint:budget",
+    "hooks:pre-push": "node scripts/pre-push.cjs",
     "spec:check": "node scripts/spec-check.cjs",
     "docs:check": "node scripts/docs-check.cjs",
     "secrets:scan": "node scripts/secret-scan.cjs"
   },
+  "lint-staged": {
+    "backend/src/**/*.ts": [
+      "backend/node_modules/.bin/eslint --config backend/eslint.config.js"
+    ],
+    "backend/**/*.{ts,cjs,json,md,yml,yaml}": ["backend/node_modules/.bin/prettier --check"],
+    "frontend/src/**/*.{ts,tsx}": [
+      "frontend/node_modules/.bin/eslint --config frontend/eslint.config.js"
+    ],
+    "frontend/src/**/*.{ts,tsx,css,md}": ["frontend/node_modules/.bin/prettier --check"],
+    "docs/adr/*.md": ["backend/node_modules/.bin/prettier --check"],
+    "specs/**/*.md": ["backend/node_modules/.bin/prettier --check"]
+  },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0"
   }
 }

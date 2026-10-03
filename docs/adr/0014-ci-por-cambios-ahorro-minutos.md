@@ -59,8 +59,8 @@ desperdicio confirmados en `.github/workflows/ci.yml`:
    entradas semanales generaban hasta 25 PRs, cada uno con CI completo)
    y los jobs pesados excluyen ramas `dependabot/`. Las dependencias se
    actualizan manualmente con `npm outdated` + `npm update` por paquete,
-   validando con `npm run validate:ci` local (el hook `pre-push` lo
-   exige igual).
+   validando con `npm run validate:ci` local (el hook `pre-push` lo exige
+   en pushes a main, solo para los paquetes tocados).
 7. `npm ci --no-audit --no-fund` en CI y `timeout-minutes` en todos los
    jobs pesados (15 verifys, 25 e2e, 30 publish, 5 pineo).
 8. Deploy con cache GHA por imagen (`cache-from/to type=gha` con scope
@@ -69,6 +69,12 @@ desperdicio confirmados en `.github/workflows/ci.yml`:
 deploy-main`, sin cancelacion) para no correr sobre `compose.yaml`.
 9. `pin-stack-images` usa `${{ github.repository_owner }}` en el patron
    del `sed` en vez del owner hardcodeado.
+10. Hooks locales optimizados (Husky se conserva): `pre-commit` usa
+    `lint-staged` (solo archivos stageados, misma paridad que
+    `format:check`/`lint` por paquete) y `pre-push` solo valida cuando
+    el push toca `main`, corriendo los gates más el `validate:ci` de
+    los paquetes tocados (`scripts/pre-push.cjs`). Pushes a ramas
+    feature no validan nada local: las cubre el CI del PR.
 
 ## Alternativas consideradas
 
@@ -108,8 +114,8 @@ Negativas / costos aceptados:
 - `dorny/paths-filter@v3` es una dependencia externa nueva del CI. Si
   la accion falla, todos los pesados se saltean por diseño fail-closed
   de los `outputs` vacios: un PR verde mostraria solo `changes` +
-  `gates`. El riesgo se mitiga porque el `pre-push` local sigue
-  corriendo `validate:ci` completo.
+  `gates`. El riesgo se mitiga porque el `pre-push` local a main sigue
+  corriendo `validate:ci` de los paquetes tocados.
 - Un cambio solo en `scripts/` dispara ambos verifys (filtro grueso
   deliberado: `lint-budget.cjs` afecta a los dos paquetes).
 
