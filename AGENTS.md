@@ -311,10 +311,12 @@ Monthly lightweight sweep, one validated commit per package batch:
 1. Apply **minor/patch only** via `npm update <pkg>` (never bare `npm update`).
 2. Majors are one migration each: validate (`validate:ci` backend,
    `validate:ci:coverage` frontend), commit, push, then next.
-3. Never run both packages' validations in parallel: backend `check:sdk`
+3. After every push: `gh run list --limit 3` and confirm CI green before
+   stacking more work (gates fail fast, e.g. `spec:check` syntax).
+4. Never run both packages' validations in parallel: backend `check:sdk`
    rewrites `frontend/src/types/api-schema.ts` mid-run and produces a
    phantom prettier failure in the frontend job.
-4. Standing holds (retry when the blocker lifts, do not force):
+5. Standing holds (retry when the blocker lifts, do not force):
    - `typescript@7`: `typescript-eslint` refuses TS 7.0 (support tracked
      for TS >=7.1); also needs `moduleResolution: node10` removal.
    - `prisma@8`: RC only, no stable release.
