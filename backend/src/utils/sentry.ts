@@ -16,8 +16,11 @@ export const initSentry = () => {
     integrations: [nodeProfilingIntegration()],
     // Performance Monitoring
     tracesSampleRate: 1.0, //  Capture 100% of the transactions
-    // Set sampling rate for profiling - this is relative to tracesSampleRate
-    profilesSampleRate: 1.0,
+    // Profiling continuo (Sentry v11): el muestreo de sesion reemplaza al
+    // antiguo profilesSampleRate; 'trace' mantiene los perfiles ligados a
+    // las trazas como antes.
+    profileSessionSampleRate: 1.0,
+    profileLifecycle: "trace",
     environment: process.env.NODE_ENV || "development",
   });
 
