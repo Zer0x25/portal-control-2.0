@@ -96,4 +96,35 @@ describe("Auth Integration Flow", () => {
     expect(sessions.length).toBe(10);
     expect(sessions.some((s) => s.id === oldestId)).toBe(false);
   });
+
+  it("allows burst logins within the same second with distinct tokens", async () => {
+    // Regresión 2026-10-03: sin nonce en el JWT, N logins dentro del mismo
+    // segundo firmaban el mismo token (iat en segundos) y el insert chocaba
+    // con el @unique de token_hash (409). El e2e en paralelo lo gatillaba
+    // siempre (loginFast en ráfaga). Con jti todos pasan y rotan al límite.
+    await prisma.activeSession.deleteMany({ where: { userId: testUserId } });
+
+    const attempt = async () => {
+      const req = {
+        body: { username: testUsername, password: "secret123" },
+        ip: "127.0.0.1",
+        headers: { "user-agent": "vitest-auth-burst" },
+      } as any;
+      const res = createMockRes();
+      await login(req, res as any);
+      return res;
+    };
+
+    const results = await Promise.all(Array.from({ length: 6 }, () => attempt()));
+
+    for (const res of results) {
+      expect(res.statusCode).toBe(200);
+      expect(res.body?.token).toBeTypeOf("string");
+    }
+    const tokens = results.map((r) => r.body?.token);
+    expect(new Set(tokens).size).toBe(tokens.length);
+
+    const count = await prisma.activeSession.count({ where: { userId: testUserId } });
+    expect(count).toBeLessThanOrEqual(10);
+  });
 });

@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { auditService } from "./auditService";
 import { mfaService } from "./mfaService";
+import { toCaughtError } from "../utils/caughtError";
 import { SocketService } from "./socketService";
 
 /**
@@ -92,9 +93,15 @@ export class AuthService {
       });
 
       if (oldestSession) {
-        await prisma.activeSession.delete({
-          where: { id: oldestSession.id },
-        });
+        // Tolerante a carreras: otro login concurrente puede haber evictado
+        // ya esta misma fila (P2025). No es error: el cupo se liberó igual.
+        try {
+          await prisma.activeSession.delete({
+            where: { id: oldestSession.id },
+          });
+        } catch (error: unknown) {
+          if (toCaughtError(error).code !== "P2025") throw error;
+        }
       }
     }
   }
@@ -107,9 +114,16 @@ export class AuthService {
     userAgent: string,
   ) {
     const sessionHours = await this.getSessionDurationHours(role);
-    const token = jwt.sign({ id: userId, username, role, employeeId }, this.SECRET, {
-      expiresIn: `${sessionHours}h`,
-    });
+    // jti único por sesión: sin nonce, dos logins dentro del mismo segundo
+    // generan JWT idénticos (iat es segundos) y el insert choca con el
+    // @unique de token_hash (409 "unknown"). crypto.randomUUID es el nonce.
+    const token = jwt.sign(
+      { id: userId, username, role, employeeId, jti: crypto.randomUUID() },
+      this.SECRET,
+      {
+        expiresIn: `${sessionHours}h`,
+      },
+    );
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
