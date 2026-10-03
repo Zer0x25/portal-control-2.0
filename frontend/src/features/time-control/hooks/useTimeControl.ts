@@ -4,6 +4,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useScheduling } from "../../../hooks/useScheduling";
 import { useStore } from "../../../store/useStore";
+import { useShallow } from "zustand/react/shallow";
 import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
 import { useDebounce } from "../../../hooks/useDebounce";
@@ -133,15 +134,18 @@ export const useTimeControl = () => {
     },
     filteredRecords: enrichedRecords, // Renamed for component compatibility
     totalRecords: infiniteData?.pages[0]?.total || 0,
-    // Keep quick action modal logic from modals hook
-    ...useStore((s) => ({
-      quickActionRecord: s.quickActionRecord,
-      closeQuickActionModal: s.closeQuickActionModal,
-      quickActionClockStatus: getContractClockingStatus(
-        s.quickActionRecord as AttendanceRecord,
-        () => "fuera",
-      ),
-    })),
+    // Keep quick action modal logic from modals hook (useShallow: fresh
+    // object per snapshot would loop under rapid store writes).
+    ...useStore(
+      useShallow((s) => ({
+        quickActionRecord: s.quickActionRecord,
+        closeQuickActionModal: s.closeQuickActionModal,
+        quickActionClockStatus: getContractClockingStatus(
+          s.quickActionRecord as AttendanceRecord,
+          () => "fuera",
+        ),
+      })),
+    ),
     handleRowDoubleClick: useCallback(
       (record: DailyTimeRecord) => openQuickActionModal(record),
       [openQuickActionModal],
