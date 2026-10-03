@@ -295,3 +295,30 @@ The type must be at position 0. Emoji prefixes (`🔒 Fix ...`,
    locally. Do not bypass it with `--no-verify`.
 3. History already contains emoji-prefixed subjects (grandfathered, see
    spec 003 G-01). Do not imitate them.
+
+---
+
+## 7. Dependency Maintenance Cadence (Dependabot is disabled)
+
+Monthly lightweight sweep, one validated commit per package batch:
+
+```bash
+# 1. From the repo root, list drift per package
+(cd backend && npm outdated)
+(cd frontend && npm outdated)
+```
+
+1. Apply **minor/patch only** via `npm update <pkg>` (never bare `npm update`).
+2. Majors are one migration each: validate (`validate:ci` backend,
+   `validate:ci:coverage` frontend), commit, push, then next.
+3. Never run both packages' validations in parallel: backend `check:sdk`
+   rewrites `frontend/src/types/api-schema.ts` mid-run and produces a
+   phantom prettier failure in the frontend job.
+4. Standing holds (retry when the blocker lifts, do not force):
+   - `typescript@7`: `typescript-eslint` refuses TS 7.0 (support tracked
+     for TS >=7.1); also needs `moduleResolution: node10` removal.
+   - `prisma@8`: RC only, no stable release.
+   - `@babel/plugin-transform-runtime@8`: conflicts with workbox-build's
+     babel 7 tree (pinned at v7 deliberately, see vite 8 migration).
+   - `@types/exceljs`: `latest` (0.5.3) is lower than installed (1.3.2);
+     `wanted` already equals `current`, nothing to do.
