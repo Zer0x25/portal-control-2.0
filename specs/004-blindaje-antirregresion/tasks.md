@@ -24,10 +24,14 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
       Hecho 2/3: `tests/unit/domainRules.test.ts` (11 tests: punch-flow,
       autocierre, colación incompleta, prioridades leave/feriado/turno y
       wrap de ciclo; todo puro sin DB).
+      Hecho 3/3: `src/utils/dateUtils.test.ts` +11 tests frontend
+      (helpers puros; 2 supuestos TZ corregidos a asserts robustos).
 - [ ] 2.3 Ratchets actualizados, `validate:ci` verde, commit.
       Hecho parcial: backend 15/18/8/14 -> 16/19/9/15 (medido
       18.13% L / 20.93% F / 11.25% B / 17.49% S), luego -> 17/20/10/16
       (medido 18.96% L / 21.77% F / 12.51% B / 18.41% S).
+      Frontend 15/12/12/15 -> 16/13/13/15 (medido 17.83% L /
+      14.73% F / 14.61% B / 17.42% S; statements sin margen para 16).
 
 ## Fase 3 — Reescritura e2e
 

@@ -209,6 +209,10 @@ export default defineConfig(({ mode }) => {
       // es correccion de medicion, no perdida de cobertura. Umbrales con
       // margen anti-flakiness: solo pueden subir. Subir cobertura real va
       // por spec aparte (fuera de alcance de 003).
+      // Spec 004 fase 2 (2026-10-03): +11 tests en dateUtils.test.ts
+      // (helpers puros) -> 17.83% L, 14.73% F, 14.61% B, 17.42% S.
+      // Ratchet 15/12/12/15 -> 16/13/13/15 (statements queda en 15:
+      // 17.42 no da 2pts de margen para 16).
       coverage: {
         provider: "v8",
         reporter: ["text", "json-summary"],
@@ -222,9 +226,9 @@ export default defineConfig(({ mode }) => {
           "src/tests/**",
         ],
         thresholds: {
-          lines: 15,
-          functions: 12,
-          branches: 12,
+          lines: 16,
+          functions: 13,
+          branches: 13,
           statements: 15,
         },
       },
