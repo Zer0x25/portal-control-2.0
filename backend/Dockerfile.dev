@@ -16,5 +16,6 @@ RUN DIRECT_URL=postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-cod
 
 EXPOSE 4000
 
-# En desarrollo, corremos migraciones + seed idempotente y luego el servidor con auto-reload
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm run dev"]
+# En desarrollo, generamos el cliente (el bind mount ./backend enciende sobre /app),
+# corremos migraciones + seed idempotente y luego el servidor con auto-reload
+CMD ["sh", "-c", "npx prisma generate && npx prisma migrate deploy && npx prisma db seed && npm run dev"]
