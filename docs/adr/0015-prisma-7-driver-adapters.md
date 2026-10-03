@@ -1,6 +1,6 @@
 # ADR-0015: Migración Prisma 6 a 7 con driver adapters
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-03
 - Autores: zer0x
 - Spec:related: ADR-0001 (Postgres + PgBouncer + URL dual)

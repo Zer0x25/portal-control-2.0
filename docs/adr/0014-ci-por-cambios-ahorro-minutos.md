@@ -1,6 +1,6 @@
 # ADR-0014: CI por cambios para reducir minutos de GitHub
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-02
 - Autores: zer0x
 - Spec:related: ADR-0013 (reparto PR/main), ADR-0012 (gobernanza)
