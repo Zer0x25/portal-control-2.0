@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login } from "./helpers/auth-helper";
+import { loginFast } from "./helpers/auth-helper";
 
 // Reescrito en spec 004 fase 3 (2026-10-03):
 // - HashRouter: la auditoría vive en `/#/admin/governance?tab=audit`
@@ -15,8 +15,8 @@ import { login } from "./helpers/auth-helper";
 
 test.describe("Render Performance", () => {
   test.setTimeout(120000);
-  test.beforeEach(async ({ page }) => {
-    await login(page);
+  test.beforeEach(async ({ page, request }) => {
+    await loginFast(page, request, "admin");
   });
 
   test("Audit Logs view load and scroll performance", async ({ page }) => {

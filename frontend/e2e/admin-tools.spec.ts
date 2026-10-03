@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login } from "./helpers/auth-helper";
+import { loginFast } from "./helpers/auth-helper";
 
 // Reescrito en spec 004 fase 3 (2026-10-03): la app usa HashRouter
 // (`/#/...`) y `/admin/tools` redirige a `/#/admin/governance?tab=system`
@@ -16,8 +16,8 @@ test.describe("Admin tools access control", () => {
     await expect(page.getByText(/centro de gobernanza/i)).not.toBeVisible();
   });
 
-  test("admin can login and open admin tools", async ({ page }) => {
-    await login(page);
+  test("admin can login and open admin tools", async ({ page, request }) => {
+    await loginFast(page, request, "admin");
 
     await page.goto("/#/admin/tools");
     // /admin/tools redirects to the Governance Hub system tab

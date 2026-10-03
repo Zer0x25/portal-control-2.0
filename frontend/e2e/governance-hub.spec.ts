@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login } from "./helpers/auth-helper";
+import { loginFast } from "./helpers/auth-helper";
 
 // Reescrito en spec 004 fase 3 (2026-10-03): login compartido con
 // presupuestos calibrados (30s/60s), etiquetas de tabs en Title Case
@@ -8,8 +8,8 @@ import { login } from "./helpers/auth-helper";
 
 test.describe("Governance Hub Verification", () => {
   test.setTimeout(120000);
-  test.beforeEach(async ({ page }) => {
-    await login(page);
+  test.beforeEach(async ({ page, request }) => {
+    await loginFast(page, request, "admin");
 
     // Navigate to Governance Hub using HashRouter format
     await page.goto("/#/admin/governance");

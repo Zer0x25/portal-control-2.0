@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login } from "./helpers/auth-helper";
+import { loginFast } from "./helpers/auth-helper";
 
 // Reescrito en spec 004 fase 3 (2026-10-03): login compartido con
 // presupuestos calibrados; el saludo del dashboard está partido en dos
@@ -16,10 +16,10 @@ import { login } from "./helpers/auth-helper";
 
 test.describe("Governance Hub - Simplified Data Validation", () => {
   test.setTimeout(120000);
-  test.beforeEach(async ({ page }) => {
-    // login() already waits for redirect into an authenticated zone;
-    // no greeting assertion here (dashboard header varies by role/flag).
-    await login(page);
+  test.beforeEach(async ({ page, request }) => {
+    // loginFast seeds an authenticated session; no greeting assertion
+    // here (dashboard header varies by role/flag).
+    await loginFast(page, request, "admin");
   });
 
   test("Integrity Tab - key metrics are visible", async ({ page }) => {

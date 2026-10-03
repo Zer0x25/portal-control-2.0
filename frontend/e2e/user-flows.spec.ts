@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { login } from "./helpers/auth-helper";
+import { loginFast } from "./helpers/auth-helper";
 
 // Reescrito en spec 004 fase 3 (2026-10-03): la app usa HashRouter, todas
 // las navegaciones van con `/#/...`; el botón es "Registrar Ausencia"
@@ -40,7 +40,7 @@ test.describe("Critical User Flows", () => {
     }
 
     // Login as worker
-    await login(page, "juan.perez", "123456");
+    await loginFast(page, request, "worker");
 
     // Navigate to Worker Portal (HashRouter: #/ prefix required)
     await page.goto("/#/worker-portal");
@@ -68,9 +68,9 @@ test.describe("Critical User Flows", () => {
     await expect(page.getByText(/acción registrada/i)).toBeVisible({ timeout: 30000 });
   });
 
-  test("Permission Request Flow: Submit Absence (Admin)", async ({ page }) => {
+  test("Permission Request Flow: Submit Absence (Admin)", async ({ page, request }) => {
     // Login as admin
-    await login(page, "admin", "999.666");
+    await loginFast(page, request, "admin");
 
     await page.goto("/#/theoretical-shifts?tab=leaves");
     await expect(page.getByText(/gestión de ausencias/i)).toBeVisible({ timeout: 30000 });
@@ -100,9 +100,9 @@ test.describe("Critical User Flows", () => {
     });
   });
 
-  test("Shift Verification Flow: View Calendar (Worker)", async ({ page }) => {
+  test("Shift Verification Flow: View Calendar (Worker)", async ({ page, request }) => {
     // Login as worker
-    await login(page, "juan.perez", "123456");
+    await loginFast(page, request, "worker");
 
     await page.goto("/#/shift-calendar");
     await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible({
