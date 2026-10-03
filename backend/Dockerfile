@@ -30,6 +30,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
+# Prisma 7: el CLI evalua prisma.config.ts en CUALQUIER comando (migrate,
+# seed). Sin este COPY el arranque falla con "datasource.url is required".
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
 
 EXPOSE 4000

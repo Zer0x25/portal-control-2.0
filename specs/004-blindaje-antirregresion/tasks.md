@@ -4,8 +4,8 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
 
 ## Fase 1 — Staging + baseline e2e
 
-- [ ] 1.1 Staging arriba (`compose.staging.yaml`) con health OK.
-- [ ] 1.2 Smoke headless contra staging verde.
+- [x] 1.1 Staging arriba (`compose.staging.yaml`) con health OK.
+- [x] 1.2 Smoke headless contra staging verde.
 - [ ] 1.3 Baseline: correr cada spec e2e, registrar pasa/falla + causa.
 
 ## Fase 2 — Cobertura unitaria
