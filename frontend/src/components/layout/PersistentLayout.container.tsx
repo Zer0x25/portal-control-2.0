@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import PersistentLayoutView from "./PersistentLayout.view";
 import { usePersistentLayoutController } from "../../hooks/layout/usePersistentLayoutController";
 

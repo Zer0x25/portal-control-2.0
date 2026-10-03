@@ -54,7 +54,7 @@ vi.mock("../../../services/configService", () => ({
   },
 }));
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 

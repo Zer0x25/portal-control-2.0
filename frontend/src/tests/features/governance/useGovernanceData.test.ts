@@ -5,7 +5,7 @@ import { useGovernanceData } from "../../../features/governance/hooks/useGoverna
 const setSearchParamsMock = vi.fn();
 let currentSearchParams = new URLSearchParams();
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useSearchParams: () => [currentSearchParams, setSearchParamsMock],
 }));
 

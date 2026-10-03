@@ -3,9 +3,9 @@ import { renderHook } from "@testing-library/react";
 import { useQuickActionsLogic } from "../../../features/dashboard/hooks/useQuickActionsLogic";
 import { ROUTES } from "../../../constants";
 
-// Mock de react-router-dom
+// Mock de react-router
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
 

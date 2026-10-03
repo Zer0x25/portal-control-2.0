@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router";
 import { SupervisorTab } from "../../../types/supervisor";
 
 export type SupervisorActiveTab = SupervisorTab;

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { ROUTES } from "../../constants";
 import { useAuth } from "../useAuth";
 import { useEmployees } from "../useEmployees";

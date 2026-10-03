@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 
 export type GovernanceTabId = "integrity" | "security" | "audit" | "system" | "health";
 

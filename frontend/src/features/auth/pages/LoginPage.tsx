@@ -8,7 +8,7 @@ import Input from "../../../components/ui/Input";
 import Card from "../../../components/ui/Card";
 import SimpleConnectionIndicator from "../../../components/ui/SimpleConnectionIndicator";
 import { APP_TITLE, ROUTES } from "../../../constants";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
 import logoImg from "../../../assets/images/Mini_Zer0x.jpg";

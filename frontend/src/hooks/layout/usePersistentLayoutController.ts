@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../useAuth";
 import { useDataRefresher } from "../useDataRefresher";
 import { useLoginAutomations } from "../useLoginAutomations";

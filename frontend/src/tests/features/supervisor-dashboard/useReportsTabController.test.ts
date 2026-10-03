@@ -19,7 +19,7 @@ vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => useToastsMock(),
 }));
 
-vi.mock("react-router-dom", () => ({
+vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 

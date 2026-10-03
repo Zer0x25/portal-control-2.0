@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import type { SidebarMenuItem } from "../../hooks/layout/sidebarMenu";
 
 interface SidebarNavItemProps extends SidebarMenuItem {

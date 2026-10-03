@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import { useReportsQuery } from "../../../hooks/queries/useReportsQuery";
 import { ShiftReport, LogbookEntryItem } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";

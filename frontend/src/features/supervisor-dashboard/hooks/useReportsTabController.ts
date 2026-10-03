@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useToasts } from "../../../hooks/useToasts";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { authService } from "../../../services/authService";

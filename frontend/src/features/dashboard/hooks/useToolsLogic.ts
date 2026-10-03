@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../../../store/useStore";
 import { ROUTES } from "../../../constants";
