@@ -18,7 +18,7 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
 - [x] 2.1 Medir cobertura por archivo, elegir 3 servicios críticos.
       Elegidos backend: `ShiftValidator` (361 líneas, 0%), reglas de
       scheduling (~0%), `AuthService` (~1%). Frontend: pendiente de medir.
-- [ ] 2.2 Unit tests nuevos hasta subir thresholds (backend + frontend).
+- [x] 2.2 Unit tests nuevos hasta subir thresholds (backend + frontend).
       Hecho 1/3: `tests/unit/shiftValidator.test.ts` (14 tests, métodos
       puros + conflictos con fixtures, fechas relativas anti-calendario).
       Hecho 2/3: `tests/unit/domainRules.test.ts` (11 tests: punch-flow,
@@ -26,7 +26,7 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
       wrap de ciclo; todo puro sin DB).
       Hecho 3/3: `src/utils/dateUtils.test.ts` +11 tests frontend
       (helpers puros; 2 supuestos TZ corregidos a asserts robustos).
-- [ ] 2.3 Ratchets actualizados, `validate:ci` verde, commit.
+- [x] 2.3 Ratchets actualizados, `validate:ci` verde, commit.
       Hecho parcial: backend 15/18/8/14 -> 16/19/9/15 (medido
       18.13% L / 20.93% F / 11.25% B / 17.49% S), luego -> 17/20/10/16
       (medido 18.96% L / 21.77% F / 12.51% B / 18.41% S).
