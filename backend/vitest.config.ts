@@ -18,16 +18,19 @@ export default defineConfig({
     // 17.1% líneas, 20.16% funciones, 10.45% ramas, 16.44% statements.
     // Umbrales con ~2pts de margen anti-flakiness: solo pueden subir.
     // Subir cobertura real va por spec aparte (fuera de alcance de 003).
+    // Spec 004 fase 2 (2026-10-03): +14 tests de ShiftValidator
+    // (tests/unit/shiftValidator.test.ts) -> 18.14% L, 21.03% F,
+    // 11.25% B, 17.51% S. Ratchet 15/18/8/14 -> 16/19/9/15.
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary"],
       include: ["src/**/*.ts"],
       exclude: ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "scripts/**"],
       thresholds: {
-        lines: 15,
-        functions: 18,
-        branches: 8,
-        statements: 14,
+        lines: 16,
+        functions: 19,
+        branches: 9,
+        statements: 15,
       },
     },
   },

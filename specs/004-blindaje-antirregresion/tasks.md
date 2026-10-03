@@ -15,9 +15,15 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
 
 ## Fase 2 — Cobertura unitaria
 
-- [ ] 2.1 Medir cobertura por archivo, elegir 3 servicios críticos.
+- [x] 2.1 Medir cobertura por archivo, elegir 3 servicios críticos.
+      Elegidos backend: `ShiftValidator` (361 líneas, 0%), reglas de
+      scheduling (~0%), `AuthService` (~1%). Frontend: pendiente de medir.
 - [ ] 2.2 Unit tests nuevos hasta subir thresholds (backend + frontend).
+      Hecho 1/3: `tests/unit/shiftValidator.test.ts` (14 tests, métodos
+      puros + conflictos con fixtures, fechas relativas anti-calendario).
 - [ ] 2.3 Ratchets actualizados, `validate:ci` verde, commit.
+      Hecho parcial: backend 15/18/8/14 -> 16/19/9/15 (medido
+      18.13% L / 20.93% F / 11.25% B / 17.49% S).
 
 ## Fase 3 — Reescritura e2e
 
