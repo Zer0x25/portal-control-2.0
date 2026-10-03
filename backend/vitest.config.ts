@@ -21,16 +21,19 @@ export default defineConfig({
     // Spec 004 fase 2 (2026-10-03): +14 tests de ShiftValidator
     // (tests/unit/shiftValidator.test.ts) -> 18.14% L, 21.03% F,
     // 11.25% B, 17.51% S. Ratchet 15/18/8/14 -> 16/19/9/15.
+    // +11 tests de reglas de dominio (tests/unit/domainRules.test.ts:
+    // attendanceRules + schedulingRules, puras sin DB) -> 18.96% L,
+    // 21.77% F, 12.51% B, 18.41% S. Ratchet -> 17/20/10/16.
     coverage: {
       provider: "v8",
       reporter: ["text", "json-summary"],
       include: ["src/**/*.ts"],
       exclude: ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "scripts/**"],
       thresholds: {
-        lines: 16,
-        functions: 19,
-        branches: 9,
-        statements: 15,
+        lines: 17,
+        functions: 20,
+        branches: 10,
+        statements: 16,
       },
     },
   },
