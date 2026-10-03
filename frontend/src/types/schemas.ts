@@ -243,7 +243,7 @@ export const CorrectionRequestSchema = SyncableSchema.extend({
   timeRecordId: z.string(),
   recordField: z.enum(["entrada", "inicioColacion", "finColacion", "salida"]),
   originalValue: z.string().nullable().optional(),
-  requestedValue: z.string().datetime({ offset: true }),
+  requestedValue: z.iso.datetime({ offset: true }),
   reason: z.string(),
   attachment: z
     .object({
@@ -343,7 +343,7 @@ export const SupervisorWidgetConfigSchema = z.object({
     w: z.number(),
     h: z.number(),
   }),
-  settings: z.record(z.any()),
+  settings: z.record(z.string(), z.any()),
   enabled: z.boolean(),
 });
 
@@ -385,7 +385,7 @@ export const SupervisorErrorSchema = z.object({
     "SYSTEM_MAINTENANCE",
   ]),
   message: z.string(),
-  details: z.record(z.any()).optional(),
+  details: z.record(z.string(), z.any()).optional(),
   recoverable: z.boolean(),
 });
 
@@ -423,7 +423,7 @@ export const SupervisorReportDataSchema = z.object({
       type: z.enum(["line", "bar", "pie", "doughnut", "area"]),
       title: z.string(),
       data: z.any(),
-      config: z.record(z.any()),
+      config: z.record(z.string(), z.any()),
     }),
   ),
   tables: z.array(
@@ -438,7 +438,7 @@ export const SupervisorReportDataSchema = z.object({
           sortable: z.boolean(),
         }),
       ),
-      rows: z.array(z.record(z.any())),
+      rows: z.array(z.record(z.string(), z.any())),
     }),
   ),
   insights: z.array(

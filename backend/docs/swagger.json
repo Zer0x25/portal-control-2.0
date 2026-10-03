@@ -61,6 +61,12 @@
           }
         ]
       },
+      "BulkEmployee": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Employee"
+        }
+      },
       "Employee": {
         "type": "object",
         "properties": {
@@ -154,12 +160,6 @@
           "rut",
           "name"
         ]
-      },
-      "BulkEmployee": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Employee"
-        }
       },
       "Department": {
         "type": "object",
@@ -451,48 +451,6 @@
           "role"
         ]
       },
-      "TimeRecordStatus": {
-        "type": "string",
-        "enum": [
-          "Laborando",
-          "Colacion",
-          "Completado",
-          "AnomaliaManual",
-          "Ausente",
-          "Permiso Especial",
-          "Vacaciones",
-          "DiaLibre",
-          "SinMarcajeTurnoAsignado",
-          "Feriado"
-        ]
-      },
-      "ClockingStatus": {
-        "type": "string",
-        "enum": [
-          "fuera",
-          "por_iniciar",
-          "en_jornada",
-          "en_colacion",
-          "en_jornada_post_colacion",
-          "terminada",
-          "jornada_terminada_anomalia",
-          "no_programado",
-          "ausente"
-        ]
-      },
-      "AttendanceStatus": {
-        "type": "string",
-        "enum": [
-          "Normal",
-          "Atraso",
-          "Ausente",
-          "Vacaciones",
-          "Licencia Médica",
-          "Permiso Especial",
-          "Feriado",
-          "DiaLibre"
-        ]
-      },
       "AttendanceRecordResponse": {
         "type": "object",
         "properties": {
@@ -620,6 +578,54 @@
           "date"
         ]
       },
+      "TimeRecordStatus": {
+        "type": "string",
+        "enum": [
+          "Laborando",
+          "Colacion",
+          "Completado",
+          "AnomaliaManual",
+          "Ausente",
+          "Permiso Especial",
+          "Vacaciones",
+          "DiaLibre",
+          "SinMarcajeTurnoAsignado",
+          "Feriado"
+        ]
+      },
+      "ClockingStatus": {
+        "type": "string",
+        "enum": [
+          "fuera",
+          "por_iniciar",
+          "en_jornada",
+          "en_colacion",
+          "en_jornada_post_colacion",
+          "terminada",
+          "jornada_terminada_anomalia",
+          "no_programado",
+          "ausente"
+        ]
+      },
+      "AttendanceStatus": {
+        "type": "string",
+        "enum": [
+          "Normal",
+          "Atraso",
+          "Ausente",
+          "Vacaciones",
+          "Licencia Médica",
+          "Permiso Especial",
+          "Feriado",
+          "DiaLibre"
+        ]
+      },
+      "BulkTimeRecord": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TimeRecordWrite"
+        }
+      },
       "TimeRecordWrite": {
         "type": "object",
         "properties": {
@@ -663,11 +669,26 @@
           "date"
         ]
       },
-      "BulkTimeRecord": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/TimeRecordWrite"
-        }
+      "CorrectionRequestListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CorrectionRequest"
+                }
+              }
+            },
+            "required": [
+              "data"
+            ]
+          }
+        ]
       },
       "CorrectionRequest": {
         "type": "object",
@@ -707,27 +728,6 @@
           "recordField",
           "requestedValue",
           "reason"
-        ]
-      },
-      "CorrectionRequestListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/CorrectionRequest"
-                }
-              }
-            },
-            "required": [
-              "data"
-            ]
-          }
         ]
       },
       "ExportQuery": {
@@ -949,6 +949,27 @@
           "resolvedBy"
         ]
       },
+      "QuickNoteListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/QuickNote"
+                }
+              }
+            },
+            "required": [
+              "data"
+            ]
+          }
+        ]
+      },
       "QuickNote": {
         "type": "object",
         "properties": {
@@ -992,27 +1013,6 @@
           "authorUsername"
         ]
       },
-      "QuickNoteListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/QuickNote"
-                }
-              }
-            },
-            "required": [
-              "data"
-            ]
-          }
-        ]
-      },
       "QuickNoteQuery": {
         "type": "object",
         "properties": {
@@ -1031,6 +1031,27 @@
             "properties": {
               "data": {
                 "$ref": "#/components/schemas/QuickNote"
+              }
+            },
+            "required": [
+              "data"
+            ]
+          }
+        ]
+      },
+      "LeaveListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LeaveRecord"
+                }
               }
             },
             "required": [
@@ -1084,27 +1105,6 @@
           "type",
           "startDate",
           "endDate"
-        ]
-      },
-      "LeaveListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/LeaveRecord"
-                }
-              }
-            },
-            "required": [
-              "data"
-            ]
-          }
         ]
       },
       "LeaveQuery": {
@@ -1196,6 +1196,12 @@
           }
         ]
       },
+      "BulkMeterReading": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/MeterReading"
+        }
+      },
       "MeterReading": {
         "type": "object",
         "properties": {
@@ -1239,12 +1245,6 @@
           "authorUsername",
           "value"
         ]
-      },
-      "BulkMeterReading": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/MeterReading"
-        }
       },
       "MeterReadingListResponse": {
         "allOf": [
@@ -1344,6 +1344,12 @@
           }
         ]
       },
+      "BulkHoliday": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Holiday"
+        }
+      },
       "Holiday": {
         "type": "object",
         "properties": {
@@ -1380,12 +1386,6 @@
           "name",
           "type"
         ]
-      },
-      "BulkHoliday": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Holiday"
-        }
       },
       "HolidayQuery": {
         "type": "object",
@@ -1435,39 +1435,11 @@
           "$ref": "#/components/schemas/AssignedShift"
         }
       },
-      "PatternSchedule": {
-        "type": "object",
-        "properties": {
-          "dayIndex": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 6
-          },
-          "startTime": {
-            "type": "string",
-            "nullable": true
-          },
-          "endTime": {
-            "type": "string",
-            "nullable": true
-          },
-          "isOffDay": {
-            "type": "boolean"
-          },
-          "hasColacion": {
-            "type": "boolean"
-          },
-          "colacionMinutes": {
-            "type": "number"
-          },
-          "hours": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "dayIndex",
-          "isOffDay"
-        ]
+      "BulkShiftPattern": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ShiftPattern"
+        }
       },
       "ShiftPattern": {
         "type": "object",
@@ -1526,11 +1498,39 @@
           "maxHoursPattern"
         ]
       },
-      "BulkShiftPattern": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/ShiftPattern"
-        }
+      "PatternSchedule": {
+        "type": "object",
+        "properties": {
+          "dayIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 6
+          },
+          "startTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "endTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "isOffDay": {
+            "type": "boolean"
+          },
+          "hasColacion": {
+            "type": "boolean"
+          },
+          "colacionMinutes": {
+            "type": "number"
+          },
+          "hours": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "dayIndex",
+          "isOffDay"
+        ]
       },
       "CalendarMatrixRequest": {
         "type": "object",
@@ -2409,6 +2409,27 @@
           "recipient"
         ]
       },
+      "ScheduledReportListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ApiResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ScheduledReport"
+                }
+              }
+            },
+            "required": [
+              "data"
+            ]
+          }
+        ]
+      },
       "ScheduledReport": {
         "type": "object",
         "properties": {
@@ -2459,7 +2480,7 @@
           "recipients"
         ]
       },
-      "ScheduledReportListResponse": {
+      "ShiftReportListResponse": {
         "allOf": [
           {
             "$ref": "#/components/schemas/ApiResponse"
@@ -2470,7 +2491,7 @@
               "data": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/ScheduledReport"
+                  "$ref": "#/components/schemas/ShiftReport"
                 }
               }
             },
@@ -2604,27 +2625,6 @@
           "status",
           "logEntries",
           "supplierEntries"
-        ]
-      },
-      "ShiftReportListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ShiftReport"
-                }
-              }
-            },
-            "required": [
-              "data"
-            ]
-          }
         ]
       }
     },

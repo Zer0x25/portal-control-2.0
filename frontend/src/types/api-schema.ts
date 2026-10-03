@@ -4524,6 +4524,7 @@ export interface components {
         totalPages: number;
       };
     };
+    BulkEmployee: components["schemas"]["Employee"][];
     Employee: {
       id?: string;
       rut: string;
@@ -4553,7 +4554,6 @@ export interface components {
       syncStatus?: string;
       lastModified?: number;
     };
-    BulkEmployee: components["schemas"]["Employee"][];
     Department: {
       id?: string;
       name: string;
@@ -4651,39 +4651,6 @@ export interface components {
       syncStatus?: string;
       lastModified?: number;
     };
-    /** @enum {string} */
-    TimeRecordStatus:
-      | "Laborando"
-      | "Colacion"
-      | "Completado"
-      | "AnomaliaManual"
-      | "Ausente"
-      | "Permiso Especial"
-      | "Vacaciones"
-      | "DiaLibre"
-      | "SinMarcajeTurnoAsignado"
-      | "Feriado";
-    /** @enum {string} */
-    ClockingStatus:
-      | "fuera"
-      | "por_iniciar"
-      | "en_jornada"
-      | "en_colacion"
-      | "en_jornada_post_colacion"
-      | "terminada"
-      | "jornada_terminada_anomalia"
-      | "no_programado"
-      | "ausente";
-    /** @enum {string} */
-    AttendanceStatus:
-      | "Normal"
-      | "Atraso"
-      | "Ausente"
-      | "Vacaciones"
-      | "Licencia Médica"
-      | "Permiso Especial"
-      | "Feriado"
-      | "DiaLibre";
     AttendanceRecordResponse: {
       id?: string;
       employeeId: string;
@@ -4720,6 +4687,40 @@ export interface components {
       lastModified?: number;
       isDeleted?: boolean;
     };
+    /** @enum {string} */
+    TimeRecordStatus:
+      | "Laborando"
+      | "Colacion"
+      | "Completado"
+      | "AnomaliaManual"
+      | "Ausente"
+      | "Permiso Especial"
+      | "Vacaciones"
+      | "DiaLibre"
+      | "SinMarcajeTurnoAsignado"
+      | "Feriado";
+    /** @enum {string} */
+    ClockingStatus:
+      | "fuera"
+      | "por_iniciar"
+      | "en_jornada"
+      | "en_colacion"
+      | "en_jornada_post_colacion"
+      | "terminada"
+      | "jornada_terminada_anomalia"
+      | "no_programado"
+      | "ausente";
+    /** @enum {string} */
+    AttendanceStatus:
+      | "Normal"
+      | "Atraso"
+      | "Ausente"
+      | "Vacaciones"
+      | "Licencia Médica"
+      | "Permiso Especial"
+      | "Feriado"
+      | "DiaLibre";
+    BulkTimeRecord: components["schemas"]["TimeRecordWrite"][];
     TimeRecordWrite: {
       employeeId: string;
       date: string;
@@ -4731,7 +4732,9 @@ export interface components {
       source?: string;
       justification?: string | null;
     };
-    BulkTimeRecord: components["schemas"]["TimeRecordWrite"][];
+    CorrectionRequestListResponse: components["schemas"]["ApiResponse"] & {
+      data: components["schemas"]["CorrectionRequest"][];
+    };
     CorrectionRequest: {
       employeeId: string;
       timeRecordId: string;
@@ -4742,9 +4745,6 @@ export interface components {
       requestedValue: string;
       reason: string;
       attachment?: unknown;
-    };
-    CorrectionRequestListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["CorrectionRequest"][];
     };
     ExportQuery: {
       startDate: string;
@@ -4806,6 +4806,9 @@ export interface components {
       rejectionReason?: string;
       resolvedBy: string;
     };
+    QuickNoteListResponse: components["schemas"]["ApiResponse"] & {
+      data: components["schemas"]["QuickNote"][];
+    };
     QuickNote: {
       id?: string;
       content: string;
@@ -4819,14 +4822,14 @@ export interface components {
       syncStatus?: string;
       lastModified?: number;
     };
-    QuickNoteListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["QuickNote"][];
-    };
     QuickNoteQuery: {
       since?: string;
     };
     QuickNoteResponse: components["schemas"]["ApiResponse"] & {
       data: components["schemas"]["QuickNote"];
+    };
+    LeaveListResponse: components["schemas"]["ApiResponse"] & {
+      data: components["schemas"]["LeaveRecord"][];
     };
     LeaveRecord: {
       id?: string;
@@ -4840,9 +4843,6 @@ export interface components {
       isDeleted?: boolean;
       syncStatus?: string;
       lastModified?: number;
-    };
-    LeaveListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["LeaveRecord"][];
     };
     LeaveQuery: {
       page?: string;
@@ -4865,6 +4865,7 @@ export interface components {
         totalPages: number;
       };
     };
+    BulkMeterReading: components["schemas"]["MeterReading"][];
     MeterReading: {
       id?: string;
       meterConfigId: string;
@@ -4878,7 +4879,6 @@ export interface components {
       syncStatus?: string;
       lastModified?: number;
     };
-    BulkMeterReading: components["schemas"]["MeterReading"][];
     MeterReadingListResponse: components["schemas"]["ApiResponse"] & {
       data: components["schemas"]["MeterReading"][];
     };
@@ -4899,6 +4899,7 @@ export interface components {
       };
       data: components["schemas"]["MeterReading"][];
     };
+    BulkHoliday: components["schemas"]["Holiday"][];
     Holiday: {
       id?: string;
       date: string;
@@ -4909,7 +4910,6 @@ export interface components {
       syncStatus?: string;
       isDeleted?: boolean;
     };
-    BulkHoliday: components["schemas"]["Holiday"][];
     HolidayQuery: {
       since?: string;
     };
@@ -4923,15 +4923,7 @@ export interface components {
       lastModified?: number;
     };
     BulkAssignedShift: components["schemas"]["AssignedShift"][];
-    PatternSchedule: {
-      dayIndex: number;
-      startTime?: string | null;
-      endTime?: string | null;
-      isOffDay: boolean;
-      hasColacion?: boolean;
-      colacionMinutes?: number;
-      hours?: number;
-    };
+    BulkShiftPattern: components["schemas"]["ShiftPattern"][];
     ShiftPattern: {
       id?: string;
       name: string;
@@ -4944,7 +4936,15 @@ export interface components {
       isDeleted?: boolean;
       lastModified?: number;
     };
-    BulkShiftPattern: components["schemas"]["ShiftPattern"][];
+    PatternSchedule: {
+      dayIndex: number;
+      startTime?: string | null;
+      endTime?: string | null;
+      isOffDay: boolean;
+      hasColacion?: boolean;
+      colacionMinutes?: number;
+      hours?: number;
+    };
     CalendarMatrixRequest: {
       startDate: string;
       endDate: string;
@@ -5171,6 +5171,9 @@ export interface components {
       /** Format: email */
       recipient: string;
     };
+    ScheduledReportListResponse: components["schemas"]["ApiResponse"] & {
+      data: components["schemas"]["ScheduledReport"][];
+    };
     ScheduledReport: {
       id?: string;
       name: string;
@@ -5184,8 +5187,8 @@ export interface components {
         [key: string]: unknown;
       };
     };
-    ScheduledReportListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["ScheduledReport"][];
+    ShiftReportListResponse: components["schemas"]["ApiResponse"] & {
+      data: components["schemas"]["ShiftReport"][];
     };
     ShiftReport: {
       id?: string;
@@ -5213,9 +5216,6 @@ export interface components {
         reason: string;
         timestamp: number;
       }[];
-    };
-    ShiftReportListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["ShiftReport"][];
     };
   };
   responses: never;

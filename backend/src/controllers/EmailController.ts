@@ -28,7 +28,7 @@ export const verifyConfig = asyncHandler(async (req: Request, res: Response) => 
     res.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError("Datos de configuración inválidos", error.errors);
+      throw new ValidationError("Datos de configuración inválidos", error.issues);
     }
     throw error;
   }
@@ -44,7 +44,7 @@ export const saveConfig = asyncHandler(async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new ValidationError("Datos de configuración inválidos", error.errors);
+      throw new ValidationError("Datos de configuración inválidos", error.issues);
     }
     throw error;
   }

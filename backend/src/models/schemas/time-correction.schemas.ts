@@ -133,7 +133,7 @@ export const CorrectionRequestSchema = z
     timeRecordId: z.string(),
     recordField: z.enum(["entrada", "inicioColacion", "finColacion", "salida"]),
     currentValue: z.string().optional(),
-    requestedValue: z.string().datetime({ offset: true }),
+    requestedValue: z.iso.datetime({ offset: true }),
     reason: z.string(),
     attachment: z.any().optional(),
   })
@@ -207,7 +207,7 @@ export const ANOMALY_RESOLUTIONS = [
 export const ResolveAnomalySchema = z
   .object({
     resolution: z.enum(ANOMALY_RESOLUTIONS, {
-      errorMap: () => ({ message: "Resolución inválida" }),
+      error: "Resolución inválida",
     }),
   })
   .openapi("ResolveAnomaly");

@@ -15,9 +15,9 @@ export const AuditLogSchema = z
     category: z.string(),
     severity: z.string(),
     outcome: z.string(),
-    details: z.record(z.unknown()).optional(),
+    details: z.record(z.string(), z.unknown()).optional(),
     ipAddress: z.string().nullable().optional(),
-    metadata: z.record(z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   })
   .openapi("AuditLog");
 
@@ -45,7 +45,7 @@ export const HealthStatusSchema = z
     uptime: z.number(),
     timestamp: z.string(),
     database: z.string(),
-    services: z.record(z.string()).optional(),
+    services: z.record(z.string(), z.string()).optional(),
   })
   .openapi("HealthStatus");
 

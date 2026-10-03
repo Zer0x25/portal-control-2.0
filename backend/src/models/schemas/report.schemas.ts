@@ -10,7 +10,7 @@ export const ScheduledReportSchema = z
     recipients: z.array(z.string().email()),
     lastRun: z.string().nullable().optional(),
     nextRun: z.string().nullable().optional(),
-    config: z.record(z.unknown()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
   })
   .openapi("ScheduledReport");
 
