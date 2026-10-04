@@ -23,7 +23,7 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
             title={`Folio: ${report.folio}`}
             subtitle={report.shiftName}
             extra={
-              <span className="text-[11px] font-semibold text-token-text-tertiary opacity-80 ml-1">
+              <span className="text-[11px] font-semibold text-token-text-tertiary ml-1">
                 • Resp: {getResponsibleDisplayName(report.responsibleUser)}
               </span>
             }
@@ -31,7 +31,7 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
               <div
                 className={`px-2.5 py-1 rounded-sm text-[11px] font-semibold uppercase tracking-wider border ${
                   report.status === "open"
-                    ? "bg-emerald-600/10 text-emerald-600 border-emerald-600/20"
+                    ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 border-emerald-600/20"
                     : "bg-token-surface-active text-token-text-tertiary border-token-border-technical"
                 }`}
               >
