@@ -1,5 +1,35 @@
 # Changelog
 
+## [8.22.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.21.0...v8.22.0) (2026-10-04)
+
+
+### Features
+
+* **docker:** separate dev and local staging environments ([1e8d962](https://github.com/Zer0x25/portal-control-2.0/commit/1e8d962c31fcbe4c2df27d2482d951d658eb9faf))
+* **frontend:** real weather via Open-Meteo, close TD-002 ([61dba33](https://github.com/Zer0x25/portal-control-2.0/commit/61dba3317065cc46d9f7c81effd8733c90651bc7))
+* **staging:** opt-in e2e worker seed for prod-mode stacks ([49dcd65](https://github.com/Zer0x25/portal-control-2.0/commit/49dcd65e41f961ee3fede63c11a95b8082ebae9a))
+* **weather:** geoaware location with hardened 30min cache ([de6eb21](https://github.com/Zer0x25/portal-control-2.0/commit/de6eb219c81612db4d64e9c34bee2e6f1157dafb))
+
+
+### Bug Fixes
+
+* **a11y:** dashboard report badge and responsible contrast ([a9b2b18](https://github.com/Zer0x25/portal-control-2.0/commit/a9b2b181482cc25f4415e5e3702cfeee4060975e))
+* **api:** database unreachable maps to 503 plus soak runner ([3b0f894](https://github.com/Zer0x25/portal-control-2.0/commit/3b0f894a5bb82b8062805eae185014c513961daf))
+* **auth:** enforce session limit post-insert against concurrent logins ([3e9e95a](https://github.com/Zer0x25/portal-control-2.0/commit/3e9e95ad818c75dce7f83e48263555fae92e62c8))
+* **auth:** serialize session insert plus trim under per-user lock ([7da4bd3](https://github.com/Zer0x25/portal-control-2.0/commit/7da4bd385cb905ce03f8cb0dd32bef2034488a53))
+* **auth:** throttle kiosk-login per ip and employee ([ab19768](https://github.com/Zer0x25/portal-control-2.0/commit/ab197680e1afe0bfdc0d2301dc83bb446af0a5e5))
+* **backend:** make concurrent logins race-safe with session jti ([3626ed4](https://github.com/Zer0x25/portal-control-2.0/commit/3626ed4553328f1690350b811abbc5fea81055d4))
+* **backend:** map attendance rule errors to 400 instead of 500 ([f579852](https://github.com/Zer0x25/portal-control-2.0/commit/f579852c98501943b2d1a76ec5426640d3bde0b3))
+* **ci:** allowlist e2e fixtures in secret-scan ([4d72e05](https://github.com/Zer0x25/portal-control-2.0/commit/4d72e059f7a7ea3314f0bc3cbcdae41dcba1a564))
+* **corrections:** single-winner concurrent approve via conditional update ([5f64330](https://github.com/Zer0x25/portal-control-2.0/commit/5f64330e0d168122cb78aa6da4e651247a9dcc8b))
+* **deploy:** copy prisma.config.ts into production image ([e191b08](https://github.com/Zer0x25/portal-control-2.0/commit/e191b08bee49b9876a03b56a830787038382c605))
+* **email,import:** send-test contract plus invalid excel maps to 400 ([9c4006b](https://github.com/Zer0x25/portal-control-2.0/commit/9c4006b2b94bef7ace148e601669026b5d65c7c9))
+* **frontend:** close IDB handle before deleteDB in wipeAllData ([7cb3e8b](https://github.com/Zer0x25/portal-control-2.0/commit/7cb3e8b05ad48359b6ce4dbc64c521c42828b4ac))
+* **frontend:** close TD-001 contrast gaps, gate serious in a11y ([53c491d](https://github.com/Zer0x25/portal-control-2.0/commit/53c491df3c1a9e31e2305a4cb14ff1ca2a10ee5c))
+* **frontend:** memoize zustand object selectors with useShallow ([a05921d](https://github.com/Zer0x25/portal-control-2.0/commit/a05921d834fa9a2fdfd2046619b63ff16f65bf52))
+* **punch:** serialize concurrent punches per employee via advisory lock ([8800224](https://github.com/Zer0x25/portal-control-2.0/commit/88002248cc9d326d4fe5f8a0061673a7bf013fde))
+* **records:** mint id server-side on create plus tsx watch for dev ([2d3fbff](https://github.com/Zer0x25/portal-control-2.0/commit/2d3fbff465cc195b9c5f272c384500f7f0b11bed))
+
 ## [8.21.0](https://github.com/Zer0x25/portal-control/compare/v8.20.0...v8.21.0) (2026-10-02)
 
 
