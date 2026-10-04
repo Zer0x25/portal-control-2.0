@@ -1,5 +1,5 @@
 # Fase 1 spec 005 (v1, solo lecturas): ráfaga de sync matinal contra
-# staging. Los tokens llegan por env (LOAD_ADMIN_TOKEN / LOAD_WORKER_TOKEN
+# staging. Los tokens llegan por env (LOAD_ADMIN_TOKEN / LOAD_WORKER_TOKEN / LOAD_EMPLOYEE_ID
 # + LOAD_TODAY) desde run-staging.cjs: el login NO va en el escenario
 # porque el rate-limit de login en prod (5/min por ip:user) tumbaría la
 # rampa y ensuciaría el reporte. Endpoints verificados por rol
@@ -44,7 +44,7 @@ scenarios:
           expect:
             - statusCode: 200
       - get:
-          url: "/api/records?employeeId=EMP001&desde={{ today }}&hasta={{ today }}"
+          url: "/api/records?employeeId={{ $env.LOAD_EMPLOYEE_ID }}&desde={{ today }}&hasta={{ today }}"
           headers:
             Authorization: "Bearer {{ adminToken }}"
           expect:
@@ -72,7 +72,7 @@ scenarios:
     weight: 30
     flow:
       - get:
-          url: "/api/records?employeeId=EMP001&desde={{ today }}&hasta={{ today }}"
+          url: "/api/records?employeeId={{ $env.LOAD_EMPLOYEE_ID }}&desde={{ today }}&hasta={{ today }}"
           headers:
             Authorization: "Bearer {{ workerToken }}"
           expect:

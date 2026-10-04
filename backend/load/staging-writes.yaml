@@ -1,6 +1,6 @@
 # Fase 4 spec 005 (escrituras): ciclo de marcación por VU contra staging.
 # Cada VU: login context ya sembrado por env (tokens fuera del escenario,
-# igual que staging-read), luego POST punch entrada + salida para EMP001.
+# igual que staging-read), luego POST punch entrada + salida para el worker de factoría (LOAD_EMPLOYEE_ID).
 # Limpia records de hoy vía DELETE en el runner (run-staging-writes.cjs)
 # antes y después, para que quede como si nunca pasó.
 config:
@@ -27,7 +27,7 @@ scenarios:
             Authorization: "Bearer {{ adminToken }}"
             Content-Type: "application/json"
           json:
-            employeeId: "EMP001"
+            employeeId: "{{ $env.LOAD_EMPLOYEE_ID }}"
             forcedType: "entrada"
             source: "e2e-stress-v4"
           expect:
@@ -39,7 +39,7 @@ scenarios:
             Authorization: "Bearer {{ adminToken }}"
             Content-Type: "application/json"
           json:
-            employeeId: "EMP001"
+            employeeId: "{{ $env.LOAD_EMPLOYEE_ID }}"
             forcedType: "salida"
             source: "e2e-stress-v4"
           expect:
