@@ -10,12 +10,12 @@ Regla condicional: un `404` por recurso ausente es diseño; el mismo
 
 ## Deuda aceptada
 
-| ID     | Item                                     | Evidencia                                                               | Estado                                            |
-| ------ | ---------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------- |
-| TD-001 | Contraste AA insuficiente (tema oscuro)  | ~30 nodos axe-core `serious/moderate`, backlog de paleta industrial     | Abierta                                           |
-| TD-002 | `useWeather` con datos mock/aleatorios   | `frontend/src/hooks/useWeather.ts:12-29`; integrar Open-Meteo (sin key) | Abierta                                           |
-| TD-003 | Seed global EMP001/juan.perez compartido | Seed legacy del primer arranque; migrar a factorías/usuarios únicos     | Abierta                                           |
-| TD-004 | Huecos restantes del barrido e2e         | `specs/005-flujos-de-testing/e2e-stress-plan.md`                        | Cerrada 2026-10-04 (`e2e/td004-gaps.spec.ts` 6/6) |
+| ID     | Item                                     | Evidencia                                                                                                                                 | Estado                                            |
+| ------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| TD-001 | Contraste AA insuficiente (tema oscuro)  | ~30 nodos axe-core `serious/moderate`, backlog de paleta industrial                                                                       | Abierta                                           |
+| TD-002 | `useWeather` con datos mock/aleatorios   | `frontend/src/hooks/useWeather.ts:12-29`; integrar Open-Meteo (sin key)                                                                   | Abierta                                           |
+| TD-003 | Seed global EMP001/juan.perez compartido | Factoría `e2e/helpers/worker-factory.ts` (kiosk migrado); restan user-flows/business-flows/load; sin DELETE employees (residual fila E2E) | Parcial                                           |
+| TD-004 | Huecos restantes del barrido e2e         | `specs/005-flujos-de-testing/e2e-stress-plan.md`                                                                                          | Cerrada 2026-10-04 (`e2e/td004-gaps.spec.ts` 6/6) |
 
 ## Diseño intencional (no deuda)
 
