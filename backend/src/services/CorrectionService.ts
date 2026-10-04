@@ -246,8 +246,12 @@ export class CorrectionService {
 
     const now = new Date();
     const result = await withDirectTransaction(async (tx) => {
-      const updatedRequest = await tx.correctionRequest.update({
-        where: { id },
+      // Anti-carrera (2026-10-04): el guard de idempotencia se lee FUERA de
+      // la tx, así que N approves concurrentes lo pasan todos y parchaban el
+      // record N veces con N auditorías. El update condicional deja pasar a
+      // uno solo; el resto retorna el estado ya resuelto (200, sin error).
+      const claimed = await tx.correctionRequest.updateMany({
+        where: { id, status: "pending" },
         data: {
           status,
           resolvedBy,
@@ -255,6 +259,15 @@ export class CorrectionService {
           resolvedAt: now,
         },
       });
+      if (claimed.count === 0) {
+        const settled = await tx.correctionRequest.findUnique({ where: { id } });
+        if (!settled) throw new Error("NOT_FOUND");
+        return { updatedRequest: settled, updatedTimeRecord: null, alreadySettled: true };
+      }
+      const updatedRequest = await tx.correctionRequest.findUnique({
+        where: { id },
+      });
+      if (!updatedRequest) throw new Error("NOT_FOUND");
 
       let updatedTimeRecord: TimeRecord | null = null;
 
@@ -343,9 +356,12 @@ export class CorrectionService {
         });
       }
 
-      return { updatedRequest, updatedTimeRecord };
+      return { updatedRequest, updatedTimeRecord, alreadySettled: false };
     });
     const request = result.updatedRequest;
+
+    // El perdedor de la carrera no re-emite ni re-audita: el ganador ya lo hizo.
+    if (result.alreadySettled) return request;
 
     const enrichedRequest = {
       ...request,
