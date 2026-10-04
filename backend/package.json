@@ -39,7 +39,8 @@
     "shift-reports:normalize": "npx tsx scripts/normalize_shift_reports.ts",
     "stress:records": "npx tsx scripts/stress_time_records.ts",
     "db:reset:state": "npx tsx scripts/reset-to-snapshot.ts",
-    "benchmark:monthly-plan": "npx tsx scripts/benchmark_monthly_plan.ts"
+    "benchmark:monthly-plan": "npx tsx scripts/benchmark_monthly_plan.ts",
+    "load:staging:cold": "node load/run-cold.cjs"
   },
   "keywords": [],
   "author": "",

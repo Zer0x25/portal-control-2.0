@@ -1,0 +1,59 @@
+# Endpoints fríos bajo ráfaga (caza-bugs 2026-10-04): rutas fuera del
+# escenario habitual de carga. Solo lecturas seguras: nada de send-test
+# (email real) ni import (multipart que muta). Token admin fuera del
+# escenario (rate-limit de login). Runner: run-cold.cjs.
+config:
+  target: "{{ $env.LOAD_TARGET }}"
+  variables:
+    adminToken: "{{ $env.LOAD_ADMIN_TOKEN }}"
+  phases:
+    - duration: 30
+      arrivalRate: 1
+      name: "calentamiento"
+    - duration: 60
+      arrivalRate: 2
+      rampTo: 4
+      name: "pico frío"
+  ensure:
+    maxErrorRate: 1
+
+scenarios:
+  - name: "lecturas frias admin"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/shift-reports"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/meters"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/email/config"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/email/rules"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/audit-logs/export?format=json"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/notes"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
