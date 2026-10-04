@@ -7,8 +7,8 @@ This document provides conventions, operational commands, and architectural cons
 ## 1. Project Structure
 
 - **`backend/`**: Node.js (v24), Express, TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
-- **`frontend/`**: React 18, Vite, TypeScript, Redux Toolkit, Tailwind CSS.
-- **`compose.yaml`**: Multi-container stack (PostgreSQL 15, PgBouncer, backend, frontend, Nginx).
+- **`frontend/`**: React 19, Vite, TypeScript, Zustand, TanStack Query, Tailwind CSS.
+- **`compose.yaml`**: Production-style stack (PostgreSQL 15, PgBouncer, backend, frontend, Nginx/Caddy). `compose.dev.yaml` (host ports 5173/4000/5433) y `compose.staging.yaml` (prod-like via gateway :8080, `pweb3_staging`, host port 5434) corren paralelos; ver README §5.
 - **`.jules/`**: Institutional memory journals:
   - `bolt.md`: Performance guidelines (N+1 prevention, batch fetching).
   - `sentinel.md`: Security constraints (safe command execution, SQL parametrization, strict secrets).
@@ -268,11 +268,11 @@ Both route-introspection guards used to pass **vacuously**. Express 5 removed
 
 Both are set to zero. Raise them only with a deliberate, explained edit:
 
-| Ratchet | File | Enforced by |
-|---|---|---|
-| ESLint warnings | `lint-budget.json` | `validate:ci`, pre-commit, CI |
-| Unvalidated mutating routes | `ALLOWED_UNVALIDATED_ROUTES` in `tests/architecture-guard.test.ts` | `test:unit` |
-| Coverage thresholds | `coverage` en `backend/vitest.config.ts` y `frontend/vite.config.ts` | `verify-backend` (`test:coverage`) y `verify-frontend` (`validate:ci:coverage`) |
+| Ratchet                     | File                                                                 | Enforced by                                                                     |
+| --------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| ESLint warnings             | `lint-budget.json`                                                   | `validate:ci`, pre-commit, CI                                                   |
+| Unvalidated mutating routes | `ALLOWED_UNVALIDATED_ROUTES` in `tests/architecture-guard.test.ts`   | `test:unit`                                                                     |
+| Coverage thresholds         | `coverage` en `backend/vitest.config.ts` y `frontend/vite.config.ts` | `verify-backend` (`test:coverage`) y `verify-frontend` (`validate:ci:coverage`) |
 
 Coverage, docs y smoke (spec 003, ADR-0012):
 
@@ -281,6 +281,21 @@ Coverage, docs y smoke (spec 003, ADR-0012):
 - Docs: `npm run docs:check` desde la raíz (enlaces + índice ADR).
 - Smoke: `npx playwright test e2e/smoke.spec.ts` en `frontend/` contra
   `compose.dev` (ver `README.md` §5).
+
+Cobertura, docs y e2e (spec 004/005, ADR-0016):
+
+- Suite e2e completa pre-release: `npm run e2e:staging` en `frontend/`
+  contra `compose.staging.yaml` (workers 4 local, 1 en CI; el proyecto
+  `perf` corre dependiente y en serie).
+- Carga baseline: `npm run load:staging` en `backend/` (Artillery;
+  tokens se obtienen fuera del escenario para no chocar con el
+  rate-limit de login).
+- Accesibilidad: `frontend/e2e/a11y.spec.ts` gatea 0 críticas con
+  `@axe-core/playwright`; contraste serio queda como backlog hasta
+  decisión de paleta.
+- Tokens de rol `Usuario` expiran ~2 min por diseño (quiosco): no
+  alargar el fallback de `AuthService`. Ver ADR-0016.
+- `compose.staging.yaml` exige `--env-file .env.staging` siempre.
 
 ---
 

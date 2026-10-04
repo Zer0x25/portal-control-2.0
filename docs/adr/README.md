@@ -23,6 +23,7 @@ con Prettier (`printWidth: 100`).
 | [0013](0013-ci-pr-full-deploy-main-gates.md)       | Aceptado  | CI completa en PR, solo gates en main |
 | [0014](0014-ci-por-cambios-ahorro-minutos.md)      | Aceptado  | CI por cambios para ahorrar minutos   |
 | [0015](0015-prisma-7-driver-adapters.md)           | Aceptado  | Prisma 7 con driver adapters          |
+| [0016](0016-e2e-staging-local.md)                  | Aceptado  | E2E completa contra staging local     |
 | [0000](0000-template.md)                           | Plantilla | No usar como decisión                 |
 
 ## Ciclo de vida

@@ -3,7 +3,7 @@
 - Estado: En ejecución (Fase 1)
 - Autor: zer0x
 - Fecha: 2026-10-03
-- ADR relacionado: pendiente (requerido al aprobar)
+- ADR relacionado: `docs/adr/0016-e2e-staging-local.md`
 
 ## Problema
 
