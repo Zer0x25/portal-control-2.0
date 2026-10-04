@@ -1,10 +1,11 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
+import { createWorker, disposeWorker } from "./helpers/worker-factory";
 
 // TD-004: cierre de huecos del barrido e2e (spec 005). Cada test ejercita
 // una interacción funcional mínima y SEGURA contra staging (solo lectura,
-// salvo el flujo kiosk que crea un record real y lo limpia vía API).
-// Serial: el flujo kiosk muta los records de hoy de EMP001.
+// salvo el flujo kiosk que crea un worker único vía factoría TD-003 y lo
+// limpia: records + usuario; la fila del empleado queda como residual E2E).
 
 async function adminToken(request: APIRequestContext): Promise<string> {
   const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:8080/api";
@@ -17,24 +18,6 @@ async function adminToken(request: APIRequestContext): Promise<string> {
   expect(res.ok()).toBe(true);
   const body = await res.json();
   return body.token as string;
-}
-
-async function cleanAllRecords(request: APIRequestContext, token: string): Promise<void> {
-  // Sin filtro de fecha a propósito: un fantasma de ayer (AnomaliaManual de
-  // los stress F4, invisible al query `desde/hasta=hoy`) dejaba el kiosk en
-  // "FINALIZADA (ANOMALÍA)" y el punch rebotaba. Staging es entorno de test.
-  const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:8080/api";
-  const headers = { Authorization: `Bearer ${token}` };
-  const listRes = await request.get(`${apiBase}/records?employeeId=EMP001&pageSize=50`, {
-    headers,
-  });
-  expect(listRes.ok()).toBe(true);
-  const listBody = await listRes.json();
-  const existing = Array.isArray(listBody) ? listBody : (listBody.records ?? listBody.data ?? []);
-  for (const rec of existing) {
-    const del = await request.delete(`${apiBase}/records/${rec.id}`, { headers });
-    expect(del.ok()).toBe(true);
-  }
 }
 
 test.describe.serial("TD-004: cierre de huecos e2e", () => {
@@ -134,35 +117,38 @@ test.describe.serial("TD-004: cierre de huecos e2e", () => {
     ).toBeVisible({ timeout: 60000 });
   });
 
-  test("kiosk: flujo PIN completo con cleanup", async ({ page, request }) => {
+  test("kiosk: flujo PIN completo con worker único", async ({ page, request }) => {
     const token = await adminToken(request);
-    await cleanAllRecords(request, token);
-    await page.goto("/#/kiosk");
-    await expect(page.getByRole("heading", { name: /identificación/i })).toBeVisible({
-      timeout: 30000,
-    });
-    await page.getByText(/seleccionar de la lista/i).click();
-    const search = page.getByPlaceholder("BUSCAR POR NOMBRE...");
-    await expect(search).toBeVisible({ timeout: 10000 });
-    await search.fill("Juan Perez");
-    await page.getByRole("button", { name: /juan perez/i }).click();
-    await expect(page.getByRole("heading", { name: /ingrese pin/i })).toBeVisible({
-      timeout: 10000,
-    });
-    // PIN seed EMP001 = 1234; auto-submit al 4º dígito. Un solo intento:
-    // 5 fallos bloquean al empleado y requieren reset de admin.
-    for (const digit of ["1", "2", "3", "4"]) {
-      await page.getByRole("button", { name: digit, exact: true }).click();
+    const worker = await createWorker(request, token);
+    try {
+      await page.goto("/#/kiosk");
+      await expect(page.getByRole("heading", { name: /identificación/i })).toBeVisible({
+        timeout: 30000,
+      });
+      await page.getByText(/seleccionar de la lista/i).click();
+      const search = page.getByPlaceholder("BUSCAR POR NOMBRE...");
+      await expect(search).toBeVisible({ timeout: 10000 });
+      await search.fill(worker.employeeName);
+      await page.getByRole("button", { name: new RegExp(worker.employeeName, "i") }).click();
+      await expect(page.getByRole("heading", { name: /ingrese pin/i })).toBeVisible({
+        timeout: 10000,
+      });
+      // PIN de factoría = 2468; auto-submit al 4º dígito. Un solo intento:
+      // 5 fallos bloquean al empleado y requieren reset de admin.
+      for (const digit of ["2", "4", "6", "8"]) {
+        await page.getByRole("button", { name: digit, exact: true }).click();
+      }
+      await expect(page.getByRole("heading", { name: /acciones/i })).toBeVisible({
+        timeout: 15000,
+      });
+      const start = page.getByRole("button", { name: /inicio jornada/i });
+      await expect(start).toBeEnabled({ timeout: 15000 });
+      await start.click();
+      await expect(page.getByRole("heading", { name: /completado/i })).toBeVisible({
+        timeout: 20000,
+      });
+    } finally {
+      await disposeWorker(request, token, worker);
     }
-    await expect(page.getByRole("heading", { name: /acciones/i })).toBeVisible({
-      timeout: 15000,
-    });
-    const start = page.getByRole("button", { name: /inicio jornada/i });
-    await expect(start).toBeEnabled({ timeout: 15000 });
-    await start.click();
-    await expect(page.getByRole("heading", { name: /completado/i })).toBeVisible({
-      timeout: 20000,
-    });
-    await cleanAllRecords(request, token);
   });
 });
