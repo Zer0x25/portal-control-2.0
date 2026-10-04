@@ -52,3 +52,18 @@ siguiente.
 - Ninguna fase empieza hasta que la anterior esté verde.
 - Cada fase termina en commit (spec + test + fix si aplica) con
   `validate:ci` verde y push.
+
+## Huecos de cobertura (registrados 2026-10-04, para fase de corrección)
+
+- `/#/kiosk` — sin ningún spec (flujo PIN kiosk existe en backend).
+- `/#/logbook` — sin verificación más allá del sweep de Fase 1.
+- `/#/dashboard-supervisor` — sin interacción real.
+- `/#/time-control` — sin flujo de filtrado/gestión de asistencias.
+- `/#/user-management` — sin interacción (listar/detalle usuario).
+- `/#/audit-logs` — sin verificación de tabla virtualizada en UI.
+- `/#/admin/governance` — solo tabs, sin trigger funcional real.
+- `/#/email-center` — solo carga, sin composer/envío.
+- `/#/planning/monthly` — solo paso 1, sin completar wizard.
+
+Nota 2026-10-04: contados en la pausa de cobertura tras Fase 2 (21 rutas,
+9 con interacción de Fase 2, 5 con spec funcional previo).
