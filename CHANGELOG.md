@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.22.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.21.0...v8.22.0) (2026-10-04)
+
+
+### Features
+
+* **docker:** separate dev and local staging environments ([1e8d962](https://github.com/Zer0x25/portal-control-2.0/commit/1e8d962c31fcbe4c2df27d2482d951d658eb9faf))
+* **staging:** opt-in e2e worker seed for prod-mode stacks ([49dcd65](https://github.com/Zer0x25/portal-control-2.0/commit/49dcd65e41f961ee3fede63c11a95b8082ebae9a))
+
+
+### Bug Fixes
+
+* **backend:** make concurrent logins race-safe with session jti ([3626ed4](https://github.com/Zer0x25/portal-control-2.0/commit/3626ed4553328f1690350b811abbc5fea81055d4))
+* **deploy:** copy prisma.config.ts into production image ([e191b08](https://github.com/Zer0x25/portal-control-2.0/commit/e191b08bee49b9876a03b56a830787038382c605))
+* **frontend:** close IDB handle before deleteDB in wipeAllData ([7cb3e8b](https://github.com/Zer0x25/portal-control-2.0/commit/7cb3e8b05ad48359b6ce4dbc64c521c42828b4ac))
+* **frontend:** memoize zustand object selectors with useShallow ([a05921d](https://github.com/Zer0x25/portal-control-2.0/commit/a05921d834fa9a2fdfd2046619b63ff16f65bf52))
+
 ## [8.21.0](https://github.com/Zer0x25/portal-control/compare/v8.20.0...v8.21.0) (2026-10-02)
 
 
