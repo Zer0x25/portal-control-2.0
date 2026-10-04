@@ -10,6 +10,7 @@ import { safeJsonParse } from "../utils/configUtils";
 import { Prisma } from "../generated/prisma/client";
 import { auditService } from "./auditService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
+import { ulid } from "ulid";
 import { OvertimeValidationService } from "./OvertimeValidationService";
 import { schedulingService } from "./schedulingService";
 import { KpiEngine } from "./kpi/KpiEngine";
@@ -374,6 +375,9 @@ export class TimeRecordService {
   static async saveRecord(recordData: TimeRecordInput, actorUsername: string) {
     // Normalize identity: if caller doesn't send id, reuse existing employee/day row.
     // This prevents duplicate records for the same employee and business date.
+    // New rows mint their id here (2026-10-04): Prisma rejects
+    // findUnique/upsert with id undefined (500), and the route contract
+    // (createOrUpdate, id opcional) promises create sin id pre-acuñado.
     if (!recordData.id && recordData.employeeId && recordData.date) {
       const existing = await prisma.timeRecord.findFirst({
         where: {
@@ -387,6 +391,7 @@ export class TimeRecordService {
         recordData.id = existing.id;
       }
     }
+    recordData.id ??= ulid();
 
     const data: Prisma.TimeRecordUncheckedCreateInput = {
       employeeId: recordData.employeeId,
