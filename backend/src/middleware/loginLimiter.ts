@@ -15,15 +15,23 @@ const consecutiveFailuresLimiter = new RateLimiterMemory({
   blockDuration: isDev ? 60 : 60 * 60,
 });
 
-function buildKey(ip: string, username?: string): string {
-  const normalized = (username || "").trim().toLowerCase();
+function extractUserKey(body: unknown): string {
+  if (typeof body !== "object" || body === null) return "";
+  const b = body as Record<string, unknown>;
+  // Login manda `username`; kiosk-login manda `employeeId` (caza-bugs 2026-10-04:
+  // el kiosco no tenía throttle porque la clave solo miraba username).
+  const raw = typeof b.username === "string" ? b.username : b.employeeId;
+  return typeof raw === "string" ? raw : "";
+}
+
+function buildKey(ip: string, userKey?: string): string {
+  const normalized = (userKey || "").trim().toLowerCase();
   return normalized ? `${ip}:${normalized}` : ip;
 }
 
 export const loginRateLimiter = async (req: Request, res: Response, next: NextFunction) => {
   const ip = req.ip || "unknown";
-  const username = typeof req.body?.username === "string" ? req.body.username : "";
-  const key = buildKey(ip, username);
+  const key = buildKey(ip, extractUserKey(req.body));
 
   try {
     const resMemory = await loginLimiter.get(key);
@@ -50,8 +58,8 @@ export const loginRateLimiter = async (req: Request, res: Response, next: NextFu
   }
 };
 
-export const recordLoginFailure = async (ip: string, username?: string) => {
-  const key = buildKey(ip, username);
+export const recordLoginFailure = async (ip: string, userKey?: string) => {
+  const key = buildKey(ip, userKey);
   try {
     await loginLimiter.consume(key);
     await consecutiveFailuresLimiter.consume(key);
@@ -60,8 +68,8 @@ export const recordLoginFailure = async (ip: string, username?: string) => {
   }
 };
 
-export const clearLoginFailures = async (ip: string, username?: string) => {
-  const key = buildKey(ip, username);
+export const clearLoginFailures = async (ip: string, userKey?: string) => {
+  const key = buildKey(ip, userKey);
   try {
     await loginLimiter.delete(key);
     await consecutiveFailuresLimiter.delete(key);

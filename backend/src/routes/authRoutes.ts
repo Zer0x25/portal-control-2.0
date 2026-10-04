@@ -132,7 +132,12 @@ router.post("/mfa/validate", validate(MFAValidateSchema), authController.validat
  *                 token: { type: string }
  *                 employee: { $ref: '#/components/schemas/Employee' }
  */
-router.post("/kiosk-login", validate(KioskLoginSchema), authController.kioskLogin);
+router.post(
+  "/kiosk-login",
+  loginRateLimiter,
+  validate(KioskLoginSchema),
+  authController.kioskLogin,
+);
 
 /**
  * @openapi

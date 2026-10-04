@@ -88,6 +88,7 @@ export const kioskLogin = asyncHandler(async (req: Request, res: Response) => {
   const authResult = await AuthService.verifyKioskPin(employeeId, pin);
 
   if (authResult.success) {
+    await clearLoginFailures(req.ip || "unknown", employeeId);
     await auditService.log({
       actorUsername: authResult.employeeName!,
       action: "KIOSK_PIN_SUCCESS",
@@ -107,16 +108,20 @@ export const kioskLogin = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (authResult.reason === "NOT_FOUND") {
+    // Frena enumeración de IDs (404-oráculo) y sondeo sobre bloqueados.
+    await recordLoginFailure(req.ip || "unknown", employeeId);
     return res.status(404).json({ message: "Empleado no encontrado" });
   }
 
   if (authResult.reason === "BLOCKED") {
+    await recordLoginFailure(req.ip || "unknown", employeeId);
     return res.status(403).json({ message: "PIN bloqueado. Contacte a un administrador." });
   }
 
   const isBlocked = authResult.isBlocked;
   const attempts = authResult.attempts || 0;
 
+  await recordLoginFailure(req.ip || "unknown", employeeId);
   await auditService.log({
     actorUsername: "UNKNOWN_KIOSK_USER",
     action: "KIOSK_PIN_FAILED",
