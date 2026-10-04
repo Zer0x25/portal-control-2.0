@@ -11,7 +11,15 @@
       consultando lo suyo) queda lejos del techo; subirlo sin medición
       real sería exponerse. Si crece, la palanca correcta es
       PgBouncer (hoy `connection_limit=1`), no el limiter.
-- [ ] 2.1 axe-core + `e2e/a11y.spec.ts` (3 flujos, 0 critical/serious).
+- [x] 2.1 axe-core + `e2e/a11y.spec.ts` (3 flujos, 0 critical/serious).
+      3 flujos (login, dashboard, worker-portal) en 9s. Hallazgos:
+      crítico `select-name` en WorkerPortal (corregido con aria-label),
+      `scrollable-region-focusable` (corregido con tabIndex=0 en el
+      contenedor de registros; queda 1 nodo similar en el calendario,
+      en backlog), contraste AA insuficiente: 30+ nodos serios del tema
+      oscuro (`--text-tertiary #64748b`, botón "Salir" rojo) — backlog
+      justificado: exige decisión de diseño sobre la paleta Industrial.
+      Gate actual: 0 críticas; serías/moderadas se reportan en backlog.
 - [ ] 3.1 Baselines visuales de 3-4 páginas críticas, 2 corridas verdes.
 - [ ] 4.1 Integración backend con Testcontainers (sin dev levantado).
 - [ ] 4.2 Factorías e2e vía API + cleanup (adiós seed global).

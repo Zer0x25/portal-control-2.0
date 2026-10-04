@@ -304,6 +304,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
+              aria-label="Seleccionar mes del calendario"
               className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-xl text-[10px] font-black uppercase text-token-text-secondary outline-none focus:border-sap-blue/50"
             >
               {monthOptions.map((opt) => (
@@ -322,7 +323,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </div>
         </div>
 
-        <div className="overflow-x-auto scrollbar-premium">
+        <div className="overflow-x-auto scrollbar-premium" tabIndex={0}>
           {isMobile ? (
             <div className="space-y-6 p-6">
               {enrichedRecords.length > 0 ? (
