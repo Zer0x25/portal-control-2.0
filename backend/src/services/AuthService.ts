@@ -1,4 +1,4 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
@@ -130,36 +130,31 @@ export class AuthService {
     );
 
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const expiresAt = new Date(Date.now() + sessionHours * 60 * 60 * 1000);
+    const device = userAgent.substring(0, 255);
 
-    await prisma.activeSession.create({
-      data: {
-        userId,
-        tokenHash,
-        deviceInfo: userAgent.substring(0, 255),
-        expiresAt: new Date(Date.now() + sessionHours * 60 * 60 * 1000),
-      },
+    // Insert + trim en una sola tx bajo lock por usuario (caza-bugs 2026-10-04):
+    // el trim sin serializar borraba TODO (trims concurrentes con keeps
+    // distintos se eliminan entre sí). Serializados, acuerdan el mismo set y
+    // queda exactamente el cupo (1 para Usuario). Xact-scoped, seguro tras PgBouncer.
+    await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"sess:" + userId}))`;
+      await tx.activeSession.create({
+        data: { userId, tokenHash, deviceInfo: device, expiresAt },
+      });
+      const sessionLimit = this.sessionLimitForRole(role);
+      const keep = await tx.activeSession.findMany({
+        where: { userId },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: sessionLimit,
+        select: { id: true },
+      });
+      await tx.activeSession.deleteMany({
+        where: { userId, id: { notIn: keep.map((k) => k.id) } },
+      });
     });
-
-    // Garantiza el cupo tras insertar (caza-bugs 2026-10-04): el evict previo
-    // (manageSessionLimit) es count→delete y N logins concurrentes evictan la
-    // misma fila e insertan todos. El trim deja las N más nuevas; el orden
-    // total (createdAt, id) hace que trims concurrentes acuerden el mismo set.
-    await this.trimSessionsToLimit(userId, role);
 
     return { token, role };
-  }
-
-  static async trimSessionsToLimit(userId: string, role: string) {
-    const sessionLimit = this.sessionLimitForRole(role);
-    const keep = await prisma.activeSession.findMany({
-      where: { userId },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: sessionLimit,
-      select: { id: true },
-    });
-    await prisma.activeSession.deleteMany({
-      where: { userId, id: { notIn: keep.map((k) => k.id) } },
-    });
   }
 
   static generateMFAPendingToken(user: { id: string; username: string; role: string }) {
