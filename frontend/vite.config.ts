@@ -213,6 +213,10 @@ export default defineConfig(({ mode }) => {
       // (helpers puros) -> 17.83% L, 14.73% F, 14.61% B, 17.42% S.
       // Ratchet 15/12/12/15 -> 16/13/13/15 (statements queda en 15:
       // 17.42 no da 2pts de margen para 16).
+      // Weather geoaware (2026-10-04): +5 tests en useWeather.test.ts
+      // (cache localStorage, geo/IP, dedup) -> 18.54% L, 15.29% F,
+      // 15.13% B, 18.1% S. Statements 15 -> 16 (margen 2.1); el resto
+      // queda (subir L/F/B deja <2pts de margen).
       coverage: {
         provider: "v8",
         reporter: ["text", "json-summary"],
@@ -229,7 +233,7 @@ export default defineConfig(({ mode }) => {
           lines: 16,
           functions: 13,
           branches: 13,
-          statements: 15,
+          statements: 16,
         },
       },
     },
