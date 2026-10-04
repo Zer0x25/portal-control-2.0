@@ -83,6 +83,13 @@ export class PunchService {
       { ...requestContext.getStore(), skipTrigger: true },
       async () => {
         return await withDirectTransaction(async (tx) => {
+          // Anti doble-fichaje (caza-bugs 2026-10-04): sin esto, N punches
+          // concurrentes no se ven entre sí (read-committed) y cada uno crea
+          // su propia fila → registros duplicados mismo empleado/día. El lock
+          // advisory serializa por empleado; los guards (ALREADY_PUNCHED_IN /
+          // ACTION_ALREADY_TAKEN) vuelven a ser correctos. Xact-scoped: se
+          // libera al commit, seguro tras PgBouncer.
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employeeId}))`;
           const employee = await tx.employee.findUnique({ where: { id: employeeId } });
           if (!employee) throw new Error("EMPLOYEE_NOT_FOUND");
 
