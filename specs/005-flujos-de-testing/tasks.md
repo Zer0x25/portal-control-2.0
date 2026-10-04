@@ -20,6 +20,10 @@
       oscuro (`--text-tertiary #64748b`, botón "Salir" rojo) — backlog
       justificado: exige decisión de diseño sobre la paleta Industrial.
       Gate actual: 0 críticas; serías/moderadas se reportan en backlog.
+- [x] 1.4 Fase 4 stress escrituras (Artillery, 60 req): antes del fix
+      30×500 por ALREADY_PUNCHED_OUT/WORKDAY_FINISHED sin mapear en
+      timeRecordController (f579852). Tras fix: 60×400 esperados
+      (una sola jornada activa por empleado/día; 1 solo EMP001) y 0×500.
 - [ ] 3.1 Baselines visuales de 3-4 páginas críticas, 2 corridas verdes.
 - [ ] 4.1 Integración backend con Testcontainers (sin dev levantado).
 - [ ] 4.2 Factorías e2e vía API + cleanup (adiós seed global).
