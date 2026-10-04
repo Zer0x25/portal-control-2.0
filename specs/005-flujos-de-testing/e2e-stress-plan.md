@@ -67,3 +67,8 @@ siguiente.
 
 Nota 2026-10-04: contados en la pausa de cobertura tras Fase 2 (21 rutas,
 9 con interacción de Fase 2, 5 con spec funcional previo).
+
+## Fase 5 ejecutada 2026-10-04
+
+- gap-coverage.spec.ts: kiosk, time-control, user-management, audit-logs (filas virtualizadas), governance tabs — 5/5 verde.
+- Bug corregido en F4: timeRecordController mapea errores de reglas de asistencia a 400.
