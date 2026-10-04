@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
 import { loginFast } from "./helpers/auth-helper";
+import { withWorker } from "./helpers/worker-factory";
 
 // Spec 005 fase 2 + TD-001: accesibilidad con axe-core sobre los flujos
 // críticos, en tema claro y oscuro. Gatea violaciones críticas y serias
@@ -67,23 +68,25 @@ test.describe("Accesibilidad axe-core", () => {
   });
 
   test("worker portal light sin violaciones bloqueantes", async ({ page, request }) => {
-    await loginFast(page, request, "worker");
-    await page.goto("/#/worker-portal");
-    await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
-      timeout: 30000,
+    await withWorker(page, request, async () => {
+      await page.goto("/#/worker-portal");
+      await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
+        timeout: 30000,
+      });
+      await page.waitForTimeout(2000); // setlean animaciones de entrada
+      await expectNoBlockingA11y(page, "worker-light");
     });
-    await page.waitForTimeout(2000); // setlean animaciones de entrada
-    await expectNoBlockingA11y(page, "worker-light");
   });
 
   test("worker portal dark sin violaciones bloqueantes", async ({ page, request }) => {
     await gotoDark(page);
-    await loginFast(page, request, "worker");
-    await page.goto("/#/worker-portal");
-    await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
-      timeout: 30000,
+    await withWorker(page, request, async () => {
+      await page.goto("/#/worker-portal");
+      await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
+        timeout: 30000,
+      });
+      await page.waitForTimeout(2000);
+      await expectNoBlockingA11y(page, "worker-dark");
     });
-    await page.waitForTimeout(2000);
-    await expectNoBlockingA11y(page, "worker-dark");
   });
 });

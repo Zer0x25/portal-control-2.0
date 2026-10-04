@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
+import {
+  createWorker,
+  disposeWorker,
+  getAdminToken,
+  loginAs,
+  withWorker,
+} from "./helpers/worker-factory";
 
 // Reescrito en spec 004 fase 3 (2026-10-03): la app usa HashRouter, todas
 // las navegaciones van con `/#/...`; el botón es "Registrar Ausencia"
@@ -8,22 +15,21 @@ import { loginFast } from "./helpers/auth-helper";
 // no hace submit: ensaya apertura, selección de colaborador y llenado,
 // y cancela para no ensuciar la BD de dev en cada corrida.
 //
-// Serial (no parallel): los 2 tests de worker comparten el único slot de
-// sesión del rol Usuario (el backend evicta la anterior) y el flujo de
-// asistencia muta los records de hoy de EMP001.
+// TD-003: el flujo de asistencia usa worker único de factoría (aislado,
+// sin slot compartido ni records de EMP001); los otros dos tests son
+// admin o solo-lectura. Ya no se necesita modo serial.
 
 // Sin networkidle a propósito: las assertions explícitas (toBeVisible /
 // toBeEnabled con timeout) ya gatean readiness, y networkidle con el
 // websocket abierto suma ~1s por navegación sin aportar señal.
 
-test.describe.serial("Critical User Flows", () => {
+test.describe("Critical User Flows", () => {
   test.setTimeout(120000);
   test("Attendance Flow: Clock In and Clock Out (Worker)", async ({ page, request }) => {
-    // Deterministic reset: delete today's records for the e2e employee via
-    // API so the cycle always starts from "fuera" (previous runs leave a
-    // closed record that would make punch buttons stale/muted).
+    // TD-003: worker único de factoría (empleado+usuario recién creados):
+    // el ciclo siempre parte de "fuera" sin depender del seed compartido
+    // ni de cleanup de EMP001. Dispose borra records + usuario.
     const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:4000/api";
-    const todayCL = new Date().toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
     const adminLogin = await request.post(`${apiBase}/auth/login`, {
       data: {
         username: process.env.E2E_ADMIN_USERNAME || "admin",
@@ -31,49 +37,39 @@ test.describe.serial("Critical User Flows", () => {
       },
     });
     expect(adminLogin.ok()).toBe(true);
-    const { token } = await adminLogin.json();
-    const authHeaders = { Authorization: `Bearer ${token}` };
-    const listRes = await request.get(
-      `${apiBase}/records?employeeId=EMP001&desde=${todayCL}&hasta=${todayCL}`,
-      { headers: authHeaders },
-    );
-    expect(listRes.ok()).toBe(true);
-    const listBody = await listRes.json();
-    const existing = Array.isArray(listBody) ? listBody : (listBody.records ?? listBody.data ?? []);
-    for (const rec of existing) {
-      const del = await request.delete(`${apiBase}/records/${rec.id}`, {
-        headers: authHeaders,
+    const { token: adminToken } = await adminLogin.json();
+    const worker = await createWorker(request, adminToken);
+    try {
+      // Login as worker
+      worker.token = await loginAs(page, request, worker.username, worker.password);
+
+      // Navigate to Worker Portal (HashRouter: #/ prefix required)
+      await page.goto("/#/worker-portal");
+      await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
+        timeout: 30000,
       });
-      expect(del.ok()).toBe(true);
+      // Let the daily records settle: buttons enable from server state, and
+      // the pre-load default ("fuera") would offer a stale enabled action
+      // that the backend rejects (duplicate punch fails silently, no toast).
+      // (Sin networkidle: los toBeEnabled de abajo ya esperan al servidor.)
+
+      const startButton = page.getByRole("button", { name: /inicio jornada/i });
+      const endButton = page.getByRole("button", { name: /fin jornada/i });
+      // Both actions are always offered (one enabled per state): never a vacuous pass
+      await expect(startButton).toBeVisible({ timeout: 10000 });
+      await expect(endButton).toBeVisible();
+
+      // Full cycle on a clean slate: clock in, then clock out, both succeed
+      await expect(startButton).toBeEnabled({ timeout: 30000 });
+      await startButton.click();
+      await expect(page.getByText(/acción registrada/i)).toBeVisible({ timeout: 30000 });
+
+      await expect(endButton).toBeEnabled({ timeout: 30000 });
+      await endButton.click();
+      await expect(page.getByText(/acción registrada/i)).toBeVisible({ timeout: 30000 });
+    } finally {
+      await disposeWorker(request, await getAdminToken(request), worker);
     }
-
-    // Login as worker
-    await loginFast(page, request, "worker");
-
-    // Navigate to Worker Portal (HashRouter: #/ prefix required)
-    await page.goto("/#/worker-portal");
-    await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
-      timeout: 30000,
-    });
-    // Let the daily records settle: buttons enable from server state, and
-    // the pre-load default ("fuera") would offer a stale enabled action
-    // that the backend rejects (duplicate punch fails silently, no toast).
-    // (Sin networkidle: los toBeEnabled de abajo ya esperan al servidor.)
-
-    const startButton = page.getByRole("button", { name: /inicio jornada/i });
-    const endButton = page.getByRole("button", { name: /fin jornada/i });
-    // Both actions are always offered (one enabled per state): never a vacuous pass
-    await expect(startButton).toBeVisible({ timeout: 10000 });
-    await expect(endButton).toBeVisible();
-
-    // Full cycle on a clean slate: clock in, then clock out, both succeed
-    await expect(startButton).toBeEnabled({ timeout: 30000 });
-    await startButton.click();
-    await expect(page.getByText(/acción registrada/i)).toBeVisible({ timeout: 30000 });
-
-    await expect(endButton).toBeEnabled({ timeout: 30000 });
-    await endButton.click();
-    await expect(page.getByText(/acción registrada/i)).toBeVisible({ timeout: 30000 });
   });
 
   test("Permission Request Flow: Submit Absence (Admin)", async ({ page, request }) => {
@@ -109,16 +105,16 @@ test.describe.serial("Critical User Flows", () => {
   });
 
   test("Shift Verification Flow: View Calendar (Worker)", async ({ page, request }) => {
-    // Login as worker
-    await loginFast(page, request, "worker");
+    // TD-003: worker único de solo-lectura.
+    await withWorker(page, request, async () => {
+      await page.goto("/#/shift-calendar");
+      await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible({
+        timeout: 30000,
+      });
 
-    await page.goto("/#/shift-calendar");
-    await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible({
-      timeout: 30000,
+      // Verify calendar view buttons (labels: Mes / Semana / Día)
+      await expect(page.getByRole("button", { name: /^mes$/i })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole("button", { name: /^semana$/i })).toBeVisible();
     });
-
-    // Verify calendar view buttons (labels: Mes / Semana / Día)
-    await expect(page.getByRole("button", { name: /^mes$/i })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole("button", { name: /^semana$/i })).toBeVisible();
   });
 });

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
+import { withWorker } from "./helpers/worker-factory";
 
 // Fase 1 del plan e2e/stress: barrido de rutas contra staging.
 // Cada ruta se visita y se aserta: (a) no redirige al login,
@@ -62,7 +63,9 @@ test.describe("Barrido de rutas por rol", () => {
   });
 
   test("worker recorre sus rutas", async ({ page, request }) => {
-    await loginFast(page, request, "worker");
-    for (const r of WORKER_ROUTES) await expectRouteHealthy(page, r);
+    // TD-003: worker único (el seed compartido queda para compat).
+    await withWorker(page, request, async () => {
+      for (const r of WORKER_ROUTES) await expectRouteHealthy(page, r);
+    });
   });
 });

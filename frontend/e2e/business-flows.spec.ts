@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
+import { withWorker } from "./helpers/worker-factory";
 
 // Fase 2 del plan: uso normal navegando la UI.
 // No repite lo cubierto en user-flows.spec.ts (fichaje, ausencias,
@@ -92,15 +93,17 @@ test.describe("Fase 2: flujos de negocio en UI", () => {
   });
 
   test("worker: shift-calendar alterna vista Mes/Semana", async ({ page, request }) => {
-    await loginFast(page, request, "worker");
-    await page.goto("/#/shift-calendar");
-    await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible({
-      timeout: 30000,
+    // TD-003: worker único de solo-lectura.
+    await withWorker(page, request, async () => {
+      await page.goto("/#/shift-calendar");
+      await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible({
+        timeout: 30000,
+      });
+      await page.getByRole("button", { name: /^semana$/i }).click();
+      await page.waitForTimeout(1000);
+      await page.getByRole("button", { name: /^mes$/i }).click();
+      await page.waitForTimeout(1000);
+      await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible();
     });
-    await page.getByRole("button", { name: /^semana$/i }).click();
-    await page.waitForTimeout(1000);
-    await page.getByRole("button", { name: /^mes$/i }).click();
-    await page.waitForTimeout(1000);
-    await expect(page.getByRole("heading", { name: /mi calendario/i })).toBeVisible();
   });
 });

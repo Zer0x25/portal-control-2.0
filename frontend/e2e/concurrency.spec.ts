@@ -10,10 +10,6 @@ async function hammerRoute(context: import("@playwright/test").BrowserContext, r
   const page = await context.newPage();
   // Semilla de sesión admin + navegación directa
   await page.goto("/");
-  await page.evaluate(() => {
-    const body = JSON.parse(document.body.innerText || "{}");
-    void body;
-  });
   await page.goto(route);
   await page.waitForTimeout(2500);
   const crashed = await page

@@ -1,6 +1,6 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
-import { createWorker, disposeWorker } from "./helpers/worker-factory";
+import { createWorker, disposeWorker, getAdminToken } from "./helpers/worker-factory";
 
 // TD-004: cierre de huecos del barrido e2e (spec 005). Cada test ejercita
 // una interacción funcional mínima y SEGURA contra staging (solo lectura,
@@ -148,7 +148,7 @@ test.describe.serial("TD-004: cierre de huecos e2e", () => {
         timeout: 20000,
       });
     } finally {
-      await disposeWorker(request, token, worker);
+      await disposeWorker(request, await getAdminToken(request), worker);
     }
   });
 });
