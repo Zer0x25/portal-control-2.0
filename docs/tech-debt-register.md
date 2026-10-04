@@ -10,12 +10,12 @@ Regla condicional: un `404` por recurso ausente es diseño; el mismo
 
 ## Deuda aceptada
 
-| ID     | Item                                     | Evidencia                                                                                                                                 | Estado                                            |
-| ------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| TD-001 | Contraste AA insuficiente (tema oscuro)  | Tokens + 9 nodos corregidos, gate critical+serious en `e2e/a11y.spec.ts` (3 págs × 2 temas)                                               | Cerrada 2026-10-04 (`53c491d`)                    |
-| TD-002 | `useWeather` con datos mock/aleatorios   | Open-Meteo real (`frontend/src/hooks/useWeather.ts`), cache 30min, 4 tests                                                                | Cerrada 2026-10-04 (`61dba33`)                    |
-| TD-003 | Seed global EMP001/juan.perez compartido | Factoría `e2e/helpers/worker-factory.ts` (kiosk migrado); restan user-flows/business-flows/load; sin DELETE employees (residual fila E2E) | Parcial                                           |
-| TD-004 | Huecos restantes del barrido e2e         | `specs/005-flujos-de-testing/e2e-stress-plan.md`                                                                                          | Cerrada 2026-10-04 (`e2e/td004-gaps.spec.ts` 6/6) |
+| ID     | Item                                     | Evidencia                                                                                                                                               | Estado                                            |
+| ------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| TD-001 | Contraste AA insuficiente (tema oscuro)  | Tokens + 9 nodos corregidos, gate critical+serious en `e2e/a11y.spec.ts` (3 págs × 2 temas)                                                             | Cerrada 2026-10-04 (`53c491d`)                    |
+| TD-002 | `useWeather` con datos mock/aleatorios   | Open-Meteo real (`frontend/src/hooks/useWeather.ts`), cache 30min, 4 tests                                                                              | Cerrada 2026-10-04 (`61dba33`)                    |
+| TD-003 | Seed global EMP001/juan.perez compartido | Factoría e2e (`worker-factory.ts`) + load (`e2e-worker.cjs`); 0 usos en specs/runners (seed solo compat + fixture búsqueda); residual fila empleado E2E | Cerrada 2026-10-04                                |
+| TD-004 | Huecos restantes del barrido e2e         | `specs/005-flujos-de-testing/e2e-stress-plan.md`                                                                                                        | Cerrada 2026-10-04 (`e2e/td004-gaps.spec.ts` 6/6) |
 
 ## Diseño intencional (no deuda)
 
