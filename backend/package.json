@@ -21,6 +21,7 @@
     "test:integration:ci": "node scripts/run-integration-tests.cjs",
     "load:staging": "node load/run-staging.cjs",
     "load:staging:writes": "node load/run-staging-writes.cjs",
+    "load:staging:soak": "node load/run-soak.cjs",
     "test:pollution:pre": "npx tsx scripts/test-pollution-guard.ts pre",
     "test:pollution:post": "npx tsx scripts/test-pollution-guard.ts post",
     "test:schemas-refactor": "vitest run tests/schema.smoke.test.ts tests/exports.compat.test.ts tests/swagger.snapshot.generated.test.ts",

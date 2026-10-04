@@ -119,6 +119,16 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
       });
     }
 
+    // Caos PgBouncer (2026-10-04): BD inalcanzable/timeout no es un 500
+    // genérico — es 503 para que gateway, reintentos y monitores actúen.
+    if (caught.code === "P1001" || caught.code === "P1002" || caught.code === "P2024") {
+      return res.status(503).json({
+        success: false,
+        code: "SERVICE_UNAVAILABLE",
+        message: "Base de datos temporalmente no disponible",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       code: "DATABASE_ERROR",

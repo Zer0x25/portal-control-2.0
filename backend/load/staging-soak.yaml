@@ -1,0 +1,58 @@
+# Soak 15 min solo-lecturas con token admin reutilizado (sin logins en el
+# escenario: el rate-limit de login tumbaría la rampa). arrivalRate 1/s
+# sostenido ≈ 900 VUs, ~10k requests. Objetivo: fugas de sesiones y memoria,
+# no throughput. Runner: run-soak.cjs (hace 1 login admin fuera, logout al
+# final). Solo flujo admin: el token Usuario expira en ~2 min (D-002) y
+# ensuciaría el reporte con 401 esperados.
+config:
+  target: "{{ $env.LOAD_TARGET }}"
+  variables:
+    adminToken: "{{ $env.LOAD_ADMIN_TOKEN }}"
+    today: "{{ $env.LOAD_TODAY }}"
+  phases:
+    - duration: 900
+      arrivalRate: 1
+      name: "soak sostenido"
+  ensure:
+    maxErrorRate: 1
+
+scenarios:
+  - name: "sync dashboard admin"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/kpis/overview"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/employees"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/records?employeeId={{ $env.LOAD_EMPLOYEE_ID }}&desde={{ today }}&hasta={{ today }}"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/holidays"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/corrections/stats"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/shifts/assignments"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
