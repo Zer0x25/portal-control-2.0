@@ -77,10 +77,14 @@ export class AuthService {
     return { success: true, user };
   }
 
+  static sessionLimitForRole(role: string): number {
+    if (role === "Administrador") return 10;
+    if (role === "Reloj_Control") return 2;
+    return 1;
+  }
+
   static async manageSessionLimit(userId: string, role: string) {
-    let sessionLimit = 1;
-    if (role === "Administrador") sessionLimit = 10;
-    else if (role === "Reloj_Control") sessionLimit = 2;
+    const sessionLimit = this.sessionLimitForRole(role);
 
     const activeSessionsCount = await prisma.activeSession.count({
       where: { userId },
@@ -136,7 +140,26 @@ export class AuthService {
       },
     });
 
+    // Garantiza el cupo tras insertar (caza-bugs 2026-10-04): el evict previo
+    // (manageSessionLimit) es count→delete y N logins concurrentes evictan la
+    // misma fila e insertan todos. El trim deja las N más nuevas; el orden
+    // total (createdAt, id) hace que trims concurrentes acuerden el mismo set.
+    await this.trimSessionsToLimit(userId, role);
+
     return { token, role };
+  }
+
+  static async trimSessionsToLimit(userId: string, role: string) {
+    const sessionLimit = this.sessionLimitForRole(role);
+    const keep = await prisma.activeSession.findMany({
+      where: { userId },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: sessionLimit,
+      select: { id: true },
+    });
+    await prisma.activeSession.deleteMany({
+      where: { userId, id: { notIn: keep.map((k) => k.id) } },
+    });
   }
 
   static generateMFAPendingToken(user: { id: string; username: string; role: string }) {
