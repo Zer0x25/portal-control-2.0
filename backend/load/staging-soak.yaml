@@ -1,9 +1,7 @@
 # Soak 15 min solo-lecturas con token admin reutilizado (sin logins en el
-# escenario: el rate-limit de login tumbaría la rampa). arrivalRate 1/s
-# sostenido ≈ 900 VUs, ~10k requests. Objetivo: fugas de sesiones y memoria,
-# no throughput. Runner: run-soak.cjs (hace 1 login admin fuera, logout al
-# final). Solo flujo admin: el token Usuario expira en ~2 min (D-002) y
-# ensuciaría el reporte con 401 esperados.
+# escenario: el rate-limit de login tumbaría la rampa). 3 lecturas/VU a
+# 1 VU/s ≈ 2700 reqs: bajo el presupuesto del gateway (5000/15min por IP;
+# con 6 lecturas el throttle 429 ensuciaba el reporte).
 config:
   target: "{{ $env.LOAD_TARGET }}"
   variables:
@@ -34,24 +32,6 @@ scenarios:
             - statusCode: 200
       - get:
           url: "/api/records?employeeId={{ $env.LOAD_EMPLOYEE_ID }}&desde={{ today }}&hasta={{ today }}"
-          headers:
-            Authorization: "Bearer {{ adminToken }}"
-          expect:
-            - statusCode: 200
-      - get:
-          url: "/api/holidays"
-          headers:
-            Authorization: "Bearer {{ adminToken }}"
-          expect:
-            - statusCode: 200
-      - get:
-          url: "/api/corrections/stats"
-          headers:
-            Authorization: "Bearer {{ adminToken }}"
-          expect:
-            - statusCode: 200
-      - get:
-          url: "/api/shifts/assignments"
           headers:
             Authorization: "Bearer {{ adminToken }}"
           expect:

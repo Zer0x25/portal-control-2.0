@@ -59,13 +59,32 @@ async function createWorker(base, adminToken) {
   return { employeeId, username, userId: user.id, token: login.token };
 }
 
+// Un reintento ante fallo de red transitorio ("fetch failed" dejó 4
+// usuarios huérfanos tras el soak 2026-10-04). Cada paso loguea para
+// diagnosticar el siguiente huérfano sin adivinar.
+async function apiRetry(base, token, path, init = {}, step) {
+  try {
+    return await api(base, token, path, init);
+  } catch (err) {
+    console.log(`   dispose[${step}]: reintento tras ${err.message}`);
+    await new Promise((r) => setTimeout(r, 2000));
+    return await api(base, token, path, init);
+  }
+}
+
 async function disposeWorker(base, adminToken, worker) {
-  const list = await api(base, adminToken, `/records?employeeId=${worker.employeeId}&pageSize=50`);
+  const list = await apiRetry(
+    base,
+    adminToken,
+    `/records?employeeId=${worker.employeeId}&pageSize=50`,
+    {},
+    "list-records",
+  );
   const recs = Array.isArray(list) ? list : (list.records ?? list.data ?? []);
   for (const r of recs) {
-    await api(base, adminToken, `/records/${r.id}`, { method: "DELETE" });
+    await apiRetry(base, adminToken, `/records/${r.id}`, { method: "DELETE" }, "del-record");
   }
-  await api(base, adminToken, `/users/${worker.userId}`, { method: "DELETE" });
+  await apiRetry(base, adminToken, `/users/${worker.userId}`, { method: "DELETE" }, "del-user");
   await api(base, worker.token, "/auth/logout", { method: "POST" }).catch(() => {});
 }
 
