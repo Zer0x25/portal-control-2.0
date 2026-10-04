@@ -70,6 +70,18 @@ export const punch = asyncHandler(async (req: AuthRequest, res: Response) => {
     if (msg === "ALREADY_PUNCHED_IN") {
       throw new ValidationError("Ya existe una entrada activa para este empleado hoy.");
     }
+    if (msg === "ALREADY_PUNCHED_OUT" || msg === "WORKDAY_FINISHED") {
+      throw new ValidationError("La jornada ya fue cerrada para este empleado.");
+    }
+    if (msg === "ALREADY_BREAK_STARTED") {
+      throw new ValidationError("Ya existe una colación iniciada.");
+    }
+    if (msg === "NO_BREAK_STARTED") {
+      throw new ValidationError("No hay colación iniciada para finalizar.");
+    }
+    if (msg === "ALREADY_BREAK_FINISHED") {
+      throw new ValidationError("La colación ya fue finalizada.");
+    }
     if (msg === "ACTION_ALREADY_TAKEN") {
       throw new ValidationError("Esta accion ya fue registrada en la jornada actual.");
     }

@@ -1,0 +1,46 @@
+# Fase 4 spec 005 (escrituras): ciclo de marcación por VU contra staging.
+# Cada VU: login context ya sembrado por env (tokens fuera del escenario,
+# igual que staging-read), luego POST punch entrada + salida para EMP001.
+# Limpia records de hoy vía DELETE en el runner (run-staging-writes.cjs)
+# antes y después, para que quede como si nunca pasó.
+config:
+  target: "{{ $env.LOAD_TARGET }}"
+  variables:
+    adminToken: "{{ $env.LOAD_ADMIN_TOKEN }}"
+    today: "{{ $env.LOAD_TODAY }}"
+  phases:
+    - duration: 20
+      arrivalRate: 1
+      rampTo: 2
+      name: "rafaga sostenida"
+  ensure:
+    maxErrorRate: 5
+    maxResponseTime: 500
+
+scenarios:
+  - name: "marcacion entrada+salida"
+    weight: 100
+    flow:
+      - post:
+          url: "/api/records/punch"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+            Content-Type: "application/json"
+          json:
+            employeeId: "EMP001"
+            forcedType: "entrada"
+            source: "e2e-stress-v4"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/records/punch"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+            Content-Type: "application/json"
+          json:
+            employeeId: "EMP001"
+            forcedType: "salida"
+            source: "e2e-stress-v4"
+          expect:
+            - statusCode: 200
