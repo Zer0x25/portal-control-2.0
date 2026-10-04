@@ -22,13 +22,19 @@ export const previewImport = asyncHandler(async (req: Request, res: Response) =>
     throw new ValidationError("No se subió ningún archivo");
   }
 
-  const bodySchema = req.body.schema
+  const bodySchema = req.body?.schema
     ? (JSON.parse(req.body.schema) as Record<string, SchemaInfo>)
     : null;
   const workbook = new ExcelJS.Workbook();
-  // The value is a genuine multer Buffer; the cast only bridges exceljs's
-  // broken ambient Buffer declaration (see `XlsxLoadBuffer`).
-  await workbook.xlsx.load(req.file.buffer as unknown as XlsxLoadBuffer);
+  // Archivo corrupto o no-Excel: exceljs lanza error de zip crudo (500 con
+  // mensaje interno). Se traduce a 400 (caza-bugs 2026-10-04).
+  try {
+    // El cast solo puentea la declaración ambiental rota de Buffer de
+    // exceljs (ver `XlsxLoadBuffer` en AGENTS.md §4).
+    await workbook.xlsx.load(req.file.buffer as unknown as XlsxLoadBuffer);
+  } catch {
+    throw new ValidationError("El archivo no es un Excel válido");
+  }
 
   const worksheet = workbook.getWorksheet(1);
   if (!worksheet) {

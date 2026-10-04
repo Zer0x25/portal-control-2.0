@@ -5169,7 +5169,11 @@ export interface components {
     };
     SendTestEmail: {
       /** Format: email */
-      recipient: string;
+      to: string;
+      /** @default  */
+      subject: string;
+      /** @default  */
+      message: string;
     };
     ScheduledReportListResponse: components["schemas"]["ApiResponse"] & {
       data: components["schemas"]["ScheduledReport"][];

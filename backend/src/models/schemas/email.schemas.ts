@@ -25,6 +25,11 @@ export const EmailRulesSchema = z
 
 export const SendTestEmailSchema = z
   .object({
-    recipient: z.string().email(),
+    // Contrato real con el frontend (emailService.sendTestEmail manda
+    // { to, subject, message }). `recipient` nunca existió en el caller y
+    // el endpoint devolvía 400 siempre (caza-bugs 2026-10-04).
+    to: z.string().email(),
+    subject: z.string().optional().default(""),
+    message: z.string().optional().default(""),
   })
   .openapi("SendTestEmail");

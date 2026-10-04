@@ -2400,13 +2400,21 @@
       "SendTestEmail": {
         "type": "object",
         "properties": {
-          "recipient": {
+          "to": {
             "type": "string",
             "format": "email"
+          },
+          "subject": {
+            "type": "string",
+            "default": ""
+          },
+          "message": {
+            "type": "string",
+            "default": ""
           }
         },
         "required": [
-          "recipient"
+          "to"
         ]
       },
       "ScheduledReportListResponse": {

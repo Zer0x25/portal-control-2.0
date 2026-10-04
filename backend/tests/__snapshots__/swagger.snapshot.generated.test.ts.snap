@@ -2061,13 +2061,21 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       },
       "SendTestEmail": {
         "properties": {
-          "recipient": {
+          "message": {
+            "default": "",
+            "type": "string",
+          },
+          "subject": {
+            "default": "",
+            "type": "string",
+          },
+          "to": {
             "format": "email",
             "type": "string",
           },
         },
         "required": [
-          "recipient",
+          "to",
         ],
         "type": "object",
       },
