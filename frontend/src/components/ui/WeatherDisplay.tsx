@@ -94,7 +94,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
             )}
           </AnimatePresence>
         </div>
-        <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
+        <p className="text-[9px] sm:text-[10px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
           {weather.location}
         </p>
         <div className="flex items-center gap-1 mt-0.5 sm:mt-1" title={`Índice UV: ${uvInfo.text}`}>

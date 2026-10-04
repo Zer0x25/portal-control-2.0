@@ -163,7 +163,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               {currentUser && (
                 <button
                   onClick={onLogout}
-                  className="px-4 py-2.5 h-11 rounded-md border border-(--status-error)/20 bg-(--status-error)/5 hover:bg-(--status-error)/10 text-(--status-error) text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                  className="px-4 py-2.5 h-11 rounded-md border border-(--status-error)/20 bg-(--status-error)/5 hover:bg-(--status-error)/10 text-red-700 dark:text-(--status-error) text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                 >
                   Salir
                 </button>

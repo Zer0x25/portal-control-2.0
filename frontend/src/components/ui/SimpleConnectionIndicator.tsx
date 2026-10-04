@@ -54,7 +54,7 @@ const SimpleConnectionIndicator: React.FC = () => {
           color: "bg-green-500",
           shadow: "shadow-[0_0_12px_rgba(34,197,94,0.4)]",
           label: "Conectado",
-          textClass: "text-emerald-400 dark:text-emerald-300",
+          textClass: "text-emerald-700 dark:text-emerald-300",
           bgClass: "bg-emerald-500/10",
         };
       case "degraded":
@@ -62,7 +62,7 @@ const SimpleConnectionIndicator: React.FC = () => {
           color: "bg-amber-500",
           shadow: "shadow-[0_0_12px_rgba(245,158,11,0.4)]",
           label: "Sincronización en Alerta",
-          textClass: "text-amber-400",
+          textClass: "text-amber-700 dark:text-amber-400",
           bgClass: "bg-amber-500/10",
         };
       default:
@@ -70,7 +70,7 @@ const SimpleConnectionIndicator: React.FC = () => {
           color: "bg-red-500",
           shadow: "shadow-[0_0_12px_rgba(239,68,68,0.4)]",
           label: "Servidor Desconectado",
-          textClass: "text-red-400",
+          textClass: "text-red-700 dark:text-red-400",
           bgClass: "bg-red-500/10",
         };
     }

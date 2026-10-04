@@ -227,7 +227,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   />
                   {statusLabels[status]}
                 </div>
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest opacity-40 italic">
+                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest italic">
                   # {employee?.id.slice(-8).toUpperCase()}
                 </span>
               </div>
@@ -263,7 +263,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   key={item.id}
                   onClick={item.action}
                   disabled={isDisabled}
-                  className={`h-24 rounded-4xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-600"}`}
+                  className={`h-24 rounded-4xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
                 >
                   <div className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10">
                     {item.label}
@@ -315,7 +315,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </select>
             <button
               onClick={() => handleExportPDF && handleExportPDF()}
-              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
+              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               Descargar PDF

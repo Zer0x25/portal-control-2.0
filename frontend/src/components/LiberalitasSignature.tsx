@@ -14,7 +14,11 @@ const LiberalitasSignature: React.FC<LiberalitasSignatureProps> = ({
 
   return (
     <p className={`text-xs ${className}`}>
-      A selfless gesture of <em title={tooltip}>liberalitas</em> by {author}
+      A selfless gesture of{" "}
+      <em title={tooltip} className="not-italic text-slate-500 dark:text-slate-300">
+        liberalitas
+      </em>{" "}
+      by {author}
     </p>
   );
 };

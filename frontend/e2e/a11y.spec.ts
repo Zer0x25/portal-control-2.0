@@ -2,51 +2,88 @@ import { test, expect } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
 import { loginFast } from "./helpers/auth-helper";
 
-// Spec 005 fase 2: accesibilidad con axe-core sobre los flujos críticos.
-// Gatea solo violaciones críticas/serias (las que bloquean a usuarios con
-// lector de pantalla o teclado); moderadas/menores quedan reportadas
-// como backlog en consola para priorizar después.
+// Spec 005 fase 2 + TD-001: accesibilidad con axe-core sobre los flujos
+// críticos, en tema claro y oscuro. Gatea violaciones críticas y serias
+// (TD-001 llevó el contraste a 0 serious en 3 páginas × 2 temas, 2026-10-04).
+// Moderadas (landmarks/region/heading-order) quedan como backlog en consola.
 
-async function expectNoCriticalA11y(page: import("@playwright/test").Page, label: string) {
+async function expectNoBlockingA11y(page: import("@playwright/test").Page, label: string) {
   const results = await new AxeBuilder({ page }).analyze();
-  // Gate: violaciones críticas (bloquean lectores de pantalla / teclado).
-  // "serious" de contraste quedan como backlog justificado: son los
-  // tokens del tema oscuro (--text-tertiary #64748b, botón Salir roja)
-  // y cambiar la paleta Industrial exige decisión de diseño, no un fix
-  // mecánico. El scrollable-region-focusable ya se arregló con tabIndex=0.
-  const blocking = results.violations.filter((v) => v.impact === "critical");
-  const backlog = results.violations.filter((v) => v.impact !== "critical");
+  const blocking = results.violations.filter(
+    (v) => v.impact === "critical" || v.impact === "serious",
+  );
+  const backlog = results.violations.filter(
+    (v) => v.impact !== "critical" && v.impact !== "serious",
+  );
   if (backlog.length > 0) {
     console.log(`[A11Y-${label}] backlog:`);
     for (const v of backlog)
       console.log(`  - ${v.id} (${v.impact}): ${v.help} (${v.nodes.length} nodos)`);
   }
-  expect(blocking).toEqual([]);
+  expect(blocking.map((v) => `${v.id} [${v.impact}]: ${v.nodes.length} nodos\n${v.help}`)).toEqual(
+    [],
+  );
+}
+
+async function gotoDark(page: import("@playwright/test").Page) {
+  // El tema "system" (default sin preferencia guardada) resuelve por media
+  // query al cargar: setearla antes de navegar basta para forzar dark.
+  await page.emulateMedia({ colorScheme: "dark" });
 }
 
 test.describe("Accesibilidad axe-core", () => {
   test.setTimeout(60000);
 
-  test("login sin violaciones críticas", async ({ page }) => {
+  test("login light sin violaciones bloqueantes", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("#username")).toBeVisible({ timeout: 30000 });
-    await expectNoCriticalA11y(page, "login");
+    await page.waitForTimeout(2500); // setlean animaciones de entrada
+    await expectNoBlockingA11y(page, "login-light");
   });
 
-  test("dashboard admin sin violaciones críticas", async ({ page, request }) => {
+  test("login dark sin violaciones bloqueantes", async ({ page }) => {
+    await gotoDark(page);
+    await page.goto("/");
+    await expect(page.locator("#username")).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(2500);
+    await expectNoBlockingA11y(page, "login-dark");
+  });
+
+  test("dashboard admin light sin violaciones bloqueantes", async ({ page, request }) => {
     await loginFast(page, request, "admin");
     await page.goto("/#/dashboard");
     await expect(page).toHaveURL(/#\/dashboard/, { timeout: 30000 });
     await page.waitForTimeout(3000); // dejar que settleten widgets lazy
-    await expectNoCriticalA11y(page, "dashboard");
+    await expectNoBlockingA11y(page, "dashboard-light");
   });
 
-  test("worker portal sin violaciones críticas", async ({ page, request }) => {
+  test("dashboard admin dark sin violaciones bloqueantes", async ({ page, request }) => {
+    await gotoDark(page);
+    await loginFast(page, request, "admin");
+    await page.goto("/#/dashboard");
+    await expect(page).toHaveURL(/#\/dashboard/, { timeout: 30000 });
+    await page.waitForTimeout(3000);
+    await expectNoBlockingA11y(page, "dashboard-dark");
+  });
+
+  test("worker portal light sin violaciones bloqueantes", async ({ page, request }) => {
     await loginFast(page, request, "worker");
     await page.goto("/#/worker-portal");
     await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
       timeout: 30000,
     });
-    await expectNoCriticalA11y(page, "worker-portal");
+    await page.waitForTimeout(2000); // setlean animaciones de entrada
+    await expectNoBlockingA11y(page, "worker-light");
+  });
+
+  test("worker portal dark sin violaciones bloqueantes", async ({ page, request }) => {
+    await gotoDark(page);
+    await loginFast(page, request, "worker");
+    await page.goto("/#/worker-portal");
+    await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
+      timeout: 30000,
+    });
+    await page.waitForTimeout(2000);
+    await expectNoBlockingA11y(page, "worker-dark");
   });
 });

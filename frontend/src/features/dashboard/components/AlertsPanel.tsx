@@ -94,7 +94,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
             ))
           ) : (
             <div className="py-12 text-center bg-token-surface-stripe rounded-sm border border-token-border-technical">
-              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider opacity-60">
+              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider">
                 Sin ingresos programados
               </p>
             </div>

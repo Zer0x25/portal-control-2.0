@@ -120,7 +120,7 @@ const LoginPage: React.FC = () => {
                 <h1 className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-linear-to-r from-token-text-primary via-sap-blue to-sap-light-blue uppercase tracking-[0.2em] mb-1">
                   {APP_TITLE}
                 </h1>
-                <div className="flex items-center justify-center gap-2 opacity-60">
+                <div className="flex items-center justify-center gap-2">
                   <div className="h-px w-8 bg-linear-to-r from-transparent to-token-text-primary/50"></div>
                   <LiberalitasSignature className="text-[10px] tracking-[0.3em] text-token-text-primary" />
                   <div className="h-px w-8 bg-linear-to-l from-transparent to-token-text-primary/50"></div>
@@ -179,7 +179,7 @@ const LoginPage: React.FC = () => {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full h-12 rounded-xl bg-sap-blue text-white hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all duration-300"
+                  className="w-full h-12 rounded-xl bg-sap-blue text-white dark:text-slate-950 hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all duration-300"
                   disabled={loading}
                 >
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>

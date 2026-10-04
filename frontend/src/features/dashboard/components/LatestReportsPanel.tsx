@@ -45,7 +45,7 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
 
         {shiftReports.length === 0 && (
           <div className="py-12 text-center bg-token-surface-stripe rounded-sm border border-token-border-technical">
-            <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider opacity-60">
+            <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider">
               Historial Operativo Vacío
             </p>
           </div>

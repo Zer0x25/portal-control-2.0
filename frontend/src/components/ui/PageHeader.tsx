@@ -55,7 +55,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       </div>
 
       {actions && (
-        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto scrollbar-hide">
+        <div
+          className="flex items-center gap-3 w-full md:w-auto overflow-x-auto scrollbar-hide"
+          tabIndex={0}
+        >
           {actions}
         </div>
       )}

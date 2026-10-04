@@ -178,7 +178,7 @@
 
     --text-primary: #0f172a;
     --text-secondary: #475569;
-    --text-tertiary: #94a3b8;
+    --text-tertiary: #5b6b7f;
     --text-on-accent: #ffffff;
 
     /* State Colors - Reverted to HEX for solid visibility */
@@ -206,7 +206,7 @@
 
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
-    --text-tertiary: #64748b;
+    --text-tertiary: #7c8da6;
 
     --accent-professional: #38bdf8;
   }
