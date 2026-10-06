@@ -5,7 +5,16 @@ import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { UserRole, Prisma } from "../generated/prisma/client";
 
-import { toPublicUser } from "../modules/users";
+import {
+  toPublicUser,
+  createUserFlows,
+  mapUserRole,
+  type UserFlowDependencies,
+  type CreateUserDto,
+  type UpdateUserDto,
+  type UserQuery,
+} from "../modules/users";
+export type { CreateUserDto, UpdateUserDto } from "../modules/users";
 
 // Public reads and mutation results never fetch credential/security columns.
 const publicUserSelect = {
@@ -19,23 +28,6 @@ const publicUserSelect = {
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.UserSelect;
-
-export interface CreateUserDto {
-  id?: string;
-  username: string;
-  password?: string;
-  role: string;
-  employeeId: string;
-}
-
-export interface UpdateUserDto {
-  username?: string;
-  password?: string;
-  role?: string;
-  employeeId?: string;
-  mustChangePassword?: boolean;
-  isForcePasswordChange?: boolean;
-}
 
 type DbClient = Pick<Prisma.TransactionClient, "user"> | Pick<typeof prisma, "user">;
 
@@ -93,20 +85,7 @@ export class UserService {
   }
 
   public mapRoleFromFrontend(role: string): UserRole {
-    if (!role) return "Usuario";
-    const roleMap: Record<string, UserRole> = {
-      Empleado: "Usuario",
-      Usuario: "Usuario",
-      "Reloj Control": "Reloj_Control",
-      Reloj_Control: "Reloj_Control",
-      Supervisor: "Supervisor",
-      Administrador: "Administrador",
-      "Supervisor Elevado": "Supervisor_Elevado",
-      Supervisor_Elevado: "Supervisor_Elevado",
-      Fiscalizador: "Fiscalizador",
-      Archivado: "Archivado",
-    };
-    return roleMap[role] || (role as UserRole);
+    return mapUserRole(role) as UserRole;
   }
 
   private mapRoleToFrontend(role: string): string {
@@ -114,15 +93,7 @@ export class UserService {
     return role.replace(/_/g, " ");
   }
 
-  async getAllUsers(params: {
-    since?: string;
-    requesterRole?: string;
-    requesterId?: string;
-    search?: string;
-    role?: string;
-    page?: number;
-    pageSize?: number;
-  }) {
+  private async listUsers(params: UserQuery) {
     const { since, requesterRole, requesterId, search, role, page, pageSize } = params;
     const where: Prisma.UserWhereInput = {};
 
@@ -169,46 +140,47 @@ export class UserService {
       prisma.user.count({ where }),
     ]);
 
-    const mappedUsers = rawUsers.map((user) => ({
-      ...toPublicUser(user),
-      syncStatus: "synced",
-      lastModified: user.updatedAt.getTime(),
-      isDeleted: false,
-    }));
-
-    return {
-      users: mappedUsers,
-      total,
-      isPaginated,
-    };
+    return { users: rawUsers, total };
   }
 
-  async createUser(data: CreateUserDto, actorUsername: string) {
-    const hashedPassword = bcrypt.hashSync(data.password || "123456", 10);
-
-    const user = await prisma.user.create({
-      select: publicUserSelect,
-      data: {
-        id: data.id || ulid(),
-        username: data.username.toLowerCase(),
-        passwordHash: hashedPassword,
-        role: this.mapRoleFromFrontend(data.role),
-        employeeId: data.employeeId,
-        isForcePasswordChange: true,
+  private readonly flows = createUserFlows({
+    repository: {
+      list: (query) => this.listUsers(query),
+      create: (data) =>
+        prisma.user.create({
+          select: publicUserSelect,
+          data: { ...data, role: this.mapRoleFromFrontend(data.role) },
+        }),
+      update: (id, data) => {
+        const { employeeId, role, ...fields } = data;
+        const update: Prisma.UserUpdateInput = { ...fields };
+        if (role !== undefined) update.role = this.mapRoleFromFrontend(role);
+        if (employeeId !== undefined)
+          update.employee = employeeId ? { connect: { id: employeeId } } : { disconnect: true };
+        return prisma.user.update({ select: publicUserSelect, where: { id }, data: update });
       },
-    });
+      findUsername: (id) => prisma.user.findUnique({ where: { id }, select: { username: true } }),
+      delete: async (id) => {
+        await prisma.user.delete({ where: { id } });
+      },
+    },
+    hash: (password) => bcrypt.hashSync(password, 10),
+    id: ulid,
+    audit: (entry) => auditService.log(entry),
+    emit: (user) => SocketService.emit("user:updated", user),
+  } satisfies UserFlowDependencies);
 
-    const enriched = toPublicUser(user);
-
-    await auditService.log({
-      actorUsername,
-      action: "USER_CREATE",
-      category: "OPERATIONS",
-      details: { username: enriched.username, role: enriched.role },
-    });
-
-    SocketService.emit("user:updated", enriched);
-    return enriched;
+  getAllUsers(query: UserQuery) {
+    return this.flows.getAllUsers(query);
+  }
+  createUser(data: CreateUserDto, actor: string) {
+    return this.flows.createUser(data, actor);
+  }
+  updateUser(id: string, data: UpdateUserDto, actor: string) {
+    return this.flows.updateUser(id, data, actor);
+  }
+  deleteUser(id: string, actor: string) {
+    return this.flows.deleteUser(id, actor);
   }
 
   async ensureEmployeeUser(
@@ -248,71 +220,6 @@ export class UserService {
     const publicUser = toPublicUser(createdUser);
     SocketService.emit("user:updated", publicUser);
     return publicUser;
-  }
-
-  async updateUser(id: string, data: UpdateUserDto, actorUsername: string) {
-    const dataToUpdate: Prisma.UserUpdateInput = {};
-    if (data.username) dataToUpdate.username = data.username.toLowerCase();
-    if (data.password) dataToUpdate.passwordHash = bcrypt.hashSync(data.password, 10);
-    // Spec 002 H-06: si el usuario fija su propia contraseña y nadie pidió
-    // forzar cambio explícitamente, el flag forzado queda saldado.
-    if (
-      data.password &&
-      data.mustChangePassword === undefined &&
-      data.isForcePasswordChange === undefined
-    ) {
-      dataToUpdate.isForcePasswordChange = false;
-    }
-    if (data.role) dataToUpdate.role = this.mapRoleFromFrontend(data.role);
-    if (data.employeeId !== undefined) {
-      if (data.employeeId) {
-        dataToUpdate.employee = { connect: { id: data.employeeId } };
-      } else {
-        dataToUpdate.employee = { disconnect: true };
-      }
-    }
-    if (data.mustChangePassword !== undefined)
-      dataToUpdate.isForcePasswordChange = data.mustChangePassword;
-    if (data.isForcePasswordChange !== undefined)
-      dataToUpdate.isForcePasswordChange = data.isForcePasswordChange;
-
-    const updated = await prisma.user.update({
-      select: publicUserSelect,
-      where: { id },
-      data: dataToUpdate,
-    });
-
-    const enriched = toPublicUser(updated);
-
-    await auditService.log({
-      actorUsername,
-      action: "USER_UPDATE",
-      category: "OPERATIONS",
-      severity: "INFO",
-      details: {
-        userId: id,
-        username: updated.username,
-        updatedFields: Object.keys(dataToUpdate),
-      },
-    });
-
-    SocketService.emit("user:updated", enriched);
-    return enriched;
-  }
-
-  async deleteUser(id: string, actorUsername: string) {
-    const user = await prisma.user.findUnique({ where: { id }, select: { username: true } });
-    await prisma.user.delete({ where: { id } });
-
-    await auditService.log({
-      actorUsername,
-      action: "USER_DELETE",
-      category: "OPERATIONS",
-      severity: "WARNING",
-      details: { id, username: user?.username },
-    });
-
-    SocketService.emit("user:updated", { id, isDeleted: true });
   }
 
   async forceResetPassword(username: string, newPassword: string, actorUsername: string) {

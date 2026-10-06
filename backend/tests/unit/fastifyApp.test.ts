@@ -107,6 +107,12 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       deleteHoliday: commands.delete,
       syncExternalHolidays: commands.sync,
     },
+    users: {
+      getAllUsers: vi.fn(async () => ({ users: [], total: 0, isPaginated: false })),
+      createUser: vi.fn(),
+      updateUser: vi.fn(),
+      deleteUser: vi.fn(),
+    },
     health: {
       checkDbReady: vi.fn(async () => true),
       getDetailedHealth: vi.fn(async () => ({ database: { status: "OK" } })),

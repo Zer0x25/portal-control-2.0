@@ -17,6 +17,14 @@ routes.push(
     validated: true,
   })),
 );
+routes.push(
+  ...[
+    ["GET", "/api/users"],
+    ["POST", "/api/users"],
+    ["PUT", "/api/users/:id"],
+    ["DELETE", "/api/users/:id"],
+  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+);
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
     expect(() => assertMigratedRouteContracts(routes)).not.toThrow());
@@ -41,7 +49,9 @@ describe("Fastify route guard anti-vacuity", () => {
       "Auth route manifest is empty",
     ));
   it("rejects auth route missing", () =>
-    expect(() => assertMigratedRouteContracts(routes.slice(0, -1))).toThrow("differs"));
+    expect(() =>
+      assertMigratedRouteContracts(routes.filter((route) => route.url !== "/api/auth/login")),
+    ).toThrow("differs"));
   it("rejects public auth route marked protected", () =>
     expect(() =>
       assertMigratedRouteContracts(
@@ -67,3 +77,26 @@ describe("Fastify route guard anti-vacuity", () => {
       ),
     ).toThrow("Unvalidated"));
 });
+
+it("rejects missing users surface", () =>
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((route) => !route.url.startsWith("/api/users"))),
+  ).toThrow("Users route manifest is empty"));
+it("rejects users route without authentication", () =>
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((route) =>
+        route.url === "/api/users" ? { ...route, authenticated: false } : route,
+      ),
+    ),
+  ).toThrow("authentication"));
+it("rejects users path mutation without validator", () =>
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((route) =>
+        route.method === "DELETE" && route.url.startsWith("/api/users")
+          ? { ...route, validated: false }
+          : route,
+      ),
+    ),
+  ).toThrow("Unvalidated"));

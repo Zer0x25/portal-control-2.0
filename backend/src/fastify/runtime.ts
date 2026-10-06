@@ -1,3 +1,4 @@
+import { userService } from "../services/UserService";
 import { authFlows } from "../services/authFlows";
 import { inspectLoginFailures } from "../services/loginFailures";
 import { buildFastifyApp, type FastifyConfig } from "../platform/fastify/app";
@@ -15,6 +16,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
     {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
+      users: userService,
       auth: { flows: authFlows, inspectFailures: inspectLoginFailures },
       health: HealthService,
       maintenance: () =>

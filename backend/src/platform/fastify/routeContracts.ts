@@ -42,4 +42,24 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
       throw new Error(`Incorrect authentication contract: ${route.url}`);
     if (!route.validated) throw new Error(`Unvalidated mutation: ${route.method} ${route.url}`);
   }
+  const users = routes.filter(
+    (route) => route.url === "/api/users" || route.url.startsWith("/api/users/"),
+  );
+  if (!users.length) throw new Error("Users route manifest is empty");
+  const expectedUsers = [
+    "GET /api/users",
+    "POST /api/users",
+    "PUT /api/users/:id",
+    "DELETE /api/users/:id",
+  ].sort();
+  if (
+    JSON.stringify(users.map((route) => `${route.method} ${route.url}`).sort()) !==
+    JSON.stringify(expectedUsers)
+  )
+    throw new Error("Users route manifest differs from the API contract");
+  for (const route of users) {
+    if (!route.authenticated)
+      throw new Error(`Missing authentication contract: ${route.method} ${route.url}`);
+    if (!route.validated) throw new Error(`Unvalidated users route: ${route.method} ${route.url}`);
+  }
 }

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware";
 import { userService } from "../services/UserService";
+import { queryString } from "../utils/stringUtils";
 import { asyncHandler } from "../middleware/errorHandler";
 
 export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
@@ -10,11 +11,11 @@ export const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
   const requesterId = authReq.user?.id;
 
   const result = await userService.getAllUsers({
-    since: since as string,
+    since: typeof since === "number" ? since : queryString(since),
     requesterRole,
     requesterId,
-    search: search as string,
-    role: role as string,
+    search: queryString(search),
+    role: queryString(role),
     page: page ? Number(page) : undefined,
     pageSize: pageSize ? Number(pageSize) : undefined,
   });

@@ -265,7 +265,8 @@ El backend añade `npm run check:holidays` (tipos estrictos del módulo) a `chec
 
 La consulta de feriados está extraída con contratos y adaptador Prisma. Express
 sigue siendo el servidor principal. El candidato Fastify ya expone health y
-feriados completos y las seis rutas de autenticación (login, logout, quiosco y MFA),
+feriados completos, las seis rutas de autenticación (login, logout, quiosco y MFA)
+y las cuatro rutas de usuarios (CRUD Admin),
 con sesiones y permisos reales, auditoría y tipos estrictos.
 Para iniciarlo en otro puerto desde `backend/`: `PORT=4001 npm run dev:fastify`.
 Requiere las mismas conexiones y `JWT_SECRET`. Puede emitir y revocar sesiones
@@ -287,7 +288,9 @@ serializa sus fallos. Aplicar `npm run db:migrate:deploy` con `DIRECT_URL` antes
 de ejecutar el código nuevo y regenerar Prisma (`npm run db:generate`).
 Los DTO públicos de usuarios excluyen hashes, secretos MFA y contadores también
 en eventos `user:updated`. Ver [spec 011](specs/011-usuarios-dto-publico/spec.md)
-y [resultado](specs/011-usuarios-dto-publico/result.md). Usuarios sigue en Express;
-la proyección pura y sus tipos estrictos preparan su siguiente migración HTTP.
+y [resultado](specs/011-usuarios-dto-publico/result.md). Usuarios comparte casos de
+uso con repositorio/hash/identificador/auditoría/eventos inyectados y rutas nativas
+Fastify; ver [spec 012](specs/012-fastify-usuarios/spec.md) y
+[resultado de usuarios](specs/012-fastify-usuarios/result.md).
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
 [spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).

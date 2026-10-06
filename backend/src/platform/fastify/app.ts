@@ -7,6 +7,7 @@ import rateLimit from "@fastify/rate-limit";
 import type { AuthUser, AuthFlows } from "../../modules/auth";
 import { resolveAccessToken, authPlugin } from "../../modules/auth";
 import { holidayPlugin, type HolidayHttpService } from "../../modules/holidays";
+import { usersPlugin, type UserFlows } from "../../modules/users";
 import { requestContext } from "../../utils/context";
 import { AppError } from "../../utils/AppError";
 import { errorCategory, mapHttpError, shouldAuditError } from "../../utils/httpError";
@@ -23,6 +24,7 @@ export interface RouteEntry {
 export interface FastifyDependencies {
   authenticate(token: string | undefined): Promise<AuthUser>;
   holidays: HolidayHttpService;
+  users: UserFlows;
   auth: {
     flows: AuthFlows;
     inspectFailures(
@@ -185,6 +187,7 @@ export function buildFastifyApp(
       context.username = user.username;
     };
     protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(usersPlugin, { service: deps.users, authenticate });
     protectedApp.register(authPlugin, { ...deps.auth, authenticate });
   });
   app.addHook("onReady", async () => assertMigratedRouteContracts(manifest));
