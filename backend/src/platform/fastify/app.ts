@@ -116,6 +116,7 @@ export function buildFastifyApp(
         )
         .catch((err: unknown) => app.log.error({ err }, "Error audit failed"));
     }
+    if (response.headers) reply.headers(response.headers);
     return reply.code(response.statusCode).send(response.body);
   });
   app.setNotFoundHandler((request, reply) =>

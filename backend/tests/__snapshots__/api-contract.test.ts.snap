@@ -2554,6 +2554,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
         "type": "object",
       },
       "User": {
+        "additionalProperties": false,
         "properties": {
           "createdAt": {
             "type": "string",
@@ -2575,6 +2576,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "lastModified": {
             "type": "number",
           },
+          "mfaEnabled": {
+            "type": "boolean",
+          },
           "mustChangePassword": {
             "type": "boolean",
           },
@@ -2587,6 +2591,8 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
               "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado",
+              "Reloj Control",
+              "Supervisor Elevado",
             ],
             "type": "string",
           },
@@ -3287,6 +3293,24 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
               },
             },
             "description": "Autenticación de dos pasos exitosa",
+          },
+          "401": {
+            "description": "Código o desafío inválido, expirado o MFA deshabilitado",
+          },
+          "403": {
+            "description": "Cuenta archivada entre factores",
+          },
+          "429": {
+            "description": "Cinco códigos incorrectos bloquean MFA durante cinco minutos",
+            "headers": {
+              "Retry-After": {
+                "description": "Segundos hasta que se permita otro intento",
+                "schema": {
+                  "minimum": 1,
+                  "type": "integer",
+                },
+              },
+            },
           },
         },
         "summary": "Valida código MFA durante login",
@@ -6985,7 +7009,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/User",
+                "$ref": "#/components/schemas/UpdateUser",
               },
             },
           },

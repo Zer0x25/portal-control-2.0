@@ -16,6 +16,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, _next: N
       .logError(err, req, category)
       .catch((error) => logger.error("Could not log error to AuditService", error));
   }
+  if (response.headers) res.set(response.headers);
   return res.status(response.statusCode).json(response.body);
 };
 

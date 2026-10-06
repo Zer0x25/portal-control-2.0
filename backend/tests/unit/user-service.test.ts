@@ -48,6 +48,10 @@ describe("UserService.ensureEmployeeUser", () => {
       role: data.role,
       employeeId: data.employeeId,
       isForcePasswordChange: data.isForcePasswordChange,
+      mfaEnabled: false,
+      lastLogin: null,
+      createdAt: new Date("2026-10-01T00:00:00Z"),
+      updatedAt: new Date("2026-10-01T00:00:00Z"),
     }));
 
     const result = await service.ensureEmployeeUser(
@@ -67,7 +71,8 @@ describe("UserService.ensureEmployeeUser", () => {
         }),
       }),
     );
-    expect(bcrypt.compareSync("123456", result.passwordHash)).toBe(true);
+    expect(bcrypt.compareSync("123456", createMock.mock.calls[0][0].data.passwordHash)).toBe(true);
+    expect(result).not.toHaveProperty("passwordHash");
     expect(result.employeeId).toBe("EMP-1001");
     expect(result.mustChangePassword).toBe(true);
     expect(auditLogMock).toHaveBeenCalled();
@@ -84,6 +89,10 @@ describe("UserService.ensureEmployeeUser", () => {
       role: "Usuario",
       employeeId: "EMP-1001",
       isForcePasswordChange: false,
+      mfaEnabled: false,
+      lastLogin: null,
+      createdAt: new Date("2026-10-01T00:00:00Z"),
+      updatedAt: new Date("2026-10-01T00:00:00Z"),
     });
 
     const result = await service.ensureEmployeeUser(

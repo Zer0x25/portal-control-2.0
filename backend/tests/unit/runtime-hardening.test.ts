@@ -120,6 +120,10 @@ describe("UserService.updateUser force flag (spec 002 H-06)", () => {
       role: "Usuario",
       employeeId: null,
       isForcePasswordChange: data.isForcePasswordChange ?? true,
+      mfaEnabled: false,
+      lastLogin: null,
+      createdAt: new Date("2026-10-01T00:00:00Z"),
+      updatedAt: new Date("2026-10-01T00:00:00Z"),
     }));
   });
 

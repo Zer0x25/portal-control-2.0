@@ -9,19 +9,22 @@ datasource db {
 }
 
 model User {
-  id                    String          @id @default(uuid())
-  username              String          @unique
-  passwordHash          String          @map("password_hash")
-  role                  UserRole        @default(Usuario)
-  employeeId            String?         @unique @map("employee_id")
-  createdAt             DateTime        @default(now()) @map("created_at")
-  updatedAt             DateTime        @default(now()) @updatedAt @map("updated_at")
-  lastLogin             DateTime?       @map("last_login")
-  isForcePasswordChange Boolean         @default(false) @map("is_force_password_change")
-  mfaEnabled            Boolean         @default(false) @map("mfa_enabled")
-  mfaSecret             String?         @map("mfa_secret")
-  sessions              ActiveSession[]
-  employee              Employee?       @relation(fields: [employeeId], references: [id])
+  id                        String          @id @default(uuid())
+  username                  String          @unique
+  passwordHash              String          @map("password_hash")
+  role                      UserRole        @default(Usuario)
+  employeeId                String?         @unique @map("employee_id")
+  createdAt                 DateTime        @default(now()) @map("created_at")
+  updatedAt                 DateTime        @default(now()) @updatedAt @map("updated_at")
+  lastLogin                 DateTime?       @map("last_login")
+  isForcePasswordChange     Boolean         @default(false) @map("is_force_password_change")
+  mfaEnabled                Boolean         @default(false) @map("mfa_enabled")
+  mfaSecret                 String?         @map("mfa_secret")
+  mfaFailedAttempts         Int             @default(0) @map("mfa_failed_attempts")
+  mfaFailureWindowStartedAt DateTime?       @map("mfa_failure_window_started_at")
+  mfaBlockedUntil           DateTime?       @map("mfa_blocked_until")
+  sessions                  ActiveSession[]
+  employee                  Employee?       @relation(fields: [employeeId], references: [id])
 
   @@index([updatedAt])
   @@map("users")

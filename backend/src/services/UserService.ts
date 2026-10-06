@@ -5,6 +5,21 @@ import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { UserRole, Prisma } from "../generated/prisma/client";
 
+import { toPublicUser } from "../modules/users";
+
+// Public reads and mutation results never fetch credential/security columns.
+const publicUserSelect = {
+  id: true,
+  username: true,
+  role: true,
+  employeeId: true,
+  isForcePasswordChange: true,
+  mfaEnabled: true,
+  lastLogin: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.UserSelect;
+
 export interface CreateUserDto {
   id?: string;
   username: string;
@@ -145,6 +160,7 @@ export class UserService {
 
     const [rawUsers, total] = await Promise.all([
       prisma.user.findMany({
+        select: publicUserSelect,
         where,
         orderBy: { username: "asc" },
         take,
@@ -153,17 +169,12 @@ export class UserService {
       prisma.user.count({ where }),
     ]);
 
-    const mappedUsers = rawUsers.map((user) => {
-      const { isForcePasswordChange, ...rest } = user;
-      return {
-        ...rest,
-        role: this.mapRoleToFrontend(user.role),
-        mustChangePassword: isForcePasswordChange,
-        syncStatus: "synced",
-        lastModified: user.updatedAt.getTime(),
-        isDeleted: false,
-      };
-    });
+    const mappedUsers = rawUsers.map((user) => ({
+      ...toPublicUser(user),
+      syncStatus: "synced",
+      lastModified: user.updatedAt.getTime(),
+      isDeleted: false,
+    }));
 
     return {
       users: mappedUsers,
@@ -176,6 +187,7 @@ export class UserService {
     const hashedPassword = bcrypt.hashSync(data.password || "123456", 10);
 
     const user = await prisma.user.create({
+      select: publicUserSelect,
       data: {
         id: data.id || ulid(),
         username: data.username.toLowerCase(),
@@ -186,10 +198,7 @@ export class UserService {
       },
     });
 
-    const enriched = {
-      ...user,
-      role: this.mapRoleToFrontend(user.role),
-    };
+    const enriched = toPublicUser(user);
 
     await auditService.log({
       actorUsername,
@@ -208,21 +217,17 @@ export class UserService {
     db: DbClient = prisma,
   ) {
     const existingLinkedUser = await db.user.findFirst({
+      select: publicUserSelect,
       where: { employeeId: data.employeeId },
     });
 
-    if (existingLinkedUser) {
-      return {
-        ...existingLinkedUser,
-        role: this.mapRoleToFrontend(existingLinkedUser.role),
-        mustChangePassword: existingLinkedUser.isForcePasswordChange,
-      };
-    }
+    if (existingLinkedUser) return toPublicUser(existingLinkedUser);
 
     const username = await this.generateUniqueEmployeeUsername(data.fullName, db);
     const passwordHash = bcrypt.hashSync(data.defaultPassword || "123456", 10);
 
     const createdUser = await db.user.create({
+      select: publicUserSelect,
       data: {
         id: ulid(),
         username,
@@ -240,16 +245,9 @@ export class UserService {
       details: { username: createdUser.username, role: this.mapRoleToFrontend(createdUser.role) },
     });
 
-    SocketService.emit("user:updated", {
-      ...createdUser,
-      role: this.mapRoleToFrontend(createdUser.role),
-    });
-
-    return {
-      ...createdUser,
-      role: this.mapRoleToFrontend(createdUser.role),
-      mustChangePassword: createdUser.isForcePasswordChange,
-    };
+    const publicUser = toPublicUser(createdUser);
+    SocketService.emit("user:updated", publicUser);
+    return publicUser;
   }
 
   async updateUser(id: string, data: UpdateUserDto, actorUsername: string) {
@@ -279,15 +277,12 @@ export class UserService {
       dataToUpdate.isForcePasswordChange = data.isForcePasswordChange;
 
     const updated = await prisma.user.update({
+      select: publicUserSelect,
       where: { id },
       data: dataToUpdate,
     });
 
-    const enriched = {
-      ...updated,
-      role: this.mapRoleToFrontend(updated.role),
-      mustChangePassword: updated.isForcePasswordChange,
-    };
+    const enriched = toPublicUser(updated);
 
     await auditService.log({
       actorUsername,

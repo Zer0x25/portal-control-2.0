@@ -139,13 +139,22 @@ Consumidores externos no importan archivos privados. Su aplicación no importa
 Express, Fastify, Prisma, DB, entorno, red o reloj global: inyecta dependencias.
 `npm run check:holidays` aplica strict y forma parte de `npm run check`.
 El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
-de autenticación (login/logout/quiosco/MFA) con casos de uso compartidos. `check:modules` aplica strict a auth, feriados y plataforma HTTP.
+de autenticación (login/logout/quiosco/MFA) con casos de uso compartidos. `check:modules` aplica strict a auth, users, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
 Los consumidores de auth usan index.ts; aplicación solo admite puertos y errores
 compartidos, sin dependencias de servidor, BD, entorno ni reloj global.
-Ver specs 006/007/008/009 y ADR-0017/0018.
+MFA usa presupuesto persistido por usuario (cinco fallos en cinco minutos,
+bloqueo cinco minutos); MFA/PIN serializan sus cambios con FOR UPDATE en
+withDirectTransaction. Los intentos fallidos devuelven resultado antes de lanzar
+401 fuera de la transacción, para que el contador se confirme. No exponer las
+columnas de presupuesto MFA en DTO de usuarios ni sockets.
+La proyección pública de usuarios está en modules/users/index.ts. UserService
+selecciona campos públicos de Prisma y los proyecta explícitamente: nunca exponer
+passwordHash, mfaSecret ni contadores MFA en HTTP o user:updated. Mantener
+mfaEnabled y mustChangePassword; no propagar isForcePasswordChange interno.
+Ver specs 006/007/008/009/010/011 y ADR-0017/0018/0019.
 
 ---
 

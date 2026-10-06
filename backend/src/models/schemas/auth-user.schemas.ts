@@ -22,14 +22,16 @@ export const UserSchema = z
   .object({
     id: z.string(),
     username: z.string(),
-    role: z.enum([...userRoleEnum.options, "Archivado"]),
+    role: z.enum([...userRoleEnum.options, "Archivado", "Reloj Control", "Supervisor Elevado"]),
     employeeId: z.string().nullable().optional(),
     mustChangePassword: z.boolean().optional(),
+    mfaEnabled: z.boolean().optional(),
     lastLogin: z.string().nullable().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
     ...syncAuditFields,
   })
+  .strict()
   .openapi("User");
 
 export const UserQuerySchema = z.object({

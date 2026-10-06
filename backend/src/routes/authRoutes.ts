@@ -97,6 +97,18 @@ router.post(
  *     summary: Valida código MFA durante login
  *     tags: [Auth]
  *     responses:
+ *       401:
+ *         description: Código o desafío inválido, expirado o MFA deshabilitado
+ *       403:
+ *         description: Cuenta archivada entre factores
+ *       429:
+ *         description: Cinco códigos incorrectos bloquean MFA durante cinco minutos
+ *         headers:
+ *           Retry-After:
+ *             description: Segundos hasta que se permita otro intento
+ *             schema:
+ *               type: integer
+ *               minimum: 1
  *       200:
  *         description: Autenticación de dos pasos exitosa
  *         content:

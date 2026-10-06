@@ -279,5 +279,15 @@ con carga HTTP y PostgreSQL real en procesos separados. Ver
 La migración HTTP de auth y sus comprobaciones están en
 [spec 009](specs/009-fastify-autenticacion/spec.md) y
 [resultado de autenticación](specs/009-fastify-autenticacion/result.md).
+La seguridad de MFA/PIN compartida se describe en
+[spec 010](specs/010-auth-seguridad/spec.md) y
+[resultado](specs/010-auth-seguridad/result.md): MFA bloquea cinco minutos al
+quinto código incorrecto dentro de cinco minutos, con estado persistido; PIN
+serializa sus fallos. Aplicar `npm run db:migrate:deploy` con `DIRECT_URL` antes
+de ejecutar el código nuevo y regenerar Prisma (`npm run db:generate`).
+Los DTO públicos de usuarios excluyen hashes, secretos MFA y contadores también
+en eventos `user:updated`. Ver [spec 011](specs/011-usuarios-dto-publico/spec.md)
+y [resultado](specs/011-usuarios-dto-publico/result.md). Usuarios sigue en Express;
+la proyección pura y sus tipos estrictos preparan su siguiente migración HTTP.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
 [spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).

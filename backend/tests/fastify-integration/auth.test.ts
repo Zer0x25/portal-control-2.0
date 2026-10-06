@@ -1,6 +1,10 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import path from "node:path";
+import { UserService } from "../../src/services/UserService";
 import jwt from "jsonwebtoken";
 import speakeasy from "speakeasy";
 import request from "supertest";
@@ -438,5 +442,191 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
         })
       ).statusCode,
     ).toBe(401);
+  });
+});
+
+describe("Spec 010 MFA and PIN security", () => {
+  const complete = (mfaToken: string, code = "abcdef", remoteAddress?: string) =>
+    app.inject({
+      method: "POST",
+      url: "/api/auth/mfa/validate",
+      payload: { mfaToken, code },
+      remoteAddress,
+    });
+  const validCode = (actor: { mfaSecret: string | null }) =>
+    speakeasy.totp({ secret: actor.mfaSecret!, encoding: "base32" });
+
+  it.each([true, false])(
+    "rejects a user archived between factors with MFA %s in both transports without successful audit",
+    async (enabled) => {
+      const actor = await user("archived-mfa", "Supervisor", true);
+      const pending = (await login(actor.username)).json().mfaToken;
+      await prismaDirect.user.update({
+        where: { id: actor.id },
+        data: { role: "Archivado", mfaEnabled: enabled },
+      });
+      const migrated = await complete(pending, validCode(actor));
+      const legacy = await request(expressApp)
+        .post("/api/auth/mfa/validate")
+        .send({ mfaToken: pending, code: validCode(actor) });
+      expect(migrated.statusCode).toBe(403);
+      expect(legacy.status).toBe(403);
+      expect(migrated.json()).toEqual(legacy.body);
+      expect(await prismaDirect.activeSession.count()).toBe(0);
+      expect(await prismaDirect.auditLog.count({ where: { action: "LOGIN_MFA_SUCCESS" } })).toBe(0);
+    },
+  );
+  it("rejects disabled MFA even with a valid previous challenge/code", async () => {
+    const actor = await user("disabled-mfa", "Supervisor", true);
+    const pending = (await login(actor.username)).json().mfaToken;
+    await prismaDirect.user.update({ where: { id: actor.id }, data: { mfaEnabled: false } });
+    expect((await complete(pending, validCode(actor))).statusCode).toBe(401);
+    expect(await prismaDirect.activeSession.count()).toBe(0);
+  });
+  it("persists exactly five concurrent MFA failures and blocks remaining requests", async () => {
+    const actor = await user("limited-mfa", "Supervisor", true);
+    const pending = (await login(actor.username)).json().mfaToken;
+    const responses = await Promise.all(Array.from({ length: 8 }, () => complete(pending)));
+    expect(responses.filter((r) => r.statusCode === 401)).toHaveLength(5);
+    expect(responses.filter((r) => r.statusCode === 429)).toHaveLength(3);
+    const state = await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } });
+    expect(state).toMatchObject({
+      mfaFailedAttempts: 5,
+      mfaBlockedUntil: expect.any(Date),
+      mfaFailureWindowStartedAt: expect.any(Date),
+    });
+    expect(state.mfaBlockedUntil!.getTime() - Date.now()).toBeGreaterThan(290000);
+    // A genuinely different signed challenge still addresses the same persisted identity.
+    const fresh = AuthService.generateMFAPendingToken({
+      ...actor,
+      username: "different-signed-name",
+    });
+    expect(fresh).not.toBe(pending);
+    const verify = vi.spyOn(
+      (await import("../../src/services/mfaService")).mfaService,
+      "verifyToken",
+    );
+    const migrated = await complete(fresh, validCode(actor), "10.0.0.20");
+    const legacy = await request(expressApp)
+      .post("/api/auth/mfa/validate")
+      .send({ mfaToken: fresh, code: validCode(actor) });
+    expect(migrated.statusCode).toBe(429);
+    expect(legacy.status).toBe(429);
+    expect(migrated.json()).toEqual(legacy.body);
+    for (const value of [migrated.headers["retry-after"], legacy.headers["retry-after"]]) {
+      expect(Number(value)).toBeGreaterThan(0);
+      expect(Number(value)).toBeLessThanOrEqual(300);
+    }
+    expect(verify).not.toHaveBeenCalled();
+    const blockedState = await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } });
+    expect(blockedState.mfaFailedAttempts).toBe(5);
+    expect(blockedState.mfaBlockedUntil).toEqual(state.mfaBlockedUntil);
+    const other = await user("other-mfa", "Supervisor", true);
+    const otherPending = (await login(other.username)).json().mfaToken;
+    expect((await complete(otherPending, validCode(other))).statusCode).toBe(200);
+    expect(await prismaDirect.activeSession.count({ where: { userId: actor.id } })).toBe(0);
+  });
+  it.each(["block", "window"])(
+    "expired %s starts fresh failure window; success clears it and uses current role",
+    async (expiry) => {
+      const actor = await user("expired-mfa", "Supervisor", true);
+      const pending = (await login(actor.username)).json().mfaToken;
+      await prismaDirect.user.update({
+        where: { id: actor.id },
+        data: {
+          mfaFailedAttempts: expiry === "block" ? 5 : 4,
+          mfaBlockedUntil: expiry === "block" ? new Date(0) : null,
+          mfaFailureWindowStartedAt: expiry === "block" ? new Date() : new Date(0),
+          role: "Administrador",
+        },
+      });
+      expect((await complete(pending)).statusCode).toBe(401);
+      expect(
+        (await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).mfaFailedAttempts,
+      ).toBe(1);
+      const accepted = await complete(pending, validCode(actor));
+      expect(accepted.statusCode).toBe(200);
+      expect(accepted.json().role).toBe("Administrador");
+      expect(await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).toMatchObject({
+        mfaFailedAttempts: 0,
+        mfaBlockedUntil: null,
+        mfaFailureWindowStartedAt: null,
+      });
+    },
+  );
+  it("shares MFA failure budget across independent server processes", async () => {
+    const actor = await user("process-mfa", "Supervisor", true);
+    const pending = (await login(actor.username)).json().mfaToken;
+    const run = () =>
+      promisify(execFile)(
+        process.execPath,
+        ["--import", "tsx", path.join(__dirname, "helpers/mfa-worker.cjs")],
+        {
+          cwd: path.resolve(__dirname, "../.."),
+          env: { ...process.env, MFA_TEST_TOKEN: pending },
+          timeout: 15000,
+        },
+      );
+    const outputs = await Promise.all([run(), run()]);
+    const statuses: number[] = outputs.flatMap((output) => JSON.parse(output.stdout));
+    expect(statuses.filter((status) => status === 401)).toHaveLength(5);
+    expect(statuses.filter((status) => status === 429)).toHaveLength(3);
+    expect((await complete(pending, validCode(actor))).statusCode).toBe(429);
+    expect(await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).toMatchObject({
+      mfaFailedAttempts: 5,
+      mfaBlockedUntil: expect.any(Date),
+    });
+  });
+  it("new MFA counters stay out of existing user HTTP/socket DTOs", async () => {
+    const actor = await user("dto-mfa", "Supervisor", true);
+    const service = new UserService();
+    const emitted = vi
+      .spyOn((await import("../../src/services/socketService")).SocketService, "emit")
+      .mockImplementation(() => {});
+    const updated = await service.updateUser(actor.id, { username: actor.username }, "test");
+    const listed = await service.getAllUsers({ requesterRole: "Administrador" });
+    const emp = await employee();
+    const created = await service.createUser(
+      { username: "dto-created", password, role: "Supervisor", employeeId: emp.id },
+      "test",
+    );
+    for (const payload of [
+      updated,
+      listed.users[0],
+      created,
+      ...emitted.mock.calls.map((call) => call[1]),
+    ]) {
+      expect(payload).not.toHaveProperty("mfaFailedAttempts");
+      expect(payload).not.toHaveProperty("mfaFailureWindowStartedAt");
+      expect(payload).not.toHaveProperty("mfaBlockedUntil");
+    }
+  });
+  it("invalid/expired/non-pending JWTs do not consume persisted MFA attempts", async () => {
+    const actor = await user("jwt-mfa", "Supervisor", true);
+    for (const token of [
+      "invalid",
+      jwt.sign({ id: actor.id, mfaPending: true }, secret(), { expiresIn: -1 }),
+      jwt.sign({ id: actor.id, mfaPending: false }, secret()),
+      jwt.sign({ id: actor.id, mfaPending: "true" }, secret()),
+    ]) {
+      expect((await complete(token)).statusCode).toBe(401);
+    }
+    expect(await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).toMatchObject({
+      mfaFailedAttempts: 0,
+      mfaBlockedUntil: null,
+    });
+  });
+  it("serializes eight concurrent bad PINs to attempts 1..5 and keeps later valid PIN blocked", async () => {
+    const emp = await employee();
+    const responses = await Promise.all(Array.from({ length: 8 }, () => kiosk("wrong")));
+    const failures = responses.filter((r) => r.statusCode === 401);
+    expect(failures.map((r) => r.json().attempts).sort()).toEqual([1, 2, 3, 4, 5]);
+    expect(responses.filter((r) => r.statusCode === 403)).toHaveLength(3);
+    expect(await prismaDirect.employee.findUniqueOrThrow({ where: { id: emp.id } })).toMatchObject({
+      pinFailedAttempts: 5,
+      isPinBlocked: true,
+    });
+    expect((await kiosk("1234")).statusCode).toBe(403);
+    expect(responses.every((r) => !r.json().token)).toBe(true);
   });
 });

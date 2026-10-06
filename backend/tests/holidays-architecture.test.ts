@@ -170,3 +170,43 @@ describe("Auth module boundaries", () => {
     ).toContain("private module import: ../modules/auth/application/flows");
   });
 });
+
+describe("Users projection module boundaries", () => {
+  it("enumerates a pure application and requires public index consumers", () => {
+    const files = filesUnder(src).filter(
+      (file) => !file.includes(`${path.sep}generated${path.sep}`),
+    );
+    const applicationFiles = filesUnder(path.join(src, "modules/users/application"));
+    expect(applicationFiles.length).toBeGreaterThan(0);
+    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "users"))).toEqual(
+      [],
+    );
+    const config = ts.readConfigFile(
+      path.resolve(__dirname, "../tsconfig.modules.json"),
+      ts.sys.readFile,
+    );
+    const parsed = ts.parseJsonConfigFileContent(
+      config.config,
+      ts.sys,
+      path.resolve(__dirname, ".."),
+    );
+    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
+  });
+  it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
+    "rejects users projection dependency/effect: %s",
+    (source) => {
+      expect(
+        inspect(source, path.join(src, "modules/users/application/fixture.ts"), "users").length,
+      ).toBeGreaterThan(0);
+    },
+  );
+  it("rejects private projection imports", () => {
+    expect(
+      inspect(
+        'import { toPublicUser } from "../modules/users/application/publicUser";',
+        path.join(src, "services/fixture.ts"),
+        "users",
+      ),
+    ).toContain("private module import: ../modules/users/application/publicUser");
+  });
+});

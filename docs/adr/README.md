@@ -26,6 +26,7 @@ con Prettier (`printWidth: 100`).
 | [0016](0016-e2e-staging-local.md)                       | Aceptado  | E2E completa contra staging local      |
 | [0017](0017-modulos-estrictos-node26-fastify-piloto.md) | Propuesto | Módulo estricto, Node 26 y piloto HTTP |
 | [0018](0018-fastify-base-migracion-modular.md)          | Propuesto | Base Fastify y migración por módulos   |
+| [0019](0019-auth-mfa-pin-estado-persistente.md)         | Aceptado  | Estado persistente para MFA y PIN      |
 | [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida

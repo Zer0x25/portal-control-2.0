@@ -1,14 +1,18 @@
 import fs from "fs";
 import path from "path";
+import { format, resolveConfig } from "prettier";
 import { swaggerSpec } from "../src/utils/swagger";
 
-const outputPath = path.join(__dirname, "../docs/swagger.json");
-
-// Ensure directory exists
-const dir = path.dirname(outputPath);
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
+async function generateSwagger() {
+  const outputPath = path.join(__dirname, "../docs/swagger.json");
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  const config = await resolveConfig(outputPath);
+  const content = await format(JSON.stringify(swaggerSpec), { ...config, filepath: outputPath });
+  fs.writeFileSync(outputPath, content);
+  console.log(`✅ Swagger JSON exported to ${outputPath}`);
 }
 
-fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2));
-console.log(`✅ Swagger JSON exported to ${outputPath}`);
+generateSwagger().catch((error: unknown) => {
+  console.error("Could not generate Swagger", error);
+  process.exitCode = 1;
+});

@@ -77,8 +77,9 @@ PgBouncer/gateway/staging no se ejecutó: falta `.env.staging`.
 Se conservan y documentan riesgos heredados: MFA no rechaza de nuevo al usuario
 archivado entre factores; `/mfa/validate` no tiene throttle de intentos de código
 (aplica el límite global); el contador PIN no es atómico bajo fallas concurrentes;
-y los limitadores en memoria no se comparten entre procesos. Conviene tratar
-estas políticas en una entrega de seguridad con contratos y pruebas propios.
+y los limitadores en memoria no se comparten entre procesos. Los tres primeros
+se corrigen posteriormente en [spec 010](../010-auth-seguridad/result.md), que
+persiste MFA en PostgreSQL. El límite de login sigue siendo por proceso.
 
 El benchmark de spec 008 es histórico y anterior a estas rutas. No se extrapola
 su resultado ni se declara una mejora de rendimiento de esta entrega.

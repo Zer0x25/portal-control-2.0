@@ -1,4 +1,11 @@
-import { AppError, AuthError, ForbiddenError, DatabaseError, ValidationError } from "./AppError";
+import {
+  AppError,
+  AuthError,
+  ForbiddenError,
+  DatabaseError,
+  ValidationError,
+  RateLimitError,
+} from "./AppError";
 import { Prisma } from "../generated/prisma/client";
 import multer from "multer";
 import { toCaughtError } from "./caughtError";
@@ -44,7 +51,7 @@ export function shouldAuditError(error: unknown): boolean {
 export function mapHttpError(
   err: unknown,
   isDevelopment = false,
-): { statusCode: number; body: Record<string, unknown> } {
+): { statusCode: number; body: Record<string, unknown>; headers?: Record<string, string> } {
   const caught = toCaughtError(err);
   const errName = err instanceof Error ? err.name : "Error";
   const statusCode =
@@ -67,6 +74,7 @@ export function mapHttpError(
   if (err instanceof AppError) {
     return {
       statusCode: err.statusCode,
+      ...(err instanceof RateLimitError && { headers: { "Retry-After": String(err.retryAfter) } }),
       body: {
         success: false,
         code: caught.code,
