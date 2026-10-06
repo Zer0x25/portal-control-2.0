@@ -97,11 +97,9 @@ Cambios incompatibles deben marcarse explícitamente:
 En el flujo diario, Docker ejecuta solo PostgreSQL. El backend Express y el frontend Vite corren en el host con recarga en caliente:
 
 1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`.
-2. Ejecuta `npm run dev:up` desde la raíz para iniciar PostgreSQL.
-3. La primera vez, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
-4. En una terminal, ejecuta `cd backend && npm run dev`.
-5. En otra terminal, ejecuta `cd frontend && npm run dev`.
-6. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
+2. La primera vez, inicia PostgreSQL con `npm run dev:up` desde la raíz. Luego, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
+3. Para trabajar, ejecuta `npm run dev` desde la raíz. El comando inicia PostgreSQL y luego arranca backend y frontend en paralelo; `Ctrl+C` detiene ambos procesos de desarrollo.
+4. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
 
 ### 5.1 Base de datos local
 
@@ -145,7 +143,7 @@ Notas:
 - Usa siempre `--env-file .env.staging` (los scripts `npm run staging:*` ya lo hacen) para no mezclar el `.env` de dev.
 - Dev y staging pueden correr a la vez: no comparten puertos ni volúmenes.
 - Si `ALLOWED_ORIGINS`/`STAGING_PORT` cambian, mantenlos coherentes (el origen debe coincidir con la URL del gateway).
-- Atajos de dev: `npm run dev:up` / `npm run dev:down`.
+- Atajos de dev: `npm run dev` inicia la base y ambas aplicaciones; `npm run dev:up` / `npm run dev:down` controlan solo la base.
 
 ## 6. Preparación en WSL
 
@@ -155,7 +153,7 @@ Si vas a levantar el stack desde WSL, prepara el entorno Linux dentro de la prop
 2. Asegúrate de poder ejecutar `docker compose version` desde la terminal de WSL.
 3. Mantén este repositorio dentro del sistema de archivos de WSL, por ejemplo en `/home/...`, no en `/mnt/c/...`, para evitar problemas de rendimiento con los bind mounts.
 4. Verifica que tu usuario tenga permisos sobre Docker antes de levantar el stack.
-5. Arranca PostgreSQL con `npm run dev:up`; ejecuta Vite y Express en terminales separadas desde `frontend/` y `backend/`.
+5. Arranca el entorno local con `npm run dev` desde la raíz (PostgreSQL, Express y Vite).
 
 ### 6.1 Comprobación rápida
 
