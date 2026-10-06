@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.holidays.json",
+  "include": [
+    "src/modules/auth/**/*.ts",
+    "src/modules/holidays/**/*.ts",
+    "src/platform/fastify/**/*.ts"
+  ]
+}

@@ -1,7 +1,6 @@
 import prisma from "./db";
 import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
-import { Request } from "express";
 import { AppError } from "../utils/AppError";
 import { toCaughtError } from "../utils/caughtError";
 
@@ -16,10 +15,14 @@ interface AuditLogEntry {
   ipAddress?: string;
 }
 
-interface RequestWithUser extends Request {
-  user?: {
-    username: string;
-  };
+export interface AuditRequest {
+  user?: { username: string };
+  ip?: string;
+  socket?: { remoteAddress?: string };
+  path?: string;
+  method?: string;
+  query?: unknown;
+  body?: unknown;
 }
 
 /** Sortable audit log columns accepted by `getLogs`. */
@@ -83,11 +86,15 @@ export const auditService = {
   /**
    * Logs a system error with request context if available.
    */
-  async logError(err: unknown, req?: Request, category: string = "SYSTEM_ERROR"): Promise<void> {
+  async logError(
+    err: unknown,
+    req?: AuditRequest,
+    category: string = "SYSTEM_ERROR",
+  ): Promise<void> {
     const caught = toCaughtError(err);
     const statusCode = err instanceof AppError ? err.statusCode : caught.statusCode;
-    const actorUsername = (req as RequestWithUser)?.user?.username || "SYSTEM";
-    const ipAddress = req?.ip || req?.socket.remoteAddress;
+    const actorUsername = req?.user?.username || "SYSTEM";
+    const ipAddress = req?.ip || req?.socket?.remoteAddress;
 
     await this.log({
       actorUsername,
@@ -105,7 +112,10 @@ export const auditService = {
       metadata: {
         path: req?.path,
         method: req?.method,
-        query: req?.query as Record<string, unknown>,
+        query:
+          req?.query && typeof req.query === "object"
+            ? Object.fromEntries(Object.entries(req.query).filter(([key]) => key !== "token"))
+            : undefined,
         body: category === "AUTH_ERROR" ? undefined : (req?.body as Record<string, unknown>),
       },
       ipAddress,

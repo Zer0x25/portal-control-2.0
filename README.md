@@ -256,3 +256,24 @@ Umbrales de cobertura (solo suben, ver ADR-0012): backend líneas 14 / funciones
 ---
 
 _Documentación operativa y estándar agéntico - Actualizado: Octubre 2026_
+
+## Modernización de arquitectura y runtime
+
+Desarrollo y CI usan Node 26 (`.nvmrc`, engines y Dockerfiles). Con fnm, ejecutar
+`fnm use` antes de comandos npm, o `fnm exec --using 26 npm run check`.
+El backend añade `npm run check:holidays` (tipos estrictos del módulo) a `check`.
+
+La consulta de feriados está extraída con contratos y adaptador Prisma. Express
+sigue siendo el servidor principal. El candidato Fastify ya expone health y
+feriados completos con JWT, sesiones y permisos reales, auditoría y tipos estrictos.
+Para iniciarlo en otro puerto desde `backend/`: `PORT=4001 npm run dev:fastify`.
+Requiere las mismas conexiones y `JWT_SECRET`; los tokens se obtienen del login
+Express hasta migrar el módulo de autenticación HTTP. No arranca jobs ni sockets.
+
+`npm run test:fastify:integration` crea PostgreSQL 18.4 desechable y lo elimina al
+terminar (requiere Docker). `npm run benchmark:fastify` compara ambos servidores
+con carga HTTP y PostgreSQL real en procesos separados. Ver
+[spec 008](specs/008-fastify-base-feriados/spec.md) y
+[resultado de la base Fastify](specs/008-fastify-base-feriados/result.md).
+Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
+[spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).

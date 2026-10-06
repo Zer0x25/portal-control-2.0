@@ -2061,13 +2061,21 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       },
       "SendTestEmail": {
         "properties": {
-          "recipient": {
+          "message": {
+            "default": "",
+            "type": "string",
+          },
+          "subject": {
+            "default": "",
+            "type": "string",
+          },
+          "to": {
             "format": "email",
             "type": "string",
           },
         },
         "required": [
-          "recipient",
+          "to",
         ],
         "type": "object",
       },

@@ -12,7 +12,7 @@
     "db:migrate:status": "prisma migrate status",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && npm run check:holidays && npm run check:modules",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "set NODE_OPTIONS=--max-old-space-size=4096&& vitest run tests/unit tests/*.test.ts --silent",
     "test:coverage": "vitest run --coverage tests/unit tests/*.test.ts --silent",
@@ -40,17 +40,27 @@
     "stress:records": "npx tsx scripts/stress_time_records.ts",
     "db:reset:state": "npx tsx scripts/reset-to-snapshot.ts",
     "benchmark:monthly-plan": "npx tsx scripts/benchmark_monthly_plan.ts",
-    "load:staging:cold": "node load/run-cold.cjs"
+    "load:staging:cold": "node load/run-cold.cjs",
+    "check:holidays": "tsc -p tsconfig.holidays.json",
+    "dev:fastify": "tsx watch --env-file-if-exists=.env src/fastify/main.ts",
+    "start:fastify": "node dist/fastify/main.js",
+    "check:modules": "tsc -p tsconfig.modules.json",
+    "test:fastify:integration": "node scripts/run-fastify-isolated.cjs",
+    "benchmark:fastify": "node scripts/run-fastify-isolated.cjs --benchmark"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "engines": {
-    "node": ">=24"
+    "node": ">=26 <27"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",
+    "@fastify/compress": "^9.2.0",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/rate-limit": "^11.2.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@sentry/node": "^11.4.0",
@@ -64,6 +74,7 @@
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "fastify": "^5.12.5",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",

@@ -1,0 +1,133 @@
+import fs from "node:fs";
+import path from "node:path";
+import ts from "typescript";
+import { describe, expect, it } from "vitest";
+
+const src = path.resolve(__dirname, "../src");
+const moduleRoot = path.join(src, "modules/holidays");
+const applicationRoot = path.join(moduleRoot, "application");
+
+function filesUnder(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    return entry.isDirectory() ? filesUnder(file) : file.endsWith(".ts") ? [file] : [];
+  });
+}
+
+function inspect(source: string, file: string): string[] {
+  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+  const violations: string[] = [];
+  const application = file.startsWith(applicationRoot + path.sep);
+  function dependency(target: string) {
+    const resolved = target.startsWith(".") ? path.resolve(path.dirname(file), target) : target;
+    if (application && !resolved.startsWith(applicationRoot + path.sep)) {
+      violations.push(`application dependency: ${target}`);
+    }
+    if (
+      !file.startsWith(moduleRoot + path.sep) &&
+      resolved.startsWith(moduleRoot + path.sep) &&
+      resolved !== path.join(moduleRoot, "index") &&
+      resolved !== path.join(moduleRoot, "index.ts")
+    ) {
+      violations.push(`private module import: ${target}`);
+    }
+  }
+  function visit(node: ts.Node) {
+    if (
+      (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+      node.moduleSpecifier &&
+      ts.isStringLiteral(node.moduleSpecifier)
+    ) {
+      dependency(node.moduleSpecifier.text);
+    }
+    if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+    ) {
+      const argument = node.arguments[0];
+      if (argument && ts.isStringLiteral(argument)) dependency(argument.text);
+      else if (application) violations.push("dynamic dependency");
+    }
+    if (application) {
+      if (ts.isIdentifier(node) && ["process", "fetch"].includes(node.text))
+        violations.push(`global effect: ${node.text}`);
+      if (
+        ts.isNewExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === "Date" &&
+        !node.arguments?.length
+      )
+        violations.push("global clock");
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === "Date" &&
+        node.name.text === "now"
+      )
+        violations.push("global clock");
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(tree);
+  return violations;
+}
+
+describe("Holiday module boundaries", () => {
+  it("enumerates application files and rejects effects or infrastructure dependencies", () => {
+    const files = filesUnder(applicationRoot);
+    expect(files.length).toBeGreaterThan(0);
+    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file))).toEqual([]);
+  });
+
+  it("requires external consumers to use the public module entry", () => {
+    const files = filesUnder(src).filter(
+      (file) => !file.includes(`${path.sep}generated${path.sep}`),
+    );
+    expect(files.length).toBeGreaterThan(0);
+    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file))).toEqual([]);
+  });
+
+  it.each([
+    'import prisma from "../../../services/db";',
+    'import type { Prisma } from "../../../generated/prisma/client";',
+    'require("express");',
+    'import("fastify");',
+    "process.env.DISABLE_HOLIDAY_AUTOSYNC;",
+    'fetch("https://example.test");',
+    "new Date();",
+    "Date.now();",
+  ])("rejects representative application violation: %s", (source) => {
+    expect(inspect(source, path.join(applicationRoot, "fixture.ts")).length).toBeGreaterThan(0);
+  });
+
+  it("detects a consumer importing private module code", () => {
+    expect(
+      inspect(
+        'import { createGetHolidays } from "../modules/holidays/application/getHolidays";',
+        path.join(src, "services/fixture.ts"),
+      ),
+    ).toContain("private module import: ../modules/holidays/application/getHolidays");
+  });
+
+  it("enforces strict module checking as part of backend validation", () => {
+    const config = ts.readConfigFile(
+      path.resolve(__dirname, "../tsconfig.holidays.json"),
+      ts.sys.readFile,
+    );
+    expect(config.error).toBeUndefined();
+    expect(config.config.compilerOptions.strict).toBe(true);
+    expect(config.config.compilerOptions.noImplicitAny).toBe(true);
+    const parsed = ts.parseJsonConfigFileContent(
+      config.config,
+      ts.sys,
+      path.resolve(__dirname, ".."),
+    );
+    const files = filesUnder(moduleRoot);
+    expect(files.length).toBeGreaterThan(0);
+    expect(files.every((file) => parsed.fileNames.includes(file))).toBe(true);
+    const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8"));
+    expect(pkg.scripts.check).toContain("check:holidays");
+    expect(pkg.scripts["check:holidays"]).toContain("tsconfig.holidays.json");
+  });
+});

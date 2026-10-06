@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 LABEL org.opencontainers.image.source="https://github.com/Zer0x25/portal-control"
 
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN DIRECT_URL=postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-cod
 RUN npm run build
 
 # Production Stage
-FROM node:24-alpine
+FROM node:26-alpine
 LABEL org.opencontainers.image.source="https://github.com/Zer0x25/portal-control"
 
 # Instalar cliente de PostgreSQL para backups, curl para healthchecks y tini para reaps de zombies
