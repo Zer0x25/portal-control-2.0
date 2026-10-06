@@ -9,6 +9,14 @@ const routes: RouteEntry[] = [
   ["POST", "/api/holidays/sync"],
   ["DELETE", "/api/holidays/:id"],
 ].map(([method, url]) => ({ method, url, authenticated: true, validated: true }));
+routes.push(
+  ...["login", "kiosk-login", "logout", "mfa/setup", "mfa/verify", "mfa/validate"].map((path) => ({
+    method: "POST",
+    url: `/api/auth/${path}`,
+    authenticated: ["mfa/setup", "mfa/verify"].includes(path),
+    validated: true,
+  })),
+);
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
     expect(() => assertMigratedRouteContracts(routes)).not.toThrow());
@@ -26,6 +34,36 @@ describe("Fastify route guard anti-vacuity", () => {
     expect(() =>
       assertMigratedRouteContracts(
         routes.map((route, index) => (index === 1 ? { ...route, validated: false } : route)),
+      ),
+    ).toThrow("Unvalidated"));
+  it("rejects empty auth surface", () =>
+    expect(() => assertMigratedRouteContracts(routes.slice(0, 5))).toThrow(
+      "Auth route manifest is empty",
+    ));
+  it("rejects auth route missing", () =>
+    expect(() => assertMigratedRouteContracts(routes.slice(0, -1))).toThrow("differs"));
+  it("rejects public auth route marked protected", () =>
+    expect(() =>
+      assertMigratedRouteContracts(
+        routes.map((route) =>
+          route.url === "/api/auth/login" ? { ...route, authenticated: true } : route,
+        ),
+      ),
+    ).toThrow("authentication"));
+  it("rejects protected MFA route marked public", () =>
+    expect(() =>
+      assertMigratedRouteContracts(
+        routes.map((route) =>
+          route.url === "/api/auth/mfa/setup" ? { ...route, authenticated: false } : route,
+        ),
+      ),
+    ).toThrow("authentication"));
+  it("rejects auth route missing validator", () =>
+    expect(() =>
+      assertMigratedRouteContracts(
+        routes.map((route) =>
+          route.url === "/api/auth/logout" ? { ...route, validated: false } : route,
+        ),
       ),
     ).toThrow("Unvalidated"));
 });

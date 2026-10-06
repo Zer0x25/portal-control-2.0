@@ -116,7 +116,10 @@ export const auditService = {
           req?.query && typeof req.query === "object"
             ? Object.fromEntries(Object.entries(req.query).filter(([key]) => key !== "token"))
             : undefined,
-        body: category === "AUTH_ERROR" ? undefined : (req?.body as Record<string, unknown>),
+        body:
+          category === "AUTH_ERROR" || req?.path?.startsWith("/api/auth/")
+            ? undefined
+            : (req?.body as Record<string, unknown>),
       },
       ipAddress,
     });

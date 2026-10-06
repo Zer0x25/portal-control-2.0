@@ -138,12 +138,14 @@ El piloto `backend/src/modules/holidays/` tiene API pública en `index.ts`.
 Consumidores externos no importan archivos privados. Su aplicación no importa
 Express, Fastify, Prisma, DB, entorno, red o reloj global: inyecta dependencias.
 `npm run check:holidays` aplica strict y forma parte de `npm run check`.
-El candidato Fastify expone health y las cinco rutas de feriados con autenticación
-compartida real. `check:modules` aplica strict a auth, feriados y plataforma HTTP.
+El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
+de autenticación (login/logout/quiosco/MFA) con casos de uso compartidos. `check:modules` aplica strict a auth, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
-Ver specs 006/007/008 y ADR-0017/0018.
+Los consumidores de auth usan index.ts; aplicación solo admite puertos y errores
+compartidos, sin dependencias de servidor, BD, entorno ni reloj global.
+Ver specs 006/007/008/009 y ADR-0017/0018.
 
 ---
 

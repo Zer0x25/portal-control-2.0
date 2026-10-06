@@ -14,13 +14,19 @@ function filesUnder(directory: string): string[] {
   });
 }
 
-function inspect(source: string, file: string): string[] {
+function inspect(source: string, file: string, name = "holidays"): string[] {
+  const moduleRoot = path.join(src, "modules", name);
+  const applicationRoot = path.join(moduleRoot, "application");
   const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
   const violations: string[] = [];
   const application = file.startsWith(applicationRoot + path.sep);
   function dependency(target: string) {
     const resolved = target.startsWith(".") ? path.resolve(path.dirname(file), target) : target;
-    if (application && !resolved.startsWith(applicationRoot + path.sep)) {
+    if (
+      application &&
+      !resolved.startsWith(applicationRoot + path.sep) &&
+      !(name === "auth" && resolved === path.join(src, "utils/AppError"))
+    ) {
       violations.push(`application dependency: ${target}`);
     }
     if (
@@ -129,5 +135,38 @@ describe("Holiday module boundaries", () => {
     const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8"));
     expect(pkg.scripts.check).toContain("check:holidays");
     expect(pkg.scripts["check:holidays"]).toContain("tsconfig.holidays.json");
+  });
+});
+
+describe("Auth module boundaries", () => {
+  it("keeps application independent of infrastructure and consumers on public index", () => {
+    const files = filesUnder(src).filter(
+      (file) => !file.includes(`${path.sep}generated${path.sep}`),
+    );
+    expect(
+      files.filter((file) => file.includes("modules/auth/application")).length,
+    ).toBeGreaterThan(0);
+    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "auth"))).toEqual(
+      [],
+    );
+  });
+  it.each([
+    'import prisma from "../../../services/db";',
+    'import("fastify");',
+    "Date.now();",
+    "process.env.JWT_SECRET;",
+  ])("rejects auth application effect %s", (source) => {
+    expect(
+      inspect(source, path.join(src, "modules/auth/application/fixture.ts"), "auth").length,
+    ).toBeGreaterThan(0);
+  });
+  it("rejects private auth import from a consumer", () => {
+    expect(
+      inspect(
+        'import { createAuthFlows } from "../modules/auth/application/flows";',
+        path.join(src, "services/fixture.ts"),
+        "auth",
+      ),
+    ).toContain("private module import: ../modules/auth/application/flows");
   });
 });

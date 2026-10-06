@@ -4,8 +4,8 @@ import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import compress from "@fastify/compress";
 import rateLimit from "@fastify/rate-limit";
-import type { AuthUser } from "../../modules/auth";
-import { resolveAccessToken } from "../../modules/auth";
+import type { AuthUser, AuthFlows } from "../../modules/auth";
+import { resolveAccessToken, authPlugin } from "../../modules/auth";
 import { holidayPlugin, type HolidayHttpService } from "../../modules/holidays";
 import { requestContext } from "../../utils/context";
 import { AppError } from "../../utils/AppError";
@@ -23,6 +23,13 @@ export interface RouteEntry {
 export interface FastifyDependencies {
   authenticate(token: string | undefined): Promise<AuthUser>;
   holidays: HolidayHttpService;
+  auth: {
+    flows: AuthFlows;
+    inspectFailures(
+      ip: string,
+      body: unknown,
+    ): Promise<{ retryAfter: number; message: string } | null>;
+  };
   health: {
     checkDbReady(): Promise<boolean>;
     getDetailedHealth(): Promise<{ database: { status: string } }>;
@@ -164,21 +171,20 @@ export function buildFastifyApp(
           "MAINTENANCE_MODE",
         );
     });
-    protectedApp.register(holidayPlugin, {
-      service: deps.holidays,
-      authenticate: async (request) => {
-        const query = request.query;
-        const token =
-          typeof query === "object" && query !== null && "token" in query ? query.token : undefined;
-        const user = await deps.authenticate(
-          resolveAccessToken(request.headers.authorization, token),
-        );
-        request.user = user;
-        const context = requestContext.getStore();
-        if (!context) throw new Error("Missing request audit context");
-        context.username = user.username;
-      },
-    });
+    const authenticate: import("fastify").onRequestHookHandler = async (request) => {
+      const query = request.query;
+      const token =
+        typeof query === "object" && query !== null && "token" in query ? query.token : undefined;
+      const user = await deps.authenticate(
+        resolveAccessToken(request.headers.authorization, token),
+      );
+      request.user = user;
+      const context = requestContext.getStore();
+      if (!context) throw new Error("Missing request audit context");
+      context.username = user.username;
+    };
+    protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(authPlugin, { ...deps.auth, authenticate });
   });
   app.addHook("onReady", async () => assertMigratedRouteContracts(manifest));
   return result;

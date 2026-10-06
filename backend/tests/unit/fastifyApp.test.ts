@@ -7,7 +7,12 @@ import {
   type FastifyConfig,
   type FastifyDependencies,
 } from "../../src/platform/fastify/app";
-import { createAuthenticate, verifyAccessToken, type AuthUser } from "../../src/modules/auth";
+import {
+  createAuthenticate,
+  createAuthFlows,
+  verifyAccessToken,
+  type AuthUser,
+} from "../../src/modules/auth";
 import { createHolidayCommands } from "../../src/modules/holidays";
 import { requestContext } from "../../src/utils/context";
 import { Prisma } from "../../src/generated/prisma/client";
@@ -76,6 +81,25 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       },
       users: { find: async (id) => users.get(id) ?? null },
     }),
+    auth: {
+      inspectFailures: async () => null,
+      flows: createAuthFlows({
+        service: {
+          authenticate: async () => ({ success: false, reason: "INVALID_CREDENTIALS" }),
+          generateMFAPendingToken: () => "pending",
+          manageSessionLimit: async () => {},
+          createSession: async () => ({ token: "token", role: "Usuario" }),
+          verifyKioskPin: async () => ({ success: false, reason: "NOT_FOUND" }),
+          revokeSession: async () => {},
+          setupMFA: async () => ({ qrCode: "qr", secret: "secret" }),
+          confirmMFASetup: async () => false,
+          validateMFALogin: async () => ({ success: false }),
+        },
+        failures: { record: async () => {}, clear: async () => {} },
+        audit: async () => {},
+        log: () => {},
+      }),
+    },
     holidays: {
       getHolidays: vi.fn(async () => []),
       upsertHoliday: commands.upsert,

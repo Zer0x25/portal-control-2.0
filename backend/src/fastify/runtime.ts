@@ -1,3 +1,5 @@
+import { authFlows } from "../services/authFlows";
+import { inspectLoginFailures } from "../services/loginFailures";
 import { buildFastifyApp, type FastifyConfig } from "../platform/fastify/app";
 import { authenticateAccessToken } from "../services/authentication";
 import { holidayService } from "../services/HolidayService";
@@ -13,6 +15,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
     {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
+      auth: { flows: authFlows, inspectFailures: inspectLoginFailures },
       health: HealthService,
       maintenance: () =>
         systemOperationService.isMaintenanceModeActive()

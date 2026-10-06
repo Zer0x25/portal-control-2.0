@@ -22,10 +22,11 @@ Extraer comandos de feriados y proveedor externo, además de consulta. Inyectar
 repositorio, eventos, auditoría, identificador y reloj. Aplicar strict a módulos
 y plataforma HTTP. Validar Zod y serializar respuestas con schemas Fastify.
 Health queda fuera de límites/mantenimiento. Guards sobre onRoute exigen cinco
-rutas, auth declarada y validadores registrados; pruebas ejercitan auth real.
+rutas de feriados y seis de auth, seguridad declarada y validadores registrados;
+pruebas ejercitan auth real. Logout y setup ignoran el cuerpo por contrato.
 
-Base HTTP en `backend/src/platform/fastify/app.ts:57` y contexto/actor en sus
-hooks (líneas 91 y 179); arranque/composición en `backend/src/fastify/`.
+Base HTTP y contexto/actor en `backend/src/platform/fastify/app.ts`;
+arranque/composición en `backend/src/fastify/`.
 Comandos en `backend/src/modules/holidays/application/commands.ts:35`;
 transacción/pools en `backend/src/services/db.ts`. Tests de integración verifican
 el actor SQL usando un trigger temporal en una BD desechable.
@@ -43,11 +44,15 @@ Cada módulo tiene un contrato y pruebas locales; agentes requieren menos
 contexto global. Hay más archivos, pero las reglas no importan framework o DB.
 Auth/error mapper compartidos también requieren verificar Express existente.
 El rendimiento se compara con consultas reales; no se garantiza una mejora por
-el nombre del framework. Las siguientes entregas migran rutas de auth, módulos
-restantes, sockets/jobs, OpenAPI y validación staging con PgBouncer.
+el nombre del framework. Spec 009 completa las seis rutas HTTP de auth con
+orquestación compartida y throttle independiente de Express. Las siguientes
+entregas migran módulos restantes, sockets/jobs, OpenAPI y validación staging
+con PgBouncer.
 
 ## Referencias
 
+- [Spec 009](../../specs/009-fastify-autenticacion/spec.md)
+- [Resultado auth](../../specs/009-fastify-autenticacion/result.md)
 - [Spec 008](../../specs/008-fastify-base-feriados/spec.md)
 - [Resultado](../../specs/008-fastify-base-feriados/result.md)
 - [ADR-0017](0017-modulos-estrictos-node26-fastify-piloto.md)

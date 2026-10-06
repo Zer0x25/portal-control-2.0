@@ -21,4 +21,25 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     if (["POST", "PUT", "PATCH", "DELETE"].includes(route.method) && !route.validated)
       throw new Error(`Unvalidated mutation: ${route.method} ${route.url}`);
   }
+  const auth = routes.filter((route) => route.url.startsWith("/api/auth/"));
+  if (auth.length === 0) throw new Error("Auth route manifest is empty");
+  const expectedAuth = [
+    "/api/auth/login",
+    "/api/auth/kiosk-login",
+    "/api/auth/logout",
+    "/api/auth/mfa/setup",
+    "/api/auth/mfa/verify",
+    "/api/auth/mfa/validate",
+  ].sort();
+  if (
+    JSON.stringify(auth.map((route) => `${route.method} ${route.url}`).sort()) !==
+    JSON.stringify(expectedAuth.map((url) => `POST ${url}`))
+  )
+    throw new Error("Auth route manifest differs from the API contract");
+  for (const route of auth) {
+    const protectedRoute = ["/api/auth/mfa/setup", "/api/auth/mfa/verify"].includes(route.url);
+    if (route.authenticated !== protectedRoute)
+      throw new Error(`Incorrect authentication contract: ${route.url}`);
+    if (!route.validated) throw new Error(`Unvalidated mutation: ${route.method} ${route.url}`);
+  }
 }
