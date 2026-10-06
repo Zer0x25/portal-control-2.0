@@ -96,7 +96,7 @@ Cambios incompatibles deben marcarse explícitamente:
 
 En el flujo diario, Docker ejecuta solo PostgreSQL. El backend Express y el frontend Vite corren en el host con recarga en caliente:
 
-1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`.
+1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`. `JWT_SECRET` es obligatorio: sin él el backend aborta al arrancar con `CRITICAL: JWT_SECRET environment variable is not set` (ver §5.2).
 2. La primera vez, inicia PostgreSQL con `npm run dev:up` desde la raíz. Luego, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
 3. Para trabajar, ejecuta `npm run dev` desde la raíz. El comando inicia PostgreSQL y luego arranca backend y frontend en paralelo; `Ctrl+C` detiene ambos procesos de desarrollo.
 4. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
@@ -117,7 +117,25 @@ npm run dev:down
 
 `npm run dev:down` detiene el contenedor y conserva el volumen. No uses `down -v` salvo que quieras borrar los datos locales.
 
-### 5.2 Staging local (ensayo del deploy de producción)
+### 5.2 Variables de entorno y arranque
+
+El backend carga `backend/.env` con `node --env-file-if-exists=.env` **antes** de evaluar los módulos, no con `dotenv.config()` dentro de `src/index.ts`. El proyecto compila a CommonJS, donde TypeScript emite todos los `require` en la cabecera del archivo antes de ejecutar ninguna sentencia del módulo: un `dotenv.config()` en la línea 2 llega demasiado tarde y los módulos importados (`app` → `cryptoUtils`) se inicializan sin variables.
+
+`--env-file-if-exists` no falla cuando el `.env` aún no existe, de modo que el arranque con una configuración por variables de entorno (Docker, CI) sigue funcionando.
+
+Valores recomendados solo para desarrollo local, ninguno apto para producción:
+
+| Variable                   | Desarrollo local        | Comentario                                             |
+| -------------------------- | ----------------------- | ------------------------------------------------------ |
+| `JWT_SECRET`               | aleatorio, ≥ 32 bytes   | Sin valor por defecto: el proceso aborta al arrancar.  |
+| `DISABLE_INTEGRITY_AUDIT`  | `true`                  | Pausa la auditoría de integridad automática.           |
+| `DISABLE_HOLIDAY_AUTOSYNC` | `true`                  | Pausa la sincronización de feriados (llamada externa). |
+| `BACKUP_ENABLED`           | `false`                 | Los backups requieren el contenedor del servicio.      |
+| `ALLOWED_ORIGINS`          | `http://localhost:5173` | Origen de Vite; añade el gateway si aplica.            |
+
+En producción, `JWT_SECRET` se inyecta como secreto del orquestador; nunca se escribe un valor por defecto en el repositorio.
+
+### 5.3 Staging local (ensayo del deploy de producción)
 
 `compose.staging.yaml` replica la topología de producción (`db` → `pgbouncer` → `backend` → `frontend` → `gateway`, `NODE_ENV=production`) en tu máquina, construyendo las imágenes con los Dockerfiles de producción. Está aislado de dev y de prod: proyecto Compose `portal-control-staging`, volúmenes, red y base de datos (`pweb3_staging`) propios, sin `proxy_net` ni rutas `/srv/...`.
 
