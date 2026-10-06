@@ -40,6 +40,41 @@ routes.push(
     validated: url !== "/api/employees/kiosk",
   })),
 );
+routes.push(
+  ...[
+    ["POST", "/api/records/punch"],
+    ["GET", "/api/records"],
+    ["GET", "/api/records/export"],
+    ["POST", "/api/records"],
+    ["POST", "/api/records/bulk"],
+    ["POST", "/api/records/auto-close"],
+    ["GET", "/api/records/integrity/verify"],
+    ["POST", "/api/records/:id/resolve-anomaly"],
+    ["DELETE", "/api/records/:id"],
+  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+);
+routes.push(
+  ...[
+    ["GET", "/api/shifts/patterns"],
+    ["POST", "/api/shifts/patterns"],
+    ["PUT", "/api/shifts/patterns/:id"],
+    ["DELETE", "/api/shifts/patterns/:id"],
+    ["POST", "/api/shifts/patterns/bulk"],
+    ["GET", "/api/shifts/assignments"],
+    ["POST", "/api/shifts/assignments"],
+    ["PUT", "/api/shifts/assignments/:id"],
+    ["DELETE", "/api/shifts/assignments/:id"],
+    ["POST", "/api/shifts/assignments/bulk"],
+    ["GET", "/api/shifts/schedule/employee/:id"],
+    ["GET", "/api/shifts/schedule/employees-on-date"],
+    ["GET", "/api/shifts/schedule/employee/:id/month"],
+    ["POST", "/api/shifts/schedule/matrix"],
+    ["GET", "/api/shifts/monthly-plan/:employeeId/:year/:month"],
+    ["POST", "/api/shifts/monthly-plan"],
+    ["GET", "/api/shifts/suggest-pattern-name"],
+    ["POST", "/api/shifts/validate-conflicts"],
+  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+);
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
     expect(() => assertMigratedRouteContracts(routes)).not.toThrow());
@@ -137,6 +172,32 @@ it("rejects employees missing validator", () =>
     assertMigratedRouteContracts(
       routes.map((route) =>
         route.url === "/api/employees/export" ? { ...route, validated: false } : route,
+      ),
+    ),
+  ).toThrow("Unvalidated"));
+
+it("rejects empty records surface", () =>
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((route) => !route.url.startsWith("/api/records"))),
+  ).toThrow("Records route manifest is empty"));
+it("rejects unvalidated auto-close despite ignored body", () =>
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((route) =>
+        route.url === "/api/records/auto-close" ? { ...route, validated: false } : route,
+      ),
+    ),
+  ).toThrow("Unvalidated"));
+
+it("rejects missing shifts surface", () =>
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((route) => !route.url.startsWith("/api/shifts/"))),
+  ).toThrow("Shifts route manifest is empty"));
+it("rejects unvalidated schedule route", () =>
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((route) =>
+        route.url === "/api/shifts/schedule/matrix" ? { ...route, validated: false } : route,
       ),
     ),
   ).toThrow("Unvalidated"));

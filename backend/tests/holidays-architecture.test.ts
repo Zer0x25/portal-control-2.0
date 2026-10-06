@@ -25,7 +25,10 @@ function inspect(source: string, file: string, name = "holidays"): string[] {
     if (
       application &&
       !resolved.startsWith(applicationRoot + path.sep) &&
-      !(["auth", "employees"].includes(name) && resolved === path.join(src, "utils/AppError"))
+      !(
+        ["auth", "employees", "records", "shifts"].includes(name) &&
+        resolved === path.join(src, "utils/AppError")
+      )
     ) {
       violations.push(`application dependency: ${target}`);
     }
@@ -248,5 +251,83 @@ describe("Employees module boundaries", () => {
         "employees",
       ),
     ).toContain("private module import: ../modules/employees/application/flows");
+  });
+});
+describe("Records module boundaries", () => {
+  it("enumerates a pure application and requires public index consumers", () => {
+    const files = filesUnder(src).filter(
+      (file) => !file.includes(`${path.sep}generated${path.sep}`),
+    );
+    const applicationFiles = filesUnder(path.join(src, "modules/records/application"));
+    expect(applicationFiles.length).toBeGreaterThan(0);
+    expect(
+      files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "records")),
+    ).toEqual([]);
+    const config = ts.readConfigFile(
+      path.resolve(__dirname, "../tsconfig.modules.json"),
+      ts.sys.readFile,
+    );
+    const parsed = ts.parseJsonConfigFileContent(
+      config.config,
+      ts.sys,
+      path.resolve(__dirname, ".."),
+    );
+    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
+  });
+  it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
+    "rejects records application dependency/effect: %s",
+    (source) => {
+      expect(
+        inspect(source, path.join(src, "modules/records/application/fixture.ts"), "records").length,
+      ).toBeGreaterThan(0);
+    },
+  );
+  it("rejects private records imports", () => {
+    expect(
+      inspect(
+        'import { createRecordFlows } from "../modules/records/application/flows";',
+        path.join(src, "services/fixture.ts"),
+        "records",
+      ),
+    ).toContain("private module import: ../modules/records/application/flows");
+  });
+});
+describe("Shifts module boundaries", () => {
+  it("enumerates a pure application and requires public index consumers", () => {
+    const files = filesUnder(src).filter(
+      (file) => !file.includes(`${path.sep}generated${path.sep}`),
+    );
+    const applicationFiles = filesUnder(path.join(src, "modules/shifts/application"));
+    expect(applicationFiles.length).toBeGreaterThan(0);
+    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "shifts"))).toEqual(
+      [],
+    );
+    const config = ts.readConfigFile(
+      path.resolve(__dirname, "../tsconfig.modules.json"),
+      ts.sys.readFile,
+    );
+    const parsed = ts.parseJsonConfigFileContent(
+      config.config,
+      ts.sys,
+      path.resolve(__dirname, ".."),
+    );
+    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
+  });
+  it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
+    "rejects shifts application dependency/effect: %s",
+    (source) => {
+      expect(
+        inspect(source, path.join(src, "modules/shifts/application/fixture.ts"), "shifts").length,
+      ).toBeGreaterThan(0);
+    },
+  );
+  it("rejects private shifts imports", () => {
+    expect(
+      inspect(
+        'import { createShiftFlows } from "../modules/shifts/application/flows";',
+        path.join(src, "services/fixture.ts"),
+        "shifts",
+      ),
+    ).toContain("private module import: ../modules/shifts/application/flows");
   });
 });

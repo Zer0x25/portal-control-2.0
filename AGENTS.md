@@ -163,7 +163,14 @@ services/employeeFlows.ts conserva withDirectTransaction y ensureEmployeeUser
 sobre el mismo cliente. No exponer PIN en HTTP/employee:updated; quiosco conserva
 seis campos. Validar el lote completo y conservar streaming Excel sin casts a
 Express.Response. Los borradores siguientes están en specs/roadmap-fastify.md.
-Ver specs 006/007/008/009/010/011/012/013 y ADR-0017/0018/0019.
+Records y shifts tienen API pública index.ts y aplicación pura con puertos.
+Fastify añade nueve rutas records y dieciocho shifts con flujos compartidos Express.
+Bulks conservan límite 10 MiB, resto 1 MiB. MonthlyShiftService conserva transacción
+con withDirectTransaction. Matriz Usuario/quiosco sin vínculo devuelve 403.
+Deudas 015: calendario mensual consulta UTC y muestra el día anterior en Chile,
+con queries por día heredadas; no replicar. Assignments sin vínculo de Usuario y
+quiosco mantienen scope legacy pendiente de decisión. Matriz sí usa batch context.
+Ver specs 006/007/008/009/010/011/012/013/014/015 y ADR-0017/0018/0019.
 
 ---
 

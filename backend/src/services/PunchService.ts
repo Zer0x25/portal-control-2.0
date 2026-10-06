@@ -1,5 +1,4 @@
 import { withDirectTransaction } from "./db";
-import { AuthRequest } from "../middleware/authMiddleware";
 import { requestContext } from "../utils/context";
 import { kpiService } from "./kpiService";
 import { auditService } from "./auditService";
@@ -66,9 +65,9 @@ interface PunchJustification {
 
 export class PunchService {
   static async handlePunch(
-    req: AuthRequest,
+    req: { user?: { username: string } },
     employeeId: string,
-    source: string,
+    source?: string,
     forcedType?: string,
     latitude?: number,
     longitude?: number,

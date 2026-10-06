@@ -8,6 +8,8 @@ import type { AuthUser, AuthFlows } from "../../modules/auth";
 import { resolveAccessToken, authPlugin } from "../../modules/auth";
 import { holidayPlugin, type HolidayHttpService } from "../../modules/holidays";
 import { usersPlugin, type UserFlows } from "../../modules/users";
+import { shiftsPlugin, type ShiftFlows } from "../../modules/shifts";
+import { recordsPlugin, type RecordsHttpService } from "../../modules/records";
 import { employeesPlugin, type EmployeesHttpService } from "../../modules/employees";
 import { requestContext } from "../../utils/context";
 import { AppError } from "../../utils/AppError";
@@ -26,6 +28,8 @@ export interface FastifyDependencies {
   authenticate(token: string | undefined): Promise<AuthUser>;
   holidays: HolidayHttpService;
   users: UserFlows;
+  records: RecordsHttpService;
+  shifts: ShiftFlows;
   employees: EmployeesHttpService;
   auth: {
     flows: AuthFlows;
@@ -189,6 +193,8 @@ export function buildFastifyApp(
       context.username = user.username;
     };
     protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(shiftsPlugin, { service: deps.shifts, authenticate });
+    protectedApp.register(recordsPlugin, { service: deps.records, authenticate });
     protectedApp.register(employeesPlugin, { service: deps.employees, authenticate });
     protectedApp.register(usersPlugin, { service: deps.users, authenticate });
     protectedApp.register(authPlugin, { ...deps.auth, authenticate });

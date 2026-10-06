@@ -113,6 +113,39 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       updateUser: vi.fn(),
       deleteUser: vi.fn(),
     },
+    shifts: {
+      patterns: vi.fn(),
+      createPattern: vi.fn(),
+      updatePattern: vi.fn(),
+      deletePattern: vi.fn(),
+      bulkPatterns: vi.fn(),
+      assignments: vi.fn(),
+      assign: vi.fn(),
+      updateAssignment: vi.fn(),
+      deleteAssignment: vi.fn(),
+      bulkAssignments: vi.fn(),
+      daily: vi.fn(),
+      scheduled: vi.fn(),
+      month: vi.fn(),
+      matrix: vi.fn(),
+      conflicts: vi.fn(),
+      monthlyPlan: vi.fn(),
+      saveMonthlyPlan: vi.fn(),
+      suggest: vi.fn(),
+    },
+    records: {
+      punch: vi.fn(),
+      list: vi.fn(),
+      save: vi.fn(),
+      bulk: vi.fn(),
+      delete: vi.fn(),
+      autoClose: vi.fn(),
+      verify: vi.fn(),
+      resolve: vi.fn(),
+      prepareExport: vi.fn(),
+      exportJson: vi.fn(),
+      exportStream: vi.fn(),
+    },
     employees: {
       list: vi.fn(async () => []),
       create: vi.fn(),
@@ -522,3 +555,71 @@ it("employees Excel preserves an error response already ended by its exporter", 
   expect(response.statusCode).toBe(500);
   expect(response.body).toBe(JSON.stringify({ message: "Error al exportar empleados" }));
 });
+
+it.each([
+  {
+    single: "/api/records",
+    bulk: "/api/records/bulk",
+    key: "records" as const,
+    method: "bulk" as const,
+    status: 200,
+    body: { employeeId: "e", date: "2026-10-06" },
+  },
+  {
+    single: "/api/shifts/patterns",
+    bulk: "/api/shifts/patterns/bulk",
+    key: "shifts" as const,
+    method: "bulkPatterns" as const,
+    status: 201,
+    body: {
+      name: "Pattern",
+      cycleLengthDays: 7,
+      startDayOfWeek: 0,
+      dailySchedules: [],
+      color: "red",
+      maxHoursPattern: 40,
+    },
+  },
+  {
+    single: "/api/shifts/assignments",
+    bulk: "/api/shifts/assignments/bulk",
+    key: "shifts" as const,
+    method: "bulkAssignments" as const,
+    status: 201,
+    body: { employeeId: "e", shiftPatternId: "p", startDate: "2026-10-06" },
+  },
+])(
+  "$bulk enforces 1/10 MiB limits before invoking application",
+  async ({ single, bulk, key, method, status, body }) => {
+    const f = fixture();
+    const headers = { authorization: `Bearer ${f.token()}` };
+    const effect =
+      key === "records"
+        ? f.deps.records.bulk
+        : method === "bulkPatterns"
+          ? f.deps.shifts.bulkPatterns
+          : f.deps.shifts.bulkAssignments;
+    vi.mocked(effect).mockResolvedValue({ count: 1 });
+    const large = { ...body, extra: "x".repeat(1024 * 1024) };
+    expect(
+      (await f.app.inject({ method: "POST", url: single, headers, payload: large })).statusCode,
+    ).toBe(413);
+    expect(effect).not.toHaveBeenCalled();
+    expect(
+      (await f.app.inject({ method: "POST", url: bulk, headers, payload: [large] })).statusCode,
+    ).toBe(status);
+    expect(effect).toHaveBeenCalledTimes(1);
+    vi.mocked(effect).mockClear();
+    expect(
+      (
+        await f.app.inject({
+          method: "POST",
+          url: bulk,
+          headers,
+          payload: [{ ...large, extra: "x".repeat(10 * 1024 * 1024) }],
+        })
+      ).statusCode,
+    ).toBe(413);
+    expect(effect).not.toHaveBeenCalled();
+  },
+);

@@ -33,7 +33,7 @@ async function processInBatches<T>(
 
 export interface DailyScheduleInput {
   day: number;
-  type: "work" | "off";
+  type: "work" | "off" | "rest";
   startTime?: string | null;
   endTime?: string | null;
   hours?: number;

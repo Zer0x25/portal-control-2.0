@@ -86,4 +86,60 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     if (!kiosk && !route.validated)
       throw new Error(`Unvalidated employees route: ${route.method} ${route.url}`);
   }
+  const records = routes.filter(
+    (route) => route.url === "/api/records" || route.url.startsWith("/api/records/"),
+  );
+  if (!records.length) throw new Error("Records route manifest is empty");
+  const expectedRecords = [
+    "POST /api/records/punch",
+    "GET /api/records",
+    "GET /api/records/export",
+    "POST /api/records",
+    "POST /api/records/bulk",
+    "POST /api/records/auto-close",
+    "GET /api/records/integrity/verify",
+    "POST /api/records/:id/resolve-anomaly",
+    "DELETE /api/records/:id",
+  ].sort();
+  if (
+    JSON.stringify(records.map((route) => `${route.method} ${route.url}`).sort()) !==
+    JSON.stringify(expectedRecords)
+  )
+    throw new Error("Records route manifest differs from the API contract");
+  for (const route of records) {
+    if (!route.authenticated) throw new Error(`Missing authentication contract: ${route.url}`);
+    if (!route.validated)
+      throw new Error(`Unvalidated records route: ${route.method} ${route.url}`);
+  }
+  const shifts = routes.filter((route) => route.url.startsWith("/api/shifts/"));
+  if (!shifts.length) throw new Error("Shifts route manifest is empty");
+  const expectedShifts = [
+    "GET /api/shifts/patterns",
+    "POST /api/shifts/patterns",
+    "PUT /api/shifts/patterns/:id",
+    "DELETE /api/shifts/patterns/:id",
+    "POST /api/shifts/patterns/bulk",
+    "GET /api/shifts/assignments",
+    "POST /api/shifts/assignments",
+    "PUT /api/shifts/assignments/:id",
+    "DELETE /api/shifts/assignments/:id",
+    "POST /api/shifts/assignments/bulk",
+    "GET /api/shifts/schedule/employee/:id",
+    "GET /api/shifts/schedule/employees-on-date",
+    "GET /api/shifts/schedule/employee/:id/month",
+    "POST /api/shifts/schedule/matrix",
+    "GET /api/shifts/monthly-plan/:employeeId/:year/:month",
+    "POST /api/shifts/monthly-plan",
+    "GET /api/shifts/suggest-pattern-name",
+    "POST /api/shifts/validate-conflicts",
+  ].sort();
+  if (
+    JSON.stringify(shifts.map((route) => `${route.method} ${route.url}`).sort()) !==
+    JSON.stringify(expectedShifts)
+  )
+    throw new Error("Shifts route manifest differs from the API contract");
+  for (const route of shifts) {
+    if (!route.authenticated) throw new Error(`Missing authentication contract: ${route.url}`);
+    if (!route.validated) throw new Error(`Unvalidated shifts route: ${route.method} ${route.url}`);
+  }
 }

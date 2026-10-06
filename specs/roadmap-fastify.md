@@ -1,12 +1,12 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-06. Estado: 013 implementada y validada localmente; 014–025 son borradores.
+Fecha: 2026-10-06. Estado: 013–015 implementadas y validadas localmente. 016–025 son borradores.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
 No todas las specs anteriores fueron migraciones de módulos.
 
-## Entregas pendientes
+## Ruta de entregas
 
 | Spec                                                   | Entrega                          | Superficie                                    |
 | ------------------------------------------------------ | -------------------------------- | --------------------------------------------- |
@@ -26,7 +26,7 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; quedan doce tras esta entrega. El orden es propuesto y podrá
+la ruta comprende trece specs incluyendo 013; quedan diez tras la tanda 014/015. El orden es propuesto y podrá
 ajustarse por las dependencias que revele cada inventario.
 
 ## Condición de avance
@@ -47,3 +47,9 @@ usa createdAt. Empleados tiene campos de servicio ausentes del schema HTTP,
 PIN en auditoría de actualización, efectos previos al commit al asegurar usuario
 y sincronización de estado no atómica. Cada corrección debe declarar su cambio
 de contrato y pruebas, sin introducirse silenciosamente en la paridad.
+
+La tanda 014/015 añade 27 rutas: nueve de marcaciones y dieciocho de turnos.
+Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/result.md).
+Siguiente entrega: 016 (permisos/correcciones), seguida de 017 (reportes de turno).
+Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
+y el scope de assignments sin vínculo/para quiosco, registrados en 015.

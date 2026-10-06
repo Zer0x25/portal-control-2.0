@@ -1,3 +1,5 @@
+import { shiftFlows } from "../services/shiftFlows";
+import { recordFlows } from "../services/recordFlows";
 import { employeeFlows } from "../services/employeeFlows";
 import { userService } from "../services/UserService";
 import { authFlows } from "../services/authFlows";
@@ -13,15 +15,27 @@ import { getAllowedOrigins } from "../utils/corsPolicy";
 
 export function createFastifyRuntime(config?: FastifyConfig) {
   if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET es obligatorio para iniciar Fastify");
+  let exports: Promise<typeof import("../services/export/StreamExportService")> | undefined;
+  const loadExports = () => (exports ??= import("../services/export/StreamExportService"));
   return buildFastifyApp(
     {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
       users: userService,
+      shifts: shiftFlows,
+      records: {
+        ...recordFlows,
+        exportStream: async (format, stream, filters) => {
+          const { streamExportService } = await loadExports();
+          if (format === "csv") return streamExportService.streamToCSV(stream, filters);
+          if (format === "xml") return streamExportService.streamToXML(stream, filters);
+          return streamExportService.streamToExcel(stream, filters);
+        },
+      },
       employees: {
         ...employeeFlows,
         exportExcel: async (stream, filters) => {
-          const { streamExportService } = await import("../services/export/StreamExportService");
+          const { streamExportService } = await loadExports();
           await streamExportService.streamEmployeesToExcel(stream, filters);
         },
       },
@@ -32,7 +46,10 @@ export function createFastifyRuntime(config?: FastifyConfig) {
           ? systemOperationService.getSnapshot()
           : null,
       auditError: (error, request, category) => auditService.logError(error, request, category),
-      close: closeDatabase,
+      close: async () => {
+        if (exports) await (await exports).streamExportService.close();
+        await closeDatabase();
+      },
     },
     config ?? {
       allowedOrigins: getAllowedOrigins(),

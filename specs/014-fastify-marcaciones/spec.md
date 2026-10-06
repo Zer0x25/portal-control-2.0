@@ -1,38 +1,54 @@
-# Spec 014: Marcaciones
+# Spec 014: Marcaciones en Fastify
 
-- Estado: Borrador planificado; implementación pendiente
+- Estado: Implementado y validado localmente
 - Fecha: 2026-10-06
 - Ruta: [roadmap](../roadmap-fastify.md)
 
 ## Problema
 
-La superficie /api/records debe integrarse al candidato Fastify para completar
-la migración modular y disponer de contratos y pruebas mantenibles.
+Nueve rutas de marcaciones aún dependen de Express; el controller mezcla permisos,
+periodos cerrados, cooldown, errores de punch, auditoría y eventos. PunchService
+recibe AuthRequest aunque solo necesita username. La exportación depende de Response.
 
 ## Alcance
 
-Estados y secuencia de marcaciones, integridad, quiosco y lotes. Inventariar cada ruta real antes de implementar, incluidas las
-anidadas. Compartir casos de uso entre los adaptadores cuando corresponda.
+Extraer orquestación HTTP en aplicación pura compartida por Express/Fastify. Puertos
+con entradas tipadas y salidas genéricas inferidas en composición: no importar
+Prisma/framework/DB/entorno/reloj en aplicación. Mantener TimeRecordService,
+PunchService, integridad y scheduling como infraestructura vigente.
 
-Fuera: módulos de otras specs y cambios de producto no declarados. Esta spec
-es una previsión; no autoriza despliegues ni operaciones externas.
+| Método | Ruta                             | Acceso                                                     |
+| ------ | -------------------------------- | ---------------------------------------------------------- |
+| POST   | /api/records/punch               | Autenticado; Usuario fuerza asociación persistida          |
+| GET    | /api/records                     | Autenticado; Usuario/Kiosk_Employee limitado a su empleado |
+| GET    | /api/records/export              | Autenticado; export propio para Usuario/Kiosk_Employee     |
+| POST   | /api/records                     | Supervisor o superior                                      |
+| POST   | /api/records/bulk                | Supervisor o superior, 10 MiB                              |
+| POST   | /api/records/auto-close          | Supervisor o superior, cuerpo ignorado                     |
+| GET    | /api/records/integrity/verify    | Supervisor o superior                                      |
+| POST   | /api/records/:id/resolve-anomaly | Supervisor o superior                                      |
+| DELETE | /api/records/:id                 | Supervisor o superior, 204                                 |
 
 ## Criterios de aceptación
 
-- [ ] AC1: Inventario no vacío con método, path, permisos, validación, respuestas y efectos de cada ruta/flujo.
-- [ ] AC2: BDD concreto y pruebas RED antes de implementar; comportamiento vigente y errores caracterizados.
-- [ ] AC3: Implementación con puertos tipados, límites públicos y sin dependencias de infraestructura en aplicación.
-- [ ] AC4: Paridad verificada con BD aislada donde aplique; contratos de seguridad y fallos comprobados.
-- [ ] AC5: Gates backend/frontend secuenciales, docs/SDK y ratchets aprobados; resultado con límites y rollback.
+- [x] AC1: Nueve rutas nativas, guard exacto no vacío, autenticación y validadores; auto-close valida cuerpo ignorado sin cambiar contrato.
+- [x] AC2: Aplicación compartida y strict; PunchService recibe principal neutral, transacciones/advisory lock/integridad conservados.
+- [x] AC3: Preservar scopes, periodos cerrados, cooldown de 15s, errores, metadata, sync y eventos.
+- [x] AC4: Validar lote completo y comprobar todas sus fechas antes de escribir, también después de índice 50; fallos sin evento de éxito.
+- [x] AC5: Exportar JSON/CSV/XML/XLSX con filtros/scopes/headers, streaming y sin casteo a Response; pools/cursors liberados.
+- [x] AC6: TDD RED/GREEN, PostgreSQL aislado en ambos servidores, gates backend/frontend, docs/SDK/ratchets y resultado.
 
-## Restricciones
+## Restricciones y límites
 
-Constitución I–V, Node 26, React/Vite y PostgreSQL se conservan. Usar
-withDirectTransaction para transacciones interactivas. No reducir ratchets.
-El cambio de servidor principal se reserva a 025. Para 025, AC3 exige además
-retirar dependencias Express una vez demostrado el rollback.
+Constitución I–V. Express principal. Sin cambio de schema/dependencias ni lógica
+contable; conservar campos extra legacy validados sin reemplazar body.
+No se migra internamente todo TimeRecordService/PunchService ni notificaciones.
+Auditoría de punch/export y aviso de atraso tienen efectos sin await heredados;
+period lock se comprueba fuera de transacción y no se endurece en esta spec.
+No corregir silenciosamente NumericString, semántica de coordenadas cero ni
+permisos heredados de Kiosk_Employee/archivados en servicios internos.
 
 ## Trazabilidad
 
-Dependencia prevista: 013; revisar dependencias reales al iniciar.
-Tests y archivos concretos se detallarán tras el inventario de AC1.
+recordFlows.test.ts, records.test.ts PostgreSQL, guards, test:coverage y check:modules.
+Composición services/recordFlows.ts; export StreamExportService y plataforma HTTP.

@@ -210,7 +210,7 @@ export class StreamExportService {
    * Stream time records as CSV with native PostgreSQL cursor
    */
   async streamToCSV(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;
@@ -302,7 +302,7 @@ export class StreamExportService {
    * Stream time records as Excel (.xlsx) with native PostgreSQL cursor and exceljs
    */
   async streamToExcel(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;
@@ -721,7 +721,7 @@ export class StreamExportService {
    * Stream time records as XML with native PostgreSQL cursor
    */
   async streamToXML(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;

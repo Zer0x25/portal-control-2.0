@@ -2,6 +2,8 @@
   "extends": "./tsconfig.holidays.json",
   "include": [
     "src/modules/auth/**/*.ts",
+    "src/modules/records/**/*.ts",
+    "src/modules/shifts/**/*.ts",
     "src/modules/users/**/*.ts",
     "src/modules/employees/**/*.ts",
     "src/modules/holidays/**/*.ts",

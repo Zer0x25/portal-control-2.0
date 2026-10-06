@@ -22,7 +22,8 @@ Extraer comandos de feriados y proveedor externo, además de consulta. Inyectar
 repositorio, eventos, auditoría, identificador y reloj. Aplicar strict a módulos
 y plataforma HTTP. Validar Zod y serializar respuestas con schemas Fastify.
 Health queda fuera de límites/mantenimiento. Guards sobre onRoute exigen cinco
-rutas de feriados, seis de auth, cuatro de usuarios y seis de empleados, seguridad declarada y validadores registrados;
+rutas de feriados, seis de auth, cuatro de usuarios, seis de empleados, nueve de
+marcaciones y dieciocho de turnos, seguridad declarada y validadores registrados;
 pruebas ejercitan auth real. Logout y setup ignoran el cuerpo por contrato.
 
 Base HTTP y contexto/actor en `backend/src/platform/fastify/app.ts`;
@@ -57,8 +58,18 @@ cuenta para demostrar rollback de ambas filas. Los efectos externos de ensure
 siguen sin ser transaccionales. La ruta 013–025 cubre restantes módulos y cierre.
 Pruebas comparan ambos transportes contra PostgreSQL real.
 
+Specs 014/015 añaden orquestación de marcaciones y turnos con puertos neutrales.
+Pruebas comparan 27 rutas nuevas, cursores de exportación, punch concurrente y
+rollback mensual, además del recorrido empleado→patrón→asignación→marcación.
+Matriz sin vínculo de Usuario/quiosco devuelve 403 como cambio declarado. El
+calendario mensual mantiene un defecto UTC/Chile y queries por día existentes;
+assignments conserva scope legacy sin vínculo/para quiosco. Resolver esas deudas
+con contratos y pruebas antes de cutover. No se promete mejora de rendimiento.
+
 ## Referencias
 
+- [Resultado 014](../../specs/014-fastify-marcaciones/result.md)
+- [Resultado 015](../../specs/015-fastify-turnos/result.md)
 - [Ruta 013–025](../../specs/roadmap-fastify.md)
 - [Spec 013](../../specs/013-fastify-empleados/spec.md)
 
