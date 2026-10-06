@@ -37,7 +37,7 @@ registraban como decisión, y las specs 004/005 quedaron con
 
 ## Alternativas consideradas
 
-1. E2E contra compose.dev — descartada: Vite dev penaliza ~3-4s por
+1. E2E contra la pila local DB-only — descartada: Vite dev penaliza ~3-4s por
    test y oculta regresiones de build prod (como el #185 de zustand).
 2. CI gateando la suite e2e completa — descartada por costo (stack
    completo + ~40s serían gate, pero el mismo criterio de 004: smoke

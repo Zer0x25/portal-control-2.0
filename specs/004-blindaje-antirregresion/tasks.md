@@ -48,7 +48,7 @@ Spec: `./spec.md`. Plan: `./plan.md`. Estado: En ejecución.
       (reset vía API + ciclo entrada->salida), workers paralelos
       expulsándose (límite 1 sesión Usuario + rate-limit login).
 - [x] 3.2 Suite completa verde en local.
-      2026-10-03, dev (`compose.dev.yaml`), serial (`workers: 1`
+      2026-10-03, staging (`compose.staging.yaml`), serial (`workers: 1`
       fijado en `playwright.config.ts`): **16 passed / 0 failed en
       5.0 min** (`/tmp/e2e-final.log`, EXIT 0). Commits: helper +
       user-flows, admin-tools, governance-hub, data-validation,

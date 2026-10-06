@@ -24,7 +24,7 @@ desperdicio confirmados en `.github/workflows/ci.yml`:
    `npm ci` frontend) y re-corria la suite de frontend que
    `verify-frontend` ya habia corrido dentro de `validate:ci`.
 2. `e2e-smoke` corria en paralelo a los verifys: en un PR rojo quemaba
-   ~176 s (build de `compose.dev` + Playwright) sobre codigo roto.
+   ~176 s (build de `compose.staging` + Playwright) sobre codigo roto.
 3. PRs de release-please (bumps de version + changelogs) y PRs solo-docs
    corrian la bateria completa (~11 min) sin codigo funcional nuevo.
 4. `publish-images` (`deploy.yml`) reconstruia las 3 imagenes desde cero

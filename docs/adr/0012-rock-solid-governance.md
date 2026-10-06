@@ -34,8 +34,8 @@ CI). Faltaban 5 brechas (G-01…G-05 del spec):
    60, statements 17 (medido 19.82% líneas, 37.66% funciones, 64.11%
    ramas). Job `coverage-ratchet` en CI.
    Subir cobertura real queda fuera de alcance (spec aparte).
-3. Smoke e2e en CI: job `e2e-smoke` levanta `compose.dev.yaml`
-   (el backend hace `migrate deploy + seed` en su entrypoint), espera
+3. Smoke e2e en CI: job `e2e-smoke` levanta `compose.staging.yaml`
+   (base de producción local con migraciones/seed), espera
    `/api/health` y corre solo `frontend/e2e/smoke.spec.ts` (health +
    login admin). Los flujos de negocio siguen en los otros
    `e2e/*.spec.ts` y se corren en local con `npx playwright test`.
@@ -77,7 +77,7 @@ Positivas:
 
 Negativas / costos aceptados:
 
-- `e2e-smoke` añade ~5-10 min al CI (build de `compose.dev` +
+- `e2e-smoke` añade ~5-10 min al CI (build de `compose.staging` +
   chromium). Solo corre en PR/push no-bot, igual que el resto.
 - Thresholds bajos al inicio: la señal es débil hasta que un spec
   futuro suba la cobertura y el ratchet con ella.

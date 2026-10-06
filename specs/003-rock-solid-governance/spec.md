@@ -38,7 +38,7 @@ Fuera (explícito):
 - [x] AC1: `AGENTS.md` y `jules-scheduled.yml` exigen subject
       Conventional sin prefijo; verificado en el siguiente ciclo Jules.
 - [x] AC2: `vitest --coverage` con thresholds falla bajo el umbral.
-- [x] AC3: CI corre al menos 1 smoke e2e contra `compose.dev`.
+- [x] AC3: CI corre al menos 1 smoke e2e contra `compose.staging`.
 - [x] AC4: CI falla con enlace roto en `docs/adr/` o `specs/`.
 - [x] AC5: criterio escrito de cuándo migrar a gitleaks.
 

@@ -11,8 +11,8 @@
     "spec:check": "node scripts/spec-check.cjs",
     "docs:check": "node scripts/docs-check.cjs",
     "secrets:scan": "node scripts/secret-scan.cjs",
-    "dev:up": "docker compose -f compose.dev.yaml up --build",
-    "dev:down": "docker compose -f compose.dev.yaml down",
+    "dev:up": "docker compose -f compose.db.dev.yaml up -d",
+    "dev:down": "docker compose -f compose.db.dev.yaml down",
     "staging:up": "docker compose --env-file .env.staging -f compose.staging.yaml up --build -d",
     "staging:logs": "docker compose --env-file .env.staging -f compose.staging.yaml logs -f --tail=100",
     "staging:down": "docker compose --env-file .env.staging -f compose.staging.yaml down"
@@ -21,13 +21,21 @@
     "backend/src/**/*.ts": [
       "backend/node_modules/.bin/eslint --config backend/eslint.config.js"
     ],
-    "backend/**/*.{ts,cjs,json,md,yml,yaml}": ["backend/node_modules/.bin/prettier --check"],
+    "backend/**/*.{ts,cjs,json,md,yml,yaml}": [
+      "backend/node_modules/.bin/prettier --check"
+    ],
     "frontend/src/**/*.{ts,tsx}": [
       "frontend/node_modules/.bin/eslint --config frontend/eslint.config.js"
     ],
-    "frontend/src/**/*.{ts,tsx,css,md}": ["frontend/node_modules/.bin/prettier --check"],
-    "docs/adr/*.md": ["backend/node_modules/.bin/prettier --check"],
-    "specs/**/*.md": ["backend/node_modules/.bin/prettier --check"]
+    "frontend/src/**/*.{ts,tsx,css,md}": [
+      "frontend/node_modules/.bin/prettier --check"
+    ],
+    "docs/adr/*.md": [
+      "backend/node_modules/.bin/prettier --check"
+    ],
+    "specs/**/*.md": [
+      "backend/node_modules/.bin/prettier --check"
+    ]
   },
   "devDependencies": {
     "husky": "^9.1.7",

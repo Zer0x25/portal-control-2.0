@@ -1,14 +1,14 @@
 import { test, expect } from "@playwright/test";
 
-// Smoke mínimo para CI (spec 003 G-03, AC3): corre contra compose.dev.
+// Smoke mínimo para CI (spec 003 G-03, AC3): corre contra compose.staging.
 // - API viva: GET /api/health responde 200 con success.
 // - Login real: admin entra y la app redirige a zona autenticada.
 // No cubre flujos de negocio; esos viven en los otros e2e/*.spec.ts.
 // El login se implementa inline (no se reutiliza el helper, atado a 15s)
-// porque compose.dev en frío necesita ~30s.
+// porque el stack staging en frío necesita ~30s.
 test.describe("smoke @smoke", () => {
   test("API health responde OK", async ({ request }) => {
-    const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:4000/api";
+    const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:8080/api";
     const res = await request.get(`${apiBase}/health`);
     expect(res.status()).toBe(200);
     const body = await res.json();
@@ -16,7 +16,7 @@ test.describe("smoke @smoke", () => {
   });
 
   test("login admin redirige a zona autenticada", async ({ page }) => {
-    // compose.dev en frío (build + Vite compile + seed) tarda ~30s en
+    // compose.staging en frío (build + prod compile + seed) tarda ~30s en
     // dejar la app navegable; 90s de margen para no flakear en CI.
     test.setTimeout(90000);
     await page.goto("/");

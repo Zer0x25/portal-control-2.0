@@ -15,7 +15,7 @@ no en `.env` en el servidor (`README.md:20-33`).
 
 Fallar rápido en arranque si falta `JWT_SECRET` u otro secreto
 criptográfico. Prohibidos los defaults débiles. En desarrollo se permite
-un valor explícito de dev (`compose.dev.yaml`), nunca en `compose.yaml`
+un valor explícito de dev (`compose.db.dev.yaml`), nunca en `compose.yaml`
 de producción (`compose.yaml:62` sin default).
 
 ## Alternativas consideradas

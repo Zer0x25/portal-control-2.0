@@ -8,7 +8,10 @@ This document provides conventions, operational commands, and architectural cons
 
 - **`backend/`**: Node.js (v24), Express, TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
 - **`frontend/`**: React 19, Vite, TypeScript, Zustand, TanStack Query, Tailwind CSS.
-- **`compose.yaml`**: Production-style stack (PostgreSQL 15, PgBouncer, backend, frontend, Nginx/Caddy). `compose.dev.yaml` (host ports 5173/4000/5433) y `compose.staging.yaml` (prod-like via gateway :8080, `pweb3_staging`, host port 5434) corren paralelos; ver README §5.
+- **`compose.yaml`**: Production-style stack (PostgreSQL 18.4, PgBouncer, backend, frontend, Nginx/Caddy). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Express en el host. `compose.staging.yaml` es prod-like vía gateway :8080 (`pweb3_staging`, host port 5434); ver README §5.
+- **PostgreSQL 18.4** en todos los compose. Dos detalles no negociables:
+  - `PGDATA` es `/var/lib/postgresql/<major>/docker`; el entrypoint ABORTA si el volumen se monta en `/var/lib/postgresql/data` (ver docker-library/postgres#37). El volumen va en `/var/lib/postgresql`.
+  - `md5` está deprecado (avisa al crear/alterar roles). Todos los compose usan `--auth-host=scram-sha-256 --auth-local=scram-sha-256`.
 - **`.jules/`**: Institutional memory journals:
   - `bolt.md`: Performance guidelines (N+1 prevention, batch fetching).
   - `sentinel.md`: Security constraints (safe command execution, SQL parametrization, strict secrets).
@@ -280,7 +283,7 @@ Coverage, docs y smoke (spec 003, ADR-0012):
   thresholds como ratchet: solo suben).
 - Docs: `npm run docs:check` desde la raíz (enlaces + índice ADR).
 - Smoke: `npx playwright test e2e/smoke.spec.ts` en `frontend/` contra
-  `compose.dev` (ver `README.md` §5).
+  `compose.staging.yaml` (ver `README.md` §5).
 
 Cobertura, docs y e2e (spec 004/005, ADR-0016):
 

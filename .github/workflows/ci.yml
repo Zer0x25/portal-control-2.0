@@ -78,7 +78,7 @@ jobs:
               - 'backend/docs/swagger.json'
               - '.github/workflows/ci.yml'
             stack:
-              - 'compose.dev.yaml'
+              - 'compose.db.dev.yaml'
               - 'compose.staging.yaml'
               - 'compose.yaml'
               - 'nginx/**'
@@ -293,7 +293,7 @@ jobs:
           fi
 
   e2e-smoke:
-    name: E2E Smoke (compose.dev)
+    name: E2E Smoke (compose.staging)
     needs: [gates, changes, verify-backend, verify-frontend]
     # Solo si toco backend/frontend/stack y los verifys no fallaron (success
     # o skipped cuando su area no cambio). En un PR rojo el e2e ya no quema
@@ -312,16 +312,10 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      # El orden importa: con `./frontend:/app` bind + volumen anidado en
-      # /app/node_modules, Docker crea el mountpoint en el HOST como root si
-      # no existe, y el npm ci posterior falla con EACCES. Instalar primero.
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci --no-audit --no-fund
 
-      # Los binarios del navegador (~150 MB) se cachean entre corridas; la
-      # instalacion de dependencias OS via apt (`--with-deps`) sigue
-      # corriendo sobre la VM fresca.
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -330,20 +324,28 @@ jobs:
           restore-keys: |
             playwright-${{ runner.os }}-
 
-      - name: Start compose.dev stack
-        run: docker compose -f compose.dev.yaml up -d --build
-
-      - name: Wait for backend health
+      - name: Create staging env
         run: |
-          for i in $(seq 1 36); do
-            if curl -sf http://127.0.0.1:4000/api/health > /dev/null; then
-              echo "backend healthy"
+          cp .env.staging.example .env.staging
+          printf '\nJWT_SECRET=%s\nSEED_ADMIN_PASSWORD=%s\n' \
+            "${{ secrets.JWT_SECRET || github.run_id }}" \
+            "${{ secrets.SEED_ADMIN_PASSWORD || '999.666' }}" \
+            >> .env.staging
+
+      - name: Start compose.staging stack
+        run: docker compose --env-file .env.staging -f compose.staging.yaml up -d --build
+
+      - name: Wait for gateway health
+        run: |
+          for i in $(seq 1 48); do
+            if curl -sf http://127.0.0.1:8080 > /dev/null; then
+              echo "gateway healthy"
               exit 0
             fi
             sleep 5
           done
-          echo "::error::backend no alcanzó /api/health en ~3 min"
-          docker compose -f compose.dev.yaml logs backend --tail=100
+          echo "::error::gateway no alcanzó http://127.0.0.1:8080 en ~4 min"
+          docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
           exit 1
 
       - name: Install Playwright chromium
@@ -353,14 +355,14 @@ jobs:
       - name: Run smoke spec
         working-directory: frontend
         env:
-          E2E_BASE_URL: http://127.0.0.1:5173
-          E2E_API_URL: http://127.0.0.1:4000/api
+          E2E_BASE_URL: http://127.0.0.1:8080
+          E2E_API_URL: http://127.0.0.1:8080/api
         run: npx playwright test e2e/smoke.spec.ts
 
       - name: Dump stack logs on failure
         if: failure()
-        run: docker compose -f compose.dev.yaml logs --tail=200
+        run: docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
 
       - name: Stop stack
         if: always()
-        run: docker compose -f compose.dev.yaml down
+        run: docker compose --env-file .env.staging -f compose.staging.yaml down

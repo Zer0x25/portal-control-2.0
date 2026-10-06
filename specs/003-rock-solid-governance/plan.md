@@ -8,7 +8,7 @@ Spec: `./spec.md`. Constitución: `../constitution.md`. Estado: En ejecución.
    regla: subject Conventional puro, sin emoji ni prefijo.
 2. Activar `@vitest/coverage-v8` con thresholds iniciales = cobertura
    actual (ratchet, mismo patrón que `lint-budget`).
-3. Job e2e mínimo en CI: levantar `compose.dev`, smoke login + health.
+3. Job e2e mínimo en CI: levantar `compose.staging`, smoke login + health.
 4. Job docs: Prettier check + link-check sobre `docs/adr/` y `specs/`.
 5. Dejar G-05 como criterio escrito, sin implementar.
 

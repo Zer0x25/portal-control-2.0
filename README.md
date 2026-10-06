@@ -12,7 +12,7 @@ Este servicio se despliega como un Stack en **Server.lab** con la siguiente topo
   - `gateway`: Gateway de la aplicación (Construido vía `nginx/Dockerfile`).
   - `frontend`: Aplicación React/Vite.
   - `backend`: API Node.js/Prisma.
-  - `db`: PostgreSQL 15.
+  - `db`: PostgreSQL 18.4.
   - `pgbouncer`: Gestor de conexiones a BD.
 
 ## 2. Configuración de Entorno
@@ -92,48 +92,46 @@ Cambios incompatibles deben marcarse explícitamente:
 - **Backups:** Deben escribirse en una ruta fija del host, fuera de `/data/compose/<stack-id>/`, para evitar dependencia del workspace interno de Portainer.
 - **Uploads:** Los archivos cargados por la aplicación, incluido `company-policy`, deben persistirse en una ruta fija del host para sobrevivir a redeploys y recreación de contenedores.
 
-## 5. Despliegue de Desarrollo
+## 5. Desarrollo Local
 
-Para levantar un entorno local de desarrollo con recarga en caliente:
+En el flujo diario, Docker ejecuta solo PostgreSQL. El backend Express y el frontend Vite corren en el host con recarga en caliente:
 
-1. Usa `compose.dev.yaml` como manifiesto de desarrollo.
-2. El stack levanta `db`, `backend` y `frontend` con builds locales y bind mounts del código.
-3. El backend expone `http://localhost:4000` y el frontend `http://localhost:5173`.
-4. La base de datos de desarrollo usa por defecto `pweb3_dev` y el puerto host `5433` para evitar colisiones con otras instancias.
+1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`.
+2. Ejecuta `npm run dev:up` desde la raíz para iniciar PostgreSQL.
+3. La primera vez, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
+4. En una terminal, ejecuta `cd backend && npm run dev`.
+5. En otra terminal, ejecuta `cd frontend && npm run dev`.
+6. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
 
-### 5.1 Arranque rápido
+### 5.1 Base de datos local
 
-```bash
-docker compose -f compose.dev.yaml up --build
-```
+`compose.db.dev.yaml` publica PostgreSQL 18.4 en el puerto `5433` y conserva sus datos en un volumen Docker. `DB_USER`, `DB_PASSWORD`, `DB_NAME` y `DB_HOST_PORT` pueden cambiarse desde el `.env` de la raíz; mantén las URLs de `backend/.env` sincronizadas.
 
-### 5.2 Variables útiles
+Dos particularidades de PostgreSQL 18 que ya están resueltas en el manifiesto:
 
-- `JWT_SECRET`: se usa un valor seguro de desarrollo por defecto si no se define.
-- `DB_PASSWORD`: contraseña de PostgreSQL en desarrollo; por defecto `password`.
-- `DB_NAME`: nombre de la base de datos; por defecto `pweb3_dev`.
-- `DB_HOST_PORT`: puerto host para PostgreSQL; por defecto `5433`.
-- `VITE_API_URL`: URL explícita del backend para el frontend; por defecto `http://localhost:4000/api`.
-
-### 5.3 Parada y limpieza
+- El volumen se monta en `/var/lib/postgresql`, no en `/var/lib/postgresql/data`. La imagen oficial de PG 18+ usa `PGDATA=/var/lib/postgresql/18/docker` y su entrypoint aborta si detecta el montaje heredado.
+- La autenticación es `scram-sha-256` (no `md5`, que quedó deprecado en PG 18).
 
 ```bash
-docker compose -f compose.dev.yaml down
+npm run dev:up
+npm run dev:down
 ```
 
-### 5.4 Staging local (ensayo del deploy de producción)
+`npm run dev:down` detiene el contenedor y conserva el volumen. No uses `down -v` salvo que quieras borrar los datos locales.
+
+### 5.2 Staging local (ensayo del deploy de producción)
 
 `compose.staging.yaml` replica la topología de producción (`db` → `pgbouncer` → `backend` → `frontend` → `gateway`, `NODE_ENV=production`) en tu máquina, construyendo las imágenes con los Dockerfiles de producción. Está aislado de dev y de prod: proyecto Compose `portal-control-staging`, volúmenes, red y base de datos (`pweb3_staging`) propios, sin `proxy_net` ni rutas `/srv/...`.
 
-|                  | **Dev**                              | **Staging local**                           | **Producción**        |
-| ---------------- | ------------------------------------ | ------------------------------------------- | --------------------- |
-| Manifiesto       | `compose.dev.yaml`                   | `compose.staging.yaml`                      | `compose.yaml`        |
-| Proyecto Compose | `portal-control-dev`                 | `portal-control-staging`                    | (Portainer)           |
-| Imágenes         | build `Dockerfile.dev` + bind mounts | build `Dockerfile` de prod                  | GHCR `sha-*` prebuild |
-| `NODE_ENV`       | `development`                        | `production`                                | `production`          |
-| Base de datos    | `pweb3_dev` directa (host `5433`)    | `pweb3_staging` vía PgBouncer (host `5434`) | `pweb3` vía PgBouncer |
-| Acceso           | `:5173` (Vite) y `:4000` (API)       | `http://localhost:8080` (gateway)           | dominio vía Caddy     |
-| Secretos         | defaults de dev                      | obligatorios en `.env.staging`              | Portainer             |
+|                  | **Dev**                                     | **Staging local**                           | **Producción**        |
+| ---------------- | ------------------------------------------- | ------------------------------------------- | --------------------- |
+| Manifiesto       | `compose.db.dev.yaml`                       | `compose.staging.yaml`                      | `compose.yaml`        |
+| Proyecto Compose | `portal-control-localdb`                    | `portal-control-staging`                    | (Portainer)           |
+| Imágenes         | PostgreSQL en Docker; apps en host          | build `Dockerfile` de prod                  | GHCR `sha-*` prebuild |
+| `NODE_ENV`       | `development`                               | `production`                                | `production`          |
+| Base de datos    | `pweb3_dev` directa (host `5433`)           | `pweb3_staging` vía PgBouncer (host `5434`) | `pweb3` vía PgBouncer |
+| Acceso           | `:5173` (Vite), `:4000` (API), `:5433` (DB) | `http://localhost:8080` (gateway)           | dominio vía Caddy     |
+| Secretos         | defaults de dev                             | obligatorios en `.env.staging`              | Portainer             |
 
 ```bash
 cp .env.staging.example .env.staging   # completar JWT_SECRET y SEED_ADMIN_PASSWORD
@@ -157,7 +155,7 @@ Si vas a levantar el stack desde WSL, prepara el entorno Linux dentro de la prop
 2. Asegúrate de poder ejecutar `docker compose version` desde la terminal de WSL.
 3. Mantén este repositorio dentro del sistema de archivos de WSL, por ejemplo en `/home/...`, no en `/mnt/c/...`, para evitar problemas de rendimiento con los bind mounts.
 4. Verifica que tu usuario tenga permisos sobre Docker antes de levantar el stack.
-5. Arranca el entorno con `docker compose -f compose.dev.yaml up --build`.
+5. Arranca PostgreSQL con `npm run dev:up`; ejecuta Vite y Express en terminales separadas desde `frontend/` y `backend/`.
 
 ### 6.1 Comprobación rápida
 
@@ -231,11 +229,11 @@ El repositorio cuenta con mantenimiento preventivo continuo orquestado mediante 
 
 Además de `verify-backend` / `verify-frontend`, cada PR/push pasa:
 
-| Job                | Qué blinda                                                      | Cómo correrlo en local                                                                             |
-| :----------------- | :-------------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `coverage-ratchet` | La cobertura no baja (ratchet)                                  | `npm run test:coverage` en cada paquete                                                            |
-| `docs-check`       | Sin links rotos en `docs/adr/`/`specs/`, ADR indexado, Prettier | `npm run docs:check` (raíz)                                                                        |
-| `e2e-smoke`        | El stack levanta y el login funciona                            | `docker compose -f compose.dev.yaml up` + `npx playwright test e2e/smoke.spec.ts` (en `frontend/`) |
+| Job                | Qué blinda                                                      | Cómo correrlo en local                                   |
+| :----------------- | :-------------------------------------------------------------- | :------------------------------------------------------- |
+| `coverage-ratchet` | La cobertura no baja (ratchet)                                  | `npm run test:coverage` en cada paquete                  |
+| `docs-check`       | Sin links rotos en `docs/adr/`/`specs/`, ADR indexado, Prettier | `npm run docs:check` (raíz)                              |
+| `e2e-smoke`        | El stack levanta y el login funciona                            | `npx playwright test e2e/smoke.spec.ts` (en `frontend/`) |
 
 Umbrales de cobertura (solo suben, ver ADR-0012): backend líneas 14 / funciones 17 / ramas 8 / statements 14; frontend líneas 17 / funciones 35 / ramas 60 / statements 17.
 

@@ -1,0 +1,34 @@
+# Base de datos local para desarrollar frontend/backend ejecutados en el host.
+#   npm run dev:up
+#
+# PostgreSQL 18 deprecó la autenticación `md5` (avisa al crear roles; se
+# quitará en una versión mayor futura). Como esta DB se crea desde cero, se
+# usa `scram-sha-256` desde el inicio.
+#
+# OJO PG 18+: la imagen oficial cambió el layout de datos y `PGDATA` ahora es
+# `/var/lib/postgresql/<major>/docker`. El entrypoint ABORTA si se monta un
+# volumen en `/var/lib/postgresql/data` (lo detecta como montaje heredado).
+# Por eso el volumen va en `/var/lib/postgresql` (ver docker-library/postgres#37).
+name: portal-control-localdb
+services:
+  db:
+    image: postgres:18.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-pweb3_dev}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --auth-local=scram-sha-256
+    ports:
+      - "${DB_HOST_PORT:-5433}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data_dev:
+    name: portal-control-localdb_postgres_data_dev

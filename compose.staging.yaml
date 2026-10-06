@@ -4,8 +4,11 @@
 #   NODE_ENV=production y migraciones/seed por DIRECT_URL.
 # - Las imágenes se CONSTRUYEN localmente con los Dockerfiles de producción
 #   (no se usa GHCR ni Portainer, no se tocan los tags pineados de compose.yaml).
-# - Aislado de dev (compose.dev.yaml) y de prod (compose.yaml): proyecto, volúmenes,
-#   red y base de datos propios; sin proxy_net ni rutas /srv del servidor.
+# - OJO PG 18+: `PGDATA` es `/var/lib/postgresql/<major>/docker`; el entrypoint
+#   ABORTA si el volumen se monta en `/var/lib/postgresql/data` (ver #37).
+# - Aislado del DB-only local (compose.db.dev.yaml) y de prod (compose.yaml):
+#   proyecto, volúmenes, red y base de datos propios; sin proxy_net ni rutas /srv
+#   del servidor.
 # - Único punto de entrada: el gateway en http://localhost:${STAGING_PORT:-8080}.
 #
 # Uso (siempre con env-file dedicado para no compartir `.env` con dev):
@@ -15,17 +18,17 @@ name: portal-control-staging
 
 services:
   db:
-    image: postgres:15-alpine
+    image: postgres:18.4-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: ${DB_NAME:-pweb3_staging}
-      POSTGRES_INITDB_ARGS: --auth-host=md5 --auth-local=md5
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256 --auth-local=scram-sha-256
     ports:
       - "127.0.0.1:${STAGING_DB_HOST_PORT:-5434}:5432"
     volumes:
-      - postgres_data_staging:/var/lib/postgresql/data
+      - postgres_data_staging:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-pweb3_staging}"]
       interval: 10s

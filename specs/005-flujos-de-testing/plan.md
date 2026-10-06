@@ -47,4 +47,4 @@
   dimensionar conservador y limpiar sesiones de carga al final.
 - Screenshots flaky por fuentes/animaciones: congelar y enmascarar.
 - Testcontainers en CI necesita Docker en el runner (ya lo hay por
-  el smoke de compose.dev).
+  el smoke de compose.staging).
