@@ -62,4 +62,28 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
       throw new Error(`Missing authentication contract: ${route.method} ${route.url}`);
     if (!route.validated) throw new Error(`Unvalidated users route: ${route.method} ${route.url}`);
   }
+  const employees = routes.filter(
+    (route) => route.url === "/api/employees" || route.url.startsWith("/api/employees/"),
+  );
+  if (!employees.length) throw new Error("Employees route manifest is empty");
+  const expectedEmployees = [
+    "GET /api/employees",
+    "GET /api/employees/kiosk",
+    "POST /api/employees",
+    "PUT /api/employees/:id",
+    "POST /api/employees/bulk",
+    "GET /api/employees/export",
+  ].sort();
+  if (
+    JSON.stringify(employees.map((route) => `${route.method} ${route.url}`).sort()) !==
+    JSON.stringify(expectedEmployees)
+  )
+    throw new Error("Employees route manifest differs from the API contract");
+  for (const route of employees) {
+    const kiosk = route.url === "/api/employees/kiosk";
+    if (route.authenticated === kiosk)
+      throw new Error(`Incorrect authentication contract: ${route.url}`);
+    if (!kiosk && !route.validated)
+      throw new Error(`Unvalidated employees route: ${route.method} ${route.url}`);
+  }
 }

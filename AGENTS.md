@@ -140,7 +140,8 @@ Express, Fastify, Prisma, DB, entorno, red o reloj global: inyecta dependencias.
 `npm run check:holidays` aplica strict y forma parte de `npm run check`.
 El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
 de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
-con casos de uso compartidos. `check:modules` aplica strict a auth, users, feriados y plataforma HTTP.
+y las seis de empleados (incluido Excel), con casos de uso compartidos.
+`check:modules` aplica strict a auth, users, employees, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
@@ -157,7 +158,12 @@ passwordHash, mfaSecret ni contadores MFA en HTTP o user:updated. Mantener
 mfaEnabled y mustChangePassword; no propagar isForcePasswordChange interno.
 Usuarios extrae list/create/update/delete con repositorio, hash, id, auditoría y
 eventos inyectados; UserService conserva la fachada y ensure transaccional.
-Ver specs 006/007/008/009/010/011/012 y ADR-0017/0018/0019.
+Empleados usa index.ts y aplicación pura con puertos; composición en
+services/employeeFlows.ts conserva withDirectTransaction y ensureEmployeeUser
+sobre el mismo cliente. No exponer PIN en HTTP/employee:updated; quiosco conserva
+seis campos. Validar el lote completo y conservar streaming Excel sin casts a
+Express.Response. Los borradores siguientes están en specs/roadmap-fastify.md.
+Ver specs 006/007/008/009/010/011/012/013 y ADR-0017/0018/0019.
 
 ---
 

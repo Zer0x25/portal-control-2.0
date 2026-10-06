@@ -25,6 +25,21 @@ routes.push(
     ["DELETE", "/api/users/:id"],
   ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
 );
+routes.push(
+  ...[
+    ["GET", "/api/employees"],
+    ["GET", "/api/employees/kiosk"],
+    ["POST", "/api/employees"],
+    ["PUT", "/api/employees/:id"],
+    ["POST", "/api/employees/bulk"],
+    ["GET", "/api/employees/export"],
+  ].map(([method, url]) => ({
+    method,
+    url,
+    authenticated: url !== "/api/employees/kiosk",
+    validated: url !== "/api/employees/kiosk",
+  })),
+);
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
     expect(() => assertMigratedRouteContracts(routes)).not.toThrow());
@@ -97,6 +112,31 @@ it("rejects users path mutation without validator", () =>
         route.method === "DELETE" && route.url.startsWith("/api/users")
           ? { ...route, validated: false }
           : route,
+      ),
+    ),
+  ).toThrow("Unvalidated"));
+
+it("rejects empty employees surface", () =>
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((route) => !route.url.startsWith("/api/employees"))),
+  ).toThrow("Employees route manifest is empty"));
+it("rejects missing employees route", () =>
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((route) => route.url !== "/api/employees/export")),
+  ).toThrow("differs"));
+it("rejects kiosk marked protected", () =>
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((route) =>
+        route.url === "/api/employees/kiosk" ? { ...route, authenticated: true } : route,
+      ),
+    ),
+  ).toThrow("authentication"));
+it("rejects employees missing validator", () =>
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((route) =>
+        route.url === "/api/employees/export" ? { ...route, validated: false } : route,
       ),
     ),
   ).toThrow("Unvalidated"));

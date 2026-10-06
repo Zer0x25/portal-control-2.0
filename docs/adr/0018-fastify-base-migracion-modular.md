@@ -22,7 +22,7 @@ Extraer comandos de feriados y proveedor externo, además de consulta. Inyectar
 repositorio, eventos, auditoría, identificador y reloj. Aplicar strict a módulos
 y plataforma HTTP. Validar Zod y serializar respuestas con schemas Fastify.
 Health queda fuera de límites/mantenimiento. Guards sobre onRoute exigen cinco
-rutas de feriados, seis de auth y cuatro de usuarios, seguridad declarada y validadores registrados;
+rutas de feriados, seis de auth, cuatro de usuarios y seis de empleados, seguridad declarada y validadores registrados;
 pruebas ejercitan auth real. Logout y setup ignoran el cuerpo por contrato.
 
 Base HTTP y contexto/actor en `backend/src/platform/fastify/app.ts`;
@@ -50,10 +50,17 @@ entregas migran módulos restantes, sockets/jobs, OpenAPI y validación staging
 con PgBouncer.
 
 Spec 012 migra CRUD de usuarios, con flujos puros y fachada UserService compartida.
-Pruebas comparan ambos transportes contra PostgreSQL real; empleados permanece
-como siguiente módulo, conservando ensureEmployeeUser y su transacción.
+Spec 013 migra seis rutas de empleados con list/create/update/bulk compartidos,
+proyección explícita sin PIN y exportación Excel por stream tipado. Conserva
+ensureEmployeeUser y su transacción directa; pruebas provocan fallo tras crear
+cuenta para demostrar rollback de ambas filas. Los efectos externos de ensure
+siguen sin ser transaccionales. La ruta 013–025 cubre restantes módulos y cierre.
+Pruebas comparan ambos transportes contra PostgreSQL real.
 
 ## Referencias
+
+- [Ruta 013–025](../../specs/roadmap-fastify.md)
+- [Spec 013](../../specs/013-fastify-empleados/spec.md)
 
 - [Spec 012](../../specs/012-fastify-usuarios/spec.md)
 

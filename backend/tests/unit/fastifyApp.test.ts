@@ -113,6 +113,13 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       updateUser: vi.fn(),
       deleteUser: vi.fn(),
     },
+    employees: {
+      list: vi.fn(async () => []),
+      create: vi.fn(),
+      update: vi.fn(),
+      bulk: vi.fn(),
+      exportExcel: vi.fn(),
+    },
     health: {
       checkDbReady: vi.fn(async () => true),
       getDetailedHealth: vi.fn(async () => ({ database: { status: "OK" } })),
@@ -454,4 +461,64 @@ describe("Fastify foundation with real JWT/session rules", () => {
     await f.app.close();
     expect(f.deps.close).toHaveBeenCalledTimes(1);
   });
+});
+
+it("employees enforce simple/bulk body limits before effects", async () => {
+  const f = fixture();
+  const headers = { authorization: `Bearer ${f.token()}` };
+  const large = {
+    id: "EMP-big",
+    name: "x".repeat(1024 * 1024),
+    rut: "12345678-9",
+    position: "Operator",
+    area: "Ops",
+    workdayType: "Normal",
+  };
+  vi.mocked(f.deps.employees.bulk).mockResolvedValue({ success: true, count: 1 });
+  expect(
+    (await f.app.inject({ method: "POST", url: "/api/employees", headers, payload: large }))
+      .statusCode,
+  ).toBe(413);
+  expect(f.deps.employees.create).not.toHaveBeenCalled();
+  expect(
+    (await f.app.inject({ method: "POST", url: "/api/employees/bulk", headers, payload: [large] }))
+      .statusCode,
+  ).toBe(200);
+  expect(f.deps.employees.bulk).toHaveBeenCalledTimes(1);
+  vi.mocked(f.deps.employees.bulk).mockClear();
+  expect(
+    (
+      await f.app.inject({
+        method: "POST",
+        url: "/api/employees/bulk",
+        headers,
+        payload: [{ ...large, name: "x".repeat(10 * 1024 * 1024) }],
+      })
+    ).statusCode,
+  ).toBe(413);
+  expect(f.deps.employees.bulk).not.toHaveBeenCalled();
+});
+it("employees Excel handles pre-stream failure without hanging the request", async () => {
+  const f = fixture();
+  vi.mocked(f.deps.employees.exportExcel).mockRejectedValue(new Error("export unavailable"));
+  const response = await f.app.inject({
+    url: "/api/employees/export",
+    headers: { authorization: `Bearer ${f.token()}` },
+  });
+  expect(response.statusCode).toBe(500);
+  expect(response.body).toContain("Error al exportar empleados");
+});
+
+it("employees Excel preserves an error response already ended by its exporter", async () => {
+  const f = fixture();
+  vi.mocked(f.deps.employees.exportExcel).mockImplementation(async (output) => {
+    output.status(500).json({ message: "Error al exportar empleados" });
+    throw new Error("export failed after ending error response");
+  });
+  const response = await f.app.inject({
+    url: "/api/employees/export",
+    headers: { authorization: `Bearer ${f.token()}` },
+  });
+  expect(response.statusCode).toBe(500);
+  expect(response.body).toBe(JSON.stringify({ message: "Error al exportar empleados" }));
 });

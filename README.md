@@ -266,7 +266,7 @@ El backend añade `npm run check:holidays` (tipos estrictos del módulo) a `chec
 La consulta de feriados está extraída con contratos y adaptador Prisma. Express
 sigue siendo el servidor principal. El candidato Fastify ya expone health y
 feriados completos, las seis rutas de autenticación (login, logout, quiosco y MFA)
-y las cuatro rutas de usuarios (CRUD Admin),
+las cuatro rutas de usuarios (CRUD Admin) y las seis de empleados (incluido Excel),
 con sesiones y permisos reales, auditoría y tipos estrictos.
 Para iniciarlo en otro puerto desde `backend/`: `PORT=4001 npm run dev:fastify`.
 Requiere las mismas conexiones y `JWT_SECRET`. Puede emitir y revocar sesiones
@@ -292,5 +292,11 @@ y [resultado](specs/011-usuarios-dto-publico/result.md). Usuarios comparte casos
 uso con repositorio/hash/identificador/auditoría/eventos inyectados y rutas nativas
 Fastify; ver [spec 012](specs/012-fastify-usuarios/spec.md) y
 [resultado de usuarios](specs/012-fastify-usuarios/result.md).
+Empleados comparte list/create/update/bulk y conserva la transacción directa de
+alta con usuario vinculado; Excel usa streaming tipado en ambos servidores.
+Ver [spec 013](specs/013-fastify-empleados/spec.md) y
+[resultado de empleados](specs/013-fastify-empleados/result.md).
+La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
+a empleados y reserva runtime integrado y cutover para las últimas dos specs.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
 [spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).

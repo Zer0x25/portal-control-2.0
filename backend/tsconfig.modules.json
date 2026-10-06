@@ -3,6 +3,7 @@
   "include": [
     "src/modules/auth/**/*.ts",
     "src/modules/users/**/*.ts",
+    "src/modules/employees/**/*.ts",
     "src/modules/holidays/**/*.ts",
     "src/platform/fastify/**/*.ts"
   ]

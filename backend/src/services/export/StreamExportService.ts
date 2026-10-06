@@ -1,4 +1,5 @@
 import { Response } from "express";
+import type { ExcelHttpStream } from "../../utils/httpStream";
 import type { Prisma } from "../../generated/prisma/client";
 import { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
@@ -429,7 +430,7 @@ export class StreamExportService {
    * Stream employees as Excel (.xlsx)
    */
   async streamEmployeesToExcel(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       search?: string;
       status?: string;

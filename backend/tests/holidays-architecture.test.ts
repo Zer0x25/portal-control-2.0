@@ -25,7 +25,7 @@ function inspect(source: string, file: string, name = "holidays"): string[] {
     if (
       application &&
       !resolved.startsWith(applicationRoot + path.sep) &&
-      !(name === "auth" && resolved === path.join(src, "utils/AppError"))
+      !(["auth", "employees"].includes(name) && resolved === path.join(src, "utils/AppError"))
     ) {
       violations.push(`application dependency: ${target}`);
     }
@@ -208,5 +208,45 @@ describe("Users projection module boundaries", () => {
         "users",
       ),
     ).toContain("private module import: ../modules/users/application/publicUser");
+  });
+});
+describe("Employees module boundaries", () => {
+  it("enumerates a pure application and requires public index consumers", () => {
+    const files = filesUnder(src).filter(
+      (file) => !file.includes(`${path.sep}generated${path.sep}`),
+    );
+    const applicationFiles = filesUnder(path.join(src, "modules/employees/application"));
+    expect(applicationFiles.length).toBeGreaterThan(0);
+    expect(
+      files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "employees")),
+    ).toEqual([]);
+    const config = ts.readConfigFile(
+      path.resolve(__dirname, "../tsconfig.modules.json"),
+      ts.sys.readFile,
+    );
+    const parsed = ts.parseJsonConfigFileContent(
+      config.config,
+      ts.sys,
+      path.resolve(__dirname, ".."),
+    );
+    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
+  });
+  it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
+    "rejects employees application dependency/effect: %s",
+    (source) => {
+      expect(
+        inspect(source, path.join(src, "modules/employees/application/fixture.ts"), "employees")
+          .length,
+      ).toBeGreaterThan(0);
+    },
+  );
+  it("rejects private employees imports", () => {
+    expect(
+      inspect(
+        'import { createEmployeeFlows } from "../modules/employees/application/flows";',
+        path.join(src, "services/fixture.ts"),
+        "employees",
+      ),
+    ).toContain("private module import: ../modules/employees/application/flows");
   });
 });

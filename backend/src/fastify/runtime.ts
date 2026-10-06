@@ -1,3 +1,4 @@
+import { employeeFlows } from "../services/employeeFlows";
 import { userService } from "../services/UserService";
 import { authFlows } from "../services/authFlows";
 import { inspectLoginFailures } from "../services/loginFailures";
@@ -17,6 +18,13 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
       users: userService,
+      employees: {
+        ...employeeFlows,
+        exportExcel: async (stream, filters) => {
+          const { streamExportService } = await import("../services/export/StreamExportService");
+          await streamExportService.streamEmployeesToExcel(stream, filters);
+        },
+      },
       auth: { flows: authFlows, inspectFailures: inspectLoginFailures },
       health: HealthService,
       maintenance: () =>
