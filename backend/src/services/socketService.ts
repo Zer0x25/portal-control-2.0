@@ -5,6 +5,7 @@ export class SocketService {
   private static io: SocketIOServer | null = null;
 
   public static initialize(httpServer: HTTPServer): SocketIOServer {
+    if (this.io) throw new Error("SocketService already initialized");
     this.io = new SocketIOServer(httpServer, {
       cors: {
         origin: true, // Matches main CORS policy (reflects request origin)
@@ -31,6 +32,18 @@ export class SocketService {
 
     console.warn("🔌 Socket.io service initialized.");
     return this.io;
+  }
+
+  public static async close(): Promise<void> {
+    const io = this.io;
+    if (!io) return;
+    this.io = null;
+    await new Promise<void>((resolve, reject) =>
+      io.close((error) => {
+        if (error && error.message !== "Server is not running.") reject(error);
+        else resolve();
+      }),
+    );
   }
 
   public static getInstance(): SocketIOServer {

@@ -94,8 +94,11 @@ export function createFastifyRuntime(config?: FastifyConfig) {
           : null,
       auditError: (error, request, category) => auditService.logError(error, request, category),
       close: async () => {
-        if (exports) await (await exports).streamExportService.close();
-        await closeDatabase();
+        try {
+          if (exports) await (await exports).streamExportService.close();
+        } finally {
+          await closeDatabase();
+        }
       },
     },
     config ?? {

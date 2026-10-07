@@ -49,6 +49,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-pweb3_staging}
+      AUTH_TYPE: scram-sha-256
       POOL_MODE: transaction
       MAX_CLIENT_CONN: ${PGB_MAX_CLIENT_CONN:-300}
       DEFAULT_POOL_SIZE: ${PGB_DEFAULT_POOL_SIZE:-25}
@@ -92,6 +93,7 @@ services:
       EMAIL_USER: ${EMAIL_USER:-}
       EMAIL_PASS: ${EMAIL_PASS:-}
       DISABLE_INTEGRITY_AUDIT: ${DISABLE_INTEGRITY_AUDIT:-false}
+      DISABLE_HOLIDAY_AUTOSYNC: ${DISABLE_HOLIDAY_AUTOSYNC:-false}
       BACKUP_ENABLED: ${BACKUP_ENABLED:-false}
       BACKUP_PATH: /app/backups
     entrypoint: ["tini", "-s", "--"]

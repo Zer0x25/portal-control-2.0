@@ -440,3 +440,25 @@ Deudas 023: reset TRUNCATE CASCADE borra users aunque informa preservedUser,
 recrea admin con credenciales fijas heredadas y conserva jobs; operaciones y jobs
 no coordinan bloqueo distribuido, watchdog no cancela motor, restart dev toca
 index.ts. Ver specs/023-fastify-operaciones-admin/spec.md antes de cutover.
+
+Runtime integrado (024): modules/runtime/index.ts exporta lifecycle puro con
+puertos de timers y tareas; strict y guard de arquitectura. HTTP-only factory
+no inicia sockets/jobs; fastify/main.ts opta por integrateFastifyRuntime.
+Express y Fastify comparten runtimeJobs, huella validada antes de locks,
+autocierre inicial/5 min, scheduler nocturno único y drenaje antes de pools.
+refreshScheduler no vuelve a inicializar mantenimiento ni autocierre horario.
+Seeder shutdown espera workers y operaciones aún vivas tras timeout, conserva
+running para resume; no iniciar dos workers del mismo job en un proceso.
+RuntimeHost atiende SIGINT/SIGTERM y restart toca el entrypoint activo en dev.
+SocketService tiene propietario único/close; legacy acepta conexión sin sesión,
+query userId elige sala y broadcast es global: deuda bloqueante antes de 025.
+OpenAPI dist usa docs/swagger.json copiado en Docker; SDK sin cambios.
+Override compose.fastify-staging.yaml es opt-in, producción/base siguen Express.
+
+024 preserva JSON vacío como undefined antes de schema, pero usa parser Fastify
+nativo seguro para JSON no vacío (proto/constructor) y conserva bodyLimit por ruta.
+Swagger HTML/JS/CSS declaran UTF-8; probar render real, 200 de assets no basta.
+Carga staging renueva Usuario fuera de VUs sin cambiar TTL, archivo privado con
+reemplazo atómico/limpieza y ensure moderno exige todo HTTP 200 + tráfico no vacío.
+La suite e2e comparte admin y puede evictar sesiones en paralelo; registrar perfil
+workers=1 y no relajar presupuestos de auth para resolver interferencia del harness.

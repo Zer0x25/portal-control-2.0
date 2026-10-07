@@ -113,6 +113,14 @@ export function buildFastifyApp(
     exposeHeadRoutes: false,
     routerOptions: { ignoreTrailingSlash: true },
   });
+  // Express accepts an empty JSON body; keep required-body validation at the route.
+  const jsonParser = app.getDefaultJsonParser("error", "error");
+  app.removeContentTypeParser("application/json");
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
+    const json = typeof body === "string" ? body : body.toString("utf8");
+    if (json.length === 0) return done(null, undefined);
+    jsonParser(request, json, done);
+  });
   const manifest: RouteEntry[] = [];
   const result = Object.assign(app, { routeManifest: manifest });
   app.decorateRequest("user", undefined);

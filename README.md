@@ -324,3 +324,11 @@ permisos y límite export compartido: [resultado](specs/021-fastify-importacion-
 Migración Fastify 022 (auditoría): [resultado](specs/022-fastify-auditoria/result.md).
 
 Migración Fastify 023 (admin/mantenimiento): [resultado](specs/023-fastify-operaciones-admin/result.md).
+
+El [spec 024](specs/024-fastify-runtime-integrado/spec.md) integra el runtime candidato:
+`cd backend && npm run dev:fastify` (Node 26) inicia HTTP, Socket.IO y jobs con cierre
+SIGINT/SIGTERM. `npm run dev` conserva Express y usa el mismo runner.
+Para ensayo por gateway, combinar `compose.staging.yaml` con
+`compose.fastify-staging.yaml` y un env-file dedicado; el override cambia solo el
+entrypoint candidato. Omitirlo recupera Express. Socket conserva su política legacy
+sin autenticación; revisar deudas del spec antes del cutover 025.

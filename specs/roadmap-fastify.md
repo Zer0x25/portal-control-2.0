@@ -1,6 +1,6 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-06. Estado: 013–023 implementadas y validadas localmente. 024–025 son borradores.
+Fecha: 2026-10-07. Estado: 013–024 validadas y 025 borrador.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
@@ -26,7 +26,7 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; quedan dos tras la spec 023. El orden es propuesto y podrá
+la ruta comprende trece specs incluyendo 013; queda una tras la spec 024. El orden es propuesto y podrá
 ajustarse por las dependencias que revele cada inventario.
 
 ## Condición de avance
@@ -59,7 +59,7 @@ Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/
 [resultado](021-fastify-importacion-exportacion/result.md).
 022 añade seis rutas de auditoría: [resultado](022-fastify-auditoria/result.md).
 023 añade 21 rutas admin/maintenance: [resultado](023-fastify-operaciones-admin/result.md).
-Siguiente entrega: 024 (runtime integrado).
+Siguiente entrega: 025 (seguridad y deudas previas al cambio de servidor principal).
 Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
 y el scope de assignments sin vínculo/para quiosco, registrados en 015.
 
@@ -96,3 +96,9 @@ de producto antes de 025; ALS/direct transaction sí se verifica concurrentement
 ruta compress=false en Fastify. Caracteriza reset CASCADE que borra users pese a
 preservedUser, admin con contraseña fija y jobs retenidos, watchdog sin cancelación
 y estado local; coordinar operaciones/jobs y redacción de secretos antes de 025.
+
+024 unifica runner, scheduler, sockets y cierre de recursos. Mantiene Express como
+principal; override opt-in para ensayos Fastify. PgBouncer usa AUTH_TYPE SCRAM
+explícito tras fallo reproducido; no desplegar compose de producción desde esta
+entrega. Socket sin auth/salas por query y broadcasts globales deben resolverse
+antes de 025. Ver [resultado 024](024-fastify-runtime-integrado/result.md).

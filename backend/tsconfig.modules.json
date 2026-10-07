@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.holidays.json",
   "include": [
+    "src/modules/runtime/**/*.ts",
     "src/modules/admin/**/*.ts",
     "src/modules/maintenance/**/*.ts",
     "src/modules/audit/**/*.ts",

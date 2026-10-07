@@ -1,0 +1,12 @@
+# Candidate runtime rehearsal; always combine with compose.staging.yaml and a dedicated env-file.
+services:
+  backend:
+    command: >
+      sh -c "echo '>>> [STAGING] Aplicando migraciones (conexion directa)...' &&
+      DATABASE_URL=$${DIRECT_URL} npx prisma migrate deploy &&
+      echo '>>> [STAGING] Ejecutando seed (idempotente, conexion directa)...' &&
+      DATABASE_URL=$${DIRECT_URL} npx prisma db seed &&
+      echo '>>> [STAGING] Servidor iniciando (via PgBouncer)...' &&
+      npm run start:fastify"
+    environment:
+      DISABLE_HOLIDAY_AUTOSYNC: "true"

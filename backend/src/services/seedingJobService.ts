@@ -3,6 +3,7 @@ import prisma from "./db";
 import { requestContext } from "../utils/context";
 import { seedingEngine as seedingService } from "./seeder/SeederEngine";
 import { SocketService } from "./socketService";
+import { logger } from "../utils/logger";
 import { toCaughtError } from "../utils/caughtError";
 
 type Phase2Config = {
@@ -32,6 +33,17 @@ const toJsonColumn = <T extends object>(value: T): Prisma.InputJsonValue => valu
  */
 const fromJsonColumn = <T extends object>(value: Prisma.JsonValue): T => value as T;
 
+let shuttingDown = false;
+const workers = new Map<string, Promise<void>>();
+const operations = new Set<Promise<unknown>>();
+function trackOperation<T>(promise: Promise<T>): Promise<T> {
+  operations.add(promise);
+  void promise.then(
+    () => operations.delete(promise),
+    () => operations.delete(promise),
+  );
+  return promise;
+}
 const RUNNING = new Map<string, boolean>();
 const JOB_TYPE = "MARKINGS_PHASE2";
 const phase2DayTimeoutMs = Math.max(
@@ -211,7 +223,33 @@ export const seedingJobService = {
     for (const j of jobs) void this.run(j.id);
   },
 
-  async run(jobId: string) {
+  async shutdown() {
+    shuttingDown = true;
+    await Promise.all(workers.values());
+    await Promise.allSettled(operations);
+  },
+
+  openRuntime() {
+    shuttingDown = false;
+  },
+
+  run(jobId: string): Promise<void> {
+    if (shuttingDown) return Promise.resolve();
+    const current = workers.get(jobId);
+    if (current) return current;
+    const pending = this.runWorker(jobId)
+      .catch((error) => {
+        logger.error("Seeding worker failed", error, { jobId });
+      })
+      .finally(() => {
+        workers.delete(jobId);
+        RUNNING.delete(jobId);
+      });
+    workers.set(jobId, pending);
+    return pending;
+  },
+
+  async runWorker(jobId: string) {
     if (RUNNING.get(jobId)) return;
     RUNNING.set(jobId, true);
 
@@ -246,6 +284,7 @@ export const seedingJobService = {
           chunkStart < config.days;
           chunkStart += PARALLEL_DAYS
         ) {
+          if (shuttingDown) return;
           const fresh = await prisma.seedingJob.findUnique({ where: { id: jobId } });
           if (!fresh || fresh.status === "paused" || fresh.status === "stopped") break;
 
@@ -259,11 +298,13 @@ export const seedingJobService = {
               (async () => {
                 try {
                   const createdCount = await withTimeout(
-                    seedingService.seedHistoryForDate(
-                      date,
-                      ((config.leaveRatio || 0) / 100) * 0.4,
-                      undefined,
-                      context,
+                    trackOperation(
+                      seedingService.seedHistoryForDate(
+                        date,
+                        ((config.leaveRatio || 0) / 100) * 0.4,
+                        undefined,
+                        context,
+                      ),
                     ),
                     phase2DayTimeoutMs,
                     `Timeout generando marcaciones del dia ${day + 1} (${phase2DayTimeoutMs}ms).`,
@@ -319,6 +360,7 @@ export const seedingJobService = {
         }
       });
 
+      if (shuttingDown) return;
       const final = await prisma.seedingJob.findUnique({ where: { id: jobId } });
       if (final?.status === "paused" || final?.status === "stopped") {
         RUNNING.set(jobId, false);

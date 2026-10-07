@@ -26,8 +26,10 @@ RUN apk add --no-cache postgresql-client curl tini
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
+# Dependencies change less often than code: preserve this layer across runtime edits.
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/docs/swagger.json ./docs/swagger.json
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
 # Prisma 7: el CLI evalua prisma.config.ts en CUALQUIER comando (migrate,

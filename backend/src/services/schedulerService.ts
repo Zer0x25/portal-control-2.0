@@ -1,7 +1,8 @@
 ﻿import prisma from "./db";
 import { ExportService } from "./export/ExportService";
 import { EmailService } from "./EmailService";
-import { processAutoClosures } from "./autoCloseService";
+import { createRuntimeLifecycle } from "../modules/runtime";
+import { logger } from "../utils/logger";
 import { closureValidationService } from "./closureValidationService";
 import { holidayService } from "./HolidayService";
 import { integrityMaintenanceService } from "./integrityMaintenanceService";
@@ -13,50 +14,36 @@ const emailService = new EmailService();
 const exportService = new ExportService();
 const disableIntegrityAudit = process.env.DISABLE_INTEGRITY_AUDIT === "true";
 
-// System Maintenance Job (Runs daily at 00:00)
-function startMaintenanceJobs() {
-  const scheduleNextRun = () => {
-    const now = new Date();
-    const nextRun = new Date(now);
-    nextRun.setDate(now.getDate() + 1);
-    nextRun.setHours(0, 0, 0, 0);
-
-    const msUntilNextRun = nextRun.getTime() - now.getTime();
-    console.warn(
-      `📅 Siguiente mantenimiento programado para las 00:00 (${Math.round(msUntilNextRun / 3600000)}h restantes)`,
-    );
-
-    setTimeout(async () => {
-      await runMaintenance();
-      scheduleNextRun();
-    }, msUntilNextRun);
-  };
-
-  // Run immediately on startup to ensure data integrity
-  runMaintenance();
-
-  // Initialize the cycle
-  scheduleNextRun();
+let lifecycle = newLifecycle();
+function newLifecycle() {
+  return createRuntimeLifecycle({
+    after: (ms, task) => {
+      const id = setTimeout(task, ms);
+      return () => clearTimeout(id);
+    },
+    every: (ms, task) => {
+      const id = setInterval(task, ms);
+      return () => clearInterval(id);
+    },
+    reportError: (error) => logger.error("Scheduled task failed", error),
+  });
 }
-
-/**
- * Hourly Auto-Closure Job
- * Ensures shifts exceeding 14h are closed promptly.
- */
-function startAutoCloseJob() {
-  const HOURLY_INTERVAL = 60 * 60 * 1000;
-  console.warn("🕒 Inicializando job de cierre automático de jornadas (Frecuencia: 1h)...");
-
-  setInterval(async () => {
-    try {
-      await processAutoClosures();
-    } catch (error) {
-      console.error("Error in hourly auto-closure job:", error);
-    }
-  }, HOURLY_INTERVAL);
-
-  // Run once on startup
-  processAutoClosures().catch((err) => console.error("Initial auto-close failed:", err));
+let initialized = false;
+let stopped = false;
+let revision = 0;
+function startMaintenanceJobs() {
+  void lifecycle.run(runMaintenance);
+  const scheduleNext = () => {
+    const now = new Date();
+    const next = new Date(now);
+    next.setDate(now.getDate() + 1);
+    next.setHours(0, 0, 0, 0);
+    lifecycle.after(next.getTime() - now.getTime(), async () => {
+      await runMaintenance();
+      scheduleNext();
+    });
+  };
+  scheduleNext();
 }
 
 async function runMaintenance() {
@@ -70,7 +57,7 @@ async function runMaintenance() {
     console.warn("🛠️ Ejecutando tareas de mantenimiento del sistema...");
     await integrityMaintenanceService.runNightlyIntegrityMaintenance();
 
-    // 2. Daily Maintenance (Shift auto-closure is now handled by an hourly job)
+    // Auto-closure belongs to the shared runtime runner (5 minutes, distributed lock).
 
     // 3. Proactive closure audit
     if (disableIntegrityAudit) {
@@ -105,8 +92,10 @@ const activeJobs: Map<string, ScheduledReportJob> = new Map();
  */
 export async function initializeScheduler(): Promise<void> {
   console.warn("📅 Inicializando scheduler de reportes...");
+  if (initialized) return;
+  initialized = true;
+  stopped = false;
   startMaintenanceJobs();
-  startAutoCloseJob();
 
   try {
     const reports = await prisma.scheduledReport.findMany({
@@ -143,14 +132,22 @@ function getIntervalMs(frequency: string): number {
  * Schedule a single report using setInterval
  */
 export function scheduleReport(reportId: string, frequency: string): boolean {
+  if (stopped) return false;
   try {
     // Cancel existing job if any
     cancelReport(reportId);
 
     const intervalMs = getIntervalMs(frequency);
 
+    let busy = false;
     const intervalId = setInterval(async () => {
-      await executeReport(reportId);
+      if (busy || stopped) return;
+      busy = true;
+      try {
+        await lifecycle.run(() => executeReport(reportId));
+      } finally {
+        busy = false;
+      }
     }, intervalMs);
 
     activeJobs.set(reportId, { reportId, intervalId });
@@ -272,6 +269,8 @@ function calculateNextRun(frequency: string): Date {
  * Refresh all scheduled jobs (call after report updates)
  */
 export async function refreshScheduler(): Promise<void> {
+  if (stopped) return;
+  const current = ++revision;
   // Stop all current jobs
   for (const [, job] of activeJobs) {
     clearInterval(job.intervalId);
@@ -279,7 +278,23 @@ export async function refreshScheduler(): Promise<void> {
   activeJobs.clear();
 
   // Reinitialize
-  await initializeScheduler();
+  try {
+    const reports = await prisma.scheduledReport.findMany({ where: { isActive: true } });
+    if (stopped || current !== revision) return;
+    for (const report of reports) scheduleReport(report.id, report.frequency);
+  } catch (error) {
+    logger.error("Error refreshing scheduler", error);
+  }
+}
+
+export async function stopScheduler(): Promise<void> {
+  stopped = true;
+  revision++;
+  for (const job of activeJobs.values()) clearInterval(job.intervalId);
+  activeJobs.clear();
+  await lifecycle.stop(async () => {});
+  initialized = false;
+  lifecycle = newLifecycle();
 }
 
 /**

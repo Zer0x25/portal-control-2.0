@@ -828,3 +828,35 @@ it("admin applies shared 1000/IP/15-minute budget before auth and leaves mainten
       .statusCode,
   ).toBe(401);
 });
+
+it("accepts an explicitly JSON but empty DELETE body like Express without weakening required bodies", async () => {
+  const { app, token } = fixture();
+  const authorization = "Bearer " + token("admin", "Administrador");
+  const removed = await app.inject({
+    method: "DELETE",
+    url: "/api/users/a-user",
+    headers: { authorization, "content-type": "application/json" },
+  });
+  expect(removed.statusCode).toBe(204);
+  const missing = await app.inject({
+    method: "POST",
+    url: "/api/users",
+    headers: { authorization, "content-type": "application/json" },
+  });
+  expect(missing.statusCode).toBe(400);
+});
+
+it("keeps prototype poisoning rejection in the shared JSON parser", async () => {
+  const { app, token } = fixture();
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/users",
+    headers: {
+      authorization: "Bearer " + token("admin", "Administrador"),
+      "content-type": "application/json",
+    },
+    payload: '{"__proto__":{"isAdmin":true}}',
+  });
+  expect(response.statusCode).toBe(400);
+  expect(({} as Record<string, unknown>).isAdmin).toBeUndefined();
+});

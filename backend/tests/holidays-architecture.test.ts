@@ -364,6 +364,7 @@ describe.each([
   "audit",
   "admin",
   "maintenance",
+  "runtime",
   "notes",
   "configs",
 ])("%s module boundaries", (name) => {

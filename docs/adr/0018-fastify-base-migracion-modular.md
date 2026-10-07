@@ -131,3 +131,8 @@ presupuesto admin 1000/IP/15 min y exclusiones maintenance/global. Corrige el
 filtro Express de compresión por path relativo y caracteriza reset CASCADE/jobs
 con BD desechable. No cambia servidor principal ni ejecuta restore/restart real.
 Ver [resultado 023](../../specs/023-fastify-operaciones-admin/result.md).
+
+El [spec 024](../../specs/024-fastify-runtime-integrado/spec.md) integra sockets,
+OpenAPI y el ciclo de vida compartido de jobs/pools, con override staging opt-in.
+Express conserva el arranque principal. El scheduler evita timers duplicados y
+shutdown drena workers; seguridad de sockets legacy se registra antes de 025.
