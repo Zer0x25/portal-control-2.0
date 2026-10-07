@@ -42,6 +42,7 @@ export class KpiStatsService {
     startDate: Date,
     endDate: Date,
     context: SchedulingContext,
+    sourceRevision: string,
     preFetchedRecords?: Map<string, TimeRecord[]>,
     preFetchedStats?: Map<string, MonthlyEmployeeStats>,
     preFetchedLockConfig?: string | null,
@@ -94,10 +95,12 @@ export class KpiStatsService {
         const monthKey = `${y}-${String(m).padStart(2, "0")}`;
         let cached = preFetchedStats?.get(`${emp.id}_${monthKey}`);
 
-        let dailyData = cached ? readMonthlyBreakdown(cached.dailyBreakdown, y, m) : null;
+        let dailyData = cached
+          ? readMonthlyBreakdown(cached.dailyBreakdown, y, m, sourceRevision)
+          : null;
         if (!dailyData) {
-          cached = await this.ensureMonthlyCache(emp.id, y, m, emp, context);
-          dailyData = readMonthlyBreakdown(cached.dailyBreakdown, y, m);
+          cached = await this.ensureMonthlyCache(emp.id, y, m, emp, context, sourceRevision);
+          dailyData = readMonthlyBreakdown(cached.dailyBreakdown, y, m, sourceRevision);
         }
 
         if (!dailyData) throw new Error("Invalid materialized monthly KPI cache");
@@ -168,9 +171,11 @@ export class KpiStatsService {
     month: number,
     emp: Employee,
     globalContext: SchedulingContext,
+    sourceRevision: string,
   ): Promise<MonthlyEmployeeStats> {
     const existing = await kpiCache.getMonthlyStats(employeeId, year, month);
-    if (existing && readMonthlyBreakdown(existing.dailyBreakdown, year, month)) return existing;
+    if (existing && readMonthlyBreakdown(existing.dailyBreakdown, year, month, sourceRevision))
+      return existing;
 
     // Calculate using Period Stats logic for ONE ONE full month
     const startDate = new Date(Date.UTC(year, month - 1, 1));
@@ -199,7 +204,7 @@ export class KpiStatsService {
       absenceCount: calculated.filter((d) => d.status === "Ausente").length,
       vacationDays: calculated.filter((d) => d.status === "Vacaciones").length,
       medicalLeaveDays: calculated.filter((d) => d.status === "Licencia Médica").length,
-      dailyBreakdown: serializeMonthlyBreakdown(calculated),
+      dailyBreakdown: serializeMonthlyBreakdown(calculated, sourceRevision),
     };
 
     const monthKey = `${year}-${String(month).padStart(2, "0")}`;

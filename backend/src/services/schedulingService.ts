@@ -125,6 +125,7 @@ class SchedulingService {
         prisma.employee.findUnique({ where: { id: employeeId } }),
         prisma.assignedShift.findMany({
           where: {
+            isDeleted: false,
             employeeId,
             startDate: { lte: targetDateString },
             OR: [{ endDate: null }, { endDate: { gte: targetDateString } }],
@@ -132,6 +133,7 @@ class SchedulingService {
         }),
         prisma.leaveRecord.findMany({
           where: {
+            isDeleted: false,
             employeeId,
             startDate: { lte: targetDateString },
             endDate: { gte: targetDateString },
@@ -315,6 +317,7 @@ class SchedulingService {
     const [assignedShifts, leaves, holidays, shiftPatternsRaw] = await Promise.all([
       prisma.assignedShift.findMany({
         where: {
+          isDeleted: false,
           employeeId: { in: employeeIds },
           startDate: { lte: endDateStr },
           OR: [{ endDate: null }, { endDate: { gte: startDateStr } }],
@@ -322,6 +325,7 @@ class SchedulingService {
       }),
       prisma.leaveRecord.findMany({
         where: {
+          isDeleted: false,
           employeeId: { in: employeeIds },
           startDate: { lte: endDateStr },
           endDate: { gte: startDateStr },

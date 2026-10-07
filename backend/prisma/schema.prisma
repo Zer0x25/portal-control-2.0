@@ -364,3 +364,11 @@ model SystemLock {
   @@index([expiresAt])
   @@map("system_locks")
 }
+
+// Singleton seeded by migration; its revision changes in the source transaction.
+model KpiSourceRevision {
+  id       Int    @id
+  revision BigInt @default(0)
+
+  @@map("kpi_source_revision")
+}

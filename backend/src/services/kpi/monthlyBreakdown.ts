@@ -1,9 +1,9 @@
 import type { DailyMetric } from "./types";
 
-// Version 1 guarantees full-month scheduling context. Legacy arrays do not.
-const CACHE_VERSION = 1;
-export const serializeMonthlyBreakdown = (days: DailyMetric[]): string =>
-  JSON.stringify({ version: CACHE_VERSION, days });
+// Version 2 also binds the complete month to the generation read before its inputs.
+const CACHE_VERSION = 2;
+export const serializeMonthlyBreakdown = (days: DailyMetric[], sourceRevision: string): string =>
+  JSON.stringify({ version: CACHE_VERSION, sourceRevision, days });
 
 const numericFields = [
   "scheduledHours",
@@ -35,12 +35,18 @@ export function readMonthlyBreakdown(
   raw: string,
   year: number,
   month: number,
+  sourceRevision: string,
 ): DailyMetric[] | null {
   try {
     const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
     const envelope = parsed as Record<string, unknown>;
-    if (envelope.version !== CACHE_VERSION || !Array.isArray(envelope.days)) return null;
+    if (
+      envelope.version !== CACHE_VERSION ||
+      envelope.sourceRevision !== sourceRevision ||
+      !Array.isArray(envelope.days)
+    )
+      return null;
     const expectedDays = new Date(Date.UTC(year, month, 0)).getUTCDate();
     if (envelope.days.length !== expectedDays) return null;
     const prefix = `${year}-${String(month).padStart(2, "0")}`;

@@ -28,7 +28,12 @@ export class KpiReportService {
     this.kpiFormattingService = new KpiFormattingService();
   }
 
-  async prepareKpiBulkData(employees: Employee[], startDate: string, endDate: string) {
+  async prepareKpiBulkData(
+    employees: Employee[],
+    startDate: string,
+    endDate: string,
+    sourceRevision: string,
+  ) {
     const tIds = employees.map((e) => e.id);
     // Cache misses materialize whole months even for a one-day request.
     const contextStart = `${startDate.slice(0, 7)}-01`;
@@ -87,6 +92,7 @@ export class KpiReportService {
     }
 
     return {
+      sourceRevision,
       context: context as SchedulingContext,
       timeRecordsMap,
       statsCacheMap,
@@ -96,13 +102,14 @@ export class KpiReportService {
 
   async getKpiSummary(filters: KpiFilters) {
     const { startDate, endDate } = this.resolveInclusiveRange(filters);
+    const sourceRevision = await kpiCache.getSourceRevision();
     const employees = await this.getEmployees(filters);
 
     if (employees.length === 0) {
       return { kpis: {}, kpiDetails: {} };
     }
 
-    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate);
+    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate, sourceRevision);
     const allEmpStats = await this.calculateAllPeriodStats(employees, startDate, endDate, bulkData);
 
     const summary = this.kpiAggregationService.createSummaryAccumulator();
@@ -132,11 +139,12 @@ export class KpiReportService {
 
   async getDetailedReport(filters: KpiFilters) {
     const { startDate, endDate } = this.resolveInclusiveRange(filters);
+    const sourceRevision = await kpiCache.getSourceRevision();
     const employees = await this.getEmployees(filters);
 
     if (employees.length === 0) return { summary: [], details: {} };
 
-    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate);
+    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate, sourceRevision);
     const allEmpStats = await this.calculateAllPeriodStats(employees, startDate, endDate, bulkData);
 
     for (let idx = 0; idx < allEmpStats.length; idx++) {
@@ -351,6 +359,7 @@ export class KpiReportService {
     startDate: string,
     endDate: string,
     bulkData: {
+      sourceRevision: string;
       context: SchedulingContext;
       timeRecordsMap: Map<string, TimeRecord[]>;
       statsCacheMap: Map<string, MonthlyEmployeeStats>;
@@ -369,6 +378,7 @@ export class KpiReportService {
             new Date(startDate),
             new Date(endDate),
             bulkData.context,
+            bulkData.sourceRevision,
             bulkData.timeRecordsMap,
             bulkData.statsCacheMap,
             bulkData.lockConfigValue,

@@ -2,6 +2,11 @@ import prisma from "../db";
 import { getChileDateISO } from "../../utils/timeUtils";
 
 export class KpiCache {
+  async getSourceRevision(): Promise<string> {
+    const source = await prisma.kpiSourceRevision.findUniqueOrThrow({ where: { id: 1 } });
+    return source.revision.toString();
+  }
+
   /**
    * Checks if a specific month is locked (Accounting Close).
    * Optional pre-fetched systemConfig to avoid repeated DB calls.

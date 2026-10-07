@@ -21,6 +21,6 @@ duplicados, mes incorrecto y tipos inválidos. Integración Express/Fastify cons
 un solo día, verifica el mes materializado con turno/permiso/feriado posteriores,
 reutiliza ese resultado y reconstruye caché legacy/corrupta.
 
-Invalidación por cambios en marcajes, empleados, turnos, permisos y feriados sigue
-pendiente; requiere coordinar escrituras y materialización concurrentes. Este
-cambio tampoco altera cierre contable ni formatos horarios del host.
+Invalidación por cambios en fuentes y envelope con revisión se completan en
+[kpi-cache-invalidation](kpi-cache-invalidation.md). Este cambio no altera cierre
+contable ni formatos horarios del host.

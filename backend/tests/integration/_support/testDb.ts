@@ -2,7 +2,7 @@ import prisma from "../../../src/services/db";
 
 const TEST_DB_NAME = "pweb3_test";
 
-const NON_TRUNCATED_TABLES = new Set<string>(["_prisma_migrations"]);
+const NON_TRUNCATED_TABLES = new Set<string>(["_prisma_migrations", "kpi_source_revision"]);
 
 export async function assertConnectedToTestDb(): Promise<void> {
   const result = await prisma.$queryRawUnsafe<Array<{ db_name: string }>>(

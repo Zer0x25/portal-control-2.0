@@ -26,14 +26,23 @@ describe("Monthly KPI cache contract", () => {
     [2026, 12],
   ])("accepts a full %i-%i", (year, month) => {
     const rows = days(year, month);
-    expect(readMonthlyBreakdown(serializeMonthlyBreakdown(rows), year, month)).toEqual(rows);
+    expect(readMonthlyBreakdown(serializeMonthlyBreakdown(rows, "42"), year, month, "42")).toEqual(
+      rows,
+    );
   });
   it.each(["not-json", "null", "[]", "{}", '{"version":99,"days":[]}'])(
     "rejects legacy/corrupt %s",
     (raw) => {
-      expect(readMonthlyBreakdown(raw, 2026, 9)).toBeNull();
+      expect(readMonthlyBreakdown(raw, 2026, 9, "42")).toBeNull();
     },
   );
+  it("rejects an obsolete source generation and version 1", () => {
+    const rows = days(2026, 9);
+    expect(readMonthlyBreakdown(serializeMonthlyBreakdown(rows, "41"), 2026, 9, "42")).toBeNull();
+    expect(
+      readMonthlyBreakdown(JSON.stringify({ version: 1, days: rows }), 2026, 9, "42"),
+    ).toBeNull();
+  });
   it("rejects missing, duplicate, wrong-month and malformed days", () => {
     const rows = days(2026, 9);
     for (const invalid of [
@@ -44,7 +53,12 @@ describe("Monthly KPI cache contract", () => {
       rows.map((day, i) => (i ? day : null)),
     ]) {
       expect(
-        readMonthlyBreakdown(JSON.stringify({ version: 1, days: invalid }), 2026, 9),
+        readMonthlyBreakdown(
+          JSON.stringify({ version: 2, sourceRevision: "42", days: invalid }),
+          2026,
+          9,
+          "42",
+        ),
       ).toBeNull();
     }
   });

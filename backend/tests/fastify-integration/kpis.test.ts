@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
-import { prismaDirect } from "../../src/services/db";
+import { KpiStatsService } from "../../src/services/kpi/KpiStatsService";
+import { KpiCache } from "../../src/services/kpi/KpiCache";
+import { withDirectTransaction, prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { getChileDateISO } from "../../src/utils/timeUtils";
 import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
@@ -165,23 +167,153 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     ).toBe(400);
     expect(await prismaDirect.monthlyEmployeeStats.count()).toBe(0);
   });
-  it("materializes locked monthly cache and reuses it after source changes", async () => {
+  it("reuses unchanged monthly cache and refreshes it after source changes", async () => {
     const record = await seedRecord("2020-01-06");
     const first = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
     expect(first.status).toBe(200);
     expect(first.body.summary[0].totalHoursWorked).toBe(8);
     expect(await prismaDirect.monthlyEmployeeStats.count()).toBe(1);
+    const originalCache = await prismaDirect.monthlyEmployeeStats.findFirstOrThrow();
+    expect((await http("POST", "/api/kpis/detailed-report", range("2020-01-06"))).body).toEqual(
+      first.body,
+    );
+    expect((await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).updatedAt).toEqual(
+      originalCache.updatedAt,
+    );
     await prismaDirect.timeRecord.update({
       where: { id: record.id },
       data: { salida: "2020-01-06T22:00:00.000Z" },
     });
     const next = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
-    expect(next.body).toEqual(first.body);
+    expect(next.status).toBe(200);
+    expect(next.body.summary[0].totalHoursWorked).toBe(10);
     await prismaDirect.monthlyEmployeeStats.updateMany({ data: { dailyBreakdown: "not-json" } });
     const repaired = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
     expect(repaired.status).toBe(200);
     expect(repaired.body.summary[0].totalHoursWorked).toBe(10);
     expect(await prismaDirect.monthlyEmployeeStats.count()).toBe(1);
+  });
+  it("does not reuse a calculation that finishes after a committed source change", async () => {
+    const record = await seedRecord("2020-01-06");
+    const original = KpiStatsService.prototype.calculateRangeMetrics;
+    const spy = vi
+      .spyOn(KpiStatsService.prototype, "calculateRangeMetrics")
+      .mockImplementationOnce(async function (...args) {
+        const days = await original.apply(this, args);
+        // Deterministic interleaving: inputs computed, then source committed, then cache saved.
+        await prismaDirect.timeRecord.update({
+          where: { id: record.id },
+          data: { salida: "2020-01-06T22:00:00.000Z" },
+        });
+        return days;
+      });
+    try {
+      expect((await http("POST", "/api/kpis/detailed-report", range("2020-01-06"))).status).toBe(
+        200,
+      );
+      const stale = JSON.parse(
+        (await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).dailyBreakdown,
+      );
+      expect(stale.sourceRevision).not.toBe(await new KpiCache().getSourceRevision());
+      const next = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
+      expect(next.status).toBe(200);
+      expect(next.body.summary[0].totalHoursWorked).toBe(10);
+      const fresh = JSON.parse(
+        (await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).dailyBreakdown,
+      );
+      expect(fresh.sourceRevision).toBe(await new KpiCache().getSourceRevision());
+    } finally {
+      spy.mockRestore();
+    }
+  });
+  it("keeps the generation and cache valid when a source transaction rolls back", async () => {
+    const record = await seedRecord("2020-01-06");
+    const first = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
+    const revision = await new KpiCache().getSourceRevision();
+    const cache = await prismaDirect.monthlyEmployeeStats.findFirstOrThrow();
+    await expect(
+      withDirectTransaction(async (tx) => {
+        await tx.timeRecord.update({
+          where: { id: record.id },
+          data: { salida: "2020-01-06T22:00:00.000Z" },
+        });
+        throw new Error("test rollback");
+      }),
+    ).rejects.toThrow("test rollback");
+    expect(await new KpiCache().getSourceRevision()).toBe(revision);
+    expect((await http("POST", "/api/kpis/detailed-report", range("2020-01-06"))).body).toEqual(
+      first.body,
+    );
+    expect((await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).updatedAt).toEqual(
+      cache.updatedAt,
+    );
+  });
+  it("refreshes scheduling cache after pattern, assignment, leave, holiday and employee changes", async () => {
+    await prismaDirect.employee.create({ data: employee });
+    const date = "2020-01-20";
+    const fetchDay = async () => {
+      const response = await http("POST", "/api/kpis/detailed-report", range(date));
+      expect(response.status).toBe(200);
+      return response.body.details[employee.id][0];
+    };
+    expect((await fetchDay()).scheduledHours).toBe(0);
+    await prismaDirect.shiftPattern.create({
+      data: {
+        id: "revision-pattern",
+        name: "Daily",
+        cycleLengthDays: 1,
+        dailySchedules: JSON.stringify([
+          { dayIndex: 0, isOffDay: false, startTime: "09:00", endTime: "17:00", hours: 8 },
+        ]),
+      },
+    });
+    const assignment = await prismaDirect.assignedShift.create({
+      data: {
+        employeeId: employee.id,
+        shiftPatternId: "revision-pattern",
+        startDate: date,
+        endDate: date,
+      },
+    });
+    expect((await fetchDay()).scheduledHours).toBe(8);
+    await prismaDirect.shiftPattern.update({
+      where: { id: "revision-pattern" },
+      data: {
+        dailySchedules: JSON.stringify([
+          { dayIndex: 0, isOffDay: false, startTime: "09:00", endTime: "15:00", hours: 6 },
+        ]),
+      },
+    });
+    expect((await fetchDay()).scheduledHours).toBe(6);
+    const leave = await prismaDirect.leaveRecord.create({
+      data: {
+        employeeId: employee.id,
+        type: "Vacaciones",
+        startDate: date,
+        endDate: date,
+      },
+    });
+    expect((await fetchDay()).status).toBe("Vacaciones");
+    await prismaDirect.leaveRecord.update({ where: { id: leave.id }, data: { isDeleted: true } });
+    expect((await fetchDay()).scheduledHours).toBe(6);
+    const holiday = await prismaDirect.holiday.create({ data: { date, name: "Changed holiday" } });
+    expect((await fetchDay()).isHoliday).toBe(true);
+    await prismaDirect.holiday.delete({ where: { id: holiday.id } });
+    expect((await fetchDay()).isHoliday).toBe(false);
+    await prismaDirect.employee.update({
+      where: { id: employee.id },
+      data: { workdayType: "Artículo 22" },
+    });
+    expect((await fetchDay()).scheduledHours).toBe(0);
+    await prismaDirect.employee.update({
+      where: { id: employee.id },
+      data: { workdayType: "Ordinaria" },
+    });
+    await prismaDirect.assignedShift.update({
+      where: { id: assignment.id },
+      data: { isDeleted: true },
+    });
+    expect((await fetchDay()).scheduledHours).toBe(0);
   });
   it("materializes full-month context from a partial query and replaces legacy cache", async () => {
     await seedRecord("2020-01-06");
@@ -215,7 +347,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     expect((await http("POST", "/api/kpis/detailed-report", range("2020-01-06"))).status).toBe(200);
     const cache = await prismaDirect.monthlyEmployeeStats.findFirstOrThrow();
     const stored = JSON.parse(cache.dailyBreakdown);
-    expect(stored.version).toBe(1);
+    expect(stored.version).toBe(2);
     expect(stored.days).toHaveLength(31);
     expect(stored.days[19]).toMatchObject({ isoDate: "2020-01-20", scheduledHours: 8 });
     expect(stored.days[20].status).toBe("Vacaciones");
@@ -233,7 +365,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     expect(
       JSON.parse((await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).dailyBreakdown)
         .version,
-    ).toBe(1);
+    ).toBe(2);
   });
   it("returns 500 on actual cache write failure without inserting partial cache", async () => {
     await seedRecord("2020-01-06");
