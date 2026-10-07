@@ -2,7 +2,7 @@
 
 Seguimiento posterior a [025](spec.md), vinculado al [backlog](backlog.md).
 Cada tanda agrupa un área funcional con contrato correctivo, pruebas de fallos,
-paridad Express/Fastify, CI de ambos paquetes y un commit al cerrar la tanda.
+pruebas nativas Fastify, CI de ambos paquetes y un commit al cerrar la tanda.
 No crear nuevas specs de migración. No se hace push automático.
 
 1. Medidores y notas — completada. Contrato: [data-tools-consistency](data-tools-consistency.md).
@@ -52,6 +52,12 @@ No crear nuevas specs de migración. No se hace push automático.
    - Registro de promesas reales de admin y maintenance, independiente de la respuesta.
    - Admisión cerrada y drenaje antes de jobs, sockets y pools en ambos servidores.
    - Prueba de escritura real durante cierre y errores preservados para el consumidor.
+     Cuarto bloque: [consistencia de backup y restore](backup-restore-consistency.md).
+     Validación: 391 integración nativa, 562 unitarias/contrato y 280 frontend;
+     ambos CI, cobertura, SDK, docs, specs y secretos. Sin migración de BD.
+   - Restore atómico con rollback ante errores SQL y temporales propios.
+   - Publicación de backups verificados, limpieza de fallos y retención tolerante a errores.
+   - PostgreSQL 18.4 explícito y regresiones con motores reales en BD desechable.
      Pendientes: barrera universal del trabajo HTTP/jobs y coordinación distribuida
      reset/restore; exclusión de ejecuciones manuales/ocurrencias distintas entre procesos.
 

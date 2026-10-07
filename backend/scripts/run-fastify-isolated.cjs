@@ -44,6 +44,7 @@ async function main() {
       DISABLE_HOLIDAY_AUTOSYNC: "true",
       NODE_ENV: "test",
       BACKUP_ENABLED: "false",
+      BACKUP_DOCKER_CONTAINER: container,
       SENTRY_DSN: "",
     };
     let ready = false;

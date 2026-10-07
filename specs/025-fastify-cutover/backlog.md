@@ -47,3 +47,7 @@ y reset/restore distribuido permanecen pendientes.
 
 Prioridad resuelta antes de continuar tandas: [retiro definitivo de Express](express-retirement.md).
 Toda implementación posterior usa exclusivamente Fastify.
+
+Backup y restore corrigen atomicidad SQL, publicación y temporales en
+[consistencia de backup y restore](backup-restore-consistency.md); la coordinación
+distribuida permanece pendiente.
