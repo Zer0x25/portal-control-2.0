@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
@@ -248,7 +249,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
     expect(overlap.status).toBe(400);
     expect(await prismaDirect.assignedShift.count()).toBe(1);
   });
-  it("scopes linked Usuario calendar/assignments/matrix and explicitly rejects unlinked matrix", async () => {
+  it.each(["Usuario", "Kiosk_Employee"])("scopes assignments and calendar for %s", async (role) => {
     await setup();
     await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
     await prismaDirect.assignedShift.create({
@@ -259,7 +260,14 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
         endDate: plus(1),
       },
     });
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
+    if (role === "Usuario")
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+    if (role === "Kiosk_Employee")
+      token = jwt.sign(
+        { id: employee.id, username: "kiosk", role, employeeId: employee.id },
+        process.env.JWT_SECRET!,
+        { expiresIn: "5m" },
+      );
     const list = await http("GET", "/api/shifts/assignments?employeeId=foreign");
     expect(list.status).toBe(200);
     expect(list.body.data.map((a: { employeeId: string }) => a.employeeId)).toEqual([employee.id]);
@@ -290,6 +298,14 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
     expect(matrix.status).toBe(200);
     expect(Object.keys(matrix.body)).toEqual([employee.id]);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
+    if (role === "Kiosk_Employee")
+      token = jwt.sign({ id: employee.id, username: "kiosk", role }, process.env.JWT_SECRET!, {
+        expiresIn: "5m",
+      });
+    expect((await http("GET", "/api/shifts/assignments")).status).toBe(403);
+    expect(
+      (await http("GET", `/api/shifts/assignments?employeeId=${employee.id}&since=1`)).status,
+    ).toBe(403);
     expect(
       (
         await http("POST", "/api/shifts/schedule/matrix", {

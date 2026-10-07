@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
@@ -353,6 +354,66 @@ describe.each(["Express", "Fastify"] as const)("Spec 016 leaves/corrections on %
     ).toBeNull();
     expect(SocketService.emit).not.toHaveBeenCalled();
     expect(await prismaDirect.auditLog.count({ where: { action: "TIME_RECORD_EDITED" } })).toBe(0);
+  });
+  it("scopes kiosk correction reads and creation to its signed employee", async () => {
+    const own = await seedRequest();
+    await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
+    await seedRecord({ id: "foreign-record", employeeId: "foreign" });
+    const foreign = await prismaDirect.correctionRequest.create({
+      data: {
+        employeeId: "foreign",
+        timeRecordId: "foreign-record",
+        recordField: "salida",
+        originalValue: "",
+        requestedValue: correction().requestedValue,
+        reason: "Foreign",
+      },
+    });
+    token = jwt.sign(
+      { id: employee.id, username: "kiosk", role: "Kiosk_Employee", employeeId: employee.id },
+      process.env.JWT_SECRET!,
+      { expiresIn: "5m" },
+    );
+    for (const url of ["/api/corrections", "/api/corrections?since=1"]) {
+      const listed = await http("GET", url);
+      expect(listed.status).toBe(200);
+      expect(listed.body.total).toBe(1);
+      expect(listed.body.requests.map((r: { id: string }) => r.id)).toEqual([own.id]);
+    }
+    expect((await http("GET", "/api/corrections/stats")).body).toEqual({
+      pending: 1,
+      approved: 0,
+      rejected: 0,
+    });
+    expect((await http("GET", `/api/corrections/${own.id}/history`)).status).toBe(200);
+    expect((await http("GET", `/api/corrections/${foreign.id}/history`)).status).toBe(403);
+    expect(
+      (
+        await http(
+          "POST",
+          "/api/corrections",
+          correction({ employeeId: "foreign", timeRecordId: "foreign-record" }),
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await http("POST", "/api/corrections", correction({ timeRecordId: "foreign-record" })))
+        .status,
+    ).toBe(403);
+    expect((await http("POST", "/api/corrections", correction())).status).toBe(201);
+    token = jwt.sign(
+      { id: employee.id, username: "kiosk", role: "Kiosk_Employee" },
+      process.env.JWT_SECRET!,
+      { expiresIn: "5m" },
+    );
+    for (const url of [
+      "/api/corrections",
+      "/api/corrections/stats",
+      `/api/corrections/${own.id}/history`,
+    ]) {
+      expect((await http("GET", url)).status).toBe(403);
+    }
+    expect((await http("POST", "/api/corrections", correction())).status).toBe(403);
   });
   it("rejects without reason, then persists rejection and returns settled request idempotently", async () => {
     const request = await seedRequest();

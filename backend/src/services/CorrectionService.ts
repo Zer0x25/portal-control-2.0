@@ -35,8 +35,11 @@ export interface CreateCorrectionData {
   reason?: string;
 }
 
+const isSelfOnly = (user: { role: string }) =>
+  user.role === "Usuario" || user.role === "Kiosk_Employee";
+
 function requireLinkedEmployee(user: { role: string; employeeId?: string }) {
-  if (user.role === "Usuario" && !user.employeeId) {
+  if (isSelfOnly(user) && !user.employeeId) {
     throw new AppError("Usuario sin empleado vinculado.", 403, "FORBIDDEN");
   }
 }
@@ -65,7 +68,7 @@ export class CorrectionService {
     }
 
     // Role-based visibility: Users only see their own requests
-    if (user.role === "Usuario" && user.employeeId) {
+    if (isSelfOnly(user) && user.employeeId) {
       where.employeeId = user.employeeId;
     }
 
@@ -96,7 +99,7 @@ export class CorrectionService {
     user: { role: string; employeeId?: string; username?: string; id?: string },
   ) {
     // 1. Security Check: Ownership validation for regular users
-    if (user.role === "Usuario") {
+    if (isSelfOnly(user)) {
       const userEmpId = user.employeeId?.toString();
       const dataEmpId = data.employeeId?.toString();
 
@@ -439,7 +442,7 @@ export class CorrectionService {
     last30Days.setDate(last30Days.getDate() - 30);
 
     const baseWhere: Prisma.CorrectionRequestWhereInput = { isDeleted: false };
-    if (user.role === "Usuario" && user.employeeId) {
+    if (isSelfOnly(user) && user.employeeId) {
       baseWhere.employeeId = user.employeeId;
     }
 
@@ -478,7 +481,7 @@ export class CorrectionService {
       throw new Error("NOT_FOUND");
     }
 
-    if (user.role === "Usuario" && user.employeeId && request.employeeId !== user.employeeId) {
+    if (isSelfOnly(user) && user.employeeId && request.employeeId !== user.employeeId) {
       throw new AppError("Acceso denegado a historial de corrección", 403, "FORBIDDEN");
     }
 

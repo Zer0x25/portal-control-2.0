@@ -76,13 +76,14 @@ export function createShiftFlows<
       return { count: await deps.service.bulkPatterns(input) };
     },
     async assignments(query: ShiftQuery, user?: ShiftPrincipal) {
+      if (selfOnly(user) && !user?.employeeId) throw new ForbiddenError("Acceso denegado");
       return deps.service.assignments({
         page: query.page ? parseInt(query.page) : undefined,
         pageSize: query.pageSize ? parseInt(query.pageSize) : undefined,
         since: query.since,
         startDate: query.startDate,
         endDate: query.endDate,
-        employeeId: user?.role === "Usuario" ? user.employeeId : query.employeeId,
+        employeeId: selfOnly(user) ? user?.employeeId : query.employeeId,
         role: user?.role,
         showArchived: query.showArchived === "true",
       });

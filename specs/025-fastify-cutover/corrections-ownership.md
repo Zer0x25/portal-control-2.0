@@ -13,7 +13,7 @@ La caracterización histórica de 016 describe el comportamiento previo.
   pending dentro de withDirectTransaction. No modifica jornada ni emite eventos
   o auditorías de éxito. Rechazar sigue disponible para resolver esas solicitudes.
 - Roles administrativos conservan lecturas globales. Scope quiosco y assignments
-  permanecen pendientes; este cambio no decide su política.
+  se resuelven después en [self-only-scope](self-only-scope.md).
 
 Verificación: tests PostgreSQL/HTTP para Express y Fastify en
 backend/tests/fastify-integration/leavesCorrections.test.ts, incluidos acceso
