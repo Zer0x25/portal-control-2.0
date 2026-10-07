@@ -1,5 +1,6 @@
-import prisma from "./db";
-import { Prisma } from "../generated/prisma/client";
+import prisma, { withDirectTransaction } from "./db";
+import { redactAuditFields } from "../modules/audit";
+import { Prisma, type AuditLog } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { formatDateUTCISO } from "../utils/timeUtils";
@@ -68,10 +69,10 @@ class ShiftStartBlockedError extends AppError {
 }
 
 export class ShiftReportService {
-  private static async getNextFolio(): Promise<string> {
+  private static async getNextFolio(tx: Prisma.TransactionClient): Promise<string> {
     // IMPORTANT: folio is stored as string, so lexicographic ORDER BY is unsafe
     // (e.g., "999" sorts before "1000"). Use numeric MAX from PostgreSQL.
-    const rows = await prisma.$queryRaw<Array<{ max_folio: number | null }>>`
+    const rows = await tx.$queryRaw<Array<{ max_folio: number | null }>>`
       SELECT MAX(CAST(folio AS INTEGER)) AS max_folio
       FROM shift_reports
       WHERE folio ~ '^[0-9]+$'
@@ -243,210 +244,218 @@ export class ShiftReportService {
    * Creates or updates a shift report.
    */
   static async createOrUpdate(data: ShiftReportInput, actorUsername: string) {
-    const existing = await prisma.shiftReport.findUnique({
-      where: { id: data.id },
-    });
+    const auditEvents: AuditLog[] = [];
+    const result = await withDirectTransaction(async (tx) => {
+      // One transaction-scoped lock coordinates creates and updates across processes.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17017, 1)`;
+      const existing = data.id ? await tx.shiftReport.findUnique({ where: { id: data.id } }) : null;
+      const opens = (data.status ?? existing?.status ?? "open") === "open";
+      if (opens || !existing) {
+        const openShift = await tx.shiftReport.findFirst({
+          where: {
+            status: "open",
+            isDeleted: false,
+            ...(existing ? { id: { not: existing.id } } : {}),
+          },
+        });
+        if (openShift) return { blocked: openShift } as const;
+      }
+      const audit = async (entry: Parameters<typeof auditService.log>[0]) => {
+        const safe = redactAuditFields(entry.action, entry.details, entry.metadata);
+        const log = await tx.auditLog.create({
+          data: {
+            actorUsername: entry.actorUsername,
+            action: entry.action,
+            category: entry.category,
+            severity: entry.severity ?? "INFO",
+            outcome: entry.outcome ?? "SUCCESS",
+            details: safe.details as Prisma.InputJsonValue,
+            metadata: safe.metadata as Prisma.InputJsonValue,
+          },
+        });
+        auditEvents.push(log);
+      };
 
-    let report;
+      let report;
 
-    if (existing) {
-      // --- AUDIT GRANULAR CHANGES ---
-      const oldNormalized = this.normalizeEntries(
-        existing.logEntries,
-        existing.supplierEntries,
-        existing.updatedAt.getTime(),
-      );
-      const oldLogEntries = oldNormalized.logEntries;
-      const oldSupplierEntries = oldNormalized.supplierEntries;
+      if (existing) {
+        // --- AUDIT GRANULAR CHANGES ---
+        const oldNormalized = this.normalizeEntries(
+          existing.logEntries,
+          existing.supplierEntries,
+          existing.updatedAt.getTime(),
+        );
+        const oldLogEntries = oldNormalized.logEntries;
+        const oldSupplierEntries = oldNormalized.supplierEntries;
 
-      const newLogRaw =
-        typeof data.logEntries === "string"
-          ? data.logEntries
-          : JSON.stringify(Array.isArray(data.logEntries) ? data.logEntries : []);
-      const newSupplierRaw =
-        typeof data.supplierEntries === "string"
-          ? data.supplierEntries
-          : JSON.stringify(Array.isArray(data.supplierEntries) ? data.supplierEntries : []);
-      const newNormalized = this.normalizeEntries(newLogRaw, newSupplierRaw, Date.now());
-      const newLogEntries = newNormalized.logEntries;
-      const newSupplierEntries = newNormalized.supplierEntries;
+        const newLogRaw =
+          typeof data.logEntries === "string"
+            ? data.logEntries
+            : JSON.stringify(Array.isArray(data.logEntries) ? data.logEntries : []);
+        const newSupplierRaw =
+          typeof data.supplierEntries === "string"
+            ? data.supplierEntries
+            : JSON.stringify(Array.isArray(data.supplierEntries) ? data.supplierEntries : []);
+        const newNormalized = this.normalizeEntries(newLogRaw, newSupplierRaw, Date.now());
+        const newLogEntries = newNormalized.logEntries;
+        const newSupplierEntries = newNormalized.supplierEntries;
 
-      // Detect Logbook Changes
-      for (const entry of newLogEntries) {
-        const original = oldLogEntries.find((old) => old.id === entry.id);
-        if (!original) {
-          await auditService.log({
+        // Detect Logbook Changes
+        for (const entry of newLogEntries) {
+          const original = oldLogEntries.find((old) => old.id === entry.id);
+          if (!original) {
+            await audit({
+              actorUsername,
+              action: "LOG_ENTRY_ADDED",
+              category: "OPERATIONS",
+              severity: "INFO",
+              outcome: "SUCCESS",
+              details: { shiftFolio: data.folio, entryId: entry.id, annotation: entry.annotation },
+            });
+          } else if (JSON.stringify(original) !== JSON.stringify(entry)) {
+            await audit({
+              actorUsername,
+              action: "LOG_ENTRY_EDITED",
+              category: "OPERATIONS",
+              severity: "INFO",
+              outcome: "SUCCESS",
+              details: { shiftFolio: data.folio, entryId: entry.id },
+            });
+          }
+        }
+        for (const old of oldLogEntries) {
+          if (!newLogEntries.find((n) => n.id === old.id)) {
+            await audit({
+              actorUsername,
+              action: "LOG_ENTRY_DELETED",
+              category: "OPERATIONS",
+              severity: "INFO",
+              outcome: "SUCCESS",
+              details: { shiftFolio: data.folio, entryId: old.id },
+            });
+          }
+        }
+
+        // Detect Supplier Changes
+        for (const entry of newSupplierEntries) {
+          const original = oldSupplierEntries.find((old) => old.id === entry.id);
+          if (!original) {
+            await audit({
+              actorUsername,
+              action: "SUPPLIER_ENTRY_ADDED",
+              category: "OPERATIONS",
+              severity: "INFO",
+              outcome: "SUCCESS",
+              details: { shiftFolio: data.folio, entryId: entry.id, company: entry.company },
+            });
+          } else if (JSON.stringify(original) !== JSON.stringify(entry)) {
+            await audit({
+              actorUsername,
+              action: "SUPPLIER_ENTRY_EDITED",
+              category: "OPERATIONS",
+              severity: "INFO",
+              outcome: "SUCCESS",
+              details: { shiftFolio: data.folio, entryId: entry.id },
+            });
+          }
+        }
+        for (const old of oldSupplierEntries) {
+          if (!newSupplierEntries.find((n) => n.id === old.id)) {
+            await audit({
+              actorUsername,
+              action: "SUPPLIER_ENTRY_DELETED",
+              category: "OPERATIONS",
+              severity: "INFO",
+              outcome: "SUCCESS",
+              details: { shiftFolio: data.folio, entryId: old.id },
+            });
+          }
+        }
+
+        report = await tx.shiftReport.update({
+          where: { id: data.id },
+          data: {
+            folio: data.folio,
+            shiftName: data.shiftName,
+            responsibleUser: data.responsibleUser,
+            startTime: data.startTime ? new Date(data.startTime) : undefined,
+            endTime: data.endTime ? new Date(data.endTime) : null,
+            status: data.status,
+            date: new Date(data.date),
+            logEntries: JSON.stringify(newLogEntries),
+            supplierEntries: JSON.stringify(newSupplierEntries),
+          },
+        });
+
+        if (existing.status === "open" && report.status === "closed") {
+          await audit({
             actorUsername,
-            action: "LOG_ENTRY_ADDED",
+            action: "SHIFT_CLOSED",
             category: "OPERATIONS",
             severity: "INFO",
             outcome: "SUCCESS",
-            details: { shiftFolio: data.folio, entryId: entry.id, annotation: entry.annotation },
-          });
-        } else if (JSON.stringify(original) !== JSON.stringify(entry)) {
-          await auditService.log({
-            actorUsername,
-            action: "LOG_ENTRY_EDITED",
-            category: "OPERATIONS",
-            severity: "INFO",
-            outcome: "SUCCESS",
-            details: { shiftFolio: data.folio, entryId: entry.id },
+            details: { folio: report.folio, shiftId: report.id },
           });
         }
-      }
-      for (const old of oldLogEntries) {
-        if (!newLogEntries.find((n) => n.id === old.id)) {
-          await auditService.log({
-            actorUsername,
-            action: "LOG_ENTRY_DELETED",
-            category: "OPERATIONS",
-            severity: "INFO",
-            outcome: "SUCCESS",
-            details: { shiftFolio: data.folio, entryId: old.id },
-          });
-        }
-      }
+      } else {
+        // CREATE
+        const incomingLogRaw =
+          typeof data.logEntries === "string"
+            ? data.logEntries
+            : JSON.stringify(Array.isArray(data.logEntries) ? data.logEntries : []);
+        const incomingSupplierRaw =
+          typeof data.supplierEntries === "string"
+            ? data.supplierEntries
+            : JSON.stringify(Array.isArray(data.supplierEntries) ? data.supplierEntries : []);
+        const normalizedIncoming = this.normalizeEntries(
+          incomingLogRaw,
+          incomingSupplierRaw,
+          Date.now(),
+        );
 
-      // Detect Supplier Changes
-      for (const entry of newSupplierEntries) {
-        const original = oldSupplierEntries.find((old) => old.id === entry.id);
-        if (!original) {
-          await auditService.log({
-            actorUsername,
-            action: "SUPPLIER_ENTRY_ADDED",
-            category: "OPERATIONS",
-            severity: "INFO",
-            outcome: "SUCCESS",
-            details: { shiftFolio: data.folio, entryId: entry.id, company: entry.company },
-          });
-        } else if (JSON.stringify(original) !== JSON.stringify(entry)) {
-          await auditService.log({
-            actorUsername,
-            action: "SUPPLIER_ENTRY_EDITED",
-            category: "OPERATIONS",
-            severity: "INFO",
-            outcome: "SUCCESS",
-            details: { shiftFolio: data.folio, entryId: entry.id },
-          });
-        }
-      }
-      for (const old of oldSupplierEntries) {
-        if (!newSupplierEntries.find((n) => n.id === old.id)) {
-          await auditService.log({
-            actorUsername,
-            action: "SUPPLIER_ENTRY_DELETED",
-            category: "OPERATIONS",
-            severity: "INFO",
-            outcome: "SUCCESS",
-            details: { shiftFolio: data.folio, entryId: old.id },
-          });
-        }
-      }
-
-      report = await prisma.shiftReport.update({
-        where: { id: data.id },
-        data: {
-          folio: data.folio,
-          shiftName: data.shiftName,
-          responsibleUser: data.responsibleUser,
-          startTime: data.startTime ? new Date(data.startTime) : undefined,
-          endTime: data.endTime ? new Date(data.endTime) : null,
-          status: data.status,
-          date: new Date(data.date),
-          logEntries: JSON.stringify(newLogEntries),
-          supplierEntries: JSON.stringify(newSupplierEntries),
-        },
-      });
-
-      if (existing.status === "open" && report.status === "closed") {
-        await auditService.log({
+        const nextFolio = await this.getNextFolio(tx);
+        report = await tx.shiftReport.create({
+          data: {
+            id: data.id,
+            folio: nextFolio,
+            shiftName: data.shiftName,
+            responsibleUser: data.responsibleUser,
+            startTime: new Date(data.startTime),
+            endTime: data.endTime ? new Date(data.endTime) : null,
+            status: data.status || "open",
+            date: new Date(data.date),
+            logEntries: JSON.stringify(normalizedIncoming.logEntries),
+            supplierEntries: JSON.stringify(normalizedIncoming.supplierEntries),
+          },
+        });
+        await audit({
           actorUsername,
-          action: "SHIFT_CLOSED",
+          action: "SHIFT_STARTED",
           category: "OPERATIONS",
           severity: "INFO",
           outcome: "SUCCESS",
-          details: { folio: report.folio, shiftId: report.id },
+          details: { folio: report.folio, shiftId: report.id, shiftName: report.shiftName },
         });
       }
-    } else {
-      // CREATE
-      const openShift = await prisma.shiftReport.findFirst({
-        where: { status: "open" },
-      });
 
-      if (openShift) {
-        await auditService.log({
-          actorUsername,
-          action: "SHIFT_START_BLOCKED",
-          category: "OPERATIONS",
-          severity: "WARNING",
-          outcome: "FAILURE",
-          details: {
-            conflictingShiftFolio: openShift.folio,
-            responsible: openShift.responsibleUser,
-          },
-        });
-        const error = new ShiftStartBlockedError(openShift);
-        throw error;
-      }
-
-      const incomingLogRaw =
-        typeof data.logEntries === "string"
-          ? data.logEntries
-          : JSON.stringify(Array.isArray(data.logEntries) ? data.logEntries : []);
-      const incomingSupplierRaw =
-        typeof data.supplierEntries === "string"
-          ? data.supplierEntries
-          : JSON.stringify(Array.isArray(data.supplierEntries) ? data.supplierEntries : []);
-      const normalizedIncoming = this.normalizeEntries(
-        incomingLogRaw,
-        incomingSupplierRaw,
-        Date.now(),
-      );
-
-      // Folio generation is race-prone if two creates happen in parallel.
-      // Retry on unique-folio collisions to guarantee eventual creation.
-      const MAX_FOLIO_RETRIES = 5;
-      let lastError: unknown = null;
-      for (let attempt = 0; attempt < MAX_FOLIO_RETRIES; attempt++) {
-        const nextFolio = await this.getNextFolio();
-        try {
-          report = await prisma.shiftReport.create({
-            data: {
-              id: data.id,
-              folio: nextFolio,
-              shiftName: data.shiftName,
-              responsibleUser: data.responsibleUser,
-              startTime: new Date(data.startTime),
-              endTime: data.endTime ? new Date(data.endTime) : null,
-              status: data.status || "open",
-              date: new Date(data.date),
-              logEntries: JSON.stringify(normalizedIncoming.logEntries),
-              supplierEntries: JSON.stringify(normalizedIncoming.supplierEntries),
-            },
-          });
-          lastError = null;
-          break;
-        } catch (error) {
-          lastError = error;
-          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-            continue;
-          }
-          throw error;
-        }
-      }
-      if (!report && lastError) throw lastError;
-
+      return { report, existing } as const;
+    });
+    if ("blocked" in result && result.blocked) {
       await auditService.log({
         actorUsername,
-        action: "SHIFT_STARTED",
+        action: "SHIFT_START_BLOCKED",
         category: "OPERATIONS",
-        severity: "INFO",
-        outcome: "SUCCESS",
-        details: { folio: report.folio, shiftId: report.id, shiftName: report.shiftName },
+        severity: "WARNING",
+        outcome: "FAILURE",
+        details: {
+          conflictingShiftFolio: result.blocked.folio,
+          responsible: result.blocked.responsibleUser,
+        },
       });
+      throw new ShiftStartBlockedError(result.blocked);
     }
-
+    for (const log of auditEvents) SocketService.emitToAll("auditLog:created", log);
+    const { report, existing } = result;
     const normalizedSaved = this.normalizeEntries(
       report.logEntries,
       report.supplierEntries,

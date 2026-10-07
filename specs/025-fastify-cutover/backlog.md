@@ -13,7 +13,9 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
   [corrections-ownership](corrections-ownership.md).
 - Reactivación, solapamiento y atomicidad al extender permisos (016): corregidas
   en [leave-consistency](leave-consistency.md).
-- Consistencia del ciclo de vida/folios de reportes y motor KPI (017/018).
+- Apertura, folios y atomicidad de reportes (017): corregidas en
+  [shift-report-consistency](shift-report-consistency.md). Exportación legacy
+  y consistencia del motor KPI (018) siguen pendientes.
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
   revocación en otras rutas de cambio de credenciales y redacción de texto libre.

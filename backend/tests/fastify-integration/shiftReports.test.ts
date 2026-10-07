@@ -186,7 +186,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (
       2,
     );
   });
-  it("uses numeric MAX across 999/1000 and retries concurrent closed folios", async () => {
+  it("uses numeric MAX across 999/1000 and serializes concurrent closed folios", async () => {
     await seedReport({ id: "old999", folio: "999" });
     await seedReport({ id: "old1000", folio: "1000" });
     await seedReport({ id: "legacy", folio: "LEGACY" });
@@ -201,6 +201,21 @@ describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (
     expect(results.map((r) => r.status)).toEqual([200, 200, 200]);
     expect(new Set(results.map((r) => r.body.folio)).size).toBe(3);
     expect(await prismaDirect.shiftReport.count()).toBe(7);
+  });
+  it("allows exactly one concurrent opening and rejects reopening beside it", async () => {
+    const results = await Promise.all(
+      Array.from({ length: 5 }, (_, i) =>
+        http("POST", "/api/shift-reports", body({ id: `opening-${i}` })),
+      ),
+    );
+    expect(results.filter((r) => r.status === 200)).toHaveLength(1);
+    expect(results.filter((r) => r.status === 409)).toHaveLength(4);
+    expect(await prismaDirect.shiftReport.count({ where: { status: "open" } })).toBe(1);
+    expect(SocketService.emit).toHaveBeenCalledTimes(1);
+    await seedReport();
+    expect(
+      (await http("POST", "/api/shift-reports", body({ id: "seed-report", folio: "010" }))).status,
+    ).toBe(409);
   });
   it("preserves pagination/status/delta semantics and normalizes stored legacy content", async () => {
     await seedReport({
@@ -258,17 +273,18 @@ describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (
     expect(exported.headers["content-type"]).toContain("application/json");
     expect((await http("GET", "/api/shift-reports")).body.data[0].logEntries).toEqual([]);
   });
-  it("characterizes missing ID failure and deleted-open shift blocking while validating malformed body", async () => {
+  it("accepts generated IDs and ignores deleted-open shifts while validating malformed body", async () => {
     expect((await http("POST", "/api/shift-reports", {})).status).toBe(400);
     const withoutId: any = body();
     delete withoutId.id;
-    expect((await http("POST", "/api/shift-reports", withoutId)).status).toBe(500);
-    expect(await prismaDirect.shiftReport.count()).toBe(0);
+    expect((await http("POST", "/api/shift-reports", withoutId)).status).toBe(200);
+    expect(await prismaDirect.shiftReport.count()).toBe(1);
+    await prismaDirect.shiftReport.deleteMany();
     await seedReport({ status: "open", isDeleted: true });
-    expect((await http("POST", "/api/shift-reports", body())).status).toBe(409);
-    expect((await http("GET", "/api/shift-reports")).body.total).toBe(0);
+    expect((await http("POST", "/api/shift-reports", body())).status).toBe(200);
+    expect((await http("GET", "/api/shift-reports")).body.total).toBe(1);
   });
-  it("preserves non-atomic granular audit before failed update and emits no success event", async () => {
+  it("rolls back granular audit after failed update and emits no success event", async () => {
     await http("POST", "/api/shift-reports", body());
     vi.mocked(SocketService.emit).mockClear();
     await prismaDirect.$executeRaw`CREATE FUNCTION test_report_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'spec017 update failed'; END; $$`;
@@ -285,11 +301,24 @@ describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (
         where: { id: "shift-report" },
       });
       expect(JSON.parse(report.logEntries)).toHaveLength(1);
-      expect(await prismaDirect.auditLog.count({ where: { action: "LOG_ENTRY_ADDED" } })).toBe(1);
+      expect(await prismaDirect.auditLog.count({ where: { action: "LOG_ENTRY_ADDED" } })).toBe(0);
       expect(SocketService.emit).not.toHaveBeenCalled();
     } finally {
       await prismaDirect.$executeRaw`DROP TRIGGER test_report_fail ON shift_reports`;
       await prismaDirect.$executeRaw`DROP FUNCTION test_report_fail()`;
+    }
+  });
+  it("rolls back a new report when its success audit cannot be saved", async () => {
+    await prismaDirect.$executeRaw`CREATE FUNCTION test_report_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action = 'SHIFT_STARTED' THEN RAISE EXCEPTION 'audit failed'; END IF; RETURN NEW; END; $$`;
+    await prismaDirect.$executeRaw`CREATE TRIGGER test_report_audit_fail BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION test_report_audit_fail()`;
+    try {
+      expect((await http("POST", "/api/shift-reports", body())).status).toBe(500);
+      expect(await prismaDirect.shiftReport.count()).toBe(0);
+      expect(await prismaDirect.auditLog.count({ where: { action: "SHIFT_STARTED" } })).toBe(0);
+      expect(SocketService.emit).not.toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRaw`DROP TRIGGER test_report_audit_fail ON audit_logs`;
+      await prismaDirect.$executeRaw`DROP FUNCTION test_report_audit_fail()`;
     }
   });
   it("permits Reloj_Control to list/save/export", async () => {
