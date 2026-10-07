@@ -1,3 +1,4 @@
+import { normalizeShiftReportEntries } from "../../modules/shiftReports";
 import type { ExcelHttpStream } from "../../utils/httpStream";
 import type { Prisma } from "../../generated/prisma/client";
 import { Pool, PoolClient } from "pg";
@@ -559,8 +560,11 @@ export class StreamExportService {
         return;
       }
 
-      const logEntries = JSON.parse(report.logEntries);
-      const supplierEntries = JSON.parse(report.supplierEntries);
+      const { logEntries, supplierEntries } = normalizeShiftReportEntries(
+        report.logEntries,
+        report.supplierEntries,
+        report.updatedAt.getTime(),
+      );
 
       res.setHeader(
         "Content-Type",

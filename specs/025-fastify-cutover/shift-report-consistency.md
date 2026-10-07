@@ -16,5 +16,6 @@ Contrato correctivo posterior a [025](spec.md), para la deuda de 017.
 
 Pruebas compartidas Express/Fastify cubren id generado, eliminados, cinco
 aperturas simultáneas, reapertura, folios concurrentes y rollback por fallo de
-escritura o auditoría. La exportación de JSON legacy corrupto, paginación,
-fechas del host y la consistencia del motor KPI siguen pendientes.
+escritura o auditoría. La exportación de JSON legacy corrupto se corrigió en
+[shift-report-legacy-export](shift-report-legacy-export.md). Paginación, fechas
+del host y la consistencia del motor KPI siguen pendientes.

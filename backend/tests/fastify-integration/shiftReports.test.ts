@@ -265,13 +265,35 @@ describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (
     expect(missing.body).toEqual({ message: "Reporte no encontrado" });
     expect(missing.headers["content-type"]).toContain("application/json");
   });
-  it("terminates corrupt legacy export with JSON 500 while list normalizes it", async () => {
-    await seedReport({ logEntries: "not-json" });
-    const exported = await http("GET", "/api/shift-reports/export/seed-report");
-    expect(exported.status).toBe(500);
-    expect(exported.body.message).toBe("Error al exportar reporte de turno");
-    expect(exported.headers["content-type"]).toContain("application/json");
-    expect((await http("GET", "/api/shift-reports")).body.data[0].logEntries).toEqual([]);
+  it.each([
+    ["not-json", "not-json", undefined],
+    ["null", "{}", undefined],
+    [
+      JSON.stringify([{ detail: "Recovered", timestamp: "10" }]),
+      JSON.stringify([null, { company: " Legacy " }]),
+      "Recovered",
+    ],
+  ])("exports normalized legacy entries (%s)", async (logEntries, supplierEntries, expected) => {
+    await seedReport({ logEntries, supplierEntries });
+    const exported = await http(
+      "GET",
+      "/api/shift-reports/export/seed-report",
+      undefined,
+      token,
+      true,
+    );
+    expect(exported.status).toBe(200);
+    expect(exported.headers["content-type"]).toContain("spreadsheetml");
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(exported.bytes as any);
+    const sheet = workbook.getWorksheet("Bitácora")!;
+    const listed = (await http("GET", "/api/shift-reports")).body.data[0];
+    expect(sheet.rowCount).toBe(1 + listed.logEntries.length + listed.supplierEntries.length);
+    if (expected) {
+      expect(sheet.getCell("C2").value).toBe(expected);
+      expect(sheet.getCell("C3").value).toBe("N/A");
+      expect(sheet.getCell("C4").value).toBe("Legacy");
+    }
   });
   it("accepts generated IDs and ignores deleted-open shifts while validating malformed body", async () => {
     expect((await http("POST", "/api/shift-reports", {})).status).toBe(400);

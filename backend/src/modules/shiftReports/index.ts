@@ -7,3 +7,5 @@ export type {
   SupplierEntry,
 } from "./application/contracts";
 export { shiftReportsPlugin, type ShiftReportsHttpService } from "./http/routes";
+
+export { normalizeShiftReportEntries } from "./application/normalizeEntries";

@@ -1,4 +1,5 @@
 import prisma, { withDirectTransaction } from "./db";
+import { normalizeShiftReportEntries } from "../modules/shiftReports";
 import { redactAuditFields } from "../modules/audit";
 import { Prisma, type AuditLog } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
@@ -82,108 +83,6 @@ export class ShiftReportService {
     return String(nextFolioNum).padStart(3, "0");
   }
 
-  private static toNumberTimestamp(value: unknown, fallback: number): number {
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string") {
-      const numeric = Number(value);
-      if (Number.isFinite(numeric)) return numeric;
-      const parsedDate = new Date(value).getTime();
-      if (Number.isFinite(parsedDate)) return parsedDate;
-    }
-    return fallback;
-  }
-
-  private static toTimeString(value: unknown, timestamp: number): string {
-    if (typeof value === "string" && value.trim().length > 0) return value.trim();
-    const d = new Date(timestamp);
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mm = String(d.getMinutes()).padStart(2, "0");
-    return `${hh}:${mm}`;
-  }
-
-  private static normalizeLogEntry(entry: unknown, idx: number, fallbackTs: number): LogEntry {
-    const e = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>;
-    const timestamp = this.toNumberTimestamp(e.timestamp, fallbackTs + idx);
-    const annotationRaw = e.annotation ?? e.detail ?? e.notes ?? e.message;
-    const annotation =
-      typeof annotationRaw === "string" && annotationRaw.trim().length > 0
-        ? annotationRaw.trim()
-        : "Novedad sin detalle";
-
-    return {
-      id:
-        typeof e.id === "string" && e.id.trim().length > 0
-          ? e.id
-          : `legacy-log-${timestamp}-${idx}`,
-      time: this.toTimeString(e.time, timestamp),
-      annotation,
-      timestamp,
-    };
-  }
-
-  private static normalizeSupplierEntry(
-    entry: unknown,
-    idx: number,
-    fallbackTs: number,
-  ): SupplierEntry {
-    const e = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>;
-    const timestamp = this.toNumberTimestamp(e.timestamp, fallbackTs + idx);
-
-    return {
-      id:
-        typeof e.id === "string" && e.id.trim().length > 0
-          ? e.id
-          : `legacy-supplier-${timestamp}-${idx}`,
-      time: this.toTimeString(e.time, timestamp),
-      licensePlate:
-        typeof e.licensePlate === "string" && e.licensePlate.trim().length > 0
-          ? e.licensePlate.trim()
-          : "N/A",
-      driverName:
-        typeof e.driverName === "string" && e.driverName.trim().length > 0
-          ? e.driverName.trim()
-          : "N/A",
-      paxCount: typeof e.paxCount === "number" && Number.isFinite(e.paxCount) ? e.paxCount : 0,
-      company:
-        typeof e.company === "string" && e.company.trim().length > 0 ? e.company.trim() : "N/A",
-      reason: typeof e.reason === "string" && e.reason.trim().length > 0 ? e.reason.trim() : "N/A",
-      timestamp,
-    };
-  }
-
-  private static normalizeEntries(
-    logEntriesRaw: string,
-    supplierEntriesRaw: string,
-    fallbackTs: number,
-  ) {
-    let parsedLogEntries: unknown[] = [];
-    let parsedSupplierEntries: unknown[] = [];
-
-    try {
-      parsedLogEntries = JSON.parse(logEntriesRaw || "[]");
-      if (!Array.isArray(parsedLogEntries)) parsedLogEntries = [];
-    } catch {
-      parsedLogEntries = [];
-    }
-
-    try {
-      parsedSupplierEntries = JSON.parse(supplierEntriesRaw || "[]");
-      if (!Array.isArray(parsedSupplierEntries)) parsedSupplierEntries = [];
-    } catch {
-      parsedSupplierEntries = [];
-    }
-
-    const logEntries = parsedLogEntries
-      .map((entry, idx) => this.normalizeLogEntry(entry, idx, fallbackTs))
-      .sort((a, b) => a.timestamp - b.timestamp);
-
-    const supplierEntries = parsedSupplierEntries
-      .map((entry, idx) => this.normalizeSupplierEntry(entry, idx, fallbackTs))
-      .sort((a, b) => a.timestamp - b.timestamp);
-
-    return { logEntries, supplierEntries };
-  }
-
   /**
    * Lists all shift reports with filtering and pagination.
    */
@@ -216,7 +115,7 @@ export class ShiftReportService {
     ]);
 
     const mapped = reports.map((r) => {
-      const normalized = this.normalizeEntries(
+      const normalized = normalizeShiftReportEntries(
         r.logEntries,
         r.supplierEntries,
         r.updatedAt.getTime(),
@@ -280,7 +179,7 @@ export class ShiftReportService {
 
       if (existing) {
         // --- AUDIT GRANULAR CHANGES ---
-        const oldNormalized = this.normalizeEntries(
+        const oldNormalized = normalizeShiftReportEntries(
           existing.logEntries,
           existing.supplierEntries,
           existing.updatedAt.getTime(),
@@ -296,7 +195,7 @@ export class ShiftReportService {
           typeof data.supplierEntries === "string"
             ? data.supplierEntries
             : JSON.stringify(Array.isArray(data.supplierEntries) ? data.supplierEntries : []);
-        const newNormalized = this.normalizeEntries(newLogRaw, newSupplierRaw, Date.now());
+        const newNormalized = normalizeShiftReportEntries(newLogRaw, newSupplierRaw, Date.now());
         const newLogEntries = newNormalized.logEntries;
         const newSupplierEntries = newNormalized.supplierEntries;
 
@@ -407,7 +306,7 @@ export class ShiftReportService {
           typeof data.supplierEntries === "string"
             ? data.supplierEntries
             : JSON.stringify(Array.isArray(data.supplierEntries) ? data.supplierEntries : []);
-        const normalizedIncoming = this.normalizeEntries(
+        const normalizedIncoming = normalizeShiftReportEntries(
           incomingLogRaw,
           incomingSupplierRaw,
           Date.now(),
@@ -456,7 +355,7 @@ export class ShiftReportService {
     }
     for (const log of auditEvents) SocketService.emitToAll("auditLog:created", log);
     const { report, existing } = result;
-    const normalizedSaved = this.normalizeEntries(
+    const normalizedSaved = normalizeShiftReportEntries(
       report.logEntries,
       report.supplierEntries,
       report.updatedAt.getTime(),

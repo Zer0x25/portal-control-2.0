@@ -1,3 +1,4 @@
+import { normalizeShiftReportEntries } from "../../modules/shiftReports";
 import { Prisma } from "../../generated/prisma/client";
 import prisma from "../db";
 import PDFDocument from "pdfkit";
@@ -1067,8 +1068,11 @@ Sistema de Gestión de Turnos - Reporte Automático
     const report = await prisma.shiftReport.findUnique({ where: { id: reportId } });
     if (!report) throw new Error("Reporte de turno no encontrado");
 
-    const logEntries = JSON.parse(report.logEntries) as LogEntry[];
-    const supplierEntries = JSON.parse(report.supplierEntries) as SupplierEntry[];
+    const { logEntries, supplierEntries } = normalizeShiftReportEntries(
+      report.logEntries,
+      report.supplierEntries,
+      report.updatedAt.getTime(),
+    );
     const startX = 40;
 
     doc

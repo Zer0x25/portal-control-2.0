@@ -247,34 +247,44 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
       expect(response.bytes.toString()).not.toContain(employee.pin);
     },
   );
-  it("generates shift PDF from real persisted report; missing ID keeps service 500", async () => {
-    expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
-    await prismaDirect.shiftReport.create({
-      data: {
-        id: "shift-pdf",
-        folio: "001",
-        shiftName: "Day",
-        responsibleUser: "Operator",
-        startTime: new Date("2020-01-01T12:00:00Z"),
-        date: new Date("2020-01-01T00:00:00Z"),
-        status: "closed",
-        logEntries: "[]",
-        supplierEntries: "[]",
-      },
-    });
-    const response = await http(
-      "GET",
-      "/api/export/shift-report-pdf/shift-pdf",
-      undefined,
-      token,
-      true,
-    );
-    expect(response.status).toBe(200);
-    expect(response.bytes.subarray(0, 5).toString()).toBe("%PDF-");
-    expect(response.headers["content-disposition"]).toBe(
-      "attachment; filename=Reporte_Turno_shift-pdf.pdf",
-    );
-  });
+  it.each([
+    ["[]", "[]"],
+    ["not-json", "null"],
+    [
+      JSON.stringify([{ detail: "Recovered", timestamp: "10" }, null]),
+      JSON.stringify([{ company: "Legacy" }, null]),
+    ],
+  ])(
+    "generates shift PDF from normalized legacy entries (%s); missing ID keeps service 500",
+    async (logEntries, supplierEntries) => {
+      expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
+      await prismaDirect.shiftReport.create({
+        data: {
+          id: "shift-pdf",
+          folio: "001",
+          shiftName: "Day",
+          responsibleUser: "Operator",
+          startTime: new Date("2020-01-01T12:00:00Z"),
+          date: new Date("2020-01-01T00:00:00Z"),
+          status: "closed",
+          logEntries,
+          supplierEntries,
+        },
+      });
+      const response = await http(
+        "GET",
+        "/api/export/shift-report-pdf/shift-pdf",
+        undefined,
+        token,
+        true,
+      );
+      expect(response.status).toBe(200);
+      expect(response.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+      expect(response.headers["content-disposition"]).toBe(
+        "attachment; filename=Reporte_Turno_shift-pdf.pdf",
+      );
+    },
+  );
   it("streams real team and employee XLSX with data columns/rows and no PIN", async () => {
     await prismaDirect.employee.create({ data: employee });
     await prismaDirect.timeRecord.create({
