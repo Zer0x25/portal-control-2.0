@@ -1,3 +1,4 @@
+import { kpisPlugin, type KpiFlows } from "../../modules/kpis";
 import type {} from "./types";
 import Fastify, { type FastifyInstance } from "fastify";
 import helmet from "@fastify/helmet";
@@ -34,6 +35,7 @@ export interface FastifyDependencies {
   records: RecordsHttpService;
   shifts: ShiftFlows;
   leaves: LeaveFlows;
+  kpis: KpiFlows;
   shiftReports: ShiftReportsHttpService;
   corrections: CorrectionFlows;
   employees: EmployeesHttpService;
@@ -199,6 +201,7 @@ export function buildFastifyApp(
       context.username = user.username;
     };
     protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(kpisPlugin, { service: deps.kpis, authenticate });
     protectedApp.register(shiftReportsPlugin, { service: deps.shiftReports, authenticate });
     protectedApp.register(leavesPlugin, { service: deps.leaves, authenticate });
     protectedApp.register(correctionsPlugin, { service: deps.corrections, authenticate });

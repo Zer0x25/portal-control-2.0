@@ -34,6 +34,7 @@ function inspect(source: string, file: string, name = "holidays"): string[] {
           "leaves",
           "corrections",
           "shiftReports",
+          "kpis",
         ].includes(name) &&
         (resolved === path.join(src, "utils/AppError") ||
           (["leaves", "corrections", "shiftReports"].includes(name) &&
@@ -342,7 +343,7 @@ describe("Shifts module boundaries", () => {
   });
 });
 
-describe.each(["leaves", "corrections", "shiftReports"])("%s module boundaries", (name) => {
+describe.each(["leaves", "corrections", "shiftReports", "kpis"])("%s module boundaries", (name) => {
   it("enumerates pure application, public consumers and strict files", () => {
     const files = filesUnder(src).filter(
       (file) => !file.includes(`${path.sep}generated${path.sep}`),

@@ -113,6 +113,7 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       updateUser: vi.fn(),
       deleteUser: vi.fn(),
     },
+    kpis: { summary: vi.fn(), detailed: vi.fn(), overview: vi.fn(), daily: vi.fn() },
     shiftReports: { list: vi.fn(), save: vi.fn(), exportStream: vi.fn() },
     leaves: { list: vi.fn(), upsert: vi.fn(), delete: vi.fn() },
     corrections: {
@@ -633,18 +634,23 @@ it.each([
   },
 );
 
-it.each(["/api/leaves", "/api/corrections"])("%s enforces 1 MiB before effects", async (url) => {
-  const f = fixture();
-  const response = await f.app.inject({
-    method: "POST",
-    url,
-    headers: { authorization: `Bearer ${f.token()}` },
-    payload: { extra: "x".repeat(1024 * 1024) },
-  });
-  expect(response.statusCode).toBe(413);
-  expect(f.deps.leaves.upsert).not.toHaveBeenCalled();
-  expect(f.deps.corrections.create).not.toHaveBeenCalled();
-});
+it.each(["/api/leaves", "/api/corrections", "/api/kpis/summary", "/api/kpis/detailed-report"])(
+  "%s enforces 1 MiB before effects",
+  async (url) => {
+    const f = fixture();
+    const response = await f.app.inject({
+      method: "POST",
+      url,
+      headers: { authorization: `Bearer ${f.token()}` },
+      payload: { extra: "x".repeat(1024 * 1024) },
+    });
+    expect(response.statusCode).toBe(413);
+    expect(f.deps.leaves.upsert).not.toHaveBeenCalled();
+    expect(f.deps.corrections.create).not.toHaveBeenCalled();
+    expect(f.deps.kpis.summary).not.toHaveBeenCalled();
+    expect(f.deps.kpis.detailed).not.toHaveBeenCalled();
+  },
+);
 
 it("shift reports reject oversized bodies and terminate unexpected pre-stream failure", async () => {
   const f = fixture();

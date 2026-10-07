@@ -81,6 +81,10 @@ routes.push(
     ["GET", "/api/leaves"],
     ["POST", "/api/leaves"],
     ["DELETE", "/api/leaves/:id"],
+    ["POST", "/api/kpis/summary"],
+    ["POST", "/api/kpis/detailed-report"],
+    ["GET", "/api/kpis/overview"],
+    ["GET", "/api/kpis/daily-planning"],
     ["GET", "/api/corrections"],
     ["GET", "/api/corrections/stats"],
     ["GET", "/api/corrections/:id/history"],
@@ -222,14 +226,14 @@ it("rejects unvalidated schedule route", () =>
     ),
   ).toThrow("Unvalidated"));
 
-it.each(["leaves", "corrections", "shift-reports"])(
+it.each(["leaves", "corrections", "shift-reports", "kpis"])(
   "rejects empty/missing/extra/unsecured/unvalidated %s routes",
   (name) => {
     const prefix = `/api/${name}`;
     const belongs = (r: RouteEntry) => r.url === prefix || r.url.startsWith(`${prefix}/`);
     expect(() => assertMigratedRouteContracts(routes.filter((r) => !belongs(r)))).toThrow("empty");
     expect(() =>
-      assertMigratedRouteContracts(routes.filter((r) => !(r.url === prefix && r.method === "GET"))),
+      assertMigratedRouteContracts(routes.filter((r) => r !== routes.find(belongs))),
     ).toThrow("differs");
     expect(() =>
       assertMigratedRouteContracts([

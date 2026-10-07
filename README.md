@@ -308,6 +308,9 @@ para permisos, pruebas concurrentes y deudas de materialización/ownership.
 Reportes de turno comparte list/save y exportación XLSX por streaming nativo.
 Ver [resultado 017](specs/017-fastify-reportes-turno/result.md) para folios, ciclo de
 vida, auditoría y límites heredados.
+KPI comparte cuatro rutas y validación de rangos mediante puertos de fechas.
+La proyección pública elimina PIN de overview y ausencias; ver
+[resultado 018](specs/018-fastify-kpis/result.md) para caché y límites del motor.
 La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
 a empleados y reserva runtime integrado y cutover para las últimas dos specs.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y

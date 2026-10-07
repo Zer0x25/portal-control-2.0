@@ -2,24 +2,22 @@
 
 Spec: [spec.md](spec.md). Constitución: [constitución](../constitution.md).
 
-## Estrategia
+## Estrategia y archivos
 
-1. Inspeccionar /api/kpis y sus servicios; completar contratos y riesgos.
-2. Escribir behavior.md con ejemplos y pruebas que fallen primero.
-3. Extraer puertos y casos de uso, implementar adaptador y guard no vacío.
-4. Verificar permisos, fallos, persistencia y efectos; registrar result.md.
+Extraer validación/orquestación de controllers/kpiController.ts a aplicación
+pura modules/kpis/application con puertos de fechas y motor; composición en
+services/kpiFlows.ts. Adaptador modules/kpis/http/routes.ts usa schema existente.
+API pública index.ts. Registrar en platform/fastify/app.ts, runtime.ts y contrato
+exacto no vacío routeContracts.ts. Ampliar tsconfig.modules y guard arquitectónico.
+Motor services/kpi/* conserva cálculos, cache y reloj actuales. Proyección de PIN
+en KpiReportService/KpiAggregationService usa API pública employees. Prueba
+kpiProjection verifica una ausencia concreta; fastifyApp verifica límites 1 MiB.
 
-## Archivos a tocar
-
-Inventario pendiente: identificar routers, servicios y tests de la superficie
-indicada antes de modificar código. No reutilizar controllers Express como
-handlers Fastify. En 024/025 agregar entrypoint, sockets/jobs, compose, gateway
-y contrato OpenAPI al inventario.
+BDD: [behavior.md](behavior.md). RED unit kpiFlows antes de implementación;
+paridad real Express/Fastify en tests/fastify-integration/kpis.test.ts.
 
 ## Verificación y rollback
 
-Backend: validate:ci, test:coverage, test:fastify:integration. Después del SDK,
-frontend: validate:ci:coverage. Raíz: docs:check, spec:check, secrets:scan.
-024/025 requieren además staging, e2e, carga y ciclo de vida del servidor.
-Mientras Express siga principal, revertir el registro del módulo candidato;
-025 debe documentar y ensayar rollback antes de cambiar el servidor.
+Backend validate:ci, test:coverage y test:fastify:integration. Luego frontend
+validate:ci:coverage; raíz docs:check, spec:check, secrets:scan. Sin staging ni
+cutover. Revertir este cambio; Express conserva montaje y contrato existentes.

@@ -80,8 +80,14 @@ neutral y headers nativos hasta primer byte. Pruebas abren XLSX y caracterizan
 auditoría previa a write/soft-delete abierto/ID ausente/contenido corrupto;
 la exclusividad de turnos open bajo concurrencia requiere corrección separada.
 
+Spec 018 añade cuatro rutas KPI, rango compartido y puertos de fechas/motor.
+Cambio de seguridad declarado: overview y detalles de ausencias usan proyección
+pública de empleados sin PIN. Se conserva caché y cálculo legacy; invalidación,
+contexto diario UTC y consultas por cache miss requieren trabajo antes de cutover.
+
 ## Referencias
 
+- [Resultado 018](../../specs/018-fastify-kpis/result.md)
 - [Resultado 017](../../specs/017-fastify-reportes-turno/result.md)
 - [Resultado 016](../../specs/016-fastify-permisos-correcciones/result.md)
 - [Resultado 014](../../specs/014-fastify-marcaciones/result.md)

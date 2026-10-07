@@ -1,3 +1,4 @@
+import { kpiFlows } from "../services/kpiFlows";
 import { shiftReportFlows } from "../services/shiftReportFlows";
 import { leaveFlows } from "../services/leaveFlows";
 import { correctionFlows } from "../services/correctionFlows";
@@ -25,6 +26,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
       users: userService,
+      kpis: kpiFlows,
       shiftReports: {
         ...shiftReportFlows,
         exportStream: async (stream, id) => {

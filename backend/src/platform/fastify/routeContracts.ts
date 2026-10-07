@@ -144,6 +144,15 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
   }
   for (const [name, expected] of [
     [
+      "kpis",
+      [
+        "POST /api/kpis/summary",
+        "POST /api/kpis/detailed-report",
+        "GET /api/kpis/overview",
+        "GET /api/kpis/daily-planning",
+      ],
+    ],
+    [
       "shift-reports",
       ["GET /api/shift-reports", "POST /api/shift-reports", "GET /api/shift-reports/export/:id"],
     ],
