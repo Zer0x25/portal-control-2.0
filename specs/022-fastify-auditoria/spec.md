@@ -1,38 +1,56 @@
 # Spec 022: Auditoría
 
-- Estado: Borrador planificado; implementación pendiente
-- Fecha: 2026-10-06
-- Ruta: [roadmap](../roadmap-fastify.md)
+- Estado: Implementada y validada localmente
+- Fecha: 2026-10-07
+- Dependencia: [021](../021-fastify-importacion-exportacion/result.md)
 
-## Problema
+## PRD
 
-La superficie /api/audit-logs debe integrarse al candidato Fastify para completar
-la migración modular y disponer de contratos y pruebas mantenibles.
+Completar la superficie de auditoría del candidato Fastify con casos de uso
+compartidos con Express, permisos verificables y aplicación independiente de BD
+y transporte. Express permanece principal. No se ejecutan operaciones externas.
 
-## Alcance
+## SDD: contrato e inventario
 
-Filtros, paginación, acceso y atribución de actor mediante contexto aislado. Inventariar cada ruta real antes de implementar, incluidas las
-anidadas. Compartir casos de uso entre los adaptadores cuando corresponda.
+| Método y ruta                        | Permiso                                 | Validación vigente                        | Resultado y efectos                                                                    |
+| ------------------------------------ | --------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------- |
+| GET /api/audit-logs                  | Admin, Supervisor Elevado, Fiscalizador | AuditLogQuerySchema, sin reemplazar query | 200 success/data con items, total, page, totalPages, nextCursor                        |
+| POST /api/audit-logs                 | Cualquier sesión                        | AuditLogSchema, sin reemplazar body       | 201 mensaje; actor de sesión e IP; persistencia y socket                               |
+| GET /api/audit-logs/export           | Lectores de auditoría                   | Sin schema adicional                      | JSON crudo por defecto/format desconocido; CSV/XML mediante cursor SQL parametrizado   |
+| GET /api/audit-logs/integrity-status | Lectores de auditoría                   | Sin entrada adicional                     | 200 snapshot local del proceso                                                         |
+| GET /api/audit-logs/verify-integrity | Admin, Supervisor Elevado               | Sin entrada adicional                     | 200 tras verificación; transacción directa, logs y snapshot                            |
+| POST /api/audit-logs/cleanup         | Admin, Supervisor Elevado               | AuditLogCleanupSchema                     | months entero 1–120, default 6; DELETE anterior al corte; 200 count/cutoffDate/mensaje |
 
-Fuera: módulos de otras specs y cambios de producto no declarados. Esta spec
-es una previsión; no autoriza despliegues ni operaciones externas.
+Sesión ausente 401; rol insuficiente 403; schema inválido 400. No añadir
+restricciones de producto durante la extracción. Aplicación inyecta repositorio,
+verificación, snapshot y exportadores; no importa frameworks, SQL, Prisma, entorno
+ni reloj global. API pública modules/audit/index.ts; strict y guard no vacío.
+ALS se conserva por petición, incluida la variable audit.username sobre conexión
+directa. Streaming emplea Writable y no casts a Express.Response. Errores de
+exportación antes de bytes: AUDIT_EXPORT_ERROR 500; tras bytes se cierra el stream.
+El exportador genérico puede producir su propio 500 message-only antes de fallar.
+
+## Deudas preservadas
+
+AuditLogSchema exige campos de salida id/timestamp/actorUsername que el POST ignora;
+metadata/IP del cliente también se ignoran. severity/outcome son strings libres.
+AuditService.log absorbe fallos, por lo que POST puede devolver 201 sin persistir.
+Consulta transforma números solo para validar y no sustituye query; since se ignora,
+fechas no se validan y paginación no tiene cotas. endDate usa zona local del host.
+JSON export limita a 10.000; CSV/XML no tienen esa cota, no respetan backpressure y
+no neutralizan fórmulas CSV. Export no tiene schema y usa filtros legacy.
+Snapshot es local del proceso; verificación limita aproximadamente 20.000 en lotes
+5.000 y registra actor SYSTEM, aunque el contexto transaccional sí pertenece al
+usuario. No certificar cobertura criptográfica global ni rendimiento medido.
 
 ## Criterios de aceptación
 
-- [ ] AC1: Inventario no vacío con método, path, permisos, validación, respuestas y efectos de cada ruta/flujo.
-- [ ] AC2: BDD concreto y pruebas RED antes de implementar; comportamiento vigente y errores caracterizados.
-- [ ] AC3: Implementación con puertos tipados, límites públicos y sin dependencias de infraestructura en aplicación.
-- [ ] AC4: Paridad verificada con BD aislada donde aplique; contratos de seguridad y fallos comprobados.
-- [ ] AC5: Gates backend/frontend secuenciales, docs/SDK y ratchets aprobados; resultado con límites y rollback.
-
-## Restricciones
-
-Constitución I–V, Node 26, React/Vite y PostgreSQL se conservan. Usar
-withDirectTransaction para transacciones interactivas. No reducir ratchets.
-El cambio de servidor principal se reserva a 025. Para 025, AC3 exige además
-retirar dependencias Express una vez demostrado el rollback.
+- [x] AC1: Inventario de seis rutas, permisos, efectos y errores explícitos.
+- [x] AC2: BDD y cuatro pruebas RED previas a implementación.
+- [x] AC3: Aplicación pura, puertos tipados, API pública y strict.
+- [x] AC4: Paridad HTTP/BD aislada, seguridad, fallos y contexto concurrente.
+- [x] AC5: Gates backend/frontend secuenciales, ratchets, docs y rollback.
 
 ## Trazabilidad
 
-Dependencia prevista: 021; revisar dependencias reales al iniciar.
-Tests y archivos concretos se detallarán tras el inventario de AC1.
+[Plan](plan.md), [BDD](behavior.md), [tareas](tasks.md), [resultado](result.md).

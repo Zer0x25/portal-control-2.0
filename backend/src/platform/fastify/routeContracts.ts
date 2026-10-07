@@ -168,6 +168,17 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     if (!route.validated) throw new Error(`Unvalidated shifts route: ${route.method} ${route.url}`);
   }
   for (const [name, expected] of [
+    [
+      "audit-logs",
+      [
+        "GET /api/audit-logs",
+        "POST /api/audit-logs",
+        "GET /api/audit-logs/export",
+        "GET /api/audit-logs/integrity-status",
+        "GET /api/audit-logs/verify-integrity",
+        "POST /api/audit-logs/cleanup",
+      ],
+    ],
     ["import", ["POST /api/import/preview"]],
     [
       "export",

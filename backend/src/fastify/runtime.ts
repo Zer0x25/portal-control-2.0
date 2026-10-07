@@ -1,3 +1,4 @@
+import { auditFlows } from "../services/auditFlows";
 import { importExportFlows } from "../services/importExportFlows";
 import { meterFlows } from "../services/meterFlows";
 import { noteFlows } from "../services/noteFlows";
@@ -42,6 +43,13 @@ export function createFastifyRuntime(config?: FastifyConfig) {
         },
       },
       meters: meterFlows,
+      audit: {
+        ...auditFlows,
+        exportStream: async (sink, filters) => {
+          await loadExports();
+          await auditFlows.exportStream(sink, filters);
+        },
+      },
       notes: noteFlows,
       configs: {
         ...configFlows,

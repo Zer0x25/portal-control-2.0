@@ -121,6 +121,15 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       excel: vi.fn(),
     },
     meters: { list: vi.fn(), create: vi.fn() },
+    audit: {
+      list: vi.fn(),
+      create: vi.fn(),
+      cleanup: vi.fn(),
+      status: vi.fn(),
+      verify: vi.fn(),
+      exportJson: vi.fn(),
+      exportStream: vi.fn(),
+    },
     notes: { list: vi.fn(), create: vi.fn(), archive: vi.fn(), remove: vi.fn() },
     configs: {
       time: vi.fn(),

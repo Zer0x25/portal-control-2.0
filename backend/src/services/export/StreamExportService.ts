@@ -1,4 +1,3 @@
-import { Response } from "express";
 import type { ExcelHttpStream } from "../../utils/httpStream";
 import type { Prisma } from "../../generated/prisma/client";
 import { Pool, PoolClient } from "pg";
@@ -54,7 +53,7 @@ export class StreamExportService {
    * @param filename - Output filename (e.g., "audit_logs_2025_2026.csv")
    */
   async streamQueryToCSV(
-    res: Response,
+    res: ExcelHttpStream,
     query: string,
     params: (string | number | boolean | Date | null | string[])[],
     headers: string[],
@@ -128,7 +127,7 @@ export class StreamExportService {
    * GENERIC: Stream any PostgreSQL query to XML
    */
   async streamQueryToXML(
-    res: Response,
+    res: ExcelHttpStream,
     query: string,
     params: (string | number | boolean | Date | null | string[])[],
     rootElement: string,

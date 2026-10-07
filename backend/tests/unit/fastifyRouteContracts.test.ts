@@ -96,6 +96,12 @@ routes.push(
     ["GET", "/api/leaves"],
     ["POST", "/api/leaves"],
     ["DELETE", "/api/leaves/:id"],
+    ["GET", "/api/audit-logs"],
+    ["POST", "/api/audit-logs"],
+    ["GET", "/api/audit-logs/export"],
+    ["GET", "/api/audit-logs/integrity-status"],
+    ["GET", "/api/audit-logs/verify-integrity"],
+    ["POST", "/api/audit-logs/cleanup"],
     ["POST", "/api/import/preview"],
     ["GET", "/api/export/calendar-pdf"],
     ["GET", "/api/export/report-pdf"],
@@ -292,6 +298,7 @@ it.each([
   "meters",
   "import",
   "export",
+  "audit-logs",
   "notes",
 ])("rejects empty/missing/extra/unsecured/unvalidated %s routes", (name) => {
   const prefix = `/api/${name}`;

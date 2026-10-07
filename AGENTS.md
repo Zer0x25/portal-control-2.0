@@ -420,3 +420,12 @@ Usuario/Excel y los dos schemas históricos; no traducir modos ni ampliar scopes
 Preview limita un archivo a 50 MiB en memoria; XLSX conserva ExcelHttpStream,
 PDF buffer. Runtime cierra pool lazy también con descargas 021 únicamente.
 Deudas de fechas, mapping, quiosco y renderers: specs/021-fastify-importacion-exportacion/spec.md.
+
+Auditoría usa modules/audit/index.ts, aplicación pura y seis rutas compartidas.
+Fiscalizador tiene lectura; verificación/cleanup requieren Admin o Supervisor
+Elevado; POST manual permite toda sesión y atribuye actor/IP del request.
+CSV/XML usa puerto Writable y SQL parametrizado en services/auditExport.ts.
+Conservar ALS por request y withDirectTransaction para audit.username.
+Deudas 022: schema manual exige campos ignorados, log absorbe fallos, paginación
+sin cotas, fechas del host, snapshot local, export parcial tras bytes y actor
+SYSTEM de verificación. Ver specs/022-fastify-auditoria/spec.md.

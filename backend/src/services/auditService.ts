@@ -8,8 +8,8 @@ interface AuditLogEntry {
   actorUsername: string;
   action: string;
   category: string;
-  severity?: "INFO" | "WARNING" | "ERROR" | "CRITICAL";
-  outcome?: "SUCCESS" | "FAILURE";
+  severity?: string;
+  outcome?: string;
   details?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   ipAddress?: string;

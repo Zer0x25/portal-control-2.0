@@ -1,3 +1,5 @@
+import { auditPlugin, type AuditFlows } from "../../modules/audit";
+import type { ExcelHttpStream } from "../../utils/httpStream";
 import { importExportPlugin, type ImportExportHttpService } from "../../modules/importExport";
 import { metersPlugin, type MeterFlows } from "../../modules/meters";
 import { notesPlugin, type NoteFlows } from "../../modules/notes";
@@ -43,6 +45,7 @@ export interface FastifyDependencies {
   kpis: KpiFlows;
   emailReports: EmailReportFlows;
   configs: ConfigHttpService;
+  audit: AuditFlows<ExcelHttpStream>;
   notes: NoteFlows;
   meters: MeterFlows;
   importExport: ImportExportHttpService;
@@ -239,6 +242,11 @@ export function buildFastifyApp(
       auditStreamError: auditFailure,
     });
     protectedApp.register(metersPlugin, { service: deps.meters, authenticate });
+    protectedApp.register(auditPlugin, {
+      service: deps.audit,
+      authenticate,
+      auditStreamError: auditFailure,
+    });
     protectedApp.register(notesPlugin, { service: deps.notes, authenticate });
     protectedApp.register(configsPlugin, { service: deps.configs, authenticate });
     protectedApp.register(emailReportsPlugin, { service: deps.emailReports, authenticate });

@@ -119,3 +119,9 @@ Spec 021 añade importación/exportación con flujos puros compartidos, preview
 ExcelJS y renderers PDF/XLSX existentes. Conserva 50 MiB multipart y presupuesto
 export 10/IP/15 min antes de auth/maintenance; caracteriza schemas/scope/errores
 legacy y ZIP parcial al fallar KPI. Ver [resultado 021](../../specs/021-fastify-importacion-exportacion/result.md).
+
+Spec 022 añade seis rutas de auditoría con flujos puros compartidos, permisos
+Fiscalizador/elevados y export CSV/XML mediante Writable. Paridad con BD aislada
+comprueba ALS por petición y variable de auditoría en transacción directa.
+Conserva las deudas de schema manual, retención, snapshot y export parcial.
+Ver [resultado 022](../../specs/022-fastify-auditoria/result.md).
