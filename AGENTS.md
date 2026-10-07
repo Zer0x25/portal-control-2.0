@@ -6,9 +6,9 @@ This document provides conventions, operational commands, and architectural cons
 
 ## 1. Project Structure
 
-- **`backend/`**: Node.js (v24), Express, TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
+- **`backend/`**: Node.js (v26), Fastify (principal), Express (fixture de paridad local), TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
 - **`frontend/`**: React 19, Vite, TypeScript, Zustand, TanStack Query, Tailwind CSS.
-- **`compose.yaml`**: Production-style stack (PostgreSQL 18.4, PgBouncer, backend, frontend, Nginx/Caddy). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Express en el host. `compose.staging.yaml` es prod-like vía gateway :8080 (`pweb3_staging`, host port 5434); ver README §5.
+- **`compose.yaml`**: Production-style stack (PostgreSQL 18.4, PgBouncer, backend, frontend, Nginx/Caddy). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Fastify en el host. `compose.staging.yaml` es prod-like vía gateway :8080 (`pweb3_staging`, host port 5434); ver README §5.
 - **PostgreSQL 18.4** en todos los compose. Dos detalles no negociables:
   - `PGDATA` es `/var/lib/postgresql/<major>/docker`; el entrypoint ABORTA si el volumen se monta en `/var/lib/postgresql/data` (ver docker-library/postgres#37). El volumen va en `/var/lib/postgresql`.
   - `md5` está deprecado (avisa al crear/alterar roles). Todos los compose usan `--auth-host=scram-sha-256 --auth-local=scram-sha-256`.
@@ -134,6 +134,77 @@ To raise the budget again (a deliberate decision, not an accident), edit
      and `frontend/src/utils/logger.ts` is the one sanctioned place where
      `console` output is allowed.
 
+El piloto `backend/src/modules/holidays/` tiene API pública en `index.ts`.
+Consumidores externos no importan archivos privados. Su aplicación no importa
+Express, Fastify, Prisma, DB, entorno, red o reloj global: inyecta dependencias.
+`npm run check:holidays` aplica strict y forma parte de `npm run check`.
+Fastify expone health, las cinco rutas de feriados y las seis rutas
+de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
+y las seis de empleados (incluido Excel), con casos de uso compartidos.
+`check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
+corrections, shiftReports, kpis, emailReports, meters, notes, configs, feriados y plataforma HTTP.
+Fastify es el servidor principal tras 025. Express queda solo para pruebas de paridad/rollback local.
+`npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
+no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
+Los consumidores de auth usan index.ts; aplicación solo admite puertos y errores
+compartidos, sin dependencias de servidor, BD, entorno ni reloj global.
+MFA usa presupuesto persistido por usuario (cinco fallos en cinco minutos,
+bloqueo cinco minutos); MFA/PIN serializan sus cambios con FOR UPDATE en
+withDirectTransaction. Los intentos fallidos devuelven resultado antes de lanzar
+401 fuera de la transacción, para que el contador se confirme. No exponer las
+columnas de presupuesto MFA en DTO de usuarios ni sockets.
+La proyección pública de usuarios está en modules/users/index.ts. UserService
+selecciona campos públicos de Prisma y los proyecta explícitamente: nunca exponer
+passwordHash, mfaSecret ni contadores MFA en HTTP o user:updated. Mantener
+mfaEnabled y mustChangePassword; no propagar isForcePasswordChange interno.
+Usuarios extrae list/create/update/delete con repositorio, hash, id, auditoría y
+eventos inyectados; UserService conserva la fachada y ensure transaccional.
+Empleados usa index.ts y aplicación pura con puertos; composición en
+services/employeeFlows.ts conserva withDirectTransaction y ensureEmployeeUser
+sobre el mismo cliente. No exponer PIN en HTTP/employee:updated; quiosco conserva
+seis campos. Validar el lote completo y conservar streaming Excel sin casts a
+Express.Response. Los borradores siguientes están en specs/roadmap-fastify.md.
+Records y shifts tienen API pública index.ts y aplicación pura con puertos.
+Fastify añade nueve rutas records y dieciocho shifts con flujos compartidos Express.
+Bulks conservan límite 10 MiB, resto 1 MiB. MonthlyShiftService conserva transacción
+con withDirectTransaction. Matriz Usuario/quiosco sin vínculo devuelve 403.
+Deudas 015: calendario mensual consulta UTC y muestra el día anterior en Chile,
+con queries por día heredadas; no replicar. Assignments sin vínculo de Usuario y
+quiosco mantienen scope legacy pendiente de decisión. Matriz sí usa batch context.
+Leaves/corrections tienen API pública index.ts y aplicación pura con puertos.
+Tres rutas leaves y cinco corrections comparten flujos Express/Fastify. POST leaves
+conserva parse explícito del schema; corrections valida sin reemplazar body.
+Reloj_Control gestiona leaves pero no resuelve corrections. Aprobación conserva
+withDirectTransaction, claim pending e idempotencia concurrente. Errores compartidos
+AppError/toCaughtError son helpers puros admitidos por el guard de estos módulos.
+Deudas 016: al extender leave, jornadas archivadas no se reactivan; materialización
+no atómica y solapamiento permitido. Correcciones no coteja employeeId/timeRecordId,
+y conserva lectura sin vínculo Usuario y scope quiosco legacy. Resolver antes de cutover.
+ShiftReports tiene API pública index.ts, aplicación pura y tres rutas nativas
+list/save/export Excel. Conserva MAX numérico/retry de folios, conflicto 409 y
+orquestación Express compartida. Exportador acepta Writable neutral; helper stream
+sincroniza headers del response hasta primer byte para errores JSON y XLSX.
+Deudas 017: id opcional en schema falla en servicio, abierto soft-deleted bloquea,
+open no es exclusivo bajo concurrencia; audit previo a write no atómico y JSON
+legacy corrupto rompe export aunque list lo normalice. Resolver antes de cutover.
+KPI comparte cuatro flujos con puertos de fechas/motor, sin reloj global en aplicación.
+Summary/detailed preservan rango exclusivo y límites 1/5 años. Proyección pública
+retira PIN de overview y ausencias en ambos servidores. Caché cerrada conserva
+materialización/reutilización; invalidación y contexto UTC/ayer siguen pendientes.
+EmailReports comparte doce rutas de correo/reportes programados y puertos neutrales.
+SMTP conserva cifrado y enmascarado; tests sustituyen proveedor sin entrega externa.
+Deudas 019: schemas HTTP y servicios divergen en config/rules/reportes; validar sin
+reemplazar body conserva extras y defaults no aplicados. Cron parcial/reloj local y
+toggle read/update requieren contrato correctivo antes de cutover.
+Meters/notes/configs tienen límites independientes, aplicación pura y catorce rutas
+nativas. Configs conserva dos lecturas públicas PDF, multipart 15 MiB y descarga
+con Range/ETag; plugins multipart/static no publican carpeta. Flujos comparten
+parsing de colección completa, errores de cierre, puertos de reloj/archivos.
+Deudas 020: rango medidores mezcla UTC/local; lotes no atómicos y autores cliente;
+configs genérico/auditoría expone secretos a roles elevados, write/audit no atómicos,
+PDF solo MIME y posible archivo huérfano al fallar upsert. Resolver antes de cutover.
+Ver specs 006/007/008/009/010/011/012/013/014/015/016/017/018/019/020 y ADR-0017/0018/0019.
+
 ---
 
 ## 4. Removing Lint Warnings Efficiently
@@ -225,7 +296,7 @@ defects that only became visible once the types stopped lying:
 
 ### Known upstream escape hatch
 
-`backend/src/controllers/ImportController.ts` keeps one narrow
+`backend/src/services/importWorkbook.ts` keeps one narrow
 `as unknown as XlsxLoadBuffer` cast. exceljs ships an ambient
 `interface Buffer extends ArrayBuffer` that shadows Node's real `Buffer` and
 rejects it outright — even a direct `as Buffer` fails. The type is derived via
@@ -342,3 +413,102 @@ Monthly lightweight sweep, one validated commit per package batch:
      babel 7 tree (pinned at v7 deliberately, see vite 8 migration).
    - `@types/exceljs`: `latest` (0.5.3) is lower than installed (1.3.2);
      `wanted` already equals `current`, nothing to do.
+
+Import/export usa modules/importExport/index.ts, aplicación pura y puertos de
+workbook/renderers. Cinco rutas conservan permisos y errores distintos para
+Usuario/Excel y los dos schemas históricos; no traducir modos ni ampliar scopes.
+Preview limita un archivo a 50 MiB en memoria; XLSX conserva ExcelHttpStream,
+PDF buffer. Runtime cierra pool lazy también con descargas 021 únicamente.
+Deudas de fechas, mapping, quiosco y renderers: specs/021-fastify-importacion-exportacion/spec.md.
+
+Auditoría usa modules/audit/index.ts, aplicación pura y seis rutas compartidas.
+Fiscalizador tiene lectura; verificación/cleanup requieren Admin o Supervisor
+Elevado; POST manual permite toda sesión y atribuye actor/IP del request.
+CSV/XML usa puerto Writable y SQL parametrizado en services/auditExport.ts.
+Conservar ALS por request y withDirectTransaction para audit.username.
+Deudas 022: schema manual exige campos ignorados, log absorbe fallos, paginación
+sin cotas, fechas del host, snapshot local, export parcial tras bytes y actor
+SYSTEM de verificación. Ver specs/022-fastify-auditoria/spec.md.
+
+Admin/maintenance usa módulos públicos index.ts y aplicación pura; 12 rutas admin
+y 9 maintenance exigen solo Administrador. Mantener 1000/IP/15 min admin antes
+de auth, exclusión global/maintenance y límite JSON 1 MiB. Maintenance no comprime:
+Express filtra originalUrl, Fastify usa opción de ruta compress=false.
+Respuesta precede restart/finish por callbacks de puertos. Seed watchdog/contexto
+SYSTEM_SEEDER/skipTrigger se compone fuera de aplicación.
+Deudas 023: reset TRUNCATE CASCADE borra users aunque informa preservedUser,
+recrea admin con credenciales fijas heredadas y conserva jobs; operaciones y jobs
+no coordinan bloqueo distribuido, watchdog no cancela motor, restart dev toca
+index.ts. Ver specs/023-fastify-operaciones-admin/spec.md antes de cutover.
+
+Runtime integrado (024): modules/runtime/index.ts exporta lifecycle puro con
+puertos de timers y tareas; strict y guard de arquitectura. HTTP-only factory
+no inicia sockets/jobs; fastify/main.ts opta por integrateFastifyRuntime.
+Express y Fastify comparten runtimeJobs, huella validada antes de locks,
+autocierre inicial/5 min, scheduler nocturno único y drenaje antes de pools.
+refreshScheduler no vuelve a inicializar mantenimiento ni autocierre horario.
+Seeder shutdown espera workers y operaciones aún vivas tras timeout, conserva
+running para resume; no iniciar dos workers del mismo job en un proceso.
+RuntimeHost atiende SIGINT/SIGTERM y restart toca el entrypoint activo en dev.
+SocketService tiene propietario único/close; legacy acepta conexión sin sesión,
+query userId elegía sala y broadcast era global; 025 resolvió esta deuda.
+OpenAPI dist usa docs/swagger.json copiado en Docker; SDK sin cambios.
+Override compose.fastify-staging.yaml conserva compatibilidad; base/producción ya usan Fastify tras 025.
+
+024 preserva JSON vacío como undefined antes de schema, pero usa parser Fastify
+nativo seguro para JSON no vacío (proto/constructor) y conserva bodyLimit por ruta.
+Swagger HTML/JS/CSS declaran UTF-8; probar render real, 200 de assets no basta.
+Carga staging renueva Usuario fuera de VUs sin cambiar TTL, archivo privado con
+reemplazo atómico/limpieza y ensure moderno exige todo HTTP 200 + tráfico no vacío.
+La suite e2e comparte admin y puede evictar sesiones en paralelo; registrar perfil
+workers=1 y no relajar presupuestos de auth para resolver interferencia del harness.
+
+Histórico 025-A (Express era principal): Socket.IO exige token en
+handshake auth, deriva sala user:ID del principal y aplica allowlist HTTP también
+a websocket mediante allowRequest. No usar query userId como identidad. Antes de
+entregar eventos valida JWT/sesiones/usuario/rol en dos consultas por lote completo;
+fallo de BD desconecta, barrido de 30 s revoca clientes ociosos. Mantener el evento
+server-only auth:force_logout después de borrar sesiones. Kiosk conserva JWT sin
+ActiveSession. Frontend conecta tras login y desconecta al salir/cambiar identidad.
+025-B1 completó autorización de payloads; el cierre 025 completó benchmark/cutover.
+Las deudas de negocio son backlog posterior, no bloqueantes de migración.
+
+Spec 025-B1: modules/realtime aplica política pura por rol/empleado con API pública
+index.ts y strict. SocketService proyecta eventos explícitos; desconocidos se
+deniegan. Negocio emite invalidaciones changed:true, nunca filas/config/password;
+notas creadas añaden created:true. Audit solo Admin/elevado/Fiscalizador, usuarios
+solo Admin, seeder solo Admin con campos explícitos y sin errores. Usuario/quiosco
+solo recibe records/assignments/corrections/employee propios con ownership explícito;
+bulk sin employeeId no se difunde a esos roles. Notificación personal exige target
+validado y omite metadata. Guard enumera productores reales y exige contrato.
+ConfigService redacta SMTP_CONFIG/EMAIL_NOTIFICATION_RULES completos en nuevas
+auditorías; HTTP/históricos, errores y reset/credenciales siguen en 025-B2.
+
+025-B2: HTTP SMTP_CONFIG enmascara secretos; placeholder solo conserva contraseña
+para destino idéntico (host/user/port/secure). AuditService y export JSON/CSV/XML
+redactan claves sensibles y UNHANDLED_ERROR; históricos no se reescriben. Errores
+HTTP 5xx/SMTP no exponen mensaje interno. Reset usa withDirectTransaction y
+TRUNCATE RESTRICT explícito, conserva hash/MFA del Admin ejecutor y admin existente
+Administrador, elimina sesiones y no crea credenciales fijas. Worker seeding se
+drena; jobs running bloquean reset. Drenaje universal de operaciones, watchdog
+fase 1 quedan en backlog posterior, sin bloquear el cutover de desarrollo.
+
+025-B2d1: forceResetPassword cambia hash/flag y revoca sesiones del destino en
+withDirectTransaction; fallo revierte ambos, éxito audita conteo sin secretos.
+Auth pasa credentialStamp HMAC opaco de id/hash por puerto interno; no DTO de
+login ni auditoría. createSession bloquea users FOR UPDATE antes de comprobar
+prueba y aplicar cupo por lastActive dentro de la misma transacción. MFA firmado
+lleva prueba y la verifica bajo ese lock, conservando rol actual y presupuesto
+persistido. AuthFlow nunca emite sesión sin prueba; el argumento opcional de
+AuthService.createSession se conserva solo para productores internos confiables
+(fixtures de sesión), no para HTTP. No llamar manageSessionLimit antes de emitir.
+B2d2 (admisión/drenaje universal de operaciones) queda en backlog posterior.
+
+Cierre 025 en desarrollo: index.ts carga fastify/main; dev/start/compose usan
+Fastify. Express/middleware solo devDependencies; Docker instala solo dependencias runtime en una etapa separada. Prisma
+CLI y swagger-ui-dist son dependencias runtime explícitas. UploadError neutral
+conserva códigos multipart sin importar Multer en Fastify. dev:express es rollback
+local con dependencias dev, no está disponible en imagen final. Deudas funcionales
+y drenaje universal pasan a specs/025-fastify-cutover/backlog.md por instrucción
+del usuario; no crear más specs de migración ni bloquear cutover con continuidad
+de producción. En desarrollo se autoriza purgar sesiones y reiniciar.

@@ -1,0 +1,79 @@
+# BDD 025: Preparación del cutover
+
+Spec: [spec.md](spec.md). Contratos conservados y cutover en desarrollo.
+
+- Sin token o con token inválido, handshake devuelve Unauthorized, sin detalles
+  internos y sin socket conectado ni sala privada.
+- Con token propio y query userId de una víctima, la sala es user:ID propio;
+  jamás se une a la sala indicada por el cliente.
+- Con sesión válida recibe una entrega privada. Tras borrar su sesión, un nuevo
+  broadcast no entrega el payload y desconecta al cliente.
+- JWT vencido, sesión revocada, usuario eliminado o rol cambiado quedan fuera del
+  lote autorizado. Quince sesiones y un duplicado usan dos consultas de lote.
+- Un fallo de BD no permite enviar datos: desconecta los clientes afectados.
+- Un Origin fuera de allowlist devuelve 403 al handshake Engine.IO, además de CORS.
+- Quiosco conserva JWT sin ActiveSession; expiración rechaza entrega igualmente.
+- Antes de login no existe conexión frontend. Login conecta; logout cierra.
+  Cada handshake obtiene token actual, incluida reconexión tras actualización.
+
+RED inicial: tres pruebas fallaron contra 024 (anónimo aceptado, sala query y
+revocación sin comprobar). GREEN y gates se registran en [resultado](result.md).
+
+Pendientes B2–D: secretos/reset,
+deudas funcionales, benchmark comparable y cambio de entrypoint con rollback.
+
+## Ejemplos 025-B1
+
+- Admin/Fiscalizador reciben auditLog:created solo con changed:true; Usuario no
+  recibe el evento. Seeder failed llega solo a Admin con jobId, sin error.
+- Config SMTP modificado: socket entrega changed:true sin key/value/password a
+  roles conocidos; la consulta HTTP aplica su autorización existente.
+- Usuario vinculado a empleado A recibe marcador de registro A; no recibe
+  actualización B ni bulk/deletion sin ownership explícito. Sin vínculo no recibe.
+- Usuario solo recibe user_notification con destinatario propio; faltante, vacío
+  o destinatario ajeno no entrega. Metadata no sale en el payload.
+- Unknown event/role nunca entrega, aunque sea Admin o evento privado.
+- Nota creada cambia indicador unread con created:true; no necesita content/id.
+  Nota archivada invalida queries mediante quickNote:updated.
+- POST SMTP_CONFIG conserva secreto operacional en DB, pero audit CONFIG_SET
+  contiene previousValue/newValue REDACTED, tanto Express como Fastify.
+
+RED de política: import del módulo inexistente antes de implementar (sin tests
+colectados); no afirmar fallo de una aserción ejecutada. GREEN verifica política,
+listener real con tres roles y sesiones persistidas y guard no vacío de productores.
+
+## Ejemplos 025-B2
+
+- GET/list/POST SMTP_CONFIG por Admin entrega ********; DB conserva el secreto.
+  Reenviar máscara al mismo destino conserva contraseña; cambiar host devuelve 400.
+- Auditoría histórica contiene contraseña en body o config: list y exportaciones
+  JSON/CSV/XML ocultan el secreto; la fila original no se modifica.
+- Fallo SMTP entrega mensaje genérico; error HTTP 500 omite detalles internos.
+- Reset de administrador vinculado conserva usuario, hash y MFA, desvincula empleado
+  y elimina sesiones/jobs. No crea usuario admin con contraseña fija.
+- Fallo inyectado al borrar configs después de borrar sesiones: rollback conserva
+  sesiones, usuarios y configs, entrega error genérico y no solicita reinicio.
+
+RED del helper inexistente falla al importar antes de implementar, sin aserciones
+colectadas. Las pruebas con PostgreSQL ejercitan ambos adaptadores y rollback real.
+
+## Ejemplos 025-B2d1: reset de contraseña
+
+- Admin fuerza contraseña nueva: hash y flag cambian junto con borrado de todas
+  las sesiones del destino, sin revocar sesiones de otros usuarios. Token anterior
+  devuelve 401. Password/hash nunca aparece en respuesta, auditoría ni socket.
+- Login validó contraseña antes del reset: su snapshot ya no permite crear sesión
+  después del commit. Challenge MFA anterior tampoco completa autenticación.
+- Fallo al revocar sesiones revierte hash/flag y conserva sesiones; no audita éxito.
+- Contraseña nueva permite login posterior; contraseña anterior falla.
+
+## Cutover final
+
+- npm run dev/npm start cargan Fastify; no importan app Express.
+- Imagen final arranca y sirve health/login/docs/cargas sin Express ni Multer.
+- Gateway conserva mismas rutas y SDK; UI permite login y flujos de negocio.
+- SIGTERM cierra HTTP/sockets/jobs/BD; reinicio autorizado puede purgar sesiones.
+- dev:express permite comprobar rollback local con dependencias de desarrollo.
+
+RED: ambos tests de cutover fallaron por entrypoint Express y dependencias runtime
+antes de modificar código. GREEN y evidencia final en result.md.

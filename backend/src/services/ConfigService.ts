@@ -1,4 +1,5 @@
 import prisma from "./db";
+import { configAuditValue } from "../modules/configs";
 import { closureValidationService } from "./closureValidationService";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
@@ -114,8 +115,8 @@ export class ConfigService {
           severity: "WARNING",
           details: {
             key,
-            previousValue: oldConfig ? safeJsonParse(oldConfig.value) : null,
-            newValue: value,
+            previousValue: configAuditValue(key, oldConfig ? safeJsonParse(oldConfig.value) : null),
+            newValue: configAuditValue(key, value),
           },
         });
 

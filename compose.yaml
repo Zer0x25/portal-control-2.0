@@ -34,6 +34,7 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-pweb3}
+      AUTH_TYPE: scram-sha-256
       POOL_MODE: transaction
       MAX_CLIENT_CONN: ${PGB_MAX_CLIENT_CONN:-300}
       DEFAULT_POOL_SIZE: ${PGB_DEFAULT_POOL_SIZE:-25}

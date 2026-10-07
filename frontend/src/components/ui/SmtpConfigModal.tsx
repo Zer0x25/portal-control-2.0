@@ -318,7 +318,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       value={currentProfile.pass}
                       onChange={handleInputChange}
                       required
-                      placeholder="••••••••••••"
+                      placeholder="Contraseña nueva si cambias servidor o usuario"
                       className="rounded-2xl"
                     />
                   </div>

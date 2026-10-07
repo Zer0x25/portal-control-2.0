@@ -43,7 +43,7 @@ app.use(helmet());
 app.use(
   compression({
     filter: (req, res) => {
-      if (req.path.startsWith("/api/maintenance")) {
+      if (req.originalUrl.split("?")[0].startsWith("/api/maintenance")) {
         return false;
       }
       return compression.filter(req, res);

@@ -109,7 +109,7 @@ export interface paths {
       };
       requestBody?: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UpdateUser"];
         };
       };
       responses: {
@@ -3572,6 +3572,29 @@ export interface paths {
             };
           };
         };
+        /** @description Código o desafío inválido, expirado o MFA deshabilitado */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Cuenta archivada entre factores */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Cinco códigos incorrectos bloquean MFA durante cinco minutos */
+        429: {
+          headers: {
+            /** @description Segundos hasta que se permita otro intento */
+            "Retry-After"?: number;
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
       };
     };
     delete?: never;
@@ -4641,9 +4664,12 @@ export interface components {
         | "Administrador"
         | "Supervisor_Elevado"
         | "Fiscalizador"
-        | "Archivado";
+        | "Archivado"
+        | "Reloj Control"
+        | "Supervisor Elevado";
       employeeId?: string | null;
       mustChangePassword?: boolean;
+      mfaEnabled?: boolean;
       lastLogin?: string | null;
       createdAt?: string;
       updatedAt?: string;

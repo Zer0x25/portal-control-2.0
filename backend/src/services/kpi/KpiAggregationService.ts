@@ -1,3 +1,4 @@
+import { toPublicEmployee } from "../../modules/employees";
 import { Employee } from "../../generated/prisma/client";
 import { KpiSummaryAccumulator, KpiSummaryDetails, PeriodStats } from "./types";
 
@@ -48,7 +49,7 @@ export class KpiAggregationService {
         });
       }
       if (d.status === "Ausente") {
-        details.absentEmployees.push({ ...employee, absenceDate: d.isoDate });
+        details.absentEmployees.push({ ...toPublicEmployee(employee), absenceDate: d.isoDate });
       }
       if (d.status === "Vacaciones") {
         details.vacationRecords.push({ employeeName: employee.name, date: d.isoDate });

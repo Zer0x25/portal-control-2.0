@@ -2,7 +2,20 @@ import fs from "fs";
 import path from "path";
 
 class RuntimeControlService {
+  private handler?: (reason: string) => void;
+  bind(handler: (reason: string) => void): () => void {
+    if (this.handler) throw new Error("Runtime restart handler already bound");
+    this.handler = handler;
+    return () => {
+      if (this.handler === handler) this.handler = undefined;
+    };
+  }
+
   scheduleRestart(reason: string): void {
+    if (this.handler) {
+      this.handler(reason);
+      return;
+    }
     if (process.env.NODE_ENV === "test") {
       return;
     }

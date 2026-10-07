@@ -3,17 +3,8 @@ import { NotFoundError } from "../utils/AppError";
 import { safeJsonParse } from "../utils/configUtils";
 import type { ScheduledReport } from "../generated/prisma/client";
 
-export interface ScheduledReportData {
-  name: string;
-  description?: string;
-  reportType: string;
-  frequency: string;
-  cronExpression: string;
-  recipients: string | string[];
-  filters?: unknown;
-  isActive?: boolean;
-}
-
+import type { ScheduledReportData } from "../modules/emailReports";
+export type { ScheduledReportData } from "../modules/emailReports";
 export class ScheduledReportService {
   /**
    * Lists all scheduled reports with normalized data.

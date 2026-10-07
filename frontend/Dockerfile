@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:24-alpine AS builder
+FROM node:26-alpine AS builder
 LABEL org.opencontainers.image.source="https://github.com/Zer0x25/portal-control"
 
 WORKDIR /app

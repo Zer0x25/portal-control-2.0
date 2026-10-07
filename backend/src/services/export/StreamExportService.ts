@@ -1,4 +1,4 @@
-import { Response } from "express";
+import type { ExcelHttpStream } from "../../utils/httpStream";
 import type { Prisma } from "../../generated/prisma/client";
 import { Pool, PoolClient } from "pg";
 import Cursor from "pg-cursor";
@@ -53,11 +53,12 @@ export class StreamExportService {
    * @param filename - Output filename (e.g., "audit_logs_2025_2026.csv")
    */
   async streamQueryToCSV(
-    res: Response,
+    res: ExcelHttpStream,
     query: string,
     params: (string | number | boolean | Date | null | string[])[],
     headers: string[],
     filename: string,
+    project?: (row: Record<string, unknown>) => Record<string, unknown>,
   ): Promise<void> {
     let client: PoolClient | null = null;
     let cursor: Cursor | null = null;
@@ -87,7 +88,8 @@ export class StreamExportService {
 
         // Buffer batch content
         let batchOutput = "";
-        for (const row of rows) {
+        for (const original of rows) {
+          const row = project ? project(original) : original;
           const csvRow = headers.map((h) => {
             let val = row[h];
             if (val === null || val === undefined) return "";
@@ -127,12 +129,13 @@ export class StreamExportService {
    * GENERIC: Stream any PostgreSQL query to XML
    */
   async streamQueryToXML(
-    res: Response,
+    res: ExcelHttpStream,
     query: string,
     params: (string | number | boolean | Date | null | string[])[],
     rootElement: string,
     recordElement: string,
     filename: string,
+    project?: (row: Record<string, unknown>) => Record<string, unknown>,
   ): Promise<void> {
     let client: PoolClient | null = null;
     let cursor: Cursor | null = null;
@@ -158,7 +161,8 @@ export class StreamExportService {
         }
 
         let batchOutput = "";
-        for (const row of rows) {
+        for (const original of rows) {
+          const row = project ? project(original) : original;
           batchOutput += `  <${recordElement}>\n`;
           for (const [key, value] of Object.entries(row)) {
             let val = value;
@@ -209,7 +213,7 @@ export class StreamExportService {
    * Stream time records as CSV with native PostgreSQL cursor
    */
   async streamToCSV(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;
@@ -301,7 +305,7 @@ export class StreamExportService {
    * Stream time records as Excel (.xlsx) with native PostgreSQL cursor and exceljs
    */
   async streamToExcel(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;
@@ -429,7 +433,7 @@ export class StreamExportService {
    * Stream employees as Excel (.xlsx)
    */
   async streamEmployeesToExcel(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       search?: string;
       status?: string;
@@ -543,7 +547,7 @@ export class StreamExportService {
   /**
    * Stream shift report as Excel (.xlsx)
    */
-  async streamShiftReportToExcel(res: Response, shiftId: string): Promise<void> {
+  async streamShiftReportToExcel(res: ExcelHttpStream, shiftId: string): Promise<void> {
     try {
       const prisma = (await import("../db")).default;
       const report = await prisma.shiftReport.findUnique({
@@ -628,13 +632,13 @@ export class StreamExportService {
    * Stream KPI Report as Excel (.xlsx)
    */
   async streamKpiReportToExcel(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;
       employeeId?: string;
       area?: string;
-      mode?: "summary" | "detailed";
+      mode?: "summary" | "detailed" | "compiled_detailed";
     },
   ): Promise<void> {
     try {
@@ -720,7 +724,7 @@ export class StreamExportService {
    * Stream time records as XML with native PostgreSQL cursor
    */
   async streamToXML(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;

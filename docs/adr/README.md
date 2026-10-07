@@ -6,25 +6,28 @@ con Prettier (`printWidth: 100`).
 
 ## Índice
 
-| ADR                                                | Estado    | Resumen                               |
-| -------------------------------------------------- | --------- | ------------------------------------- |
-| [0001](0001-postgres-pgbouncer-dual-url.md)        | Aceptado  | Postgres + PgBouncer + URL dual       |
-| [0002](0002-prisma-migrate-seed-entrypoint.md)     | Aceptado  | Migración y seed en entrypoint        |
-| [0003](0003-express-zod-openapi-contract-guard.md) | Aceptado  | Contrato API con guards               |
-| [0004](0004-jwt-fail-fast.md)                      | Aceptado  | JWT fail-fast sin fallback débil      |
-| [0005](0005-gitops-portainer-ghcr.md)              | Aceptado  | GitOps Portainer + GHCR               |
-| [0006](0006-gateway-nginx-proxy-net.md)            | Aceptado  | Gateway Nginx + `proxy_net`           |
-| [0007](0007-frontend-vite-sdk-generado.md)         | Aceptado  | Frontend Vite + SDK generado          |
-| [0008](0008-ratchets-calidad.md)                   | Aceptado  | Ratchets de lint y validación         |
-| [0009](0009-observabilidad-minima.md)              | Aceptado  | Observabilidad mínima incremental     |
-| [0010](0010-sdd-agentic-workflow.md)               | Aceptado  | SDD mínimo (spec → plan → tasks)      |
-| [0011](0011-runtime-hardening.md)                  | Aceptado  | Endurecimiento runtime y secretos     |
-| [0012](0012-rock-solid-governance.md)              | Aceptado  | Cobertura, e2e smoke, docs check      |
-| [0013](0013-ci-pr-full-deploy-main-gates.md)       | Aceptado  | CI completa en PR, solo gates en main |
-| [0014](0014-ci-por-cambios-ahorro-minutos.md)      | Aceptado  | CI por cambios para ahorrar minutos   |
-| [0015](0015-prisma-7-driver-adapters.md)           | Aceptado  | Prisma 7 con driver adapters          |
-| [0016](0016-e2e-staging-local.md)                  | Aceptado  | E2E completa contra staging local     |
-| [0000](0000-template.md)                           | Plantilla | No usar como decisión                 |
+| ADR                                                     | Estado    | Resumen                                |
+| ------------------------------------------------------- | --------- | -------------------------------------- |
+| [0001](0001-postgres-pgbouncer-dual-url.md)             | Aceptado  | Postgres + PgBouncer + URL dual        |
+| [0002](0002-prisma-migrate-seed-entrypoint.md)          | Aceptado  | Migración y seed en entrypoint         |
+| [0003](0003-express-zod-openapi-contract-guard.md)      | Aceptado  | Contrato API con guards                |
+| [0004](0004-jwt-fail-fast.md)                           | Aceptado  | JWT fail-fast sin fallback débil       |
+| [0005](0005-gitops-portainer-ghcr.md)                   | Aceptado  | GitOps Portainer + GHCR                |
+| [0006](0006-gateway-nginx-proxy-net.md)                 | Aceptado  | Gateway Nginx + `proxy_net`            |
+| [0007](0007-frontend-vite-sdk-generado.md)              | Aceptado  | Frontend Vite + SDK generado           |
+| [0008](0008-ratchets-calidad.md)                        | Aceptado  | Ratchets de lint y validación          |
+| [0009](0009-observabilidad-minima.md)                   | Aceptado  | Observabilidad mínima incremental      |
+| [0010](0010-sdd-agentic-workflow.md)                    | Aceptado  | SDD mínimo (spec → plan → tasks)       |
+| [0011](0011-runtime-hardening.md)                       | Aceptado  | Endurecimiento runtime y secretos      |
+| [0012](0012-rock-solid-governance.md)                   | Aceptado  | Cobertura, e2e smoke, docs check       |
+| [0013](0013-ci-pr-full-deploy-main-gates.md)            | Aceptado  | CI completa en PR, solo gates en main  |
+| [0014](0014-ci-por-cambios-ahorro-minutos.md)           | Aceptado  | CI por cambios para ahorrar minutos    |
+| [0015](0015-prisma-7-driver-adapters.md)                | Aceptado  | Prisma 7 con driver adapters           |
+| [0016](0016-e2e-staging-local.md)                       | Aceptado  | E2E completa contra staging local      |
+| [0017](0017-modulos-estrictos-node26-fastify-piloto.md) | Propuesto | Módulo estricto, Node 26 y piloto HTTP |
+| [0018](0018-fastify-base-migracion-modular.md)          | Aceptado  | Base Fastify y migración por módulos   |
+| [0019](0019-auth-mfa-pin-estado-persistente.md)         | Aceptado  | Estado persistente para MFA y PIN      |
+| [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida
 

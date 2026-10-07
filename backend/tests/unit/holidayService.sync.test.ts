@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { holidayService } from "../../src/services/HolidayService";
 import prisma from "../../src/services/db";
 import { auditService } from "../../src/services/auditService";
+import { logger } from "../../src/utils/logger";
 import { SocketService } from "../../src/services/socketService";
 
 // Mock dependencies
@@ -34,8 +35,8 @@ describe("HolidayService.syncExternalHolidays", () => {
 
   beforeEach(() => {
     // Suppress console.warn and console.error during tests
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(logger, "warn").mockImplementation(() => {});
+    vi.spyOn(logger, "error").mockImplementation(() => {});
 
     // Save original fetch
     originalFetch = global.fetch;
@@ -113,7 +114,7 @@ describe("HolidayService.syncExternalHolidays", () => {
       "API de Boostr respondió con status: 500",
     );
 
-    expect(console.error).toHaveBeenCalledWith(
+    expect(logger.error).toHaveBeenCalledWith(
       "[HolidayService] API Error 500:",
       "Internal Server Error",
     );
@@ -150,7 +151,7 @@ describe("HolidayService.syncExternalHolidays", () => {
       "Formato de respuesta de API de Boostr inválido",
     );
 
-    expect(console.error).toHaveBeenCalledWith("[HolidayService] Invalid API response format:", {
+    expect(logger.error).toHaveBeenCalledWith("[HolidayService] Invalid API response format:", {
       status: "error",
       message: "Not found",
     });
@@ -170,7 +171,7 @@ describe("HolidayService.syncExternalHolidays", () => {
       "Formato de respuesta de API de Boostr inválido",
     );
 
-    expect(console.error).toHaveBeenCalledWith("[HolidayService] Invalid API response format:", {
+    expect(logger.error).toHaveBeenCalledWith("[HolidayService] Invalid API response format:", {
       status: "success",
       data: "not an array",
     });
@@ -190,6 +191,6 @@ describe("HolidayService.syncExternalHolidays", () => {
       "API de Boostr respondió con status: 404",
     );
 
-    expect(console.error).toHaveBeenCalledWith("[HolidayService] API Error 404:", "N/A");
+    expect(logger.error).toHaveBeenCalledWith("[HolidayService] API Error 404:", "N/A");
   });
 });

@@ -18,8 +18,13 @@ config:
       arrivalRate: 2
       rampTo: 4
       name: "pico de turno"
-  ensure:
-    maxErrorRate: 1
+  processor: "./staging-read.cjs"
+  plugins:
+    ensure:
+      conditions:
+        - expression: "http.responses > 0"
+        - expression: "http.codes.200 == http.responses"
+        - expression: "vusers.failed == 0"
 
 scenarios:
   - name: "sync dashboard admin"
@@ -69,6 +74,7 @@ scenarios:
             - statusCode: 200
 
   - name: "sync portal worker"
+    beforeScenario: "assignWorkerToken"
     weight: 30
     flow:
       - get:

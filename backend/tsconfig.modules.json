@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.holidays.json",
+  "include": [
+    "src/modules/runtime/**/*.ts",
+    "src/modules/realtime/**/*.ts",
+    "src/modules/admin/**/*.ts",
+    "src/modules/maintenance/**/*.ts",
+    "src/modules/audit/**/*.ts",
+    "src/modules/importExport/**/*.ts",
+    "src/modules/auth/**/*.ts",
+    "src/modules/kpis/**/*.ts",
+    "src/modules/emailReports/**/*.ts",
+    "src/modules/configs/**/*.ts",
+    "src/modules/notes/**/*.ts",
+    "src/modules/meters/**/*.ts",
+    "src/modules/records/**/*.ts",
+    "src/modules/shifts/**/*.ts",
+    "src/modules/shiftReports/**/*.ts",
+    "src/modules/leaves/**/*.ts",
+    "src/modules/corrections/**/*.ts",
+    "src/modules/users/**/*.ts",
+    "src/modules/employees/**/*.ts",
+    "src/modules/holidays/**/*.ts",
+    "src/platform/fastify/**/*.ts"
+  ]
+}

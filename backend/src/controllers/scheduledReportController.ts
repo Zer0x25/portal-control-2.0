@@ -1,76 +1,23 @@
-import { Response } from "express";
-import { AuthRequest } from "../middleware/authMiddleware";
-import { ScheduledReportService } from "../services/ScheduledReportService";
+import type { Response } from "express";
+import type { AuthRequest } from "../middleware/authMiddleware";
 import { asyncHandler } from "../middleware/errorHandler";
-import { NotFoundError, ValidationError } from "../utils/AppError";
-
-/**
- * Get all scheduled reports
- */
+import { emailReportFlows as flows } from "../services/emailReportFlows";
 export const getScheduledReports = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const reports = await ScheduledReportService.list();
-  res.json(reports);
+  res.json(await flows.list());
 });
-
-/**
- * Get a single scheduled report by ID
- */
 export const getScheduledReport = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const id = req.params.id as string;
-  const report = await ScheduledReportService.getById(id);
-
-  if (!report) {
-    throw new NotFoundError("Reporte no encontrado");
-  }
-
-  res.json(report);
+  res.json(await flows.get(req.params.id as string));
 });
-
-/**
- * Create a new scheduled report
- */
 export const createScheduledReport = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const createdBy = req.user?.username || "System";
-  const { name, reportType, frequency, cronExpression, recipients } = req.body;
-
-  if (
-    !name ||
-    !reportType ||
-    !frequency ||
-    !cronExpression ||
-    !recipients ||
-    recipients.length === 0
-  ) {
-    throw new ValidationError("Faltan campos requeridos");
-  }
-
-  const report = await ScheduledReportService.create(req.body, createdBy);
-  res.status(201).json(report);
+  res.status(201).json(await flows.create(req.body, req.user?.username));
 });
-
-/**
- * Update a scheduled report
- */
 export const updateScheduledReport = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const id = req.params.id as string;
-  const report = await ScheduledReportService.update(id, req.body);
-  res.json(report);
+  res.json(await flows.update(req.params.id as string, req.body));
 });
-
-/**
- * Delete a scheduled report
- */
 export const deleteScheduledReport = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const id = req.params.id as string;
-  await ScheduledReportService.delete(id);
+  await flows.remove(req.params.id as string);
   res.status(204).send();
 });
-
-/**
- * Toggle report active status
- */
 export const toggleReportStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const id = req.params.id as string;
-  const report = await ScheduledReportService.toggleStatus(id);
-  res.json(report);
+  res.json(await flows.toggle(req.params.id as string));
 });

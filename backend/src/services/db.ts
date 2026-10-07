@@ -23,21 +23,23 @@ function createPool(connectionString: string | undefined): Pool {
   });
 }
 
+const runtimePool = createPool(process.env.DATABASE_URL?.trim());
+
 // Runtime client via PgBouncer
 const basePrisma = new PrismaClient({
-  adapter: new PrismaPg(createPool(process.env.DATABASE_URL?.trim())),
+  adapter: new PrismaPg(runtimePool),
   log: prismaLogConfig,
 });
 
 // Direct client for interactive transactions that are incompatible with PgBouncer transaction pooling
 const directDatabaseUrl = process.env.DIRECT_URL?.trim();
-const directPrisma =
-  directDatabaseUrl && directDatabaseUrl.length > 0
-    ? new PrismaClient({
-        adapter: new PrismaPg(createPool(directDatabaseUrl)),
-        log: prismaLogConfig,
-      })
-    : basePrisma;
+const directPool = directDatabaseUrl ? createPool(directDatabaseUrl) : null;
+const directPrisma = directPool
+  ? new PrismaClient({
+      adapter: new PrismaPg(directPool),
+      log: prismaLogConfig,
+    })
+  : basePrisma;
 
 type TransactionOptions = {
   maxWait?: number;
@@ -173,3 +175,12 @@ export const prisma = createExtendedClient(basePrisma);
 export const prismaDirect = directPrisma;
 
 export default prisma;
+
+/** Candidate runtime owns these pools; Prisma does not dispose externally supplied pg.Pools. */
+export async function closeDatabase(): Promise<void> {
+  await Promise.all([
+    basePrisma.$disconnect(),
+    ...(directPrisma !== basePrisma ? [directPrisma.$disconnect()] : []),
+  ]);
+  await Promise.all([runtimePool.end(), ...(directPool ? [directPool.end()] : [])]);
+}

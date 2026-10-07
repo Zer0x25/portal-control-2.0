@@ -1,10 +1,8 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
 import { subYears, subMonths } from "date-fns";
 import { ulid } from "ulid";
-import bcrypt from "bcryptjs";
-import { Watchdog } from "../utils/Watchdog";
-import { AgentLogger } from "../utils/agentLogger";
 import { AuthService } from "./AuthService";
+import { ForbiddenError, ConflictError } from "../utils/AppError";
 
 /** Snapshot returned by {@link MaintenanceService.checkSystemHealth}. */
 type SystemHealthSummary = {
@@ -143,90 +141,43 @@ export class MaintenanceService {
     currentUser?: { id: string; username: string };
   }): Promise<{ success: boolean; preservedUser?: string; invalidatedSessions?: number }> {
     const { onProgress, currentUser } = options;
-
-    const watchdog = new Watchdog("DatabaseCleaner", 120000, () => {
-      console.error("❌ [CLEANER] Watchdog abortó por inactividad durante limpieza.");
-      throw new Error("PROCESS_TIMEOUT");
-    });
-
-    try {
-      onProgress("🚨 Iniciando limpieza total y robustecida de la base de datos...");
-      AgentLogger.log("Iniciando limpieza manual de base de datos", "DB");
-      watchdog.start();
-
-      // 1. Limpieza TOTAL con TRUNCATE (Instantánea y con Reclamo de Espacio en Disco)
-      onProgress("🔥 Ejecutando TRUNCATE masivo en tablas (Recuperando espacio en disco)...");
-
-      const tables = [
-        "audit_logs",
-        "time_records",
-        "shift_reports",
-        "correction_requests",
-        "assigned_shifts",
-        "meter_readings",
-        "leave_records",
-        "monthly_employee_stats",
-        "quick_notes",
-        "employees",
-        "shift_patterns",
-        "holidays",
-        "system_configs",
-        "scheduled_reports",
-      ];
-
-      const truncateQuery = `TRUNCATE TABLE ${tables.map((t) => `"${t}"`).join(", ")} RESTART IDENTITY CASCADE;`;
-      await prisma.$executeRawUnsafe(truncateQuery);
-      watchdog.heartbeat();
-
-      // 2. Limpieza de Usuarios (Preservando al actual o admin)
-      onProgress(
-        `🔐 Limpiando usuarios secundarios (Preservando: ${currentUser?.username || "admin"})...`,
-      );
-
-      await prisma.user.deleteMany({
-        where: {
-          AND: [currentUser ? { id: { not: currentUser.id } } : {}, { username: { not: "admin" } }],
-        },
-      });
-
-      // 3. Asegurar cuenta Admin
-      onProgress("🛡️ Verificando integridad de cuenta maestra (admin)...");
-      const adminUser = await prisma.user.findUnique({
-        where: { username: "admin" },
-      });
-
-      if (!adminUser) {
-        const defaultPassword = process.env.NODE_ENV === "production" ? "" : "999.666";
-        const hashedPassword = bcrypt.hashSync(defaultPassword || "999.666", 10);
-        await prisma.user.create({
-          data: {
-            username: "admin",
-            passwordHash: hashedPassword,
-            role: "Administrador",
-          },
+    if (!currentUser?.id) throw new ForbiddenError("Se requiere un administrador existente");
+    onProgress("Iniciando reset transaccional; se conservan administradores y credenciales.");
+    const result = await withDirectTransaction(
+      async (tx) => {
+        await tx.$executeRaw`SELECT set_config('statement_timeout', '110s', true)`;
+        await tx.$executeRaw`SELECT set_config('lock_timeout', '10s', true)`;
+        await tx.$executeRaw`SELECT set_config('audit.skip_trigger', 'true', true)`;
+        const locked = await tx.$queryRaw<
+          { id: string; username: string; role: string }[]
+        >`SELECT id, username, role FROM users WHERE id = ${currentUser.id} FOR UPDATE`;
+        const actor = locked[0];
+        if (!actor || actor.role !== "Administrador")
+          throw new ForbiddenError("Se requiere un administrador existente");
+        const running = await tx.seedingJob.count({ where: { status: "running" } });
+        if (running) throw new ConflictError("Detén los jobs activos antes del reset");
+        const preserved = await tx.user.findMany({
+          where: { OR: [{ id: actor.id }, { username: "admin", role: "Administrador" }] },
+          select: { id: true },
         });
-        onProgress("✅ Cuenta 'admin' recreada con credenciales por defecto.");
-      }
-
-      console.warn(`✅ Base de datos limpiada. Preservado: ${currentUser?.username || "ninguno"}`);
-      const invalidation = await AuthService.invalidateAllSessions({
-        actorUsername: currentUser?.username || "SYSTEM",
-        reason: "DATABASE_RESET",
-        restartRecommended: true,
-      });
-      onProgress("✨ Sistema reseteado con éxito. Reiniciando...");
-
-      watchdog.stop();
-      return {
-        success: true,
-        preservedUser: currentUser?.username,
-        invalidatedSessions: invalidation.deletedCount,
-      };
-    } catch (error: unknown) {
-      watchdog.stop();
-      console.error("Error al limpiar la base de datos:", error);
-      throw error;
-    }
+        const ids = preserved.map((user) => user.id);
+        const invalidation = await tx.activeSession.deleteMany({});
+        await tx.user.updateMany({ where: { id: { in: ids } }, data: { employeeId: null } });
+        await tx.user.deleteMany({ where: { id: { notIn: ids } } });
+        // Explicit RESTRICT fails closed if an unforeseen FK is introduced. Never CASCADE users.
+        await tx.$executeRaw`TRUNCATE TABLE audit_logs, time_records, shift_reports, correction_requests, assigned_shifts, meter_readings, leave_records, monthly_employee_stats, quick_notes, shift_patterns, holidays, scheduled_reports, seeding_job_logs, seeding_jobs RESTART IDENTITY RESTRICT`;
+        await tx.employee.deleteMany({});
+        await tx.systemConfig.deleteMany({ where: { key: { not: "db_instance_id" } } });
+        return { preservedUser: actor.username, invalidatedSessions: invalidation.count };
+      },
+      { timeout: 125000, maxWait: 10000 },
+    );
+    await AuthService.notifySessionInvalidation(
+      { actorUsername: result.preservedUser, reason: "DATABASE_RESET", restartRecommended: true },
+      result.invalidatedSessions,
+    );
+    onProgress("Reset confirmado; sesiones invalidadas. Reiniciando...");
+    return { success: true, ...result };
   }
 }
 

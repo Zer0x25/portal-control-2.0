@@ -96,12 +96,10 @@ Cambios incompatibles deben marcarse explícitamente:
 
 En el flujo diario, Docker ejecuta solo PostgreSQL. El backend Express y el frontend Vite corren en el host con recarga en caliente:
 
-1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`.
-2. Ejecuta `npm run dev:up` desde la raíz para iniciar PostgreSQL.
-3. La primera vez, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
-4. En una terminal, ejecuta `cd backend && npm run dev`.
-5. En otra terminal, ejecuta `cd frontend && npm run dev`.
-6. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
+1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`. `JWT_SECRET` es obligatorio: sin él el backend aborta al arrancar con `CRITICAL: JWT_SECRET environment variable is not set` (ver §5.2).
+2. La primera vez, inicia PostgreSQL con `npm run dev:up` desde la raíz. Luego, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
+3. Para trabajar, ejecuta `npm run dev` desde la raíz. El comando inicia PostgreSQL y luego arranca backend y frontend en paralelo; `Ctrl+C` detiene ambos procesos de desarrollo.
+4. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
 
 ### 5.1 Base de datos local
 
@@ -119,7 +117,25 @@ npm run dev:down
 
 `npm run dev:down` detiene el contenedor y conserva el volumen. No uses `down -v` salvo que quieras borrar los datos locales.
 
-### 5.2 Staging local (ensayo del deploy de producción)
+### 5.2 Variables de entorno y arranque
+
+El backend carga `backend/.env` con `node --env-file-if-exists=.env` **antes** de evaluar los módulos, no con `dotenv.config()` dentro de `src/index.ts`. El proyecto compila a CommonJS, donde TypeScript emite todos los `require` en la cabecera del archivo antes de ejecutar ninguna sentencia del módulo: un `dotenv.config()` en la línea 2 llega demasiado tarde y los módulos importados (`app` → `cryptoUtils`) se inicializan sin variables.
+
+`--env-file-if-exists` no falla cuando el `.env` aún no existe, de modo que el arranque con una configuración por variables de entorno (Docker, CI) sigue funcionando.
+
+Valores recomendados solo para desarrollo local, ninguno apto para producción:
+
+| Variable                   | Desarrollo local        | Comentario                                             |
+| -------------------------- | ----------------------- | ------------------------------------------------------ |
+| `JWT_SECRET`               | aleatorio, ≥ 32 bytes   | Sin valor por defecto: el proceso aborta al arrancar.  |
+| `DISABLE_INTEGRITY_AUDIT`  | `true`                  | Pausa la auditoría de integridad automática.           |
+| `DISABLE_HOLIDAY_AUTOSYNC` | `true`                  | Pausa la sincronización de feriados (llamada externa). |
+| `BACKUP_ENABLED`           | `false`                 | Los backups requieren el contenedor del servicio.      |
+| `ALLOWED_ORIGINS`          | `http://localhost:5173` | Origen de Vite; añade el gateway si aplica.            |
+
+En producción, `JWT_SECRET` se inyecta como secreto del orquestador; nunca se escribe un valor por defecto en el repositorio.
+
+### 5.3 Staging local (ensayo del deploy de producción)
 
 `compose.staging.yaml` replica la topología de producción (`db` → `pgbouncer` → `backend` → `frontend` → `gateway`, `NODE_ENV=production`) en tu máquina, construyendo las imágenes con los Dockerfiles de producción. Está aislado de dev y de prod: proyecto Compose `portal-control-staging`, volúmenes, red y base de datos (`pweb3_staging`) propios, sin `proxy_net` ni rutas `/srv/...`.
 
@@ -145,7 +161,7 @@ Notas:
 - Usa siempre `--env-file .env.staging` (los scripts `npm run staging:*` ya lo hacen) para no mezclar el `.env` de dev.
 - Dev y staging pueden correr a la vez: no comparten puertos ni volúmenes.
 - Si `ALLOWED_ORIGINS`/`STAGING_PORT` cambian, mantenlos coherentes (el origen debe coincidir con la URL del gateway).
-- Atajos de dev: `npm run dev:up` / `npm run dev:down`.
+- Atajos de dev: `npm run dev` inicia la base y ambas aplicaciones; `npm run dev:up` / `npm run dev:down` controlan solo la base.
 
 ## 6. Preparación en WSL
 
@@ -155,7 +171,7 @@ Si vas a levantar el stack desde WSL, prepara el entorno Linux dentro de la prop
 2. Asegúrate de poder ejecutar `docker compose version` desde la terminal de WSL.
 3. Mantén este repositorio dentro del sistema de archivos de WSL, por ejemplo en `/home/...`, no en `/mnt/c/...`, para evitar problemas de rendimiento con los bind mounts.
 4. Verifica que tu usuario tenga permisos sobre Docker antes de levantar el stack.
-5. Arranca PostgreSQL con `npm run dev:up`; ejecuta Vite y Express en terminales separadas desde `frontend/` y `backend/`.
+5. Arranca el entorno local con `npm run dev` desde la raíz (PostgreSQL, Express y Vite).
 
 ### 6.1 Comprobación rápida
 
@@ -240,3 +256,79 @@ Umbrales de cobertura (solo suben, ver ADR-0012): backend líneas 14 / funciones
 ---
 
 _Documentación operativa y estándar agéntico - Actualizado: Octubre 2026_
+
+## Modernización de arquitectura y runtime
+
+Desarrollo y CI usan Node 26 (`.nvmrc`, engines y Dockerfiles). Con fnm, ejecutar
+`fnm use` antes de comandos npm, o `fnm exec --using 26 npm run check`.
+El backend añade `npm run check:holidays` (tipos estrictos del módulo) a `check`.
+
+Fastify es el servidor principal. Todos los módulos usan adaptadores HTTP nativos
+y casos de uso compartidos, con contratos, permisos y tipos estrictos. El runtime
+integra Socket.IO y jobs. Para iniciarlo en otro puerto desde backend:
+`PORT=4001 npm run dev`. Requiere conexiones de BD y JWT_SECRET.
+
+`npm run test:fastify:integration` crea PostgreSQL 18.4 desechable y lo elimina al
+terminar (requiere Docker). `npm run benchmark:fastify` compara ambos servidores
+con carga HTTP y PostgreSQL real en procesos separados. Ver
+[spec 008](specs/008-fastify-base-feriados/spec.md) y
+[resultado de la base Fastify](specs/008-fastify-base-feriados/result.md).
+La migración HTTP de auth y sus comprobaciones están en
+[spec 009](specs/009-fastify-autenticacion/spec.md) y
+[resultado de autenticación](specs/009-fastify-autenticacion/result.md).
+La seguridad de MFA/PIN compartida se describe en
+[spec 010](specs/010-auth-seguridad/spec.md) y
+[resultado](specs/010-auth-seguridad/result.md): MFA bloquea cinco minutos al
+quinto código incorrecto dentro de cinco minutos, con estado persistido; PIN
+serializa sus fallos. Aplicar `npm run db:migrate:deploy` con `DIRECT_URL` antes
+de ejecutar el código nuevo y regenerar Prisma (`npm run db:generate`).
+Los DTO públicos de usuarios excluyen hashes, secretos MFA y contadores también
+en eventos `user:updated`. Ver [spec 011](specs/011-usuarios-dto-publico/spec.md)
+y [resultado](specs/011-usuarios-dto-publico/result.md). Usuarios comparte casos de
+uso con repositorio/hash/identificador/auditoría/eventos inyectados y rutas nativas
+Fastify; ver [spec 012](specs/012-fastify-usuarios/spec.md) y
+[resultado de usuarios](specs/012-fastify-usuarios/result.md).
+Empleados comparte list/create/update/bulk y conserva la transacción directa de
+alta con usuario vinculado; Excel usa streaming tipado en ambos servidores.
+Ver [spec 013](specs/013-fastify-empleados/spec.md) y
+[resultado de empleados](specs/013-fastify-empleados/result.md).
+Marcaciones y turnos comparten flujos puros y adaptadores HTTP; exportación de
+marcaciones usa streaming CSV/XML/Excel y el plan mensual conserva transacciones
+directas. Ver resultados [014](specs/014-fastify-marcaciones/result.md) y
+[015](specs/015-fastify-turnos/result.md), incluidos límites y deudas del calendario.
+Permisos y correcciones comparten orquestación y conservan aprobación transaccional
+e idempotente. Ver [resultado 016](specs/016-fastify-permisos-correcciones/result.md)
+para permisos, pruebas concurrentes y deudas de materialización/ownership.
+Reportes de turno comparte list/save y exportación XLSX por streaming nativo.
+Ver [resultado 017](specs/017-fastify-reportes-turno/result.md) para folios, ciclo de
+vida, auditoría y límites heredados.
+KPI comparte cuatro rutas y validación de rangos mediante puertos de fechas.
+La proyección pública elimina PIN de overview y ausencias; ver
+[resultado 018](specs/018-fastify-kpis/result.md) para caché y límites del motor.
+Spec 019 añade doce rutas de correo y reportes programados con puertos compartidos, cifrado/enmascarado y pruebas sin SMTP real: [resultado](specs/019-fastify-correo-reportes-programados/result.md).
+Spec 020 añade catorce rutas de medidores/notas/configs, incluidos PDF público, streaming de carga y descarga con rangos: [resultado](specs/020-fastify-datos-configuracion/result.md).
+La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
+a empleados; runtime integrado y cutover completaron las últimas dos specs.
+Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
+[spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).
+
+Spec 021 añade cinco rutas import/export con preview Excel y descargas PDF/XLSX,
+permisos y límite export compartido: [resultado](specs/021-fastify-importacion-exportacion/result.md).
+
+Migración Fastify 022 (auditoría): [resultado](specs/022-fastify-auditoria/result.md).
+
+Migración Fastify 023 (admin/mantenimiento): [resultado](specs/023-fastify-operaciones-admin/result.md).
+
+El [spec 025](specs/025-fastify-cutover/spec.md) deja Fastify como servidor principal.
+`npm run dev` en la raíz coordina PostgreSQL, Fastify y Vite; `npm start` en backend
+y los compose arrancan el mismo runtime Fastify con Socket.IO y jobs.
+`dev:fastify`/`start:fastify` son aliases compatibles.
+
+Express queda como fixture de paridad local: `cd backend && npm run dev:express`.
+La imagen final elimina sus dependencias de desarrollo. Para revertir contenedores,
+usar la imagen/checkout anterior al cutover; omitir compose.fastify-staging.yaml
+ya no cambia servidor. Ese override se conserva solo por compatibilidad.
+
+En desarrollo se permite purgar sesiones y reiniciar; mejoras de mantenimiento
+sin interrupciones y deudas de negocio quedan en el [backlog](specs/025-fastify-cutover/backlog.md).
+No son pasos pendientes para terminar la migración. [Evidencia del cierre](specs/025-fastify-cutover/result.md).

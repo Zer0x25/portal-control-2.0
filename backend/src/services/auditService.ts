@@ -1,7 +1,7 @@
 import prisma from "./db";
+import { redactAuditFields } from "../modules/audit";
 import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
-import { Request } from "express";
 import { AppError } from "../utils/AppError";
 import { toCaughtError } from "../utils/caughtError";
 
@@ -9,17 +9,21 @@ interface AuditLogEntry {
   actorUsername: string;
   action: string;
   category: string;
-  severity?: "INFO" | "WARNING" | "ERROR" | "CRITICAL";
-  outcome?: "SUCCESS" | "FAILURE";
+  severity?: string;
+  outcome?: string;
   details?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   ipAddress?: string;
 }
 
-interface RequestWithUser extends Request {
-  user?: {
-    username: string;
-  };
+export interface AuditRequest {
+  user?: { username: string };
+  ip?: string;
+  socket?: { remoteAddress?: string };
+  path?: string;
+  method?: string;
+  query?: unknown;
+  body?: unknown;
 }
 
 /** Sortable audit log columns accepted by `getLogs`. */
@@ -53,6 +57,7 @@ export const auditService = {
    */
   async log(entry: AuditLogEntry): Promise<void> {
     try {
+      const safe = redactAuditFields(entry.action, entry.details, entry.metadata);
       const log = await prisma.auditLog.create({
         data: {
           actorUsername: entry.actorUsername,
@@ -62,8 +67,8 @@ export const auditService = {
           outcome: entry.outcome || "SUCCESS",
           // Prisma 7 tipa los Json con Exact<...>: se castea al tipo de
           // escritura documentado en lugar de relajar el tipo de entrada.
-          details: (entry.details ?? null) as Prisma.InputJsonValue,
-          metadata: (entry.metadata ?? null) as Prisma.InputJsonValue,
+          details: safe.details as Prisma.InputJsonValue,
+          metadata: safe.metadata as Prisma.InputJsonValue,
           ipAddress: entry.ipAddress,
         },
       });
@@ -71,8 +76,8 @@ export const auditService = {
       // Notify clients about new audit log
       SocketService.emitToAll("auditLog:created", {
         ...log,
-        details: entry.details,
-        metadata: entry.metadata,
+        details: safe.details,
+        metadata: safe.metadata,
       });
     } catch (error) {
       console.error("Error creating audit log:", error);
@@ -83,11 +88,15 @@ export const auditService = {
   /**
    * Logs a system error with request context if available.
    */
-  async logError(err: unknown, req?: Request, category: string = "SYSTEM_ERROR"): Promise<void> {
+  async logError(
+    err: unknown,
+    req?: AuditRequest,
+    category: string = "SYSTEM_ERROR",
+  ): Promise<void> {
     const caught = toCaughtError(err);
     const statusCode = err instanceof AppError ? err.statusCode : caught.statusCode;
-    const actorUsername = (req as RequestWithUser)?.user?.username || "SYSTEM";
-    const ipAddress = req?.ip || req?.socket.remoteAddress;
+    const actorUsername = req?.user?.username || "SYSTEM";
+    const ipAddress = req?.ip || req?.socket?.remoteAddress;
 
     await this.log({
       actorUsername,
@@ -105,8 +114,14 @@ export const auditService = {
       metadata: {
         path: req?.path,
         method: req?.method,
-        query: req?.query as Record<string, unknown>,
-        body: category === "AUTH_ERROR" ? undefined : (req?.body as Record<string, unknown>),
+        query:
+          req?.query && typeof req.query === "object"
+            ? Object.fromEntries(Object.entries(req.query).filter(([key]) => key !== "token"))
+            : undefined,
+        body:
+          category === "AUTH_ERROR" || req?.path?.startsWith("/api/auth/")
+            ? undefined
+            : (req?.body as Record<string, unknown>),
       },
       ipAddress,
     });
@@ -259,8 +274,7 @@ export const auditService = {
 
     const mappedLogs = logs.map((log) => ({
       ...log,
-      details: log.details as Record<string, unknown>,
-      metadata: log.metadata as Record<string, unknown>,
+      ...redactAuditFields(log.action, log.details, log.metadata),
     }));
 
     const nextCursor = logs.length === pageSize ? logs[logs.length - 1].id : null;
@@ -329,10 +343,14 @@ export const auditService = {
       }
     }
 
-    return await prisma.auditLog.findMany({
+    const logs = await prisma.auditLog.findMany({
       where,
       orderBy: { timestamp: "desc" },
       take: 10000,
     });
+    return logs.map((log) => ({
+      ...log,
+      ...redactAuditFields(log.action, log.details, log.metadata),
+    }));
   },
 };

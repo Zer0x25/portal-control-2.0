@@ -4,8 +4,12 @@
 // login en prod es 5/min por ip:user) y pasa los tokens por env al
 // escenario, que solo hace lecturas (no ensucia datos, no crea sesiones
 // por VU). Al final limpia las 2 sesiones que abrió (logout).
-const { spawnSync } = require("node:child_process");
+const { spawn } = require("node:child_process");
 const { api, createWorker, disposeWorker } = require("./e2e-worker.cjs");
+
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 
 const TARGET = process.env.LOAD_TARGET || "http://127.0.0.1:8080";
 const API = `${TARGET}/api`;
@@ -46,24 +50,62 @@ async function main() {
   await new Promise((r) => setTimeout(r, 2000));
   const worker = await createWorker(API, adminToken);
 
+  const tokenDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "portal-load-token-"));
+  const tokenFile = path.join(tokenDirectory, "worker.token");
+  const saveToken = () => {
+    fs.writeFileSync(tokenFile + ".next", worker.token, { mode: 0o600 });
+    fs.renameSync(tokenFile + ".next", tokenFile);
+  };
+  saveToken();
+  let renewalTimer;
+  let renewing;
+  let renewalError;
   try {
-    const result = spawnSync("npx", ["artillery", "run", "load/staging-read.yaml"], {
+    const child = spawn("npx", ["artillery", "run", "load/staging-read.yaml"], {
       cwd: __dirname + "/..",
       env: {
         ...process.env,
         LOAD_TARGET: TARGET,
         LOAD_ADMIN_TOKEN: adminToken,
         LOAD_WORKER_TOKEN: worker.token,
+        LOAD_WORKER_TOKEN_FILE: tokenFile,
         LOAD_EMPLOYEE_ID: worker.employeeId,
         LOAD_TODAY: today,
       },
       stdio: "inherit",
       encoding: "utf8",
     });
-    process.exitCode = result.status ?? 1;
+    const closed = new Promise((resolve, reject) => {
+      child.once("error", reject);
+      child.once("close", (code) => resolve(code));
+    });
+    // Renew outside measured scenarios; preserve the short Usuario JWT lifetime.
+    renewalTimer = setInterval(() => {
+      if (renewing) return;
+      renewing = login(worker.username, process.env.E2E_FACTORY_PASSWORD || "e2e-worker-123")
+        .then((token) => {
+          worker.token = token;
+          saveToken();
+        })
+        .catch((error) => {
+          renewalError = error;
+          child.kill("SIGTERM");
+        })
+        .finally(() => {
+          renewing = undefined;
+        });
+    }, 60000);
+    process.exitCode = (await closed) ?? 1;
+    if (renewalError) throw renewalError;
   } finally {
-    await disposeWorker(API, adminToken, worker);
-    await logout(adminToken);
+    clearInterval(renewalTimer);
+    if (renewing) await renewing;
+    fs.rmSync(tokenDirectory, { recursive: true, force: true });
+    try {
+      await disposeWorker(API, adminToken, worker);
+    } finally {
+      await logout(adminToken);
+    }
   }
 }
 

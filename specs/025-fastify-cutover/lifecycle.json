@@ -1,0 +1,23 @@
+{
+  "purge": {
+    "success": true,
+    "data": {
+      "message": "Sesiones purgadas: 2",
+      "deletedCount": 2,
+      "target": "admin"
+    }
+  },
+  "restart": {
+    "success": true,
+    "data": {
+      "message": "Reiniciando servidor backend..."
+    }
+  },
+  "restarted": true,
+  "legacyRollback": {
+    "health": true,
+    "login": true,
+    "docs": true,
+    "exitCode": 0
+  }
+}

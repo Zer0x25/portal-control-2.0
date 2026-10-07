@@ -1,3 +1,4 @@
+import { toPublicEmployee } from "../../modules/employees";
 import { Employee, TimeRecord, MonthlyEmployeeStats } from "../../generated/prisma/client";
 import prisma from "../db";
 import { schedulingService, SchedulingContext } from "../schedulingService";
@@ -5,13 +6,7 @@ import { KpiCache } from "./KpiCache";
 import { KpiStatsService } from "./KpiStatsService";
 import { KpiAggregationService } from "./KpiAggregationService";
 import { KpiFormattingService } from "./KpiFormattingService";
-import {
-  KpiFilters,
-  DashboardStatus,
-  DashboardOverview,
-  PeriodStats,
-  AnomalyRecord,
-} from "./types";
+import { KpiFilters, DashboardOverview, PeriodStats, AnomalyRecord } from "./types";
 import { addBusinessDaysChile, formatDateUTCISO, toBusinessDateChile } from "../../utils/timeUtils";
 import { toEndInclusive } from "../../utils/timePolicy";
 
@@ -254,7 +249,10 @@ export class KpiReportService {
         anomalies,
         presentRecords,
       },
-      employeeStatuses: employeeStatuses as DashboardStatus[],
+      employeeStatuses: employeeStatuses.map((entry) => ({
+        ...entry,
+        employee: toPublicEmployee(entry.employee),
+      })),
       timestamp: new Date().toISOString(),
     };
   }

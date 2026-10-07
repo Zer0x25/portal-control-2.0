@@ -6,21 +6,18 @@ import { auditService } from "./auditService";
 import { mfaService } from "./mfaService";
 import { toCaughtError } from "../utils/caughtError";
 import { SocketService } from "./socketService";
-
-/**
- * Claims carried by the short-lived token issued between the first MFA factor
- * succeeding and the second factor being submitted. `mfaPending` is deliberately
- * local to this service — it is never consumed by `authenticateToken`.
- */
-type MfaPendingClaims = {
-  id: string;
-  username: string;
-  role: string;
-  mfaPending: true;
-};
+import { AuthError, ForbiddenError, RateLimitError } from "../utils/AppError";
 
 export class AuthService {
   private static readonly SECRET = process.env.JWT_SECRET || "";
+
+  private static credentialStamp(user: { id: string; passwordHash: string }): string {
+    // Opaque proof of the password validated by this login; never exposes the hash.
+    return crypto
+      .createHmac("sha256", this.SECRET)
+      .update(JSON.stringify(["auth-credential-version-v1", user.id, user.passwordHash]))
+      .digest("hex");
+  }
 
   static async getSessionDurationHours(role: string): Promise<number> {
     try {
@@ -74,7 +71,7 @@ export class AuthService {
       return { success: false, reason: "USER_ARCHIVED" };
     }
 
-    return { success: true, user };
+    return { success: true, user: { ...user, credentialStamp: this.credentialStamp(user) } };
   }
 
   static sessionLimitForRole(role: string): number {
@@ -116,6 +113,7 @@ export class AuthService {
     role: string,
     employeeId: string | null,
     userAgent: string,
+    expectedCredentialStamp?: string,
   ) {
     const sessionHours = await this.getSessionDurationHours(role);
     // jti único por sesión: sin nonce, dos logins dentro del mismo segundo
@@ -133,90 +131,118 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + sessionHours * 60 * 60 * 1000);
     const device = userAgent.substring(0, 255);
 
-    // Insert + trim en una sola tx bajo lock por usuario (caza-bugs 2026-10-04):
+    // Cupo + insert en una sola tx bajo lock por usuario (caza-bugs 2026-10-04):
     // el trim sin serializar borraba TODO (trims concurrentes con keeps
     // distintos se eliminan entre sí). Serializados, acuerdan el mismo set y
     // queda exactamente el cupo (1 para Usuario). Xact-scoped, seguro tras PgBouncer.
     await withDirectTransaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
+      if (expectedCredentialStamp !== undefined) {
+        const current = await tx.user.findUnique({ where: { id: userId } });
+        if (
+          !current ||
+          this.credentialStamp(current) !== expectedCredentialStamp ||
+          current.username !== username ||
+          current.role !== role ||
+          current.employeeId !== employeeId
+        )
+          throw new AuthError("Credenciales cambiaron; reinicia el inicio de sesión");
+      }
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"sess:" + userId}))`;
-      await tx.activeSession.create({
-        data: { userId, tokenHash, deviceInfo: device, expiresAt },
-      });
       const sessionLimit = this.sessionLimitForRole(role);
       const keep = await tx.activeSession.findMany({
         where: { userId },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        take: sessionLimit,
+        // Preserve the existing policy: evict least recently active sessions.
+        orderBy: [{ lastActive: "desc" }, { id: "desc" }],
+        take: sessionLimit - 1,
         select: { id: true },
       });
       await tx.activeSession.deleteMany({
         where: { userId, id: { notIn: keep.map((k) => k.id) } },
+      });
+      await tx.activeSession.create({
+        data: { userId, tokenHash, deviceInfo: device, expiresAt },
       });
     });
 
     return { token, role };
   }
 
-  static generateMFAPendingToken(user: { id: string; username: string; role: string }) {
+  static generateMFAPendingToken(user: {
+    id: string;
+    username: string;
+    role: string;
+    credentialStamp: string;
+  }) {
     return jwt.sign(
-      { id: user.id, username: user.username, role: user.role, mfaPending: true },
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        mfaPending: true,
+        credentialStamp: user.credentialStamp,
+      },
       this.SECRET,
       { expiresIn: "5m" },
     );
   }
 
   static async verifyKioskPin(employeeId: string, pin: string) {
-    const employee = await prisma.employee.findUnique({
-      where: { id: employeeId },
-    });
-
-    if (!employee) return { success: false, reason: "NOT_FOUND" };
-    if (employee.isPinBlocked) return { success: false, reason: "BLOCKED" };
-
-    const defaultPin = employee.rut.slice(0, 4);
-    const storedPin = employee.pin || defaultPin;
-
-    let isPinValid = false;
-    if (storedPin.startsWith("$2") || storedPin.length > 10) {
-      isPinValid = bcryptjs.compareSync(pin, storedPin);
-    } else {
-      isPinValid = pin === storedPin;
-    }
-
-    if (isPinValid) {
-      if (employee.pinFailedAttempts > 0) {
-        await prisma.employee.update({
-          where: { id: employee.id },
-          data: { pinFailedAttempts: 0 },
-        });
-      }
-
-      const token = jwt.sign(
-        {
-          id: `kiosk-${employee.id}`,
-          username: employee.name,
-          role: "Kiosk_Employee",
-          employeeId: employee.id,
-        },
-        this.SECRET,
-        { expiresIn: "5m" },
-      );
-
-      return { success: true, token, employeeName: employee.name };
-    } else {
-      const newAttempts = employee.pinFailedAttempts + 1;
-      const isBlocked = newAttempts >= 5;
-
-      await prisma.employee.update({
-        where: { id: employee.id },
-        data: {
-          pinFailedAttempts: newAttempts,
-          isPinBlocked: isBlocked,
-        },
+    return withDirectTransaction(async (tx) => {
+      // Lock before reading; concurrent failures and admin updates share this row lock.
+      await tx.$queryRaw`SELECT id FROM employees WHERE id = ${employeeId} FOR UPDATE`;
+      const employee = await tx.employee.findUnique({
+        where: { id: employeeId },
       });
 
-      return { success: false, reason: "INVALID_PIN", attempts: newAttempts, isBlocked };
-    }
+      if (!employee) return { success: false, reason: "NOT_FOUND" };
+      if (employee.isPinBlocked) return { success: false, reason: "BLOCKED" };
+
+      const defaultPin = employee.rut.slice(0, 4);
+      const storedPin = employee.pin || defaultPin;
+
+      let isPinValid = false;
+      if (storedPin.startsWith("$2") || storedPin.length > 10) {
+        isPinValid = bcryptjs.compareSync(pin, storedPin);
+      } else {
+        isPinValid = pin === storedPin;
+      }
+
+      if (isPinValid) {
+        if (employee.pinFailedAttempts > 0) {
+          await tx.employee.update({
+            where: { id: employee.id },
+            data: { pinFailedAttempts: 0 },
+          });
+        }
+
+        const token = jwt.sign(
+          {
+            id: `kiosk-${employee.id}`,
+            username: employee.name,
+            role: "Kiosk_Employee",
+            employeeId: employee.id,
+          },
+          this.SECRET,
+          { expiresIn: "5m" },
+        );
+
+        return { success: true, token, employeeName: employee.name };
+      } else {
+        const newAttempts = employee.pinFailedAttempts + 1;
+        const isBlocked = newAttempts >= 5;
+
+        await tx.employee.update({
+          where: { id: employee.id },
+          data: {
+            pinFailedAttempts: newAttempts,
+            isPinBlocked: isBlocked,
+          },
+        });
+
+        return { success: false, reason: "INVALID_PIN", attempts: newAttempts, isBlocked };
+      }
+    });
   }
 
   static async revokeSession(token: string) {
@@ -256,16 +282,58 @@ export class AuthService {
   }
 
   static async validateMFALogin(mfaToken: string, code: string) {
-    const decoded = jwt.verify(mfaToken, this.SECRET) as MfaPendingClaims;
-    if (!decoded.mfaPending) throw new Error("INVALID_MFA_TOKEN");
+    const decoded = jwt.verify(mfaToken, this.SECRET);
+    if (
+      typeof decoded === "string" ||
+      decoded.mfaPending !== true ||
+      typeof decoded.id !== "string" ||
+      typeof decoded.credentialStamp !== "string"
+    )
+      throw new AuthError("Token MFA inválido");
 
-    const user = await prisma.user.findUnique({ where: { id: String(decoded.id) } });
-    if (!user || !user.mfaSecret) throw new Error("USER_OR_MFA_MISSING");
+    return withDirectTransaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${decoded.id} FOR UPDATE`;
+      const user = await tx.user.findUnique({ where: { id: decoded.id } });
+      if (!user) throw new AuthError("MFA no disponible para esta cuenta");
+      if (user.role === "Archivado")
+        throw new ForbiddenError("Acceso denegado: Su cuenta de usuario está archivada");
+      if (this.credentialStamp(user) !== decoded.credentialStamp)
+        throw new AuthError("Credenciales cambiaron; reinicia el inicio de sesión");
+      if (!user.mfaEnabled || !user.mfaSecret)
+        throw new AuthError("MFA no disponible para esta cuenta");
 
-    const isValid = mfaService.verifyToken(user.mfaSecret, code);
-    if (!isValid) return { success: false };
+      const now = Date.now();
+      if (user.mfaBlockedUntil && user.mfaBlockedUntil.getTime() > now)
+        throw new RateLimitError((user.mfaBlockedUntil.getTime() - now) / 1000);
 
-    return { success: true, user };
+      const windowMs = 5 * 60 * 1000;
+      const freshWindow =
+        !user.mfaFailureWindowStartedAt ||
+        now - user.mfaFailureWindowStartedAt.getTime() >= windowMs ||
+        user.mfaBlockedUntil !== null;
+      if (!mfaService.verifyToken(user.mfaSecret, code)) {
+        const attempts = (freshWindow ? 0 : user.mfaFailedAttempts) + 1;
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            mfaFailedAttempts: attempts,
+            mfaFailureWindowStartedAt: freshWindow ? new Date(now) : user.mfaFailureWindowStartedAt,
+            mfaBlockedUntil: attempts >= 5 ? new Date(now + windowMs) : null,
+          },
+        });
+        // Return, do not throw: failure accounting must commit before the flow raises 401.
+        return { success: false };
+      }
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          mfaFailedAttempts: 0,
+          mfaFailureWindowStartedAt: null,
+          mfaBlockedUntil: null,
+        },
+      });
+      return { success: true, user: { ...user, credentialStamp: this.credentialStamp(user) } };
+    });
   }
 
   static async purgeSessions(params: {
@@ -316,8 +384,15 @@ export class AuthService {
     reason: string;
     restartRecommended?: boolean;
   }) {
-    const { actorUsername, reason, restartRecommended = false } = params;
     const result = await prisma.activeSession.deleteMany({});
+    return this.notifySessionInvalidation(params, result.count);
+  }
+
+  static async notifySessionInvalidation(
+    params: { actorUsername: string; reason: string; restartRecommended?: boolean },
+    deletedCount: number,
+  ) {
+    const { actorUsername, reason, restartRecommended = false } = params;
 
     const payload = {
       reason,
@@ -337,13 +412,13 @@ export class AuthService {
       severity: "CRITICAL",
       details: {
         reason,
-        deletedCount: result.count,
+        deletedCount,
         restartRecommended,
       },
     });
 
     return {
-      deletedCount: result.count,
+      deletedCount,
       reason,
     };
   }
