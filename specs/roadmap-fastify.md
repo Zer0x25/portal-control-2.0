@@ -1,6 +1,6 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-07. Estado: 013–024 validadas y 025 borrador.
+Fecha: 2026-10-07. Estado: 013–024 validadas y 025 en ejecución (seguridad antes del cutover).
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
@@ -102,3 +102,8 @@ principal; override opt-in para ensayos Fastify. PgBouncer usa AUTH_TYPE SCRAM
 explícito tras fallo reproducido; no desplegar compose de producción desde esta
 entrega. Socket sin auth/salas por query y broadcasts globales deben resolverse
 antes de 025. Ver [resultado 024](024-fastify-runtime-integrado/result.md).
+
+025-A cierra acceso anónimo y salas elegidas por cliente; revalida sesiones por
+lote antes de entregar y sincroniza login/logout frontend. La 025 sigue abierta:
+autorización de broadcasts por rol/empleado y deudas anteriores bloquean el cutover.
+Ver [spec 025](025-fastify-cutover/spec.md).

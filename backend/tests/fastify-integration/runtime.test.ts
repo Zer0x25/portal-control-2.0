@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+import jwt from "jsonwebtoken";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
 import { integrateFastifyRuntime } from "../../src/fastify/integrated";
@@ -28,7 +30,7 @@ const app = integrateFastifyRuntime(
 );
 let base: string;
 const sockets: WebSocket[] = [];
-async function websocket(userId = "") {
+async function websocket(token: string, userId = "") {
   const socket = new WebSocket(
     base.replace("http", "ws") + "/socket.io/?EIO=4&transport=websocket&userId=" + userId,
   );
@@ -37,8 +39,9 @@ async function websocket(userId = "") {
     socket.addEventListener("error", reject, { once: true });
     socket.addEventListener("message", (event) => {
       const data = String(event.data);
-      if (data.startsWith("0")) socket.send("40");
+      if (data.startsWith("0")) socket.send("40" + JSON.stringify({ token }));
       if (data.startsWith("40")) resolve();
+      if (data.startsWith("44")) reject(new Error("Unauthorized"));
       if (data === "2") socket.send("3");
     });
   });
@@ -73,21 +76,36 @@ it("serves the exact SDK contract and local UI assets without a session", async 
   }
   expect(app.routeManifest.length).toBeGreaterThan(100);
 });
-it("uses the HTTP listener for polling and websocket; characterizes unauthenticated rooms and broadcasts", async () => {
+it("authenticates websocket identity and revokes sessions before delivery", async () => {
   const polling = await fetch(base + "/socket.io/?EIO=4&transport=polling");
   expect(polling.status).toBe(200);
   expect((await polling.text()).startsWith("0")).toBe(true);
-  const own = await websocket("arbitrary-user"),
-    other = await websocket("other-user");
-  const broadcast = [message(own), message(other)];
-  SocketService.emitToAll("spec024:broadcast", { value: 7 });
-  expect(await Promise.all(broadcast)).toEqual([
-    '42["spec024:broadcast",{"value":7}]',
-    '42["spec024:broadcast",{"value":7}]',
-  ]);
+  await expect(websocket("")).rejects.toThrow("Unauthorized");
+  const user = await prismaDirect.user.create({
+    data: { username: "socket-owner", role: "Administrador", passwordHash: "not-used" },
+  });
+  const token = jwt.sign(
+    { id: user.id, username: user.username, role: user.role },
+    process.env.JWT_SECRET!,
+    { expiresIn: "5m" },
+  );
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  await prismaDirect.activeSession.create({
+    data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 300000) },
+  });
+  const own = await websocket(token, "victim");
+  const serverSocket = [...SocketService.getInstance().sockets.sockets.values()][0]!;
+  expect(serverSocket.rooms.has(`user:${user.id}`)).toBe(true);
+  expect(serverSocket.rooms.has("user:victim")).toBe(false);
   const room = message(own);
-  SocketService.emitToUser("arbitrary-user", "spec024:private", { value: 8 });
-  expect(await room).toBe('42["spec024:private",{"value":8}]');
+  SocketService.emitToUser(user.id, "spec025:private", { value: 8 });
+  expect(await room).toBe('42["spec025:private",{"value":8}]');
+  await prismaDirect.activeSession.deleteMany({ where: { tokenHash } });
+  const received: string[] = [];
+  own.addEventListener("message", (event) => received.push(String(event.data)));
+  SocketService.emitToAll("spec025:revoked", { value: 9 });
+  await vi.waitFor(() => expect(SocketService.getInstance().sockets.sockets.size).toBe(0));
+  expect(received.some((packet) => packet.includes("spec025:revoked"))).toBe(false);
   expect(() => SocketService.initialize(app.server)).toThrow("already initialized");
 });
 it("drains seeding work before shutdown, preserving resumable running state", async () => {

@@ -462,3 +462,13 @@ Carga staging renueva Usuario fuera de VUs sin cambiar TTL, archivo privado con
 reemplazo atómico/limpieza y ensure moderno exige todo HTTP 200 + tráfico no vacío.
 La suite e2e comparte admin y puede evictar sesiones en paralelo; registrar perfil
 workers=1 y no relajar presupuestos de auth para resolver interferencia del harness.
+
+Spec 025-A (en ejecución, Express todavía principal): Socket.IO exige token en
+handshake auth, deriva sala user:ID del principal y aplica allowlist HTTP también
+a websocket mediante allowRequest. No usar query userId como identidad. Antes de
+entregar eventos valida JWT/sesiones/usuario/rol en dos consultas por lote completo;
+fallo de BD desconecta, barrido de 30 s revoca clientes ociosos. Mantener el evento
+server-only auth:force_logout después de borrar sesiones. Kiosk conserva JWT sin
+ActiveSession. Frontend conecta tras login y desconecta al salir/cambiar identidad.
+Pendiente: autorizar payloads de broadcasts por rol/empleado, deudas previas y
+benchmark/cutover; no retirar Express hasta completar los bloqueantes de 025.

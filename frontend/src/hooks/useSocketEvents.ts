@@ -8,6 +8,8 @@ import { useStore } from "../store/useStore";
  */
 export const useSocketEvents = () => {
   const queryClient = useQueryClient();
+  const userId = useStore((state) => state.currentUser?.id);
+  const authenticated = useStore((state) => state.isAuthenticated);
   const debounceTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Helper to debounce invalidations (prevents spamming refetches)
@@ -25,6 +27,8 @@ export const useSocketEvents = () => {
   );
 
   useEffect(() => {
+    if (!authenticated || !userId) return;
+    let disconnect: (() => void) | undefined;
     let mounted = true;
     let activeSocket: {
       on: (event: string, listener: (...args: unknown[]) => void) => void;
@@ -34,6 +38,7 @@ export const useSocketEvents = () => {
     const setupSocket = async () => {
       const { socketService } = await import("../services/socketService");
       if (!mounted) return;
+      disconnect = () => socketService.disconnect();
 
       const socket = socketService.connect();
       activeSocket = socket;
@@ -217,6 +222,7 @@ export const useSocketEvents = () => {
       cleanupSocketListeners?.();
       activeSocket?.off("connect");
       activeSocket?.off("connect_error");
+      disconnect?.();
     };
-  }, [queryClient, debouncedInvalidate]);
+  }, [queryClient, debouncedInvalidate, authenticated, userId]);
 };

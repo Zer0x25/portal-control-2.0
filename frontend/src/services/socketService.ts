@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import { API_ORIGIN_URL } from "./apiBase";
+import { authService } from "./authService";
 
 const SOCKET_URL = API_ORIGIN_URL;
 
@@ -9,7 +10,8 @@ class SocketService {
   public connect(): Socket {
     if (!this.socket) {
       this.socket = io(SOCKET_URL, {
-        withCredentials: true,
+        auth: (callback) => callback({ token: authService.getToken() }),
+        withCredentials: false,
         transports: ["websocket", "polling"],
       });
 
