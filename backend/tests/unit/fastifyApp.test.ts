@@ -113,6 +113,7 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       updateUser: vi.fn(),
       deleteUser: vi.fn(),
     },
+    shiftReports: { list: vi.fn(), save: vi.fn(), exportStream: vi.fn() },
     leaves: { list: vi.fn(), upsert: vi.fn(), delete: vi.fn() },
     corrections: {
       list: vi.fn(),
@@ -643,4 +644,25 @@ it.each(["/api/leaves", "/api/corrections"])("%s enforces 1 MiB before effects",
   expect(response.statusCode).toBe(413);
   expect(f.deps.leaves.upsert).not.toHaveBeenCalled();
   expect(f.deps.corrections.create).not.toHaveBeenCalled();
+});
+
+it("shift reports reject oversized bodies and terminate unexpected pre-stream failure", async () => {
+  const f = fixture();
+  const headers = { authorization: `Bearer ${f.token()}` };
+  expect(
+    (
+      await f.app.inject({
+        method: "POST",
+        url: "/api/shift-reports",
+        headers,
+        payload: { extra: "x".repeat(1024 * 1024) },
+      })
+    ).statusCode,
+  ).toBe(413);
+  expect(f.deps.shiftReports.save).not.toHaveBeenCalled();
+  vi.mocked(f.deps.shiftReports.exportStream).mockRejectedValue(new Error("export unavailable"));
+  const response = await f.app.inject({ url: "/api/shift-reports/export/missing", headers });
+  expect(response.statusCode).toBe(500);
+  expect(response.headers["content-type"]).toContain("application/json");
+  expect(response.json().message).toBe("Error al exportar reporte de turno");
 });

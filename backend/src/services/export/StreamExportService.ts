@@ -544,7 +544,7 @@ export class StreamExportService {
   /**
    * Stream shift report as Excel (.xlsx)
    */
-  async streamShiftReportToExcel(res: Response, shiftId: string): Promise<void> {
+  async streamShiftReportToExcel(res: ExcelHttpStream, shiftId: string): Promise<void> {
     try {
       const prisma = (await import("../db")).default;
       const report = await prisma.shiftReport.findUnique({

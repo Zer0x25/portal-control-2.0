@@ -142,7 +142,7 @@ El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
 de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
 y las seis de empleados (incluido Excel), con casos de uso compartidos.
 `check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
-corrections, feriados y plataforma HTTP.
+corrections, shiftReports, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
@@ -180,7 +180,14 @@ AppError/toCaughtError son helpers puros admitidos por el guard de estos módulo
 Deudas 016: al extender leave, jornadas archivadas no se reactivan; materialización
 no atómica y solapamiento permitido. Correcciones no coteja employeeId/timeRecordId,
 y conserva lectura sin vínculo Usuario y scope quiosco legacy. Resolver antes de cutover.
-Ver specs 006/007/008/009/010/011/012/013/014/015/016 y ADR-0017/0018/0019.
+ShiftReports tiene API pública index.ts, aplicación pura y tres rutas nativas
+list/save/export Excel. Conserva MAX numérico/retry de folios, conflicto 409 y
+orquestación Express compartida. Exportador acepta Writable neutral; helper stream
+sincroniza headers del response hasta primer byte para errores JSON y XLSX.
+Deudas 017: id opcional en schema falla en servicio, abierto soft-deleted bloquea,
+open no es exclusivo bajo concurrencia; audit previo a write no atómico y JSON
+legacy corrupto rompe export aunque list lo normalice. Resolver antes de cutover.
+Ver specs 006/007/008/009/010/011/012/013/014/015/016/017 y ADR-0017/0018/0019.
 
 ---
 

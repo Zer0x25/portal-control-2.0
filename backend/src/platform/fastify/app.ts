@@ -8,6 +8,7 @@ import type { AuthUser, AuthFlows } from "../../modules/auth";
 import { resolveAccessToken, authPlugin } from "../../modules/auth";
 import { holidayPlugin, type HolidayHttpService } from "../../modules/holidays";
 import { usersPlugin, type UserFlows } from "../../modules/users";
+import { shiftReportsPlugin, type ShiftReportsHttpService } from "../../modules/shiftReports";
 import { leavesPlugin, type LeaveFlows } from "../../modules/leaves";
 import { correctionsPlugin, type CorrectionFlows } from "../../modules/corrections";
 import { shiftsPlugin, type ShiftFlows } from "../../modules/shifts";
@@ -33,6 +34,7 @@ export interface FastifyDependencies {
   records: RecordsHttpService;
   shifts: ShiftFlows;
   leaves: LeaveFlows;
+  shiftReports: ShiftReportsHttpService;
   corrections: CorrectionFlows;
   employees: EmployeesHttpService;
   auth: {
@@ -197,6 +199,7 @@ export function buildFastifyApp(
       context.username = user.username;
     };
     protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(shiftReportsPlugin, { service: deps.shiftReports, authenticate });
     protectedApp.register(leavesPlugin, { service: deps.leaves, authenticate });
     protectedApp.register(correctionsPlugin, { service: deps.corrections, authenticate });
     protectedApp.register(shiftsPlugin, { service: deps.shifts, authenticate });

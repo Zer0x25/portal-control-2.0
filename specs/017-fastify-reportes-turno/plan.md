@@ -2,24 +2,26 @@
 
 Spec: [spec.md](spec.md). Constitución: [constitución](../constitution.md).
 
-## Estrategia
+## Estrategia y archivos
 
-1. Inspeccionar /api/shift-reports y sus servicios; completar contratos y riesgos.
-2. Escribir behavior.md con ejemplos y pruebas que fallen primero.
-3. Extraer puertos y casos de uso, implementar adaptador y guard no vacío.
-4. Verificar permisos, fallos, persistencia y efectos; registrar result.md.
+1. Inventario PRD/SDD/BDD y tres tests RED.
+2. modules/shiftReports/application: list/save y traducción de errores con puertos;
+   services/shiftReportFlows.ts compone servicio vigente sin importar HTTP en aplicación.
+3. Controller Express delegado, plugin nativo y exportStream con Writable neutral;
+   StreamExportService cambia solo tipo de salida y reutiliza algoritmo XLSX.
+4. app/runtime/manifiesto/strict/fixtures/guards y pruebas PostgreSQL en ambos transportes.
+5. Resultado y docs; gates backend seguidos por frontend tras SDK.
 
-## Archivos a tocar
-
-Inventario pendiente: identificar routers, servicios y tests de la superficie
-indicada antes de modificar código. No reutilizar controllers Express como
-handlers Fastify. En 024/025 agregar entrypoint, sockets/jobs, compose, gateway
-y contrato OpenAPI al inventario.
+Errores JSON de exporters en PassThrough deben declarar application/json, sin
+alterar archivos XLSX exitosos. No buffers completos ni casts a Response. Helper
+sendHttpStream compartido cierra errores antes/después de headers sin doble end.
+GET legacy query usa z.unknown como marcador y conversiones del servicio, no schema
+estricto nuevo. Conservar 200 en POST, MAX numérico/retries, errores y efectos.
 
 ## Verificación y rollback
 
-Backend: validate:ci, test:coverage, test:fastify:integration. Después del SDK,
-frontend: validate:ci:coverage. Raíz: docs:check, spec:check, secrets:scan.
-024/025 requieren además staging, e2e, carga y ciclo de vida del servidor.
-Mientras Express siga principal, revertir el registro del módulo candidato;
-025 debe documentar y ensayar rollback antes de cambiar el servidor.
+Node 26: backend validate:ci/test:coverage/test:fastify:integration. Luego frontend
+validate:ci:coverage. Raíz docs:check/spec:check/secrets:scan y diff. PostgreSQL
+18.4 desechable, XLSX leído con ExcelJS, sin servicios externos ni BD local.
+Revertir módulo/plugin/entrega sin migración BD; Express principal. Defectos legacy
+quedan en spec y pruebas de caracterización para resolver antes de 025.

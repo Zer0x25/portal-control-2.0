@@ -26,9 +26,17 @@ function inspect(source: string, file: string, name = "holidays"): string[] {
       application &&
       !resolved.startsWith(applicationRoot + path.sep) &&
       !(
-        ["auth", "employees", "records", "shifts", "leaves", "corrections"].includes(name) &&
+        [
+          "auth",
+          "employees",
+          "records",
+          "shifts",
+          "leaves",
+          "corrections",
+          "shiftReports",
+        ].includes(name) &&
         (resolved === path.join(src, "utils/AppError") ||
-          (["leaves", "corrections"].includes(name) &&
+          (["leaves", "corrections", "shiftReports"].includes(name) &&
             resolved === path.join(src, "utils/caughtError")))
       )
     ) {
@@ -334,7 +342,7 @@ describe("Shifts module boundaries", () => {
   });
 });
 
-describe.each(["leaves", "corrections"])("%s module boundaries", (name) => {
+describe.each(["leaves", "corrections", "shiftReports"])("%s module boundaries", (name) => {
   it("enumerates pure application, public consumers and strict files", () => {
     const files = filesUnder(src).filter(
       (file) => !file.includes(`${path.sep}generated${path.sep}`),

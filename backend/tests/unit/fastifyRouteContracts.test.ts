@@ -88,6 +88,13 @@ routes.push(
     ["PATCH", "/api/corrections/:id/status"],
   ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
 );
+routes.push(
+  ...[
+    ["GET", "/api/shift-reports"],
+    ["POST", "/api/shift-reports"],
+    ["GET", "/api/shift-reports/export/:id"],
+  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+);
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
     expect(() => assertMigratedRouteContracts(routes)).not.toThrow());
@@ -215,7 +222,7 @@ it("rejects unvalidated schedule route", () =>
     ),
   ).toThrow("Unvalidated"));
 
-it.each(["leaves", "corrections"])(
+it.each(["leaves", "corrections", "shift-reports"])(
   "rejects empty/missing/extra/unsecured/unvalidated %s routes",
   (name) => {
     const prefix = `/api/${name}`;

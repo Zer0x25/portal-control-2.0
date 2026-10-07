@@ -268,7 +268,7 @@ sigue siendo el servidor principal. El candidato Fastify ya expone health y
 feriados completos, las seis rutas de autenticación (login, logout, quiosco y MFA)
 las cuatro rutas de usuarios (CRUD Admin), las seis de empleados (incluido Excel),
 las nueve de marcaciones, las dieciocho de turnos, tres de ausencias y cinco
-de correcciones,
+de correcciones y tres de reportes de turno,
 con sesiones y permisos reales, auditoría y tipos estrictos.
 Para iniciarlo en otro puerto desde `backend/`: `PORT=4001 npm run dev:fastify`.
 Requiere las mismas conexiones y `JWT_SECRET`. Puede emitir y revocar sesiones
@@ -305,6 +305,9 @@ directas. Ver resultados [014](specs/014-fastify-marcaciones/result.md) y
 Permisos y correcciones comparten orquestación y conservan aprobación transaccional
 e idempotente. Ver [resultado 016](specs/016-fastify-permisos-correcciones/result.md)
 para permisos, pruebas concurrentes y deudas de materialización/ownership.
+Reportes de turno comparte list/save y exportación XLSX por streaming nativo.
+Ver [resultado 017](specs/017-fastify-reportes-turno/result.md) para folios, ciclo de
+vida, auditoría y límites heredados.
 La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
 a empleados y reserva runtime integrado y cutover para las últimas dos specs.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y

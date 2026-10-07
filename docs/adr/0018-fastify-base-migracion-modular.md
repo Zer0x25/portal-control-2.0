@@ -23,7 +23,8 @@ repositorio, eventos, auditoría, identificador y reloj. Aplicar strict a módul
 y plataforma HTTP. Validar Zod y serializar respuestas con schemas Fastify.
 Health queda fuera de límites/mantenimiento. Guards sobre onRoute exigen cinco
 rutas de feriados, seis de auth, cuatro de usuarios, seis de empleados, nueve de
-marcaciones, dieciocho de turnos, tres de ausencias y cinco de correcciones, seguridad declarada y validadores registrados;
+marcaciones, dieciocho de turnos, tres de ausencias, cinco de correcciones
+y tres de reportes de turno, seguridad declarada y validadores registrados;
 pruebas ejercitan auth real. Logout y setup ignoran el cuerpo por contrato.
 
 Base HTTP y contexto/actor en `backend/src/platform/fastify/app.ts`;
@@ -73,8 +74,15 @@ Reloj_Control gestiona ausencias pero no resuelve correcciones. Materialización
 no atómica/reactivación defectuosa y ownership/scopes incompletos son deudas
 explícitas antes de cutover; la migración no endurece reglas silenciosamente.
 
+Spec 017 añade list/save/export de reportes de turno y orquestación compartida,
+con folio numérico/retry y conflicto 409 existentes. Streaming usa puerto Writable
+neutral y headers nativos hasta primer byte. Pruebas abren XLSX y caracterizan
+auditoría previa a write/soft-delete abierto/ID ausente/contenido corrupto;
+la exclusividad de turnos open bajo concurrencia requiere corrección separada.
+
 ## Referencias
 
+- [Resultado 017](../../specs/017-fastify-reportes-turno/result.md)
 - [Resultado 016](../../specs/016-fastify-permisos-correcciones/result.md)
 - [Resultado 014](../../specs/014-fastify-marcaciones/result.md)
 - [Resultado 015](../../specs/015-fastify-turnos/result.md)

@@ -4,6 +4,7 @@
     "src/modules/auth/**/*.ts",
     "src/modules/records/**/*.ts",
     "src/modules/shifts/**/*.ts",
+    "src/modules/shiftReports/**/*.ts",
     "src/modules/leaves/**/*.ts",
     "src/modules/corrections/**/*.ts",
     "src/modules/users/**/*.ts",

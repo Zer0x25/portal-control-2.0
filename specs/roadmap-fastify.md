@@ -1,6 +1,6 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-06. Estado: 013–016 implementadas y validadas localmente. 017–025 son borradores.
+Fecha: 2026-10-06. Estado: 013–017 implementadas y validadas localmente. 018–025 son borradores.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
@@ -26,7 +26,7 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; quedan nueve tras la spec 016. El orden es propuesto y podrá
+la ruta comprende trece specs incluyendo 013; quedan ocho tras la spec 017. El orden es propuesto y podrá
 ajustarse por las dependencias que revele cada inventario.
 
 ## Condición de avance
@@ -51,10 +51,15 @@ de contrato y pruebas, sin introducirse silenciosamente en la paridad.
 La tanda 014/015 añade 27 rutas: nueve de marcaciones y dieciocho de turnos.
 Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/result.md).
 016 añade ocho rutas de permisos/correcciones: [resultado](016-fastify-permisos-correcciones/result.md).
-Siguiente entrega: 017 (reportes de turno).
+017 añade tres rutas de reportes de turno: [resultado](017-fastify-reportes-turno/result.md).
+Siguiente entrega: 018 (KPI).
 Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
 y el scope de assignments sin vínculo/para quiosco, registrados en 015.
 
 Antes de 025 resolver también reactivación/consistencia de jornadas al extender
 permisos y ownership employeeId/timeRecordId en correcciones, más scopes sin
 vínculo/para quiosco, registrados en 016. La paridad no elimina defectos legacy.
+
+017 caracteriza id ausente, abierto eliminado que bloquea, auditoría no atómica
+y contenido legacy corrupto en Excel. Revisar exclusividad del turno abierto y
+contratos de errores antes de 025; folio numérico único no garantiza un solo open.

@@ -10,12 +10,19 @@ export async function sendHttpStream(
 ) {
   reply.headers(headers);
   const output = new PassThrough();
+  // reply.send(stream) captures headers before asynchronous exporters can set them.
+  // Keep the native response in sync until the first byte commits the headers.
+  const setHeader = (name: string, value: string) => {
+    reply.header(name, value);
+    if (!reply.raw.headersSent) reply.raw.setHeader(name, value);
+  };
   const sink = Object.assign(output, {
     headersSent: false,
-    setHeader: (name: string, value: string) => reply.header(name, value),
+    setHeader,
     status: (code: number) => ({
       json: (body: { message: string }) => {
         reply.code(code);
+        setHeader("Content-Type", "application/json; charset=utf-8");
         if (!output.writableEnded) output.end(JSON.stringify(body));
       },
     }),
@@ -28,6 +35,7 @@ export async function sendHttpStream(
   } catch (error) {
     if (!reply.raw.headersSent) {
       reply.code(500);
+      setHeader("Content-Type", "application/json; charset=utf-8");
       if (!output.writableEnded) output.end(JSON.stringify({ message: fallbackMessage }));
     } else if (!output.writableEnded) output.end();
     reply.log.error({ err: error }, "HTTP export failed");

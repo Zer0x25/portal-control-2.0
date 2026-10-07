@@ -1,3 +1,4 @@
+import { shiftReportFlows } from "../services/shiftReportFlows";
 import { leaveFlows } from "../services/leaveFlows";
 import { correctionFlows } from "../services/correctionFlows";
 import { shiftFlows } from "../services/shiftFlows";
@@ -24,6 +25,13 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
       users: userService,
+      shiftReports: {
+        ...shiftReportFlows,
+        exportStream: async (stream, id) => {
+          const { streamExportService } = await loadExports();
+          await streamExportService.streamShiftReportToExcel(stream, id);
+        },
+      },
       shifts: shiftFlows,
       leaves: leaveFlows,
       corrections: correctionFlows,
