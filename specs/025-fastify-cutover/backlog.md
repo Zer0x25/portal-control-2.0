@@ -31,3 +31,5 @@ decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md
 La evidencia y límites detallados permanecen en los resultados 015–024 y en
 [roadmap](../roadmap-fastify.md). Corregir cada defecto con contrato/prueba propios
 cuando se trabaje en él, sin retrasar nuevamente el uso de Fastify por defecto.
+
+Tanda 2: [consistencia de configuración y PDF](config-policy-consistency.md).

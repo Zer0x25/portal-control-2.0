@@ -12,7 +12,9 @@ No crear nuevas specs de migración. No se hace push automático.
    - Validación de fechas/deltas/filtros y paginación acotada/determinista.
    - Actor de sesión en notas; creación/archivo/borrado y auditoría atómicos.
    - OpenAPI/SDK y caracterizaciones legacy actualizados al contrato correctivo.
-2. Configuración y archivos.
+2. Configuración y archivos — completada. Contrato: [config-policy-consistency](config-policy-consistency.md).
+   Validación: 651 pruebas de integración, 6 unitarias de flujos, 279 frontend;
+   CI, SDK, docs, specs y secretos correctos. Sin migración de base de datos.
    - Config write/audit atómicos; permisos/redacción de históricos y payloads.
    - Validación real de PDF y limpieza de archivo huérfano al fallar persistencia.
 3. Correo y reportes programados.

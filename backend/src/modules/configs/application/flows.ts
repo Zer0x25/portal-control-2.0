@@ -66,9 +66,15 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     upload: async (file: PolicyFile | undefined, actor?: string) => {
       if (!file) throw new ValidationError("Debes adjuntar un archivo PDF.");
       const username = actor || "SYSTEM";
-      const previous = await deps.get(policyKey);
+      let previous: unknown;
       const next = { ...file, uploadedAt: deps.now(), uploadedBy: username };
-      await deps.set(policyKey, next, username);
+      try {
+        await deps.validateFile(file);
+        previous = await deps.replacePolicy(next, username);
+      } catch (error) {
+        await deps.removeFile(file.filename);
+        throw error;
+      }
       if (object(previous) && "filename" in previous) {
         const old = String(previous.filename);
         if (old && old !== file.filename) await deps.removeFile(old);

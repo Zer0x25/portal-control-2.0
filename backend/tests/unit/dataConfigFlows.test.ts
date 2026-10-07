@@ -98,6 +98,8 @@ function configs() {
     get: vi.fn(),
     list: vi.fn(),
     set: vi.fn(),
+    replacePolicy: vi.fn(),
+    validateFile: vi.fn(),
     time: vi.fn(),
     closure: vi.fn(),
     download: vi.fn(),
@@ -125,7 +127,7 @@ it("configs preserve forbidden and closure-blocked translations with original fa
 });
 it("policy persists new metadata before deleting old file and uses injected clock/actor", async () => {
   const { deps, flow } = configs();
-  deps.get.mockResolvedValue({ filename: "old.pdf" });
+  deps.replacePolicy.mockResolvedValue({ filename: "old.pdf" });
   const file = {
     filename: "new.pdf",
     originalName: "Policy.pdf",
@@ -133,18 +135,17 @@ it("policy persists new metadata before deleting old file and uses injected cloc
     mimeType: "application/pdf",
   };
   const response = await flow.upload(file, "admin");
-  expect(deps.set).toHaveBeenCalledWith(
-    "company_policy_meta",
+  expect(deps.replacePolicy).toHaveBeenCalledWith(
     { ...file, uploadedAt: "2026-10-06T12:00:00Z", uploadedBy: "admin" },
     "admin",
   );
-  expect(deps.set.mock.invocationCallOrder[0]).toBeLessThan(
+  expect(deps.replacePolicy.mock.invocationCallOrder[0]).toBeLessThan(
     deps.removeFile.mock.invocationCallOrder[0],
   );
   expect(deps.removeFile).toHaveBeenCalledWith("old.pdf");
   expect(response.url).toBe("/api/configs/public/company-policy/file");
-  deps.set.mockRejectedValueOnce(new Error("db failed"));
+  deps.replacePolicy.mockRejectedValueOnce(new Error("db failed"));
   deps.removeFile.mockClear();
   await expect(flow.upload(file, "admin")).rejects.toThrow("db failed");
-  expect(deps.removeFile).not.toHaveBeenCalled();
+  expect(deps.removeFile).toHaveBeenCalledWith("new.pdf");
 });

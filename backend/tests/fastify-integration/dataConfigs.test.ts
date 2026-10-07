@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import request from "supertest";
+import { PDFDocument } from "pdf-lib";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
@@ -526,6 +527,115 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
       ).value,
     ).toBe('"2020-01-01"');
   });
+  it("preserves nested secret redaction in generic config audits", async () => {
+    const value = { nested: { password: "test-only-password", pin: "1234" }, visible: true };
+    expect((await http("POST", "/api/configs/custom", { value })).status).toBe(200);
+    const audit = await prismaDirect.auditLog.findFirstOrThrow({ where: { action: "CONFIG_SET" } });
+    expect(audit.details).toMatchObject({
+      newValue: { nested: { password: "[REDACTED]", pin: "[REDACTED]" }, visible: true },
+    });
+  });
+
+  it("rolls back configuration and events if CONFIG_SET audit fails", async () => {
+    await http("POST", "/api/configs/custom", { value: "before" });
+    emit.mockClear();
+    await prismaDirect.$executeRawUnsafe(`
+      CREATE FUNCTION fail_config_audit() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN IF NEW.action = 'CONFIG_SET' THEN RAISE EXCEPTION 'test audit failure'; END IF;
+      RETURN NEW; END $$;
+    `);
+    await prismaDirect.$executeRawUnsafe(`
+      CREATE TRIGGER fail_config_audit BEFORE INSERT ON audit_logs
+      FOR EACH ROW EXECUTE FUNCTION fail_config_audit();
+    `);
+    try {
+      expect((await http("POST", "/api/configs/custom", { value: "after" })).status).toBe(500);
+      expect(
+        (await prismaDirect.systemConfig.findUniqueOrThrow({ where: { key: "custom" } })).value,
+      ).toBe(JSON.stringify("before"));
+      expect(emit).not.toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRawUnsafe("DROP TRIGGER fail_config_audit ON audit_logs");
+      await prismaDirect.$executeRawUnsafe("DROP FUNCTION fail_config_audit()");
+    }
+  });
+
+  it.each([
+    Buffer.from("pretend PDF"),
+    Buffer.from("%PDF-1.4\nNot a document\n%%EOF"),
+    Buffer.from("%PDF-1.4\ntruncated"),
+  ])("rejects invalid PDF content and removes the staged file", async (bytes) => {
+    const before = await fs.readdir(directory);
+    expect((await upload(bytes)).status).toBe(400);
+    expect(await fs.readdir(directory)).toEqual(before);
+    expect(await prismaDirect.systemConfig.count({ where: { key: "company_policy_meta" } })).toBe(
+      0,
+    );
+  });
+
+  it("removes the new PDF after persistence failure and keeps the previous download", async () => {
+    const document = await PDFDocument.create();
+    document.addPage();
+    const bytes = Buffer.from(await document.save());
+    const previous = await upload(bytes);
+    const before = await fs.readdir(directory);
+    const replace = vi.spyOn(configFlows, "upload");
+    // Exercise actual file cleanup through the composed flow by failing its transaction.
+    await prismaDirect.$executeRawUnsafe(`
+      CREATE FUNCTION fail_policy_write() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN IF NEW.key = 'company_policy_meta' THEN RAISE EXCEPTION 'test persistence failure'; END IF;
+      RETURN NEW; END $$;
+    `);
+    await prismaDirect.$executeRawUnsafe(`
+      CREATE TRIGGER fail_policy_write BEFORE UPDATE ON system_configs
+      FOR EACH ROW EXECUTE FUNCTION fail_policy_write();
+    `);
+    try {
+      expect((await upload(bytes)).status).toBe(500);
+      expect(await fs.readdir(directory)).toEqual(before);
+      expect((await http("GET", "/api/configs/public/company-policy")).body.filename).toBe(
+        previous.body.filename,
+      );
+      expect(replace).toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRawUnsafe("DROP TRIGGER fail_policy_write ON system_configs");
+      await prismaDirect.$executeRawUnsafe("DROP FUNCTION fail_policy_write()");
+    }
+  });
+
+  it("serializes concurrent PDF replacements and retains only the current file", async () => {
+    const document = await PDFDocument.create();
+    document.addPage();
+    const bytes = Buffer.from(await document.save());
+    const first = await upload(bytes);
+    const results = await Promise.all([upload(bytes, "A.pdf"), upload(bytes, "B.pdf")]);
+    expect(results.map((result) => result.status)).toEqual([201, 201]);
+    const current = (await http("GET", "/api/configs/public/company-policy")).body;
+    const filenames = [first.body.filename, ...results.map((result) => result.body.filename)];
+    for (const filename of filenames) {
+      const exists = await fs.access(path.join(directory, filename)).then(
+        () => true,
+        () => false,
+      );
+      expect(exists).toBe(filename === current.filename);
+    }
+    const audits = await prismaDirect.auditLog.findMany({
+      where: { action: "CONFIG_SET" },
+    });
+    const chain = audits.map(
+      (audit) =>
+        audit.details as {
+          previousValue: { filename: string } | null;
+          newValue: { filename: string };
+        },
+    );
+    expect(chain.filter((entry) => entry.previousValue === null)).toHaveLength(1);
+    expect(
+      chain.filter((entry) => entry.previousValue?.filename === first.body.filename),
+    ).toHaveLength(1);
+    expect(chain.some((entry) => entry.newValue.filename === current.filename)).toBe(true);
+  });
+
   it("public policy is anonymous, uploads PDF bytes, replaces file and preserves inline headers", async () => {
     expect((await http("GET", "/api/configs/public/company-policy", undefined, null)).status).toBe(
       404,
@@ -533,7 +643,9 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(
       (await http("GET", "/api/configs/public/company-policy/file", undefined, null)).body,
     ).toEqual({ message: "No hay reglamento cargado" });
-    const bytes = Buffer.from("%PDF-1.4\nSpec020 test-only bytes\n%%EOF");
+    const document = await PDFDocument.create();
+    document.addPage();
+    const bytes = Buffer.from(await document.save());
     const res = await upload(bytes, "Reglamento á.pdf");
     expect(res.status).toBe(201);
     expect(res.body.uploadedBy).toBe("data-admin");
