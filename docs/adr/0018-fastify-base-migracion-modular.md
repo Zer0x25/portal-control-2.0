@@ -104,3 +104,8 @@ contexto diario UTC y consultas por cache miss requieren trabajo antes de cutove
 - [ADR-0017](0017-modulos-estrictos-node26-fastify-piloto.md)
 - [Factory Fastify](https://fastify.dev/docs/latest/Reference/Server/)
 - [Hooks Fastify](https://fastify.dev/docs/latest/Reference/Hooks/)
+
+La spec 019 añade doce rutas nativas de correo y reportes programados con aplicación
+pura, proveedor doble en pruebas, persistencia cifrada y sesiones reales. Conserva
+y caracteriza divergencias de schemas y calendario legacy; ver
+[resultado 019](../../specs/019-fastify-correo-reportes-programados/result.md).

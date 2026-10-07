@@ -1,6 +1,6 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-06. Estado: 013–018 implementadas y validadas localmente. 019–025 son borradores.
+Fecha: 2026-10-06. Estado: 013–019 implementadas y validadas localmente. 020–025 son borradores.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
@@ -26,7 +26,7 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; quedan siete tras la spec 018. El orden es propuesto y podrá
+la ruta comprende trece specs incluyendo 013; quedan seis tras la spec 019. El orden es propuesto y podrá
 ajustarse por las dependencias que revele cada inventario.
 
 ## Condición de avance
@@ -53,7 +53,8 @@ Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/
 016 añade ocho rutas de permisos/correcciones: [resultado](016-fastify-permisos-correcciones/result.md).
 017 añade tres rutas de reportes de turno: [resultado](017-fastify-reportes-turno/result.md).
 018 añade cuatro rutas KPI: [resultado](018-fastify-kpis/result.md).
-Siguiente entrega: 019 (correo y reportes programados).
+019 añade doce rutas de correo/reportes programados: [resultado](019-fastify-correo-reportes-programados/result.md).
+Siguiente entrega: 020 (medidores, notas y configuración).
 Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
 y el scope de assignments sin vínculo/para quiosco, registrados en 015.
 
@@ -68,3 +69,7 @@ contratos de errores antes de 025; folio numérico único no garantiza un solo o
 018 caracteriza caché cerrada sin invalidación, fechas validadas solo por formato,
 contexto diario UTC/ayer y filtros legacy. Excluye PIN de respuestas KPI; antes de
 025 resolver las deudas del motor con contrato explícito y pruebas.
+
+019 caracteriza divergencias schema/servicio SMTP, reglas y reportes, defaults no
+asignados al body, cron parcial/zona local y toggle sin atomicidad concurrente.
+Coordinar contrato, frontend y SDK antes de 025; paridad no corrige estas deudas.

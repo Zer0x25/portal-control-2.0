@@ -142,7 +142,7 @@ El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
 de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
 y las seis de empleados (incluido Excel), con casos de uso compartidos.
 `check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
-corrections, shiftReports, kpis, feriados y plataforma HTTP.
+corrections, shiftReports, kpis, emailReports, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
@@ -191,7 +191,12 @@ KPI comparte cuatro flujos con puertos de fechas/motor, sin reloj global en apli
 Summary/detailed preservan rango exclusivo y límites 1/5 años. Proyección pública
 retira PIN de overview y ausencias en ambos servidores. Caché cerrada conserva
 materialización/reutilización; invalidación y contexto UTC/ayer siguen pendientes.
-Ver specs 006/007/008/009/010/011/012/013/014/015/016/017/018 y ADR-0017/0018/0019.
+EmailReports comparte doce rutas de correo/reportes programados y puertos neutrales.
+SMTP conserva cifrado y enmascarado; tests sustituyen proveedor sin entrega externa.
+Deudas 019: schemas HTTP y servicios divergen en config/rules/reportes; validar sin
+reemplazar body conserva extras y defaults no aplicados. Cron parcial/reloj local y
+toggle read/update requieren contrato correctivo antes de cutover.
+Ver specs 006/007/008/009/010/011/012/013/014/015/016/017/018/019 y ADR-0017/0018/0019.
 
 ---
 

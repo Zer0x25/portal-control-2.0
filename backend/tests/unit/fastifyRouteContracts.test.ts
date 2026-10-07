@@ -81,6 +81,18 @@ routes.push(
     ["GET", "/api/leaves"],
     ["POST", "/api/leaves"],
     ["DELETE", "/api/leaves/:id"],
+    ["POST", "/api/email/verify"],
+    ["GET", "/api/email/config"],
+    ["POST", "/api/email/config"],
+    ["GET", "/api/email/rules"],
+    ["POST", "/api/email/rules"],
+    ["POST", "/api/email/send-test"],
+    ["GET", "/api/scheduled-reports"],
+    ["GET", "/api/scheduled-reports/:id"],
+    ["POST", "/api/scheduled-reports"],
+    ["PUT", "/api/scheduled-reports/:id"],
+    ["PATCH", "/api/scheduled-reports/:id/toggle"],
+    ["DELETE", "/api/scheduled-reports/:id"],
     ["POST", "/api/kpis/summary"],
     ["POST", "/api/kpis/detailed-report"],
     ["GET", "/api/kpis/overview"],
@@ -226,7 +238,7 @@ it("rejects unvalidated schedule route", () =>
     ),
   ).toThrow("Unvalidated"));
 
-it.each(["leaves", "corrections", "shift-reports", "kpis"])(
+it.each(["leaves", "corrections", "shift-reports", "kpis", "email", "scheduled-reports"])(
   "rejects empty/missing/extra/unsecured/unvalidated %s routes",
   (name) => {
     const prefix = `/api/${name}`;

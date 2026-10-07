@@ -1,3 +1,4 @@
+import { emailReportFlows } from "../services/emailReportFlows";
 import { kpiFlows } from "../services/kpiFlows";
 import { shiftReportFlows } from "../services/shiftReportFlows";
 import { leaveFlows } from "../services/leaveFlows";
@@ -27,6 +28,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       holidays: holidayService,
       users: userService,
       kpis: kpiFlows,
+      emailReports: emailReportFlows,
       shiftReports: {
         ...shiftReportFlows,
         exportStream: async (stream, id) => {

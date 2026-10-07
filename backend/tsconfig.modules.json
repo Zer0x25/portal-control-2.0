@@ -3,6 +3,7 @@
   "include": [
     "src/modules/auth/**/*.ts",
     "src/modules/kpis/**/*.ts",
+    "src/modules/emailReports/**/*.ts",
     "src/modules/records/**/*.ts",
     "src/modules/shifts/**/*.ts",
     "src/modules/shiftReports/**/*.ts",

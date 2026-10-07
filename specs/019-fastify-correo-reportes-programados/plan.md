@@ -2,24 +2,30 @@
 
 Spec: [spec.md](spec.md). Constitución: [constitución](../constitution.md).
 
-## Estrategia
+## Implementación
 
-1. Inspeccionar /api/email, /api/scheduled-reports y sus servicios; completar contratos y riesgos.
-2. Escribir behavior.md con ejemplos y pruebas que fallen primero.
-3. Extraer puertos y casos de uso, implementar adaptador y guard no vacío.
-4. Verificar permisos, fallos, persistencia y efectos; registrar result.md.
+- modules/emailReports/application/contracts.ts: tipos neutrales y puertos SMTP/reportes.
+- application/flows.ts: orquestación, mensajes, campos requeridos y 404.
+- index.ts: API pública; http/routes.ts: doce rutas nativas, roles y validación marcada.
+- services/emailReportFlows.ts: composición EmailService/ScheduledReportService,
+  schemas SMTP y adaptación ValidationError. Mantiene persistencia/cifrado/reloj en servicios.
+- controllers EmailController/scheduledReportController: adaptadores Express delgados.
+- models/schemas/smtpProfile.schemas.ts: schemas antes locales, sin cambiar contrato.
+- EmailService/ScheduledReportService: tipos reexportados desde módulo, lógica intacta.
+- plataforma/runtime: registro y dependencias; manifest exacto para ambas familias;
+  tsconfig.modules y guard de arquitectura incluyen módulo nuevo.
 
-## Archivos a tocar
+## Pruebas y gates
 
-Inventario pendiente: identificar routers, servicios y tests de la superficie
-indicada antes de modificar código. No reutilizar controllers Express como
-handlers Fastify. En 024/025 agregar entrypoint, sockets/jobs, compose, gateway
-y contrato OpenAPI al inventario.
+Cuatro casos unitarios RED antes de implementación; paridad con proveedor doble y
+BD desechable en tests/fastify-integration/emailReports.test.ts. Guards no vacíos,
+rutas ausentes/extras/auth/validación y prohibiciones de importaciones privadas.
+Backend validate:ci, cobertura y integración aislada. Después de terminar SDK,
+frontend validate:ci:coverage. Raíz docs:check, spec:check, secrets:scan y diff check.
+No activar jobs, sockets ni usar SMTP real; staging/e2e/carga quedan para 024/025.
 
-## Verificación y rollback
+## Rollback
 
-Backend: validate:ci, test:coverage, test:fastify:integration. Después del SDK,
-frontend: validate:ci:coverage. Raíz: docs:check, spec:check, secrets:scan.
-024/025 requieren además staging, e2e, carga y ciclo de vida del servidor.
-Mientras Express siga principal, revertir el registro del módulo candidato;
-025 debe documentar y ensayar rollback antes de cambiar el servidor.
+Revertir entrega 019 (registro candidato, módulo, composición y adaptadores)
+restaura controllers Express anteriores. No requiere migración de BD ni cambio
+operativo; sistema principal sigue Express. Cifrado y datos conservan su formato.

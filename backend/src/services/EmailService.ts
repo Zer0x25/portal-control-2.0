@@ -3,35 +3,16 @@ import prisma from "./db";
 import { encrypt, decrypt, isEncrypted } from "../utils/cryptoUtils";
 import { toCaughtError } from "../utils/caughtError";
 
-export interface SmtpConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  user: string;
-  pass: string;
-  fromEmail: string;
-  fromName: string;
-}
-
-export interface EmailRule {
-  enabled: boolean;
-  recipient: string;
-}
-
-export interface EmailNotificationRules {
-  autoCloseShift: EmailRule;
-  latenessOver15: EmailRule;
-  latenessOver60: EmailRule;
-}
-
+import type { SmtpConfig, MultiSmtpConfig, EmailNotificationRules } from "../modules/emailReports";
+export type {
+  SmtpConfig,
+  MultiSmtpConfig,
+  EmailNotificationRules,
+  EmailRule,
+} from "../modules/emailReports";
 const SMTP_CONFIG_KEY = "SMTP_CONFIG";
 const NOTIFICATION_RULES_KEY = "EMAIL_NOTIFICATION_RULES";
 const SMTP_REJECT_UNAUTHORIZED = process.env.SMTP_ALLOW_INSECURE_TLS === "true" ? false : true;
-
-export interface MultiSmtpConfig {
-  profiles: SmtpConfig[];
-  activeProfileIndex: number;
-}
 
 const DEFAULT_MULTI_CONFIG: MultiSmtpConfig = {
   profiles: [

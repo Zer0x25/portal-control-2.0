@@ -144,6 +144,29 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
   }
   for (const [name, expected] of [
     [
+      "email",
+      [
+        "POST /api/email/verify",
+        "GET /api/email/config",
+        "POST /api/email/config",
+        "GET /api/email/rules",
+        "POST /api/email/rules",
+        "POST /api/email/send-test",
+      ],
+    ],
+    [
+      "scheduled-reports",
+      [
+        "GET /api/scheduled-reports",
+        "GET /api/scheduled-reports/:id",
+        "POST /api/scheduled-reports",
+        "PUT /api/scheduled-reports/:id",
+        "PATCH /api/scheduled-reports/:id/toggle",
+        "DELETE /api/scheduled-reports/:id",
+      ],
+    ],
+
+    [
       "kpis",
       [
         "POST /api/kpis/summary",

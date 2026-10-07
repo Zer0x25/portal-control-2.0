@@ -1,3 +1,4 @@
+import { emailReportsPlugin, type EmailReportFlows } from "../../modules/emailReports";
 import { kpisPlugin, type KpiFlows } from "../../modules/kpis";
 import type {} from "./types";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -36,6 +37,7 @@ export interface FastifyDependencies {
   shifts: ShiftFlows;
   leaves: LeaveFlows;
   kpis: KpiFlows;
+  emailReports: EmailReportFlows;
   shiftReports: ShiftReportsHttpService;
   corrections: CorrectionFlows;
   employees: EmployeesHttpService;
@@ -201,6 +203,7 @@ export function buildFastifyApp(
       context.username = user.username;
     };
     protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(emailReportsPlugin, { service: deps.emailReports, authenticate });
     protectedApp.register(kpisPlugin, { service: deps.kpis, authenticate });
     protectedApp.register(shiftReportsPlugin, { service: deps.shiftReports, authenticate });
     protectedApp.register(leavesPlugin, { service: deps.leaves, authenticate });
