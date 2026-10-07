@@ -1,3 +1,5 @@
+import { leaveFlows } from "../services/leaveFlows";
+import { correctionFlows } from "../services/correctionFlows";
 import { shiftFlows } from "../services/shiftFlows";
 import { recordFlows } from "../services/recordFlows";
 import { employeeFlows } from "../services/employeeFlows";
@@ -23,6 +25,8 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       holidays: holidayService,
       users: userService,
       shifts: shiftFlows,
+      leaves: leaveFlows,
+      corrections: correctionFlows,
       records: {
         ...recordFlows,
         exportStream: async (format, stream, filters) => {

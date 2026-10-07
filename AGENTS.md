@@ -141,7 +141,8 @@ Express, Fastify, Prisma, DB, entorno, red o reloj global: inyecta dependencias.
 El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
 de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
 y las seis de empleados (incluido Excel), con casos de uso compartidos.
-`check:modules` aplica strict a auth, users, employees, feriados y plataforma HTTP.
+`check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
+corrections, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
@@ -170,7 +171,16 @@ con withDirectTransaction. Matriz Usuario/quiosco sin vínculo devuelve 403.
 Deudas 015: calendario mensual consulta UTC y muestra el día anterior en Chile,
 con queries por día heredadas; no replicar. Assignments sin vínculo de Usuario y
 quiosco mantienen scope legacy pendiente de decisión. Matriz sí usa batch context.
-Ver specs 006/007/008/009/010/011/012/013/014/015 y ADR-0017/0018/0019.
+Leaves/corrections tienen API pública index.ts y aplicación pura con puertos.
+Tres rutas leaves y cinco corrections comparten flujos Express/Fastify. POST leaves
+conserva parse explícito del schema; corrections valida sin reemplazar body.
+Reloj_Control gestiona leaves pero no resuelve corrections. Aprobación conserva
+withDirectTransaction, claim pending e idempotencia concurrente. Errores compartidos
+AppError/toCaughtError son helpers puros admitidos por el guard de estos módulos.
+Deudas 016: al extender leave, jornadas archivadas no se reactivan; materialización
+no atómica y solapamiento permitido. Correcciones no coteja employeeId/timeRecordId,
+y conserva lectura sin vínculo Usuario y scope quiosco legacy. Resolver antes de cutover.
+Ver specs 006/007/008/009/010/011/012/013/014/015/016 y ADR-0017/0018/0019.
 
 ---
 

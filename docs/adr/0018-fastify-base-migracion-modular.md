@@ -23,7 +23,7 @@ repositorio, eventos, auditoría, identificador y reloj. Aplicar strict a módul
 y plataforma HTTP. Validar Zod y serializar respuestas con schemas Fastify.
 Health queda fuera de límites/mantenimiento. Guards sobre onRoute exigen cinco
 rutas de feriados, seis de auth, cuatro de usuarios, seis de empleados, nueve de
-marcaciones y dieciocho de turnos, seguridad declarada y validadores registrados;
+marcaciones, dieciocho de turnos, tres de ausencias y cinco de correcciones, seguridad declarada y validadores registrados;
 pruebas ejercitan auth real. Logout y setup ignoran el cuerpo por contrato.
 
 Base HTTP y contexto/actor en `backend/src/platform/fastify/app.ts`;
@@ -66,8 +66,16 @@ calendario mensual mantiene un defecto UTC/Chile y queries por día existentes;
 assignments conserva scope legacy sin vínculo/para quiosco. Resolver esas deudas
 con contratos y pruebas antes de cutover. No se promete mejora de rendimiento.
 
+Spec 016 migra ocho rutas de permisos/correcciones con flujos puros y preserva
+claim pending/aprobación transaccional. Pruebas concurrentes verifican un ganador;
+fallo de persistencia revierte la solicitud. Conserva diferencias de roles:
+Reloj_Control gestiona ausencias pero no resuelve correcciones. Materialización
+no atómica/reactivación defectuosa y ownership/scopes incompletos son deudas
+explícitas antes de cutover; la migración no endurece reglas silenciosamente.
+
 ## Referencias
 
+- [Resultado 016](../../specs/016-fastify-permisos-correcciones/result.md)
 - [Resultado 014](../../specs/014-fastify-marcaciones/result.md)
 - [Resultado 015](../../specs/015-fastify-turnos/result.md)
 - [Ruta 013–025](../../specs/roadmap-fastify.md)

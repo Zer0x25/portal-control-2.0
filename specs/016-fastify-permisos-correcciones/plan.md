@@ -2,24 +2,35 @@
 
 Spec: [spec.md](spec.md). Constitución: [constitución](../constitution.md).
 
-## Estrategia
+## Estrategia y contrato
 
-1. Inspeccionar /api/leaves, /api/corrections y sus servicios; completar contratos y riesgos.
-2. Escribir behavior.md con ejemplos y pruebas que fallen primero.
-3. Extraer puertos y casos de uso, implementar adaptador y guard no vacío.
-4. Verificar permisos, fallos, persistencia y efectos; registrar result.md.
+1. Inventario de ocho rutas y deudas en spec/behavior; RED de cuatro flujos.
+2. Crear modules/leaves y modules/corrections con contratos neutrales y salidas
+   genéricas inferidas en services/leaveFlows.ts y services/correctionFlows.ts.
+3. Parse explícito LeaveRecordSchema en adaptadores; correcciones pasan cuerpo
+   original tras validar, como Express. Ownership crea outcome message-only 403.
+4. Controllers delgados, plugins nativos, manifiestos exactos/strict/guard públicos.
+5. PostgreSQL desechable por transporte: materialización/sellado, inmutabilidad,
+   filtros, scopes, aprobación/rechazo/concurrencia/rollback e historial/actores.
+6. Gates y resultados; no reescribir algoritmos ni endurecer contratos silenciosamente.
 
-## Archivos a tocar
+## Archivos y riesgos
 
-Inventario pendiente: identificar routers, servicios y tests de la superficie
-indicada antes de modificar código. No reutilizar controllers Express como
-handlers Fastify. En 024/025 agregar entrypoint, sockets/jobs, compose, gateway
-y contrato OpenAPI al inventario.
+modules/leaves, modules/corrections, services/*Flows, dos controllers,
+app/runtime/routeContracts/tsconfig, fixtures/guards/unit/integración y docs.
+LeaveService/CorrectionService no requieren cambios internos. Conservar
+withDirectTransaction en aprobación, fallos y efectos heredados. No introducir
+lecturas por fila en módulos; persistencia existente se documenta como deuda.
 
 ## Verificación y rollback
 
-Backend: validate:ci, test:coverage, test:fastify:integration. Después del SDK,
-frontend: validate:ci:coverage. Raíz: docs:check, spec:check, secrets:scan.
-024/025 requieren además staging, e2e, carga y ciclo de vida del servidor.
-Mientras Express siga principal, revertir el registro del módulo candidato;
-025 debe documentar y ensayar rollback antes de cambiar el servidor.
+Node 26: backend validate:ci/test:coverage/test:fastify:integration, luego
+frontend validate:ci:coverage tras check:sdk. Raíz docs:check/spec:check/secrets:scan,
+git diff --check. BD aislada con propietario y cleanup. Sin staging ni DB local.
+Revertir plugin/entrega; Express principal, sin migración de BD.
+
+Errores usan AppError y toCaughtError, ambos helpers puros admitidos explícitamente
+por el guard solo para estos módulos; valores desconocidos se estrechan sin any y
+los fallos inesperados se relanzan preservando stack e identidad.
+El defecto de reactivación al extender ausencia queda cubierto y pendiente de
+spec de corrección; no se presenta la paridad como prueba de ausencia de defectos.

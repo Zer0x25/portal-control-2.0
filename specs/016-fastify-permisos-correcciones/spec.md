@@ -1,38 +1,61 @@
 # Spec 016: Permisos y correcciones
 
-- Estado: Borrador planificado; implementación pendiente
+- Estado: Implementado y validado localmente
 - Fecha: 2026-10-06
 - Ruta: [roadmap](../roadmap-fastify.md)
 
-## Problema
+## Problema y alcance
 
-La superficie /api/leaves, /api/corrections debe integrarse al candidato Fastify para completar
-la migración modular y disponer de contratos y pruebas mantenibles.
+Ocho rutas siguen ligadas a controllers Express. Extraer orquestación a módulos
+leaves/corrections con API pública index.ts, puertos estrictos, errores/helpers puros compartidos y adaptadores
+compartidos; conservar servicios de materialización/aprobación e integridad.
 
-## Alcance
+| Método | Ruta                         | Permiso / respuesta                             |
+| ------ | ---------------------------- | ----------------------------------------------- |
+| GET    | /api/leaves                  | Supervisor, 200 success/data/meta               |
+| POST   | /api/leaves                  | Supervisor, 201 success/data; upsert            |
+| DELETE | /api/leaves/:id              | Supervisor, 200 success/message                 |
+| GET    | /api/corrections             | Autenticado, 200 requests/total                 |
+| GET    | /api/corrections/stats       | Autenticado, 200 pending/approved/rejected      |
+| GET    | /api/corrections/:id/history | Autenticado, 200 data                           |
+| POST   | /api/corrections             | Autenticado, 201 entidad; ownership 403 message |
+| PATCH  | /api/corrections/:id/status  | Resolver, 200 entidad                           |
 
-Solapamientos, fechas Chile, aprobación y autorización por rol. Inventariar cada ruta real antes de implementar, incluidas las
-anidadas. Compartir casos de uso entre los adaptadores cuando corresponda.
-
-Fuera: módulos de otras specs y cambios de producto no declarados. Esta spec
-es una previsión; no autoriza despliegues ni operaciones externas.
+Supervisor: Administrador, Supervisor_Elevado, Supervisor, Reloj_Control.
+Resolver: mismos excepto Reloj_Control. Permisos usan rol persistido.
+GET leaves usa LeaveQuerySchema; POST leaves usa LeaveRecordSchema y parse explícito
+que elimina desconocidos. Corrections usa CorrectionRequestSchema / UpdateCorrectionStatusSchema
+sin reemplazar body. GET corrections conserva conversión manual; params string,
+query z.unknown en endpoints legacy son marcadores, no validación exhaustiva.
+Todos los cuerpos mantienen límite global 1 MiB, sin bulks nuevos.
 
 ## Criterios de aceptación
 
-- [ ] AC1: Inventario no vacío con método, path, permisos, validación, respuestas y efectos de cada ruta/flujo.
-- [ ] AC2: BDD concreto y pruebas RED antes de implementar; comportamiento vigente y errores caracterizados.
-- [ ] AC3: Implementación con puertos tipados, límites públicos y sin dependencias de infraestructura en aplicación.
-- [ ] AC4: Paridad verificada con BD aislada donde aplique; contratos de seguridad y fallos comprobados.
-- [ ] AC5: Gates backend/frontend secuenciales, docs/SDK y ratchets aprobados; resultado con límites y rollback.
+- [x] AC1: Manifiestos exactos de 3/5 rutas, no vacíos, auth/roles/validación/respuestas conservados.
+- [x] AC2: BDD concreto y cuatro tests RED antes de implementar, luego GREEN.
+- [x] AC3: Aplicación pura strict, puertos neutrales y consumers index.ts; controllers delgados, sin nuevos N+1.
+- [x] AC4: Paridad PostgreSQL para ausencias/materialización/fechas y correcciones/ownership/aprobación/historial; fallo aprobación revierte y concurrencia aplica una vez.
+- [x] AC5: Backend/frontend secuenciales, SDK/docs/specs/secrets/ratchets y resultado/rollback.
 
-## Restricciones
+## Invariantes y límites declarados
 
-Constitución I–V, Node 26, React/Vite y PostgreSQL se conservan. Usar
-withDirectTransaction para transacciones interactivas. No reducir ratchets.
-El cambio de servidor principal se reserva a 025. Para 025, AC3 exige además
-retirar dependencias Express una vez demostrado el rollback.
+No cambios de producto, schema o dependencias. LeaveService conserva límite de
+siete días, campos inmutables, protección 24h, precedencia de marcación y limpieza.
+No existe validación de solapamiento de ausencias ni startDate<=endDate: conservar,
+caracterizar y registrar deuda. Materialización/limpieza no son una sola transacción;
+se conserva sellado por fila con consultas heredadas, sin replicarlas en aplicación.
+Hallazgo: al extender ausencia se archivan jornadas sin marcación y materializeDays
+no restablece isDeleted; quedan tombstones pese al permiso activo. Caracterizar
+y corregir en contrato separado antes de cutover.
+Correcciones conserva withDirectTransaction, claim pending condicional e idempotencia.
+currentValue del schema no se traduce a originalValue; resolvedBy suministrado se
+mantiene distinto del actor real. attachment no se persiste. Usuario sin vínculo
+no restringe list/stats/history, quiosco no tiene scope, y ownership valida employeeId
+sin cotejar pertenencia del timeRecordId: deudas explícitas, no corregidas silenciosamente.
+No asegurar atomicidad de auditoría/eventos ni aislamiento de efectos externos.
+Express principal, runtime/jobs/sockets/staging/cutover fuera (024/025).
 
 ## Trazabilidad
 
-Dependencia prevista: 015; revisar dependencias reales al iniciar.
-Tests y archivos concretos se detallarán tras el inventario de AC1.
+leaveCorrectionFlows.test.ts (RED/GREEN), leavesCorrections.test.ts (PostgreSQL),
+fastifyApp/RouteContracts y guard de límites/strict. Dependencia: 014/015.

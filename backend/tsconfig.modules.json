@@ -4,6 +4,8 @@
     "src/modules/auth/**/*.ts",
     "src/modules/records/**/*.ts",
     "src/modules/shifts/**/*.ts",
+    "src/modules/leaves/**/*.ts",
+    "src/modules/corrections/**/*.ts",
     "src/modules/users/**/*.ts",
     "src/modules/employees/**/*.ts",
     "src/modules/holidays/**/*.ts",

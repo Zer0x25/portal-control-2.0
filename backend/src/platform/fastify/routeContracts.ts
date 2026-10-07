@@ -142,4 +142,33 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     if (!route.authenticated) throw new Error(`Missing authentication contract: ${route.url}`);
     if (!route.validated) throw new Error(`Unvalidated shifts route: ${route.method} ${route.url}`);
   }
+  for (const [name, expected] of [
+    ["leaves", ["GET /api/leaves", "POST /api/leaves", "DELETE /api/leaves/:id"]],
+    [
+      "corrections",
+      [
+        "GET /api/corrections",
+        "GET /api/corrections/stats",
+        "GET /api/corrections/:id/history",
+        "POST /api/corrections",
+        "PATCH /api/corrections/:id/status",
+      ],
+    ],
+  ] as const) {
+    const prefix = `/api/${name}`;
+    const selected = routes.filter(
+      (route) => route.url === prefix || route.url.startsWith(`${prefix}/`),
+    );
+    if (!selected.length) throw new Error(`${name} route manifest is empty`);
+    if (
+      JSON.stringify(selected.map((route) => `${route.method} ${route.url}`).sort()) !==
+      JSON.stringify([...expected].sort())
+    )
+      throw new Error(`${name} route manifest differs from the API contract`);
+    for (const route of selected) {
+      if (!route.authenticated) throw new Error(`Missing authentication contract: ${route.url}`);
+      if (!route.validated)
+        throw new Error(`Unvalidated ${name} route: ${route.method} ${route.url}`);
+    }
+  }
 }

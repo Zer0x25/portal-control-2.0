@@ -75,6 +75,19 @@ routes.push(
     ["POST", "/api/shifts/validate-conflicts"],
   ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
 );
+
+routes.push(
+  ...[
+    ["GET", "/api/leaves"],
+    ["POST", "/api/leaves"],
+    ["DELETE", "/api/leaves/:id"],
+    ["GET", "/api/corrections"],
+    ["GET", "/api/corrections/stats"],
+    ["GET", "/api/corrections/:id/history"],
+    ["POST", "/api/corrections"],
+    ["PATCH", "/api/corrections/:id/status"],
+  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+);
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
     expect(() => assertMigratedRouteContracts(routes)).not.toThrow());
@@ -201,3 +214,31 @@ it("rejects unvalidated schedule route", () =>
       ),
     ),
   ).toThrow("Unvalidated"));
+
+it.each(["leaves", "corrections"])(
+  "rejects empty/missing/extra/unsecured/unvalidated %s routes",
+  (name) => {
+    const prefix = `/api/${name}`;
+    const belongs = (r: RouteEntry) => r.url === prefix || r.url.startsWith(`${prefix}/`);
+    expect(() => assertMigratedRouteContracts(routes.filter((r) => !belongs(r)))).toThrow("empty");
+    expect(() =>
+      assertMigratedRouteContracts(routes.filter((r) => !(r.url === prefix && r.method === "GET"))),
+    ).toThrow("differs");
+    expect(() =>
+      assertMigratedRouteContracts([
+        ...routes,
+        { method: "POST", url: `${prefix}/extra`, authenticated: true, validated: true },
+      ]),
+    ).toThrow("differs");
+    expect(() =>
+      assertMigratedRouteContracts(
+        routes.map((r) => (belongs(r) ? { ...r, authenticated: false } : r)),
+      ),
+    ).toThrow("authentication");
+    expect(() =>
+      assertMigratedRouteContracts(
+        routes.map((r) => (belongs(r) ? { ...r, validated: false } : r)),
+      ),
+    ).toThrow("Unvalidated");
+  },
+);
