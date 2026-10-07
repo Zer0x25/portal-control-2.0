@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as adminController from "../controllers/adminController";
 import { authenticateToken, authorizeAdmin } from "../middleware/authMiddleware";
 import { validate } from "../middleware/validate";
-import { z } from "zod";
+import { PurgeSessionsBodySchema, ResetPasswordBodySchema } from "../models/schemas/admin.schemas";
 import { RestoreBackupSchema } from "../models/schemas/core.schemas";
 
 const router = Router();
@@ -147,15 +147,7 @@ router.post("/trigger-backup", adminController.triggerBackup);
  *       200:
  *         description: Sesiones purgadas
  */
-router.post(
-  "/purge-sessions",
-  validate(
-    z.object({
-      username: z.string().min(1).optional(),
-    }),
-  ),
-  adminController.purgeSessions,
-);
+router.post("/purge-sessions", validate(PurgeSessionsBodySchema), adminController.purgeSessions);
 
 /**
  * @openapi
@@ -181,12 +173,7 @@ router.post(
  */
 router.post(
   "/reset-password",
-  validate(
-    z.object({
-      username: z.string().min(1),
-      newPassword: z.string().min(6),
-    }),
-  ),
+  validate(ResetPasswordBodySchema),
   adminController.resetUserPassword,
 );
 

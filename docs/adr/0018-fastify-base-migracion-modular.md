@@ -125,3 +125,9 @@ Fiscalizador/elevados y export CSV/XML mediante Writable. Paridad con BD aislada
 comprueba ALS por petición y variable de auditoría en transacción directa.
 Conserva las deudas de schema manual, retención, snapshot y export parcial.
 Ver [resultado 022](../../specs/022-fastify-auditoria/result.md).
+
+Spec 023 añade 21 rutas admin/mantenimiento, flujos puros y progreso compartido,
+presupuesto admin 1000/IP/15 min y exclusiones maintenance/global. Corrige el
+filtro Express de compresión por path relativo y caracteriza reset CASCADE/jobs
+con BD desechable. No cambia servidor principal ni ejecuta restore/restart real.
+Ver [resultado 023](../../specs/023-fastify-operaciones-admin/result.md).

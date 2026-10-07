@@ -1,3 +1,5 @@
+import { adminFlows } from "../services/adminFlows";
+import { maintenanceFlows } from "../services/maintenanceFlows";
 import { auditFlows } from "../services/auditFlows";
 import { importExportFlows } from "../services/importExportFlows";
 import { meterFlows } from "../services/meterFlows";
@@ -33,6 +35,8 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
       users: userService,
+      admin: adminFlows,
+      maintenanceFlows,
       kpis: kpiFlows,
       emailReports: emailReportFlows,
       importExport: {

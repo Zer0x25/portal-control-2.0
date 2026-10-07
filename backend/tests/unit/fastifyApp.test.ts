@@ -121,6 +121,30 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       excel: vi.fn(),
     },
     meters: { list: vi.fn(), create: vi.fn() },
+    admin: {
+      stats: vi.fn().mockResolvedValue({}),
+      diagnosis: vi.fn(),
+      insights: vi.fn(),
+      status: vi.fn(),
+      backups: vi.fn(),
+      autoClose: vi.fn(),
+      accountingClose: vi.fn(),
+      resetPassword: vi.fn(),
+      purge: vi.fn(),
+      backup: vi.fn(),
+      restore: vi.fn(),
+      restart: vi.fn(),
+    },
+    maintenanceFlows: {
+      clear: vi.fn(),
+      seed: vi.fn(),
+      startJob: vi.fn(),
+      pauseJob: vi.fn(),
+      resumeJob: vi.fn(),
+      stopJob: vi.fn(),
+      status: vi.fn().mockResolvedValue({}),
+      logs: vi.fn(),
+    },
     audit: {
       list: vi.fn(),
       create: vi.fn(),
@@ -679,6 +703,8 @@ it.each([
 );
 
 it.each([
+  "/api/admin/reset-password",
+  "/api/maintenance/seed",
   "/api/leaves",
   "/api/corrections",
   "/api/kpis/summary",
@@ -762,4 +788,43 @@ it("export IP budget is independent, shared across routes and checked before mai
     ).statusCode,
   ).toBe(503);
   expect(f.deps.importExport.pdf).not.toHaveBeenCalled();
+});
+
+it("admin and maintenance bypass the global limiter and maintenance gate but require auth", async () => {
+  const f = fixture({ rateLimit: { max: 1, timeWindow: 900000 } });
+  vi.mocked(f.deps.maintenance).mockReturnValue({ type: "restore" });
+  const headers = { authorization: `Bearer ${f.token("admin", "Administrador")}` };
+  for (let i = 0; i < 3; i++) {
+    expect((await f.app.inject({ url: "/api/admin/stats", headers })).statusCode).toBe(200);
+    expect(
+      (await f.app.inject({ url: "/api/maintenance/seed/phase2/status", headers })).statusCode,
+    ).toBe(200);
+  }
+  expect((await f.app.inject({ url: "/api/admin/stats" })).statusCode).toBe(401);
+  expect((await f.app.inject({ url: "/api/maintenance/seed/phase2/status" })).statusCode).toBe(401);
+  expect((await f.app.inject({ url: "/api/notes", headers })).statusCode).toBe(503);
+  expect((await f.app.inject({ url: "/api/notes", headers })).statusCode).toBe(429);
+});
+it("admin applies shared 1000/IP/15-minute budget before auth and leaves maintenance independent", async () => {
+  const f = fixture({ rateLimit: { max: 1, timeWindow: 900000 } }),
+    headers = { "x-forwarded-for": "192.0.2.191" };
+  for (let i = 0; i < 1000; i++)
+    expect(
+      (await f.app.inject({ url: i % 2 ? "/api/admin/stats" : "/api/admin/backups", headers }))
+        .statusCode,
+    ).toBe(401);
+  const response = await f.app.inject({ url: "/api/admin/stats", headers });
+  expect(response.statusCode).toBe(429);
+  expect(response.json()).toEqual({
+    message: "Límite de operaciones admin alcanzado. Intenta en 15 minutos.",
+  });
+  expect(response.headers["ratelimit-policy"]).toBe("1000;w=900");
+  expect(Number(response.headers["retry-after"])).toBeGreaterThan(0);
+  expect(
+    (await f.app.inject({ url: "/api/maintenance/seed/phase2/status", headers })).statusCode,
+  ).toBe(401);
+  expect(
+    (await f.app.inject({ url: "/api/admin/stats", headers: { "x-forwarded-for": "192.0.2.192" } }))
+      .statusCode,
+  ).toBe(401);
 });

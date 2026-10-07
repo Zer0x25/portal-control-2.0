@@ -429,3 +429,14 @@ Conservar ALS por request y withDirectTransaction para audit.username.
 Deudas 022: schema manual exige campos ignorados, log absorbe fallos, paginación
 sin cotas, fechas del host, snapshot local, export parcial tras bytes y actor
 SYSTEM de verificación. Ver specs/022-fastify-auditoria/spec.md.
+
+Admin/maintenance usa módulos públicos index.ts y aplicación pura; 12 rutas admin
+y 9 maintenance exigen solo Administrador. Mantener 1000/IP/15 min admin antes
+de auth, exclusión global/maintenance y límite JSON 1 MiB. Maintenance no comprime:
+Express filtra originalUrl, Fastify usa opción de ruta compress=false.
+Respuesta precede restart/finish por callbacks de puertos. Seed watchdog/contexto
+SYSTEM_SEEDER/skipTrigger se compone fuera de aplicación.
+Deudas 023: reset TRUNCATE CASCADE borra users aunque informa preservedUser,
+recrea admin con credenciales fijas heredadas y conserva jobs; operaciones y jobs
+no coordinan bloqueo distribuido, watchdog no cancela motor, restart dev toca
+index.ts. Ver specs/023-fastify-operaciones-admin/spec.md antes de cutover.

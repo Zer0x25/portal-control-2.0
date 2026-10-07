@@ -41,9 +41,13 @@ function inspect(source: string, file: string, name = "holidays"): string[] {
           "meters",
           "importExport",
           "audit",
+          "admin",
+          "maintenance",
         ].includes(name) &&
         (resolved === path.join(src, "utils/AppError") ||
-          (["leaves", "corrections", "shiftReports", "configs"].includes(name) &&
+          (["leaves", "corrections", "shiftReports", "configs", "admin", "maintenance"].includes(
+            name,
+          ) &&
             resolved === path.join(src, "utils/caughtError")))
       )
     ) {
@@ -358,6 +362,8 @@ describe.each([
   "meters",
   "importExport",
   "audit",
+  "admin",
+  "maintenance",
   "notes",
   "configs",
 ])("%s module boundaries", (name) => {

@@ -1,3 +1,5 @@
+import { adminPlugin, type AdminFlows } from "../../modules/admin";
+import { maintenancePlugin, type MaintenanceFlows } from "../../modules/maintenance";
 import { auditPlugin, type AuditFlows } from "../../modules/audit";
 import type { ExcelHttpStream } from "../../utils/httpStream";
 import { importExportPlugin, type ImportExportHttpService } from "../../modules/importExport";
@@ -45,6 +47,8 @@ export interface FastifyDependencies {
   kpis: KpiFlows;
   emailReports: EmailReportFlows;
   configs: ConfigHttpService;
+  admin: AdminFlows;
+  maintenanceFlows: MaintenanceFlows;
   audit: AuditFlows<ExcelHttpStream>;
   notes: NoteFlows;
   meters: MeterFlows;
@@ -194,7 +198,30 @@ export function buildFastifyApp(
           "RATE_LIMITED",
         ),
     });
-    protectedApp.addHook("onRequest", protectedApp.rateLimit());
+    const globalRateLimit = protectedApp.rateLimit();
+    protectedApp.addHook("onRequest", async function (request, reply) {
+      const path = request.url.split("?")[0];
+      if (path.startsWith("/api/maintenance") || path.startsWith("/api/admin")) return;
+      await globalRateLimit.call(this, request, reply);
+    });
+    const adminLimit = protectedApp.createRateLimit({ max: 1000, timeWindow: 15 * 60 * 1000 });
+    protectedApp.addHook("onRequest", async (request, reply) => {
+      const path = request.url.split("?")[0];
+      if (path !== "/api/admin" && !path.startsWith("/api/admin/")) return;
+      const limit = await adminLimit(request);
+      if (limit.isAllowed === false) {
+        reply.header("RateLimit-Policy", "1000;w=900");
+        reply.header(
+          "RateLimit",
+          `limit=1000, remaining=${limit.remaining}, reset=${limit.ttlInSeconds}`,
+        );
+        if (limit.isExceeded)
+          return reply
+            .header("Retry-After", String(limit.ttlInSeconds))
+            .code(429)
+            .send({ message: "Límite de operaciones admin alcanzado. Intenta en 15 minutos." });
+      }
+    });
     // Separate IP budget, before maintenance/auth, as in Express /api/export.
     const exportLimit = protectedApp.createRateLimit({ max: 10, timeWindow: 15 * 60 * 1000 });
     protectedApp.addHook("onRequest", async (request, reply) => {
@@ -214,7 +241,9 @@ export function buildFastifyApp(
             .send({ message: "Límite de exportaciones alcanzado. Intenta en 15 minutos." });
       }
     });
-    protectedApp.addHook("onRequest", async () => {
+    protectedApp.addHook("onRequest", async (request) => {
+      const path = request.url.split("?")[0];
+      if (path.startsWith("/api/maintenance") || path.startsWith("/api/admin")) return;
       const operation = deps.maintenance();
       if (operation)
         throw new AppError(
@@ -242,6 +271,8 @@ export function buildFastifyApp(
       auditStreamError: auditFailure,
     });
     protectedApp.register(metersPlugin, { service: deps.meters, authenticate });
+    protectedApp.register(adminPlugin, { service: deps.admin, authenticate });
+    protectedApp.register(maintenancePlugin, { service: deps.maintenanceFlows, authenticate });
     protectedApp.register(auditPlugin, {
       service: deps.audit,
       authenticate,

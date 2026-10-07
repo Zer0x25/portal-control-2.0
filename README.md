@@ -322,3 +322,5 @@ Spec 021 añade cinco rutas import/export con preview Excel y descargas PDF/XLSX
 permisos y límite export compartido: [resultado](specs/021-fastify-importacion-exportacion/result.md).
 
 Migración Fastify 022 (auditoría): [resultado](specs/022-fastify-auditoria/result.md).
+
+Migración Fastify 023 (admin/mantenimiento): [resultado](specs/023-fastify-operaciones-admin/result.md).

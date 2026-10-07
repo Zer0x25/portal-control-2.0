@@ -1,6 +1,6 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-06. Estado: 013–022 implementadas y validadas localmente. 023–025 son borradores.
+Fecha: 2026-10-06. Estado: 013–023 implementadas y validadas localmente. 024–025 son borradores.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
@@ -26,7 +26,7 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; quedan tres tras la spec 022. El orden es propuesto y podrá
+la ruta comprende trece specs incluyendo 013; quedan dos tras la spec 023. El orden es propuesto y podrá
 ajustarse por las dependencias que revele cada inventario.
 
 ## Condición de avance
@@ -58,7 +58,8 @@ Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/
 021 añade cinco rutas import/export, límite export y pruebas PDF/XLSX reales:
 [resultado](021-fastify-importacion-exportacion/result.md).
 022 añade seis rutas de auditoría: [resultado](022-fastify-auditoria/result.md).
-Siguiente entrega: 023 (mantenimiento/administración).
+023 añade 21 rutas admin/maintenance: [resultado](023-fastify-operaciones-admin/result.md).
+Siguiente entrega: 024 (runtime integrado).
 Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
 y el scope de assignments sin vínculo/para quiosco, registrados en 015.
 
@@ -90,3 +91,8 @@ si falla KPI después de iniciar ZIP. Resolver antes de 025 según alcance de pr
 persistencia, fechas del host/paginación sin cotas, snapshot local, actor SYSTEM
 de verificación y CSV/XML parcial tras fallo de cursor. Resolver según contrato
 de producto antes de 025; ALS/direct transaction sí se verifica concurrentemente.
+
+023 corrige compresión de maintenance usando originalUrl en Express y opción de
+ruta compress=false en Fastify. Caracteriza reset CASCADE que borra users pese a
+preservedUser, admin con contraseña fija y jobs retenidos, watchdog sin cancelación
+y estado local; coordinar operaciones/jobs y redacción de secretos antes de 025.

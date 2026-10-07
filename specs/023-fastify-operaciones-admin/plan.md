@@ -2,24 +2,25 @@
 
 Spec: [spec.md](spec.md). Constitución: [constitución](../constitution.md).
 
-## Estrategia
+## Implementación
 
-1. Inspeccionar /api/maintenance, /api/admin y sus servicios; completar contratos y riesgos.
-2. Escribir behavior.md con ejemplos y pruebas que fallen primero.
-3. Extraer puertos y casos de uso, implementar adaptador y guard no vacío.
-4. Verificar permisos, fallos, persistencia y efectos; registrar result.md.
+1. Inventario 12 admin + 9 maintenance; cuatro RED y BDD.
+2. modules/admin y modules/maintenance con contratos/flows puros e index público.
+3. services/adminFlows.ts y maintenanceFlows.ts componen servicios vigentes,
+   watchdog, ALS y runtime. Controllers delgados comparten flujos.
+4. Schemas admin movidos sin cambio; plugins nativos; progressStream y helper
+   Express JSON por líneas. Conservar compresión/exclusiones/presupuesto admin.
+5. Integración aislada, guards exactos, strict y gates; publicar resultado.
 
-## Archivos a tocar
+## Gates
 
-Inventario pendiente: identificar routers, servicios y tests de la superficie
-indicada antes de modificar código. No reutilizar controllers Express como
-handlers Fastify. En 024/025 agregar entrypoint, sockets/jobs, compose, gateway
-y contrato OpenAPI al inventario.
+Backend validate:ci, test:coverage y test:fastify:integration. Tras SDK y backend,
+frontend validate:ci:coverage. Raíz docs:check, spec:check, secrets:scan y diff check.
+No staging, procesos backup/restore/restart reales ni cambios Prisma/dependencias.
 
-## Verificación y rollback
+## Rollback
 
-Backend: validate:ci, test:coverage, test:fastify:integration. Después del SDK,
-frontend: validate:ci:coverage. Raíz: docs:check, spec:check, secrets:scan.
-024/025 requieren además staging, e2e, carga y ciclo de vida del servidor.
-Mientras Express siga principal, revertir el registro del módulo candidato;
-025 debe documentar y ensayar rollback antes de cambiar el servidor.
+Revertir 023 completo restaura controllers, schemas y configuración HTTP anterior,
+retira registros/guards nativos, sin migraciones DB. Express continúa principal.
+Cambiar solo el plugin requiere ajustar el guard exacto. Cutover se reserva a 025;
+024 debe revisar jobs/background, sockets, entrypoint y restart.
