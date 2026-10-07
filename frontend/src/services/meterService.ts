@@ -10,7 +10,7 @@ export const meterService = {
    */
   async getAll(since?: number): Promise<MeterReadingItem[]> {
     const response = await apiClient.get("/api/meters", {
-      params: since ? { since: String(since) } : undefined,
+      params: since !== undefined ? { since: String(since) } : undefined,
     });
 
     // Both possible responses have a 'data' property which is an array of MeterReading
@@ -24,7 +24,13 @@ export const meterService = {
   async getPaginated(
     page: number,
     pageSize: number,
-    filters?: { meterId?: string; startDate?: string; endDate?: string; since?: number },
+    filters?: {
+      month?: string;
+      meterId?: string;
+      startDate?: string;
+      endDate?: string;
+      since?: number;
+    },
   ): Promise<{
     data: MeterReadingItem[];
     pagination: { total: number; page: number; totalPages: number };
@@ -33,10 +39,11 @@ export const meterService = {
       params: {
         page: page,
         pageSize: pageSize,
+        month: filters?.month,
         meterId: filters?.meterId,
         startDate: filters?.startDate,
         endDate: filters?.endDate,
-        since: filters?.since ? String(filters.since) : undefined,
+        since: filters?.since !== undefined ? String(filters.since) : undefined,
       },
     });
 

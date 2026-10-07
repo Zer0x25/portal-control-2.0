@@ -1,5 +1,5 @@
 export interface NoteListParams {
-  since?: string;
+  since?: string | number;
 }
 export interface NoteInput {
   content: string;
@@ -8,9 +8,10 @@ export interface NoteInput {
   reminderEnabled?: boolean;
 }
 export interface NoteDependencies<Note, Archived> {
+  parseQuery(value: unknown): NoteListParams;
   list(params: NoteListParams): Promise<Note[]>;
   parse(value: unknown): NoteInput;
-  create(value: NoteInput): Promise<Note>;
-  archive(id: string): Promise<Archived>;
-  remove(id: string): Promise<unknown>;
+  create(value: NoteInput, actorUsername: string): Promise<Note>;
+  archive(id: string, actorUsername: string): Promise<Archived>;
+  remove(id: string, actorUsername: string): Promise<unknown>;
 }

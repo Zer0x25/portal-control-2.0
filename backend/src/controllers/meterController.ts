@@ -3,9 +3,10 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../middleware/errorHandler";
 import { meterFlows as flows } from "../services/meterFlows";
 export const getMeterReadings = asyncHandler(async (req: Request, res: Response) => {
-  const { since, page, pageSize, meterId, startDate, endDate } = req.query;
+  const { since, page, pageSize, meterId, startDate, endDate, month } = req.query;
   res.json(
     await flows.list({
+      month: month as string,
       since: since as string,
       page: page as string,
       pageSize: pageSize as string,

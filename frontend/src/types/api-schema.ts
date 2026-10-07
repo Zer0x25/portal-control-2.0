@@ -1607,6 +1607,8 @@ export interface paths {
         query?: {
           page?: number;
           pageSize?: number;
+          /** @description Mes de Chile, excluyente con startDate/endDate */
+          month?: string;
           meterId?: string;
           startDate?: string;
           endDate?: string;
@@ -4912,6 +4914,9 @@ export interface components {
       page?: string;
       pageSize?: string;
       since?: string;
+      meterId?: string;
+      startDate?: string;
+      endDate?: string;
       month?: string;
     };
     MeterReadingResponse: components["schemas"]["ApiResponse"] & {

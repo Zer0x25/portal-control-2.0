@@ -19,10 +19,20 @@ const router = Router();
  *         name: page
  *         schema:
  *           type: integer
+ *           minimum: 1
+ *           maximum: 1000000
  *       - in: query
  *         name: pageSize
  *         schema:
  *           type: integer
+ *           minimum: 1
+ *           maximum: 500
+ *       - in: query
+ *         name: month
+ *         schema:
+ *           type: string
+ *           pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+ *         description: Mes de Chile, excluyente con startDate/endDate
  *       - in: query
  *         name: meterId
  *         schema:

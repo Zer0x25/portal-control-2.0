@@ -29,12 +29,13 @@ export const notesPlugin: FastifyPluginAsync<{
   app.post(
     "/api/notes",
     { ...base, preHandler: validateRequest("body", QuickNoteSchema) },
-    async (req, reply) => reply.code(201).send(await options.service.create(req.body)),
+    async (req, reply) =>
+      reply.code(201).send(await options.service.create(req.body, req.user?.username || "")),
   );
   app.put<{ Params: { id: string } }>("/api/notes/:id", id, (req) =>
-    options.service.archive(req.params.id),
+    options.service.archive(req.params.id, req.user?.username || ""),
   );
   app.delete<{ Params: { id: string } }>("/api/notes/:id", id, (req) =>
-    options.service.remove(req.params.id),
+    options.service.remove(req.params.id, req.user?.username || ""),
   );
 };

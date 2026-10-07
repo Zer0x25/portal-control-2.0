@@ -1275,17 +1275,32 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       },
       "MeterReadingQuery": {
         "properties": {
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "meterId": {
+            "minLength": 1,
+            "type": "string",
+          },
           "month": {
-            "pattern": "^\\d{4}-\\d{2}$",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
             "type": "string",
           },
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "since": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "type": "string",
           },
         },
@@ -1709,6 +1724,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "QuickNoteQuery": {
         "properties": {
           "since": {
+            "pattern": "^\\d+$",
             "type": "string",
           },
         },
@@ -5102,6 +5118,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "in": "query",
             "name": "page",
             "schema": {
+              "maximum": 1000000,
+              "minimum": 1,
               "type": "integer",
             },
           },
@@ -5109,7 +5127,18 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "in": "query",
             "name": "pageSize",
             "schema": {
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer",
+            },
+          },
+          {
+            "description": "Mes de Chile, excluyente con startDate/endDate",
+            "in": "query",
+            "name": "month",
+            "schema": {
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "type": "string",
             },
           },
           {

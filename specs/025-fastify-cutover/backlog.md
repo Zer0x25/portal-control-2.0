@@ -1,7 +1,7 @@
 # Mejoras posteriores al cutover
 
 Spec: [025](spec.md). Estas deudas no bloquean la migración en desarrollo, por
-decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
+decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md). No representan nuevas specs de migración.
 
 - Mantenimiento sin interrupciones: barrera común de trabajo HTTP/jobs/scheduler,
   ownership de seed fase 1 hasta terminar trabajo real, admisión cerrada hasta
@@ -22,8 +22,8 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
   [kpi-monthly-materialization](kpi-monthly-materialization.md). Invalidación
   por cambios de fuentes corregida en [kpi-cache-invalidation](kpi-cache-invalidation.md).
 - Atomicidad y autoría de lotes de medidores (020): corregidas en
-  [meter-batch-consistency](meter-batch-consistency.md). Fechas/filtros de medidores
-  siguen pendientes.
+  [meter-batch-consistency](meter-batch-consistency.md). Fechas/filtros, paginación y consistencia de notas se cubren en
+  [data-tools-consistency](data-tools-consistency.md).
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
   revocación en otras rutas de cambio de credenciales y redacción de texto libre.

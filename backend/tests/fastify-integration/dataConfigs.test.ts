@@ -199,7 +199,7 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect((await http("POST", "/api/meters/bulk", [])).body).toEqual({ success: true, data: [] });
     expect(emit).toHaveBeenCalledExactlyOnceWith("meter:updated", { count: 0 });
   });
-  it("filters/deltas/paginates meters and preserves query debts", async () => {
+  it("filters/deltas/paginates meters with effective month selection", async () => {
     await prismaDirect.meterReading.createMany({
       data: [
         { ...reading, timestamp: new Date("2026-01-01T12:00:00Z") },
@@ -220,14 +220,15 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(
       (await http("GET", "/api/meters?startDate=2026-01-01&endDate=2026-01-03")).body.data,
     ).toHaveLength(2);
-    expect((await http("GET", "/api/meters?month=2020-01")).body.data).toHaveLength(2); // Schema-only field, no service filter.
-    expect((await http("GET", "/api/meters?page=invalid&pageSize=1")).status).toBe(500);
+    expect((await http("GET", "/api/meters?month=2020-01")).body.data).toHaveLength(0);
+    expect((await http("GET", "/api/meters?month=2026-01")).body.data).toHaveLength(2);
+    expect((await http("GET", "/api/meters?page=invalid&pageSize=1")).status).toBe(400);
   });
   it.each([
     { timezone: "UTC", offset: 0, included: true },
-    { timezone: "America/Santiago", offset: 180, included: false },
+    { timezone: "America/Santiago", offset: 180, included: true },
   ])(
-    "characterizes legacy meter date bounds in $timezone",
+    "uses Chile meter date bounds regardless of host in $timezone",
     async ({ timezone, offset, included }) => {
       vi.stubEnv("TZ", timezone);
       expect(new Date("2026-01-02T00:00:00Z").getTimezoneOffset()).toBe(offset);
@@ -236,14 +237,104 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
       });
       const res = await http("GET", "/api/meters?startDate=2026-01-02&endDate=2026-01-02");
       expect(res.status).toBe(200);
-      // UTC date parsing followed by local setHours is an inherited, host-dependent debt.
-      // Preserve both outcomes explicitly rather than assuming the machine's timezone.
+      // Both hosts select the same Chile calendar day.
       expect(res.body.data.map((row: { id: string }) => row.id)).toEqual(
         included ? [meter.id] : [],
       );
     },
   );
-  it("creates note with client author/defaults and archives/deletes with existing event shapes", async () => {
+  it("keeps page ordering stable when timestamps tie", async () => {
+    const timestamp = new Date("2026-01-01T12:00:00Z");
+    await prismaDirect.meterReading.createMany({
+      data: [
+        { ...reading, id: "meter-a", timestamp },
+        { ...reading, id: "meter-z", timestamp },
+      ],
+    });
+    const first = await http("GET", "/api/meters?page=1&pageSize=1");
+    const second = await http("GET", "/api/meters?page=2&pageSize=1");
+    expect(first.body.data[0].id).toBe("meter-z");
+    expect(second.body.data[0].id).toBe("meter-a");
+  });
+  it.each([
+    "page=0&pageSize=1",
+    "page=1&pageSize=0",
+    "page=1&pageSize=501",
+    "page=1",
+    "pageSize=1",
+    "page=1.5&pageSize=1",
+    "since=NaN",
+    "since=-1",
+    "since=8640000000000001",
+    "meterId=water&meterId=gas",
+    "startDate=2026-02-30",
+    "month=2026-13",
+    "startDate=2026-02-02&endDate=2026-02-01",
+    "month=2026-01&startDate=2026-01-01",
+  ])("rejects invalid meter query %s with 400", async (query) => {
+    expect((await http("GET", `/api/meters?${query}`)).status).toBe(400);
+  });
+  it.each(["NaN", "-1", "8640000000000001", "1.5"])(
+    "rejects invalid note delta %s",
+    async (since) => {
+      expect((await http("GET", `/api/notes?since=${since}`)).status).toBe(400);
+    },
+  );
+  it.each(["2026-01-02", "2026-09-06"])(
+    "uses exact Chile day boundaries including DST for %s",
+    async (date) => {
+      // September 6 has no local midnight: its first valid instant is 01:00 (-03).
+      const start = date === "2026-09-06" ? "2026-09-06T04:00:00Z" : "2026-01-02T03:00:00Z";
+      const end = date === "2026-09-06" ? "2026-09-07T03:00:00Z" : "2026-01-03T03:00:00Z";
+      const base = new Date(start).getTime(),
+        upper = new Date(end).getTime();
+      await prismaDirect.meterReading.createMany({
+        data: [base - 1, base, upper - 1, upper].map((ms, index) => ({
+          ...reading,
+          value: index,
+          timestamp: new Date(ms),
+        })),
+      });
+      const response = await http("GET", `/api/meters?startDate=${date}&endDate=${date}`);
+      expect(response.status).toBe(200);
+      expect(response.body.data.map((row: { value: number }) => row.value)).toEqual([2, 1]);
+      const delta = await http(
+        "GET",
+        `/api/meters?startDate=${date}&endDate=${date}&since=${upper - 1}`,
+      );
+      expect(delta.body.data.map((row: { value: number }) => row.value)).toEqual([2]);
+    },
+  );
+  it.each(["CREATE", "UPDATE", "DELETE"])(
+    "rolls back note %s and emits no event if its audit fails",
+    async (operation) => {
+      const existing =
+        operation === "CREATE" ? null : await prismaDirect.quickNote.create({ data: note });
+      await prismaDirect.$executeRaw`CREATE FUNCTION test_note_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action LIKE 'QUICKNOTE_%' THEN RAISE EXCEPTION 'test note audit failure'; END IF; RETURN NEW; END; $$`;
+      await prismaDirect.$executeRaw`CREATE TRIGGER test_note_audit_fail BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION test_note_audit_fail()`;
+      try {
+        const response =
+          operation === "CREATE"
+            ? await http("POST", "/api/notes", note)
+            : await http(operation === "UPDATE" ? "PUT" : "DELETE", `/api/notes/${existing!.id}`);
+        expect(response.status).toBe(500);
+        expect(await prismaDirect.quickNote.count()).toBe(existing ? 1 : 0);
+        if (existing)
+          expect(
+            (await prismaDirect.quickNote.findUniqueOrThrow({ where: { id: existing.id } }))
+              .isArchived,
+          ).toBe(false);
+        expect(
+          await prismaDirect.auditLog.count({ where: { action: { startsWith: "QUICKNOTE_" } } }),
+        ).toBe(0);
+        expect(emit).not.toHaveBeenCalled();
+      } finally {
+        await prismaDirect.$executeRaw`DROP TRIGGER test_note_audit_fail ON audit_logs`;
+        await prismaDirect.$executeRaw`DROP FUNCTION test_note_audit_fail()`;
+      }
+    },
+  );
+  it("creates note with session author/defaults and archives/deletes with existing event shapes", async () => {
     const res = await http("POST", "/api/notes", {
       ...note,
       id: "client",
@@ -254,7 +345,7 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(res.status).toBe(201);
     const n = res.body.data;
     expect(n).toMatchObject({
-      authorUsername: "client-author",
+      authorUsername: "data-admin",
       isArchived: false,
       color: "amber",
       reminderEnabled: true,
@@ -277,6 +368,16 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     });
     expect(emit).toHaveBeenCalledWith("quickNote:deleted", { id: n.id });
     expect(await prismaDirect.quickNote.count()).toBe(0);
+    const audits = await prismaDirect.auditLog.findMany({
+      where: { action: { startsWith: "QUICKNOTE_" } },
+    });
+    expect(audits).toHaveLength(3);
+    expect(audits.every((audit) => audit.actorUsername === "data-admin")).toBe(true);
+    expect(audits.map((audit) => audit.action).sort()).toEqual([
+      "QUICKNOTE_CREATE",
+      "QUICKNOTE_DELETE",
+      "QUICKNOTE_UPDATE",
+    ]);
   });
   it("validates note content and handles missing IDs and delta", async () => {
     expect((await http("POST", "/api/notes", { ...note, content: "" })).status).toBe(400);

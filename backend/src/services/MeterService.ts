@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import prisma, { withDirectTransaction } from "./db";
+import { parseBusinessDateCL, formatBusinessDateCL } from "../utils/timePolicy";
 import { AuthError } from "../utils/AppError";
 import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
@@ -13,7 +14,8 @@ import type { z } from "zod";
 type MeterReadingInput = z.infer<typeof MeterReadingSchema>;
 
 export interface MeterListParams {
-  since?: string;
+  since?: string | number;
+  month?: string;
   page?: string | number;
   pageSize?: string | number;
   meterId?: string;
@@ -21,15 +23,43 @@ export interface MeterListParams {
   endDate?: string;
 }
 
+function nextBusinessDate(date: string): string {
+  const utc = new Date(`${date}T12:00:00Z`);
+  utc.setUTCDate(utc.getUTCDate() + 1);
+  return utc.toISOString().slice(0, 10);
+}
+
+function businessDayStart(date: string): Date {
+  const candidate = parseBusinessDateCL(date);
+  if (formatBusinessDateCL(candidate) === date) return candidate;
+  let low = candidate.getTime(),
+    high = low + 3 * 3600000;
+  while (high - low > 1) {
+    const mid = Math.floor((low + high) / 2);
+    if (formatBusinessDateCL(new Date(mid)) < date) low = mid;
+    else high = mid;
+  }
+  return new Date(high);
+}
+
 export class MeterService {
   /**
    * Retrieves a list of meter readings with optional filtering and pagination.
    */
   static async list(params: MeterListParams) {
-    const { since, page, pageSize, meterId, startDate, endDate } = params;
+    const { since, page, pageSize, meterId, month } = params;
+    let { startDate, endDate } = params;
+    if (month) {
+      startDate = `${month}-01`;
+      const [year, m] = month.split("-").map(Number);
+      const last = new Date(0);
+      last.setUTCFullYear(year, m, 0);
+      last.setUTCHours(12, 0, 0, 0);
+      endDate = last.toISOString().slice(0, 10);
+    }
     const where: Prisma.MeterReadingWhereInput = {};
 
-    if (since) {
+    if (since !== undefined) {
       const sinceDate = new Date(Number(since));
       if (!isNaN(sinceDate.getTime())) {
         where.timestamp = { gte: sinceDate };
@@ -42,18 +72,14 @@ export class MeterService {
 
     if (startDate || endDate) {
       const timestampFilter: Prisma.DateTimeFilter = {};
+      if (since !== undefined) timestampFilter.gte = new Date(Number(since));
       if (startDate) {
-        timestampFilter.gte = new Date(startDate);
+        const start = businessDayStart(startDate);
+        timestampFilter.gte =
+          since !== undefined ? new Date(Math.max(Number(since), start.getTime())) : start;
       }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        timestampFilter.lte = end;
-      }
-      where.timestamp = {
-        ...((where.timestamp as Prisma.DateTimeFilter) || {}),
-        ...timestampFilter,
-      };
+      if (endDate) timestampFilter.lt = businessDayStart(nextBusinessDate(endDate));
+      where.timestamp = timestampFilter;
     }
 
     const isPaginated = page !== undefined && pageSize !== undefined;
@@ -63,7 +89,7 @@ export class MeterService {
     const [readings, total] = await Promise.all([
       prisma.meterReading.findMany({
         where,
-        orderBy: { timestamp: "desc" },
+        orderBy: [{ timestamp: "desc" }, { id: "desc" }],
         take,
         skip,
       }),

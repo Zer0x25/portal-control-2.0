@@ -3,7 +3,7 @@ import type { MeterDependencies, MeterListParams } from "./contracts";
 export function createMeterFlows<Reading>(deps: MeterDependencies<Reading>) {
   return {
     list: async (params: MeterListParams) => {
-      const result = await deps.list(params);
+      const result = await deps.list(deps.parseQuery(params));
       return {
         success: true,
         data: result.items,

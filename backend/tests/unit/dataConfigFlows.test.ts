@@ -14,7 +14,7 @@ it("meters preserve optional pagination and parse whole batch before effects", a
   const parse = vi.fn(() => {
     throw new Error("invalid 51st");
   });
-  const flow = createMeterFlows({ list, create, parse });
+  const flow = createMeterFlows({ list, create, parse, parseQuery: (value) => value as any });
   expect(await flow.list({ page: "2", pageSize: "2" })).toEqual({
     success: true,
     data: [{ id: "r" }],
@@ -31,7 +31,12 @@ it("meters preserve optional pagination and parse whole batch before effects", a
 it("meter creation requires a session actor and forwards it independently of client authors", async () => {
   const create = vi.fn(async () => []);
   const parse = vi.fn(() => [{ meterConfigId: "meter", authorUsername: "spoofed", value: 1 }]);
-  const flow = createMeterFlows({ list: vi.fn(), create, parse });
+  const flow = createMeterFlows({
+    list: vi.fn(),
+    create,
+    parse,
+    parseQuery: (value) => value as any,
+  });
   await expect(flow.create([], "")).rejects.toThrow("Autenticación requerida");
   expect(parse).not.toHaveBeenCalled();
   expect(create).not.toHaveBeenCalled();
@@ -45,6 +50,7 @@ it("notes project parsed fields, enforce path ID and retain delete response", as
   const create = vi.fn(async (v) => v),
     remove = vi.fn();
   const flow = createNoteFlows({
+    parseQuery: (value) => value as any,
     list: vi.fn(),
     create,
     archive: vi.fn(),
@@ -57,15 +63,35 @@ it("notes project parsed fields, enforce path ID and retain delete response", as
       isArchived: true,
     }),
   });
-  expect((await flow.create({})).data).toEqual({
+  expect((await flow.create({}, "session-actor")).data).toEqual({
     content: "note",
-    authorUsername: "client",
+    authorUsername: "session-actor",
     color: "blue",
     reminderEnabled: false,
   });
-  await expect(flow.archive(undefined)).rejects.toMatchObject({ statusCode: 400 });
-  expect(await flow.remove("n")).toEqual({ success: true, message: "Nota eliminada" });
-  expect(remove).toHaveBeenCalledWith("n");
+  await expect(flow.archive(undefined, "session-actor")).rejects.toMatchObject({ statusCode: 400 });
+  expect(await flow.remove("n", "session-actor")).toEqual({
+    success: true,
+    message: "Nota eliminada",
+  });
+  expect(remove).toHaveBeenCalledWith("n", "session-actor");
+});
+it("notes reject an absent session actor for every mutation before effects", async () => {
+  const create = vi.fn(),
+    archive = vi.fn(),
+    remove = vi.fn();
+  const flow = createNoteFlows({
+    list: vi.fn(),
+    parseQuery: vi.fn(),
+    parse: vi.fn(),
+    create,
+    archive,
+    remove,
+  });
+  await expect(flow.create({}, "")).rejects.toMatchObject({ statusCode: 401 });
+  await expect(flow.archive("n", "")).rejects.toMatchObject({ statusCode: 401 });
+  await expect(flow.remove("n", "")).rejects.toMatchObject({ statusCode: 401 });
+  for (const effect of [create, archive, remove]) expect(effect).not.toHaveBeenCalled();
 });
 function configs() {
   const deps = {

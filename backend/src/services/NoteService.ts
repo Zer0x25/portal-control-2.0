@@ -1,12 +1,36 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
+import { AuthError } from "../utils/AppError";
 import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 
 export interface NoteListParams {
-  since?: string;
+  since?: string | number;
 }
 
 export class NoteService {
+  private static async mutate<T extends { id: string }>(
+    operation: "create" | "update" | "delete",
+    actorUsername: string,
+    write: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
+    if (!actorUsername?.trim()) throw new AuthError();
+    const result = await withDirectTransaction(async (tx) => {
+      const note = await write(tx);
+      const audit = await tx.auditLog.create({
+        data: {
+          actorUsername,
+          action: `QUICKNOTE_${operation.toUpperCase()}`,
+          category: "DATA",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: { model: "QuickNote", operation, id: note.id },
+        },
+      });
+      return { note, audit };
+    });
+    SocketService.emitToAll("auditLog:created", result.audit);
+    return result.note;
+  }
   /**
    * Retrieves all quick notes with optional 'since' filter.
    */
@@ -14,7 +38,7 @@ export class NoteService {
     const { since } = params;
     const where: Prisma.QuickNoteWhereInput = {};
 
-    if (since) {
+    if (since !== undefined) {
       const sinceDate = new Date(Number(since));
       if (!isNaN(sinceDate.getTime())) {
         where.updatedAt = { gte: sinceDate };
@@ -37,20 +61,25 @@ export class NoteService {
   /**
    * Creates a new quick note.
    */
-  static async create(data: {
-    content: string;
-    authorUsername: string;
-    color?: string;
-    reminderEnabled?: boolean;
-  }) {
-    const note = await prisma.quickNote.create({
-      data: {
-        content: data.content,
-        authorUsername: data.authorUsername,
-        color: data.color || "amber",
-        reminderEnabled: data.reminderEnabled ?? true,
-      },
-    });
+  static async create(
+    data: {
+      content: string;
+      authorUsername: string;
+      color?: string;
+      reminderEnabled?: boolean;
+    },
+    actorUsername: string,
+  ) {
+    const note = await this.mutate("create", actorUsername, (tx) =>
+      tx.quickNote.create({
+        data: {
+          content: data.content,
+          authorUsername: actorUsername,
+          color: data.color || "amber",
+          reminderEnabled: data.reminderEnabled ?? true,
+        },
+      }),
+    );
 
     const enrichedNote = {
       ...note,
@@ -66,11 +95,13 @@ export class NoteService {
   /**
    * Logic to "archive" or acknowledge a note.
    */
-  static async archive(id: string) {
-    const note = await prisma.quickNote.update({
-      where: { id },
-      data: { isArchived: true },
-    });
+  static async archive(id: string, actorUsername: string) {
+    const note = await this.mutate("update", actorUsername, (tx) =>
+      tx.quickNote.update({
+        where: { id },
+        data: { isArchived: true },
+      }),
+    );
 
     SocketService.emit("quickNote:updated", {
       ...note,
@@ -84,8 +115,8 @@ export class NoteService {
   /**
    * Deletes a quick note by ID.
    */
-  static async delete(id: string) {
-    await prisma.quickNote.delete({ where: { id } });
+  static async delete(id: string, actorUsername: string) {
+    await this.mutate("delete", actorUsername, (tx) => tx.quickNote.delete({ where: { id } }));
     SocketService.emit("quickNote:deleted", { id });
     return true;
   }

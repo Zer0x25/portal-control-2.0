@@ -1,4 +1,5 @@
-import { numericString, syncAuditFields, z } from "./common";
+import { epochQuery } from "./dataQuery";
+import { syncAuditFields, z } from "./common";
 import { ApiResponseSchema } from "./responses.schemas";
 
 export const QuickNoteSchema = z
@@ -24,5 +25,5 @@ export const QuickNoteListResponseSchema = ApiResponseSchema.extend({
 }).openapi("QuickNoteListResponse");
 
 export const QuickNoteQuerySchema = z.object({
-  since: numericString.optional(),
+  since: epochQuery.optional(),
 });
