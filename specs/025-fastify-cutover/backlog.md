@@ -11,7 +11,8 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
 - Ownership de Usuario/quiosco en assignments y correcciones (015/016):
   corregido en [self-only-scope](self-only-scope.md) y
   [corrections-ownership](corrections-ownership.md).
-- Reactivación, solapamiento y atomicidad al extender permisos (016).
+- Reactivación, solapamiento y atomicidad al extender permisos (016): corregidas
+  en [leave-consistency](leave-consistency.md).
 - Consistencia del ciclo de vida/folios de reportes y motor KPI (017/018).
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de

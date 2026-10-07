@@ -1,3 +1,4 @@
+import { timeRecordIntegrityService } from "../../src/services/timeRecordIntegrityService";
 import jwt from "jsonwebtoken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
@@ -157,9 +158,9 @@ describe.each(["Express", "Fastify"] as const)("Spec 016 leaves/corrections on %
     expect(
       (await http("POST", "/api/leaves", leave({ id: "leave-edit", endDate: date(3) }))).status,
     ).toBe(201);
-    // Existing cleanup archives day 1, and materializeDays never resets its isDeleted flag.
+    // Extending preserves existing active days instead of archiving the whole range.
     const extendedRows = await prismaDirect.timeRecord.findMany({ orderBy: { date: "asc" } });
-    expect(extendedRows.map((r) => r.isDeleted)).toEqual([true, false, false]);
+    expect(extendedRows.map((r) => r.isDeleted)).toEqual([false, false, false]);
     const deleted = await http("DELETE", "/api/leaves/leave-edit");
     expect(deleted.status).toBe(200);
     expect(deleted.body).toEqual({ success: true, message: "Ausencia finalizada" });
@@ -213,14 +214,155 @@ describe.each(["Express", "Fastify"] as const)("Spec 016 leaves/corrections on %
       400,
     );
   });
-  it("characterizes existing overlap allowance without adding a conflict rule", async () => {
+  it("rejects overlapping active leave regardless of type", async () => {
     expect((await http("POST", "/api/leaves", leave())).status).toBe(201);
     expect((await http("POST", "/api/leaves", leave({ type: "Permiso Especial" }))).status).toBe(
-      201,
+      409,
     );
-    expect(await prismaDirect.leaveRecord.count()).toBe(2);
+    expect(await prismaDirect.leaveRecord.count()).toBe(1);
     expect(await prismaDirect.timeRecord.count()).toBe(2);
   });
+  it("reactivates own archived days and reseals them when extending after shortening", async () => {
+    await http("POST", "/api/leaves", leave({ id: "extend", endDate: date(3) }));
+    expect(
+      (await http("POST", "/api/leaves", leave({ id: "extend", endDate: date(1) }))).status,
+    ).toBe(201);
+    const shortened = await prismaDirect.timeRecord.findMany({ orderBy: { date: "asc" } });
+    expect(shortened.map((r) => r.isDeleted)).toEqual([false, true, true]);
+    expect(
+      (await http("POST", "/api/leaves", leave({ id: "extend", endDate: date(3) }))).status,
+    ).toBe(201);
+    const extended = await prismaDirect.timeRecord.findMany({ orderBy: { date: "asc" } });
+    expect(extended.map((r) => r.isDeleted)).toEqual([false, false, false]);
+    expect(extended.every((r) => r.deletedAt === null && !!r.integrityHash)).toBe(true);
+    for (const row of extended) {
+      const payload = timeRecordIntegrityService.buildCanonicalPayload(row, row.integrityPrevHash);
+      expect(row.integrityHash).toBe(timeRecordIntegrityService.computeHash(payload));
+    }
+  });
+  it("rejects inclusive overlaps on extension, permits adjacency and ignores deleted leaves", async () => {
+    await http("POST", "/api/leaves", leave({ id: "first", endDate: date(1) }));
+    expect(
+      (
+        await http(
+          "POST",
+          "/api/leaves",
+          leave({ id: "second", startDate: date(2), endDate: date(3) }),
+        )
+      ).status,
+    ).toBe(201);
+    expect(
+      (await http("POST", "/api/leaves", leave({ id: "first", endDate: date(2) }))).status,
+    ).toBe(409);
+    expect(
+      (await prismaDirect.leaveRecord.findUniqueOrThrow({ where: { id: "first" } })).endDate,
+    ).toBe(date(1));
+    expect((await http("DELETE", "/api/leaves/second")).status).toBe(200);
+    expect(
+      (await http("POST", "/api/leaves", leave({ id: "first", endDate: date(3) }))).status,
+    ).toBe(201);
+  });
+  it("preserves unrelated manual tombstones and reuses days from deleted leave", async () => {
+    await seedRecord({
+      date: date(1),
+      entrada: null,
+      isDeleted: true,
+      deletedAt: new Date(),
+      justification: "manual",
+      status: "Laborando",
+    });
+    await http(
+      "POST",
+      "/api/leaves",
+      leave({ id: "removed", startDate: date(2), endDate: date(3) }),
+    );
+    await http("DELETE", "/api/leaves/removed");
+    expect(
+      (await http("POST", "/api/leaves", leave({ id: "replacement", endDate: date(3) }))).status,
+    ).toBe(201);
+    const rows = await prismaDirect.timeRecord.findMany({ orderBy: { date: "asc" } });
+    expect(rows.map((r) => r.isDeleted)).toEqual([true, false, false]);
+    expect(rows[0]).toMatchObject({ status: "Laborando", justification: "manual" });
+    for (const row of rows.slice(1))
+      expect(JSON.parse(row.justification!)).toMatchObject({ leaveId: "replacement" });
+  });
+  it("serializes concurrent overlapping creates with exactly one winner", async () => {
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () => http("POST", "/api/leaves", leave())),
+    );
+    expect(results.map((r) => r.status).sort()).toEqual([201, 409, 409, 409, 409]);
+    expect(await prismaDirect.leaveRecord.count()).toBe(1);
+    expect(await prismaDirect.timeRecord.count()).toBe(2);
+    expect(
+      vi.mocked(SocketService.emit).mock.calls.filter(([event]) => event === "leave:updated"),
+    ).toHaveLength(1);
+  });
+  it.each(["inicioColacion", "finColacion", "salida"])(
+    "preserves a row with only %s through materialization and deletion",
+    async (field) => {
+      const record = await seedRecord({
+        date: date(1),
+        entrada: null,
+        [field]: `${date(1)}T12:00:00.000Z`,
+        status: "En Curso",
+      });
+      await http("POST", "/api/leaves", leave({ id: "punched", endDate: date(1) }));
+      await http("DELETE", "/api/leaves/punched");
+      expect(await prismaDirect.timeRecord.findUnique({ where: { id: record.id } })).toMatchObject({
+        status: "En Curso",
+        isDeleted: false,
+        [field]: record[field as keyof typeof record],
+      });
+    },
+  );
+  it("rejects inverted/impossible ranges and the old-start limit even with a client id", async () => {
+    for (const body of [
+      leave({ startDate: date(3), endDate: date(2) }),
+      leave({ startDate: "2026-02-30" }),
+      leave({ id: "old-client-id", startDate: date(-8) }),
+    ]) {
+      expect((await http("POST", "/api/leaves", body)).status).toBe(400);
+    }
+    expect(await prismaDirect.leaveRecord.count()).toBe(0);
+    expect(await prismaDirect.timeRecord.count()).toBe(0);
+  });
+  it("rolls back header, materialization and audit on a record write failure", async () => {
+    await prismaDirect.$executeRaw`CREATE FUNCTION test_leave_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'leave write failure'; END; $$`;
+    await prismaDirect.$executeRaw`CREATE TRIGGER test_leave_fail BEFORE INSERT ON time_records FOR EACH ROW EXECUTE FUNCTION test_leave_fail()`;
+    const before = await prismaDirect.auditLog.count({ where: { category: "DATABASE" } });
+    try {
+      expect((await http("POST", "/api/leaves", leave())).status).toBe(500);
+      expect(await prismaDirect.leaveRecord.count()).toBe(0);
+      expect(await prismaDirect.timeRecord.count()).toBe(0);
+      expect(await prismaDirect.auditLog.count({ where: { category: "DATABASE" } })).toBe(before);
+      expect(SocketService.emit).not.toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRaw`DROP TRIGGER test_leave_fail ON time_records`;
+      await prismaDirect.$executeRaw`DROP FUNCTION test_leave_fail()`;
+    }
+  });
+  it.each(["extend", "delete"])(
+    "rolls back %s when sealing fails without emitting events",
+    async (operation) => {
+      await http("POST", "/api/leaves", leave({ id: "atomic" }));
+      const header = await prismaDirect.leaveRecord.findUniqueOrThrow({ where: { id: "atomic" } });
+      const rows = await prismaDirect.timeRecord.findMany({ orderBy: { id: "asc" } });
+      vi.mocked(SocketService.emit).mockClear();
+      vi.spyOn(timeRecordIntegrityService, "sealAfterMutation").mockRejectedValueOnce(
+        new Error("seal failed"),
+      );
+      const response =
+        operation === "extend"
+          ? await http("POST", "/api/leaves", leave({ id: "atomic", endDate: date(3) }))
+          : await http("DELETE", "/api/leaves/atomic");
+      expect(response.status).toBe(500);
+      expect(await prismaDirect.leaveRecord.findUniqueOrThrow({ where: { id: "atomic" } })).toEqual(
+        header,
+      );
+      expect(await prismaDirect.timeRecord.findMany({ orderBy: { id: "asc" } })).toEqual(rows);
+      expect(SocketService.emit).not.toHaveBeenCalled();
+    },
+  );
   it("allows Reloj_Control leaves but refuses correction resolution", async () => {
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Reloj_Control" } });
     expect((await http("POST", "/api/leaves", leave())).status).toBe(201);
