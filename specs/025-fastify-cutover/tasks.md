@@ -2,27 +2,21 @@
 
 Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 
-- [ ] T1: Completar inventario, archivos, contratos y riesgos (AC1).
-- [ ] T2: Escribir BDD y demostrar RED (AC2).
-- [ ] T3: Implementar aplicación y adaptadores tipados (AC3).
-- [ ] T4: Verificar paridad, permisos y fallos con pruebas significativas (AC4).
-- [ ] T5: Ejecutar gates y documentar resultado y rollback (AC5).
+- [x] T1: Inventario Fastify no vacío de rutas, autenticación y validación (AC1).
+- [x] T2: BDD y dos tests RED reales de entrypoint/dependencias (AC2).
+- [x] T3: Fastify por defecto y retiro de Express del runtime (AC3).
+- [x] T4: Integración BD, gateway/PgBouncer, UI y ciclo de vida final (AC4).
+- [x] T5: Gates, medición acotada, documentación y rollback verificado (AC5).
 
-## Primera tanda y bloqueantes
+## Tandas previas completadas
 
-- [x] A1: RED reproduce conexión anónima, sala ajena y entrega tras revocación.
-- [x] A2: Implementar autenticación compartida, identidad de sala y allowlist.
-- [x] A3: Revalidar colección completa en batch antes de emitir y barrido periódico.
-- [x] A4: Handshake frontend vigente; conectar después del login y cerrar al salir.
-- [x] A5: Gates backend/frontend, BD aislada y documentación del resultado.
-- [x] B1a: Política pura por rol/empleado, proyecciones y default deny.
-- [x] B1b: Invalidaciones frontend y auditoría protegida de nuevas escrituras configs.
-- [x] B1c: Gates y evidencia de listener/BD reales.
-- [ ] B2: Secretos en HTTP/históricos, errores y credenciales/reset destructivo.
-      Tanda local validada; B2d pendiente. Gates y límites en result.md.
-- [x] B2a: Máscaras SMTP y contraseña vinculada al destino.
-- [x] B2b: Redacción de auditorías HTTP/export, nuevos errores y SMTP.
-- [x] B2c: Reset atómico preservando administradores/hash/MFA y rollback real.
-- [ ] B2d: Revocación al reset de contraseña y drenaje universal de operaciones.
-- [ ] C: Cerrar deudas funcionales bloqueantes de las specs anteriores.
-- [ ] D: Ensayar benchmark/rollback y retirar Express tras completar bloqueantes.
+- [x] A: Autenticación socket, salas derivadas del servidor y revalidación por lote.
+- [x] B1: Proyecciones de eventos y autorización por rol/empleado.
+- [x] B2a/b/c: Secretos SMTP/audit/errores y reset de BD atómico.
+- [x] B2d1: Reset de contraseña/sesiones atómico; rechazo de login/MFA anterior.
+
+## Ajuste de alcance autorizado
+
+B2d2 y C pasan a [backlog](backlog.md) de mejoras posteriores. No son entregas
+pendientes de migración ni originan nuevas specs para posponer el cutover.
+D se resuelve en T3–T5 de esta misma spec.

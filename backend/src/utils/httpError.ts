@@ -7,7 +7,7 @@ import {
   RateLimitError,
 } from "./AppError";
 import { Prisma } from "../generated/prisma/client";
-import multer from "multer";
+import { UploadError } from "./UploadError";
 import { toCaughtError } from "./caughtError";
 
 const readConflictTarget = (error: unknown): string | undefined => {
@@ -180,8 +180,8 @@ export function mapHttpError(
   }
 
   // Handle Multer upload errors (spec 002 H-02): file too large -> 413.
-  if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
+  if (err instanceof UploadError || errName === "MulterError") {
+    if (caught.code === "LIMIT_FILE_SIZE") {
       return {
         statusCode: 413,
         body: {

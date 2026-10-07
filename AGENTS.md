@@ -6,9 +6,9 @@ This document provides conventions, operational commands, and architectural cons
 
 ## 1. Project Structure
 
-- **`backend/`**: Node.js (v26), Express (principal), Fastify (candidato), TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
+- **`backend/`**: Node.js (v26), Fastify (principal), Express (fixture de paridad local), TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
 - **`frontend/`**: React 19, Vite, TypeScript, Zustand, TanStack Query, Tailwind CSS.
-- **`compose.yaml`**: Production-style stack (PostgreSQL 18.4, PgBouncer, backend, frontend, Nginx/Caddy). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Express en el host. `compose.staging.yaml` es prod-like vía gateway :8080 (`pweb3_staging`, host port 5434); ver README §5.
+- **`compose.yaml`**: Production-style stack (PostgreSQL 18.4, PgBouncer, backend, frontend, Nginx/Caddy). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Fastify en el host. `compose.staging.yaml` es prod-like vía gateway :8080 (`pweb3_staging`, host port 5434); ver README §5.
 - **PostgreSQL 18.4** en todos los compose. Dos detalles no negociables:
   - `PGDATA` es `/var/lib/postgresql/<major>/docker`; el entrypoint ABORTA si el volumen se monta en `/var/lib/postgresql/data` (ver docker-library/postgres#37). El volumen va en `/var/lib/postgresql`.
   - `md5` está deprecado (avisa al crear/alterar roles). Todos los compose usan `--auth-host=scram-sha-256 --auth-local=scram-sha-256`.
@@ -138,12 +138,12 @@ El piloto `backend/src/modules/holidays/` tiene API pública en `index.ts`.
 Consumidores externos no importan archivos privados. Su aplicación no importa
 Express, Fastify, Prisma, DB, entorno, red o reloj global: inyecta dependencias.
 `npm run check:holidays` aplica strict y forma parte de `npm run check`.
-El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
+Fastify expone health, las cinco rutas de feriados y las seis rutas
 de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
 y las seis de empleados (incluido Excel), con casos de uso compartidos.
 `check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
 corrections, shiftReports, kpis, emailReports, meters, notes, configs, feriados y plataforma HTTP.
-Express sigue siendo el servidor principal mientras se migran los demás módulos.
+Fastify es el servidor principal tras 025. Express queda solo para pruebas de paridad/rollback local.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
 Los consumidores de auth usan index.ts; aplicación solo admite puertos y errores
@@ -451,9 +451,9 @@ Seeder shutdown espera workers y operaciones aún vivas tras timeout, conserva
 running para resume; no iniciar dos workers del mismo job en un proceso.
 RuntimeHost atiende SIGINT/SIGTERM y restart toca el entrypoint activo en dev.
 SocketService tiene propietario único/close; legacy acepta conexión sin sesión,
-query userId elige sala y broadcast es global: deuda bloqueante antes de 025.
+query userId elegía sala y broadcast era global; 025 resolvió esta deuda.
 OpenAPI dist usa docs/swagger.json copiado en Docker; SDK sin cambios.
-Override compose.fastify-staging.yaml es opt-in, producción/base siguen Express.
+Override compose.fastify-staging.yaml conserva compatibilidad; base/producción ya usan Fastify tras 025.
 
 024 preserva JSON vacío como undefined antes de schema, pero usa parser Fastify
 nativo seguro para JSON no vacío (proto/constructor) y conserva bodyLimit por ruta.
@@ -463,15 +463,15 @@ reemplazo atómico/limpieza y ensure moderno exige todo HTTP 200 + tráfico no v
 La suite e2e comparte admin y puede evictar sesiones en paralelo; registrar perfil
 workers=1 y no relajar presupuestos de auth para resolver interferencia del harness.
 
-Spec 025-A (en ejecución, Express todavía principal): Socket.IO exige token en
+Histórico 025-A (Express era principal): Socket.IO exige token en
 handshake auth, deriva sala user:ID del principal y aplica allowlist HTTP también
 a websocket mediante allowRequest. No usar query userId como identidad. Antes de
 entregar eventos valida JWT/sesiones/usuario/rol en dos consultas por lote completo;
 fallo de BD desconecta, barrido de 30 s revoca clientes ociosos. Mantener el evento
 server-only auth:force_logout después de borrar sesiones. Kiosk conserva JWT sin
 ActiveSession. Frontend conecta tras login y desconecta al salir/cambiar identidad.
-Pendiente: autorizar payloads de broadcasts por rol/empleado, deudas previas y
-benchmark/cutover; no retirar Express hasta completar los bloqueantes de 025.
+025-B1 completó autorización de payloads; el cierre 025 completó benchmark/cutover.
+Las deudas de negocio son backlog posterior, no bloqueantes de migración.
 
 Spec 025-B1: modules/realtime aplica política pura por rol/empleado con API pública
 index.ts y strict. SocketService proyecta eventos explícitos; desconocidos se
@@ -491,4 +491,24 @@ HTTP 5xx/SMTP no exponen mensaje interno. Reset usa withDirectTransaction y
 TRUNCATE RESTRICT explícito, conserva hash/MFA del Admin ejecutor y admin existente
 Administrador, elimina sesiones y no crea credenciales fijas. Worker seeding se
 drena; jobs running bloquean reset. Drenaje universal de operaciones, watchdog
-fase 1 y force-reset-password legacy siguen pendientes antes de cutover.
+fase 1 quedan en backlog posterior, sin bloquear el cutover de desarrollo.
+
+025-B2d1: forceResetPassword cambia hash/flag y revoca sesiones del destino en
+withDirectTransaction; fallo revierte ambos, éxito audita conteo sin secretos.
+Auth pasa credentialStamp HMAC opaco de id/hash por puerto interno; no DTO de
+login ni auditoría. createSession bloquea users FOR UPDATE antes de comprobar
+prueba y aplicar cupo por lastActive dentro de la misma transacción. MFA firmado
+lleva prueba y la verifica bajo ese lock, conservando rol actual y presupuesto
+persistido. AuthFlow nunca emite sesión sin prueba; el argumento opcional de
+AuthService.createSession se conserva solo para productores internos confiables
+(fixtures de sesión), no para HTTP. No llamar manageSessionLimit antes de emitir.
+B2d2 (admisión/drenaje universal de operaciones) queda en backlog posterior.
+
+Cierre 025 en desarrollo: index.ts carga fastify/main; dev/start/compose usan
+Fastify. Express/middleware solo devDependencies; Docker instala solo dependencias runtime en una etapa separada. Prisma
+CLI y swagger-ui-dist son dependencias runtime explícitas. UploadError neutral
+conserva códigos multipart sin importar Multer en Fastify. dev:express es rollback
+local con dependencias dev, no está disponible en imagen final. Deudas funcionales
+y drenaje universal pasan a specs/025-fastify-cutover/backlog.md por instrucción
+del usuario; no crear más specs de migración ni bloquear cutover con continuidad
+de producción. En desarrollo se autoriza purgar sesiones y reiniciar.

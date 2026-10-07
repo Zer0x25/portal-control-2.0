@@ -1,6 +1,6 @@
 # BDD 025: Preparación del cutover
 
-Spec: [spec.md](spec.md). Tandas 025-A/B1/B2; cutover pendiente.
+Spec: [spec.md](spec.md). Contratos conservados y cutover en desarrollo.
 
 - Sin token o con token inválido, handshake devuelve Unauthorized, sin detalles
   internos y sin socket conectado ni sala privada.
@@ -56,3 +56,24 @@ listener real con tres roles y sesiones persistidas y guard no vacío de product
 
 RED del helper inexistente falla al importar antes de implementar, sin aserciones
 colectadas. Las pruebas con PostgreSQL ejercitan ambos adaptadores y rollback real.
+
+## Ejemplos 025-B2d1: reset de contraseña
+
+- Admin fuerza contraseña nueva: hash y flag cambian junto con borrado de todas
+  las sesiones del destino, sin revocar sesiones de otros usuarios. Token anterior
+  devuelve 401. Password/hash nunca aparece en respuesta, auditoría ni socket.
+- Login validó contraseña antes del reset: su snapshot ya no permite crear sesión
+  después del commit. Challenge MFA anterior tampoco completa autenticación.
+- Fallo al revocar sesiones revierte hash/flag y conserva sesiones; no audita éxito.
+- Contraseña nueva permite login posterior; contraseña anterior falla.
+
+## Cutover final
+
+- npm run dev/npm start cargan Fastify; no importan app Express.
+- Imagen final arranca y sirve health/login/docs/cargas sin Express ni Multer.
+- Gateway conserva mismas rutas y SDK; UI permite login y flujos de negocio.
+- SIGTERM cierra HTTP/sockets/jobs/BD; reinicio autorizado puede purgar sesiones.
+- dev:express permite comprobar rollback local con dependencias de desarrollo.
+
+RED: ambos tests de cutover fallaron por entrypoint Express y dependencias runtime
+antes de modificar código. GREEN y evidencia final en result.md.

@@ -1,4 +1,4 @@
-# Candidate runtime rehearsal; always combine with compose.staging.yaml and a dedicated env-file.
+# Compatibility override: base staging now starts Fastify too. Use a dedicated env-file.
 services:
   backend:
     command: >
@@ -7,6 +7,6 @@ services:
       echo '>>> [STAGING] Ejecutando seed (idempotente, conexion directa)...' &&
       DATABASE_URL=$${DIRECT_URL} npx prisma db seed &&
       echo '>>> [STAGING] Servidor iniciando (via PgBouncer)...' &&
-      npm run start:fastify"
+      npm start"
     environment:
       DISABLE_HOLIDAY_AUTOSYNC: "true"

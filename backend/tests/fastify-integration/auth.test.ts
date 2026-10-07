@@ -498,7 +498,7 @@ describe("Spec 010 MFA and PIN security", () => {
     expect(state.mfaBlockedUntil!.getTime() - Date.now()).toBeGreaterThan(290000);
     // A genuinely different signed challenge still addresses the same persisted identity.
     const fresh = AuthService.generateMFAPendingToken({
-      ...actor,
+      ...(await AuthService.authenticate(actor.username, password)).user!,
       username: "different-signed-name",
     });
     expect(fresh).not.toBe(pending);

@@ -1,6 +1,6 @@
 # ADR-0018: Migración modular a Fastify con base compartida
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-06
 - Autores: equipo y Codex
 
@@ -136,3 +136,11 @@ El [spec 024](../../specs/024-fastify-runtime-integrado/spec.md) integra sockets
 OpenAPI y el ciclo de vida compartido de jobs/pools, con override staging opt-in.
 Express conserva el arranque principal. El scheduler evita timers duplicados y
 shutdown drena workers; seguridad de sockets legacy se registra antes de 025.
+
+## Cierre en desarrollo (025, 2026-10-07)
+
+Decisión del usuario: Fastify pasa a servidor por defecto; Express queda solo como
+fixture de comparación/rollback local, sin dependencia runtime en imagen final.
+Se autoriza purgar sesiones y reiniciar en desarrollo. Deudas de negocio y drenaje
+sin interrupciones se documentan como backlog posterior, sin prolongar migración
+con nuevos specs. Ver [spec 025](../../specs/025-fastify-cutover/spec.md).

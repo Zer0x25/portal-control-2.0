@@ -1,10 +1,133 @@
-# Resultado 025: Preparación del cutover
+# Resultado 025: Fastify principal en desarrollo
+
+Fecha: 2026-10-07. Estado: completada y validada en desarrollo; Fastify principal.
+
+Por instrucción del usuario se cierra la migración para desarrollo. Se había
+ampliado el cierre con mejoras de producción que no correspondían al objetivo.
+No se añaden specs: deudas B2d2/C pasan a [backlog](backlog.md) posterior.
+
+index.ts carga Fastify por defecto; npm run dev/npm start, root dev y todos los
+compose usan HTTP, Socket.IO y jobs integrados. dev:express conserva fixture local
+para comparar y revertir. Express y middleware pasan a devDependencies; imagen
+final instala solo runtime dependencies en etapa separada. Prisma CLI conserva
+engines del builder para migrar sin downloads en boot. Swagger UI tiene assets
+directos; multipart usa UploadError neutral conservando 413/400.
+
+Inventario [routes.json](routes.json): 124 rutas reales con método/path y marcas
+de autenticación/validación. Runtime aplica guard no vacío/contratos por módulo;
+OpenAPI/SDK no cambia. RED: dos tests de cutover fallaron antes de implementar
+por entrypoint Express y dependencias runtime. GREEN incluido en coverage.
+
+Backend validate:ci aprobado (formato, lint 0/0, strict, SDK, 9 schema tests, build).
+Coverage: 519 pruebas / 65 archivos, ratchets aprobados: líneas 35.69%, funciones
+37.97%, ramas 27.94%, statements 35.07%. PostgreSQL aislado final: 515 pruebas /
+20 archivos, incluido entrypoint dist/index.js y cierre SIGINT/SIGTERM. Se ajustó
+prueba de boot para usar nombre de servidor principal, no mensaje de candidato.
+Frontend validate:ci:coverage posterior al SDK: 279 pruebas / 74 archivos, tipos,
+formato, lint 0/0, cobertura y build/PWA aprobados.
+
+Imagen final construida y arrancada con migraciones/seed: Fastify 5.12.5 instalado;
+express, multer, compression, express-rate-limit y swagger-ui-express ausentes.
+CORS/helmet permanecen como dependencias transitivas de Socket.IO/Fastify, sin
+arranque Express. Gateway y health/ready comprobados sobre PgBouncer SCRAM.
+
+E2E final: 45 pruebas aprobadas, incluidas accesibilidad, flujos de negocio,
+concurrencia, barrido de rutas y dos casos de rendimiento. Se usó workers=1:
+primera corrida paralela tuvo 41 aprobadas, una redirección al login en barrido y
+tres no ejecutadas, con presión sobre el cupo del admin compartido. No se cambiaron
+límites de sesiones, TTL, ratchets ni aserciones para resolver el harness.
+
+[Ciclo de vida](lifecycle.json): purga de sesiones admin, login nuevo y reinicio
+real del contenedor con readiness posterior. Rollback local dist/express-main.js:
+health, login/logout, Swagger y SIGTERM con exit 0 comprobados contra BD propia.
+La primera sonda de reinicio esperaba success en readiness; se corrigió para
+status=ready del contrato real y se repitió el ensayo completo con éxito.
+
+[Benchmark](benchmark.json): tres rondas alternadas por framework, 600 requests
+por ronda, concurrencia 16 y 100 warmup, cero fallos. GET autenticado/paginado de
+feriados con 500 filas, PostgreSQL 18.4 directo; sin PgBouncer. Mediana de las tres
+rondas: Express 318 req/s y p95 90.48 ms; Fastify 389 req/s y p95 56.51 ms.
+Son señales de una ruta en host compartido, con variación entre rondas y ensayo
+lifecycle cercano; no certifican mejora global de app/sockets/jobs. Se conserva
+benchmark histórico 008 y no se exige porcentaje de mejora para este cierre.
+
+No quedan tareas de migración pendientes en 025. Backlog posterior no bloquea
+el uso de Fastify en desarrollo.
+
+No se tocaron esquema ni versiones instaladas; package-lock reclasifica
+dependencias y hace explícitos assets/CLI. BD de ensayos aislada y sin SMTP real. Contenedores/volúmenes propios de staging
+y benchmark eliminados; base local preexistente conservada.
+Docs/spec/secrets finales aprobados: 142 Markdown, 19 ADR, 25 specs, cero
+secretos y 39 fixtures allowlistados.
+
+Rollback local usa dev:express con dependencias dev; para contenedor usar imagen
+anterior al cutover/checkout 113c66a. No cambió esquema DB. El resultado certifica
+el cambio de servidor en desarrollo, no continuidad de operaciones de producción.
+
+## Arranque local posterior al cierre
+
+Se detuvieron tres instancias de desarrollo anteriores que ocupaban 4000/5173/5174.
+El coordinador raíz quedó ejecutándose con Node 26.10.0 y Fastify en este worktree,
+con la configuración local ignorada por Git y la BD pweb3_dev existente. Se aplicó
+la migración pendiente 20261006211000_auth_mfa_attempts sin borrar datos.
+Readiness 4000 y proxy Vite 5173 respondieron 200; Chromium mostró login sin errores
+JavaScript. El checkout principal previo no se modifica automáticamente.
+
+## Historia de las tandas de seguridad
+
+Las secciones siguientes registran límites al momento de cada tanda; sus
+referencias a Express principal/bloqueantes no describen el estado final.
 
 Spec: [spec.md](spec.md). BDD: [behavior.md](behavior.md). Plan: [plan.md](plan.md).
 
+## 025-B2d1: reset de contraseña y sesiones
+
+Fecha: 2026-10-07. Estado: implementada y validada localmente; sin commit.
+Anterior: 113c66a, protección HTTP y reset transaccional (B2a/b/c).
+
+Reset de contraseña cambia hash/flag y borra sesiones solo del destino en una
+withDirectTransaction. Fallo de revocación revierte ambos cambios, sin audit de
+éxito. Tras commit se audita cantidad revocada y emite invalidación user:updated;
+la política de sockets revalida sesiones y desconecta las revocadas. No se usa
+logout global ni se afectan sesiones de otras cuentas.
+
+Auth lleva prueba opaca HMAC id/hash desde validación de contraseña hasta emisión
+de sesión, y dentro del challenge MFA firmado. createSession y MFA toman FOR UPDATE
+sobre users: contraseña anterior al reset no permite emitir sesión tras commit.
+Si la emisión gana el lock, reset borra su sesión; si reset gana, emisión rechaza
+snapshot. MFA conserva rol actual y presupuesto persistido. Se elimina el trim
+previo de sesión fuera de transacción; el cupo y expulsión por menor actividad
+se aplican junto con la inserción, después de comprobar credenciales.
+
+Prueba no aparece en DTO de login normal ni auditoría. El challenge MFA contiene
+prueba opaca, nunca hash/contraseña. Challenges anteriores sin prueba se rechazan
+y requieren login nuevo. Access tokens de otras cuentas y quiosco no cambian.
+Sin Prisma/dependencias/SDK nuevos.
+
+RED real PostgreSQL: 6 fallos de aserciones (tres casos por adaptador) antes de
+implementar: sesiones no revocadas, snapshot aceptado y falta de rollback. Luego
+se añadió concurrencia de reset/emisión y prueba del puerto privado.
+Backend validate:ci aprobado: formato, lint 0/0, strict, SDK, 9 schema tests y build.
+Backend coverage final: 517 pruebas / 64 archivos; ratchets aprobados (35.71%
+líneas, 37.99% funciones, 27.91% ramas, 35.09% statements). Se ejecutó con
+JWT_SECRET de fixture explícito; primer intento sin esa variable falló al importar
+cryptoUtils en dos guards, sin relajar el requisito de secreto en producción.
+PostgreSQL aislado final: 515 pruebas / 20 archivos, incluidas concurrencia,
+rollback, MFA entre procesos y expulsión de sesión menos activa. Runner eliminó
+PostgreSQL 18.4 propio; BD local preexistente conservada. Frontend validate:ci:coverage posterior
+al SDK aprobado: 279 pruebas / 74 archivos, formato, lint 0/0, tipos, ratchets
+y build/PWA. Docs/spec/secrets aprobados: 141 Markdown, 19 ADR,
+25 specs, cero secretos y 39 fixtures allowlistados.
+
+B2d2 queda pendiente: barrera de trabajo real HTTP/jobs/scheduler/seed, sin asumir
+que cerrar respuesta drena un handler. El inventario y casos de prueba están en
+plan.md. Express sigue principal; esta tanda no certifica cutover ni rendimiento.
+Rollback futuro de B2d1 restaura sesiones activas después de reset y los challenges
+MFA sin versión; no usar como configuración segura.
+
 ## 025-B2: Secretos HTTP y reset transaccional
 
-Fecha: 2026-10-07. Estado: tanda implementada y validada localmente, sin commit; B2d pendiente.
+Fecha: 2026-10-07. Estado: commiteada en 113c66a; B2d pendiente en ese cierre.
 Anterior: c6caf5c, política de eventos y auditoría protegida (025-B1).
 
 SMTP_CONFIG se enmascara en list/get/set HTTP. Reutilizar ******** exige destino
@@ -48,7 +171,7 @@ incluidas redacción histórica y rollback real del reset. Runner eliminó Postg
 Sin cambios Prisma,
 dependencias, Swagger/SDK. BD usada solo desechable, sin operaciones externas.
 
-Rollback de esta tanda: revertir su commit futuro restaura exposición HTTP y reset
+Rollback de esta tanda: revertir 113c66a restaura exposición HTTP y reset
 legacy; no constituye una configuración segura. Express sigue principal. C/D
 conservan deudas funcionales, gateway/e2e, benchmark equivalente y rollback del servidor.
 

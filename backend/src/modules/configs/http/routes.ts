@@ -4,7 +4,7 @@ import { z } from "zod";
 import { validateRequest } from "../../../platform/fastify/validation";
 import { ForbiddenError } from "../../../utils/AppError";
 import multipart from "@fastify/multipart";
-import multer from "multer";
+import { UploadError } from "../../../utils/UploadError";
 import fastifyStatic from "@fastify/static";
 import path from "node:path";
 import type { Readable } from "node:stream";
@@ -89,19 +89,19 @@ export const configsPlugin: FastifyPluginAsync<{
             if (part.type !== "file") continue;
             if (part.fieldname !== "file" || stored) {
               part.file.resume();
-              throw new multer.MulterError("LIMIT_UNEXPECTED_FILE", part.fieldname);
+              throw new UploadError("LIMIT_UNEXPECTED_FILE", part.fieldname);
             }
             if (part.mimetype !== "application/pdf") {
               part.file.resume();
               throw new ValidationError("Solo se permiten archivos PDF");
             }
             stored = await options.service.storePolicy(part.file, part.filename, part.mimetype);
-            if (part.file.truncated) throw new multer.MulterError("LIMIT_FILE_SIZE");
+            if (part.file.truncated) throw new UploadError("LIMIT_FILE_SIZE");
           }
       } catch (error) {
         if (stored) await options.service.removeUploaded(stored.filename);
         if (error instanceof app.multipartErrors.RequestFileTooLargeError)
-          throw new multer.MulterError("LIMIT_FILE_SIZE");
+          throw new UploadError("LIMIT_FILE_SIZE");
         throw error;
       }
       return reply.code(201).send(await options.service.upload(stored, req.user?.username));

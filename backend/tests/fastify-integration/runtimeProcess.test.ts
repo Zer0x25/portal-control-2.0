@@ -7,14 +7,14 @@ import { closeDatabase } from "../../src/services/db";
 import { afterAll } from "vitest";
 afterAll(() => closeDatabase());
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-  it(`compiled Fastify drains and exits cleanly on ${signal}`, async () => {
+  it(`default compiled Fastify drains and exits cleanly on ${signal}`, async () => {
     await assertConnectedToTestDb();
     const reservation = net.createServer();
     await new Promise<void>((resolve) => reservation.listen(0, "127.0.0.1", resolve));
     const address = reservation.address();
     if (!address || typeof address === "string") throw new Error("No port");
     await new Promise<void>((resolve) => reservation.close(() => resolve()));
-    const child = spawn(process.execPath, [path.resolve("dist/fastify/main.js")], {
+    const child = spawn(process.execPath, [path.resolve("dist/index.js")], {
       env: {
         ...process.env,
         PORT: String(address.port),
@@ -40,7 +40,7 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
         );
         child.stdout.on("data", (chunk) => {
           output += String(chunk);
-          if (output.includes("Servidor candidato Fastify iniciado")) {
+          if (output.includes("Servidor Fastify iniciado")) {
             clearTimeout(timeout);
             resolve();
           }

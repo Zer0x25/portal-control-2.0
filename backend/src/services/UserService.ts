@@ -1,4 +1,4 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
 import bcrypt from "bcryptjs";
 import { ulid } from "ulid";
 import { SocketService } from "./socketService";
@@ -225,12 +225,15 @@ export class UserService {
   async forceResetPassword(username: string, newPassword: string, actorUsername: string) {
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
 
-    await prisma.user.update({
-      where: { username: username.toLowerCase() },
-      data: {
-        passwordHash: hashedPassword,
-        isForcePasswordChange: true, // Standard practice to force change after admin reset
-      },
+    const result = await withDirectTransaction(async (tx) => {
+      // UPDATE takes the same row lock as session issuance and MFA validation.
+      const user = await tx.user.update({
+        where: { username: username.toLowerCase() },
+        data: { passwordHash: hashedPassword, isForcePasswordChange: true },
+        select: { id: true },
+      });
+      const revoked = await tx.activeSession.deleteMany({ where: { userId: user.id } });
+      return { userId: user.id, invalidatedSessions: revoked.count };
     });
 
     await auditService.log({
@@ -238,8 +241,10 @@ export class UserService {
       action: "FORCE_PASSWORD_RESET",
       category: "OPERATIONS",
       severity: "CRITICAL",
-      details: { targetUser: username },
+      details: { targetUser: username, invalidatedSessions: result.invalidatedSessions },
     });
+    // Existing delivery revalidates sessions before events and disconnects revoked sockets.
+    SocketService.emit("user:updated", { id: result.userId });
   }
 }
 

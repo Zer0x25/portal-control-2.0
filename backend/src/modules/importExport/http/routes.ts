@@ -6,7 +6,7 @@ import type {
   FastifyRequest,
 } from "fastify";
 import multipart from "@fastify/multipart";
-import multer from "multer";
+import { UploadError } from "../../../utils/UploadError";
 import { z } from "zod";
 import { ForbiddenError } from "../../../utils/AppError";
 import { ExportQuerySchema } from "../../../models/schemas/time-correction.schemas";
@@ -60,16 +60,16 @@ export const importExportPlugin: FastifyPluginAsync<{
             }
             if (part.fieldname !== "file" || file) {
               part.file.resume();
-              throw new multer.MulterError("LIMIT_UNEXPECTED_FILE", part.fieldname);
+              throw new UploadError("LIMIT_UNEXPECTED_FILE", part.fieldname);
             }
             file = await part.toBuffer();
-            if (part.file.truncated) throw new multer.MulterError("LIMIT_FILE_SIZE");
+            if (part.file.truncated) throw new UploadError("LIMIT_FILE_SIZE");
           }
       } catch (error) {
         if (error instanceof app.multipartErrors.RequestFileTooLargeError)
-          throw new multer.MulterError("LIMIT_FILE_SIZE");
+          throw new UploadError("LIMIT_FILE_SIZE");
         if (error instanceof app.multipartErrors.FilesLimitError)
-          throw new multer.MulterError("LIMIT_FILE_COUNT");
+          throw new UploadError("LIMIT_FILE_COUNT");
         throw error;
       }
       return options.service.preview(file, schema);

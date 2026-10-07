@@ -1,57 +1,37 @@
-# Plan 025: Cambio de servidor principal
+# Plan 025: Cutover en desarrollo
 
 Spec: [spec.md](spec.md). Constitución: [constitución](../constitution.md).
 
-## Estrategia
+## Implementación
 
-1. Inspeccionar Gateway, staging y retirada de Express y sus servicios; completar contratos y riesgos.
-2. Escribir behavior.md con ejemplos y pruebas que fallen primero.
-3. Extraer puertos y casos de uso, implementar adaptador y guard no vacío.
-4. Verificar permisos, fallos, persistencia y efectos; registrar result.md.
+1. src/index.ts carga fastify/main: mismo comando para dev, start y contenedores.
+2. src/express-main.ts queda como referencia local opt-in con dev:express.
+3. Express y middleware asociados pasan a devDependencies; Docker instala dependencias runtime en una etapa separada. Prisma CLI queda runtime para migraciones/seed; Swagger UI assets
+   tienen dependencia directa swagger-ui-dist. No cambiar versiones instaladas.
+4. UploadError neutral sustituye Multer en rutas Fastify y error mapper; conservar
+   413/400 y compatibilidad con errores del fixture Express.
+5. Mantener módulos, puertos, SDK, sockets/jobs y seguridad ya implementada.
 
-## Archivos a tocar
+## Verificación
 
-Inventario pendiente: identificar routers, servicios y tests de la superficie
-indicada antes de modificar código. No reutilizar controllers Express como
-handlers Fastify. En 024/025 agregar entrypoint, sockets/jobs, compose, gateway
-y contrato OpenAPI al inventario.
+Inventario real [routes.json](routes.json), guard no vacío/contratos por módulo y
+RED/GREEN tests/unit/cutover.test.ts. validate:ci/coverage backend y PostgreSQL
+18.4 aislado. Luego frontend validate:ci:coverage, sin solapar generación SDK.
+Staging con proyecto/volúmenes/env-file propios: imagen sin Express, migraciones
+y seed por DIRECT_URL, HTTP por PgBouncer/gateway, e2e UI y sockets. Comprobar
+SIGTERM/reinicio y rollback local. Benchmark acotado existente con escenario
+equivalente; no convertir una medida de ruta en promesa general de rendimiento.
 
-## Verificación y rollback
+## Rollback
 
-Backend: validate:ci, test:coverage, test:fastify:integration. Después del SDK,
-frontend: validate:ci:coverage. Raíz: docs:check, spec:check, secrets:scan.
-024/025 requieren además staging, e2e, carga y ciclo de vida del servidor.
-Mientras Express siga principal, revertir el registro del módulo candidato;
-025 debe documentar y ensayar rollback antes de cambiar el servidor.
+Desarrollo: npm run dev:express conserva servidor anterior en el mismo puerto;
+purgar sesiones/reiniciar está autorizado. Imagen final no instala Express. Para
+rollback de contenedor usar imagen/checkout previo al cutover (113c66a), no intentar
+arrancar fixture Express en una imagen sin dependencias dev. No cambia esquema DB.
+El ensayo actual usa BD desechable; no tocar la BD local preexistente.
 
-## Tandas concretas
+## Mejoras fuera del cierre
 
-1. 025-A: autenticación socket, salas derivadas del servidor, revalidación por lote
-   antes de entregar, expiración/revocación y lifecycle frontend. RED/GREEN con
-   listener real y sesiones persistidas. No cambiar servidor principal.
-2. 025-B1: contrato de eventos por rol/empleado; evitar payloads globales sensibles,
-   seeder solo Admin, notificaciones personales y redacción de nuevas auditorías.
-   025-B2: resolver secretos HTTP/históricos de configs,
-   auditorías de errores y credenciales/reset destructivo documentados en 020/023.
-3. 025-C: resolver deudas funcionales previas mediante contratos explícitos
-   (fechas Chile, ownership, extensión de leaves, reportes y consistencia).
-4. 025-D: benchmark equivalente, e2e/gateway, rollback y cambio de entrypoint;
-   retirar Express y adaptar guards/test helpers solo tras completar bloqueantes.
-
-Archivos 025-A: services/socketService.ts y socketAuthentication.ts;
-frontend services/socketService.ts y hooks/useSocketEvents.ts;
-unit/socketSecurity.test.ts, socketAuthentication.test.ts y runtime.test.ts
-con listener/BD reales; pruebas frontend de handshake y login/logout.
-No reutilizar middleware Express para autenticar Socket.IO.
-
-Archivos B1: modules/realtime/application/eventPolicy.ts/index.ts, SocketService,
-configs/application/auditValue.ts y fachada ConfigService; guard de strict/módulos
-y productores con inventario no vacío; hook/socket badge frontend; tests policy,
-listener websocket real, runtime con sesiones persistidas y POST configs en ambos
-servidores. No introducir dependencia Express en aplicación ni cambiar schemas/SDK.
-
-Archivos B2: módulos audit/redaction y configs/smtpSecrets (helpers puros públicos),
-flujos configs, auditService/auditExport/StreamExportService, EmailService y modal
-SMTP; mapper HTTP y handlers; MaintenanceService/AuthService/maintenanceFlows y
-runtimeJobs. Pruebas unitarias de redacción/máscaras e integración audit, configs,
-email y operations en ambos servidores. No cambiar Prisma, dependencias ni SDK.
+[Backlog](backlog.md) registra consistencia/ownership/fechas heredados y drenaje
+universal. Se podrán resolver después de usar Fastify; no ampliar de nuevo el
+criterio de finalización de esta migración en desarrollo.

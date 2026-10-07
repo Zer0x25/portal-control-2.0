@@ -1,9 +1,9 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-07. Estado: 013–024 validadas y 025 en ejecución (seguridad antes del cutover).
+Fecha: 2026-10-07. Estado: 013–025 completadas y validadas. Migración cerrada en desarrollo.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
-011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
+011 cerró DTO públicos; 012 migró usuarios. Health está en el servidor Fastify principal.
 No todas las specs anteriores fueron migraciones de módulos.
 
 ## Ruta de entregas
@@ -26,21 +26,26 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; queda una tras la spec 024. El orden es propuesto y podrá
-ajustarse por las dependencias que revele cada inventario.
+la ruta comprende trece specs incluyendo 013, todas completadas. No quedan
+entregas de migración pendientes.
 
 ## Condición de avance
 
 Cada entrega concreta PRD (spec), SDD (plan), BDD (behavior), TDD (tests RED/GREEN)
-y resultado verificable. Los borradores siguientes requieren detallar contratos
-antes de implementar; no están marcados como terminados ni aprobados.
+y resultado verificable. Los resultados de cada entrega documentan sus contratos y comprobaciones.
 Mantener puertos por módulo aunque varios se entreguen en una misma spec.
 
 Los gates locales no sustituyen staging: 025 exige gateway, PgBouncer, e2e,
 sockets/jobs y medición de carga con escenarios equivalentes. Fastify por sí
 solo no demuestra mayor rendimiento. No fijar una mejora porcentual sin medir.
 
-## Hallazgos que necesitan decisión explícita
+## Backlog posterior al cutover (no bloqueante en desarrollo)
+
+Decisión del usuario: estas deudas no añaden pasos/specs de migración. Fastify
+es principal tras cerrar 025; purgar/reiniciar está autorizado en desarrollo.
+Ver [backlog 025](025-fastify-cutover/backlog.md).
+
+### Hallazgos conservados
 
 La paginación numericString admite NaN/valores no positivos; el delta de usuarios
 usa createdAt. Empleados tiene campos de servicio ausentes del schema HTTP,
@@ -59,57 +64,13 @@ Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/
 [resultado](021-fastify-importacion-exportacion/result.md).
 022 añade seis rutas de auditoría: [resultado](022-fastify-auditoria/result.md).
 023 añade 21 rutas admin/maintenance: [resultado](023-fastify-operaciones-admin/result.md).
-Siguiente entrega: 025 (seguridad y deudas previas al cambio de servidor principal).
-Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
-y el scope de assignments sin vínculo/para quiosco, registrados en 015.
 
-Antes de 025 resolver también reactivación/consistencia de jornadas al extender
-permisos y ownership employeeId/timeRecordId en correcciones, más scopes sin
-vínculo/para quiosco, registrados en 016. La paridad no elimina defectos legacy.
+Las deudas de fechas, scopes y consistencia de negocio documentadas en 015–023
+se conservan en el backlog posterior. No son prerrequisitos de esta migración.
+024 integró runtime, jobs, sockets y cierre. Las tandas de seguridad de 025
+resolvieron autenticación/autorización de sockets, secretos HTTP/auditoría y
+resets transaccionales antes del cambio de entrypoint.
 
-017 caracteriza id ausente, abierto eliminado que bloquea, auditoría no atómica
-y contenido legacy corrupto en Excel. Revisar exclusividad del turno abierto y
-contratos de errores antes de 025; folio numérico único no garantiza un solo open.
-
-018 caracteriza caché cerrada sin invalidación, fechas validadas solo por formato,
-contexto diario UTC/ayer y filtros legacy. Excluye PIN de respuestas KPI; antes de
-025 resolver las deudas del motor con contrato explícito y pruebas.
-
-019 caracteriza divergencias schema/servicio SMTP, reglas y reportes, defaults no
-asignados al body, cron parcial/zona local y toggle sin atomicidad concurrente.
-Coordinar contrato, frontend y SDK antes de 025; paridad no corrige estas deudas.
-
-020 conserva lote de medidores no atómico, rango UTC/local, autores del cliente
-y hard delete de notas; config genérico/auditoría sensible, cierre futuro 500 y
-policy solo validada por MIME. Resolver contrato/consistencia antes de 025.
-
-021 conserva mapping sin schema estructural, preview ZIP en memoria, fechas
-regex, dos schemas de modos, scope quiosco/Usuario Excel y descarga parcial
-si falla KPI después de iniciar ZIP. Resolver antes de 025 según alcance de producto.
-
-022 caracteriza campos de salida exigidos por POST manual e ignorados, éxito sin
-persistencia, fechas del host/paginación sin cotas, snapshot local, actor SYSTEM
-de verificación y CSV/XML parcial tras fallo de cursor. Resolver según contrato
-de producto antes de 025; ALS/direct transaction sí se verifica concurrentemente.
-
-023 corrige compresión de maintenance usando originalUrl en Express y opción de
-ruta compress=false en Fastify. Caracteriza reset CASCADE que borra users pese a
-preservedUser, admin con contraseña fija y jobs retenidos, watchdog sin cancelación
-y estado local; coordinar operaciones/jobs y redacción de secretos antes de 025.
-
-024 unifica runner, scheduler, sockets y cierre de recursos. Mantiene Express como
-principal; override opt-in para ensayos Fastify. PgBouncer usa AUTH_TYPE SCRAM
-explícito tras fallo reproducido; no desplegar compose de producción desde esta
-entrega. Socket sin auth/salas por query y broadcasts globales deben resolverse
-antes de 025. Ver [resultado 024](024-fastify-runtime-integrado/result.md).
-
-025-A cierra acceso anónimo y salas elegidas por cliente; revalida sesiones por
-lote antes de entregar y sincroniza login/logout frontend. La 025 sigue abierta:
-025-B1 añade invalidaciones y autorización por rol/empleado. Secretos/reset y
-deudas anteriores siguen bloqueando el cutover.
-Ver [spec 025](025-fastify-cutover/spec.md).
-
-025-B2 implementa protección SMTP HTTP, redacción de auditorías nuevas/históricas
-en lectura/exportación y reset atómico sin contraseña fija. Mantener Express
-principal hasta cerrar C/D; drenaje universal de operaciones y seeding fase 1
-siguen pendientes. Detalle y evidencia en [resultado 025](025-fastify-cutover/result.md).
+025 cierra el cambio: Fastify por defecto, imagen sin Express, 124 rutas
+inventariadas, gateway/PgBouncer, UI, purga/reinicio y rollback local comprobados.
+Validación completa y límites de medición: [resultado 025](025-fastify-cutover/result.md).

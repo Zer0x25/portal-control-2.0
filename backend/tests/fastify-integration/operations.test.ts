@@ -204,7 +204,7 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     ).toBe(1);
     expect((await http("GET", "/api/admin/stats")).status).toBe(401);
   });
-  it("resets password and forced-change flag without invalidating legacy sessions", async () => {
+  it("resets password and forced-change flag and invalidates only target sessions", async () => {
     const target = await user("reset-target"),
       password = "spec023-test-only";
     expect(
@@ -218,7 +218,9 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     const saved = await prismaDirect.user.findUniqueOrThrow({ where: { id: target.saved.id } });
     expect(bcrypt.compareSync(password, saved.passwordHash)).toBe(true);
     expect(saved.isForcePasswordChange).toBe(true);
-    expect(await prismaDirect.activeSession.count({ where: { userId: target.saved.id } })).toBe(1);
+    expect(await prismaDirect.activeSession.count({ where: { userId: target.saved.id } })).toBe(0);
+    expect(await prismaDirect.activeSession.count({ where: { userId: actorId } })).toBe(1);
+    expect((await http("GET", "/api/users", undefined, target.access)).status).toBe(401);
     const log = await prismaDirect.auditLog.findFirst({
       where: { action: "FORCE_PASSWORD_RESET" },
     });
@@ -240,6 +242,115 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
         })
       ).status,
     ).toBe(404);
+  });
+  it("rejects an authenticated credential snapshot and MFA challenge after password reset", async () => {
+    const target = await user("reset-snapshot");
+    const hash = bcrypt.hashSync("snapshot-old-password", 10);
+    await prismaDirect.user.update({
+      where: { id: target.saved.id },
+      data: { passwordHash: hash },
+    });
+    const authenticated = await AuthService.authenticate(
+      target.saved.username,
+      "snapshot-old-password",
+    );
+    expect(authenticated.success).toBe(true);
+    const pending = AuthService.generateMFAPendingToken(authenticated.user!);
+    expect(
+      (
+        await http("POST", "/api/admin/reset-password", {
+          username: target.saved.username,
+          newPassword: "snapshot-new-password",
+        })
+      ).status,
+    ).toBe(200);
+    await expect(
+      AuthService.createSession(
+        target.saved.id,
+        target.saved.username,
+        target.saved.role,
+        null,
+        "stale-login",
+        authenticated.user!.credentialStamp,
+      ),
+    ).rejects.toThrow("Credenciales cambiaron");
+    await expect(AuthService.validateMFALogin(pending, "000000")).rejects.toThrow(
+      "Credenciales cambiaron",
+    );
+    expect(await prismaDirect.activeSession.count({ where: { userId: target.saved.id } })).toBe(0);
+    const fresh = await AuthService.authenticate(target.saved.username, "snapshot-new-password");
+    expect(fresh.success).toBe(true);
+    const session = await AuthService.createSession(
+      target.saved.id,
+      target.saved.username,
+      target.saved.role,
+      null,
+      "fresh-login",
+      fresh.user!.credentialStamp,
+    );
+    expect(session.token).toBeTruthy();
+    expect(
+      (await AuthService.authenticate(target.saved.username, "snapshot-old-password")).success,
+    ).toBe(false);
+  });
+  it("serializes concurrent reset and stale session issuance on the user row", async () => {
+    const target = await user("reset-race");
+    await prismaDirect.user.update({
+      where: { id: target.saved.id },
+      data: { passwordHash: bcrypt.hashSync("race-old-password", 4) },
+    });
+    const login = await AuthService.authenticate(target.saved.username, "race-old-password");
+    const [reset, issuance] = await Promise.allSettled([
+      http("POST", "/api/admin/reset-password", {
+        username: target.saved.username,
+        newPassword: "race-new-password",
+      }),
+      AuthService.createSession(
+        target.saved.id,
+        target.saved.username,
+        target.saved.role,
+        null,
+        "racing-login",
+        login.user!.credentialStamp,
+      ),
+    ]);
+    expect(reset.status).toBe("fulfilled");
+    if (reset.status === "fulfilled") expect(reset.value.status).toBe(200);
+    if (issuance.status === "rejected")
+      expect(issuance.reason.message).toContain("Credenciales cambiaron");
+    expect(await prismaDirect.activeSession.count({ where: { userId: target.saved.id } })).toBe(0);
+    expect(await prismaDirect.activeSession.count({ where: { userId: actorId } })).toBe(1);
+  });
+  it("rolls back password and sessions if session revocation fails", async () => {
+    const target = await user("reset-rollback");
+    await prismaDirect.$executeRawUnsafe(
+      `CREATE FUNCTION test_password_reset_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'owned revocation failure'; END $$`,
+    );
+    await prismaDirect.$executeRawUnsafe(
+      `CREATE TRIGGER test_password_reset_failure BEFORE DELETE ON active_sessions FOR EACH STATEMENT EXECUTE FUNCTION test_password_reset_failure()`,
+    );
+    try {
+      const response = await http("POST", "/api/admin/reset-password", {
+        username: target.saved.username,
+        newPassword: "rollback-new-password",
+      });
+      expect(response.status).toBe(500);
+      expect(JSON.stringify(response.body)).not.toContain("owned revocation failure");
+      const stored = await prismaDirect.user.findUniqueOrThrow({ where: { id: target.saved.id } });
+      expect(stored.passwordHash).toBe(target.saved.passwordHash);
+      expect(stored.isForcePasswordChange).toBe(target.saved.isForcePasswordChange);
+      expect(await prismaDirect.activeSession.count({ where: { userId: target.saved.id } })).toBe(
+        1,
+      );
+      expect(await prismaDirect.auditLog.count({ where: { action: "FORCE_PASSWORD_RESET" } })).toBe(
+        0,
+      );
+    } finally {
+      await prismaDirect.$executeRawUnsafe(
+        `DROP TRIGGER test_password_reset_failure ON active_sessions`,
+      );
+      await prismaDirect.$executeRawUnsafe(`DROP FUNCTION test_password_reset_failure()`);
+    }
   });
   it("backs up through injected host double, records success and releases ownership", async () => {
     vi.mocked(backupService.backupDatabase).mockResolvedValueOnce("owned-backup.sql");

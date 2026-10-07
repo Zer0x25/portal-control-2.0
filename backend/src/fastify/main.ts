@@ -17,7 +17,7 @@ async function main() {
   const host = bindRuntimeHost(() => app.close(), path.join(__dirname, "main.ts"));
   try {
     await app.listen({ port, host: "0.0.0.0" });
-    logger.info("Servidor candidato Fastify iniciado", { eventType: "BOOT", port });
+    logger.info("Servidor Fastify iniciado", { eventType: "BOOT", port });
   } catch (error) {
     await host.shutdown();
     throw error;

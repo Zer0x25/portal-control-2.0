@@ -11,6 +11,14 @@ import { AuthError, ForbiddenError, RateLimitError } from "../utils/AppError";
 export class AuthService {
   private static readonly SECRET = process.env.JWT_SECRET || "";
 
+  private static credentialStamp(user: { id: string; passwordHash: string }): string {
+    // Opaque proof of the password validated by this login; never exposes the hash.
+    return crypto
+      .createHmac("sha256", this.SECRET)
+      .update(JSON.stringify(["auth-credential-version-v1", user.id, user.passwordHash]))
+      .digest("hex");
+  }
+
   static async getSessionDurationHours(role: string): Promise<number> {
     try {
       const config = await prisma.systemConfig.findUnique({
@@ -63,7 +71,7 @@ export class AuthService {
       return { success: false, reason: "USER_ARCHIVED" };
     }
 
-    return { success: true, user };
+    return { success: true, user: { ...user, credentialStamp: this.credentialStamp(user) } };
   }
 
   static sessionLimitForRole(role: string): number {
@@ -105,6 +113,7 @@ export class AuthService {
     role: string,
     employeeId: string | null,
     userAgent: string,
+    expectedCredentialStamp?: string,
   ) {
     const sessionHours = await this.getSessionDurationHours(role);
     // jti único por sesión: sin nonce, dos logins dentro del mismo segundo
@@ -122,33 +131,57 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + sessionHours * 60 * 60 * 1000);
     const device = userAgent.substring(0, 255);
 
-    // Insert + trim en una sola tx bajo lock por usuario (caza-bugs 2026-10-04):
+    // Cupo + insert en una sola tx bajo lock por usuario (caza-bugs 2026-10-04):
     // el trim sin serializar borraba TODO (trims concurrentes con keeps
     // distintos se eliminan entre sí). Serializados, acuerdan el mismo set y
     // queda exactamente el cupo (1 para Usuario). Xact-scoped, seguro tras PgBouncer.
     await withDirectTransaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${userId} FOR UPDATE`;
+      if (expectedCredentialStamp !== undefined) {
+        const current = await tx.user.findUnique({ where: { id: userId } });
+        if (
+          !current ||
+          this.credentialStamp(current) !== expectedCredentialStamp ||
+          current.username !== username ||
+          current.role !== role ||
+          current.employeeId !== employeeId
+        )
+          throw new AuthError("Credenciales cambiaron; reinicia el inicio de sesión");
+      }
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"sess:" + userId}))`;
-      await tx.activeSession.create({
-        data: { userId, tokenHash, deviceInfo: device, expiresAt },
-      });
       const sessionLimit = this.sessionLimitForRole(role);
       const keep = await tx.activeSession.findMany({
         where: { userId },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        take: sessionLimit,
+        // Preserve the existing policy: evict least recently active sessions.
+        orderBy: [{ lastActive: "desc" }, { id: "desc" }],
+        take: sessionLimit - 1,
         select: { id: true },
       });
       await tx.activeSession.deleteMany({
         where: { userId, id: { notIn: keep.map((k) => k.id) } },
+      });
+      await tx.activeSession.create({
+        data: { userId, tokenHash, deviceInfo: device, expiresAt },
       });
     });
 
     return { token, role };
   }
 
-  static generateMFAPendingToken(user: { id: string; username: string; role: string }) {
+  static generateMFAPendingToken(user: {
+    id: string;
+    username: string;
+    role: string;
+    credentialStamp: string;
+  }) {
     return jwt.sign(
-      { id: user.id, username: user.username, role: user.role, mfaPending: true },
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        mfaPending: true,
+        credentialStamp: user.credentialStamp,
+      },
       this.SECRET,
       { expiresIn: "5m" },
     );
@@ -253,7 +286,8 @@ export class AuthService {
     if (
       typeof decoded === "string" ||
       decoded.mfaPending !== true ||
-      typeof decoded.id !== "string"
+      typeof decoded.id !== "string" ||
+      typeof decoded.credentialStamp !== "string"
     )
       throw new AuthError("Token MFA inválido");
 
@@ -263,6 +297,8 @@ export class AuthService {
       if (!user) throw new AuthError("MFA no disponible para esta cuenta");
       if (user.role === "Archivado")
         throw new ForbiddenError("Acceso denegado: Su cuenta de usuario está archivada");
+      if (this.credentialStamp(user) !== decoded.credentialStamp)
+        throw new AuthError("Credenciales cambiaron; reinicia el inicio de sesión");
       if (!user.mfaEnabled || !user.mfaSecret)
         throw new AuthError("MFA no disponible para esta cuenta");
 
@@ -296,7 +332,7 @@ export class AuthService {
           mfaBlockedUntil: null,
         },
       });
-      return { success: true, user };
+      return { success: true, user: { ...user, credentialStamp: this.credentialStamp(user) } };
     });
   }
 

@@ -108,7 +108,9 @@ async function main() {
     failures: 0,
     runs,
   };
-  const output = path.resolve(__dirname, "../../specs/008-fastify-base-feriados/benchmark.json");
+  const output = process.env.FASTIFY_BENCHMARK_OUTPUT
+    ? path.resolve(process.env.FASTIFY_BENCHMARK_OUTPUT)
+    : path.resolve(__dirname, "../../specs/008-fastify-base-feriados/benchmark.json");
   fs.writeFileSync(output, JSON.stringify(report, null, 2) + "\n");
   console.log(`Benchmark report: ${output}`);
 }

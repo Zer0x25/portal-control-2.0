@@ -263,16 +263,10 @@ Desarrollo y CI usan Node 26 (`.nvmrc`, engines y Dockerfiles). Con fnm, ejecuta
 `fnm use` antes de comandos npm, o `fnm exec --using 26 npm run check`.
 El backend añade `npm run check:holidays` (tipos estrictos del módulo) a `check`.
 
-La consulta de feriados está extraída con contratos y adaptador Prisma. Express
-sigue siendo el servidor principal. El candidato Fastify ya expone health y
-feriados completos, las seis rutas de autenticación (login, logout, quiosco y MFA)
-las cuatro rutas de usuarios (CRUD Admin), las seis de empleados (incluido Excel),
-las nueve de marcaciones, las dieciocho de turnos, tres de ausencias y cinco
-de correcciones y tres de reportes de turno,
-con sesiones y permisos reales, auditoría y tipos estrictos.
-Para iniciarlo en otro puerto desde `backend/`: `PORT=4001 npm run dev:fastify`.
-Requiere las mismas conexiones y `JWT_SECRET`. Puede emitir y revocar sesiones
-desde su propio login. No arranca jobs ni sockets.
+Fastify es el servidor principal. Todos los módulos usan adaptadores HTTP nativos
+y casos de uso compartidos, con contratos, permisos y tipos estrictos. El runtime
+integra Socket.IO y jobs. Para iniciarlo en otro puerto desde backend:
+`PORT=4001 npm run dev`. Requiere conexiones de BD y JWT_SECRET.
 
 `npm run test:fastify:integration` crea PostgreSQL 18.4 desechable y lo elimina al
 terminar (requiere Docker). `npm run benchmark:fastify` compara ambos servidores
@@ -314,7 +308,7 @@ La proyección pública elimina PIN de overview y ausencias; ver
 Spec 019 añade doce rutas de correo y reportes programados con puertos compartidos, cifrado/enmascarado y pruebas sin SMTP real: [resultado](specs/019-fastify-correo-reportes-programados/result.md).
 Spec 020 añade catorce rutas de medidores/notas/configs, incluidos PDF público, streaming de carga y descarga con rangos: [resultado](specs/020-fastify-datos-configuracion/result.md).
 La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
-a empleados y reserva runtime integrado y cutover para las últimas dos specs.
+a empleados; runtime integrado y cutover completaron las últimas dos specs.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
 [spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).
 
@@ -325,10 +319,16 @@ Migración Fastify 022 (auditoría): [resultado](specs/022-fastify-auditoria/res
 
 Migración Fastify 023 (admin/mantenimiento): [resultado](specs/023-fastify-operaciones-admin/result.md).
 
-El [spec 024](specs/024-fastify-runtime-integrado/spec.md) integra el runtime candidato:
-`cd backend && npm run dev:fastify` (Node 26) inicia HTTP, Socket.IO y jobs con cierre
-SIGINT/SIGTERM. `npm run dev` conserva Express y usa el mismo runner.
-Para ensayo por gateway, combinar `compose.staging.yaml` con
-`compose.fastify-staging.yaml` y un env-file dedicado; el override cambia solo el
-entrypoint candidato. Omitirlo recupera Express. Socket conserva su política legacy
-sin autenticación; revisar deudas del spec antes del cutover 025.
+El [spec 025](specs/025-fastify-cutover/spec.md) deja Fastify como servidor principal.
+`npm run dev` en la raíz coordina PostgreSQL, Fastify y Vite; `npm start` en backend
+y los compose arrancan el mismo runtime Fastify con Socket.IO y jobs.
+`dev:fastify`/`start:fastify` son aliases compatibles.
+
+Express queda como fixture de paridad local: `cd backend && npm run dev:express`.
+La imagen final elimina sus dependencias de desarrollo. Para revertir contenedores,
+usar la imagen/checkout anterior al cutover; omitir compose.fastify-staging.yaml
+ya no cambia servidor. Ese override se conserva solo por compatibilidad.
+
+En desarrollo se permite purgar sesiones y reiniciar; mejoras de mantenimiento
+sin interrupciones y deudas de negocio quedan en el [backlog](specs/025-fastify-cutover/backlog.md).
+No son pasos pendientes para terminar la migración. [Evidencia del cierre](specs/025-fastify-cutover/result.md).

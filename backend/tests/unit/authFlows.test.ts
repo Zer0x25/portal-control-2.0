@@ -8,6 +8,7 @@ function fixture() {
     role: "Supervisor_Elevado",
     employeeId: null,
     mfaEnabled: false,
+    credentialStamp: "private-credential-proof",
     isForcePasswordChange: true,
   };
   const deps: AuthFlowDependencies = {
@@ -54,6 +55,7 @@ describe("Shared auth flows", () => {
       "Supervisor_Elevado",
       null,
       "test-agent",
+      "private-credential-proof",
     );
     expect(f.deps.audit).toHaveBeenCalledWith(
       expect.objectContaining({ action: "LOGIN_SUCCESS", actorUsername: "alice" }),
@@ -188,7 +190,14 @@ describe("Shared auth flows", () => {
     const f = fixture();
     vi.mocked(f.deps.service.authenticate).mockResolvedValue({
       success: true,
-      user: { id: "u1", username: "alice", role: "Usuario", employeeId: null, mfaEnabled: false },
+      user: {
+        id: "u1",
+        username: "alice",
+        role: "Usuario",
+        employeeId: null,
+        mfaEnabled: false,
+        credentialStamp: "private-credential-proof",
+      },
     });
     expect(await f.flows.login({ username: "alice", password: "valid" }, {})).toMatchObject({
       body: { mustChangePassword: false },
@@ -199,8 +208,27 @@ describe("Shared auth flows", () => {
       "Usuario",
       null,
       "Unknown",
+      "private-credential-proof",
     );
     expect(f.deps.service.authenticate).toHaveBeenCalledWith("alice", "valid", "unknown");
+  });
+  it("passes a private credential proof without exposing it and rejects missing proofs", async () => {
+    const f = fixture();
+    const response = await f.flows.login({ username: "alice", password: "valid" }, context);
+    expect(JSON.stringify(response)).not.toContain("private-credential-proof");
+    expect(JSON.stringify(vi.mocked(f.deps.audit).mock.calls)).not.toContain(
+      "private-credential-proof",
+    );
+    expect(f.deps.service.manageSessionLimit).not.toHaveBeenCalled();
+    vi.mocked(f.deps.service.createSession).mockClear();
+    vi.mocked(f.deps.service.authenticate).mockResolvedValue({
+      success: true,
+      user: { ...f.user, credentialStamp: "" },
+    });
+    await expect(f.flows.login({ username: "alice", password: "valid" }, context)).rejects.toThrow(
+      "Credenciales cambiaron",
+    );
+    expect(f.deps.service.createSession).not.toHaveBeenCalled();
   });
   it("rejects incomplete service results before emitting success effects", async () => {
     const f = fixture();

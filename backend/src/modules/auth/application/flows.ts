@@ -5,6 +5,7 @@ export interface LoginUser {
   role: string;
   employeeId: string | null;
   mfaEnabled: boolean;
+  credentialStamp: string;
   isForcePasswordChange?: boolean | null;
 }
 export interface AuthFlowContext {
@@ -31,6 +32,7 @@ export interface AuthFlowDependencies {
       role: string,
       employeeId: string | null,
       agent: string,
+      credentialStamp: string,
     ): Promise<{ token: string; role: string }>;
     verifyKioskPin(
       id: string,
@@ -70,13 +72,15 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
     return context.user;
   };
   const session = async (user: LoginUser, context: AuthFlowContext) => {
-    await deps.service.manageSessionLimit(user.id, user.role);
+    if (!user.credentialStamp)
+      throw new AuthError("Credenciales cambiaron; reinicia el inicio de sesión");
     const result = await deps.service.createSession(
       user.id,
       user.username,
       user.role,
       user.employeeId,
       context.userAgent || "Unknown",
+      user.credentialStamp,
     );
     return {
       userId: user.id,

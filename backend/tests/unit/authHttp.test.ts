@@ -15,6 +15,7 @@ function fixture() {
     role: "Supervisor",
     employeeId: null,
     mfaEnabled: false,
+    credentialStamp: "private-credential-proof",
   };
   const deps: AuthFlowDependencies = {
     service: {

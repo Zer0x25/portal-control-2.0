@@ -1,0 +1,746 @@
+[
+  {
+    "method": "GET",
+    "url": "/api/health",
+    "authenticated": false,
+    "validated": false
+  },
+  {
+    "method": "GET",
+    "url": "/api/health/ready",
+    "authenticated": false,
+    "validated": false
+  },
+  {
+    "method": "OPTIONS",
+    "url": "*",
+    "authenticated": false,
+    "validated": false
+  },
+  {
+    "method": "GET",
+    "url": "/api/holidays",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/holidays",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/holidays/bulk",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/holidays/sync",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/holidays/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/import/preview",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/export/calendar-pdf",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/export/report-pdf",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/export/shift-report-pdf/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/export/report-excel",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/meters",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/meters/bulk",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/admin/stats",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/admin/diagnose-autoclose",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/admin/security-insights",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/admin/integrity-status",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/admin/backups",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/trigger-autoclose",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/trigger-accounting-autoclose",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/trigger-backup",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/restart",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/purge-sessions",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/reset-password",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/admin/restore",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/maintenance/clear-database",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/maintenance/seed",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/maintenance/seed/phase1",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/maintenance/seed/phase2/start",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/maintenance/seed/phase2/pause",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/maintenance/seed/phase2/resume",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/maintenance/seed/phase2/stop",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/maintenance/seed/phase2/status",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/maintenance/seed/phase2/logs",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/audit-logs",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/audit-logs",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/audit-logs/cleanup",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/audit-logs/integrity-status",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/audit-logs/verify-integrity",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/audit-logs/export",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/notes",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/notes",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PUT",
+    "url": "/api/notes/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/notes/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/configs/public/company-policy",
+    "authenticated": false,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/configs/public/company-policy/file",
+    "authenticated": false,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/configs/server-time",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/configs/validate-closure",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/configs",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/configs/:key",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/configs/:key",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/configs/company-policy",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/email/verify",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/email/config",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/email/config",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/email/rules",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/email/rules",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/email/send-test",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/scheduled-reports",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/scheduled-reports/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/scheduled-reports",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PUT",
+    "url": "/api/scheduled-reports/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PATCH",
+    "url": "/api/scheduled-reports/:id/toggle",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/scheduled-reports/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/kpis/summary",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/kpis/detailed-report",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/kpis/overview",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/kpis/daily-planning",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shift-reports",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shift-reports",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shift-reports/export/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/leaves",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/leaves",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/leaves/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/corrections",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/corrections/stats",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/corrections/:id/history",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/corrections",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PATCH",
+    "url": "/api/corrections/:id/status",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/patterns",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/patterns",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PUT",
+    "url": "/api/shifts/patterns/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/shifts/patterns/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/patterns/bulk",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/assignments",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/assignments",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PUT",
+    "url": "/api/shifts/assignments/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/shifts/assignments/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/assignments/bulk",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/schedule/employee/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/schedule/employees-on-date",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/schedule/employee/:id/month",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/schedule/matrix",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/monthly-plan/:employeeId/:year/:month",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/monthly-plan",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/shifts/suggest-pattern-name",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/shifts/validate-conflicts",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/records/punch",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/records",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/records",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/records/bulk",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/records/auto-close",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/records/integrity/verify",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/records/:id/resolve-anomaly",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/records/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/records/export",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/employees/kiosk",
+    "authenticated": false,
+    "validated": false
+  },
+  {
+    "method": "GET",
+    "url": "/api/employees",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/employees",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PUT",
+    "url": "/api/employees/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/employees/bulk",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/employees/export",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "GET",
+    "url": "/api/users",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/users",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "PUT",
+    "url": "/api/users/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "DELETE",
+    "url": "/api/users/:id",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/auth/login",
+    "authenticated": false,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/auth/kiosk-login",
+    "authenticated": false,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/auth/logout",
+    "authenticated": false,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/auth/mfa/setup",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/auth/mfa/verify",
+    "authenticated": true,
+    "validated": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/auth/mfa/validate",
+    "authenticated": false,
+    "validated": true
+  }
+]
