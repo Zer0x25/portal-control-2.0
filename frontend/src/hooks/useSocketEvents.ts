@@ -107,6 +107,7 @@ export const useSocketEvents = () => {
       };
       socket.on("quickNote:created", handleQuickNoteUpdate);
       socket.on("quickNote:deleted", handleQuickNoteUpdate);
+      socket.on("quickNote:updated", handleQuickNoteUpdate);
 
       // -- Correction Request Events --
       const handleCorrectionUpdate = (data: unknown) => {
@@ -199,6 +200,7 @@ export const useSocketEvents = () => {
         socket.off("auditLog:created", handleAuditLogCreated);
         socket.off("quickNote:created", handleQuickNoteUpdate);
         socket.off("quickNote:deleted", handleQuickNoteUpdate);
+        socket.off("quickNote:updated", handleQuickNoteUpdate);
         socket.off("correctionRequest:created", handleCorrectionUpdate);
         socket.off("correctionRequest:updated", handleCorrectionUpdate);
         socket.off("correctionRequest:deleted", handleCorrectionUpdate);

@@ -241,6 +241,25 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(time.timezone).toBe("America/Santiago");
     expect(new Date(time.iso).getTime()).toBe(time.timestamp);
   });
+  it("stores SMTP credentials but redacts old and new values from persisted audits", async () => {
+    await prismaDirect.systemConfig.create({
+      data: { key: "SMTP_CONFIG", value: JSON.stringify({ password: "old-smtp-fixture" }) },
+    });
+    const value = { profiles: [{ auth: { pass: "new-smtp-fixture" } }] };
+    expect((await http("POST", "/api/configs/SMTP_CONFIG", { value })).status).toBe(200);
+    const stored = await prismaDirect.systemConfig.findUniqueOrThrow({
+      where: { key: "SMTP_CONFIG" },
+    });
+    expect(JSON.parse(stored.value)).toEqual(value);
+    const audits = await prismaDirect.auditLog.findMany({ where: { action: "CONFIG_SET" } });
+    expect(audits).toHaveLength(1);
+    expect(audits[0]!.details).toMatchObject({
+      key: "SMTP_CONFIG",
+      previousValue: "[REDACTED]",
+      newValue: "[REDACTED]",
+    });
+    expect(JSON.stringify(audits)).not.toMatch(/old-smtp-fixture|new-smtp-fixture/);
+  });
   it("writes config JSON with one audit and event; supervisor elevated cannot write", async () => {
     const res = await http("POST", "/api/configs/custom", {
       value: { enabled: true },

@@ -472,3 +472,14 @@ server-only auth:force_logout después de borrar sesiones. Kiosk conserva JWT si
 ActiveSession. Frontend conecta tras login y desconecta al salir/cambiar identidad.
 Pendiente: autorizar payloads de broadcasts por rol/empleado, deudas previas y
 benchmark/cutover; no retirar Express hasta completar los bloqueantes de 025.
+
+Spec 025-B1: modules/realtime aplica política pura por rol/empleado con API pública
+index.ts y strict. SocketService proyecta eventos explícitos; desconocidos se
+deniegan. Negocio emite invalidaciones changed:true, nunca filas/config/password;
+notas creadas añaden created:true. Audit solo Admin/elevado/Fiscalizador, usuarios
+solo Admin, seeder solo Admin con campos explícitos y sin errores. Usuario/quiosco
+solo recibe records/assignments/corrections/employee propios con ownership explícito;
+bulk sin employeeId no se difunde a esos roles. Notificación personal exige target
+validado y omite metadata. Guard enumera productores reales y exige contrato.
+ConfigService redacta SMTP_CONFIG/EMAIL_NOTIFICATION_RULES completos en nuevas
+auditorías; HTTP/históricos, errores y reset/credenciales siguen en 025-B2.

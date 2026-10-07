@@ -1,6 +1,6 @@
 # Spec 025: Cambio de servidor principal
 
-- Estado: En ejecución; primera tanda de seguridad de sockets
+- Estado: En ejecución; 025-A commiteada, política de eventos 025-B1 validada localmente
 - Fecha: 2026-10-07
 - Ruta: [roadmap](../roadmap-fastify.md)
 
@@ -56,25 +56,55 @@ No se registran tokens ni detalles del fallo de autenticación.
 Frontend conecta después del login, toma token actual en cada handshake y cierra
 al salir/cambiar de usuario. No cambia duración de sesiones ni política HTTP.
 
-Esto no resuelve autorización de payloads entre roles autenticados. Broadcasts
-actuales siguen sujetos a una siguiente tanda con contratos de eventos y scopes;
+La 025-A no resolvía autorización de payloads entre roles autenticados. La 025-B1
+añade los contratos de eventos y scopes detallados abajo;
 no autoriza promover Fastify ni retirar Express mientras queden bloqueantes.
 La revalidación consulta BD por evento; medir su costo y agrupar ráfagas antes de
 certificar rendimiento del runtime completo.
 
 ## Inventario de seguridad previo al cutover
 
-| Superficie                             | Contrato actual tras 025-A                                                | Pendiente para cutover                                      |
-| -------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Engine.IO polling/websocket /socket.io | allowRequest rechaza Origin no permitido; handshake exige token           | ensayo final por gateway con contratos de eventos completos |
-| Sala user:ID                           | ID derivado del servidor, query ignorada; destinatario vacío no emite     | scopes de notificaciones por empleado/rol                   |
-| Eventos generales de negocio           | solo sesiones vigentes; payloads legacy globales                          | autorizar o reemplazar por invalidación sin datos sensibles |
-| auditLog:created                       | sesiones vigentes de todos los roles                                      | limitar a roles de auditoría                                |
-| config:updated                         | conserva key/value global                                                 | excluir secretos y limitar payload/roles                    |
-| seeder:phase2_*                        | payload global autenticado                                                | limitar a Admin y redactar fallos                           |
-| auth:force_logout                      | servidor avisa tras invalidación; sin revalidación que impediría el aviso | conservar control exclusivamente del servidor               |
-| Clientes sin tráfico                   | barrido 30 s; expiry/revocación desconecta                                | medir ráfagas y escalabilidad del chequeo                   |
-| 123 rutas HTTP                         | contratos previos en specs 013–023                                        | cerrar deudas funcionales/seguridad listadas en roadmap     |
+| Superficie                             | Contrato actual tras 025-A                                                | Pendiente para cutover                                       |
+| -------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Engine.IO polling/websocket /socket.io | allowRequest rechaza Origin no permitido; handshake exige token           | ensayo final por gateway con contratos de eventos completos  |
+| Sala user:ID                           | ID derivado del servidor, query ignorada; destinatario vacío no emite     | scopes de notificaciones por empleado/rol                    |
+| Eventos generales de negocio           | invalidaciones sin filas ni datos privados                                | medir costo de entrega y completar contratos HTTP pendientes |
+| auditLog:created                       | invalidación solo Admin, Supervisor_Elevado y Fiscalizador                | ensayo final de gateway                                      |
+| config:updated                         | invalidación sin key/value                                                | lecturas HTTP/históricos protegidos pendientes               |
+| seeder:phase2_*                        | solo Admin; jobId y contadores explícitos, sin error                      | redacción de logs/errores HTTP pendiente                     |
+| auth:force_logout                      | servidor avisa tras invalidación; sin revalidación que impediría el aviso | conservar control exclusivamente del servidor                |
+| Clientes sin tráfico                   | barrido 30 s; expiry/revocación desconecta                                | medir ráfagas y escalabilidad del chequeo                    |
+| 123 rutas HTTP                         | contratos previos en specs 013–023                                        | cerrar deudas funcionales/seguridad listadas en roadmap      |
 
 Esta tabla no marca AC1 completo: los contratos nuevos de eventos/scopes y la
 retirada de Express requieren inventario definitivo en las siguientes tandas.
+
+## 025-B1: contrato de eventos
+
+Aplicación pura modules/realtime con API pública index.ts, strict y guard de
+consumidores/infraestructura. Unknown event/role se deniega. Contratos:
+
+| Familia                              | Receptores                                                                                                           | Payload                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| records, assignments, corrections    | Admin, Supervisor_Elevado, Supervisor, Reloj_Control, Fiscalizador; Usuario/quiosco solo employeeId propio explícito | changed:true                                                      |
+| employee:updated                     | mismos roles staff; Usuario/quiosco solo id propio explícito                                                         | changed:true                                                      |
+| notes, shift reports, leaves, meters | authorizeSupervisor: Admin, Supervisor_Elevado, Supervisor, Reloj_Control                                            | changed:true; notas creadas añaden created:true                   |
+| auditLog:created                     | Admin, Supervisor_Elevado, Fiscalizador                                                                              | changed:true                                                      |
+| user:updated                         | Admin                                                                                                                | changed:true                                                      |
+| holidays, patterns, configs          | roles conocidos autenticados                                                                                         | changed:true, sin key/value/config/secretos                       |
+| seeder:phase2_*                      | Admin                                                                                                                | jobId; progress añade dayCompleted/totalDays enteros no negativos |
+| user_notification                    | destinatario validado explícito, sin broadcast                                                                       | title/message/type; sin metadata                                  |
+| system_notification                  | Admin                                                                                                                | aviso genérico sin contenido/metadata de origen                   |
+| system:maintenance                   | roles conocidos autenticados                                                                                         | active, operation enum backup/restore/reset                       |
+| auth:force_logout                    | clientes previamente autenticados, incluso tras borrar sesiones                                                      | reason permitido/generic, restartRecommended boolean              |
+
+Si evento de registros/bulk/eliminación no contiene employeeId, no se inventa
+scope para Usuario/quiosco: no recibe invalidación. Sus queries HTTP conservan
+refetch/polling; notificar a todos los empleados sin ownership sería una filtración.
+Frontend conserva indicador de notas mediante created:true y escucha updated para
+invalidar al archivar. No requiere contenido/id del registro en el socket.
+ConfigService audita SMTP_CONFIG/EMAIL_NOTIFICATION_RULES con valores completos
+redactados antes de persistir; almacenamiento operacional de credenciales no cambia.
+No limpia históricos ni cambia contrato de lectura HTTP de configuración elevada.
+Reset/credenciales fijas, redacción de fallos HTTP/históricos y deudas funcionales
+siguen bloqueando cutover (025-B2/C/D).

@@ -26,10 +26,10 @@ export const createQuickNotesSlice: StateCreator<AppState, [], [], QuickNotesSli
 
   handleQuickNoteSocketEvent: (data: unknown) => {
     const state = get();
-    // Only care if it's a new note (not deletion) and modal is closed.
-    // A deletion event carries no payload, so fall back to an empty object.
-    const payload = (data ?? {}) as { id?: unknown };
-    if (payload.id && Object.keys(payload).length > 1 && !state.isQuickNotesModalOpen) {
+    // Created invalidation contains no note data.
+    const created =
+      typeof data === "object" && data !== null && "created" in data && data.created === true;
+    if (created && !state.isQuickNotesModalOpen) {
       set({ hasUnreadNotes: true });
     }
   },

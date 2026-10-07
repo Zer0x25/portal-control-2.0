@@ -29,8 +29,9 @@ Mientras Express siga principal, revertir el registro del módulo candidato;
 1. 025-A: autenticación socket, salas derivadas del servidor, revalidación por lote
    antes de entregar, expiración/revocación y lifecycle frontend. RED/GREEN con
    listener real y sesiones persistidas. No cambiar servidor principal.
-2. 025-B: contrato de eventos por rol/empleado; evitar payloads globales sensibles,
-   seeder solo Admin y notificaciones personales. Resolver secretos de configs,
+2. 025-B1: contrato de eventos por rol/empleado; evitar payloads globales sensibles,
+   seeder solo Admin, notificaciones personales y redacción de nuevas auditorías.
+   025-B2: resolver secretos HTTP/históricos de configs,
    auditorías de errores y credenciales/reset destructivo documentados en 020/023.
 3. 025-C: resolver deudas funcionales previas mediante contratos explícitos
    (fechas Chile, ownership, extensión de leaves, reportes y consistencia).
@@ -42,3 +43,9 @@ frontend services/socketService.ts y hooks/useSocketEvents.ts;
 unit/socketSecurity.test.ts, socketAuthentication.test.ts y runtime.test.ts
 con listener/BD reales; pruebas frontend de handshake y login/logout.
 No reutilizar middleware Express para autenticar Socket.IO.
+
+Archivos B1: modules/realtime/application/eventPolicy.ts/index.ts, SocketService,
+configs/application/auditValue.ts y fachada ConfigService; guard de strict/módulos
+y productores con inventario no vacío; hook/socket badge frontend; tests policy,
+listener websocket real, runtime con sesiones persistidas y POST configs en ambos
+servidores. No introducir dependencia Express en aplicación ni cambiar schemas/SDK.

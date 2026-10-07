@@ -98,15 +98,59 @@ it("authenticates websocket identity and revokes sessions before delivery", asyn
   expect(serverSocket.rooms.has(`user:${user.id}`)).toBe(true);
   expect(serverSocket.rooms.has("user:victim")).toBe(false);
   const room = message(own);
-  SocketService.emitToUser(user.id, "spec025:private", { value: 8 });
-  expect(await room).toBe('42["spec025:private",{"value":8}]');
+  SocketService.emitToUser(user.id, "user_notification", {
+    title: "Title",
+    message: "Message",
+    type: "info",
+  });
+  expect(await room).toBe(
+    '42["user_notification",{"title":"Title","message":"Message","type":"info"}]',
+  );
   await prismaDirect.activeSession.deleteMany({ where: { tokenHash } });
   const received: string[] = [];
   own.addEventListener("message", (event) => received.push(String(event.data)));
-  SocketService.emitToAll("spec025:revoked", { value: 9 });
+  SocketService.emitToAll("auditLog:created", { secret: "hidden" });
   await vi.waitFor(() => expect(SocketService.getInstance().sockets.sockets.size).toBe(0));
-  expect(received.some((packet) => packet.includes("spec025:revoked"))).toBe(false);
+  expect(received.some((packet) => packet.includes("auditLog:created"))).toBe(false);
   expect(() => SocketService.initialize(app.server)).toThrow("already initialized");
+});
+it("delivers only projected role-authorized frames with persisted sessions", async () => {
+  const frames = new Map<string, string[]>();
+  for (const role of ["Administrador", "Fiscalizador", "Usuario"] as const) {
+    const user = await prismaDirect.user.create({
+      data: { username: `event-${role}`, role, passwordHash: "not-used" },
+    });
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role },
+      process.env.JWT_SECRET!,
+      { expiresIn: "5m" },
+    );
+    await prismaDirect.activeSession.create({
+      data: {
+        userId: user.id,
+        tokenHash: crypto.createHash("sha256").update(token).digest("hex"),
+        expiresAt: new Date(Date.now() + 300000),
+      },
+    });
+    const client = await websocket(token);
+    const received: string[] = [];
+    frames.set(role, received);
+    client.addEventListener("message", (event) => received.push(String(event.data)));
+  }
+  SocketService.emit("auditLog:created", { details: "protected-payload" });
+  SocketService.emit("seeder:phase2_failed", { jobId: "job", error: "protected-payload" });
+  SocketService.emit("config:updated", { value: { password: "protected-payload" } });
+  SocketService.emit("system:maintenance", { active: false });
+  await vi.waitFor(() => {
+    for (const received of frames.values())
+      expect(received).toContain('42["system:maintenance",{"active":false}]');
+  });
+  expect(frames.get("Administrador")).toContain('42["seeder:phase2_failed",{"jobId":"job"}]');
+  expect(frames.get("Fiscalizador")).toContain('42["auditLog:created",{"changed":true}]');
+  expect(frames.get("Fiscalizador")!.some((frame) => frame.includes("seeder"))).toBe(false);
+  expect(frames.get("Usuario")!.some((frame) => /seeder|auditLog/.test(frame))).toBe(false);
+  for (const received of frames.values())
+    expect(received.join()).not.toContain("protected-payload");
 });
 it("drains seeding work before shutdown, preserving resumable running state", async () => {
   seedingJobService.openRuntime();

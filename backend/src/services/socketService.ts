@@ -1,5 +1,6 @@
 import { Server as SocketIOServer, type Socket } from "socket.io";
 import { Server as HTTPServer } from "http";
+import { projectRealtimeEvent } from "../modules/realtime";
 import type { AuthUser } from "../modules/auth";
 import { getAllowedOrigins, isOriginAllowed } from "../utils/corsPolicy";
 import { logger } from "../utils/logger";
@@ -85,8 +86,10 @@ export class SocketService {
             socket.disconnect(true);
             continue;
           }
-          if (event && (userId === undefined || identity.user.id === userId))
-            socket.emit(event, data);
+          if (event) {
+            const delivery = projectRealtimeEvent(event, data, identity.user, userId);
+            if (delivery) socket.emit(event, delivery.payload);
+          }
         }
       })
       .catch(() => {
@@ -121,7 +124,10 @@ export class SocketService {
   public static emitToAll(event: string, data: unknown): void {
     if (event === "auth:force_logout") {
       // Revocation itself must reach already authenticated clients after sessions are deleted.
-      this.io?.emit(event, data);
+      for (const [id, identity] of this.identities) {
+        const delivery = projectRealtimeEvent(event, data, identity.user);
+        if (delivery) this.io?.sockets.sockets.get(id)?.emit(event, delivery.payload);
+      }
       return;
     }
     this.deliver(event, data);

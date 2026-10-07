@@ -105,5 +105,6 @@ antes de 025. Ver [resultado 024](024-fastify-runtime-integrado/result.md).
 
 025-A cierra acceso anónimo y salas elegidas por cliente; revalida sesiones por
 lote antes de entregar y sincroniza login/logout frontend. La 025 sigue abierta:
-autorización de broadcasts por rol/empleado y deudas anteriores bloquean el cutover.
+025-B1 añade invalidaciones y autorización por rol/empleado. Secretos/reset y
+deudas anteriores siguen bloqueando el cutover.
 Ver [spec 025](025-fastify-cutover/spec.md).

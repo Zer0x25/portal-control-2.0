@@ -15,6 +15,9 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 - [x] A3: Revalidar colección completa en batch antes de emitir y barrido periódico.
 - [x] A4: Handshake frontend vigente; conectar después del login y cerrar al salir.
 - [x] A5: Gates backend/frontend, BD aislada y documentación del resultado.
-- [ ] B: Autorizar payloads/eventos por rol/empleado y resolver secretos/reset.
+- [x] B1a: Política pura por rol/empleado, proyecciones y default deny.
+- [x] B1b: Invalidaciones frontend y auditoría protegida de nuevas escrituras configs.
+- [x] B1c: Gates y evidencia de listener/BD reales.
+- [ ] B2: Secretos en HTTP/históricos, errores y credenciales/reset destructivo.
 - [ ] C: Cerrar deudas funcionales bloqueantes de las specs anteriores.
 - [ ] D: Ensayar benchmark/rollback y retirar Express tras completar bloqueantes.

@@ -8,12 +8,18 @@ afterEach(async () => {
   await SocketService.close();
   vi.restoreAllMocks();
 });
-async function fixture() {
+async function fixture(
+  principals: Record<
+    string,
+    { id: string; username: string; role: string; employeeId?: string }
+  > = { valid: { id: "own", username: "owner", role: "Administrador" } },
+) {
   const server = createServer();
   const authorize = vi.fn(async (tokens: string[]) => new Set(tokens));
   const authenticate = vi.fn(async (token: string) => {
-    if (token !== "valid") throw new Error("private detail");
-    return { id: "own", username: "owner", role: "Administrador" };
+    const principal = principals[token];
+    if (!principal) throw new Error("private detail");
+    return principal;
   });
   const io = SocketService.initialize(server, { authenticate, authorize, allowedOrigins: [] });
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -58,15 +64,31 @@ it("checks session validity before delivering and disconnects revoked clients", 
   const { client } = await connect(f.url, "valid");
   const messages: string[] = [];
   client.addEventListener("message", (event) => messages.push(String(event.data)));
-  SocketService.emitToUser("", "empty-target", { secret: 0 });
-  SocketService.emitToUser("victim", "foreign-target", { secret: 0 });
-  SocketService.emitToUser("own", "private", { secret: 1 });
-  await vi.waitFor(() => expect(messages).toContain('42["private",{"secret":1}]'));
-  expect(messages.some((packet) => packet.includes("target"))).toBe(false);
+  SocketService.emitToUser("", "user_notification", {
+    title: "Empty",
+    message: "Empty",
+    type: "info",
+  });
+  SocketService.emitToUser("victim", "user_notification", {
+    title: "Foreign",
+    message: "Foreign",
+    type: "info",
+  });
+  SocketService.emitToUser("own", "user_notification", {
+    title: "Title",
+    message: "Message",
+    type: "info",
+  });
+  await vi.waitFor(() =>
+    expect(messages).toContain(
+      '42["user_notification",{"title":"Title","message":"Message","type":"info"}]',
+    ),
+  );
+  expect(messages.some((packet) => /Empty|Foreign/.test(packet))).toBe(false);
   f.authorize.mockResolvedValue(new Set());
-  SocketService.emitToAll("sensitive", { secret: 2 });
+  SocketService.emitToAll("config:updated", { value: "secret" });
   await vi.waitFor(() => expect(f.io.sockets.sockets.size).toBe(0));
-  expect(messages.some((packet) => packet.includes("sensitive"))).toBe(false);
+  expect(messages.some((packet) => packet.includes("config:updated"))).toBe(false);
 });
 it("rejects unlisted origins at the Engine.IO boundary, not only CORS headers", async () => {
   const f = await fixture();
@@ -80,7 +102,7 @@ it("disconnects clients on authorization infrastructure failure without exposing
   const f = await fixture();
   await connect(f.url, "valid");
   f.authorize.mockRejectedValue(new Error("database secret"));
-  SocketService.emitToAll("sensitive", { secret: 2 });
+  SocketService.emitToAll("config:updated", { value: "secret" });
   await vi.waitFor(() => expect(f.io.sockets.sockets.size).toBe(0));
 });
 
@@ -98,4 +120,50 @@ it("revalidates idle clients on the periodic sweep and releases its timer on clo
   await vi.waitFor(() => expect(f.io.sockets.sockets.size).toBe(0));
   await SocketService.close();
   expect(clear).toHaveBeenCalledWith(interval.mock.results[index]!.value);
+});
+
+it("enforces role and employee policy over real websocket frames without leaking source payloads", async () => {
+  const f = await fixture({
+    admin: { id: "admin", username: "admin", role: "Administrador" },
+    audit: { id: "audit", username: "audit", role: "Fiscalizador" },
+    worker: { id: "worker", username: "worker", role: "Usuario", employeeId: "employee" },
+  });
+  const received = new Map<string, string[]>();
+  for (const token of ["admin", "audit", "worker"]) {
+    const { client } = await connect(f.url, token);
+    const frames: string[] = [];
+    received.set(token, frames);
+    client.addEventListener("message", (event) => frames.push(String(event.data)));
+  }
+  SocketService.emit("auditLog:created", { details: "sensitive-source" });
+  SocketService.emit("config:updated", { value: { password: "sensitive-source" } });
+  SocketService.emit("seeder:phase2_failed", { jobId: "job", error: "sensitive-source" });
+  SocketService.emit("timeRecord:updated", { employeeId: "other", name: "sensitive-source" });
+  SocketService.emitToUser("worker", "user_notification", {
+    title: "Own",
+    message: "Personal",
+    type: "info",
+    metadata: "sensitive-source",
+  });
+  SocketService.emit("unknown", { value: "sensitive-source" });
+  SocketService.emit("system:maintenance", { active: false });
+  await vi.waitFor(() => {
+    for (const frames of received.values())
+      expect(frames).toContain('42["system:maintenance",{"active":false}]');
+  });
+  expect(received.get("admin")).toContain('42["auditLog:created",{"changed":true}]');
+  expect(received.get("audit")).toContain('42["auditLog:created",{"changed":true}]');
+  expect(received.get("worker")!.some((frame) => /auditLog|seeder|timeRecord/.test(frame))).toBe(
+    false,
+  );
+  expect(received.get("admin")).toContain('42["seeder:phase2_failed",{"jobId":"job"}]');
+  expect(received.get("audit")!.some((frame) => frame.includes("seeder"))).toBe(false);
+  expect(received.get("worker")).toContain(
+    '42["user_notification",{"title":"Own","message":"Personal","type":"info"}]',
+  );
+  expect(received.get("admin")!.some((frame) => frame.includes("user_notification"))).toBe(false);
+  for (const frames of received.values()) {
+    expect(frames.join()).not.toContain("sensitive-source");
+    expect(frames.some((frame) => frame.includes("unknown"))).toBe(false);
+  }
 });
