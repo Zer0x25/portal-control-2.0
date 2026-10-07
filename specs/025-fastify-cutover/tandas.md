@@ -24,10 +24,15 @@ No crear nuevas specs de migración. No se hace push automático.
    - Credenciales serializadas y auditoría atómica para configuración y reportes.
    - Cron de cinco campos en Chile, timers por próxima ejecución y toggle atómico.
    - Fallo de entrega no marca éxito; adjunto conserva formato y MIME real.
-4. Importación y exportación.
-   - Fechas de Chile, mapping y contratos pendientes; renderers parciales.
-   - Convertir a PDF real los cuatro generadores createSimplePDF que devuelven texto.
-   - Pruebas de contenido y QA visual para artefactos cuyo layout cambie.
+4. Importación y exportación — completada. Contrato: [import-export-consistency](import-export-consistency.md).
+   Validación: 731 pruebas de integración, 25 unitarias/contrato, 280 frontend;
+   CI, SDK, docs, specs y secretos correctos. QA visual/texto con Poppler.
+   Sin migración de base de datos.
+   - Fechas reales/ordenadas, mapping estructural y serialización String del frontend.
+   - Cuatro PDF reales paginados, filtros/borrados/cobertura y horas ISO/legacy corregidos.
+   - Calendario de Chile con contexto por lote; fecha civil de bitácora conservada.
+   - Fallo del PDF detallado devuelve error HTTP neutral, sin documento parcial.
+   - Pruebas de contenido y QA visual de los cuatro reportes, paginación y bitácora.
 5. Operaciones y rendimiento.
    - Admisión/drenaje común de HTTP/jobs/scheduler y watchdog del seed.
    - Coordinación entre procesos para reset/restore y scheduler.

@@ -94,3 +94,5 @@ Cierre: 707 pruebas de integración en 20 archivos, 39 unitarias/de contrato y
 279 frontend. validate:ci de ambos paquetes, SDK, docs:check, spec:check y
 secrets:scan correctos. Se añadieron cron-parser y su dependencia al lockfile;
 no cambió el schema Prisma.
+
+Tanda 4 convirtió esos cuatro renderers a PDF real: [importación/exportación](import-export-consistency.md).

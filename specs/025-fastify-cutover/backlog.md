@@ -24,7 +24,9 @@ decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md
 - Atomicidad y autoría de lotes de medidores (020): corregidas en
   [meter-batch-consistency](meter-batch-consistency.md). Fechas/filtros, paginación y consistencia de notas se cubren en
   [data-tools-consistency](data-tools-consistency.md).
-- Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
+- Fechas, mapping y cuatro PDF reales de importación/exportación (021):
+  corregidos en [import-export-consistency](import-export-consistency.md).
+  Sus límites de memoria, tipos raw y errores históricos están documentados allí.
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
   revocación en otras rutas de cambio de credenciales y redacción de texto libre.
 

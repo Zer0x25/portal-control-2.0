@@ -11,7 +11,7 @@ export function createImportExportFlows<TSink extends ExportSink, TBytes extends
       const mapping = schema ? deps.parseMapping(schema) : null;
       const sheet = await deps.readWorkbook(file);
       const rows = sheet.rows.map((cells) => {
-        const row: Record<string, unknown> = {};
+        const row: Record<string, unknown> = Object.create(null);
         if (mapping) {
           for (const header of Object.keys(mapping)) {
             const column = sheet.headers.indexOf(header);

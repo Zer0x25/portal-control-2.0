@@ -1,3 +1,4 @@
+import { calendarDateQuery } from "./dataQuery";
 import { isoDateSchema, numericString, z } from "./common";
 import { ApiResponseSchema } from "./responses.schemas";
 
@@ -179,15 +180,17 @@ export const IntegrityVerifyQuerySchema = z.object({
   to: isoDateSchema("Formato de fecha inválido"),
 });
 
-export const ExportQuerySchema = z.object({
-  startDate: isoDateSchema(),
-  endDate: isoDateSchema(),
-  area: z.string().optional(),
-  cargo: z.string().optional(),
-  employeeId: z.string().optional(),
-  viewMode: z.enum(["month", "week", "day"]).optional(),
-  mode: z.enum(["summary", "detailed", "compiled_detailed"]).optional(),
-});
+export const ExportQuerySchema = z
+  .object({
+    startDate: calendarDateQuery,
+    endDate: calendarDateQuery,
+    area: z.string().optional(),
+    cargo: z.string().optional(),
+    employeeId: z.string().optional(),
+    viewMode: z.enum(["month", "week", "day"]).optional(),
+    mode: z.enum(["summary", "detailed", "compiled_detailed"]).optional(),
+  })
+  .refine((value) => value.startDate <= value.endDate, "Rango de fechas invertido");
 
 /**
  * `POST /api/records/{id}/resolve-anomaly` body.

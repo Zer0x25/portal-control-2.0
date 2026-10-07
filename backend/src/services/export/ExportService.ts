@@ -1,3 +1,4 @@
+import { reportWorkedHours } from "../../utils/reportHours";
 import { normalizeShiftReportEntries } from "../../modules/shiftReports";
 import { Prisma } from "../../generated/prisma/client";
 import prisma from "../db";
@@ -65,19 +66,11 @@ export class ExportService {
     }
   }
 
-  private calculateWorkedHours(entrada: string | null, salida: string | null): number {
-    if (!entrada || !salida) return 0;
-    const [entradaHour, entradaMin] = entrada.split(":").map(Number);
-    const [salidaHour, salidaMin] = salida.split(":").map(Number);
-    let hours = salidaHour - entradaHour;
-    let mins = salidaMin - entradaMin;
-    if (hours < 0) hours += 24;
-    return hours + mins / 60;
-  }
-
   private async generateAttendanceSummaryReport(filters: ReportFilters): Promise<Buffer> {
     const { startDate, endDate, area } = filters;
-    const end = endDate ? this.parseDateStringAsUTC(endDate) : new Date();
+    const end = endDate
+      ? this.parseDateStringAsUTC(endDate)
+      : this.parseDateStringAsUTC(toBusinessDateChile());
     const start = startDate
       ? this.parseDateStringAsUTC(startDate)
       : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -85,6 +78,8 @@ export class ExportService {
     const employees = await prisma.employee.findMany({
       where: {
         status: "Activo",
+        ...(filters.employeeId && { id: filters.employeeId }),
+        ...(filters.cargo && { position: filters.cargo }),
         ...(area && { area }),
       },
       select: { id: true, name: true, area: true, workdayType: true },
@@ -97,6 +92,7 @@ export class ExportService {
           lte: formatDateUTCISO(end),
         },
         employeeId: { in: employees.map((e) => e.id) },
+        isDeleted: false,
       },
     });
 
@@ -105,7 +101,7 @@ export class ExportService {
       const isExempt = emp.workdayType === "Artículo 22";
       const totalHours = isExempt
         ? 0
-        : empRecords.reduce((sum, r) => sum + this.calculateWorkedHours(r.entrada, r.salida), 0);
+        : empRecords.reduce((sum, r) => sum + reportWorkedHours(r.entrada, r.salida), 0);
       const attendanceDays = empRecords.filter((r) => r.entrada).length;
 
       return {
@@ -128,7 +124,9 @@ export class ExportService {
 
   private async generateOvertimeReport(filters: ReportFilters): Promise<Buffer> {
     const { startDate, endDate, area } = filters;
-    const end = endDate ? this.parseDateStringAsUTC(endDate) : new Date();
+    const end = endDate
+      ? this.parseDateStringAsUTC(endDate)
+      : this.parseDateStringAsUTC(toBusinessDateChile());
     const start = startDate
       ? this.parseDateStringAsUTC(startDate)
       : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -136,6 +134,8 @@ export class ExportService {
     const employees = await prisma.employee.findMany({
       where: {
         status: "Activo",
+        ...(filters.employeeId && { id: filters.employeeId }),
+        ...(filters.cargo && { position: filters.cargo }),
         ...(area && { area }),
       },
       select: { id: true, name: true, area: true, workdayType: true },
@@ -148,6 +148,7 @@ export class ExportService {
           lte: formatDateUTCISO(end),
         },
         employeeId: { in: employees.map((e) => e.id) },
+        isDeleted: false,
         salida: { not: null },
       },
     });
@@ -163,7 +164,7 @@ export class ExportService {
           const isExempt = emp.workdayType === "Artículo 22";
           if (isExempt) return;
 
-          const hours = this.calculateWorkedHours(r.entrada, r.salida);
+          const hours = reportWorkedHours(r.entrada, r.salida);
           if (hours > STANDARD_HOURS) {
             totalExtraHours += hours - STANDARD_HOURS;
             daysWithOvertime++;
@@ -191,7 +192,9 @@ export class ExportService {
 
   private async generateAnomaliesReport(filters: ReportFilters): Promise<Buffer> {
     const { startDate, endDate, area } = filters;
-    const end = endDate ? this.parseDateStringAsUTC(endDate) : new Date();
+    const end = endDate
+      ? this.parseDateStringAsUTC(endDate)
+      : this.parseDateStringAsUTC(toBusinessDateChile());
     const start = startDate
       ? this.parseDateStringAsUTC(startDate)
       : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -199,6 +202,8 @@ export class ExportService {
     const employees = await prisma.employee.findMany({
       where: {
         status: "Activo",
+        ...(filters.employeeId && { id: filters.employeeId }),
+        ...(filters.cargo && { position: filters.cargo }),
         ...(area && { area }),
       },
       select: { id: true, name: true },
@@ -211,11 +216,11 @@ export class ExportService {
           lte: formatDateUTCISO(end),
         },
         employeeId: { in: employees.map((e) => e.id) },
+        isDeleted: false,
         OR: [
           { salida: null, entrada: { not: null } },
           { status: { in: ["CierreAutomatico", "AnomaliaManual"] } },
         ],
-        isDeleted: false,
       },
     });
 
@@ -246,21 +251,35 @@ export class ExportService {
 
   private async generateShiftCoverageReport(filters: ReportFilters): Promise<Buffer> {
     const { startDate, endDate } = filters;
-    const end = endDate ? this.parseDateStringAsUTC(endDate) : new Date();
+    const end = endDate
+      ? this.parseDateStringAsUTC(endDate)
+      : this.parseDateStringAsUTC(toBusinessDateChile());
     const start = startDate
       ? this.parseDateStringAsUTC(startDate)
       : new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const patterns = await prisma.shiftPattern.findMany();
+    const patterns = await prisma.shiftPattern.findMany({ where: { isDeleted: false } });
     const assignments = await prisma.assignedShift.findMany({
       where: {
+        isDeleted: false,
+        ...(filters.employeeId && { employeeId: filters.employeeId }),
+        ...(filters.area || filters.cargo
+          ? {
+              employee: {
+                ...(filters.area && { area: filters.area }),
+                ...(filters.cargo && { position: filters.cargo }),
+              },
+            }
+          : {}),
         startDate: { lte: formatDateUTCISO(end) },
         OR: [{ endDate: null }, { endDate: { gte: formatDateUTCISO(start) } }],
       },
     });
 
     const coverage = patterns.map((p) => {
-      const assigned = assignments.filter((a) => a.shiftPatternId === p.id).length;
+      const assigned = new Set(
+        assignments.filter((a) => a.shiftPatternId === p.id).map((a) => a.employeeId),
+      ).size;
       return {
         patternName: p.name,
         assignedEmployees: assigned,
@@ -287,31 +306,85 @@ export class ExportService {
     dateRange: string,
     tableData: string[][],
   ): Promise<Buffer> {
-    let content = `
-=================================================================
-${title.toUpperCase()}
-${dateRange}
-Generado: ${new Date().toLocaleString("es-CL")}
-=================================================================
-
-`;
-
-    if (tableData.length > 0) {
-      const headers = tableData[0];
-      const rows = tableData.slice(1);
-      content += headers.join(" | ") + "\n";
-      content += "-".repeat(60) + "\n";
-      rows.forEach((row) => {
-        content += row.join(" | ") + "\n";
-      });
-    }
-
-    content += `
-=================================================================
-Sistema de Gestión de Turnos - Reporte Automático
-=================================================================
-`;
-    return Promise.resolve(Buffer.from(content, "utf-8"));
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 36 });
+      const chunks: Buffer[] = [];
+      doc.on("data", (chunk: Buffer) => chunks.push(chunk));
+      doc.on("error", reject);
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      const width = doc.page.width - 72;
+      const headers = tableData[0] || [];
+      const columnWidth = width / Math.max(headers.length, 1);
+      let page = 0;
+      const heading = () => {
+        page++;
+        doc.fillColor("#005792").font("Helvetica-Bold").fontSize(18).text(title, 36, 30);
+        doc.fillColor("#555555").font("Helvetica").fontSize(10).text(dateRange, 36, 58);
+        doc.text(
+          `Generado: ${new Date().toLocaleString("es-CL", { timeZone: "America/Santiago" })}`,
+          36,
+          74,
+        );
+        doc.text(`Página ${page}`, 36, doc.page.height - 58, {
+          width,
+          align: "right",
+          lineBreak: false,
+        });
+        return 100;
+      };
+      const drawRow = (row: string[], y: number, header: boolean, stripe: boolean) => {
+        doc.font(header ? "Helvetica-Bold" : "Helvetica").fontSize(10);
+        const height = Math.max(
+          28,
+          ...row.map((cell) => doc.heightOfString(cell, { width: columnWidth - 12 }) + 12),
+        );
+        doc
+          .fillColor(header ? "#005792" : stripe ? "#edf3f7" : "#ffffff")
+          .rect(36, y, width, height)
+          .fill();
+        doc.fillColor(header ? "#ffffff" : "#222222");
+        row.forEach((cell, i) =>
+          doc.text(cell, 42 + i * columnWidth, y + 6, {
+            width: columnWidth - 12,
+            height: height - 12,
+          }),
+        );
+        return y + height;
+      };
+      let y = drawRow(headers, heading(), true, false);
+      for (const [index, row] of tableData.slice(1).entries()) {
+        doc.font("Helvetica").fontSize(10);
+        const lines = row.map((cell) => {
+          const result: string[] = [];
+          let line = "";
+          for (const character of cell) {
+            if (character === "\n" || doc.widthOfString(line + character) > columnWidth - 12) {
+              result.push(line);
+              line = character === "\n" ? "" : character;
+            } else line += character;
+          }
+          result.push(line);
+          return result;
+        });
+        const segmentLines = 30;
+        const count = Math.max(...lines.map((cell) => cell.length));
+        for (let offset = 0; offset < count; offset += segmentLines) {
+          const segment = lines.map((cell) => cell.slice(offset, offset + segmentLines).join("\n"));
+          const height = Math.max(
+            28,
+            ...segment.map((cell) => doc.heightOfString(cell, { width: columnWidth - 12 }) + 12),
+          );
+          if (y + height > doc.page.height - 76) {
+            doc.addPage();
+            y = drawRow(headers, heading(), true, false);
+          }
+          y = drawRow(segment, y, false, index % 2 === 0);
+        }
+      }
+      if (tableData.length <= 1)
+        doc.fillColor("#555555").text("Sin datos para el período seleccionado", 42, y + 12);
+      doc.end();
+    });
   }
 
   private formatDate(date: Date): string {
@@ -323,7 +396,10 @@ Sistema de Gestión de Turnos - Reporte Automático
 
   private parseDateStringAsUTC(dateString: string): Date {
     const [year, month, day] = dateString.split("-").map(Number);
-    return new Date(Date.UTC(year, month - 1, day));
+    const date = new Date(0);
+    date.setUTCFullYear(year, month - 1, day);
+    date.setUTCHours(12, 0, 0, 0);
+    return date;
   }
 
   private async generateCalendarPDF(filters: ReportFilters): Promise<Buffer> {
@@ -331,18 +407,18 @@ Sistema de Gestión de Turnos - Reporte Automático
     const chunks: Buffer[] = [];
     doc.on("data", (chunk) => chunks.push(chunk));
 
-    const now = new Date();
+    const now = this.parseDateStringAsUTC(toBusinessDateChile());
     let startDate = filters.startDate
       ? this.parseDateStringAsUTC(filters.startDate)
-      : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 12));
     let endDate = filters.endDate
       ? this.parseDateStringAsUTC(filters.endDate)
-      : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+      : new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 12));
 
     if (isNaN(startDate.getTime()))
-      startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 12));
     if (isNaN(endDate.getTime()))
-      endDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+      endDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 12));
 
     const whereClause: Prisma.EmployeeWhereInput = { status: "Activo" };
     if (filters.area) whereClause.area = filters.area;
@@ -352,9 +428,13 @@ Sistema de Gestión de Turnos - Reporte Automático
     const employees = await prisma.employee.findMany({
       where: whereClause,
       orderBy: { name: "asc" },
-      select: { id: true, name: true, area: true, position: true },
     });
 
+    const context = await schedulingService.getSchedulingContext(
+      employees.map((employee) => employee.id),
+      formatDateUTCISO(startDate),
+      formatDateUTCISO(endDate),
+    );
     const PAGE_WIDTH = 545;
     const startX = 25;
     const ROW_HEIGHT = 20;
@@ -420,6 +500,8 @@ Sistema de Gestión de Turnos - Reporte Automático
         const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
           employee.id,
           new Date(d),
+          context,
+          employee,
         );
 
         const month = monthNames[d.getUTCMonth()];
@@ -584,9 +666,14 @@ Sistema de Gestión de Turnos - Reporte Automático
       }
 
       doc.fontSize(7).fillColor("#9ca3af");
-      doc.text(`Generado: ${new Date().toLocaleString("es-CL", { hour12: false })}`, startX, 800, {
-        lineBreak: false,
-      });
+      doc.text(
+        `Generado: ${new Date().toLocaleString("es-CL", { hour12: false, timeZone: "America/Santiago" })}`,
+        startX,
+        800,
+        {
+          lineBreak: false,
+        },
+      );
       doc.text(`Página ${pageNum}`, startX + PAGE_WIDTH - 50, 800, {
         width: 50,
         align: "right",
@@ -646,7 +733,6 @@ Sistema de Gestión de Turnos - Reporte Automático
         if (ids.length > 0) {
           const infos = await prisma.employee.findMany({
             where: { id: { in: ids } },
-            select: { id: true, name: true, area: true, position: true },
           });
           infos.forEach((i) => employeeInfoMap.set(i.id, i));
         }
@@ -679,10 +765,15 @@ Sistema de Gestión de Turnos - Reporte Automático
         doc
           .fontSize(8)
           .fillColor("#9CA3AF")
-          .text(`Generado: ${new Date().toLocaleString("es-CL", { hour12: false })}`, 400, 32, {
-            align: "right",
-            width: 165,
-          });
+          .text(
+            `Generado: ${new Date().toLocaleString("es-CL", { hour12: false, timeZone: "America/Santiago" })}`,
+            400,
+            32,
+            {
+              align: "right",
+              width: 165,
+            },
+          );
         doc.strokeColor("#E5E7EB").moveTo(30, 65).lineTo(565, 65).lineWidth(1).stroke();
         doc.y = 80;
       };
@@ -1048,10 +1139,9 @@ Sistema de Gestión de Turnos - Reporte Automático
           width: 160,
         });
       }
-    } catch (e: unknown) {
-      const err = e as Error;
-      console.error("PDF Calc Error", err);
-      doc.text("Error al generar reporte: " + err.message);
+    } catch (error: unknown) {
+      doc.destroy();
+      throw error;
     }
     doc.end();
     return new Promise((resolve, reject) => {
@@ -1103,22 +1193,19 @@ Sistema de Gestión de Turnos - Reporte Automático
     };
     drawInfoRow("Responsable:", report.responsibleUser, startX + 15, currentY + 15);
     drawInfoRow("Turno:", report.shiftName, startX + 15, currentY + 30);
-    drawInfoRow(
-      "Fecha:",
-      new Date(report.date).toLocaleDateString("es-CL"),
-      startX + 15,
-      currentY + 45,
-    );
+    drawInfoRow("Fecha:", this.formatDate(report.date), startX + 15, currentY + 45);
     drawInfoRow(
       "Inicio:",
-      new Date(report.startTime).toLocaleString("es-CL"),
+      new Date(report.startTime).toLocaleString("es-CL", { timeZone: "America/Santiago" }),
       startX + 260,
       currentY + 15,
       50,
     );
     drawInfoRow(
       "Cierre:",
-      report.endTime ? new Date(report.endTime).toLocaleString("es-CL") : "---",
+      report.endTime
+        ? new Date(report.endTime).toLocaleString("es-CL", { timeZone: "America/Santiago" })
+        : "---",
       startX + 260,
       currentY + 30,
       50,
@@ -1229,7 +1316,7 @@ Sistema de Gestión de Turnos - Reporte Automático
       doc.strokeColor("#E5E7EB").moveTo(startX, 770).lineTo(555, 770).lineWidth(0.5).stroke();
       doc.fontSize(7).fillColor("#9CA3AF").font("Helvetica");
       doc.text(
-        `Generado por Sistema de Gestión de Turnos - ${new Date().toLocaleString("es-CL")}`,
+        `Generado por Sistema de Gestión de Turnos - ${new Date().toLocaleString("es-CL", { timeZone: "America/Santiago" })}`,
         startX,
         780,
         { align: "left", width: 400 },

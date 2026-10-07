@@ -12,7 +12,10 @@ export const importService = {
       const formData = new FormData();
       formData.append("file", file);
       if (schema) {
-        formData.append("schema", JSON.stringify(schema));
+        formData.append(
+          "schema",
+          JSON.stringify(schema, (_key, value: unknown) => (value === String ? "String" : value)),
+        );
       }
 
       const response = await fetch(`${API_URL}/import/preview`, {
