@@ -51,7 +51,7 @@ export async function streamAuditExport(res: ExcelHttpStream, filters: AuditQuer
   const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
   const query = `
-        SELECT 
+        SELECT
           id,
           timestamp,
           actor_username as "actorUsername",
