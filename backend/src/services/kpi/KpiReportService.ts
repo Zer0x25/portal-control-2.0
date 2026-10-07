@@ -7,7 +7,12 @@ import { KpiStatsService } from "./KpiStatsService";
 import { KpiAggregationService } from "./KpiAggregationService";
 import { KpiFormattingService } from "./KpiFormattingService";
 import { KpiFilters, DashboardOverview, PeriodStats, AnomalyRecord } from "./types";
-import { addBusinessDaysChile, parseDateOnlyUTC, toBusinessDateChile } from "../../utils/timeUtils";
+import {
+  addBusinessDaysChile,
+  formatDateUTCISO,
+  parseDateOnlyUTC,
+  toBusinessDateChile,
+} from "../../utils/timeUtils";
 import { toEndInclusive } from "../../utils/timePolicy";
 
 const kpiCache = new KpiCache();
@@ -25,8 +30,14 @@ export class KpiReportService {
 
   async prepareKpiBulkData(employees: Employee[], startDate: string, endDate: string) {
     const tIds = employees.map((e) => e.id);
+    // Cache misses materialize whole months even for a one-day request.
+    const contextStart = `${startDate.slice(0, 7)}-01`;
+    const end = new Date(endDate);
+    const contextEnd = formatDateUTCISO(
+      new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 1, 0, 12)),
+    );
     const [context, timeRecordsRaw, lockConfig] = await Promise.all([
-      schedulingService.getSchedulingContext(tIds, startDate, endDate),
+      schedulingService.getSchedulingContext(tIds, contextStart, contextEnd),
       prisma.timeRecord.findMany({
         where: { employeeId: { in: tIds }, date: { gte: startDate, lte: endDate } },
       }),
@@ -51,10 +62,10 @@ export class KpiReportService {
     curr.setUTCDate(1);
     curr.setUTCHours(0, 0, 0, 0);
 
-    const end = new Date(endDate);
-    end.setUTCHours(23, 59, 59, 999);
+    const periodEnd = new Date(endDate);
+    periodEnd.setUTCHours(23, 59, 59, 999);
 
-    while (curr <= end) {
+    while (curr <= periodEnd) {
       months.add(`${curr.getUTCFullYear()}-${String(curr.getUTCMonth() + 1).padStart(2, "0")}`);
       curr.setUTCMonth(curr.getUTCMonth() + 1);
     }

@@ -178,8 +178,62 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     const next = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
     expect(next.body).toEqual(first.body);
     await prismaDirect.monthlyEmployeeStats.updateMany({ data: { dailyBreakdown: "not-json" } });
-    expect((await http("POST", "/api/kpis/summary", range("2020-01-06"))).status).toBe(500);
+    const repaired = await http("POST", "/api/kpis/detailed-report", range("2020-01-06"));
+    expect(repaired.status).toBe(200);
+    expect(repaired.body.summary[0].totalHoursWorked).toBe(10);
     expect(await prismaDirect.monthlyEmployeeStats.count()).toBe(1);
+  });
+  it("materializes full-month context from a partial query and replaces legacy cache", async () => {
+    await seedRecord("2020-01-06");
+    await prismaDirect.shiftPattern.create({
+      data: {
+        id: "monthly-pattern",
+        name: "Daily",
+        cycleLengthDays: 1,
+        dailySchedules: JSON.stringify([
+          { dayIndex: 0, isOffDay: false, startTime: "09:00", endTime: "17:00", hours: 8 },
+        ]),
+      },
+    });
+    await prismaDirect.assignedShift.create({
+      data: {
+        employeeId: employee.id,
+        shiftPatternId: "monthly-pattern",
+        startDate: "2020-01-15",
+        endDate: "2020-01-31",
+      },
+    });
+    await prismaDirect.leaveRecord.create({
+      data: {
+        employeeId: employee.id,
+        type: "Vacaciones",
+        startDate: "2020-01-21",
+        endDate: "2020-01-21",
+      },
+    });
+    await prismaDirect.holiday.create({ data: { date: "2020-01-22", name: "Monthly holiday" } });
+    expect((await http("POST", "/api/kpis/detailed-report", range("2020-01-06"))).status).toBe(200);
+    const cache = await prismaDirect.monthlyEmployeeStats.findFirstOrThrow();
+    const stored = JSON.parse(cache.dailyBreakdown);
+    expect(stored.version).toBe(1);
+    expect(stored.days).toHaveLength(31);
+    expect(stored.days[19]).toMatchObject({ isoDate: "2020-01-20", scheduledHours: 8 });
+    expect(stored.days[20].status).toBe("Vacaciones");
+    expect(stored.days[21].isHoliday).toBe(true);
+    const warm = await http("POST", "/api/kpis/detailed-report", range("2020-01-20"));
+    expect(warm.body.details[employee.id][0].scheduledHours).toBe(8);
+    // Legacy arrays cannot certify full-month context; regenerate them lazily.
+    await prismaDirect.monthlyEmployeeStats.update({
+      where: { id: cache.id },
+      data: { dailyBreakdown: "[]" },
+    });
+    const repaired = await http("POST", "/api/kpis/detailed-report", range("2020-01-21"));
+    expect(repaired.status).toBe(200);
+    expect(repaired.body.details[employee.id][0].status).toBe("Vacaciones");
+    expect(
+      JSON.parse((await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).dailyBreakdown)
+        .version,
+    ).toBe(1);
   });
   it("returns 500 on actual cache write failure without inserting partial cache", async () => {
     await seedRecord("2020-01-06");

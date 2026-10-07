@@ -17,8 +17,10 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
   [shift-report-consistency](shift-report-consistency.md). Exportación legacy
   corregida en [shift-report-legacy-export](shift-report-legacy-export.md).
   Contexto diario KPI (018) corregido en
-  [kpi-daily-context-chile](kpi-daily-context-chile.md). Invalidación y contexto
-  mensual de caché siguen pendientes.
+  [kpi-daily-context-chile](kpi-daily-context-chile.md). Materialización mensual
+  y recuperación de caché corregidas en
+  [kpi-monthly-materialization](kpi-monthly-materialization.md). Invalidación
+  por cambios de fuentes sigue pendiente.
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
   revocación en otras rutas de cambio de credenciales y redacción de texto libre.

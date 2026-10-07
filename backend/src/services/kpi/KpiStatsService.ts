@@ -8,6 +8,7 @@ import {
   parseTimeToMinutes,
 } from "../../utils/timeUtils";
 import { KpiEngine } from "./KpiEngine";
+import { readMonthlyBreakdown, serializeMonthlyBreakdown } from "./monthlyBreakdown";
 import { KpiCache } from "./KpiCache";
 import { DailyMetric, PeriodStats } from "./types";
 
@@ -93,11 +94,13 @@ export class KpiStatsService {
         const monthKey = `${y}-${String(m).padStart(2, "0")}`;
         let cached = preFetchedStats?.get(`${emp.id}_${monthKey}`);
 
-        if (!cached) {
+        let dailyData = cached ? readMonthlyBreakdown(cached.dailyBreakdown, y, m) : null;
+        if (!dailyData) {
           cached = await this.ensureMonthlyCache(emp.id, y, m, emp, context);
+          dailyData = readMonthlyBreakdown(cached.dailyBreakdown, y, m);
         }
 
-        const dailyData = JSON.parse(cached.dailyBreakdown || "[]");
+        if (!dailyData) throw new Error("Invalid materialized monthly KPI cache");
 
         for (const day of dailyData) {
           const dIso = day.isoDate || day.date; // Handle legacy format if needed
@@ -167,7 +170,7 @@ export class KpiStatsService {
     globalContext: SchedulingContext,
   ): Promise<MonthlyEmployeeStats> {
     const existing = await kpiCache.getMonthlyStats(employeeId, year, month);
-    if (existing) return existing;
+    if (existing && readMonthlyBreakdown(existing.dailyBreakdown, year, month)) return existing;
 
     // Calculate using Period Stats logic for ONE ONE full month
     const startDate = new Date(Date.UTC(year, month - 1, 1));
@@ -196,7 +199,7 @@ export class KpiStatsService {
       absenceCount: calculated.filter((d) => d.status === "Ausente").length,
       vacationDays: calculated.filter((d) => d.status === "Vacaciones").length,
       medicalLeaveDays: calculated.filter((d) => d.status === "Licencia Médica").length,
-      dailyBreakdown: JSON.stringify(calculated),
+      dailyBreakdown: serializeMonthlyBreakdown(calculated),
     };
 
     const monthKey = `${year}-${String(month).padStart(2, "0")}`;

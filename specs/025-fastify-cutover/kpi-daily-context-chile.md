@@ -17,6 +17,7 @@ Pruebas compartidas Express/Fastify fijan el reloj a un instante donde Chile y U
 están en fechas distintas. Comprueban turno terminado ayer, exclusión de registros
 futuros, permiso/feriado de ayer, marcaje de ayer y vacaciones solo hoy.
 
-Invalidación de caché mensual, contexto completo al materializar meses, JSON de
-caché corrupto y formatos horarios del host siguen pendientes. No se cambia la
+Contexto completo al materializar meses y JSON de caché corrupto se corrigieron
+en [kpi-monthly-materialization](kpi-monthly-materialization.md). Invalidación
+de caché mensual y formatos horarios del host siguen pendientes. No se cambia la
 política de cierre contable ni la reutilización de caché en este arreglo.
