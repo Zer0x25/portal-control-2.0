@@ -6,7 +6,9 @@ decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md
 - Mantenimiento sin interrupciones: barrera común de trabajo HTTP/jobs/scheduler,
   shutdown y coordinación reset/restore. La propiedad y el drenaje de fase 1 se
   corrigieron en [seed-runtime-consistency](seed-runtime-consistency.md); quedan
-  barrera universal y coordinación entre procesos. Hoy puede requerir purgar/reiniciar.
+  barrera universal y coordinación reset/restore entre procesos. El
+  [scheduler y la contención KPI](scheduler-kpi-concurrency.md) cubren la
+  reclamación de una misma ocurrencia, drenaje de reportes y revisiones distribuidas. Hoy puede requerir purgar/reiniciar.
 - Fechas Chile y consultas por día del calendario mensual (015): corregidas en
   [monthly-calendar-chile](monthly-calendar-chile.md).
 - Ownership de Usuario/quiosco en assignments y correcciones (015/016):

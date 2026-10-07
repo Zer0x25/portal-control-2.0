@@ -1,3 +1,4 @@
+import { systemOperationService } from "./systemOperationService";
 import prisma from "./db";
 import { ExportService } from "./export/ExportService";
 import { EmailService } from "./EmailService";
@@ -49,6 +50,7 @@ function startMaintenanceJobs() {
 
 async function runMaintenance() {
   try {
+    if (systemOperationService.isMaintenanceModeActive()) return;
     const phase2Running = await seedingJobService.isPhase2Running();
     if (phase2Running) {
       console.warn("Seeder Fase 2 activo: mantenimiento nocturno diferido para evitar contencion.");
@@ -186,7 +188,24 @@ export function cancelReport(reportId: string): boolean {
  * Execute a scheduled report
  */
 const executingReports = new Set<string>();
+const reportExecutions = new Set<Promise<void>>();
+export function openSchedulerRuntime(): void {
+  if (reportExecutions.size) throw new AppError("Reportes aún drenando", 409, "CONFLICT");
+  stopped = false;
+}
 export async function executeReport(reportId: string, onlyDue = false): Promise<void> {
+  if (stopped || systemOperationService.isMaintenanceModeActive()) {
+    throw new AppError("Scheduler no disponible por mantenimiento o cierre", 409, "CONFLICT");
+  }
+  const pending = Promise.resolve().then(() => executeReportWork(reportId, onlyDue));
+  reportExecutions.add(pending);
+  try {
+    await pending;
+  } finally {
+    reportExecutions.delete(pending);
+  }
+}
+async function executeReportWork(reportId: string, onlyDue: boolean): Promise<void> {
   if (executingReports.has(reportId)) throw new AppError("Reporte en ejecución", 409, "CONFLICT");
   executingReports.add(reportId);
   try {
@@ -197,6 +216,19 @@ export async function executeReport(reportId: string, onlyDue = false): Promise<
     }
     if (onlyDue && report.nextRunAt && report.nextRunAt > new Date()) return;
     const nextRunAt = nextReportRun(report.cronExpression, new Date());
+    // Only timer-driven occurrences have a due-time token shared by every process.
+    if (onlyDue) {
+      const claim = await prisma.scheduledReport.updateMany({
+        where: {
+          id: reportId,
+          isActive: true,
+          cronExpression: report.cronExpression,
+          nextRunAt: report.nextRunAt,
+        },
+        data: { nextRunAt },
+      });
+      if (claim.count !== 1) return;
+    }
     let delivered = false;
     try {
       const filters = report.filters ? JSON.parse(report.filters) : {};
@@ -232,7 +264,7 @@ export async function executeReport(reportId: string, onlyDue = false): Promise<
           id: reportId,
           isActive: true,
           cronExpression: report.cronExpression,
-          nextRunAt: report.nextRunAt,
+          nextRunAt: onlyDue ? nextRunAt : report.nextRunAt,
         },
         data: { ...(delivered ? { lastRunAt: new Date() } : {}), nextRunAt },
       });
@@ -295,7 +327,9 @@ export async function stopScheduler(): Promise<void> {
   revision++;
   for (const job of activeJobs.values()) clearTimeout(job.intervalId);
   activeJobs.clear();
-  await lifecycle.stop(async () => {});
+  await lifecycle.stop(async () => {
+    await Promise.allSettled(reportExecutions);
+  });
   initialized = false;
   lifecycle = newLifecycle();
 }

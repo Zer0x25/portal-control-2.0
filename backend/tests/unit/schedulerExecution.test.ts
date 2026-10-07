@@ -6,6 +6,10 @@ const fixture = vi.hoisted(() => ({
   updateMany: vi.fn(),
   render: vi.fn(),
   send: vi.fn(),
+  maintenance: false,
+}));
+vi.mock("../../src/services/systemOperationService", () => ({
+  systemOperationService: { isMaintenanceModeActive: () => fixture.maintenance },
 }));
 vi.mock("../../src/services/db", () => ({
   default: {
@@ -39,11 +43,15 @@ import {
   refreshScheduler,
   stopScheduler,
   triggerReport,
+  executeReport,
+  openSchedulerRuntime,
 } from "../../src/services/schedulerService";
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-01-02T10:59:00Z"));
   vi.clearAllMocks();
+  fixture.maintenance = false;
+  openSchedulerRuntime();
   fixture.report = {
     id: "r",
     isActive: true,
@@ -154,4 +162,65 @@ it("keeps legacy text renderers as txt attachments", async () => {
     expect.any(Buffer),
     "Attendance_2026-01-02.txt",
   );
+});
+
+it("losing an occurrence claim does not render or deliver", async () => {
+  vi.setSystemTime(new Date("2026-01-02T11:00:00Z"));
+  fixture.updateMany.mockResolvedValueOnce({ count: 0 });
+  await executeReport("r", true);
+  expect(fixture.render).not.toHaveBeenCalled();
+  expect(fixture.send).not.toHaveBeenCalled();
+});
+it("claims before rendering and keeps the next deadline after renderer failure", async () => {
+  vi.setSystemTime(new Date("2026-01-02T11:00:00Z"));
+  fixture.render.mockImplementationOnce(async () => {
+    expect(fixture.report.nextRunAt).toEqual(new Date("2026-01-03T11:00:00Z"));
+    throw new Error("renderer");
+  });
+  await expect(executeReport("r", true)).rejects.toThrow("renderer");
+  expect(fixture.report.lastRunAt).toBeNull();
+  expect(fixture.send).not.toHaveBeenCalled();
+});
+it("a concurrent edit owns its new schedule after delivery", async () => {
+  fixture.updateMany.mockImplementation(async ({ where, data }) => {
+    if (Number(where.nextRunAt) !== Number(fixture.report.nextRunAt)) return { count: 0 };
+    Object.assign(fixture.report, data);
+    return { count: 1 };
+  });
+  fixture.send.mockImplementationOnce(async () => {
+    fixture.report.nextRunAt = new Date("2026-01-04T11:00:00Z");
+    return { success: true };
+  });
+  await executeReport("r");
+  expect(fixture.report.nextRunAt).toEqual(new Date("2026-01-04T11:00:00Z"));
+  expect(fixture.report.lastRunAt).toBeNull();
+});
+
+it("shutdown drains manual delivery and rejects new executions until reopening", async () => {
+  let resolve!: () => void;
+  fixture.send.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = () => done({ success: true });
+      }),
+  );
+  const running = executeReport("r");
+  while (!resolve) await Promise.resolve();
+  let drained = false;
+  const shutdown = stopScheduler().then(() => {
+    drained = true;
+  });
+  await Promise.resolve();
+  expect(drained).toBe(false);
+  await expect(executeReport("other")).rejects.toMatchObject({ statusCode: 409 });
+  expect(() => openSchedulerRuntime()).toThrow("Reportes aún drenando");
+  resolve();
+  await Promise.all([running, shutdown]);
+  expect(drained).toBe(true);
+});
+it("maintenance admission denies delivery without touching a report", async () => {
+  fixture.maintenance = true;
+  await expect(executeReport("r", true)).rejects.toMatchObject({ statusCode: 409 });
+  expect(fixture.findUnique).not.toHaveBeenCalled();
+  expect(fixture.render).not.toHaveBeenCalled();
 });

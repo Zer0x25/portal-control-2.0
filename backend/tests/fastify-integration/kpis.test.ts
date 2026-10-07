@@ -494,3 +494,26 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     expect(await prismaDirect.monthlyEmployeeStats.count()).toBe(0);
   });
 });
+
+it("keeps all revision stripes and commits every concurrent source increment", async () => {
+  const rows = await prismaDirect.kpiSourceRevision.findMany({ orderBy: { id: "asc" } });
+  expect(rows.map((row) => row.id)).toEqual(Array.from({ length: 64 }, (_, index) => index + 1));
+  const before = BigInt(await new KpiCache().getSourceRevision());
+  await Promise.all(
+    Array.from({ length: 16 }, (_, index) =>
+      withDirectTransaction(async (tx) => {
+        await tx.employee.create({
+          data: {
+            id: `stripe-${index}`,
+            name: `Stripe ${index}`,
+            rut: `stripe-${index}`,
+            position: "Fixture",
+            area: "Fixture",
+            workdayType: "Full-Time",
+          },
+        });
+      }),
+    ),
+  );
+  expect(BigInt(await new KpiCache().getSourceRevision()) - before).toBe(16n);
+});

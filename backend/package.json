@@ -19,6 +19,8 @@
     "test:unit:ci": "node scripts/run-unit-tests.cjs",
     "test:integration": "node scripts/run-integration-tests.cjs",
     "test:integration:ci": "node scripts/run-integration-tests.cjs",
+    "benchmark:kpi:contention:baseline": "node scripts/run-fastify-isolated.cjs --kpi-contention --singleton-baseline",
+    "benchmark:kpi:contention": "node scripts/run-fastify-isolated.cjs --kpi-contention",
     "load:staging": "node load/run-staging.cjs",
     "load:staging:writes": "node load/run-staging-writes.cjs",
     "load:staging:soak": "node load/run-soak.cjs",

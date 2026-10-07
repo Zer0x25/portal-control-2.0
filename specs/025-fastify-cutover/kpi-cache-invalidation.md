@@ -7,7 +7,9 @@ empleados, marcajes, asignaciones, patrones, permisos y feriados. Triggers por
 statement cubren INSERT/UPDATE/DELETE/TRUNCATE, SQL directo, lotes y soft deletes.
 Un rollback revierte también la revisión. Los cambios sin filas afectadas pueden
 invalidar conservadoramente. Auditorías, usuarios y escrituras de caché no avanzan
-la revisión. La migración crea el singleton; debe conservarse en reset de datos.
+la revisión. La migración original creó un singleton; el bloque de
+[contención](scheduler-kpi-concurrency.md) lo reparte en 64 filas que deben
+conservarse en reset de datos. La generación se obtiene sumando sus revisiones.
 
 Summary y detailed leen la revisión antes de empleados y contexto batch. El
 envelope interno pasa a `{ version: 2, sourceRevision: "…", days: [...] }`.
@@ -26,10 +28,10 @@ transaccional del reporte. Un cálculo antiguo puede reemplazar físicamente otr
 nuevo, pero queda invalidado por su revisión y la siguiente lectura lo repara.
 
 La revisión es global: cambios de otro empleado o período invalidan también los
-meses consultados después. La actualización del singleton serializa brevemente
-las transacciones de escritura de estas fuentes y puede tener contención. No se
-ha medido carga de producción; revisiones por empleado/período y persistencia
-condicional son optimizaciones posteriores, sin cambiar el criterio de vigencia.
+meses consultados después. El ensayo aislado confirmó contención del singleton;
+la revisión ahora distribuye escritores en 64 filas sin cambiar el scope de
+invalidación. Revisiones por empleado/período y persistencia condicional siguen
+como posibles mejoras. No se ha medido capacidad de producción.
 No truncar/reiniciar la revisión separadamente de las cachés en restauraciones.
 
 Integración Express/Fastify cubre reutilización sin cambios, actualización de

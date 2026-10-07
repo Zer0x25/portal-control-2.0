@@ -5,6 +5,7 @@ import app from "./app";
 import { SocketService } from "./services/socketService";
 import { createRuntimeJobs } from "./services/runtimeJobs";
 import { bindRuntimeHost } from "./services/runtimeHost";
+import { openSchedulerRuntime } from "./services/schedulerService";
 import { seedRuntime } from "./services/seedRuntime";
 import { seedingJobService } from "./services/seedingJobService";
 import { closeDatabase } from "./services/db";
@@ -16,6 +17,7 @@ async function main() {
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("PORT inválido");
   seedingJobService.openRuntime();
   seedRuntime.openRuntime();
+  openSchedulerRuntime();
   const server = http.createServer(app);
   SocketService.initialize(server);
   const jobs = createRuntimeJobs();

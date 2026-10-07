@@ -40,9 +40,15 @@ No crear nuevas specs de migración. No se hace push automático.
    - Fase 1 reserva mantenimiento hasta finalizar el trabajo real; timeout sin doble cierre.
    - Runtime espera fase 1 antes de pools y rechaza admisión durante apagado.
    - Configuración inicial por lote y agrupación lineal de asignaciones.
-   - Admisión/drenaje común de HTTP/jobs/scheduler y watchdog del seed.
-   - Coordinación entre procesos para reset/restore y scheduler.
-   - Evaluar contención e invalidación global KPI; optimizar con evidencia de carga.
+     Segundo bloque: [scheduler y contención KPI](scheduler-kpi-concurrency.md).
+     Validación: 735 integración, 18 unitarias y 280 frontend; ambos CI, SDK, docs,
+     specs y secretos. Carga aislada de ambos diseños repetida tres veces.
+     Incluye migración de contador en 64 filas; no se aplicó a BD del usuario.
+   - Reclamación distribuida de una misma ocurrencia cron antes de renderer/envío.
+   - Admisión y drenaje de reportes manuales/automáticos antes de cerrar pools.
+   - Contención KPI medida en BD aislada; generación repartida en 64 filas transaccionales.
+     Pendientes: barrera universal del trabajo HTTP/jobs y coordinación distribuida
+     reset/restore; exclusión de ejecuciones manuales/ocurrencias distintas entre procesos.
 
 Los detalles concretos de las tandas 4–5 se delimitan al inspeccionar cada área.
 No implican cambios de permisos ni despliegue sin una instrucción para ello.
