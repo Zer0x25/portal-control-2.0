@@ -6,7 +6,8 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
 - Mantenimiento sin interrupciones: barrera común de trabajo HTTP/jobs/scheduler,
   ownership de seed fase 1 hasta terminar trabajo real, admisión cerrada hasta
   shutdown y coordinación reset/restore. Hoy puede requerir purgar/reiniciar.
-- Fechas Chile y consultas por día del calendario mensual (015).
+- Fechas Chile y consultas por día del calendario mensual (015): corregidas en
+  [monthly-calendar-chile](monthly-calendar-chile.md).
 - Ownership de Usuario/quiosco en assignments y correcciones (015/016):
   corregido en [self-only-scope](self-only-scope.md) y
   [corrections-ownership](corrections-ownership.md).
