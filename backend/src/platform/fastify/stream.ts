@@ -7,6 +7,9 @@ export async function sendHttpStream(
   headers: Record<string, string>,
   exportFile: (sink: ExcelHttpStream) => Promise<void>,
   fallbackMessage: string,
+  errorResponse?: (
+    error: unknown,
+  ) => { statusCode: number; body: unknown } | Promise<{ statusCode: number; body: unknown }>,
 ) {
   reply.headers(headers);
   const output = new PassThrough();
@@ -34,9 +37,11 @@ export async function sendHttpStream(
     await exporting;
   } catch (error) {
     if (!reply.raw.headersSent) {
-      reply.code(500);
+      const response = await errorResponse?.(error);
+      reply.code(response?.statusCode ?? 500);
       setHeader("Content-Type", "application/json; charset=utf-8");
-      if (!output.writableEnded) output.end(JSON.stringify({ message: fallbackMessage }));
+      if (!output.writableEnded)
+        output.end(JSON.stringify(response?.body ?? { message: fallbackMessage }));
     } else if (!output.writableEnded) output.end();
     reply.log.error({ err: error }, "HTTP export failed");
   }

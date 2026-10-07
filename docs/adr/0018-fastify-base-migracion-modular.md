@@ -114,3 +114,8 @@ La spec 020 añade tres módulos independientes y catorce rutas de medidores/not
 configuración. Plugins oficiales multipart/static conservan streaming y HTTP
 de archivos; aplicación usa puertos de reloj/archivos y guards strict/públicos.
 Ver [resultado 020](../../specs/020-fastify-datos-configuracion/result.md).
+
+Spec 021 añade importación/exportación con flujos puros compartidos, preview
+ExcelJS y renderers PDF/XLSX existentes. Conserva 50 MiB multipart y presupuesto
+export 10/IP/15 min antes de auth/maintenance; caracteriza schemas/scope/errores
+legacy y ZIP parcial al fallar KPI. Ver [resultado 021](../../specs/021-fastify-importacion-exportacion/result.md).

@@ -317,3 +317,6 @@ La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
 a empleados y reserva runtime integrado y cutover para las últimas dos specs.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y
 [spec de mantenimiento y Node 26](specs/007-stack-node26-fastify/spec.md).
+
+Spec 021 añade cinco rutas import/export con preview Excel y descargas PDF/XLSX,
+permisos y límite export compartido: [resultado](specs/021-fastify-importacion-exportacion/result.md).

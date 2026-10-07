@@ -96,6 +96,11 @@ routes.push(
     ["GET", "/api/leaves"],
     ["POST", "/api/leaves"],
     ["DELETE", "/api/leaves/:id"],
+    ["POST", "/api/import/preview"],
+    ["GET", "/api/export/calendar-pdf"],
+    ["GET", "/api/export/report-pdf"],
+    ["GET", "/api/export/shift-report-pdf/:id"],
+    ["GET", "/api/export/report-excel"],
     ["GET", "/api/meters"],
     ["POST", "/api/meters/bulk"],
     ["GET", "/api/notes"],
@@ -285,6 +290,8 @@ it.each([
   "email",
   "scheduled-reports",
   "meters",
+  "import",
+  "export",
   "notes",
 ])("rejects empty/missing/extra/unsecured/unvalidated %s routes", (name) => {
   const prefix = `/api/${name}`;
@@ -292,7 +299,7 @@ it.each([
   expect(() => assertMigratedRouteContracts(routes.filter((r) => !belongs(r)))).toThrow("empty");
   expect(() =>
     assertMigratedRouteContracts(routes.filter((r) => r !== routes.find(belongs))),
-  ).toThrow("differs");
+  ).toThrow(/differs|empty/);
   expect(() =>
     assertMigratedRouteContracts([
       ...routes,

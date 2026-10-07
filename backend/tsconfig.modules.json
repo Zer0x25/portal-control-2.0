@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.holidays.json",
   "include": [
+    "src/modules/importExport/**/*.ts",
     "src/modules/auth/**/*.ts",
     "src/modules/kpis/**/*.ts",
     "src/modules/emailReports/**/*.ts",

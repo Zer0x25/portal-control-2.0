@@ -1,10 +1,11 @@
+import { importExportPlugin, type ImportExportHttpService } from "../../modules/importExport";
 import { metersPlugin, type MeterFlows } from "../../modules/meters";
 import { notesPlugin, type NoteFlows } from "../../modules/notes";
 import { configsPlugin, type ConfigHttpService } from "../../modules/configs";
 import { emailReportsPlugin, type EmailReportFlows } from "../../modules/emailReports";
 import { kpisPlugin, type KpiFlows } from "../../modules/kpis";
 import type {} from "./types";
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import compress from "@fastify/compress";
@@ -44,6 +45,7 @@ export interface FastifyDependencies {
   configs: ConfigHttpService;
   notes: NoteFlows;
   meters: MeterFlows;
+  importExport: ImportExportHttpService;
   shiftReports: ShiftReportsHttpService;
   corrections: CorrectionFlows;
   employees: EmployeesHttpService;
@@ -120,10 +122,7 @@ export function buildFastifyApp(
   });
   // Callback continuation is created inside ALS so every downstream await shares this request's store.
   app.addHook("onRequest", (_request, _reply, done) => requestContext.run({}, done));
-  app.setErrorHandler(async (error, request, reply) => {
-    const response = mapHttpError(error, config.development);
-    const category = errorCategory(error);
-    app.log.error({ err: error, category, requestId: request.id }, "HTTP request failed");
+  const auditFailure = async (error: unknown, request: FastifyRequest) => {
     if (shouldAuditError(error)) {
       await deps
         .auditError(
@@ -136,10 +135,16 @@ export function buildFastifyApp(
             query: request.query,
             body: request.body,
           },
-          category,
+          errorCategory(error),
         )
         .catch((err: unknown) => app.log.error({ err }, "Error audit failed"));
     }
+  };
+  app.setErrorHandler(async (error, request, reply) => {
+    const response = mapHttpError(error, config.development);
+    const category = errorCategory(error);
+    app.log.error({ err: error, category, requestId: request.id }, "HTTP request failed");
+    await auditFailure(error, request);
     if (response.headers) reply.headers(response.headers);
     return reply.code(response.statusCode).send(response.body);
   });
@@ -187,6 +192,25 @@ export function buildFastifyApp(
         ),
     });
     protectedApp.addHook("onRequest", protectedApp.rateLimit());
+    // Separate IP budget, before maintenance/auth, as in Express /api/export.
+    const exportLimit = protectedApp.createRateLimit({ max: 10, timeWindow: 15 * 60 * 1000 });
+    protectedApp.addHook("onRequest", async (request, reply) => {
+      const path = request.url.split("?")[0];
+      if (path !== "/api/export" && !path.startsWith("/api/export/")) return;
+      const limit = await exportLimit(request);
+      if (limit.isAllowed === false) {
+        reply.header("RateLimit-Policy", "10;w=900");
+        reply.header(
+          "RateLimit",
+          `limit=10, remaining=${limit.remaining}, reset=${limit.ttlInSeconds}`,
+        );
+        if (limit.isExceeded)
+          return reply
+            .header("Retry-After", String(limit.ttlInSeconds))
+            .code(429)
+            .send({ message: "Límite de exportaciones alcanzado. Intenta en 15 minutos." });
+      }
+    });
     protectedApp.addHook("onRequest", async () => {
       const operation = deps.maintenance();
       if (operation)
@@ -209,6 +233,11 @@ export function buildFastifyApp(
       context.username = user.username;
     };
     protectedApp.register(holidayPlugin, { service: deps.holidays, authenticate });
+    protectedApp.register(importExportPlugin, {
+      service: deps.importExport,
+      authenticate,
+      auditStreamError: auditFailure,
+    });
     protectedApp.register(metersPlugin, { service: deps.meters, authenticate });
     protectedApp.register(notesPlugin, { service: deps.notes, authenticate });
     protectedApp.register(configsPlugin, { service: deps.configs, authenticate });

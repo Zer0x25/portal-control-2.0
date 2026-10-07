@@ -113,6 +113,13 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       updateUser: vi.fn(),
       deleteUser: vi.fn(),
     },
+    importExport: {
+      preview: vi.fn(),
+      pdf: vi.fn(),
+      shiftPdf: vi.fn(),
+      prepareExcel: vi.fn(),
+      excel: vi.fn(),
+    },
     meters: { list: vi.fn(), create: vi.fn() },
     notes: { list: vi.fn(), create: vi.fn(), archive: vi.fn(), remove: vi.fn() },
     configs: {
@@ -714,4 +721,36 @@ it("shift reports reject oversized bodies and terminate unexpected pre-stream fa
   expect(response.statusCode).toBe(500);
   expect(response.headers["content-type"]).toContain("application/json");
   expect(response.json().message).toBe("Error al exportar reporte de turno");
+});
+
+it("export IP budget is independent, shared across routes and checked before maintenance/auth", async () => {
+  const f = fixture();
+  const headers = { "x-forwarded-for": "192.0.2.200" };
+  for (let i = 0; i < 10; i++)
+    expect(
+      (
+        await f.app.inject({
+          url: i % 2 ? "/api/export/calendar-pdf" : "/api/export/report-excel",
+          headers,
+        })
+      ).statusCode,
+    ).toBe(401);
+  vi.mocked(f.deps.maintenance).mockReturnValue({ type: "restore" });
+  const blocked = await f.app.inject({ url: "/api/export/report-pdf", headers });
+  expect(blocked.statusCode).toBe(429);
+  expect(blocked.json()).toEqual({
+    message: "Límite de exportaciones alcanzado. Intenta en 15 minutos.",
+  });
+  expect(blocked.headers["ratelimit-policy"]).toBe("10;w=900");
+  expect(Number(blocked.headers["retry-after"])).toBeGreaterThan(0);
+  expect((await f.app.inject({ url: "/api/notes", headers })).statusCode).toBe(503);
+  expect(
+    (
+      await f.app.inject({
+        url: "/api/export/report-pdf",
+        headers: { "x-forwarded-for": "192.0.2.201" },
+      })
+    ).statusCode,
+  ).toBe(503);
+  expect(f.deps.importExport.pdf).not.toHaveBeenCalled();
 });

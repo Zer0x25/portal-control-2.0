@@ -1,3 +1,4 @@
+import { importExportFlows } from "../services/importExportFlows";
 import { meterFlows } from "../services/meterFlows";
 import { noteFlows } from "../services/noteFlows";
 import { configFlows } from "../services/configFlows";
@@ -33,6 +34,13 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       users: userService,
       kpis: kpiFlows,
       emailReports: emailReportFlows,
+      importExport: {
+        ...importExportFlows,
+        excel: async (sink, filters) => {
+          await loadExports();
+          await importExportFlows.excel(sink, filters);
+        },
+      },
       meters: meterFlows,
       notes: noteFlows,
       configs: {

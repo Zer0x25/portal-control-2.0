@@ -296,7 +296,7 @@ defects that only became visible once the types stopped lying:
 
 ### Known upstream escape hatch
 
-`backend/src/controllers/ImportController.ts` keeps one narrow
+`backend/src/services/importWorkbook.ts` keeps one narrow
 `as unknown as XlsxLoadBuffer` cast. exceljs ships an ambient
 `interface Buffer extends ArrayBuffer` that shadows Node's real `Buffer` and
 rejects it outright — even a direct `as Buffer` fails. The type is derived via
@@ -413,3 +413,10 @@ Monthly lightweight sweep, one validated commit per package batch:
      babel 7 tree (pinned at v7 deliberately, see vite 8 migration).
    - `@types/exceljs`: `latest` (0.5.3) is lower than installed (1.3.2);
      `wanted` already equals `current`, nothing to do.
+
+Import/export usa modules/importExport/index.ts, aplicación pura y puertos de
+workbook/renderers. Cinco rutas conservan permisos y errores distintos para
+Usuario/Excel y los dos schemas históricos; no traducir modos ni ampliar scopes.
+Preview limita un archivo a 50 MiB en memoria; XLSX conserva ExcelHttpStream,
+PDF buffer. Runtime cierra pool lazy también con descargas 021 únicamente.
+Deudas de fechas, mapping, quiosco y renderers: specs/021-fastify-importacion-exportacion/spec.md.

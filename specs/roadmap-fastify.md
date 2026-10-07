@@ -1,6 +1,6 @@
 # Ruta de migración modular a Fastify
 
-Fecha: 2026-10-06. Estado: 013–020 implementadas y validadas localmente. 021–025 son borradores.
+Fecha: 2026-10-06. Estado: 013–021 implementadas y validadas localmente. 022–025 son borradores.
 
 008 migró base/feriados; 009 autenticación; 010 endureció MFA/PIN;
 011 cerró DTO públicos; 012 migró usuarios. Health está en el candidato.
@@ -26,7 +26,7 @@ No todas las specs anteriores fueron migraciones de módulos.
 
 013 cubre empleados. 014–023 cubren los otros 16 routers de negocio/operación,
 agrupados en diez entregas. 024 y 025 completan integración y cambio principal:
-la ruta comprende trece specs incluyendo 013; quedan cinco tras la spec 020. El orden es propuesto y podrá
+la ruta comprende trece specs incluyendo 013; quedan cuatro tras la spec 021. El orden es propuesto y podrá
 ajustarse por las dependencias que revele cada inventario.
 
 ## Condición de avance
@@ -55,7 +55,9 @@ Resultados: [014](014-fastify-marcaciones/result.md) y [015](015-fastify-turnos/
 018 añade cuatro rutas KPI: [resultado](018-fastify-kpis/result.md).
 019 añade doce rutas de correo/reportes programados: [resultado](019-fastify-correo-reportes-programados/result.md).
 020 añade catorce rutas de medidores/notas/configs: [resultado](020-fastify-datos-configuracion/result.md).
-Siguiente entrega: 021 (importación/exportación).
+021 añade cinco rutas import/export, límite export y pruebas PDF/XLSX reales:
+[resultado](021-fastify-importacion-exportacion/result.md).
+Siguiente entrega: 022 (auditoría).
 Antes de 025 resolver el desfase UTC/Chile y consultas por día del calendario mensual,
 y el scope de assignments sin vínculo/para quiosco, registrados en 015.
 
@@ -78,3 +80,7 @@ Coordinar contrato, frontend y SDK antes de 025; paridad no corrige estas deudas
 020 conserva lote de medidores no atómico, rango UTC/local, autores del cliente
 y hard delete de notas; config genérico/auditoría sensible, cierre futuro 500 y
 policy solo validada por MIME. Resolver contrato/consistencia antes de 025.
+
+021 conserva mapping sin schema estructural, preview ZIP en memoria, fechas
+regex, dos schemas de modos, scope quiosco/Usuario Excel y descarga parcial
+si falla KPI después de iniciar ZIP. Resolver antes de 025 según alcance de producto.

@@ -629,13 +629,13 @@ export class StreamExportService {
    * Stream KPI Report as Excel (.xlsx)
    */
   async streamKpiReportToExcel(
-    res: Response,
+    res: ExcelHttpStream,
     filters: {
       startDate: string;
       endDate: string;
       employeeId?: string;
       area?: string;
-      mode?: "summary" | "detailed";
+      mode?: "summary" | "detailed" | "compiled_detailed";
     },
   ): Promise<void> {
     try {

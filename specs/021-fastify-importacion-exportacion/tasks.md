@@ -2,8 +2,8 @@
 
 Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 
-- [ ] T1: Completar inventario, archivos, contratos y riesgos (AC1).
-- [ ] T2: Escribir BDD y demostrar RED (AC2).
-- [ ] T3: Implementar aplicación y adaptadores tipados (AC3).
-- [ ] T4: Verificar paridad, permisos y fallos con pruebas significativas (AC4).
-- [ ] T5: Ejecutar gates y documentar resultado y rollback (AC5).
+- [x] T1: Inventario de cinco rutas, dos schemas, archivos, contratos y riesgos (AC1).
+- [x] T2: BDD y cuatro pruebas RED antes de implementar (AC2).
+- [x] T3: Aplicación pura, composición ExcelJS/renderers y adaptadores tipados (AC3).
+- [x] T4: Paridad real Excel/PDF/XLSX, permisos, límites y fallos (AC4).
+- [x] T5: Gates secuenciales, resultado y rollback (AC5).

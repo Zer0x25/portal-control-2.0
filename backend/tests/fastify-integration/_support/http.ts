@@ -5,6 +5,7 @@ export function httpClient(
   server: "Express" | "Fastify",
   getFastify: () => FastifyInstance,
   getToken: () => string,
+  getHeaders: () => Record<string, string> = () => ({}),
 ) {
   return async (
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
@@ -13,7 +14,7 @@ export function httpClient(
     token: string | null = getToken(),
     binary = false,
   ) => {
-    const headers = token ? { authorization: `Bearer ${token}` } : {};
+    const headers = { ...getHeaders(), ...(token ? { authorization: `Bearer ${token}` } : {}) };
     if (server === "Fastify") {
       const response = await getFastify().inject({
         method,
