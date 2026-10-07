@@ -12,7 +12,14 @@ export const maintenanceFlows = createMaintenanceFlows({
     start: (input) => systemOperationService.start(input),
     finish: () => systemOperationService.finish(),
   },
-  clear: (input) => maintenanceService.clearDatabase(input),
+  clear: async (input) => {
+    await seedingJobService.shutdown();
+    try {
+      return await maintenanceService.clearDatabase(input);
+    } finally {
+      seedingJobService.openRuntime();
+    }
+  },
   restart: (reason) => runtimeControlService.scheduleRestart(reason),
   watchdog: (onTimeout) => new Watchdog("SeederPhase1", 60000, onTimeout),
   seedScope: (run) => requestContext.run({ username: "SYSTEM_SEEDER", skipTrigger: true }, run),

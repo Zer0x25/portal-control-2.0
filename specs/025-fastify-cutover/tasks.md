@@ -19,5 +19,10 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 - [x] B1b: Invalidaciones frontend y auditoría protegida de nuevas escrituras configs.
 - [x] B1c: Gates y evidencia de listener/BD reales.
 - [ ] B2: Secretos en HTTP/históricos, errores y credenciales/reset destructivo.
+      Tanda local validada; B2d pendiente. Gates y límites en result.md.
+- [x] B2a: Máscaras SMTP y contraseña vinculada al destino.
+- [x] B2b: Redacción de auditorías HTTP/export, nuevos errores y SMTP.
+- [x] B2c: Reset atómico preservando administradores/hash/MFA y rollback real.
+- [ ] B2d: Revocación al reset de contraseña y drenaje universal de operaciones.
 - [ ] C: Cerrar deudas funcionales bloqueantes de las specs anteriores.
 - [ ] D: Ensayar benchmark/rollback y retirar Express tras completar bloqueantes.

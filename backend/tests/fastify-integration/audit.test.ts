@@ -153,6 +153,37 @@ describe.each(["Express", "Fastify"] as const)("Spec022 audit on %s", (server) =
       expect.objectContaining({ actorUsername: "audit-admin" }),
     );
   });
+  it("redacts historical secrets in listing and every export without rewriting history", async () => {
+    const old = await prismaDirect.auditLog.create({
+      data: {
+        actorUsername: "audit-admin",
+        action: "UNHANDLED_ERROR",
+        category: "SYSTEM",
+        severity: "ERROR",
+        details: { message: "historic-secret", stack: "historic-secret" },
+        metadata: { body: { newPassword: "historic-secret" }, query: { token: "historic-secret" } },
+      },
+    });
+    const list = await http("GET", "/api/audit-logs");
+    expect(JSON.stringify(list.body)).not.toContain("historic-secret");
+    for (const format of ["json", "csv", "xml"]) {
+      const response = await http(
+        "GET",
+        `/api/audit-logs/export?format=${format}`,
+        undefined,
+        token,
+        format !== "json",
+      );
+      expect(response.status).toBe(200);
+      expect(response.bytes.toString()).not.toContain("historic-secret");
+      expect(response.bytes.toString()).toContain("REDACTED");
+    }
+    expect(
+      JSON.stringify(
+        (await prismaDirect.auditLog.findUniqueOrThrow({ where: { id: old.id } })).metadata,
+      ),
+    ).toContain("historic-secret");
+  });
   it("rejects incomplete manual schema before creating a log", async () => {
     expect(
       (await http("POST", "/api/audit-logs", { action: "MANUAL", category: "A" })).status,
@@ -295,7 +326,12 @@ describe.each(["Express", "Fastify"] as const)("Spec022 audit on %s", (server) =
         new Error("connect failed"),
       );
       const errorAudit = vi.spyOn(auditService, "logError");
-      const response = await http("GET", `/api/audit-logs/export?format=${format}`);
+      const response = await http(
+        "GET",
+        `/api/audit-logs/export?format=${format}`,
+        undefined,
+        token,
+      );
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ message: "Error al exportar datos" });
       expect(errorAudit).not.toHaveBeenCalled();

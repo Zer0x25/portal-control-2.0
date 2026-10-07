@@ -158,7 +158,10 @@ export function buildFastifyApp(
   app.setErrorHandler(async (error, request, reply) => {
     const response = mapHttpError(error, config.development);
     const category = errorCategory(error);
-    app.log.error({ err: error, category, requestId: request.id }, "HTTP request failed");
+    app.log.error(
+      { code: response.body.code, category, requestId: request.id },
+      "HTTP request failed",
+    );
     await auditFailure(error, request);
     if (response.headers) reply.headers(response.headers);
     return reply.code(response.statusCode).send(response.body);

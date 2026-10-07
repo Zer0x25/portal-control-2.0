@@ -31,7 +31,7 @@ export function createMaintenanceFlows(deps: MaintenanceDependencies) {
           error:
             caught.message === "PROCESS_TIMEOUT"
               ? "Proceso de limpieza abortado por inactividad prolongada en la DB."
-              : `Error crítico al limpiar DB: ${caught.message || "Error desconocido"}`,
+              : "Error crítico al limpiar DB; no se confirmó el reset.",
         });
         out.end();
       } finally {

@@ -1,3 +1,4 @@
+import { maskConfigValue, mergeSmtpSecrets } from "./smtpSecrets";
 import { AppError, ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { ConfigDependencies, PolicyFile } from "./contracts";
@@ -14,11 +15,15 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
   };
   return {
     time: () => deps.time(),
-    list: (role?: string) => deps.list(role),
+    list: async (role?: string) =>
+      (await deps.list(role)).map((entry) => ({
+        ...entry,
+        value: maskConfigValue(entry.key, entry.value),
+      })),
     get: async (key: unknown, role?: string) => {
       const valid = keyValue(key);
       try {
-        return await deps.get(valid, role);
+        return maskConfigValue(valid, await deps.get(valid, role));
       } catch (error) {
         if (toCaughtError(error).message === "FORBIDDEN")
           throw new ForbiddenError("Acceso denegado");
@@ -28,7 +33,11 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     set: async (key: unknown, value: unknown, actor?: string) => {
       const valid = keyValue(key);
       try {
-        return await deps.set(valid, value, actor || "SYSTEM");
+        const prepared =
+          valid === "SMTP_CONFIG"
+            ? mergeSmtpSecrets(value, await deps.get(valid, "Administrador"))
+            : value;
+        return maskConfigValue(valid, await deps.set(valid, prepared, actor || "SYSTEM"));
       } catch (error) {
         const caught = toCaughtError(error);
         if (caught.message === "LOCK_DATE_BLOCKED")

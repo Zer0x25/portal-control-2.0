@@ -1,4 +1,4 @@
-import type { AuditQuery } from "../modules/audit";
+import { redactAuditFields, type AuditQuery } from "../modules/audit";
 import type { ExcelHttpStream } from "../utils/httpStream";
 export async function streamAuditExport(res: ExcelHttpStream, filters: AuditQuery) {
   const { startDate, endDate, format = "json", actor, category, severity, outcome } = filters;
@@ -82,8 +82,23 @@ export async function streamAuditExport(res: ExcelHttpStream, filters: AuditQuer
 
   const filename = `audit_logs_${startDate || "all"}_${endDate || "all"}.${format}`;
 
+  const project = (row: Record<string, unknown>) => ({
+    ...row,
+    ...redactAuditFields(
+      typeof row.action === "string" ? row.action : "",
+      row.details,
+      row.metadata,
+    ),
+  });
   if (format === "csv") {
-    return await streamExportService.streamQueryToCSV(res, query, params, headers, filename);
+    return await streamExportService.streamQueryToCSV(
+      res,
+      query,
+      params,
+      headers,
+      filename,
+      project,
+    );
   } else {
     return await streamExportService.streamQueryToXML(
       res,
@@ -92,6 +107,7 @@ export async function streamAuditExport(res: ExcelHttpStream, filters: AuditQuer
       "AuditLogs",
       "Log",
       filename,
+      project,
     );
   }
 }

@@ -75,7 +75,14 @@ export const emailService = {
         },
         body: JSON.stringify(config),
       });
-      if (!response.ok) throw new Error("Error al guardar configuración SMTP");
+      if (!response.ok) {
+        const detail = await response.json();
+        throw new Error(
+          typeof detail.message === "string"
+            ? detail.message
+            : "Error al guardar configuración SMTP",
+        );
+      }
       return await response.json();
     } catch (error: unknown) {
       return { success: false, message: extractErrorMessage(error) };

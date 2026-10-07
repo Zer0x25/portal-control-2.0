@@ -58,6 +58,7 @@ export class StreamExportService {
     params: (string | number | boolean | Date | null | string[])[],
     headers: string[],
     filename: string,
+    project?: (row: Record<string, unknown>) => Record<string, unknown>,
   ): Promise<void> {
     let client: PoolClient | null = null;
     let cursor: Cursor | null = null;
@@ -87,7 +88,8 @@ export class StreamExportService {
 
         // Buffer batch content
         let batchOutput = "";
-        for (const row of rows) {
+        for (const original of rows) {
+          const row = project ? project(original) : original;
           const csvRow = headers.map((h) => {
             let val = row[h];
             if (val === null || val === undefined) return "";
@@ -133,6 +135,7 @@ export class StreamExportService {
     rootElement: string,
     recordElement: string,
     filename: string,
+    project?: (row: Record<string, unknown>) => Record<string, unknown>,
   ): Promise<void> {
     let client: PoolClient | null = null;
     let cursor: Cursor | null = null;
@@ -158,7 +161,8 @@ export class StreamExportService {
         }
 
         let batchOutput = "";
-        for (const row of rows) {
+        for (const original of rows) {
+          const row = project ? project(original) : original;
           batchOutput += `  <${recordElement}>\n`;
           for (const [key, value] of Object.entries(row)) {
             let val = value;

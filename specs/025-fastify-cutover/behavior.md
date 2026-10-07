@@ -1,6 +1,6 @@
 # BDD 025: Preparación del cutover
 
-Spec: [spec.md](spec.md). Tandas 025-A/B1; cutover pendiente.
+Spec: [spec.md](spec.md). Tandas 025-A/B1/B2; cutover pendiente.
 
 - Sin token o con token inválido, handshake devuelve Unauthorized, sin detalles
   internos y sin socket conectado ni sala privada.
@@ -41,3 +41,18 @@ deudas funcionales, benchmark comparable y cambio de entrypoint con rollback.
 RED de política: import del módulo inexistente antes de implementar (sin tests
 colectados); no afirmar fallo de una aserción ejecutada. GREEN verifica política,
 listener real con tres roles y sesiones persistidas y guard no vacío de productores.
+
+## Ejemplos 025-B2
+
+- GET/list/POST SMTP_CONFIG por Admin entrega ********; DB conserva el secreto.
+  Reenviar máscara al mismo destino conserva contraseña; cambiar host devuelve 400.
+- Auditoría histórica contiene contraseña en body o config: list y exportaciones
+  JSON/CSV/XML ocultan el secreto; la fila original no se modifica.
+- Fallo SMTP entrega mensaje genérico; error HTTP 500 omite detalles internos.
+- Reset de administrador vinculado conserva usuario, hash y MFA, desvincula empleado
+  y elimina sesiones/jobs. No crea usuario admin con contraseña fija.
+- Fallo inyectado al borrar configs después de borrar sesiones: rollback conserva
+  sesiones, usuarios y configs, entrega error genérico y no solicita reinicio.
+
+RED del helper inexistente falla al importar antes de implementar, sin aserciones
+colectadas. Las pruebas con PostgreSQL ejercitan ambos adaptadores y rollback real.

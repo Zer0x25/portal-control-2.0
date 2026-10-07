@@ -348,8 +348,15 @@ export class AuthService {
     reason: string;
     restartRecommended?: boolean;
   }) {
-    const { actorUsername, reason, restartRecommended = false } = params;
     const result = await prisma.activeSession.deleteMany({});
+    return this.notifySessionInvalidation(params, result.count);
+  }
+
+  static async notifySessionInvalidation(
+    params: { actorUsername: string; reason: string; restartRecommended?: boolean },
+    deletedCount: number,
+  ) {
+    const { actorUsername, reason, restartRecommended = false } = params;
 
     const payload = {
       reason,
@@ -369,13 +376,13 @@ export class AuthService {
       severity: "CRITICAL",
       details: {
         reason,
-        deletedCount: result.count,
+        deletedCount,
         restartRecommended,
       },
     });
 
     return {
-      deletedCount: result.count,
+      deletedCount,
       reason,
     };
   }

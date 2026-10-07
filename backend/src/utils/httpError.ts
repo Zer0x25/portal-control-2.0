@@ -50,7 +50,7 @@ export function shouldAuditError(error: unknown): boolean {
 }
 export function mapHttpError(
   err: unknown,
-  isDevelopment = false,
+  _isDevelopment = false,
 ): { statusCode: number; body: Record<string, unknown>; headers?: Record<string, string> } {
   const caught = toCaughtError(err);
   const errName = err instanceof Error ? err.name : "Error";
@@ -78,7 +78,7 @@ export function mapHttpError(
       body: {
         success: false,
         code: caught.code,
-        message: caught.message,
+        message: err.statusCode >= 500 ? "Error interno del servidor" : caught.message,
         ...(err instanceof ValidationError && { errors: err.errors }),
       },
     };
@@ -207,8 +207,7 @@ export function mapHttpError(
     body: {
       success: false,
       code: caught.code || "INTERNAL_ERROR",
-      message: caught.message || "Error interno del servidor",
-      ...(isDevelopment && { stack: err instanceof Error ? err.stack : undefined }),
+      message: statusCode >= 500 ? "Error interno del servidor" : "Solicitud inválida",
     },
   };
 }

@@ -260,6 +260,30 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     });
     expect(JSON.stringify(audits)).not.toMatch(/old-smtp-fixture|new-smtp-fixture/);
   });
+  it("masks generic SMTP get/list/post and retains secret when saving a masked profile", async () => {
+    const value = {
+      profiles: [
+        { host: "smtp.invalid", user: "owner", port: 587, secure: false, pass: "smtp-fixture" },
+      ],
+    };
+    await prismaDirect.systemConfig.create({
+      data: { key: "SMTP_CONFIG", value: JSON.stringify(value) },
+    });
+    const read = await http("GET", "/api/configs/SMTP_CONFIG");
+    expect(read.body.profiles[0].pass).toBe("********");
+    expect(JSON.stringify((await http("GET", "/api/configs")).body)).not.toContain("smtp-fixture");
+    const saved = await http("POST", "/api/configs/SMTP_CONFIG", { value: read.body });
+    expect(saved.status).toBe(200);
+    expect(JSON.stringify(saved.body)).not.toContain("smtp-fixture");
+    expect(
+      JSON.parse(
+        (await prismaDirect.systemConfig.findUniqueOrThrow({ where: { key: "SMTP_CONFIG" } }))
+          .value,
+      ),
+    ).toEqual(value);
+    read.body.profiles[0].host = "different.invalid";
+    expect((await http("POST", "/api/configs/SMTP_CONFIG", { value: read.body })).status).toBe(400);
+  });
   it("writes config JSON with one audit and event; supervisor elevated cannot write", async () => {
     const res = await http("POST", "/api/configs/custom", {
       value: { enabled: true },

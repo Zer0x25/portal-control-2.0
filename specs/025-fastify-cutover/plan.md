@@ -49,3 +49,9 @@ configs/application/auditValue.ts y fachada ConfigService; guard de strict/módu
 y productores con inventario no vacío; hook/socket badge frontend; tests policy,
 listener websocket real, runtime con sesiones persistidas y POST configs en ambos
 servidores. No introducir dependencia Express en aplicación ni cambiar schemas/SDK.
+
+Archivos B2: módulos audit/redaction y configs/smtpSecrets (helpers puros públicos),
+flujos configs, auditService/auditExport/StreamExportService, EmailService y modal
+SMTP; mapper HTTP y handlers; MaintenanceService/AuthService/maintenanceFlows y
+runtimeJobs. Pruebas unitarias de redacción/máscaras e integración audit, configs,
+email y operations en ambos servidores. No cambiar Prisma, dependencias ni SDK.

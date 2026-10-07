@@ -322,7 +322,7 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     expect((await http("GET", "/api/notes")).status).toBe(503);
     expect((await http("GET", "/api/health/ready")).status).toBe(200);
   });
-  it("clears real disposable DB and characterizes CASCADE, session invalidation and retained jobs", async () => {
+  it("resets disposable DB atomically while preserving administrators and removing sessions/jobs", async () => {
     await prismaDirect.employee.create({
       data: {
         id: "clear-employee",
@@ -333,6 +333,11 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
         workdayType: "Ordinaria",
       },
     });
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { employeeId: "clear-employee", mfaSecret: "preserved-fixture", mfaEnabled: true },
+    });
+    const before = await prismaDirect.user.findUniqueOrThrow({ where: { id: actorId } });
     const job = await stoppedJob();
     gzip = true;
     const response = await http(
@@ -350,11 +355,39 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     expect(output.at(-1)).toMatchObject({ success: true, preservedUser: "operations-admin" });
     expect(await prismaDirect.employee.count()).toBe(0);
     expect(await prismaDirect.activeSession.count()).toBe(0);
-    expect(await prismaDirect.user.findUnique({ where: { id: actorId } })).toBeNull();
-    expect(await prismaDirect.user.findUnique({ where: { username: "admin" } })).not.toBeNull();
-    expect(await prismaDirect.seedingJob.findUnique({ where: { id: job.id } })).not.toBeNull();
+    const after = await prismaDirect.user.findUniqueOrThrow({ where: { id: actorId } });
+    expect(after.passwordHash).toBe(before.passwordHash);
+    expect(after.mfaSecret).toBe(before.mfaSecret);
+    expect(after.mfaEnabled).toBe(true);
+    expect(after.employeeId).toBeNull();
+    expect(await prismaDirect.user.findUnique({ where: { username: "admin" } })).toBeNull();
+    expect(await prismaDirect.seedingJob.findUnique({ where: { id: job.id } })).toBeNull();
     expect(runtimeControlService.scheduleRestart).toHaveBeenCalledWith("database reset completed");
     expect(systemOperationService.getSnapshot()).toBeNull();
+  });
+  it("rolls back session/user deletion and keeps admin credentials when reset fails", async () => {
+    await prismaDirect.systemConfig.create({ data: { key: "rollback-fixture", value: "true" } });
+    await prismaDirect.$executeRaw`CREATE FUNCTION spec025_reset_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'spec025 forced reset failure'; END $$`;
+    await prismaDirect.$executeRaw`CREATE TRIGGER spec025_reset_fail BEFORE DELETE ON system_configs FOR EACH STATEMENT EXECUTE FUNCTION spec025_reset_fail()`;
+    try {
+      const response = await http(
+        "DELETE",
+        "/api/maintenance/clear-database",
+        undefined,
+        token,
+        true,
+      );
+      expect(lines(response.bytes).at(-1).error).toBeDefined();
+      expect(await prismaDirect.activeSession.count()).toBeGreaterThan(0);
+      expect(await prismaDirect.user.findUnique({ where: { id: actorId } })).not.toBeNull();
+      expect(
+        await prismaDirect.systemConfig.findUnique({ where: { key: "rollback-fixture" } }),
+      ).not.toBeNull();
+      expect(runtimeControlService.scheduleRestart).not.toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRaw`DROP TRIGGER spec025_reset_fail ON system_configs`;
+      await prismaDirect.$executeRaw`DROP FUNCTION spec025_reset_fail()`;
+    }
   });
   it("clear timeout/failure uses in-band 200 and acquisition conflict precedes stream", async () => {
     const cleaner = vi

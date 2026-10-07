@@ -10,7 +10,7 @@ export interface PolicyDownload {
 }
 export interface ConfigDependencies<Time, Closure> {
   get(key: string, role?: string): Promise<unknown>;
-  list(role?: string): Promise<unknown>;
+  list(role?: string): Promise<{ key: string; value: unknown }[]>;
   set(key: string, value: unknown, actor: string): Promise<unknown>;
   time(): Time;
   closure(date: string): Promise<Closure>;

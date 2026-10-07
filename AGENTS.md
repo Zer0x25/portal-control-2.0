@@ -483,3 +483,12 @@ bulk sin employeeId no se difunde a esos roles. Notificación personal exige tar
 validado y omite metadata. Guard enumera productores reales y exige contrato.
 ConfigService redacta SMTP_CONFIG/EMAIL_NOTIFICATION_RULES completos en nuevas
 auditorías; HTTP/históricos, errores y reset/credenciales siguen en 025-B2.
+
+025-B2: HTTP SMTP_CONFIG enmascara secretos; placeholder solo conserva contraseña
+para destino idéntico (host/user/port/secure). AuditService y export JSON/CSV/XML
+redactan claves sensibles y UNHANDLED_ERROR; históricos no se reescriben. Errores
+HTTP 5xx/SMTP no exponen mensaje interno. Reset usa withDirectTransaction y
+TRUNCATE RESTRICT explícito, conserva hash/MFA del Admin ejecutor y admin existente
+Administrador, elimina sesiones y no crea credenciales fijas. Worker seeding se
+drena; jobs running bloquean reset. Drenaje universal de operaciones, watchdog
+fase 1 y force-reset-password legacy siguen pendientes antes de cutover.

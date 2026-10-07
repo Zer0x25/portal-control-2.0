@@ -108,3 +108,8 @@ lote antes de entregar y sincroniza login/logout frontend. La 025 sigue abierta:
 025-B1 añade invalidaciones y autorización por rol/empleado. Secretos/reset y
 deudas anteriores siguen bloqueando el cutover.
 Ver [spec 025](025-fastify-cutover/spec.md).
+
+025-B2 implementa protección SMTP HTTP, redacción de auditorías nuevas/históricas
+en lectura/exportación y reset atómico sin contraseña fija. Mantener Express
+principal hasta cerrar C/D; drenaje universal de operaciones y seeding fase 1
+siguen pendientes. Detalle y evidencia en [resultado 025](025-fastify-cutover/result.md).

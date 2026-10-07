@@ -7,3 +7,4 @@ export type {
   AuditSink,
 } from "./application/contracts";
 export { auditPlugin } from "./http/routes";
+export { redactAuditFields } from "./application/redaction";

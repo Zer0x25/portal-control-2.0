@@ -2,9 +2,59 @@
 
 Spec: [spec.md](spec.md). BDD: [behavior.md](behavior.md). Plan: [plan.md](plan.md).
 
+## 025-B2: Secretos HTTP y reset transaccional
+
+Fecha: 2026-10-07. Estado: tanda implementada y validada localmente, sin commit; B2d pendiente.
+Anterior: c6caf5c, política de eventos y auditoría protegida (025-B1).
+
+SMTP_CONFIG se enmascara en list/get/set HTTP. Reutilizar ******** exige destino
+SMTP idéntico; cambiar host/usuario/puerto/TLS requiere contraseña nueva. EmailService
+aplica el mismo vínculo al guardar y verificar, y devuelve fallos genéricos.
+El modal explica cómo cambiar destino; almacenamiento operacional no se migra.
+
+AuditService redacta nuevas escrituras y lecturas históricas; JSON/CSV/XML aplican
+la misma proyección, CSV/XML por fila conservando cursor/streaming. No se reescriben
+históricos en BD. UNHANDLED_ERROR omite mensaje/stack/body/query sensibles. Mapper
+HTTP no expone stack ni mensaje interno 5xx incluso en desarrollo. Los handlers
+registran código/contexto; no afirmar redacción universal de logs/texto libre.
+
+Reset usa una única withDirectTransaction: conserva ejecutor Admin y admin existente
+si tiene ese rol, hash/MFA originales, elimina todas las sesiones y usuarios restantes,
+datos operacionales/empleados/jobs/configs salvo db_instance_id. TRUNCATE RESTRICT
+explícito evita borrar usuarios por CASCADE. No crea admin ni contraseña fija.
+Revocación/reinicio solo tras commit. Rollback inyectado al borrar configs confirma
+que los borrados anteriores se revierten y no se solicita reinicio.
+
+Se drena el worker seeding antes de reset y se reabre al terminar; jobs running
+impiden reset hasta detenerlos explícitamente. Nuevos jobs runtime no arrancan
+en mantenimiento. Drenaje universal de HTTP/tareas nocturnas y watchdog seeder fase 1
+siguen pendientes; no se certifica quiescencia global ni cutover. También siguen
+pendientes revocación al force-reset-password legacy y scopes/consistencia de C.
+
+RED: import de helper inexistente, sin aserciones colectadas. GREEN: pruebas de
+redacción/máscaras, lectura/exportación histórica y reset/rollback con BD real en
+Express/Fastify. Ajustes de fixtures sustituyen mensajes SMTP internos por contrato
+genérico y usan AuthError tipado en piloto de paridad.
+
+Backend validate:ci aprobado: formato, lint 0/0, strict, SDK, 9 pruebas schema y build.
+Backend coverage: 516 pruebas / 64 archivos; ratchets aprobados (35.76% líneas,
+37.98% funciones, 27.95% ramas, 35.13% statements). Frontend validate:ci:coverage
+aprobado después del SDK: 279 pruebas / 74 archivos, formato, lint 0/0, tipos,
+ratchets y build/PWA (19.5% líneas, 15.71% funciones, 15.33% ramas).
+PostgreSQL aislado: 509 pruebas / 20 archivos aprobados en ambos adaptadores,
+incluidas redacción histórica y rollback real del reset. Runner eliminó PostgreSQL
+18.4 desechable; BD local preexistente conservada. Docs/spec/secrets aprobados:
+141 Markdown, 19 ADR, 25 specs, cero secretos y 37 fixtures allowlistados.
+Sin cambios Prisma,
+dependencias, Swagger/SDK. BD usada solo desechable, sin operaciones externas.
+
+Rollback de esta tanda: revertir su commit futuro restaura exposición HTTP y reset
+legacy; no constituye una configuración segura. Express sigue principal. C/D
+conservan deudas funcionales, gateway/e2e, benchmark equivalente y rollback del servidor.
+
 ## 025-B1: Eventos autorizados y auditoría de configuración
 
-Fecha: 2026-10-07. Estado: implementada y validada localmente; sin commit.
+Fecha: 2026-10-07. Estado: commiteada en c6caf5c.
 Anterior: c8767d3, autenticación de sockets y sesiones (025-A).
 
 La política pura modules/realtime usa API pública y strict. Eventos desconocidos

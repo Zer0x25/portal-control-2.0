@@ -149,7 +149,7 @@ describe.each(["Express", "Fastify"] as const)("Spec019 email/reports on %s", (s
     smtp.verify.mockRejectedValueOnce(new Error("provider offline"));
     expect((await http("POST", "/api/email/verify", profile)).body).toEqual({
       success: false,
-      message: "Error de conexión: provider offline",
+      message: "No se pudo verificar la conexión SMTP",
     });
   });
   it("sends only through a double; absence/configuration/provider errors keep existing result contract", async () => {
@@ -173,7 +173,7 @@ describe.each(["Express", "Fastify"] as const)("Spec019 email/reports on %s", (s
     smtp.sendMail.mockRejectedValueOnce(new Error("send offline"));
     expect((await http("POST", "/api/email/send-test", body)).body).toEqual({
       success: false,
-      message: "Error al enviar correo: send offline",
+      message: "No se pudo enviar el correo",
     });
     expect((await http("POST", "/api/email/send-test", { to: body.to })).body.success).toBe(false); // Middleware validates defaults without replacing body.
   });

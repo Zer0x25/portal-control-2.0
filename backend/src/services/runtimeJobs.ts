@@ -1,3 +1,4 @@
+import { systemOperationService } from "./systemOperationService";
 import { processAutoClosures } from "./autoCloseService";
 import { rotateIndefiniteShifts } from "./shiftRotationService";
 import { initializeScheduler, stopScheduler } from "./schedulerService";
@@ -67,6 +68,7 @@ export function createRuntimeJobs() {
             taskName: string,
             task: () => Promise<unknown>,
           ) => {
+            if (systemOperationService.isMaintenanceModeActive()) return;
             return requestContext.run({ username: "SYSTEM" }, async () => {
               const result = await LockService.withLock(key, ttlMs, instanceId, async () => {
                 const start = Date.now();

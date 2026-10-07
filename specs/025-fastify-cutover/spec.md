@@ -1,6 +1,6 @@
 # Spec 025: Cambio de servidor principal
 
-- Estado: En ejecución; 025-A commiteada, política de eventos 025-B1 validada localmente
+- Estado: En ejecución; 025-A/B1 commiteadas; protección HTTP y reset 025-B2 validados; B2d/C/D pendientes
 - Fecha: 2026-10-07
 - Ruta: [roadmap](../roadmap-fastify.md)
 
@@ -108,3 +108,25 @@ redactados antes de persistir; almacenamiento operacional de credenciales no cam
 No limpia históricos ni cambia contrato de lectura HTTP de configuración elevada.
 Reset/credenciales fijas, redacción de fallos HTTP/históricos y deudas funcionales
 siguen bloqueando cutover (025-B2/C/D).
+
+## 025-B2: secretos HTTP, auditorías y reset
+
+SMTP_CONFIG se proyecta en GET/list/POST con credenciales enmascaradas. El
+placeholder conserva la contraseña guardada solo para el mismo host, puerto,
+usuario y modo TLS; cambiar destino exige contraseña nueva. Verificación SMTP
+reutiliza secretos únicamente del perfil que coincide con ese destino.
+
+Auditorías nuevas y lecturas/exportaciones JSON/CSV/XML redactan claves sensibles.
+UNHANDLED_ERROR oculta mensaje, stack, body y query. Los históricos se proyectan
+sin reescribir su evidencia original en BD. No se garantiza detección de secretos
+en texto libre arbitrario; acceso directo a BD/backups sigue siendo privilegiado.
+Errores HTTP 5xx no devuelven mensaje interno ni stack; SMTP devuelve fallo genérico.
+
+Reset exige administrador existente, conserva al ejecutor y al usuario admin
+existente si es Administrador, con hash/MFA intactos. Borra sesiones, otros usuarios,
+empleados, datos operacionales, jobs y configs salvo db_instance_id en una única
+withDirectTransaction. Sin CASCADE ni credenciales predeterminadas. Un fallo revierte
+todo y no reinicia. Solo tras commit se notifica revocación y se solicita reinicio.
+Se drena el worker de seeding; jobs todavía running impiden reset. Jobs nuevos de
+runtime no arrancan en mantenimiento. No certifica drenaje universal de solicitudes
+HTTP, tareas nocturnas ni seeding fase 1: ese ciclo de vida sigue pendiente de C/D.

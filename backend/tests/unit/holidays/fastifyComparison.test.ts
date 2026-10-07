@@ -7,7 +7,8 @@ import { createGetHolidays } from "../../../src/modules/holidays/application/get
 import { holidayService } from "../../../src/services/HolidayService";
 import holidayRoutes from "../../../src/routes/holidayRoutes";
 import { errorHandler } from "../../../src/middleware/errorHandler";
-import { toCaughtError } from "../../../src/utils/caughtError";
+import { AuthError } from "../../../src/utils/AppError";
+import { mapHttpError } from "../../../src/utils/httpError";
 
 vi.mock("../../../src/services/HolidayService", () => ({
   holidayService: { getHolidays: vi.fn() },
@@ -71,19 +72,10 @@ describe("Express router vs Fastify pilot: same holiday use case", () => {
       getHolidays: query,
       authenticate: async (req) => {
         if (req.headers.authorization !== "Bearer fixture") {
-          throw Object.assign(new Error("Auth required"), {
-            statusCode: 401,
-            code: "UNAUTHORIZED",
-          });
+          throw new AuthError("Auth required");
         }
       },
-      mapError: (error) => {
-        const caught = toCaughtError(error);
-        return {
-          statusCode: caught.statusCode || 500,
-          body: { success: false, code: caught.code || "INTERNAL_ERROR", message: caught.message },
-        };
-      },
+      mapError: (error) => mapHttpError(error),
     });
   });
 
