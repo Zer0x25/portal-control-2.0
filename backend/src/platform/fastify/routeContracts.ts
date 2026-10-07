@@ -86,6 +86,31 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     if (!kiosk && !route.validated)
       throw new Error(`Unvalidated employees route: ${route.method} ${route.url}`);
   }
+  const configs = routes.filter(
+    (route) => route.url === "/api/configs" || route.url.startsWith("/api/configs/"),
+  );
+  if (!configs.length) throw new Error("configs route manifest is empty");
+  const expectedConfigs = [
+    "GET /api/configs/public/company-policy",
+    "GET /api/configs/public/company-policy/file",
+    "POST /api/configs/company-policy",
+    "GET /api/configs/server-time",
+    "GET /api/configs/validate-closure",
+    "GET /api/configs",
+    "GET /api/configs/:key",
+    "POST /api/configs/:key",
+  ];
+  if (
+    JSON.stringify(configs.map((route) => `${route.method} ${route.url}`).sort()) !==
+    JSON.stringify(expectedConfigs.sort())
+  )
+    throw new Error("configs route manifest differs from the API contract");
+  for (const route of configs) {
+    const isPublic = route.url.startsWith("/api/configs/public/");
+    if (route.authenticated === isPublic)
+      throw new Error(`Incorrect authentication contract: ${route.url}`);
+    if (!route.validated) throw new Error(`Unvalidated configs route: ${route.url}`);
+  }
   const records = routes.filter(
     (route) => route.url === "/api/records" || route.url.startsWith("/api/records/"),
   );
@@ -143,6 +168,9 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     if (!route.validated) throw new Error(`Unvalidated shifts route: ${route.method} ${route.url}`);
   }
   for (const [name, expected] of [
+    ["meters", ["GET /api/meters", "POST /api/meters/bulk"]],
+    ["notes", ["GET /api/notes", "POST /api/notes", "PUT /api/notes/:id", "DELETE /api/notes/:id"]],
+
     [
       "email",
       [

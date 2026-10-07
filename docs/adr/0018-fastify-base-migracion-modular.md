@@ -109,3 +109,8 @@ La spec 019 añade doce rutas nativas de correo y reportes programados con aplic
 pura, proveedor doble en pruebas, persistencia cifrada y sesiones reales. Conserva
 y caracteriza divergencias de schemas y calendario legacy; ver
 [resultado 019](../../specs/019-fastify-correo-reportes-programados/result.md).
+
+La spec 020 añade tres módulos independientes y catorce rutas de medidores/notas/
+configuración. Plugins oficiales multipart/static conservan streaming y HTTP
+de archivos; aplicación usa puertos de reloj/archivos y guards strict/públicos.
+Ver [resultado 020](../../specs/020-fastify-datos-configuracion/result.md).

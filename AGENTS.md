@@ -142,7 +142,7 @@ El candidato Fastify expone health, las cinco rutas de feriados y las seis rutas
 de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admin)
 y las seis de empleados (incluido Excel), con casos de uso compartidos.
 `check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
-corrections, shiftReports, kpis, emailReports, feriados y plataforma HTTP.
+corrections, shiftReports, kpis, emailReports, meters, notes, configs, feriados y plataforma HTTP.
 Express sigue siendo el servidor principal mientras se migran los demás módulos.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
@@ -196,7 +196,14 @@ SMTP conserva cifrado y enmascarado; tests sustituyen proveedor sin entrega exte
 Deudas 019: schemas HTTP y servicios divergen en config/rules/reportes; validar sin
 reemplazar body conserva extras y defaults no aplicados. Cron parcial/reloj local y
 toggle read/update requieren contrato correctivo antes de cutover.
-Ver specs 006/007/008/009/010/011/012/013/014/015/016/017/018/019 y ADR-0017/0018/0019.
+Meters/notes/configs tienen límites independientes, aplicación pura y catorce rutas
+nativas. Configs conserva dos lecturas públicas PDF, multipart 15 MiB y descarga
+con Range/ETag; plugins multipart/static no publican carpeta. Flujos comparten
+parsing de colección completa, errores de cierre, puertos de reloj/archivos.
+Deudas 020: rango medidores mezcla UTC/local; lotes no atómicos y autores cliente;
+configs genérico/auditoría expone secretos a roles elevados, write/audit no atómicos,
+PDF solo MIME y posible archivo huérfano al fallar upsert. Resolver antes de cutover.
+Ver specs 006/007/008/009/010/011/012/013/014/015/016/017/018/019/020 y ADR-0017/0018/0019.
 
 ---
 

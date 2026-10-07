@@ -312,6 +312,7 @@ KPI comparte cuatro rutas y validación de rangos mediante puertos de fechas.
 La proyección pública elimina PIN de overview y ausencias; ver
 [resultado 018](specs/018-fastify-kpis/result.md) para caché y límites del motor.
 Spec 019 añade doce rutas de correo y reportes programados con puertos compartidos, cifrado/enmascarado y pruebas sin SMTP real: [resultado](specs/019-fastify-correo-reportes-programados/result.md).
+Spec 020 añade catorce rutas de medidores/notas/configs, incluidos PDF público, streaming de carga y descarga con rangos: [resultado](specs/020-fastify-datos-configuracion/result.md).
 La [ruta 013–025](specs/roadmap-fastify.md) agrupa los 16 módulos posteriores
 a empleados y reserva runtime integrado y cutover para las últimas dos specs.
 Ver [resultado y comparación](specs/006-arquitectura-mantenible/result.md) y

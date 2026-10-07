@@ -23,7 +23,12 @@ routes.push(
     ["POST", "/api/users"],
     ["PUT", "/api/users/:id"],
     ["DELETE", "/api/users/:id"],
-  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+  ].map(([method, url]) => ({
+    method,
+    url,
+    authenticated: true,
+    validated: true,
+  })),
 );
 routes.push(
   ...[
@@ -51,7 +56,12 @@ routes.push(
     ["GET", "/api/records/integrity/verify"],
     ["POST", "/api/records/:id/resolve-anomaly"],
     ["DELETE", "/api/records/:id"],
-  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+  ].map(([method, url]) => ({
+    method,
+    url,
+    authenticated: true,
+    validated: true,
+  })),
 );
 routes.push(
   ...[
@@ -73,7 +83,12 @@ routes.push(
     ["POST", "/api/shifts/monthly-plan"],
     ["GET", "/api/shifts/suggest-pattern-name"],
     ["POST", "/api/shifts/validate-conflicts"],
-  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+  ].map(([method, url]) => ({
+    method,
+    url,
+    authenticated: true,
+    validated: true,
+  })),
 );
 
 routes.push(
@@ -81,6 +96,20 @@ routes.push(
     ["GET", "/api/leaves"],
     ["POST", "/api/leaves"],
     ["DELETE", "/api/leaves/:id"],
+    ["GET", "/api/meters"],
+    ["POST", "/api/meters/bulk"],
+    ["GET", "/api/notes"],
+    ["POST", "/api/notes"],
+    ["PUT", "/api/notes/:id"],
+    ["DELETE", "/api/notes/:id"],
+    ["GET", "/api/configs/public/company-policy"],
+    ["GET", "/api/configs/public/company-policy/file"],
+    ["POST", "/api/configs/company-policy"],
+    ["GET", "/api/configs/server-time"],
+    ["GET", "/api/configs/validate-closure"],
+    ["GET", "/api/configs"],
+    ["GET", "/api/configs/:key"],
+    ["POST", "/api/configs/:key"],
     ["POST", "/api/email/verify"],
     ["GET", "/api/email/config"],
     ["POST", "/api/email/config"],
@@ -102,14 +131,24 @@ routes.push(
     ["GET", "/api/corrections/:id/history"],
     ["POST", "/api/corrections"],
     ["PATCH", "/api/corrections/:id/status"],
-  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+  ].map(([method, url]) => ({
+    method,
+    url,
+    authenticated: !url.startsWith("/api/configs/public/"),
+    validated: true,
+  })),
 );
 routes.push(
   ...[
     ["GET", "/api/shift-reports"],
     ["POST", "/api/shift-reports"],
     ["GET", "/api/shift-reports/export/:id"],
-  ].map(([method, url]) => ({ method, url, authenticated: true, validated: true })),
+  ].map(([method, url]) => ({
+    method,
+    url,
+    authenticated: true,
+    validated: true,
+  })),
 );
 describe("Fastify route guard anti-vacuity", () => {
   it("accepts a complete validated authenticated route surface", () =>
@@ -238,30 +277,61 @@ it("rejects unvalidated schedule route", () =>
     ),
   ).toThrow("Unvalidated"));
 
-it.each(["leaves", "corrections", "shift-reports", "kpis", "email", "scheduled-reports"])(
-  "rejects empty/missing/extra/unsecured/unvalidated %s routes",
-  (name) => {
-    const prefix = `/api/${name}`;
-    const belongs = (r: RouteEntry) => r.url === prefix || r.url.startsWith(`${prefix}/`);
-    expect(() => assertMigratedRouteContracts(routes.filter((r) => !belongs(r)))).toThrow("empty");
-    expect(() =>
-      assertMigratedRouteContracts(routes.filter((r) => r !== routes.find(belongs))),
-    ).toThrow("differs");
-    expect(() =>
-      assertMigratedRouteContracts([
-        ...routes,
-        { method: "POST", url: `${prefix}/extra`, authenticated: true, validated: true },
-      ]),
-    ).toThrow("differs");
+it.each([
+  "leaves",
+  "corrections",
+  "shift-reports",
+  "kpis",
+  "email",
+  "scheduled-reports",
+  "meters",
+  "notes",
+])("rejects empty/missing/extra/unsecured/unvalidated %s routes", (name) => {
+  const prefix = `/api/${name}`;
+  const belongs = (r: RouteEntry) => r.url === prefix || r.url.startsWith(`${prefix}/`);
+  expect(() => assertMigratedRouteContracts(routes.filter((r) => !belongs(r)))).toThrow("empty");
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((r) => r !== routes.find(belongs))),
+  ).toThrow("differs");
+  expect(() =>
+    assertMigratedRouteContracts([
+      ...routes,
+      { method: "POST", url: `${prefix}/extra`, authenticated: true, validated: true },
+    ]),
+  ).toThrow("differs");
+  expect(() =>
+    assertMigratedRouteContracts(
+      routes.map((r) => (belongs(r) ? { ...r, authenticated: false } : r)),
+    ),
+  ).toThrow("authentication");
+  expect(() =>
+    assertMigratedRouteContracts(routes.map((r) => (belongs(r) ? { ...r, validated: false } : r))),
+  ).toThrow("Unvalidated");
+});
+
+it("configs rejects empty/missing/extra/public auth drift and missing validation", () => {
+  const selected = (r: { url: string }) =>
+    r.url === "/api/configs" || r.url.startsWith("/api/configs/");
+  expect(() => assertMigratedRouteContracts(routes.filter((r) => !selected(r)))).toThrow("empty");
+  expect(() =>
+    assertMigratedRouteContracts(routes.filter((r) => r.url !== "/api/configs/server-time")),
+  ).toThrow("differs");
+  expect(() =>
+    assertMigratedRouteContracts([
+      ...routes,
+      { method: "GET", url: "/api/configs/extra", authenticated: true, validated: true },
+    ]),
+  ).toThrow("differs");
+  for (const target of routes.filter(selected)) {
     expect(() =>
       assertMigratedRouteContracts(
-        routes.map((r) => (belongs(r) ? { ...r, authenticated: false } : r)),
+        routes.map((r) => (r === target ? { ...r, authenticated: !r.authenticated } : r)),
       ),
     ).toThrow("authentication");
     expect(() =>
       assertMigratedRouteContracts(
-        routes.map((r) => (belongs(r) ? { ...r, validated: false } : r)),
+        routes.map((r) => (r === target ? { ...r, validated: false } : r)),
       ),
     ).toThrow("Unvalidated");
-  },
-);
+  }
+});

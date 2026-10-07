@@ -113,6 +113,20 @@ function fixture(config: Partial<FastifyConfig> = {}) {
       updateUser: vi.fn(),
       deleteUser: vi.fn(),
     },
+    meters: { list: vi.fn(), create: vi.fn() },
+    notes: { list: vi.fn(), create: vi.fn(), archive: vi.fn(), remove: vi.fn() },
+    configs: {
+      time: vi.fn(),
+      list: vi.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
+      closure: vi.fn(),
+      policy: vi.fn(),
+      download: vi.fn(),
+      upload: vi.fn(),
+      storePolicy: vi.fn(),
+      removeUploaded: vi.fn(),
+    },
     emailReports: {
       verify: vi.fn(),
       saveConfig: vi.fn(),
@@ -658,6 +672,9 @@ it.each([
   "/api/email/rules",
   "/api/email/send-test",
   "/api/scheduled-reports",
+  "/api/meters/bulk",
+  "/api/notes",
+  "/api/configs/custom",
 ])("%s enforces 1 MiB before effects", async (url) => {
   const f = fixture();
   const response = await f.app.inject({
