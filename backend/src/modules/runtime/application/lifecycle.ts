@@ -1,6 +1,7 @@
 export interface RuntimeTimers {
   after(ms: number, task: () => void): () => void;
   every(ms: number, task: () => void): () => void;
+  runTask?(task: () => Promise<unknown>): Promise<unknown>;
   reportError(error: unknown): void;
 }
 
@@ -14,7 +15,7 @@ export function createRuntimeLifecycle(ports: RuntimeTimers) {
   const run = (task: () => Promise<unknown>): Promise<void> => {
     if (stopping) return Promise.resolve();
     const pending = Promise.resolve()
-      .then(task)
+      .then(() => (ports.runTask ? ports.runTask(task) : task()))
       .then(() => {}, ports.reportError);
     active.add(pending);
     void pending.finally(() => active.delete(pending));

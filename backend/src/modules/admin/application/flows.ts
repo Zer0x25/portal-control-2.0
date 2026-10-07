@@ -71,7 +71,7 @@ export function createAdminFlows(deps: AdminDependencies) {
     },
     async backup(user: AdminActor, send: AdminRespond) {
       const actorUsername = actor(user);
-      deps.operations.start({
+      await deps.operations.start({
         type: "backup",
         actorUsername,
         maintenanceMode: false,
@@ -89,20 +89,23 @@ export function createAdminFlows(deps: AdminDependencies) {
         });
         send({ success: true, data: { message: "Backup ejecutado exitosamente.", backupPath } });
       } finally {
-        deps.operations.finish();
+        await deps.operations.finish();
       }
     },
     async restore(input: { filename: string }, user: AdminActor, send: AdminRespond) {
       if (!input.filename) throw new Error("Filename is required");
       const actorUsername = actor(user);
-      deps.operations.start({
+      await deps.operations.start({
         type: "restore",
         actorUsername,
         maintenanceMode: true,
         message: `Restauracion critica en curso desde ${input.filename}`,
       });
+      let restored = false;
+      let completed = false;
       try {
         await deps.restore(input.filename);
+        restored = true;
         const invalidation = await deps.invalidate({
           actorUsername,
           reason: "DATABASE_RESTORE",
@@ -123,9 +126,11 @@ export function createAdminFlows(deps: AdminDependencies) {
             invalidatedSessions: invalidation.deletedCount,
           },
         });
+        completed = true;
         deps.restart("database restore completed");
       } finally {
-        deps.operations.finish();
+        // A committed restore with failed revocation/audit stays globally blocked.
+        if (!restored || completed) await deps.operations.finish();
       }
     },
     async restart(user: AdminActor, send: AdminRespond) {

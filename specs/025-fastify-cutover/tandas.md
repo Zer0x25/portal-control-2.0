@@ -33,7 +33,7 @@ No crear nuevas specs de migración. No se hace push automático.
    - Calendario de Chile con contexto por lote; fecha civil de bitácora conservada.
    - Fallo del PDF detallado devuelve error HTTP neutral, sin documento parcial.
    - Pruebas de contenido y QA visual de los cuatro reportes, paginación y bitácora.
-5. Operaciones y rendimiento — en curso.
+5. Operaciones y rendimiento — completada.
    Primer bloque: [propiedad y drenaje del seed](seed-runtime-consistency.md).
    Validación: 733 pruebas de integración, 15 unitarias y 280 frontend; ambos CI,
    SDK, docs, specs y secretos correctos. Sin migración de base de datos.
@@ -58,8 +58,16 @@ No crear nuevas specs de migración. No se hace push automático.
    - Restore atómico con rollback ante errores SQL y temporales propios.
    - Publicación de backups verificados, limpieza de fallos y retención tolerante a errores.
    - PostgreSQL 18.4 explícito y regresiones con motores reales en BD desechable.
-     Pendientes: barrera universal del trabajo HTTP/jobs y coordinación distribuida
-     reset/restore; exclusión de ejecuciones manuales/ocurrencias distintas entre procesos.
+     Quinto a séptimo bloques: [barrera y coordinación distribuida](runtime-coordination.md).
+     Validación: 402 integración nativa y 570 unitarias/contrato con cobertura;
+     280 frontend; ambos CI, SDK, docs, specs, secretos y carga aislada en tres
+     procesos correctos.
+   - Propiedad HTTP hasta terminar el trabajo real, incluso después de respuesta/abort.
+   - Permisos persistentes fuera de public, cierre distribuido de admisión y drenaje.
+   - Exclusión de reportes manuales/automáticos/ocurrencias distintas y jobs sin TTL.
+   - Backup excluye coordinación; restore/reset la conservan; recuperación offline explícita.
+   - Restore confirmado con fallo de revocación permanece bloqueado.
+     Incluye migración de coordinación; solo validada en BD desechable.
 
 Los detalles concretos de las tandas 4–5 se delimitan al inspeccionar cada área.
 No implican cambios de permisos ni despliegue sin una instrucción para ello.

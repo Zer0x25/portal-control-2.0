@@ -1,3 +1,5 @@
+import { workCoordinator } from "./workCoordinator";
+import { logger } from "../utils/logger";
 import { withDirectTransaction } from "./db";
 import { requestContext } from "../utils/context";
 import { kpiService } from "./kpiService";
@@ -342,7 +344,11 @@ export class PunchService {
     }
 
     if (result.action === "ENTRADA") {
-      this.notifyLateness(employeeId, result.finalRecord.employeeName, now);
+      void workCoordinator
+        .run("lateness-notification", () =>
+          this.notifyLateness(employeeId, result.finalRecord.employeeName, now),
+        )
+        .catch((error) => logger.error("Lateness notify error", error));
     }
 
     const enrichedRecord = await TimeRecordService.enrichRecord(result.finalRecord);
@@ -362,25 +368,23 @@ export class PunchService {
     };
   }
 
-  private static notifyLateness(employeeId: string, employeeName: string, now: Date) {
-    kpiService
-      .getEmployeeScheduleForDate(employeeId, now)
-      .then((schedule) => {
-        if (schedule && schedule.startTime) {
-          const entranceMinutes = getMinutesFromMidnightChile(now);
-          const [schHour, schMinute] = schedule.startTime.split(":").map(Number);
-          const scheduledMinutes = schHour * 60 + schMinute;
-          const delay = entranceMinutes - scheduledMinutes;
-          if (delay > 15) {
-            emailService.notifyTardiness(
-              employeeName,
-              schedule.startTime,
-              now.toLocaleTimeString(),
-              delay,
-            );
-          }
-        }
-      })
-      .catch((e) => console.error("Lateness notify error:", e));
+  private static async notifyLateness(employeeId: string, employeeName: string, now: Date) {
+    try {
+      const schedule = await kpiService.getEmployeeScheduleForDate(employeeId, now);
+      if (schedule?.startTime) {
+        const entranceMinutes = getMinutesFromMidnightChile(now);
+        const [hour, minute] = schedule.startTime.split(":").map(Number);
+        const delay = entranceMinutes - (hour * 60 + minute);
+        if (delay > 15)
+          await emailService.notifyTardiness(
+            employeeName,
+            schedule.startTime,
+            now.toLocaleTimeString(),
+            delay,
+          );
+      }
+    } catch (error) {
+      logger.error("Lateness notify error", error);
+    }
   }
 }

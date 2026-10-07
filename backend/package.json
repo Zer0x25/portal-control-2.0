@@ -49,7 +49,8 @@
     "check:modules": "tsc -p tsconfig.modules.json",
     "test:fastify:integration": "node scripts/run-fastify-isolated.cjs",
     "benchmark:fastify": "node scripts/run-fastify-isolated.cjs --benchmark",
-    "prebuild": "node scripts/clean-dist.cjs"
+    "prebuild": "node scripts/clean-dist.cjs",
+    "runtime:coordination": "tsx --env-file-if-exists=.env scripts/runtime-coordination.ts"
   },
   "keywords": [],
   "author": "",

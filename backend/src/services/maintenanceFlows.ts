@@ -25,7 +25,11 @@ const flows = createMaintenanceFlows({
   },
   restart: (reason) => runtimeControlService.scheduleRestart(reason),
   watchdog: (onTimeout) => new Watchdog("SeederPhase1", 60000, onTimeout),
-  seedScope: (run) => requestContext.run({ username: "SYSTEM_SEEDER", skipTrigger: true }, run),
+  seedScope: (run) =>
+    requestContext.run(
+      { ...requestContext.getStore(), username: "SYSTEM_SEEDER", skipTrigger: true },
+      run,
+    ),
   seedPhase1: (options, progress, heartbeat) =>
     seedingEngine.runSeedPhase1(options, progress, heartbeat),
   createStoppedJob: (actor, options) => seedingJobService.createStoppedJob(actor, options),

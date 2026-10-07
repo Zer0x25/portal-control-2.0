@@ -179,14 +179,20 @@ export class BackupService {
   private async runPgDumpFromHost(url: string, backupPath: string): Promise<void> {
     // The vulnerability (Command Injection via execAsync) was previously mitigated here,
     // we use spawnWithRedirect to pass arguments safely.
-    await spawnWithRedirect("pg_dump", [url], { outputFile: backupPath });
+    await spawnWithRedirect("pg_dump", ["--exclude-schema=portal_runtime", url], {
+      outputFile: backupPath,
+    });
   }
 
   private async runPgDumpFromDocker(url: string, backupPath: string): Promise<void> {
     const containerName = await this.resolveDockerContainerName();
-    await spawnWithRedirect("docker", ["exec", containerName, "pg_dump", url], {
-      outputFile: backupPath,
-    });
+    await spawnWithRedirect(
+      "docker",
+      ["exec", containerName, "pg_dump", "--exclude-schema=portal_runtime", url],
+      {
+        outputFile: backupPath,
+      },
+    );
   }
 
   /**

@@ -1,3 +1,4 @@
+import { workCoordinator } from "./workCoordinator";
 import { ConflictError } from "../utils/AppError";
 import { SocketService } from "./socketService";
 
@@ -12,14 +13,16 @@ type OperationState = {
 };
 
 class SystemOperationService {
+  private finishing: Promise<void> | undefined;
+  private releaseMaintenance: (() => Promise<void>) | undefined;
   private currentOperation: OperationState | null = null;
 
-  start(params: {
+  async start(params: {
     type: MaintenanceOperationType;
     actorUsername: string;
     maintenanceMode: boolean;
     message: string;
-  }): OperationState {
+  }): Promise<OperationState> {
     if (this.currentOperation) {
       throw new ConflictError(
         `Ya existe una operacion en curso: ${this.currentOperation.type}. Espera a que finalice antes de continuar.`,
@@ -31,6 +34,13 @@ class SystemOperationService {
       startedAt: new Date().toISOString(),
     };
 
+    try {
+      this.releaseMaintenance = await workCoordinator.maintenance(params.type);
+    } catch (error) {
+      this.currentOperation = null;
+      throw error;
+    }
+
     SocketService.emitToAll("system:maintenance", {
       active: params.maintenanceMode,
       operation: params.type,
@@ -41,19 +51,26 @@ class SystemOperationService {
     return this.currentOperation;
   }
 
-  finish(): void {
+  finish(): Promise<void> {
+    if (this.finishing) return this.finishing;
     const previous = this.currentOperation;
-    this.currentOperation = null;
-
-    if (!previous) return;
-
-    SocketService.emitToAll("system:maintenance", {
-      active: false,
-      operation: previous.type,
-      message: `${previous.type} completed`,
-      startedAt: previous.startedAt,
-      finishedAt: new Date().toISOString(),
+    const release = this.releaseMaintenance;
+    if (!previous) return Promise.resolve();
+    this.finishing = (async () => {
+      await release?.();
+      this.releaseMaintenance = undefined;
+      this.currentOperation = null;
+      SocketService.emitToAll("system:maintenance", {
+        active: false,
+        operation: previous.type,
+        message: `${previous.type} completed`,
+        startedAt: previous.startedAt,
+        finishedAt: new Date().toISOString(),
+      });
+    })().finally(() => {
+      this.finishing = undefined;
     });
+    return this.finishing;
   }
 
   getSnapshot(): OperationState | null {

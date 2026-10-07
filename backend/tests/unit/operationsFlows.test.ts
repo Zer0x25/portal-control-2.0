@@ -133,6 +133,7 @@ it("timeout closes output once but retains seed ownership until the engine settl
   );
   const out = { start: vi.fn(), write: vi.fn(), end: vi.fn() };
   const pending = createMaintenanceFlows(d).seed({}, { username: "alice" }, out);
+  await Promise.resolve();
   timeout();
   expect(out.end).toHaveBeenCalledOnce();
   expect(d.operations.finish).not.toHaveBeenCalled();
@@ -142,4 +143,44 @@ it("timeout closes output once but retains seed ownership until the engine settl
   expect(out.write).toHaveBeenCalledTimes(writes);
   expect(out.end).toHaveBeenCalledOnce();
   expect(d.operations.finish).toHaveBeenCalledOnce();
+});
+it("does not start a destructive motor or stream before asynchronous maintenance acquisition", async () => {
+  const d = maintenance();
+  let release!: () => void;
+  d.operations.start.mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+  );
+  const out = { start: vi.fn(), write: vi.fn(), end: vi.fn() };
+  const pending = createMaintenanceFlows(d).clear({ id: "admin", username: "alice" }, out);
+  expect(out.start).not.toHaveBeenCalled();
+  expect(d.clear).not.toHaveBeenCalled();
+  release();
+  await pending;
+  expect(d.clear).toHaveBeenCalledOnce();
+  expect(d.operations.finish).toHaveBeenCalledOnce();
+});
+it("failed maintenance acquisition never starts the stream, motor or restart", async () => {
+  const d = maintenance();
+  d.operations.start.mockRejectedValueOnce(new Error("work still active"));
+  const out = { start: vi.fn(), write: vi.fn(), end: vi.fn() };
+  await expect(
+    createMaintenanceFlows(d).clear({ id: "admin", username: "alice" }, out),
+  ).rejects.toThrow("work still active");
+  expect(out.start).not.toHaveBeenCalled();
+  expect(d.clear).not.toHaveBeenCalled();
+  expect(d.restart).not.toHaveBeenCalled();
+  expect(d.operations.finish).not.toHaveBeenCalled();
+});
+it("committed restore with failed session revocation retains maintenance and never restarts", async () => {
+  const d = fixture();
+  d.restore.mockResolvedValueOnce(undefined);
+  d.invalidate.mockRejectedValueOnce(new Error("revocation unavailable"));
+  await expect(
+    createAdminFlows(d).restore({ filename: "owned.sql" }, { username: "alice" }, vi.fn()),
+  ).rejects.toThrow("revocation unavailable");
+  expect(d.operations.finish).not.toHaveBeenCalled();
+  expect(d.restart).not.toHaveBeenCalled();
 });

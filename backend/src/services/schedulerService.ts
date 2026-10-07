@@ -1,3 +1,4 @@
+import { workCoordinator } from "./workCoordinator";
 import { systemOperationService } from "./systemOperationService";
 import prisma from "./db";
 import { ExportService } from "./export/ExportService";
@@ -27,6 +28,7 @@ function newLifecycle() {
       const id = setInterval(task, ms);
       return () => clearTimeout(id);
     },
+    runTask: (task) => workCoordinator.run("scheduler-task", task, true),
     reportError: (error) => logger.error("Scheduled task failed", error),
   });
 }
@@ -197,7 +199,12 @@ export async function executeReport(reportId: string, onlyDue = false): Promise<
   if (stopped || systemOperationService.isMaintenanceModeActive()) {
     throw new AppError("Scheduler no disponible por mantenimiento o cierre", 409, "CONFLICT");
   }
-  const pending = Promise.resolve().then(() => executeReportWork(reportId, onlyDue));
+  const pending = workCoordinator.run(`report:${reportId}`, async () => {
+    const result = await workCoordinator.exclusive(`report:${reportId}`, () =>
+      executeReportWork(reportId, onlyDue),
+    );
+    if (!result.ran && !onlyDue) throw new AppError("Reporte en ejecución", 409, "CONFLICT");
+  });
   reportExecutions.add(pending);
   try {
     await pending;

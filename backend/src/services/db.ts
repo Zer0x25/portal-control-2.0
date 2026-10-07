@@ -129,7 +129,7 @@ function createExtendedClient(client: PrismaClient) {
                     id: (result as any)?.id ?? (args as any)?.where?.id ?? "N/A",
                   };
 
-                  client.auditLog
+                  await client.auditLog
                     .create({
                       data: {
                         actorUsername: username,

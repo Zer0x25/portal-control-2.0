@@ -1,3 +1,4 @@
+import { workCoordinator } from "./workCoordinator";
 import { Prisma } from "../generated/prisma/client";
 import prisma from "./db";
 import { requestContext } from "../utils/context";
@@ -237,7 +238,17 @@ export const seedingJobService = {
     if (shuttingDown) return Promise.resolve();
     const current = workers.get(jobId);
     if (current) return current;
-    const pending = this.runWorker(jobId)
+    const pending = workCoordinator
+      .run(
+        `seed-job:${jobId}`,
+        async () => {
+          const result = await workCoordinator.exclusive(`seed-job:${jobId}`, () =>
+            this.runWorker(jobId),
+          );
+          if (!result.ran) return;
+        },
+        true,
+      )
       .catch((error) => {
         logger.error("Seeding worker failed", error, { jobId });
       })
@@ -265,100 +276,105 @@ export const seedingJobService = {
 
     try {
       const runStartedAt = Date.now();
-      await requestContext.run({ username: "SYSTEM_SEEDER", skipTrigger: true }, async () => {
-        // Optimization: Pre-load context once per job
-        const preloadStartedAt = Date.now();
-        const context = await seedingService.preloadSeedingContext();
-        await this.log(
-          jobId,
-          `Contexto de seeding cargado en ${Date.now() - preloadStartedAt}ms.`,
-          "INFO",
-        );
-
-        const PARALLEL_DAYS = phase2ParallelDays;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        for (
-          let chunkStart = progress.currentDay;
-          chunkStart < config.days;
-          chunkStart += PARALLEL_DAYS
-        ) {
-          if (shuttingDown) return;
-          const fresh = await prisma.seedingJob.findUnique({ where: { id: jobId } });
-          if (!fresh || fresh.status === "paused" || fresh.status === "stopped") break;
-
-          const chunkEnd = Math.min(chunkStart + PARALLEL_DAYS, config.days);
-          const dayPromises = [];
-
-          // 1. Parallel Creation for the whole chunk
-          for (let day = chunkStart; day < chunkEnd; day++) {
-            const date = new Date(today.getTime() - (config.days - 1 - day) * 86400000);
-            dayPromises.push(
-              (async () => {
-                try {
-                  const createdCount = await withTimeout(
-                    trackOperation(
-                      seedingService.seedHistoryForDate(
-                        date,
-                        ((config.leaveRatio || 0) / 100) * 0.4,
-                        undefined,
-                        context,
-                      ),
-                    ),
-                    phase2DayTimeoutMs,
-                    `Timeout generando marcaciones del dia ${day + 1} (${phase2DayTimeoutMs}ms).`,
-                  );
-                  return { day, date, createdCount, error: null };
-                } catch (err: unknown) {
-                  const caught = toCaughtError(err);
-                  return { day, date, createdCount: 0, error: caught.message || "Unknown" };
-                }
-              })(),
-            );
-          }
-
-          const chunkStartedAt = Date.now();
-          const results = await Promise.all(dayPromises);
-
-          // Update Progress for each day in the chunk
-          for (const res of results) {
-            const { day, createdCount, error } = res;
-
-            if (error) {
-              progress.errors += 1;
-              await this.log(jobId, `Error en dia ${day + 1}: ${error}`, "ERROR");
-              continue;
-            }
-
-            progress.currentDay = day + 1;
-            progress.processedRecords += createdCount;
-
-            await prisma.seedingJob.update({
-              where: { id: jobId },
-              data: { progress: toJsonColumn(progress), updatedAt: new Date() },
-            });
-
-            await this.log(jobId, `Dia ${day + 1} listo. creados=${createdCount}`, "INFO", {
-              dayCompleted: day + 1,
-              totalDays: config.days,
-              created: createdCount,
-            });
-
-            SocketService.emit("seeder:phase2_progress", {
-              jobId,
-              dayCompleted: day + 1,
-              totalDays: config.days,
-              progress,
-            });
-          }
+      await requestContext.run(
+        { ...requestContext.getStore(), username: "SYSTEM_SEEDER", skipTrigger: true },
+        async () => {
+          // Optimization: Pre-load context once per job
+          const preloadStartedAt = Date.now();
+          const context = await seedingService.preloadSeedingContext();
           await this.log(
             jobId,
-            `Chunk ${chunkStart + 1}-${chunkEnd} completado en ${Date.now() - chunkStartedAt}ms.`,
+            `Contexto de seeding cargado en ${Date.now() - preloadStartedAt}ms.`,
             "INFO",
           );
-        }
-      });
+
+          const PARALLEL_DAYS = phase2ParallelDays;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          for (
+            let chunkStart = progress.currentDay;
+            chunkStart < config.days;
+            chunkStart += PARALLEL_DAYS
+          ) {
+            if (shuttingDown) return;
+            const fresh = await prisma.seedingJob.findUnique({ where: { id: jobId } });
+            if (!fresh || fresh.status === "paused" || fresh.status === "stopped") break;
+
+            const chunkEnd = Math.min(chunkStart + PARALLEL_DAYS, config.days);
+            const dayPromises = [];
+
+            // 1. Parallel Creation for the whole chunk
+            for (let day = chunkStart; day < chunkEnd; day++) {
+              const date = new Date(today.getTime() - (config.days - 1 - day) * 86400000);
+              dayPromises.push(
+                (async () => {
+                  try {
+                    const createdCount = await withTimeout(
+                      trackOperation(
+                        workCoordinator.run("seed-day", () =>
+                          seedingService.seedHistoryForDate(
+                            date,
+                            ((config.leaveRatio || 0) / 100) * 0.4,
+                            undefined,
+                            context,
+                          ),
+                        ),
+                      ),
+                      phase2DayTimeoutMs,
+                      `Timeout generando marcaciones del dia ${day + 1} (${phase2DayTimeoutMs}ms).`,
+                    );
+                    return { day, date, createdCount, error: null };
+                  } catch (err: unknown) {
+                    const caught = toCaughtError(err);
+                    return { day, date, createdCount: 0, error: caught.message || "Unknown" };
+                  }
+                })(),
+              );
+            }
+
+            const chunkStartedAt = Date.now();
+            const results = await Promise.all(dayPromises);
+
+            // Update Progress for each day in the chunk
+            for (const res of results) {
+              const { day, createdCount, error } = res;
+
+              if (error) {
+                progress.errors += 1;
+                await this.log(jobId, `Error en dia ${day + 1}: ${error}`, "ERROR");
+                continue;
+              }
+
+              progress.currentDay = day + 1;
+              progress.processedRecords += createdCount;
+
+              await prisma.seedingJob.update({
+                where: { id: jobId },
+                data: { progress: toJsonColumn(progress), updatedAt: new Date() },
+              });
+
+              await this.log(jobId, `Dia ${day + 1} listo. creados=${createdCount}`, "INFO", {
+                dayCompleted: day + 1,
+                totalDays: config.days,
+                created: createdCount,
+              });
+
+              SocketService.emit("seeder:phase2_progress", {
+                jobId,
+                dayCompleted: day + 1,
+                totalDays: config.days,
+                progress,
+              });
+            }
+            await this.log(
+              jobId,
+              `Chunk ${chunkStart + 1}-${chunkEnd} completado en ${Date.now() - chunkStartedAt}ms.`,
+              "INFO",
+            );
+          }
+        },
+      );
 
       if (shuttingDown) return;
       const final = await prisma.seedingJob.findUnique({ where: { id: jobId } });

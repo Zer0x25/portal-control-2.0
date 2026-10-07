@@ -3,12 +3,10 @@
 Spec: [025](spec.md). Estas deudas no bloquean la migración en desarrollo, por
 decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md). No representan nuevas specs de migración.
 
-- Mantenimiento sin interrupciones: barrera común de trabajo HTTP/jobs/scheduler,
-  shutdown y coordinación reset/restore. La propiedad y el drenaje de fase 1 se
-  corrigieron en [seed-runtime-consistency](seed-runtime-consistency.md); quedan
-  barrera universal y coordinación reset/restore entre procesos. El
-  [scheduler y la contención KPI](scheduler-kpi-concurrency.md) cubren la
-  reclamación de una misma ocurrencia, drenaje de reportes y revisiones distribuidas. Hoy puede requerir purgar/reiniciar.
+- Barrera de trabajo HTTP/jobs, cierre y coordinación reset/restore: corregidas
+  en [coordinación del runtime](runtime-coordination.md), junto a seed,
+  scheduler y drenaje administrativo. Se requiere recuperación offline explícita
+  ante claims abandonados; no hay continuidad automática ni mezcla de versiones.
 - Fechas Chile y consultas por día del calendario mensual (015): corregidas en
   [monthly-calendar-chile](monthly-calendar-chile.md).
 - Ownership de Usuario/quiosco en assignments y correcciones (015/016):
@@ -30,8 +28,8 @@ decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md
 - Fechas, mapping y cuatro PDF reales de importación/exportación (021):
   corregidos en [import-export-consistency](import-export-consistency.md).
   Sus límites de memoria, tipos raw y errores históricos están documentados allí.
-- Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
-  revocación en otras rutas de cambio de credenciales y redacción de texto libre.
+- Políticas de revocación en otras rutas de cambio de credenciales y redacción de
+  texto libre permanecen fuera del alcance de las cinco tandas actuales.
 
 La evidencia y límites detallados permanecen en los resultados 015–024 y en
 [roadmap](../roadmap-fastify.md). Corregir cada defecto con contrato/prueba propios
@@ -43,11 +41,11 @@ Tanda 3: [contrato de correo y reportes](email-reports-consistency.md).
 
 El drenaje local de las fachadas administrativas está implementado en
 [drenaje de flujos administrativos](admin-operation-drain.md). La barrera universal
-y reset/restore distribuido permanecen pendientes.
+y reset/restore distribuido se cierran en [coordinación del runtime](runtime-coordination.md).
 
 Prioridad resuelta antes de continuar tandas: [retiro definitivo de Express](express-retirement.md).
 Toda implementación posterior usa exclusivamente Fastify.
 
 Backup y restore corrigen atomicidad SQL, publicación y temporales en
 [consistencia de backup y restore](backup-restore-consistency.md); la coordinación
-distribuida permanece pendiente.
+distribuida está cubierta por [coordinación del runtime](runtime-coordination.md).

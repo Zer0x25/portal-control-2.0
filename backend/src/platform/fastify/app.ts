@@ -1,3 +1,4 @@
+import { HttpWork } from "./work";
 import { adminPlugin, type AdminFlows } from "../../modules/admin";
 import { maintenancePlugin, type MaintenanceFlows } from "../../modules/maintenance";
 import { auditPlugin, type AuditFlows } from "../../modules/audit";
@@ -38,6 +39,8 @@ export interface RouteEntry {
   validated: boolean;
 }
 export interface FastifyDependencies {
+  enterWork?(path: string): Promise<() => Promise<void>>;
+  closeAdmission?(): void;
   authenticate(token: string | undefined): Promise<AuthUser>;
   holidays: HolidayHttpService;
   users: UserFlows;
@@ -121,10 +124,37 @@ export function buildFastifyApp(
     if (json.length === 0) return done(null, undefined);
     jsonParser(request, json, done);
   });
+  const work = new HttpWork();
   const manifest: RouteEntry[] = [];
   const result = Object.assign(app, { routeManifest: manifest });
   app.decorateRequest("user", undefined);
   app.addHook("onRoute", (route) => {
+    const requestHooks = Array.isArray(route.onRequest)
+      ? route.onRequest
+      : route.onRequest
+        ? [route.onRequest]
+        : [];
+    route.onRequest = [
+      async (request) => {
+        await work.attach(
+          request,
+          () => deps.enterWork?.(request.url.split("?")[0]) ?? Promise.resolve(async () => {}),
+        );
+      },
+      ...requestHooks,
+    ];
+    const handler = route.handler;
+    route.handler = function (request, reply) {
+      return work.run(request, async () => {
+        try {
+          return await handler.call(this, request, reply);
+        } catch (error) {
+          // Once transport ownership ended, retain error auditing in this frame.
+          if (reply.sent) await auditFailure(error, request);
+          throw error;
+        }
+      });
+    };
     const hooks = Array.isArray(route.preHandler) ? route.preHandler : [route.preHandler];
     for (const method of Array.isArray(route.method) ? route.method : [route.method]) {
       manifest.push({
@@ -137,8 +167,32 @@ export function buildFastifyApp(
   });
   // Callback continuation is created inside ALS so every downstream await shares this request's store.
   app.addHook("onRequest", (_request, _reply, done) => requestContext.run({}, done));
+  app.addHook("onRequest", async (request, reply) => {
+    // Raw response close also covers a disconnected client before onResponse.
+    reply.raw.once("close", () => {
+      void work.end(request).catch((err: unknown) => app.log.error({ err }, "Work release failed"));
+    });
+    await work.enter(request, async () => async () => {});
+  });
+  app.addHook("onResponse", async (request) => {
+    await work.end(request);
+  });
+  app.addHook("onRequestAbort", async (request) => {
+    await work.end(request);
+  });
+  app.addHook("preClose", async () => {
+    work.closeAdmission();
+    deps.closeAdmission?.();
+    await work.drain();
+  });
   const auditFailure = async (error: unknown, request: FastifyRequest) => {
-    if (shouldAuditError(error)) {
+    if (
+      shouldAuditError(error) &&
+      work.admitted(request) &&
+      request.url.split("?")[0].startsWith("/api/") &&
+      !request.url.startsWith("/api/health") &&
+      !(error instanceof AppError && ["MAINTENANCE_MODE", "RUNTIME_CLOSING"].includes(error.code))
+    ) {
       await deps
         .auditError(
           error,
@@ -162,7 +216,10 @@ export function buildFastifyApp(
       { code: response.body.code, category, requestId: request.id },
       "HTTP request failed",
     );
-    await auditFailure(error, request);
+    if (work.has(request))
+      await work
+        .run(request, () => auditFailure(error, request))
+        .catch((err: unknown) => app.log.error({ err }, "Error handling failed"));
     if (response.headers) reply.headers(response.headers);
     return reply.code(response.statusCode).send(response.body);
   });
@@ -267,8 +324,12 @@ export function buildFastifyApp(
       const query = request.query;
       const token =
         typeof query === "object" && query !== null && "token" in query ? query.token : undefined;
-      const user = await deps.authenticate(
-        resolveAccessToken(request.headers.authorization, token),
+      await work.attach(
+        request,
+        () => deps.enterWork?.(request.url.split("?")[0]) ?? Promise.resolve(async () => {}),
+      );
+      const user = await work.run(request, () =>
+        deps.authenticate(resolveAccessToken(request.headers.authorization, token)),
       );
       request.user = user;
       const context = requestContext.getStore();

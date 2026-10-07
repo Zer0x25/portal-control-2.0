@@ -37,11 +37,12 @@ Validación del bloque: 391 pruebas de integración nativa, 562 unitarias/contra
 y 280 frontend; CI y cobertura de ambos paquetes, SDK, docs, specs y secretos
 correctos. Presupuestos sin cambios.
 
-## Límites pendientes
+## Alcance y continuidad
 
 La atomicidad de restore no es una barrera distribuida: no coordina todas las
 peticiones/jobs de otros procesos, no conserva locks ubicados en `public` después
 de una restauración exitosa y no resuelve la recuperación tras caída del motor.
 La barrera universal HTTP/jobs, reset/restore entre procesos y exclusión de
-reportes manuales/ocurrencias distintas siguen en el [backlog](backlog.md).
+reportes manuales/ocurrencias distintas se implementan posteriormente en
+[coordinación del runtime](runtime-coordination.md).
 No se aplican migraciones ni restauraciones a bases del usuario.

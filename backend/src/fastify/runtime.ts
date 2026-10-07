@@ -1,3 +1,5 @@
+import { seedingJobService } from "../services/seedingJobService";
+import { workCoordinator } from "../services/workCoordinator";
 import { operationRuntime } from "../services/operationRuntime";
 import { openSchedulerRuntime, stopScheduler } from "../services/schedulerService";
 import { seedRuntime } from "../services/seedRuntime";
@@ -27,10 +29,13 @@ import { HealthService } from "../services/HealthService";
 import { systemOperationService } from "../services/systemOperationService";
 import { auditService } from "../services/auditService";
 import { closeDatabase } from "../services/db";
+import { AppError } from "../utils/AppError";
 import { getAllowedOrigins } from "../utils/corsPolicy";
 
 export function createFastifyRuntime(config?: FastifyConfig) {
   if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET es obligatorio para iniciar Fastify");
+  workCoordinator.openRuntime();
+  seedingJobService.openRuntime();
   operationRuntime.openRuntime();
   seedRuntime.openRuntime();
   openSchedulerRuntime();
@@ -38,6 +43,27 @@ export function createFastifyRuntime(config?: FastifyConfig) {
   const loadExports = () => (exports ??= import("../services/export/StreamExportService"));
   const app = buildFastifyApp(
     {
+      enterWork: async (path) => {
+        // Health is read-only database/OS probing and keeps its maintenance exemption.
+        if (path === "/api/health" || path === "/api/health/ready" || !path.startsWith("/api/"))
+          return async () => {};
+        try {
+          const lease = await workCoordinator.enter(`HTTP:${path}`);
+          return () => lease.release();
+        } catch (error) {
+          if (
+            error instanceof AppError &&
+            error.code === "MAINTENANCE_MODE" &&
+            (path.startsWith("/api/admin/") || path.startsWith("/api/maintenance/"))
+          )
+            throw new AppError(error.message, 409, "CONFLICT");
+          throw error;
+        }
+      },
+      closeAdmission: () => {
+        operationRuntime.closeAdmission();
+        workCoordinator.closeAdmission();
+      },
       authenticate: authenticateAccessToken,
       holidays: holidayService,
       users: userService,
@@ -103,6 +129,8 @@ export function createFastifyRuntime(config?: FastifyConfig) {
         await operationRuntime.drain();
         await stopScheduler();
         await seedRuntime.drain();
+        await seedingJobService.shutdown();
+        await workCoordinator.drain();
         try {
           if (exports) await (await exports).streamExportService.close();
         } finally {

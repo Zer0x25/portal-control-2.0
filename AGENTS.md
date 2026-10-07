@@ -510,3 +510,12 @@ conserva códigos multipart sin importar Multer en Fastify. El comando dev:expre
 y drenaje universal pasan a specs/025-fastify-cutover/backlog.md por instrucción
 del usuario; no crear más specs de migración ni bloquear cutover con continuidad
 de producción. En desarrollo se autoriza purgar sesiones y reiniciar.
+
+Cierre de tanda 5: ver specs/025-fastify-cutover/runtime-coordination.md.
+HTTP/jobs/scheduler/seed/sockets usan permisos persistentes de WorkCoordinator
+en portal_runtime fuera de public. No introducir trabajo DB/proveedor sin
+propietario, expirar locks ni limpiar claims automáticamente tras reinicio.
+Todo proceso previo debe detenerse antes de aplicar la migración de coordinación.
+Backup excluye portal_runtime; restore/reset deben conservarlo. La recuperación
+requiere detener runtimes y motores externos y confirmación explícita en el CLI.
+Health/documentación permanecen de lectura durante mantenimiento.

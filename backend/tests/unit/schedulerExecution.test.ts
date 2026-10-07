@@ -1,3 +1,12 @@
+vi.mock("../../src/services/workCoordinator", () => ({
+  workCoordinator: {
+    run: async (_label: string, task: () => Promise<unknown>) => task(),
+    exclusive: async (_key: string, task: () => Promise<unknown>) => ({
+      ran: true,
+      value: await task(),
+    }),
+  },
+}));
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const fixture = vi.hoisted(() => ({
   report: {} as Record<string, unknown>,

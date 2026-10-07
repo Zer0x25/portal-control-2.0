@@ -1,24 +1,30 @@
 import { ExportService } from "../../../src/services/export/ExportService";
 import { EmailService } from "../../../src/services/EmailService";
-import prisma, { closeDatabase } from "../../../src/services/db";
+import { closeDatabase } from "../../../src/services/db";
+import { workCoordinator } from "../../../src/services/workCoordinator";
 import { assertConnectedToTestDb } from "../../integration/_support/testDb";
-
+const command = () => new Promise<void>((resolve) => process.once("message", () => resolve()));
 async function main() {
   await assertConnectedToTestDb();
-  ExportService.prototype.generateReportPDF = async () => Buffer.from("%PDF-test-fixture");
+  ExportService.prototype.generateReportPDF = async () => {
+    process.send?.({ type: "render" });
+    await command();
+    return Buffer.from("%PDF-test-fixture");
+  };
   EmailService.prototype.sendEmailWithAttachment = async () => {
     process.send?.({ type: "delivery" });
     return { success: true, message: "fixture" };
   };
-  const read = prisma.scheduledReport.findUnique.bind(prisma.scheduledReport);
-  prisma.scheduledReport.findUnique = async (...args) => {
-    const report = await read(...args);
-    process.send?.({ type: "read" });
-    await new Promise<void>((resolve) => process.once("message", () => resolve()));
-    return report;
-  };
+  process.send?.({ type: "ready", owner: workCoordinator.owner });
+  await command();
   const { executeReport } = await import("../../../src/services/schedulerService");
-  await executeReport(process.argv[2], true);
+  try {
+    await executeReport(process.argv[2], process.argv[3] !== "manual");
+  } catch (error) {
+    if (error instanceof Error && "statusCode" in error && error.statusCode === 409) {
+      process.send?.({ type: "busy" });
+    } else throw error;
+  }
 }
 main()
   .catch((error) => {

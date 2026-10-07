@@ -29,6 +29,9 @@ beforeAll(async () => {
   url.pathname = "/pweb3_restore_test";
   target = new Client({ connectionString: url.toString() });
   await target.connect();
+  await target.query("CREATE SCHEMA portal_runtime");
+  await target.query("CREATE TABLE portal_runtime.live_claim (id int PRIMARY KEY)");
+  await target.query("INSERT INTO portal_runtime.live_claim VALUES (1)");
   directory = await fs.mkdtemp(path.join(os.tmpdir(), "portal-backup-test-"));
   process.env.BACKUP_PATH = directory;
   process.env.BACKUP_MODE = "docker";
@@ -46,6 +49,9 @@ afterEach(async () => {
     [],
   );
   expect(await listRestoreTemps()).toEqual(restoreTemps);
+  expect((await target.query("SELECT id FROM portal_runtime.live_claim")).rows).toEqual([
+    { id: 1 },
+  ]);
 });
 afterAll(async () => {
   for (const key of keys) {

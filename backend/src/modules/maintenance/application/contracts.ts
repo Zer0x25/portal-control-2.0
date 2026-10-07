@@ -30,7 +30,7 @@ export interface MaintenanceDependencies {
       maintenanceMode: boolean;
       message: string;
     }): unknown;
-    finish(): void;
+    finish(): void | Promise<void>;
   };
   clear(options: {
     onProgress: (message: string) => void;

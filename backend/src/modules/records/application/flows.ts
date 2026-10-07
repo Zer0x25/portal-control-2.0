@@ -118,8 +118,8 @@ export function createRecordFlows<
         employeeId = user.employeeId;
       }
       const format = query.format === undefined ? "json" : query.format;
-      // Existing export audit is fire-and-forget; its ordering is preserved.
-      void deps.audit({
+      // Audit belongs to this export promise, including its error/close path.
+      await deps.audit({
         actorUsername: user?.username || "SYSTEM",
         action: "DATA_EXPORT",
         category: "OPERATIONS",

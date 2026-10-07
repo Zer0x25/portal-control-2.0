@@ -11,9 +11,22 @@ export interface SocketSecurity {
   allowedOrigins: string[];
 }
 const defaultSecurity: SocketSecurity = {
-  authenticate: async (token) => (await import("./authentication")).authenticateAccessToken(token),
-  authorize: async (tokens) =>
-    (await import("./socketAuthentication")).authorizeSocketTokens(tokens),
+  authenticate: async (token) => {
+    const { workCoordinator } = await import("./workCoordinator");
+    return workCoordinator.run(
+      "socket-auth",
+      async () => (await import("./authentication")).authenticateAccessToken(token),
+      true,
+    );
+  },
+  authorize: async (tokens) => {
+    const { workCoordinator } = await import("./workCoordinator");
+    return workCoordinator.run(
+      "socket-authorize",
+      async () => (await import("./socketAuthentication")).authorizeSocketTokens(tokens),
+      true,
+    );
+  },
   allowedOrigins: [],
 };
 

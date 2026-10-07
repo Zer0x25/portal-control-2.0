@@ -10,14 +10,14 @@ import type {
 export function createMaintenanceFlows(deps: MaintenanceDependencies) {
   return {
     async clear(user: MaintenanceActor | undefined, out: MaintenanceOutput) {
-      deps.operations.start({
+      await deps.operations.start({
         type: "reset",
         actorUsername: user?.username || "ADMIN",
         maintenanceMode: true,
         message: "Reset critico de base de datos en curso",
       });
-      out.start();
       try {
+        out.start();
         const result = await deps.clear({
           onProgress: (message) => out.write({ progress: message }),
           currentUser: user,
@@ -35,7 +35,7 @@ export function createMaintenanceFlows(deps: MaintenanceDependencies) {
         });
         out.end();
       } finally {
-        deps.operations.finish();
+        await deps.operations.finish();
       }
     },
     async seed(input: SeedOptions, user: { username?: string }, out: MaintenanceOutput) {
@@ -48,7 +48,7 @@ export function createMaintenanceFlows(deps: MaintenanceDependencies) {
         shiftReportsPerDay = 6,
         quickNotesCount = 5,
       } = input;
-      deps.operations.start({
+      await deps.operations.start({
         type: "seed",
         actorUsername: user.username || "SYSTEM",
         maintenanceMode: true,
@@ -107,7 +107,7 @@ export function createMaintenanceFlows(deps: MaintenanceDependencies) {
         end();
       } finally {
         watchdog.stop();
-        deps.operations.finish();
+        await deps.operations.finish();
       }
     },
     async startJob(input: Phase2Options, user: { username?: string }) {
