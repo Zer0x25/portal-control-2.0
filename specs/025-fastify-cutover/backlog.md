@@ -21,6 +21,9 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
   y recuperación de caché corregidas en
   [kpi-monthly-materialization](kpi-monthly-materialization.md). Invalidación
   por cambios de fuentes corregida en [kpi-cache-invalidation](kpi-cache-invalidation.md).
+- Atomicidad y autoría de lotes de medidores (020): corregidas en
+  [meter-batch-consistency](meter-batch-consistency.md). Fechas/filtros de medidores
+  siguen pendientes.
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
   revocación en otras rutas de cambio de credenciales y redacción de texto libre.

@@ -1,4 +1,6 @@
-import prisma from "./db";
+import { randomUUID } from "node:crypto";
+import prisma, { withDirectTransaction } from "./db";
+import { AuthError } from "../utils/AppError";
 import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import type { MeterReadingSchema } from "../models/schemas/meter.schemas";
@@ -88,20 +90,39 @@ export class MeterService {
   /**
    * Creates multiple meter readings in bulk.
    */
-  static async bulkCreate(readings: MeterReadingInput[]) {
-    const created = await Promise.all(
-      readings.map((r) =>
-        prisma.meterReading.create({
-          data: {
-            meterConfigId: r.meterConfigId,
-            authorUsername: r.authorUsername,
-            value: r.value,
-            isRecharge: r.isRecharge ?? false,
-            notes: r.notes || null,
-          },
-        }),
-      ),
-    );
+  static async bulkCreate(readings: MeterReadingInput[], actorUsername: string) {
+    if (!actorUsername?.trim()) throw new AuthError();
+    const inputs = readings.map((r) => ({
+      id: randomUUID(),
+      meterConfigId: r.meterConfigId,
+      authorUsername: actorUsername,
+      value: r.value,
+      isRecharge: r.isRecharge ?? false,
+      notes: r.notes || null,
+    }));
+    const { created, audits } = await withDirectTransaction(async (tx) => {
+      if (!inputs.length) return { created: [], audits: [] };
+      const rows = await tx.meterReading.createManyAndReturn({ data: inputs });
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      // SQL RETURNING does not guarantee input order; preserve the HTTP batch order.
+      const created = inputs.map((input) => {
+        const row = byId.get(input.id);
+        if (!row) throw new Error("Missing inserted meter reading");
+        return row;
+      });
+      const audits = await tx.auditLog.createManyAndReturn({
+        data: created.map((row) => ({
+          actorUsername,
+          action: "METERREADING_CREATE",
+          category: "DATA",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: { model: "MeterReading", operation: "create", id: row.id },
+        })),
+      });
+      return { created, audits };
+    });
+    for (const audit of audits) SocketService.emitToAll("auditLog:created", audit);
 
     const enriched = created.map((r) => ({
       ...r,

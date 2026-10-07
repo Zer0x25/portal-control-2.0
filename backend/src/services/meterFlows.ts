@@ -4,5 +4,5 @@ import { BulkMeterReadingSchema } from "../models/schemas/meter.schemas";
 export const meterFlows = createMeterFlows({
   list: (params) => MeterService.list(params),
   parse: (value) => BulkMeterReadingSchema.parse(value),
-  create: (value) => MeterService.bulkCreate(value),
+  create: (value, actor) => MeterService.bulkCreate(value, actor),
 });

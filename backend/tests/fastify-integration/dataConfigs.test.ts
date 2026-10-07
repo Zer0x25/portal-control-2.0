@@ -120,14 +120,14 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
   it("creates whole meter batch, strips ignored input fields and emits one count", async () => {
     const res = await http("POST", "/api/meters/bulk", [
       { ...reading, id: "client-id", timestamp: "2000-01-01T00:00:00Z", extra: "ignored" },
-      { ...reading, value: 0, isRecharge: true, notes: "" },
+      { ...reading, authorUsername: "another-spoof", value: 0, isRecharge: true, notes: "" },
     ]);
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toHaveLength(2);
     expect(res.body.data[0]).toMatchObject({
       meterConfigId: "water",
-      authorUsername: "client-author",
+      authorUsername: "data-admin",
       value: 12.5,
       syncStatus: "synced",
       isDeleted: false,
@@ -136,7 +136,54 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(res.body.data[0].id).not.toBe("client-id");
     expect(res.body.data[0].timestamp).not.toContain("2000-01-01");
     expect(res.body.data[1].notes).toBeNull();
+    expect(
+      res.body.data.every((row: { authorUsername: string }) => row.authorUsername === "data-admin"),
+    ).toBe(true);
+    const audits = await prismaDirect.auditLog.findMany({
+      where: { action: "METERREADING_CREATE" },
+    });
+    expect(audits).toHaveLength(2);
+    expect(audits.every((audit) => audit.actorUsername === "data-admin")).toBe(true);
+    expect(audits.map((audit) => (audit.details as { id: string }).id).sort()).toEqual(
+      res.body.data.map((row: { id: string }) => row.id).sort(),
+    );
     expect(emit).toHaveBeenCalledExactlyOnceWith("meter:updated", { count: 2 });
+  });
+  it("rolls back all meter readings when an insertion in the batch fails", async () => {
+    await prismaDirect.$executeRaw`CREATE FUNCTION test_meter_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.value = 13 THEN RAISE EXCEPTION 'test meter failure'; END IF; RETURN NEW; END; $$`;
+    await prismaDirect.$executeRaw`CREATE TRIGGER test_meter_fail BEFORE INSERT ON meter_readings FOR EACH ROW EXECUTE FUNCTION test_meter_fail()`;
+    try {
+      const result = await http("POST", "/api/meters/bulk", [
+        { ...reading, value: 1 },
+        { ...reading, value: 13 },
+        { ...reading, value: 2 },
+      ]);
+      expect(result.status).toBe(500);
+      expect(await prismaDirect.meterReading.count()).toBe(0);
+      expect(await prismaDirect.auditLog.count({ where: { action: "METERREADING_CREATE" } })).toBe(
+        0,
+      );
+      expect(emit).not.toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRaw`DROP TRIGGER test_meter_fail ON meter_readings`;
+      await prismaDirect.$executeRaw`DROP FUNCTION test_meter_fail()`;
+    }
+  });
+  it("rolls back the meter batch when its audit fails", async () => {
+    await prismaDirect.$executeRaw`CREATE FUNCTION test_meter_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action = 'METERREADING_CREATE' THEN RAISE EXCEPTION 'test meter audit failure'; END IF; RETURN NEW; END; $$`;
+    await prismaDirect.$executeRaw`CREATE TRIGGER test_meter_audit_fail BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION test_meter_audit_fail()`;
+    try {
+      const result = await http("POST", "/api/meters/bulk", [reading, { ...reading, value: 1 }]);
+      expect(result.status).toBe(500);
+      expect(await prismaDirect.meterReading.count()).toBe(0);
+      expect(await prismaDirect.auditLog.count({ where: { action: "METERREADING_CREATE" } })).toBe(
+        0,
+      );
+      expect(emit).not.toHaveBeenCalled();
+    } finally {
+      await prismaDirect.$executeRaw`DROP TRIGGER test_meter_audit_fail ON audit_logs`;
+      await prismaDirect.$executeRaw`DROP FUNCTION test_meter_audit_fail()`;
+    }
   });
   it("rejects invalid 51st reading before all writes; empty batch remains accepted", async () => {
     expect(

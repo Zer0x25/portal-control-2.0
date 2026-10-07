@@ -20,10 +20,26 @@ it("meters preserve optional pagination and parse whole batch before effects", a
     data: [{ id: "r" }],
     pagination: { total: 3, page: 2, totalPages: 2 },
   });
-  await expect(flow.create(Array.from({ length: 51 }, () => ({ value: 1 })))).rejects.toThrow(
-    "invalid 51st",
-  );
+  await expect(
+    flow.create(
+      Array.from({ length: 51 }, () => ({ value: 1 })),
+      "session-actor",
+    ),
+  ).rejects.toThrow("invalid 51st");
   expect(create).not.toHaveBeenCalled();
+});
+it("meter creation requires a session actor and forwards it independently of client authors", async () => {
+  const create = vi.fn(async () => []);
+  const parse = vi.fn(() => [{ meterConfigId: "meter", authorUsername: "spoofed", value: 1 }]);
+  const flow = createMeterFlows({ list: vi.fn(), create, parse });
+  await expect(flow.create([], "")).rejects.toThrow("Autenticación requerida");
+  expect(parse).not.toHaveBeenCalled();
+  expect(create).not.toHaveBeenCalled();
+  await flow.create([], "session-actor");
+  expect(create).toHaveBeenCalledWith(
+    [{ meterConfigId: "meter", authorUsername: "spoofed", value: 1 }],
+    "session-actor",
+  );
 });
 it("notes project parsed fields, enforce path ID and retain delete response", async () => {
   const create = vi.fn(async (v) => v),

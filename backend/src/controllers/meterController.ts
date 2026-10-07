@@ -1,3 +1,4 @@
+import type { AuthRequest } from "../middleware/authMiddleware";
 import type { Request, Response } from "express";
 import { asyncHandler } from "../middleware/errorHandler";
 import { meterFlows as flows } from "../services/meterFlows";
@@ -14,6 +15,6 @@ export const getMeterReadings = asyncHandler(async (req: Request, res: Response)
     }),
   );
 });
-export const createMeterReading = asyncHandler(async (req: Request, res: Response) => {
-  res.status(201).json(await flows.create(req.body));
+export const createMeterReading = asyncHandler(async (req: AuthRequest, res: Response) => {
+  res.status(201).json(await flows.create(req.body, req.user?.username || ""));
 });

@@ -22,5 +22,5 @@ export interface MeterDependencies<Reading> {
     totalPages: number;
   }>;
   parse(value: unknown): MeterInput[];
-  create(readings: MeterInput[]): Promise<Reading[]>;
+  create(readings: MeterInput[], actorUsername: string): Promise<Reading[]>;
 }

@@ -1,3 +1,4 @@
+import { AuthError } from "../../../utils/AppError";
 import type { MeterDependencies, MeterListParams } from "./contracts";
 export function createMeterFlows<Reading>(deps: MeterDependencies<Reading>) {
   return {
@@ -13,10 +14,11 @@ export function createMeterFlows<Reading>(deps: MeterDependencies<Reading>) {
           : {}),
       };
     },
-    create: async (value: unknown) => ({
-      success: true,
-      data: await deps.create(deps.parse(value)),
-    }),
+    create: async (value: unknown, actorUsername: string) => {
+      if (!actorUsername?.trim()) throw new AuthError();
+      const readings = deps.parse(value);
+      return { success: true, data: await deps.create(readings, actorUsername) };
+    },
   };
 }
 export type MeterFlows = ReturnType<typeof createMeterFlows>;
