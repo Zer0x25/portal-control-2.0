@@ -1,3 +1,4 @@
+import { operationRuntime } from "./operationRuntime";
 import { createMaintenanceFlows } from "../modules/maintenance";
 import { maintenanceService } from "./maintenanceService";
 import { systemOperationService } from "./systemOperationService";
@@ -46,6 +47,14 @@ const flows = createMaintenanceFlows({
 });
 
 export const maintenanceFlows = {
-  ...flows,
-  seed: (...args: Parameters<typeof flows.seed>) => seedRuntime.run(() => flows.seed(...args)),
+  clear: operationRuntime.wrap(flows.clear),
+  startJob: operationRuntime.wrap(flows.startJob),
+  pauseJob: operationRuntime.wrap(flows.pauseJob),
+  resumeJob: operationRuntime.wrap(flows.resumeJob),
+  stopJob: operationRuntime.wrap(flows.stopJob),
+  status: operationRuntime.wrap(flows.status),
+  logs: operationRuntime.wrap(flows.logs),
+  seed: operationRuntime.wrap((...args: Parameters<typeof flows.seed>) =>
+    seedRuntime.run(() => flows.seed(...args)),
+  ),
 };

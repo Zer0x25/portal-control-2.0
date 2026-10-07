@@ -1,3 +1,4 @@
+import { operationRuntime } from "../services/operationRuntime";
 import { openSchedulerRuntime, stopScheduler } from "../services/schedulerService";
 import { seedRuntime } from "../services/seedRuntime";
 import { adminFlows } from "../services/adminFlows";
@@ -30,11 +31,12 @@ import { getAllowedOrigins } from "../utils/corsPolicy";
 
 export function createFastifyRuntime(config?: FastifyConfig) {
   if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET es obligatorio para iniciar Fastify");
+  operationRuntime.openRuntime();
   seedRuntime.openRuntime();
   openSchedulerRuntime();
   let exports: Promise<typeof import("../services/export/StreamExportService")> | undefined;
   const loadExports = () => (exports ??= import("../services/export/StreamExportService"));
-  return buildFastifyApp(
+  const app = buildFastifyApp(
     {
       authenticate: authenticateAccessToken,
       holidays: holidayService,
@@ -98,6 +100,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
           : null,
       auditError: (error, request, category) => auditService.logError(error, request, category),
       close: async () => {
+        await operationRuntime.drain();
         await stopScheduler();
         await seedRuntime.drain();
         try {
@@ -114,4 +117,9 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       development: process.env.NODE_ENV === "development",
     },
   );
+  app.addHook("preClose", async () => {
+    operationRuntime.closeAdmission();
+    await operationRuntime.drain();
+  });
+  return app;
 }

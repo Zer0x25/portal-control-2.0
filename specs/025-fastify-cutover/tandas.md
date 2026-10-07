@@ -47,6 +47,11 @@ No crear nuevas specs de migración. No se hace push automático.
    - Reclamación distribuida de una misma ocurrencia cron antes de renderer/envío.
    - Admisión y drenaje de reportes manuales/automáticos antes de cerrar pools.
    - Contención KPI medida en BD aislada; generación repartida en 64 filas transaccionales.
+     Tercer bloque: [drenaje de flujos administrativos](admin-operation-drain.md).
+     Validación: 735 integración, 3 nuevas unitarias y ambos CI; docs, specs y secretos.
+   - Registro de promesas reales de admin y maintenance, independiente de la respuesta.
+   - Admisión cerrada y drenaje antes de jobs, sockets y pools en ambos servidores.
+   - Prueba de escritura real durante cierre y errores preservados para el consumidor.
      Pendientes: barrera universal del trabajo HTTP/jobs y coordinación distribuida
      reset/restore; exclusión de ejecuciones manuales/ocurrencias distintas entre procesos.
 

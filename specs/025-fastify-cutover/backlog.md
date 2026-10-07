@@ -40,3 +40,7 @@ cuando se trabaje en él, sin retrasar nuevamente el uso de Fastify por defecto.
 Tanda 2: [consistencia de configuración y PDF](config-policy-consistency.md).
 
 Tanda 3: [contrato de correo y reportes](email-reports-consistency.md).
+
+El drenaje local de las fachadas administrativas está implementado en
+[drenaje de flujos administrativos](admin-operation-drain.md). La barrera universal
+y reset/restore distribuido permanecen pendientes.

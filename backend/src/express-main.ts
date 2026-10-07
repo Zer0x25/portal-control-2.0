@@ -1,3 +1,4 @@
+import { operationRuntime } from "./services/operationRuntime";
 import "dotenv/config";
 import http from "node:http";
 import path from "node:path";
@@ -16,6 +17,7 @@ async function main() {
   const port = Number(process.env.PORT || 4000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("PORT inválido");
   seedingJobService.openRuntime();
+  operationRuntime.openRuntime();
   seedRuntime.openRuntime();
   openSchedulerRuntime();
   const server = http.createServer(app);
@@ -23,7 +25,9 @@ async function main() {
   const jobs = createRuntimeJobs();
   const host = bindRuntimeHost(
     async () => {
+      operationRuntime.closeAdmission();
       const closed = new Promise<void>((resolve) => server.close(() => resolve()));
+      await operationRuntime.drain();
       await jobs.stop();
       await SocketService.close();
       await closed;

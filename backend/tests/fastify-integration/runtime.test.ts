@@ -1,3 +1,4 @@
+import { operationRuntime } from "../../src/services/operationRuntime";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
@@ -215,7 +216,27 @@ it("resumes the drained worker and completes persisted progress with bounded eng
 it("closes sockets, jobs and HTTP once, releases socket owner", async () => {
   await resetIntegrationDb();
   for (const s of sockets) s.close();
-  await app.close();
+  let release!: () => void;
+  const pending = operationRuntime.run(async () => {
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    // The response may already be over; the application still needs a live pool.
+    return prismaDirect.systemConfig.create({ data: { key: "drain-proof", value: "true" } });
+  });
+  await Promise.resolve();
+  let closed = false;
+  const closing = app.close().then(() => {
+    closed = true;
+  });
+  await vi.waitFor(async () => {
+    await expect(operationRuntime.run(() => "late")).rejects.toThrow("Runtime cerrando");
+  });
+  expect(closed).toBe(false);
+  expect(stops).toBe(0);
+  release();
+  expect((await pending).key).toBe("drain-proof");
+  await closing;
   await app.close();
   expect(starts).toBe(1);
   expect(stops).toBe(1);
