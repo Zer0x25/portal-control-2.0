@@ -73,6 +73,18 @@ la migración pendiente 20261006211000_auth_mfa_attempts sin borrar datos.
 Readiness 4000 y proxy Vite 5173 respondieron 200; Chromium mostró login sin errores
 JavaScript. El checkout principal previo no se modifica automáticamente.
 
+## Corrección de CI del PR 14
+
+Verify backend falló en dos expectativas de medidores: la caracterización del
+filtro legacy asumía la zona local America/Santiago, mientras el runner usa UTC.
+Se trasladó ese caso a pruebas parametrizadas con TZ explícita: UTC incluye la
+lectura de mediodía; Santiago la excluye por new Date + setHours heredados.
+Cada caso comprueba el offset efectivo, HTTP 200 e IDs exactos y restaura el
+entorno al terminar. No se modifica el servicio ni se elimina la deuda funcional.
+La suite completa con TZ=UTC pasó 519 pruebas / 20 archivos sobre PostgreSQL
+18.4 desechable, incluidos los cuatro casos por zona/adaptador. La BD local y
+la app dev no se interrumpieron. El runner eliminó su contenedor propio.
+
 ## Historia de las tandas de seguridad
 
 Las secciones siguientes registran límites al momento de cada tanda; sus

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import request from "supertest";
 import fs from "node:fs/promises";
@@ -69,6 +69,9 @@ beforeEach(async () => {
   token = (
     await AuthService.createSession(actor.id, actor.username, actor.role, undefined, "spec020")
   ).token;
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 afterAll(async () => {
   await cleanup();
@@ -168,14 +171,31 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
         .data,
     ).toHaveLength(1);
     expect(
-      (await http("GET", "/api/meters?startDate=2026-01-02&endDate=2026-01-02")).body.data,
-    ).toHaveLength(0); // Legacy UTC parse + local end-of-day excludes this business date.
-    expect(
       (await http("GET", "/api/meters?startDate=2026-01-01&endDate=2026-01-03")).body.data,
     ).toHaveLength(2);
     expect((await http("GET", "/api/meters?month=2020-01")).body.data).toHaveLength(2); // Schema-only field, no service filter.
     expect((await http("GET", "/api/meters?page=invalid&pageSize=1")).status).toBe(500);
   });
+  it.each([
+    { timezone: "UTC", offset: 0, included: true },
+    { timezone: "America/Santiago", offset: 180, included: false },
+  ])(
+    "characterizes legacy meter date bounds in $timezone",
+    async ({ timezone, offset, included }) => {
+      vi.stubEnv("TZ", timezone);
+      expect(new Date("2026-01-02T00:00:00Z").getTimezoneOffset()).toBe(offset);
+      const meter = await prismaDirect.meterReading.create({
+        data: { ...reading, timestamp: new Date("2026-01-02T12:00:00Z") },
+      });
+      const res = await http("GET", "/api/meters?startDate=2026-01-02&endDate=2026-01-02");
+      expect(res.status).toBe(200);
+      // UTC date parsing followed by local setHours is an inherited, host-dependent debt.
+      // Preserve both outcomes explicitly rather than assuming the machine's timezone.
+      expect(res.body.data.map((row: { id: string }) => row.id)).toEqual(
+        included ? [meter.id] : [],
+      );
+    },
+  );
   it("creates note with client author/defaults and archives/deletes with existing event shapes", async () => {
     const res = await http("POST", "/api/notes", {
       ...note,
