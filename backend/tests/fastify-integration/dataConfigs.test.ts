@@ -556,9 +556,14 @@ describe("Spec020 data/configs on Fastify", () => {
     Buffer.from("%PDF-1.4\nNot a document\n%%EOF"),
     Buffer.from("%PDF-1.4\ntruncated"),
   ])("rejects invalid PDF content and removes the staged file", async (bytes) => {
-    const before = await fs.readdir(directory);
+    const listFiles = () =>
+      fs.readdir(directory).catch((error: NodeJS.ErrnoException) => {
+        if (error.code === "ENOENT") return [];
+        throw error;
+      });
+    const before = await listFiles();
     expect((await upload(bytes)).status).toBe(400);
-    expect(await fs.readdir(directory)).toEqual(before);
+    expect(await listFiles()).toEqual(before);
     expect(await prismaDirect.systemConfig.count({ where: { key: "company_policy_meta" } })).toBe(
       0,
     );
