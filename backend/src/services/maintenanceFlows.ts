@@ -7,7 +7,9 @@ import { seedingEngine } from "./seeder/SeederEngine";
 import { Watchdog } from "../utils/Watchdog";
 import { requestContext } from "../utils/context";
 import { logger } from "../utils/logger";
-export const maintenanceFlows = createMaintenanceFlows({
+import { ConflictError } from "../utils/AppError";
+import { seedRuntime } from "./seedRuntime";
+const flows = createMaintenanceFlows({
   operations: {
     start: (input) => systemOperationService.start(input),
     finish: () => systemOperationService.finish(),
@@ -27,10 +29,23 @@ export const maintenanceFlows = createMaintenanceFlows({
     seedingEngine.runSeedPhase1(options, progress, heartbeat),
   createStoppedJob: (actor, options) => seedingJobService.createStoppedJob(actor, options),
   reportJobError: (error) => logger.error("No se pudo pre-crear job de fase 2", error),
-  startJob: (actor, options) => seedingJobService.startPhase2(actor, options),
+  startJob: (actor, options) => {
+    if (systemOperationService.getSnapshot())
+      throw new ConflictError("Operación de sistema en curso");
+    return seedingJobService.startPhase2(actor, options);
+  },
   pauseJob: (id) => seedingJobService.pause(id),
-  resumeJob: (id) => seedingJobService.resume(id),
+  resumeJob: (id) => {
+    if (systemOperationService.getSnapshot())
+      throw new ConflictError("Operación de sistema en curso");
+    return seedingJobService.resume(id);
+  },
   stopJob: (id) => seedingJobService.stop(id),
   status: (id) => seedingJobService.status(id),
   logs: (id, limit) => seedingJobService.logs(id, limit),
 });
+
+export const maintenanceFlows = {
+  ...flows,
+  seed: (...args: Parameters<typeof flows.seed>) => seedRuntime.run(() => flows.seed(...args)),
+};

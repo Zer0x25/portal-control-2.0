@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 /**
  * Watchdog Utility
  * Monitorea la salud de procesos largos basándose en un "latido" (heartbeat).
@@ -22,14 +24,13 @@ export class Watchdog {
   public start() {
     if (this.timer) return;
 
-    console.warn(`[Watchdog:${this.name}] Monitoreo iniciado (${this.timeoutMs}ms)`);
+    this.lastHeartbeat = Date.now();
+    logger.info("Watchdog iniciado", { name: this.name, timeoutMs: this.timeoutMs });
     this.timer = setInterval(
       () => {
         const now = Date.now();
         if (now - this.lastHeartbeat > this.timeoutMs) {
-          console.error(
-            `[Watchdog:${this.name}] ¡TIMEOUT DETECTADO! No se recibió heartbeat en ${this.timeoutMs}ms.`,
-          );
+          logger.warn("Watchdog sin heartbeat", { name: this.name, timeoutMs: this.timeoutMs });
           this.stop();
           this.onTimeout();
         }
@@ -52,7 +53,7 @@ export class Watchdog {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
-      console.warn(`[Watchdog:${this.name}] Monitoreo detenido.`);
+      logger.info("Watchdog detenido", { name: this.name });
     }
   }
 }

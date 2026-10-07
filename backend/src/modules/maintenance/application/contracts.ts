@@ -25,7 +25,7 @@ export interface Phase2Options {
 export interface MaintenanceDependencies {
   operations: {
     start(input: {
-      type: "reset";
+      type: "reset" | "seed";
       actorUsername: string;
       maintenanceMode: boolean;
       message: string;

@@ -1,3 +1,4 @@
+import { seedRuntime } from "../services/seedRuntime";
 import { adminFlows } from "../services/adminFlows";
 import { maintenanceFlows } from "../services/maintenanceFlows";
 import { auditFlows } from "../services/auditFlows";
@@ -28,6 +29,7 @@ import { getAllowedOrigins } from "../utils/corsPolicy";
 
 export function createFastifyRuntime(config?: FastifyConfig) {
   if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET es obligatorio para iniciar Fastify");
+  seedRuntime.openRuntime();
   let exports: Promise<typeof import("../services/export/StreamExportService")> | undefined;
   const loadExports = () => (exports ??= import("../services/export/StreamExportService"));
   return buildFastifyApp(
@@ -94,6 +96,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
           : null,
       auditError: (error, request, category) => auditService.logError(error, request, category),
       close: async () => {
+        await seedRuntime.drain();
         try {
           if (exports) await (await exports).streamExportService.close();
         } finally {

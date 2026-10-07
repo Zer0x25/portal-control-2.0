@@ -562,6 +562,18 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
       });
     },
   );
+  it("seed owns maintenance and blocks reset, backup and phase2 until completion", async () => {
+    vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(async () => {
+      expect(systemOperationService.getSnapshot()?.type).toBe("seed");
+      expect((await http("DELETE", "/api/maintenance/clear-database")).status).toBe(409);
+      expect((await http("POST", "/api/admin/trigger-backup", {})).status).toBe(409);
+      expect((await http("POST", "/api/maintenance/seed/phase2/start", {})).status).toBe(409);
+      expect((await http("POST", "/api/maintenance/seed/phase1", {})).status).toBe(409);
+    });
+    const response = await http("POST", "/api/maintenance/seed/phase1", {}, token, true);
+    expect(lines(response.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
+    expect(systemOperationService.getSnapshot()).toBeNull();
+  });
   it("runs bounded real phase1 on isolated DB and does not start phase2 worker", async () => {
     const response = await http(
       "POST",
@@ -590,7 +602,9 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
       .mockRejectedValueOnce(new Error("owned seed failure"));
     const failed = await http("POST", "/api/maintenance/seed", {}, token, true);
     expect(failed.status).toBe(200);
-    expect(lines(failed.bytes).at(-1)).toEqual({ error: "owned seed failure" });
+    expect(lines(failed.bytes).at(-1)).toEqual({
+      error: "Error crítico en fase 1; no se confirmó la finalización.",
+    });
     engine.mockResolvedValueOnce(undefined);
     vi.spyOn(seedingJobService, "createStoppedJob").mockRejectedValueOnce(
       new Error("owned job failure"),

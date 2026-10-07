@@ -1,3 +1,4 @@
+import { seedRuntime } from "./seedRuntime";
 import { systemOperationService } from "./systemOperationService";
 import { processAutoClosures } from "./autoCloseService";
 import { rotateIndefiniteShifts } from "./shiftRotationService";
@@ -268,6 +269,7 @@ export function createRuntimeJobs() {
     stop: () =>
       lifecycle.stop(async () => {
         await stopScheduler();
+        await seedRuntime.drain();
         await seedingJobService.shutdown();
       }),
   };

@@ -1,7 +1,7 @@
 import { ConflictError } from "../utils/AppError";
 import { SocketService } from "./socketService";
 
-export type MaintenanceOperationType = "backup" | "restore" | "reset";
+export type MaintenanceOperationType = "backup" | "restore" | "reset" | "seed";
 
 type OperationState = {
   type: MaintenanceOperationType;

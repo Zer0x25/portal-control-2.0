@@ -48,14 +48,29 @@ export function createMaintenanceFlows(deps: MaintenanceDependencies) {
         shiftReportsPerDay = 6,
         quickNotesCount = 5,
       } = input;
-      out.start();
-      const progress = (message: string) => out.write({ progress: message });
-      const watchdog = deps.watchdog(() => {
-        out.write({ error: "Proceso abortado por inactividad prolongada." });
-        out.end();
+      deps.operations.start({
+        type: "seed",
+        actorUsername: user.username || "SYSTEM",
+        maintenanceMode: true,
+        message: "Seeder Fase 1 en curso",
       });
-      watchdog.start();
+      let ended = false;
+      const write = (value: unknown) => {
+        if (!ended) out.write(value);
+      };
+      const end = () => {
+        if (ended) return;
+        ended = true;
+        out.end();
+      };
+      const progress = (message: string) => write({ progress: message });
+      const watchdog = deps.watchdog(() => {
+        write({ error: "Respuesta cerrada por inactividad; el motor continúa hasta finalizar." });
+        end();
+      });
       try {
+        out.start();
+        watchdog.start();
         await deps.seedScope(async () => {
           progress(`Iniciando Seeder Fase 1: ${employees} empleados, ${days} días...`);
           await deps.seedPhase1(
@@ -84,12 +99,15 @@ export function createMaintenanceFlows(deps: MaintenanceDependencies) {
         } catch (error) {
           deps.reportJobError(error);
         }
-        out.write({ success: true, phase: "phase1" });
-        out.end();
-      } catch (error) {
+        write({ success: true, phase: "phase1" });
+        end();
+      } catch {
         watchdog.stop();
-        out.write({ error: toCaughtError(error).message || "Error crítico en fase 1." });
-        out.end();
+        write({ error: "Error crítico en fase 1; no se confirmó la finalización." });
+        end();
+      } finally {
+        watchdog.stop();
+        deps.operations.finish();
       }
     },
     async startJob(input: Phase2Options, user: { username?: string }) {

@@ -117,3 +117,29 @@ it("seed retains defaults, isolates scope, swallows stopped-job failure and vali
   });
   await expect(f.logs({})).rejects.toMatchObject({ statusCode: 400 });
 });
+it("timeout closes output once but retains seed ownership until the engine settles", async () => {
+  const d = maintenance();
+  let timeout!: () => void;
+  let resolve!: () => void;
+  d.watchdog.mockImplementation((callback: () => void) => {
+    timeout = callback;
+    return { start: vi.fn(), stop: vi.fn(), heartbeat: vi.fn() };
+  });
+  d.seedPhase1.mockImplementation(
+    () =>
+      new Promise<void>((done) => {
+        resolve = done;
+      }),
+  );
+  const out = { start: vi.fn(), write: vi.fn(), end: vi.fn() };
+  const pending = createMaintenanceFlows(d).seed({}, { username: "alice" }, out);
+  timeout();
+  expect(out.end).toHaveBeenCalledOnce();
+  expect(d.operations.finish).not.toHaveBeenCalled();
+  const writes = out.write.mock.calls.length;
+  resolve();
+  await pending;
+  expect(out.write).toHaveBeenCalledTimes(writes);
+  expect(out.end).toHaveBeenCalledOnce();
+  expect(d.operations.finish).toHaveBeenCalledOnce();
+});

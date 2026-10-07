@@ -33,7 +33,13 @@ No crear nuevas specs de migración. No se hace push automático.
    - Calendario de Chile con contexto por lote; fecha civil de bitácora conservada.
    - Fallo del PDF detallado devuelve error HTTP neutral, sin documento parcial.
    - Pruebas de contenido y QA visual de los cuatro reportes, paginación y bitácora.
-5. Operaciones y rendimiento.
+5. Operaciones y rendimiento — en curso.
+   Primer bloque: [propiedad y drenaje del seed](seed-runtime-consistency.md).
+   Validación: 733 pruebas de integración, 15 unitarias y 280 frontend; ambos CI,
+   SDK, docs, specs y secretos correctos. Sin migración de base de datos.
+   - Fase 1 reserva mantenimiento hasta finalizar el trabajo real; timeout sin doble cierre.
+   - Runtime espera fase 1 antes de pools y rechaza admisión durante apagado.
+   - Configuración inicial por lote y agrupación lineal de asignaciones.
    - Admisión/drenaje común de HTTP/jobs/scheduler y watchdog del seed.
    - Coordinación entre procesos para reset/restore y scheduler.
    - Evaluar contención e invalidación global KPI; optimizar con evidencia de carga.

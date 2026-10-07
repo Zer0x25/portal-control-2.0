@@ -1,0 +1,24 @@
+import { afterEach, expect, it, vi } from "vitest";
+import { Watchdog } from "../../src/utils/Watchdog";
+vi.mock("../../src/utils/logger", () => ({ logger: { info: vi.fn(), warn: vi.fn() } }));
+afterEach(() => vi.useRealTimers());
+it("heartbeats extend monitoring, timeout fires once, and restart resets its clock", () => {
+  vi.useFakeTimers();
+  const timeout = vi.fn();
+  const watchdog = new Watchdog("test", 1000, timeout);
+  vi.advanceTimersByTime(5000);
+  watchdog.start();
+  vi.advanceTimersByTime(1000);
+  expect(timeout).not.toHaveBeenCalled();
+  watchdog.heartbeat();
+  vi.advanceTimersByTime(1000);
+  expect(timeout).not.toHaveBeenCalled();
+  vi.advanceTimersByTime(5000);
+  expect(timeout).toHaveBeenCalledOnce();
+  watchdog.start();
+  vi.advanceTimersByTime(500);
+  expect(timeout).toHaveBeenCalledOnce();
+  watchdog.stop();
+  vi.advanceTimersByTime(5000);
+  expect(timeout).toHaveBeenCalledOnce();
+});

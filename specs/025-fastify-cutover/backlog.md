@@ -4,8 +4,9 @@ Spec: [025](spec.md). Estas deudas no bloquean la migración en desarrollo, por
 decisión del usuario del 2026-10-07. Seguimiento por [tandas amplias](tandas.md). No representan nuevas specs de migración.
 
 - Mantenimiento sin interrupciones: barrera común de trabajo HTTP/jobs/scheduler,
-  ownership de seed fase 1 hasta terminar trabajo real, admisión cerrada hasta
-  shutdown y coordinación reset/restore. Hoy puede requerir purgar/reiniciar.
+  shutdown y coordinación reset/restore. La propiedad y el drenaje de fase 1 se
+  corrigieron en [seed-runtime-consistency](seed-runtime-consistency.md); quedan
+  barrera universal y coordinación entre procesos. Hoy puede requerir purgar/reiniciar.
 - Fechas Chile y consultas por día del calendario mensual (015): corregidas en
   [monthly-calendar-chile](monthly-calendar-chile.md).
 - Ownership de Usuario/quiosco en assignments y correcciones (015/016):
