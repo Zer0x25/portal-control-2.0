@@ -7,7 +7,9 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
   ownership de seed fase 1 hasta terminar trabajo real, admisión cerrada hasta
   shutdown y coordinación reset/restore. Hoy puede requerir purgar/reiniciar.
 - Fechas Chile y consultas por día del calendario mensual (015).
-- Ownership de usuarios sin vínculo/quiosco y vínculo employeeId/timeRecordId (015/016).
+- Ownership de assignments para usuarios sin vínculo y scope quiosco (015/016).
+  Correcciones: contrato correctivo de Usuario y pertenencia de jornada en
+  [corrections-ownership](corrections-ownership.md).
 - Reactivación, solapamiento y atomicidad al extender permisos (016).
 - Consistencia del ciclo de vida/folios de reportes y motor KPI (017/018).
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).

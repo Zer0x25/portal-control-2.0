@@ -35,12 +35,19 @@ export interface CreateCorrectionData {
   reason?: string;
 }
 
+function requireLinkedEmployee(user: { role: string; employeeId?: string }) {
+  if (user.role === "Usuario" && !user.employeeId) {
+    throw new AppError("Usuario sin empleado vinculado.", 403, "FORBIDDEN");
+  }
+}
+
 export class CorrectionService {
   /**
    * Lists correction requests with optional filtering and pagination.
    * Enforces role-based visibility rules.
    */
   static async list(params: CorrectionListParams, user: { role: string; employeeId?: string }) {
+    requireLinkedEmployee(user);
     const { since, limit, offset, status } = params;
     const where: Prisma.CorrectionRequestWhereInput = {};
 
@@ -98,6 +105,14 @@ export class CorrectionService {
       }
     }
 
+    const record = await prisma.timeRecord.findUnique({ where: { id: data.timeRecordId } });
+    if (!record) {
+      throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
+    }
+    if (record.employeeId !== data.employeeId) {
+      throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
+    }
+
     // 2. Overtime Validation: Check legal limits if altering core times
     if (
       data.recordField === "entrada" ||
@@ -105,7 +120,6 @@ export class CorrectionService {
       data.recordField === "finColacion" ||
       data.recordField === "salida"
     ) {
-      const record = await prisma.timeRecord.findUnique({ where: { id: data.timeRecordId } });
       const employee = await prisma.employee.findUnique({ where: { id: data.employeeId } });
 
       if (record && employee) {
@@ -292,6 +306,10 @@ export class CorrectionService {
           throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
         }
 
+        if (currentTimeRecord.employeeId !== currentRequest.employeeId) {
+          throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
+        }
+
         const patch: Record<string, string> = {
           [recordField]: currentRequest.requestedValue,
         };
@@ -416,6 +434,7 @@ export class CorrectionService {
    * Total pending, and approved/rejected in the last 30 days.
    */
   static async getStats(user: { role: string; employeeId?: string }) {
+    requireLinkedEmployee(user);
     const last30Days = new Date();
     last30Days.setDate(last30Days.getDate() - 30);
 
@@ -452,6 +471,7 @@ export class CorrectionService {
    * Uses audit logs as source of truth for timeline entries.
    */
   static async getHistory(id: string, user: { role: string; employeeId?: string }) {
+    requireLinkedEmployee(user);
     const request = await prisma.correctionRequest.findUnique({ where: { id } });
 
     if (!request) {

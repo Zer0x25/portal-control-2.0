@@ -293,6 +293,67 @@ describe.each(["Express", "Fastify"] as const)("Spec 016 leaves/corrections on %
     expect((await http("GET", `/api/corrections/${foreign.id}/history`)).status).toBe(403);
     expect((await http("GET", "/api/corrections/missing/history")).status).toBe(404);
   });
+  it("denies reads and creation for Usuario without an employee link", async () => {
+    const request = await seedRequest();
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Usuario", employeeId: null },
+    });
+    for (const url of [
+      "/api/corrections",
+      "/api/corrections?since=1",
+      "/api/corrections/stats",
+      `/api/corrections/${request.id}/history`,
+      "/api/corrections/missing/history",
+    ]) {
+      expect((await http("GET", url)).status).toBe(403);
+    }
+    expect((await http("POST", "/api/corrections", correction())).status).toBe(403);
+    expect(await prismaDirect.correctionRequest.count()).toBe(1);
+    expect(SocketService.emit).not.toHaveBeenCalled();
+  });
+  it.each(["Usuario", "Administrador"])(
+    "denies inconsistent record ownership for %s",
+    async (role) => {
+      await prismaDirect.employee.create({
+        data: { ...employee, id: "foreign", rut: "22222222-2" },
+      });
+      await seedRecord({ employeeId: "foreign" });
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+      expect((await http("POST", "/api/corrections", correction())).status).toBe(403);
+      expect(await prismaDirect.correctionRequest.count()).toBe(0);
+      expect(SocketService.emit).not.toHaveBeenCalled();
+      expect(
+        await prismaDirect.auditLog.count({ where: { action: "CORRECTION_REQUEST_CREATED" } }),
+      ).toBe(0);
+    },
+  );
+  it("rejects missing records without creating requests", async () => {
+    expect((await http("POST", "/api/corrections", correction())).status).toBe(404);
+    expect(await prismaDirect.correctionRequest.count()).toBe(0);
+  });
+  it("rolls back approval of historical inconsistent ownership", async () => {
+    await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
+    const request = await seedRequest({ employeeId: "foreign" });
+    expect(
+      (
+        await http("PATCH", `/api/corrections/${request.id}/status`, {
+          status: "approved",
+          resolvedBy: "actor",
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (await prismaDirect.correctionRequest.findUniqueOrThrow({ where: { id: request.id } }))
+        .status,
+    ).toBe("pending");
+    expect(
+      (await prismaDirect.timeRecord.findUniqueOrThrow({ where: { id: "correction-record" } }))
+        .salida,
+    ).toBeNull();
+    expect(SocketService.emit).not.toHaveBeenCalled();
+    expect(await prismaDirect.auditLog.count({ where: { action: "TIME_RECORD_EDITED" } })).toBe(0);
+  });
   it("rejects without reason, then persists rejection and returns settled request idempotently", async () => {
     const request = await seedRequest();
     const bad = await http("PATCH", `/api/corrections/${request.id}/status`, {
