@@ -16,7 +16,9 @@ decisión del usuario del 2026-10-07. No representan nuevas specs de migración.
 - Apertura, folios y atomicidad de reportes (017): corregidas en
   [shift-report-consistency](shift-report-consistency.md). Exportación legacy
   corregida en [shift-report-legacy-export](shift-report-legacy-export.md).
-  Consistencia del motor KPI (018) sigue pendiente.
+  Contexto diario KPI (018) corregido en
+  [kpi-daily-context-chile](kpi-daily-context-chile.md). Invalidación y contexto
+  mensual de caché siguen pendientes.
 - Fechas/mapping/contratos de exportación e importación; renderers parciales (021).
 - Operaciones resilientes ante múltiples procesos e interrupciones; políticas de
   revocación en otras rutas de cambio de credenciales y redacción de texto libre.

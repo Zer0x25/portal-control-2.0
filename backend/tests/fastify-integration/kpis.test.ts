@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
 import { prismaDirect } from "../../src/services/db";
@@ -61,6 +61,7 @@ beforeEach(async () => {
     await AuthService.createSession(actor.id, actor.username, actor.role, undefined, "spec018")
   ).token;
 });
+afterEach(() => vi.useRealTimers());
 afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
@@ -213,6 +214,87 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     expect(JSON.stringify(summary.body)).not.toContain("secret-pin");
     expect((await http("GET", "/api/kpis/daily-planning")).body.activeCount).toBe(1);
   });
+  it.each(["missing", "vacation", "holiday", "recorded"])(
+    "evaluates Chile yesterday with its own context (%s)",
+    async (scenario) => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-10-07T01:00:00Z")); // Chile October 6, UTC October 7.
+      const day = "2026-10-06",
+        yesterday = "2026-10-05";
+      await prismaDirect.employee.create({ data: employee });
+      await prismaDirect.shiftPattern.create({
+        data: {
+          id: "kpi-pattern",
+          name: "Daily",
+          cycleLengthDays: 1,
+          dailySchedules: JSON.stringify([
+            { dayIndex: 0, isOffDay: false, startTime: "09:00", endTime: "17:00", hours: 8 },
+          ]),
+        },
+      });
+      await prismaDirect.assignedShift.create({
+        data: {
+          employeeId: employee.id,
+          shiftPatternId: "kpi-pattern",
+          startDate: yesterday,
+          endDate: yesterday,
+        },
+      });
+      // A mark today must not conceal yesterday's missing mark.
+      await prismaDirect.timeRecord.create({
+        data: {
+          employeeId: employee.id,
+          employeeName: employee.name,
+          date: day,
+          status: "Laborando",
+          entrada: "2026-10-07T00:00:00Z",
+        },
+      });
+      if (scenario === "vacation")
+        await prismaDirect.leaveRecord.create({
+          data: {
+            employeeId: employee.id,
+            type: "Vacaciones",
+            startDate: yesterday,
+            endDate: yesterday,
+          },
+        });
+      if (scenario === "holiday")
+        await prismaDirect.holiday.create({ data: { date: yesterday, name: "Yesterday holiday" } });
+      if (scenario === "recorded")
+        await prismaDirect.timeRecord.create({
+          data: {
+            employeeId: employee.id,
+            employeeName: employee.name,
+            date: yesterday,
+            status: "Completado",
+          },
+        });
+      await prismaDirect.timeRecord.create({
+        data: {
+          employeeId: employee.id,
+          employeeName: employee.name,
+          date: "2026-10-07",
+          status: "Ausente",
+        },
+      });
+      const overview = await http("GET", "/api/kpis/overview");
+      expect(overview.status).toBe(200);
+      expect(overview.body.employeeStatuses[0].lastRecord.date).toBe(day);
+      const missing = overview.body.teamStatus.anomalies.filter((record: { id: string }) =>
+        record.id.startsWith("MISSING-"),
+      );
+      expect(missing).toHaveLength(scenario === "missing" ? 1 : 0);
+      if (scenario === "missing") expect(missing[0].date).toBe(yesterday);
+      // Today's one-day leave must be loaded despite the UTC date being tomorrow.
+      await prismaDirect.leaveRecord.create({
+        data: { employeeId: employee.id, type: "Vacaciones", startDate: day, endDate: day },
+      });
+      const planning = await http("GET", "/api/kpis/daily-planning");
+      expect(planning.status).toBe(200);
+      expect(planning.body).toMatchObject({ onVacation: 1, scheduled: 0, activeCount: 1 });
+    },
+  );
   it("allows Reloj_Control on every route", async () => {
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Reloj_Control" } });
     for (const [method, url] of routes)

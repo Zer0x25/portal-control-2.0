@@ -7,7 +7,7 @@ import { KpiStatsService } from "./KpiStatsService";
 import { KpiAggregationService } from "./KpiAggregationService";
 import { KpiFormattingService } from "./KpiFormattingService";
 import { KpiFilters, DashboardOverview, PeriodStats, AnomalyRecord } from "./types";
-import { addBusinessDaysChile, formatDateUTCISO, toBusinessDateChile } from "../../utils/timeUtils";
+import { addBusinessDaysChile, parseDateOnlyUTC, toBusinessDateChile } from "../../utils/timeUtils";
 import { toEndInclusive } from "../../utils/timePolicy";
 
 const kpiCache = new KpiCache();
@@ -141,13 +141,19 @@ export class KpiReportService {
     const activeEmployees = await prisma.employee.findMany({ where: { status: "Activo" } });
 
     const today = new Date();
-    const yesterdayStr = addBusinessDaysChile(toBusinessDateChile(today), -1);
+    const todayStr = toBusinessDateChile(today);
+    const yesterdayStr = addBusinessDaysChile(todayStr, -1);
 
     const recentRecords = await prisma.timeRecord.findMany({
-      where: { date: { gte: yesterdayStr } },
+      where: { date: { gte: yesterdayStr, lte: todayStr } },
       orderBy: { date: "desc" },
     });
 
+    const yesterdayEmployees = new Set(
+      recentRecords
+        .filter((record) => record.date === yesterdayStr)
+        .map((record) => record.employeeId),
+    );
     const latestByEmployee = new Map<string, TimeRecord>();
     recentRecords.forEach((rec) => {
       if (!latestByEmployee.has(rec.employeeId)) {
@@ -157,7 +163,11 @@ export class KpiReportService {
 
     const nowMs = Date.now();
     const fourteenHoursInMs = 14 * 60 * 60 * 1000;
-    const schedulingContext = await this.getDailySchedulingContext(today);
+    const schedulingContext = await schedulingService.getSchedulingContext(
+      activeEmployees.map((emp) => emp.id),
+      yesterdayStr,
+      todayStr,
+    );
 
     const employeeStatuses = await Promise.all(
       activeEmployees.map(async (emp) => {
@@ -213,13 +223,12 @@ export class KpiReportService {
       }
 
       // Check for "Missing Marks" from YESTERDAY
-      // If employee had a shift yesterday and there's no record (or last record is older than yesterday)
-      const lastRecDate = s.lastRecord?.date;
-      if (!lastRecDate || lastRecDate < yesterdayStr) {
+      // Today's record does not prove that yesterday's assigned shift was recorded.
+      if (!yesterdayEmployees.has(s.employee.id)) {
         // We only check yesterday to keep it fast
         const yesterdaySchedule = await schedulingService.getEmployeeDailyScheduleInfo(
           s.employee.id,
-          new Date(yesterdayStr + "T12:00:00Z"),
+          new Date(parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000),
           schedulingContext,
           s.employee,
         );
@@ -260,7 +269,12 @@ export class KpiReportService {
   async getDailyPlanningSummary() {
     const today = new Date();
     const activeEmployees = await prisma.employee.findMany({ where: { status: "Activo" } });
-    const schedulingContext = await this.getDailySchedulingContext(today);
+    const todayStr = toBusinessDateChile(today);
+    const schedulingContext = await schedulingService.getSchedulingContext(
+      activeEmployees.map((emp) => emp.id),
+      todayStr,
+      todayStr,
+    );
 
     const stats = {
       onVacation: 0,
@@ -355,30 +369,5 @@ export class KpiReportService {
     }
 
     return allEmpStats;
-  }
-
-  private async getDailySchedulingContext(today: Date) {
-    const todayStr = formatDateUTCISO(today);
-    const [assignedShifts, leaves, holidays] = await Promise.all([
-      prisma.assignedShift.findMany({
-        where: {
-          startDate: { lte: todayStr },
-          OR: [{ endDate: null }, { endDate: { gte: todayStr } }],
-        },
-      }),
-      prisma.leaveRecord.findMany({
-        where: { startDate: { lte: todayStr }, endDate: { gte: todayStr } },
-      }),
-      prisma.holiday.findMany({ where: { date: todayStr } }),
-    ]);
-
-    const shiftPatternsRaw = await prisma.shiftPattern.findMany({});
-    const shiftPatterns = shiftPatternsRaw.map((p) => ({
-      ...p,
-      dailySchedules:
-        typeof p.dailySchedules === "string" ? JSON.parse(p.dailySchedules) : p.dailySchedules,
-    }));
-
-    return { assignedShifts, shiftPatterns, leaves, holidays } as SchedulingContext;
   }
 }
