@@ -17,8 +17,10 @@ it("runtime dependencies contain native Fastify uploads/docs and exclude Express
     "helmet",
     "multer",
     "swagger-ui-express",
-  ])
+  ]) {
     expect(pkg.dependencies).not.toHaveProperty(name);
+    expect(pkg.devDependencies).not.toHaveProperty(name);
+  }
   expect(pkg.dependencies).toHaveProperty("swagger-ui-dist");
   expect(pkg.dependencies).toHaveProperty("prisma");
 });

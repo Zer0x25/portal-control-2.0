@@ -95,9 +95,8 @@ afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec022 audit on %s", (server) => {
+describe("Spec022 audit on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
     () => ({ "x-forwarded-for": ip }),

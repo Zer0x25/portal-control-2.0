@@ -1,10 +1,8 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import request from "supertest";
 import ExcelJS from "exceljs";
 import bcrypt from "bcryptjs";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
-import expressApp from "../../src/app";
 import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { userService } from "../../src/services/UserService";
@@ -57,7 +55,7 @@ afterAll(async () => {
   await fastify.close();
 });
 
-describe.each(["Express", "Fastify"] as const)("Spec 013 employees on %s", (server) => {
+describe("Spec 013 employees on Fastify", () => {
   async function http(
     method: "GET" | "POST" | "PUT",
     url: string,
@@ -65,15 +63,9 @@ describe.each(["Express", "Fastify"] as const)("Spec 013 employees on %s", (serv
     auth: string | null = token,
   ) {
     const headers = auth ? { authorization: `Bearer ${auth}` } : {};
-    if (server === "Fastify") {
-      const response = await fastify.inject({ method, url, payload, headers });
-      return { status: response.statusCode, body: response.body ? response.json() : undefined };
-    }
-    const response = await request(expressApp)
-      [method.toLowerCase() as "get" | "post" | "put"](url)
-      .set(headers)
-      .send(payload);
-    return { status: response.status, body: response.body };
+
+    const response = await fastify.inject({ method, url, payload, headers });
+    return { status: response.statusCode, body: response.body ? response.json() : undefined };
   }
   it("creates employee and linked user with usable forced-change credentials and no PIN exposure", async () => {
     const response = await http("POST", "/api/employees", { ...input, createUserAccount: true });
@@ -290,26 +282,12 @@ describe.each(["Express", "Fastify"] as const)("Spec 013 employees on %s", (serv
     let bytes: Buffer;
     let status: number;
     let headers: Record<string, unknown>;
-    if (server === "Fastify") {
-      const response = await fastify.inject({ url, headers: { authorization: `Bearer ${token}` } });
-      bytes = response.rawPayload;
-      status = response.statusCode;
-      headers = response.headers;
-    } else {
-      const response = await request(expressApp)
-        .get(url)
-        .set("Authorization", `Bearer ${token}`)
-        .buffer(true)
-        .parse((res, done) => {
-          const chunks: Buffer[] = [];
-          res.on("data", (chunk: Buffer) => chunks.push(chunk));
-          res.on("end", () => done(null, Buffer.concat(chunks)));
-          res.on("error", done);
-        });
-      bytes = response.body;
-      status = response.status;
-      headers = response.headers;
-    }
+
+    const response = await fastify.inject({ url, headers: { authorization: `Bearer ${token}` } });
+    bytes = response.rawPayload;
+    status = response.statusCode;
+    headers = response.headers;
+
     expect(status).toBe(200);
     expect(headers["content-type"]).toContain("spreadsheetml.sheet");
     expect(headers["content-disposition"]).toBe("attachment; filename=lista_empleados.xlsx");

@@ -61,9 +61,8 @@ afterAll(async () => {
   await fastify.close();
 });
 
-describe.each(["Express", "Fastify"] as const)("Spec 014 records on %s", (server) => {
+describe("Spec 014 records on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );

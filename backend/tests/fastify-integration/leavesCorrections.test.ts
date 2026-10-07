@@ -107,9 +107,8 @@ const routes = [
   ["POST", "/api/corrections", false],
   ["PATCH", "/api/corrections/missing/status", true],
 ] as const;
-describe.each(["Express", "Fastify"] as const)("Spec 016 leaves/corrections on %s", (server) => {
+describe("Spec 016 leaves/corrections on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );

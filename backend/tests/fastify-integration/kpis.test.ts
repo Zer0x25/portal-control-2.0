@@ -68,9 +68,8 @@ afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) => {
+describe("Spec 018 KPI on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );
@@ -486,7 +485,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 018 KPI on %s", (server) =>
     for (const [method, url] of routes)
       expect((await http(method, url, method === "POST" ? range() : undefined)).status).toBe(200);
   });
-  it.each(routes)("enforces persisted sessions and roles on %s %s", async (method, url) => {
+  it.each(routes)("enforces persisted sessions and roles on Fastify %s", async (method, url) => {
     const body = method === "POST" ? range() : undefined;
     expect((await http(method, url, body, null)).status).toBe(401);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });

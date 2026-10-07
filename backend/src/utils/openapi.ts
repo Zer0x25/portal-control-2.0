@@ -66,12 +66,7 @@ const options: swaggerJSDoc.Options = {
       },
     ],
   },
-  apis: [
-    "./src/routes/*.ts",
-    "./src/index.ts",
-    "./src/controllers/*.ts",
-    // "./src/utils/swagger_schemas.ts", // Eliminado en favor de generación automática
-  ],
+  apis: ["./src/platform/openapi/*.ts", "./src/index.ts"],
 };
 
 export const swaggerSpec = __filename.includes(`${path.sep}dist${path.sep}`)

@@ -3,14 +3,13 @@ import prisma from "../../src/services/db";
 import { ulid } from "ulid";
 import { PunchService } from "../../src/services/PunchService";
 import { getChileDateISO } from "../../src/utils/timeUtils";
-import type { AuthRequest } from "../../src/middleware/authMiddleware";
 
 // Anti-regresión caza-bugs 2026-10-04: 5 fichajes concurrentes (doble-tap de
 // kiosco) creaban hasta 3 filas abiertas mismo empleado/día — todos HTTP 200.
 // Con lock advisory por empleado, solo queda 1 fila (equivalente serial).
 describe("Punch concurrent race", () => {
   const testEmployeeId = `it-punchrace-emp-${ulid()}`;
-  const fakeReq = { user: { username: "race-test" } } as unknown as AuthRequest;
+  const fakeReq = { user: { username: "race-test" } };
 
   beforeAll(async () => {
     await prisma.employee.create({

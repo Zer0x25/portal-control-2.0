@@ -1,4 +1,4 @@
-/** Multipart errors independent of legacy Express/Multer middleware. */
+/** Neutral multipart errors for native HTTP upload handling. */
 export class UploadError extends Error {
   constructor(
     public readonly code: "LIMIT_FILE_SIZE" | "LIMIT_FILE_COUNT" | "LIMIT_UNEXPECTED_FILE",

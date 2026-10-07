@@ -1,3 +1,4 @@
+import { reportWorkedHours } from "../../src/utils/reportHours";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { ExportService } from "../../src/services/export/ExportService";
 import prisma from "../../src/services/db";
@@ -51,20 +52,16 @@ describe("ExportService - Unit Tests", () => {
 
   describe("calculateWorkedHours", () => {
     it("should return 0 if entrada or salida is missing", () => {
-      // @ts-ignore
-      expect(exportService.calculateWorkedHours(null, "08:00")).toBe(0);
-      // @ts-ignore
-      expect(exportService.calculateWorkedHours("08:00", null)).toBe(0);
+      expect(reportWorkedHours(null, "08:00")).toBe(0);
+      expect(reportWorkedHours("08:00", null)).toBe(0);
     });
 
     it("should calculate correct hours for standard shift", () => {
-      // @ts-ignore
-      expect(exportService.calculateWorkedHours("08:00", "17:30")).toBe(9.5);
+      expect(reportWorkedHours("08:00", "17:30")).toBe(9.5);
     });
 
     it("should handle overnight shifts", () => {
-      // @ts-ignore
-      expect(exportService.calculateWorkedHours("22:00", "06:00")).toBe(8);
+      expect(reportWorkedHours("22:00", "06:00")).toBe(8);
     });
   });
 });

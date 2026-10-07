@@ -1,11 +1,9 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
-import request from "supertest";
 import { PDFDocument } from "pdf-lib";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
-import expressApp from "../../src/app";
 import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { SocketService } from "../../src/services/socketService";
@@ -80,9 +78,8 @@ afterAll(async () => {
   await fastify.close();
   vi.restoreAllMocks();
 });
-describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (server) => {
+describe("Spec020 data/configs on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );
@@ -93,12 +90,6 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     field = "file",
     access: string | null = token,
   ) {
-    if (server === "Express") {
-      let call = request(expressApp).post("/api/configs/company-policy");
-      if (access) call = call.set("authorization", `Bearer ${access}`);
-      const res = await call.attach(field, bytes, { filename: name, contentType: mime });
-      return { status: res.status, body: res.body };
-    }
     const boundary = "spec020-boundary";
     const payload = Buffer.concat([
       Buffer.from(
@@ -666,45 +657,25 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(file.headers["content-type"]).toContain("application/pdf");
     expect(file.headers["content-disposition"]).toContain("inline; filename=");
     let partialStatus: number, partialBytes: Buffer, etag: string | undefined;
-    if (server === "Express") {
-      const part = await request(expressApp)
-        .get("/api/configs/public/company-policy/file")
-        .set("Range", "bytes=0-3")
-        .buffer(true)
-        .parse((res, done) => {
-          const chunks: Buffer[] = [];
-          res.on("data", (chunk: Buffer) => chunks.push(chunk));
-          res.on("end", () => done(null, Buffer.concat(chunks)));
-        });
-      partialStatus = part.status;
-      partialBytes = part.body;
-      etag = part.headers.etag;
-      expect(
-        (
-          await request(expressApp)
-            .get("/api/configs/public/company-policy/file")
-            .set("If-None-Match", etag!)
-        ).status,
-      ).toBe(304);
-    } else {
-      const part = await fastify.inject({
-        method: "GET",
-        url: "/api/configs/public/company-policy/file",
-        headers: { range: "bytes=0-3" },
-      });
-      partialStatus = part.statusCode;
-      partialBytes = part.rawPayload;
-      etag = part.headers.etag as string;
-      expect(
-        (
-          await fastify.inject({
-            method: "GET",
-            url: "/api/configs/public/company-policy/file",
-            headers: { "if-none-match": etag },
-          })
-        ).statusCode,
-      ).toBe(304);
-    }
+
+    const part = await fastify.inject({
+      method: "GET",
+      url: "/api/configs/public/company-policy/file",
+      headers: { range: "bytes=0-3" },
+    });
+    partialStatus = part.statusCode;
+    partialBytes = part.rawPayload;
+    etag = part.headers.etag as string;
+    expect(
+      (
+        await fastify.inject({
+          method: "GET",
+          url: "/api/configs/public/company-policy/file",
+          headers: { "if-none-match": etag },
+        })
+      ).statusCode,
+    ).toBe(304);
+
     expect(partialStatus).toBe(206);
     expect(partialBytes.toString()).toBe("%PDF");
     expect(etag).toBeTruthy();
@@ -728,7 +699,7 @@ describe.each(["Express", "Fastify"] as const)("Spec020 data/configs on %s", (se
     expect(emit).not.toHaveBeenCalled();
   });
   it("uses basename for public policy path without traversing directories", async () => {
-    const filename = `spec020-path-${server}.pdf`;
+    const filename = `spec020-path-fastify.pdf`;
     owned.add(filename);
     await fs.mkdir(directory, { recursive: true });
     await fs.writeFile(path.join(directory, filename), "owned-policy");

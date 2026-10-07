@@ -5,6 +5,12 @@
 - Autores: opencode
 - Spec: `specs/002-runtime-hardening/`
 
+Actualización 2026-10-07: Express está retirado. Las decisiones históricas de
+contrato/seguridad se aplican ahora en Fastify; el manifiesto nativo y sus pruebas
+reemplazan la introspección y middleware descritos abajo. OpenAPI se genera desde
+`backend/src/platform/openapi/operations.ts`. Ver
+[retiro de Express](../../specs/025-fastify-cutover/express-retirement.md).
+
 ## Contexto
 
 Auditoría del 2026-10-02 con evidencia en código. Seis hallazgos:

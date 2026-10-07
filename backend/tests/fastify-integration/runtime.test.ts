@@ -76,6 +76,19 @@ it("serves the exact SDK contract and local UI assets without a session", async 
     expect((await response.text()).length).toBeGreaterThan(100);
   }
   expect(app.routeManifest.length).toBeGreaterThan(100);
+  const routes = app.routeManifest.filter(
+    (route) => route.url.startsWith("/api/") && !route.url.startsWith("/api/health"),
+  );
+  expect(routes.length).toBeGreaterThan(100);
+  const paths = (swaggerSpec as { paths: Record<string, Record<string, unknown>> }).paths;
+  for (const route of routes) {
+    const documented = route.url.replace(/:([^/]+)/g, "{$1}");
+    expect(paths[documented], `${route.method} ${route.url}`).toHaveProperty(
+      route.method.toLowerCase(),
+    );
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(route.method))
+      expect(route.validated, `${route.method} ${route.url}`).toBe(true);
+  }
 });
 it("authenticates websocket identity and revokes sessions before delivery", async () => {
   const polling = await fetch(base + "/socket.io/?EIO=4&transport=polling");

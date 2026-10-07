@@ -1,9 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import request from "supertest";
-import multer from "multer";
 import { getAllowedOrigins, isOriginAllowed } from "../../src/utils/corsPolicy";
-import { HealthService } from "../../src/services/HealthService";
-import { errorHandler } from "../../src/middleware/errorHandler";
 
 const { userUpdateMock, auditLogMock, socketEmitMock } = vi.hoisted(() => ({
   userUpdateMock: vi.fn(),
@@ -34,7 +30,6 @@ vi.mock("../../src/utils/cryptoUtils", () => ({
 }));
 
 import { UserService } from "../../src/services/UserService";
-import app from "../../src/app";
 
 const ALLOWED = "https://portal.tu-dominio.com";
 const EVIL = "https://evil.example";
@@ -53,58 +48,6 @@ describe("corsPolicy (spec 002 H-01)", () => {
     expect(isOriginAllowed(undefined, [ALLOWED])).toBe(true);
     expect(isOriginAllowed(EVIL, [])).toBe(false);
     expect(isOriginAllowed(EVIL, ["*"])).toBe(true);
-  });
-
-  it("reflects only allowlisted origins on the real app", async () => {
-    process.env.ALLOWED_ORIGINS = ALLOWED;
-    vi.spyOn(HealthService, "getDetailedHealth").mockResolvedValue({
-      database: { status: "OK" },
-    } as never);
-    try {
-      const denied = await request(app).get("/api/health").set("Origin", EVIL);
-      expect(denied.headers["access-control-allow-origin"]).toBeUndefined();
-
-      const allowed = await request(app).get("/api/health").set("Origin", ALLOWED);
-      expect(allowed.headers["access-control-allow-origin"]).toBe(ALLOWED);
-    } finally {
-      delete process.env.ALLOWED_ORIGINS;
-      vi.restoreAllMocks();
-    }
-  });
-});
-
-describe("body limits (spec 002 H-02)", () => {
-  it("rejects >1mb JSON on regular routes with 413", async () => {
-    const big = { data: "x".repeat(2 * 1024 * 1024) };
-    const res = await request(app).post("/api/health").send(big);
-    expect(res.status).toBe(413);
-  });
-
-  it("lets >1mb JSON through on bulk routes (fails later at auth, not parse)", async () => {
-    const big = { records: ["x".repeat(2 * 1024 * 1024)] };
-    const res = await request(app).post("/api/records/bulk").send(big);
-    expect(res.status).toBe(401);
-  });
-});
-
-describe("multer errors (spec 002 H-02)", () => {
-  const mockRes = () => {
-    const res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn().mockReturnThis(),
-    };
-    return res;
-  };
-
-  it("maps LIMIT_FILE_SIZE to 413", () => {
-    const res = mockRes();
-    errorHandler(
-      new multer.MulterError("LIMIT_FILE_SIZE"),
-      { path: "/api/import/preview", method: "POST" },
-      res,
-      vi.fn(),
-    );
-    expect(res.status).toHaveBeenCalledWith(413);
   });
 });
 

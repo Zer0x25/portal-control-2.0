@@ -1,5 +1,5 @@
 import type { Writable } from "node:stream";
-/** Minimal Excel output port. Express and native Fastify streams implement it. */
+/** Minimal Excel output port. Native Fastify streams implement it. */
 export type ExcelHttpStream = Writable & {
   readonly headersSent: boolean;
   setHeader(name: string, value: string): unknown;

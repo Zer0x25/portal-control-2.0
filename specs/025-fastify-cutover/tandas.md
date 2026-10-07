@@ -57,3 +57,8 @@ No crear nuevas specs de migración. No se hace push automático.
 
 Los detalles concretos de las tandas 4–5 se delimitan al inspeccionar cada área.
 No implican cambios de permisos ni despliegue sin una instrucción para ello.
+
+Prioridad resuelta antes de continuar tandas: [retiro definitivo de Express](express-retirement.md).
+Validación del retiro: 387 integración, 562 unitarias/contrato y 280 frontend;
+ambos CI, cobertura, docs, specs, secretos y benchmark Fastify correctos.
+Toda implementación posterior usa exclusivamente Fastify.

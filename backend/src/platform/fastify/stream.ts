@@ -1,7 +1,7 @@
 import { PassThrough } from "node:stream";
 import type { FastifyReply } from "fastify";
 import type { ExcelHttpStream } from "../../utils/httpStream";
-/** Reuses Writable exporters without an Express response or whole-file buffering. */
+/** Reuses Writable exporters without whole-file buffering. */
 export async function sendHttpStream(
   reply: FastifyReply,
   headers: Record<string, string>,

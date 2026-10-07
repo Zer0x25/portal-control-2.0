@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { format, resolveConfig } from "prettier";
-import { swaggerSpec } from "../src/utils/swagger";
+import { swaggerSpec } from "../src/utils/openapi";
 
 async function generateSwagger() {
   const outputPath = path.join(__dirname, "../docs/swagger.json");

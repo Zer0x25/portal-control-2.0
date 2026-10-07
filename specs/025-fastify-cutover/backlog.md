@@ -44,3 +44,6 @@ Tanda 3: [contrato de correo y reportes](email-reports-consistency.md).
 El drenaje local de las fachadas administrativas está implementado en
 [drenaje de flujos administrativos](admin-operation-drain.md). La barrera universal
 y reset/restore distribuido permanecen pendientes.
+
+Prioridad resuelta antes de continuar tandas: [retiro definitivo de Express](express-retirement.md).
+Toda implementación posterior usa exclusivamente Fastify.

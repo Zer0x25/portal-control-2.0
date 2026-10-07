@@ -1,100 +1,69 @@
-import { describe, it, expect } from "vitest";
-import { ROUTE_MOUNTS } from "../src/app";
-import { collectRoutes } from "./helpers/routeManifest";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
+import ts from "typescript";
+import { expect, it } from "vitest";
 
-/**
- * Mutating routes that intentionally have no `validate(...)` middleware.
- *
- * Every entry takes no JSON body, or validates its own payload because it is a
- * file upload rather than a JSON document. The list is a ratchet: adding a new
- * unvalidated route fails this test until it is either validated or justified.
- */
-const ALLOWED_UNVALIDATED_ROUTES = [
-  // Authenticated session/MFA lifecycle: derives its target from the token.
-  "POST /api/auth/logout",
-  "POST /api/auth/mfa/setup",
-  // Maintenance triggers: no client-supplied payload.
-  "POST /api/admin/trigger-autoclose",
-  "POST /api/admin/trigger-accounting-autoclose",
-  "POST /api/admin/trigger-backup",
-  "POST /api/admin/restart",
-  "POST /api/records/auto-close",
-  // Path-parameter only; the controller checks `id` is a non-empty string.
-  "PATCH /api/scheduled-reports/:id/toggle",
-  "PUT /api/notes/:id",
-  // Multipart uploads: validated by multer file filters and the controller.
-  "POST /api/configs/company-policy",
-  "POST /api/import/preview",
-  // Controller parses the body with SmtpProfileSchema before use.
-  "POST /api/email/verify",
-];
-
-describe("Architectural Guardrails", () => {
-  describe("Logic-First Compliance (Controllers vs Services)", () => {
-    it("Controllers should not import prisma directly from db service", () => {
-      const controllersDir = path.join(__dirname, "../src/controllers");
-      const files = fs.readdirSync(controllersDir);
-
-      const offenders = files.filter((file) => {
-        if (!file.endsWith(".ts")) return false;
-        const content = fs.readFileSync(path.join(controllersDir, file), "utf8");
-        // Check for direct prisma imports. We allow importing 'prisma' from types if needed,
-        // but not the actual client instance from "../services/db"
-        return content.includes('import prisma from "../services/db"');
-      });
-
-      expect(
-        offenders,
-        `The following controllers are bypassing the Service layer by importing prisma directly: \n${offenders.join("\n")}. \nLogic should move to a Service.`,
-      ).toEqual([]);
-    });
-
-    it("Controllers should remain lean (line count check)", () => {
-      const controllersDir = path.join(__dirname, "../src/controllers");
-      const files = fs.readdirSync(controllersDir);
-      const THRESHOLD = 500; // Large enough for now, but should capture major bloating
-
-      const bloated = files.filter((file) => {
-        if (!file.endsWith(".ts")) return false;
-        const lines = fs.readFileSync(path.join(controllersDir, file), "utf8").split("\n").length;
-        return lines > THRESHOLD;
-      });
-
-      expect(
-        bloated,
-        `The following controllers exceed the ${THRESHOLD} lines threshold, suggesting stray business logic: \n${bloated.join("\n")}`,
-      ).toEqual([]);
-    });
+const root = path.resolve(__dirname, "..");
+const retired = new Set([
+  "express",
+  "express-rate-limit",
+  "compression",
+  "cors",
+  "helmet",
+  "multer",
+  "supertest",
+  "swagger-ui-express",
+]);
+function files(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const file = path.join(directory, entry.name);
+    if (entry.name === "generated") return [];
+    return entry.isDirectory() ? files(file) : /\.(ts|cjs)$/.test(file) ? [file] : [];
   });
-
-  describe("Boundary Zod Compliance", () => {
-    it("Every POST/PUT/PATCH route should have the 'validate' middleware", () => {
-      const routes = collectRoutes(ROUTE_MOUNTS);
-
-      // Guard against silent vacuity: the previous implementation walked
-      // `app._router.stack`, which Express 5 no longer exposes, so the route
-      // list was always empty and this test always passed.
-      expect(routes.length).toBeGreaterThan(0);
-
-      const unprotected = routes
-        .filter(
-          (route) =>
-            route.methods.some((method) => ["POST", "PUT", "PATCH"].includes(method)) &&
-            !route.hasValidate &&
-            !route.fullPath.startsWith("/api/health"),
-        )
-        .map((route) => `${route.methods.join(",")} ${route.fullPath}`);
-
-      // Ratchet: the remaining entries accept no JSON body, or validate it
-      // themselves (a Zod parse or an explicit guard) because the payload is a
-      // file upload rather than JSON. New gaps must fail; known ones must be
-      // justified here.
-      expect(
-        [...unprotected].sort(),
-        "Detected mutating routes missing Zod validation middleware",
-      ).toEqual([...ALLOWED_UNVALIDATED_ROUTES].sort());
-    });
-  });
+}
+it("has no retired Express runtime, adapters, imports or dependencies", () => {
+  for (const file of [
+    "src/app.ts",
+    "src/express-main.ts",
+    "src/routes",
+    "src/controllers",
+    "src/middleware",
+  ])
+    expect(fs.existsSync(path.join(root, file)), file).toBe(false);
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+  for (const dependency of Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }))
+    expect(retired.has(dependency.replace(/^@types\//, "")), dependency).toBe(false);
+  expect(pkg.scripts).not.toHaveProperty("dev:express");
+  const sources = ["src", "tests", "scripts"].flatMap((directory) =>
+    files(path.join(root, directory)),
+  );
+  expect(sources.length).toBeGreaterThan(0);
+  const offenders: string[] = [];
+  for (const file of sources) {
+    const ast = ts.createSourceFile(
+      file,
+      fs.readFileSync(file, "utf8"),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    function visit(node: ts.Node) {
+      let specifier: string | undefined;
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+        if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier))
+          specifier = node.moduleSpecifier.text;
+      } else if (
+        ts.isCallExpression(node) &&
+        (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+          (ts.isIdentifier(node.expression) && node.expression.text === "require"))
+      ) {
+        const arg = node.arguments[0];
+        if (arg && ts.isStringLiteral(arg)) specifier = arg.text;
+      }
+      if (specifier && retired.has(specifier))
+        offenders.push(`${path.relative(root, file)}: ${specifier}`);
+      ts.forEachChild(node, visit);
+    }
+    visit(ast);
+  }
+  expect(offenders).toEqual([]);
 });

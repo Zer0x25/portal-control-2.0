@@ -2,10 +2,8 @@ import { auditService } from "../../src/services/auditService";
 import jwt from "jsonwebtoken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
-import request from "supertest";
 import ExcelJS from "exceljs";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
-import expressApp from "../../src/app";
 import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { ExportService } from "../../src/services/export/ExportService";
@@ -64,9 +62,8 @@ afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (server) => {
+describe("Spec021 import/export on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
     () => ({ "x-forwarded-for": clientIP }),
@@ -79,22 +76,6 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     duplicate = false,
     repeatSchema = false,
   ) {
-    if (server === "Express") {
-      let call = request(expressApp).post("/api/import/preview").set("x-forwarded-for", clientIP);
-      if (access) call = call.set("authorization", `Bearer ${access}`);
-      if (bytes)
-        call = call.attach(field, bytes, {
-          filename: "Data.bin",
-          contentType: "application/octet-stream",
-        });
-      if (duplicate && bytes) call = call.attach(field, bytes, { filename: "Other.xlsx" });
-      if (schema !== undefined) {
-        call = call.field("schema", schema);
-        if (repeatSchema) call = call.field("schema", schema);
-      }
-      const response = await call;
-      return { status: response.status, body: response.body };
-    }
     if (!bytes && schema === undefined) {
       const response = await fastify.inject({
         method: "POST",
@@ -507,7 +488,7 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     "/api/export/report-pdf",
     "/api/export/report-excel",
     "/api/export/shift-report-pdf/missing",
-  ])("requires live authentication on %s", async (path) => {
+  ])("requires live authentication on Fastify", async (path) => {
     expect(
       (await http(path.startsWith("/api/import") ? "POST" : "GET", path, undefined, null)).status,
     ).toBe(401);

@@ -76,9 +76,8 @@ afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec019 email/reports on %s", (server) => {
+describe("Spec019 email/reports on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );

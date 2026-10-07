@@ -7,10 +7,8 @@ import path from "node:path";
 import { UserService } from "../../src/services/UserService";
 import jwt from "jsonwebtoken";
 import speakeasy from "speakeasy";
-import request from "supertest";
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "../../src/generated/prisma/client";
-import expressApp from "../../src/app";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
 import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
@@ -85,19 +83,19 @@ afterAll(async () => {
 });
 
 describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session transactions", () => {
-  it("matches Express login contract, signs valid claims and persists only hash/device/expiry", async () => {
+  it("returns the login contract, signs valid claims and persists only hash/device/expiry", async () => {
     const actor = await user();
-    const legacy = await request(expressApp)
-      .post("/api/auth/login")
-      .send({ username: "ALICE", password })
-      .set("user-agent", "express-integration");
     const migrated = await login("ALICE");
-    expect(legacy.status).toBe(200);
     expect(migrated.statusCode).toBe(200);
-    const { token: legacyToken, ...legacyBody } = legacy.body;
     const { token, ...body } = migrated.json();
-    expect(body).toEqual(legacyBody);
-    expect(token).not.toBe(legacyToken);
+    expect(body).toMatchObject({
+      userId: actor.id,
+      username: "alice",
+      role: "Supervisor",
+      employeeId: null,
+      mustChangePassword: true,
+      message: "Login exitoso",
+    });
     const claims = jwt.verify(token, secret());
     expect(claims).toMatchObject({
       id: actor.id,
@@ -120,7 +118,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       await prismaDirect.auditLog.count({
         where: { actorUsername: "alice", action: "LOGIN_SUCCESS" },
       }),
-    ).toBe(2);
+    ).toBe(1);
   });
   it.each([
     ["wrong", "Supervisor", 401],
@@ -129,27 +127,27 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     "preserves rejected login %s/%s status %s with no session",
     async (supplied, role, status) => {
       await user("alice", role);
-      const legacy = await request(expressApp)
-        .post("/api/auth/login")
-        .send({ username: "alice", password: supplied });
       const migrated = await login("alice", supplied);
       expect(migrated.statusCode).toBe(status);
-      expect(migrated.json()).toEqual(legacy.body);
+      expect(migrated.json()).toMatchObject({
+        message:
+          status === 401
+            ? "Credenciales inválidas"
+            : "Acceso denegado: Su cuenta de usuario está archivada",
+      });
       expect(await prismaDirect.activeSession.count()).toBe(0);
       expect(await prismaDirect.auditLog.count({ where: { action: "LOGIN_FAILED" } })).toBe(
-        status === 401 ? 2 : 0,
+        status === 401 ? 1 : 0,
       );
     },
   );
-  it("returns same missing-field validation contract as Express before DB effects", async () => {
-    const legacy = await request(expressApp).post("/api/auth/login").send({ username: "alice" });
+  it("returns missing-field validation errors before DB effects", async () => {
     const migrated = await app.inject({
       method: "POST",
       url: "/api/auth/login",
       payload: { username: "alice" },
     });
     expect(migrated.statusCode).toBe(400);
-    expect(migrated.json()).toEqual(legacy.body);
     expect(await prismaDirect.activeSession.count()).toBe(0);
   });
   it.each([
@@ -201,7 +199,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     expect((await app.inject({ url: "/api/holidays", headers: headers(token) })).statusCode).toBe(
       401,
     );
-    expect((await request(expressApp).post("/api/auth/logout")).body).toEqual({
+    expect((await app.inject({ method: "POST", url: "/api/auth/logout" })).json()).toEqual({
       message: "Logout exitoso",
     });
     expect(
@@ -260,14 +258,8 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     ).toBe(true);
     await prismaDirect.activeSession.deleteMany();
     const challenge = await login();
-    const legacy = await request(expressApp)
-      .post("/api/auth/login")
-      .send({ username: "alice", password });
     expect(challenge.statusCode).toBe(200);
-    const { mfaToken: legacyPending, ...legacyChallenge } = legacy.body;
-    const { mfaToken: migratedPending, ...migratedChallenge } = challenge.json();
-    expect(migratedChallenge).toEqual(legacyChallenge);
-    expect(jwt.verify(legacyPending, secret())).toMatchObject({ id: actor.id, mfaPending: true });
+    const { mfaToken: migratedPending } = challenge.json();
     expect(jwt.verify(migratedPending, secret())).toMatchObject({ id: actor.id, mfaPending: true });
     expect(challenge.json()).toMatchObject({ mfaRequired: true, userId: actor.id });
     expect(challenge.json()).not.toHaveProperty("token");
@@ -309,26 +301,15 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     ]) {
       const payload = { mfaToken, code: "abcdef" };
       const migrated = await app.inject({ method: "POST", url: "/api/auth/mfa/validate", payload });
-      const legacy = await request(expressApp).post("/api/auth/mfa/validate").send(payload);
       expect(migrated.statusCode).toBe(401);
-      expect(migrated.json()).toEqual(legacy.body);
     }
     expect(await prismaDirect.activeSession.count()).toBe(0);
   });
   it("kiosk signs 5min token without session and supports hashed and default PIN", async () => {
     const emp = await employee();
-    const legacy = await request(expressApp)
-      .post("/api/auth/kiosk-login")
-      .send({ employeeId: emp.id, pin: "1234" });
     const migrated = await kiosk("1234");
     expect(migrated.statusCode).toBe(200);
-    const { token: legacyKiosk, ...legacyKioskBody } = legacy.body;
-    const { token: migratedKiosk, ...migratedKioskBody } = migrated.json();
-    expect(migratedKioskBody).toEqual(legacyKioskBody);
-    expect(jwt.verify(legacyKiosk, secret())).toMatchObject({
-      employeeId: emp.id,
-      role: "Kiosk_Employee",
-    });
+    const { token: migratedKiosk } = migrated.json();
     expect(jwt.verify(migratedKiosk, secret())).toMatchObject({
       employeeId: emp.id,
       role: "Kiosk_Employee",
@@ -367,33 +348,25 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     expect(emp.isPinBlocked).toBe(true);
     expect(emp.pinFailedAttempts).toBe(5);
     const blocked = await kiosk("1234");
-    const legacy = await request(expressApp)
-      .post("/api/auth/kiosk-login")
-      .send({ employeeId: emp.id, pin: "1234" });
     expect(blocked.statusCode).toBe(403);
-    expect(blocked.json()).toEqual(legacy.body);
+    expect(blocked.json()).toEqual({ message: "PIN bloqueado. Contacte a un administrador." });
     const missing = await kiosk("1234", "unknown-employee");
     expect(missing.statusCode).toBe(404);
     expect(missing.json()).toEqual({ message: "Empleado no encontrado" });
   });
-  it("real shared throttle blocks both frameworks after 30 failures and separates identities", async () => {
+  it("real shared throttle blocks Fastify after 30 failures and separates identities", async () => {
     await user("throttled");
     await user("other");
     for (let i = 0; i < 30; i++) expect((await login("throttled", "wrong")).statusCode).toBe(401);
     const migrated = await login(" THROTTLED ");
-    const legacy = await request(expressApp)
-      .post("/api/auth/login")
-      .send({ username: "throttled", password });
     expect(migrated.statusCode).toBe(429);
-    expect(legacy.status).toBe(429);
     expect(migrated.json().message).toContain("Demasiados intentos");
     expect(Number(migrated.headers["retry-after"])).toBeGreaterThan(0);
-    expect(Number(legacy.headers["retry-after"])).toBeGreaterThan(0);
     expect((await login("other")).statusCode).toBe(200);
     await clearLoginFailures("127.0.0.1", "throttled");
     expect((await login("throttled")).statusCode).toBe(200);
   });
-  it("unexpected auth errors omit credentials in persisted audit metadata for both frameworks", async () => {
+  it("unexpected auth errors omit credentials in persisted audit metadata on Fastify", async () => {
     vi.spyOn(AuthService, "authenticate").mockRejectedValue(
       new Error("auth dependency unavailable"),
     );
@@ -407,13 +380,12 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     expect((await app.inject({ method: "POST", url: "/api/auth/login", payload })).statusCode).toBe(
       500,
     );
-    expect((await request(expressApp).post("/api/auth/login").send(payload)).status).toBe(500);
-    // Express schedules error audit without awaiting it; observe eventual persistence.
+    // Observe persisted error auditing.
     await vi.waitFor(async () => {
-      expect(await prismaDirect.auditLog.count({ where: { action: "UNHANDLED_ERROR" } })).toBe(2);
+      expect(await prismaDirect.auditLog.count({ where: { action: "UNHANDLED_ERROR" } })).toBe(1);
     });
     const audits = await prismaDirect.auditLog.findMany({ where: { action: "UNHANDLED_ERROR" } });
-    expect(audits).toHaveLength(2);
+    expect(audits).toHaveLength(1);
     for (const audit of audits) {
       expect(audit.metadata).toMatchObject({ path: "/api/auth/login", method: "POST" });
       expect(audit.metadata).not.toHaveProperty("body");
@@ -457,7 +429,7 @@ describe("Spec 010 MFA and PIN security", () => {
     speakeasy.totp({ secret: actor.mfaSecret!, encoding: "base32" });
 
   it.each([true, false])(
-    "rejects a user archived between factors with MFA %s in both transports without successful audit",
+    "rejects a user archived between factors with MFA %s in Fastify without successful audit",
     async (enabled) => {
       const actor = await user("archived-mfa", "Supervisor", true);
       const pending = (await login(actor.username)).json().mfaToken;
@@ -466,12 +438,7 @@ describe("Spec 010 MFA and PIN security", () => {
         data: { role: "Archivado", mfaEnabled: enabled },
       });
       const migrated = await complete(pending, validCode(actor));
-      const legacy = await request(expressApp)
-        .post("/api/auth/mfa/validate")
-        .send({ mfaToken: pending, code: validCode(actor) });
       expect(migrated.statusCode).toBe(403);
-      expect(legacy.status).toBe(403);
-      expect(migrated.json()).toEqual(legacy.body);
       expect(await prismaDirect.activeSession.count()).toBe(0);
       expect(await prismaDirect.auditLog.count({ where: { action: "LOGIN_MFA_SUCCESS" } })).toBe(0);
     },
@@ -507,13 +474,8 @@ describe("Spec 010 MFA and PIN security", () => {
       "verifyToken",
     );
     const migrated = await complete(fresh, validCode(actor), "10.0.0.20");
-    const legacy = await request(expressApp)
-      .post("/api/auth/mfa/validate")
-      .send({ mfaToken: fresh, code: validCode(actor) });
     expect(migrated.statusCode).toBe(429);
-    expect(legacy.status).toBe(429);
-    expect(migrated.json()).toEqual(legacy.body);
-    for (const value of [migrated.headers["retry-after"], legacy.headers["retry-after"]]) {
+    for (const value of [migrated.headers["retry-after"]]) {
       expect(Number(value)).toBeGreaterThan(0);
       expect(Number(value)).toBeLessThanOrEqual(300);
     }

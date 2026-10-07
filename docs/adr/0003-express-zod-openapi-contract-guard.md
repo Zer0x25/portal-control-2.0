@@ -4,6 +4,12 @@
 - Fecha: 2026-10-02
 - Autores: retroactivo desde código
 
+Actualización 2026-10-07: Express está retirado. Las decisiones históricas de
+contrato/seguridad se aplican ahora en Fastify; el manifiesto nativo y sus pruebas
+reemplazan la introspección y middleware descritos abajo. OpenAPI se genera desde
+`backend/src/platform/openapi/operations.ts`. Ver
+[retiro de Express](../../specs/025-fastify-cutover/express-retirement.md).
+
 ## Contexto
 
 Los guards de introspección pasaban vacuamente: Express 5 eliminó

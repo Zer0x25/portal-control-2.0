@@ -7,7 +7,7 @@ export interface HolidayHttpOptions {
   mapError(error: unknown): { statusCode: number; body: unknown };
 }
 
-/** Pilot plugin: not mounted by the production Express application. */
+/** Query contract for the native holiday HTTP plugin. */
 interface HolidayQuerystring {
   since?: string;
   page?: string;

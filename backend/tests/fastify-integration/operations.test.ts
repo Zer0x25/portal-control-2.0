@@ -108,9 +108,8 @@ afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (server) => {
+describe("Spec023 operations on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
     () => ({ "x-forwarded-for": ip, ...(gzip ? { "accept-encoding": "gzip" } : {}) }),

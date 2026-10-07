@@ -100,9 +100,8 @@ const routes = [
   ["GET", "/api/shifts/suggest-pattern-name", true],
   ["POST", "/api/shifts/validate-conflicts", true],
 ] as const;
-describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server) => {
+describe("Spec 015 shifts on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );

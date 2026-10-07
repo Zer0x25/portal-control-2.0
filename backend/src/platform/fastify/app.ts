@@ -113,7 +113,7 @@ export function buildFastifyApp(
     exposeHeadRoutes: false,
     routerOptions: { ignoreTrailingSlash: true },
   });
-  // Express accepts an empty JSON body; keep required-body validation at the route.
+  // Empty JSON bodies stay undefined; required-body validation belongs to the route.
   const jsonParser = app.getDefaultJsonParser("error", "error");
   app.removeContentTypeParser("application/json");
   app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
@@ -233,7 +233,7 @@ export function buildFastifyApp(
             .send({ message: "Límite de operaciones admin alcanzado. Intenta en 15 minutos." });
       }
     });
-    // Separate IP budget, before maintenance/auth, as in Express /api/export.
+    // Exports have a separate IP budget before maintenance/auth.
     const exportLimit = protectedApp.createRateLimit({ max: 10, timeWindow: 15 * 60 * 1000 });
     protectedApp.addHook("onRequest", async (request, reply) => {
       const path = request.url.split("?")[0];

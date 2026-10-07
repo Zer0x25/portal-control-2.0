@@ -88,9 +88,8 @@ const routes = [
   ["POST", "/api/shift-reports"],
   ["GET", "/api/shift-reports/export/missing"],
 ] as const;
-describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (server) => {
+describe("Spec 017 shift reports on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );
@@ -349,7 +348,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 017 shift reports on %s", (
     expect((await http("GET", "/api/shift-reports")).status).toBe(200);
     expect((await http("GET", "/api/shift-reports/export/missing")).status).toBe(404);
   });
-  it.each(routes)("enforces sessions/persisted roles on %s %s", async (method, url) => {
+  it.each(routes)("enforces sessions/persisted roles on Fastify %s", async (method, url) => {
     const payload = method === "POST" ? body() : undefined;
     expect((await http(method, url, payload, null)).status).toBe(401);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
