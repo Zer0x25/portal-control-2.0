@@ -17,16 +17,21 @@ No crear nuevas specs de migración. No se hace push automático.
    CI, SDK, docs, specs y secretos correctos. Sin migración de base de datos.
    - Config write/audit atómicos; permisos/redacción de históricos y payloads.
    - Validación real de PDF y limpieza de archivo huérfano al fallar persistencia.
-3. Correo y reportes programados.
-   - Alinear schemas y servicios, aplicar defaults y rechazar extras peligrosos.
-   - Cron completo y zona horaria explícita; toggle concurrente atómico.
+3. Correo y reportes programados — completada. Contrato: [email-reports-consistency](email-reports-consistency.md).
+   Validación: 707 pruebas de integración, 39 unitarias/contrato, 279 frontend;
+   CI, SDK, docs, specs y secretos correctos. Sin migración de base de datos.
+   - Contrato nativo compartido, defaults aplicados y extras rechazados.
+   - Credenciales serializadas y auditoría atómica para configuración y reportes.
+   - Cron de cinco campos en Chile, timers por próxima ejecución y toggle atómico.
+   - Fallo de entrega no marca éxito; adjunto conserva formato y MIME real.
 4. Importación y exportación.
    - Fechas de Chile, mapping y contratos pendientes; renderers parciales.
+   - Convertir a PDF real los cuatro generadores createSimplePDF que devuelven texto.
    - Pruebas de contenido y QA visual para artefactos cuyo layout cambie.
 5. Operaciones y rendimiento.
    - Admisión/drenaje común de HTTP/jobs/scheduler y watchdog del seed.
    - Coordinación entre procesos para reset/restore y scheduler.
    - Evaluar contención e invalidación global KPI; optimizar con evidencia de carga.
 
-Los detalles concretos de las tandas 2–5 se delimitan al inspeccionar cada área.
+Los detalles concretos de las tandas 4–5 se delimitan al inspeccionar cada área.
 No implican cambios de permisos ni despliegue sin una instrucción para ello.

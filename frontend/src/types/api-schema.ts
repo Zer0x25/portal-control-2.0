@@ -1332,7 +1332,7 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": components["schemas"]["ScheduledReport"];
+          "application/json": components["schemas"]["ScheduledReportInput"];
         };
       };
       responses: {
@@ -1393,7 +1393,7 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": components["schemas"]["ScheduledReport"];
+          "application/json": components["schemas"]["ScheduledReportUpdate"];
         };
       };
       responses: {
@@ -4361,7 +4361,11 @@ export interface paths {
         path?: never;
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["EmailVerify"];
+        };
+      };
       responses: {
         /** @description Configuración verificada exitosamente */
         200: {
@@ -4369,7 +4373,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": components["schemas"]["ApiResponse"];
+            "application/json": components["schemas"]["EmailOperationResult"];
           };
         };
       };
@@ -5180,23 +5184,44 @@ export interface components {
       cursor?: string;
     };
     EmailConfig: {
+      profiles: {
+        host: string;
+        port: number;
+        secure: boolean;
+        user: string;
+        pass: string;
+        fromEmail: string;
+        fromName: string;
+      }[];
+      activeProfileIndex: number;
+    };
+    EmailOperationResult: {
+      success: boolean;
+      message: string;
+    };
+    EmailRules: {
+      autoCloseShift: {
+        enabled: boolean;
+        recipient: string;
+      };
+      latenessOver15: {
+        enabled: boolean;
+        recipient: string;
+      };
+      latenessOver60: {
+        enabled: boolean;
+        recipient: string;
+      };
+    };
+    EmailVerify: {
       host: string;
       port: number;
       secure: boolean;
-      auth: {
-        user: string;
-        pass: string;
-      };
+      user: string;
+      pass: string;
       /** Format: email */
-      from: string;
-    };
-    EmailRules: {
-      notifyOnAbsence: boolean;
-      notifyOnLate: boolean;
-      notifyOnLeaveRequest: boolean;
-      /** @enum {string} */
-      digestFrequency: "daily" | "weekly" | "none";
-      recipients: string[];
+      fromEmail: string;
+      fromName: string;
     };
     SendTestEmail: {
       /** Format: email */
@@ -5206,21 +5231,115 @@ export interface components {
       /** @default  */
       message: string;
     };
-    ScheduledReportListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["ScheduledReport"][];
-    };
-    ScheduledReport: {
-      id?: string;
-      name: string;
+    ScheduledReportFilters: {
+      startDate?: string;
+      endDate?: string;
+      area?: string;
+      employeeId?: string;
       /** @enum {string} */
-      type: "daily" | "weekly" | "monthly";
-      active: boolean;
+      viewMode?: "month" | "week" | "day";
+      cargo?: string;
+      /** @enum {string} */
+      mode?: "summary" | "compiled_detailed";
+      shiftReportId?: string;
+    };
+    ScheduledReportInput: {
+      name: string;
+      description?: string;
+      /** @enum {string} */
+      reportType:
+        | "attendance_summary"
+        | "overtime"
+        | "anomalies"
+        | "shift_coverage"
+        | "calendar"
+        | "detailed"
+        | "shift_report";
+      /** @enum {string} */
+      frequency: "daily" | "weekly" | "monthly";
+      cronExpression: string;
       recipients: string[];
-      lastRun?: string | null;
-      nextRun?: string | null;
-      config?: {
-        [key: string]: unknown;
-      };
+      filters?: {
+        startDate?: string;
+        endDate?: string;
+        area?: string;
+        employeeId?: string;
+        /** @enum {string} */
+        viewMode?: "month" | "week" | "day";
+        cargo?: string;
+        /** @enum {string} */
+        mode?: "summary" | "compiled_detailed";
+        shiftReportId?: string;
+      } | null;
+      /** @default true */
+      isActive: boolean;
+    };
+    ScheduledReportListResponse: components["schemas"]["ScheduledReport"][];
+    ScheduledReport: {
+      name: string;
+      description: string | null;
+      /** @enum {string} */
+      reportType:
+        | "attendance_summary"
+        | "overtime"
+        | "anomalies"
+        | "shift_coverage"
+        | "calendar"
+        | "detailed"
+        | "shift_report";
+      /** @enum {string} */
+      frequency: "daily" | "weekly" | "monthly";
+      cronExpression: string;
+      recipients: string[];
+      filters: {
+        startDate?: string;
+        endDate?: string;
+        area?: string;
+        employeeId?: string;
+        /** @enum {string} */
+        viewMode?: "month" | "week" | "day";
+        cargo?: string;
+        /** @enum {string} */
+        mode?: "summary" | "compiled_detailed";
+        shiftReportId?: string;
+      } | null;
+      isActive: boolean;
+      id: string;
+      lastRunAt: string | null;
+      nextRunAt: string | null;
+      createdBy: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    ScheduledReportUpdate: {
+      name?: string;
+      description?: string;
+      /** @enum {string} */
+      reportType?:
+        | "attendance_summary"
+        | "overtime"
+        | "anomalies"
+        | "shift_coverage"
+        | "calendar"
+        | "detailed"
+        | "shift_report";
+      /** @enum {string} */
+      frequency?: "daily" | "weekly" | "monthly";
+      cronExpression?: string;
+      recipients?: string[];
+      filters?: {
+        startDate?: string;
+        endDate?: string;
+        area?: string;
+        employeeId?: string;
+        /** @enum {string} */
+        viewMode?: "month" | "week" | "day";
+        cargo?: string;
+        /** @enum {string} */
+        mode?: "summary" | "compiled_detailed";
+        shiftReportId?: string;
+      } | null;
+      isActive?: boolean;
     };
     ShiftReportListResponse: components["schemas"]["ApiResponse"] & {
       data: components["schemas"]["ShiftReport"][];

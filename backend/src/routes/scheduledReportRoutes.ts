@@ -9,7 +9,10 @@ import {
 } from "../controllers/scheduledReportController";
 import { authenticateToken, authorizeElevated } from "../middleware/authMiddleware";
 import { validate } from "../middleware/validate";
-import { ScheduledReportSchema } from "../models/schemas/report.schemas";
+import {
+  ScheduledReportInputSchema,
+  ScheduledReportUpdateSchema,
+} from "../models/schemas/report.schemas";
 
 const router = Router();
 
@@ -68,12 +71,12 @@ router.get("/:id", getScheduledReport);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/ScheduledReport'
+ *             $ref: '#/components/schemas/ScheduledReportInput'
  *     responses:
  *       201:
  *         description: Reporte creado
  */
-router.post("/", validate(ScheduledReportSchema), createScheduledReport);
+router.post("/", validate(ScheduledReportInputSchema), createScheduledReport);
 
 /**
  * @openapi
@@ -92,12 +95,12 @@ router.post("/", validate(ScheduledReportSchema), createScheduledReport);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/ScheduledReport'
+ *             $ref: '#/components/schemas/ScheduledReportUpdate'
  *     responses:
  *       200:
  *         description: Reporte actualizado
  */
-router.put("/:id", validate(ScheduledReportSchema.partial()), updateScheduledReport);
+router.put("/:id", validate(ScheduledReportUpdateSchema), updateScheduledReport);
 
 /**
  * @openapi

@@ -1,22 +1,75 @@
 import { isoDateSchema, z } from "./common";
 import { ApiResponseSchema } from "./responses.schemas";
 
-export const ScheduledReportSchema = z
+import { calendarDateQuery } from "./dataQuery";
+import { hasReportTarget } from "../../utils/reportTarget";
+import { validReportCron } from "../../utils/reportCron";
+
+export const ScheduledReportFiltersSchema = z
   .object({
-    id: z.string().optional(),
-    name: z.string().min(1),
-    type: z.enum(["daily", "weekly", "monthly"]),
-    active: z.boolean(),
-    recipients: z.array(z.string().email()),
-    lastRun: z.string().nullable().optional(),
-    nextRun: z.string().nullable().optional(),
-    config: z.record(z.string(), z.unknown()).optional(),
+    startDate: calendarDateQuery.optional(),
+    endDate: calendarDateQuery.optional(),
+    area: z.string().optional(),
+    employeeId: z.string().optional(),
+    viewMode: z.enum(["month", "week", "day"]).optional(),
+    cargo: z.string().optional(),
+    mode: z.enum(["summary", "compiled_detailed"]).optional(),
+    shiftReportId: z.string().optional(),
+  })
+  .strict()
+  .refine((value) => !value.startDate || !value.endDate || value.startDate <= value.endDate, {
+    message: "Rango de fechas invertido",
+  });
+const reportFields = z
+  .object({
+    name: z.string().trim().min(1),
+    description: z.string().optional(),
+    reportType: z.enum([
+      "attendance_summary",
+      "overtime",
+      "anomalies",
+      "shift_coverage",
+      "calendar",
+      "detailed",
+      "shift_report",
+    ]),
+    frequency: z.enum(["daily", "weekly", "monthly"]),
+    cronExpression: z
+      .string()
+      .trim()
+      .max(256)
+      .refine(validReportCron, "Cron inválido (cinco campos, horario de Chile)"),
+    recipients: z.array(z.string().trim().email()).min(1),
+    filters: ScheduledReportFiltersSchema.nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict();
+export const ScheduledReportInputSchema = reportFields
+  .extend({
+    isActive: z.boolean().default(true),
+  })
+  .refine((value) => hasReportTarget(value.reportType, value.filters), {
+    message: "El reporte de turno requiere shiftReportId",
+    path: ["filters"],
+  })
+  .openapi("ScheduledReportInput");
+export const ScheduledReportUpdateSchema = reportFields.partial().openapi("ScheduledReportUpdate");
+export const ScheduledReportSchema = reportFields
+  .extend({
+    id: z.string(),
+    description: z.string().nullable(),
+    filters: ScheduledReportFiltersSchema.nullable(),
+    isActive: z.boolean(),
+    lastRunAt: z.string().nullable(),
+    nextRunAt: z.string().nullable(),
+    createdBy: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
   })
   .openapi("ScheduledReport");
-
-export const ScheduledReportListResponseSchema = ApiResponseSchema.extend({
-  data: z.array(ScheduledReportSchema),
-}).openapi("ScheduledReportListResponse");
+export const ScheduledReportListResponseSchema = z
+  .array(ScheduledReportSchema)
+  .openapi("ScheduledReportListResponse");
 
 export const ShiftReportSchema = z
   .object({

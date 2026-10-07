@@ -6,7 +6,10 @@ import {
   EmailRulesSchema,
   SendTestEmailSchema,
 } from "../../../models/schemas/email.schemas";
-import { ScheduledReportSchema } from "../../../models/schemas/report.schemas";
+import {
+  ScheduledReportInputSchema,
+  ScheduledReportUpdateSchema,
+} from "../../../models/schemas/report.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
 import { ForbiddenError } from "../../../utils/AppError";
 import type { EmailReportFlows } from "../application/flows";
@@ -53,13 +56,13 @@ export const emailReportsPlugin: FastifyPluginAsync<{
   );
   app.post<{ Body: ScheduledReportData }>(
     "/api/scheduled-reports",
-    { ...base, preHandler: validateRequest("body", ScheduledReportSchema) },
+    { ...base, preHandler: validateRequest("body", ScheduledReportInputSchema) },
     async (req, reply) =>
       reply.code(201).send(await options.service.create(req.body, req.user?.username)),
   );
   app.put<{ Params: { id: string }; Body: Partial<ScheduledReportData> }>(
     "/api/scheduled-reports/:id",
-    { ...base, preHandler: validateRequest("body", ScheduledReportSchema.partial()) },
+    { ...base, preHandler: validateRequest("body", ScheduledReportUpdateSchema) },
     (req) => options.service.update(req.params.id, req.body),
   );
   app.patch<{ Params: { id: string } }>("/api/scheduled-reports/:id/toggle", id, (req) =>

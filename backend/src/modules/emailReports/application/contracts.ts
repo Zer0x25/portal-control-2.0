@@ -47,10 +47,14 @@ export interface EmailReportDependencies<Report> {
     saveConfig(config: MultiSmtpConfig): Promise<void>;
     config(): Promise<MultiSmtpConfig>;
     rules(): Promise<EmailNotificationRules>;
+    parseRules(value: unknown): EmailNotificationRules;
+    parseSend(value: unknown): { to: string; subject: string; message: string };
     saveRules(rules: EmailNotificationRules): Promise<void>;
     send(to: string, subject: string, message: string): Promise<EmailResult>;
   };
   reports: {
+    parseCreate(value: unknown): ScheduledReportData;
+    parseUpdate(value: unknown): Partial<ScheduledReportData>;
     list(): Promise<Report[]>;
     get(id: string): Promise<Report | null>;
     create(data: ScheduledReportData, actor: string): Promise<Report>;

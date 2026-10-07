@@ -1,7 +1,13 @@
 import nodemailer from "nodemailer";
 import prisma from "./db";
+import { safeJsonParse } from "../utils/configUtils";
 import { encrypt, decrypt, isEncrypted } from "../utils/cryptoUtils";
 import { mergeSmtpSecrets } from "../modules/configs";
+import { ConfigService } from "./ConfigService";
+import { requestContext } from "../utils/context";
+import { logger } from "../utils/logger";
+import { MultiSmtpConfigSchema } from "../models/schemas/smtpProfile.schemas";
+import { EmailRulesSchema } from "../models/schemas/email.schemas";
 import { ValidationError } from "../utils/AppError";
 
 import type { SmtpConfig, MultiSmtpConfig, EmailNotificationRules } from "../modules/emailReports";
@@ -54,33 +60,15 @@ export class EmailService {
       where: { key: SMTP_CONFIG_KEY },
     });
 
-    let config: MultiSmtpConfig = DEFAULT_MULTI_CONFIG;
-
-    if (configRecord) {
-      try {
-        const parsed = JSON.parse(configRecord.value);
-
-        // Migration: If it's the old single config format, wrap it in the new multi format
-        if (parsed.host !== undefined) {
-          config = {
-            ...DEFAULT_MULTI_CONFIG,
-            profiles: [parsed, DEFAULT_MULTI_CONFIG.profiles[1], DEFAULT_MULTI_CONFIG.profiles[2]],
-          };
-        } else {
-          config = parsed;
-        }
-      } catch {
-        config = DEFAULT_MULTI_CONFIG;
-      }
-    }
-
+    const config = this.normalizeMultiConfig(
+      configRecord ? safeJsonParse(configRecord.value) : null,
+    );
     if (masked) {
-      config.profiles = config.profiles.map((p) => ({
-        ...p,
-        pass: p.pass ? "********" : "",
+      config.profiles = config.profiles.map((profile) => ({
+        ...profile,
+        pass: profile.pass ? "********" : "",
       }));
     }
-
     return config;
   }
 
@@ -98,40 +86,50 @@ export class EmailService {
     return activeProfile;
   }
 
+  private normalizeMultiConfig(value: unknown): MultiSmtpConfig {
+    const defaults = () => ({
+      ...DEFAULT_MULTI_CONFIG,
+      profiles: DEFAULT_MULTI_CONFIG.profiles.map((profile) => ({ ...profile })),
+    });
+    const candidate =
+      value && typeof value === "object" && "host" in value
+        ? { ...defaults(), profiles: [value, ...defaults().profiles.slice(1)] }
+        : value;
+    const parsed = MultiSmtpConfigSchema.safeParse(candidate);
+    return parsed.success ? parsed.data : defaults();
+  }
+
   async saveMultiSmtpConfig(config: MultiSmtpConfig): Promise<void> {
-    // Before saving, ensure all passwords are encrypted
-    const currentStored = await this.getMultiSmtpConfig(false); // Get current config with actual (encrypted) passwords
-
-    const securedProfiles = config.profiles.map((newProfile, idx) => {
-      const oldProfile = currentStored.profiles[idx];
-      let securedPass = newProfile.pass;
-
-      // If the frontend sends masked password, keep the one we already have in DB
-      if (securedPass === "********") {
-        const merged = mergeSmtpSecrets(newProfile, oldProfile);
-        if (
-          !merged ||
-          typeof merged !== "object" ||
-          !("pass" in merged) ||
-          typeof merged.pass !== "string"
-        )
-          throw new ValidationError("Configuración SMTP inválida");
-        securedPass = merged.pass;
-      } else if (securedPass && !isEncrypted(securedPass)) {
-        // If it's a new plain password, encrypt it
-        securedPass = encrypt(securedPass);
-      }
-
-      return { ...newProfile, pass: securedPass };
-    });
-
-    const securedConfig = { ...config, profiles: securedProfiles };
-
-    await prisma.systemConfig.upsert({
-      where: { key: SMTP_CONFIG_KEY },
-      update: { value: JSON.stringify(securedConfig) },
-      create: { key: SMTP_CONFIG_KEY, value: JSON.stringify(securedConfig) },
-    });
+    const parsed = MultiSmtpConfigSchema.parse(config);
+    await ConfigService.replace(
+      SMTP_CONFIG_KEY,
+      parsed,
+      requestContext.getStore()?.username || "SYSTEM",
+      (_value, previous) => {
+        const current = this.normalizeMultiConfig(previous);
+        return {
+          ...parsed,
+          profiles: parsed.profiles.map((profile, index) => {
+            let pass = profile.pass;
+            if (pass === "********") {
+              const merged = mergeSmtpSecrets(profile, current.profiles[index]);
+              if (
+                !merged ||
+                typeof merged !== "object" ||
+                !("pass" in merged) ||
+                typeof merged.pass !== "string"
+              )
+                throw new ValidationError("Configuración SMTP inválida");
+              pass = merged.pass;
+            }
+            if (pass && !isEncrypted(pass)) {
+              pass = encrypt(pass);
+            }
+            return { ...profile, pass };
+          }),
+        };
+      },
+    );
   }
 
   async saveSmtpConfig(config: SmtpConfig): Promise<void> {
@@ -152,15 +150,22 @@ export class EmailService {
         latenessOver60: { enabled: false, recipient: "" },
       };
     }
-    return JSON.parse(rules.value);
+    const parsed = EmailRulesSchema.safeParse(safeJsonParse(rules.value));
+    return parsed.success
+      ? parsed.data
+      : {
+          autoCloseShift: { enabled: false, recipient: "" },
+          latenessOver15: { enabled: false, recipient: "" },
+          latenessOver60: { enabled: false, recipient: "" },
+        };
   }
 
   async saveNotificationRules(rules: EmailNotificationRules): Promise<void> {
-    await prisma.systemConfig.upsert({
-      where: { key: NOTIFICATION_RULES_KEY },
-      update: { value: JSON.stringify(rules) },
-      create: { key: NOTIFICATION_RULES_KEY, value: JSON.stringify(rules) },
-    });
+    await ConfigService.set(
+      NOTIFICATION_RULES_KEY,
+      EmailRulesSchema.parse(rules),
+      requestContext.getStore()?.username || "SYSTEM",
+    );
   }
 
   async verifyConnection(config: SmtpConfig): Promise<{ success: boolean; message: string }> {
@@ -204,7 +209,7 @@ export class EmailService {
       await transporter.verify();
       return { success: true, message: "Conexión SMTP exitosa." };
     } catch {
-      console.warn("SMTP connection verification failed");
+      logger.warn("SMTP connection verification failed");
       return { success: false, message: "No se pudo verificar la conexión SMTP" };
     }
   }
@@ -243,7 +248,7 @@ export class EmailService {
 
       return { success: true, message: "Correo enviado correctamente." };
     } catch {
-      console.warn("Email delivery failed");
+      logger.warn("Email delivery failed");
       return { success: false, message: "No se pudo enviar el correo" };
     }
   }
@@ -285,14 +290,17 @@ export class EmailService {
           {
             filename: attachmentFilename,
             content: attachmentBuffer,
-            contentType: "application/pdf",
+            contentType:
+              attachmentBuffer.subarray(0, 5).toString("ascii") === "%PDF-"
+                ? "application/pdf"
+                : "text/plain; charset=utf-8",
           },
         ],
       });
 
       return { success: true, message: "Correo con adjunto enviado correctamente." };
     } catch {
-      console.warn("Email attachment delivery failed");
+      logger.warn("Email attachment delivery failed");
       return { success: false, message: "No se pudo enviar el correo" };
     }
   }

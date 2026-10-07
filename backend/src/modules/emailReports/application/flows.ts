@@ -1,9 +1,5 @@
-import { NotFoundError, ValidationError } from "../../../utils/AppError";
-import type {
-  EmailReportDependencies,
-  EmailNotificationRules,
-  ScheduledReportData,
-} from "./contracts";
+import { NotFoundError } from "../../../utils/AppError";
+import type { EmailReportDependencies } from "./contracts";
 export function createEmailReportFlows<Report>(deps: EmailReportDependencies<Report>) {
   return {
     verify: (value: unknown) => deps.email.verify(deps.email.parseProfile(value)),
@@ -13,32 +9,24 @@ export function createEmailReportFlows<Report>(deps: EmailReportDependencies<Rep
     },
     config: () => deps.email.config(),
     rules: () => deps.email.rules(),
-    saveRules: async (value: EmailNotificationRules) => {
-      await deps.email.saveRules(value);
+    saveRules: async (value: unknown) => {
+      await deps.email.saveRules(deps.email.parseRules(value));
       return { success: true, message: "Reglas guardadas correctamente." };
     },
-    send: (value: { to: string; subject: string; message: string }) =>
-      deps.email.send(value.to, value.subject, value.message),
+    send: (value: unknown) => {
+      const parsed = deps.email.parseSend(value);
+      return deps.email.send(parsed.to, parsed.subject, parsed.message);
+    },
     list: () => deps.reports.list(),
     get: async (id: string) => {
       const report = await deps.reports.get(id);
       if (!report) throw new NotFoundError("Reporte no encontrado");
       return report;
     },
-    create: async (data: ScheduledReportData, actor?: string) => {
-      const { name, reportType, frequency, cronExpression, recipients } = data;
-      if (
-        !name ||
-        !reportType ||
-        !frequency ||
-        !cronExpression ||
-        !recipients ||
-        recipients.length === 0
-      )
-        throw new ValidationError("Faltan campos requeridos");
-      return deps.reports.create(data, actor || "System");
-    },
-    update: (id: string, data: Partial<ScheduledReportData>) => deps.reports.update(id, data),
+    create: (value: unknown, actor?: string) =>
+      deps.reports.create(deps.reports.parseCreate(value), actor || "System"),
+    update: (id: string, value: unknown) =>
+      deps.reports.update(id, deps.reports.parseUpdate(value)),
     remove: (id: string) => deps.reports.remove(id),
     toggle: (id: string) => deps.reports.toggle(id),
   };

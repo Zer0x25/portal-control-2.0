@@ -1,4 +1,4 @@
-import { maskConfigValue, mergeSmtpSecrets } from "./smtpSecrets";
+import { maskConfigValue } from "./smtpSecrets";
 import { AppError, ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { ConfigDependencies, PolicyFile } from "./contracts";
@@ -33,11 +33,7 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     set: async (key: unknown, value: unknown, actor?: string) => {
       const valid = keyValue(key);
       try {
-        const prepared =
-          valid === "SMTP_CONFIG"
-            ? mergeSmtpSecrets(value, await deps.get(valid, "Administrador"))
-            : value;
-        return maskConfigValue(valid, await deps.set(valid, prepared, actor || "SYSTEM"));
+        return maskConfigValue(valid, await deps.set(valid, value, actor || "SYSTEM"));
       } catch (error) {
         const caught = toCaughtError(error);
         if (caught.message === "LOCK_DATE_BLOCKED")

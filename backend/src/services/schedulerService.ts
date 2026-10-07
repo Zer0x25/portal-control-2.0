@@ -1,4 +1,4 @@
-﻿import prisma from "./db";
+import prisma from "./db";
 import { ExportService } from "./export/ExportService";
 import { EmailService } from "./EmailService";
 import { createRuntimeLifecycle } from "../modules/runtime";
@@ -8,7 +8,8 @@ import { holidayService } from "./HolidayService";
 import { integrityMaintenanceService } from "./integrityMaintenanceService";
 import { seedingJobService } from "./seedingJobService";
 import { toBusinessDateChile } from "../utils/timeUtils";
-import { toCaughtError } from "../utils/caughtError";
+import { nextReportRun, REPORT_TIMEZONE } from "../utils/reportCron";
+import { AppError } from "../utils/AppError";
 
 const emailService = new EmailService();
 const exportService = new ExportService();
@@ -23,7 +24,7 @@ function newLifecycle() {
     },
     every: (ms, task) => {
       const id = setInterval(task, ms);
-      return () => clearInterval(id);
+      return () => clearTimeout(id);
     },
     reportError: (error) => logger.error("Scheduled task failed", error),
   });
@@ -82,7 +83,7 @@ async function runMaintenance() {
 
 interface ScheduledReportJob {
   reportId: string;
-  intervalId: NodeJS.Timeout;
+  intervalId?: NodeJS.Timeout;
 }
 
 const activeJobs: Map<string, ScheduledReportJob> = new Map();
@@ -103,7 +104,7 @@ export async function initializeScheduler(): Promise<void> {
     });
 
     for (const report of reports) {
-      scheduleReport(report.id, report.frequency);
+      scheduleReport(report.id, report.cronExpression, report.nextRunAt);
     }
 
     console.warn(`ðŸ“… ${reports.length} reportes programados iniciados`);
@@ -112,50 +113,57 @@ export async function initializeScheduler(): Promise<void> {
   }
 }
 
-/**
- * Get interval in milliseconds based on frequency
- */
-function getIntervalMs(frequency: string): number {
-  switch (frequency) {
-    case "daily":
-      return 24 * 60 * 60 * 1000; // 24 hours
-    case "weekly":
-      return 7 * 24 * 60 * 60 * 1000; // 7 days
-    case "monthly":
-      return 30 * 24 * 60 * 60 * 1000; // ~30 days
-    default:
-      return 24 * 60 * 60 * 1000; // default to daily
-  }
-}
-
-/**
- * Schedule a single report using setInterval
- */
-export function scheduleReport(reportId: string, frequency: string): boolean {
+/** Schedule by cron, checking the persisted due time instead of fixed-day intervals. */
+export function scheduleReport(
+  reportId: string,
+  cronExpression: string,
+  due?: Date | null,
+): boolean {
   if (stopped) return false;
+  cancelReport(reportId);
   try {
-    // Cancel existing job if any
-    cancelReport(reportId);
-
-    const intervalMs = getIntervalMs(frequency);
-
-    let busy = false;
-    const intervalId = setInterval(async () => {
-      if (busy || stopped) return;
-      busy = true;
-      try {
-        await lifecycle.run(() => executeReport(reportId));
-      } finally {
-        busy = false;
-      }
-    }, intervalMs);
-
-    activeJobs.set(reportId, { reportId, intervalId });
-    console.warn(`ðŸ“… Report ${reportId} scheduled with frequency: ${frequency}`);
-
+    const next = due ?? nextReportRun(cronExpression, new Date());
+    const job: ScheduledReportJob = { reportId };
+    const arm = (at: Date) => {
+      const delay = Math.max(0, at.getTime() - Date.now());
+      // Node timers overflow beyond ~24.8 days: wake in chunks, keep the same due time.
+      job.intervalId = setTimeout(
+        async () => {
+          if (stopped || activeJobs.get(reportId) !== job) return;
+          if (Date.now() < at.getTime()) {
+            arm(at);
+            return;
+          }
+          await lifecycle.run(async () => {
+            try {
+              await executeReport(reportId, true);
+            } finally {
+              if (!stopped && activeJobs.get(reportId) === job) {
+                const report = await prisma.scheduledReport.findUnique({ where: { id: reportId } });
+                if (!report?.isActive) {
+                  cancelReport(reportId);
+                  return;
+                }
+                const now = new Date();
+                arm(
+                  report.nextRunAt && report.nextRunAt > now
+                    ? report.nextRunAt
+                    : nextReportRun(report.cronExpression, now),
+                );
+              }
+            }
+          });
+        },
+        Math.min(delay, 2147483647),
+      );
+    };
+    // Validate even when a persisted nextRunAt exists.
+    nextReportRun(cronExpression, new Date());
+    activeJobs.set(reportId, job);
+    arm(next);
     return true;
   } catch (error) {
-    console.error(`Error scheduling report ${reportId}:`, error);
+    logger.error("No se pudo programar el reporte", { reportId, error });
     return false;
   }
 }
@@ -166,7 +174,7 @@ export function scheduleReport(reportId: string, frequency: string): boolean {
 export function cancelReport(reportId: string): boolean {
   const job = activeJobs.get(reportId);
   if (job) {
-    clearInterval(job.intervalId);
+    clearTimeout(job.intervalId);
     activeJobs.delete(reportId);
     console.warn(`ðŸ“… Report ${reportId} cancelled`);
     return true;
@@ -177,57 +185,60 @@ export function cancelReport(reportId: string): boolean {
 /**
  * Execute a scheduled report
  */
-export async function executeReport(reportId: string): Promise<void> {
-  console.warn(`ðŸ“Š Executing scheduled report: ${reportId}`);
-
+const executingReports = new Set<string>();
+export async function executeReport(reportId: string, onlyDue = false): Promise<void> {
+  if (executingReports.has(reportId)) throw new AppError("Reporte en ejecución", 409, "CONFLICT");
+  executingReports.add(reportId);
   try {
-    const report = await prisma.scheduledReport.findUnique({
-      where: { id: reportId },
-    });
-
-    if (!report || !report.isActive) {
-      console.warn(`Report ${reportId} not found or inactive`);
+    const report = await prisma.scheduledReport.findUnique({ where: { id: reportId } });
+    if (!report?.isActive) {
       cancelReport(reportId);
-      return;
+      throw new AppError("Reporte no encontrado o inactivo", 404, "NOT_FOUND");
     }
-
-    const filters = report.filters ? JSON.parse(report.filters) : {};
-    const recipients = report.recipients.split(",").map((e) => e.trim());
-
-    // Generate the report
-    const reportBuffer = await exportService.generateReportPDF(report.reportType, filters);
-
-    // Send email with attachment
-    const subject = `Reporte Programado: ${report.name}`;
-    const body = `
-            <h2>Reporte AutomÃ¡tico: ${report.name}</h2>
-            <p>Se adjunta el reporte generado automÃ¡ticamente.</p>
-            <p><strong>Tipo:</strong> ${getReportTypeName(report.reportType)}</p>
-            <p><strong>Frecuencia:</strong> ${getFrequencyName(report.frequency)}</p>
-            <p><strong>Generado:</strong> ${new Date().toLocaleString("es-CL")}</p>
-            <hr>
-            <p style="color: #666; font-size: 12px;">Este es un correo automÃ¡tico del sistema de gestiÃ³n de turnos.</p>
-        `;
-
-    const filename = `${report.name.replace(/\s+/g, "_")}_${toBusinessDateChile()}.txt`;
-
-    // Send to all recipients
-    for (const recipient of recipients) {
-      await emailService.sendEmailWithAttachment(recipient, subject, body, reportBuffer, filename);
+    if (onlyDue && report.nextRunAt && report.nextRunAt > new Date()) return;
+    const nextRunAt = nextReportRun(report.cronExpression, new Date());
+    let delivered = false;
+    try {
+      const filters = report.filters ? JSON.parse(report.filters) : {};
+      const recipients = report.recipients
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean);
+      const reportBuffer = await exportService.generateReportPDF(report.reportType, filters);
+      const subject = `Reporte Programado: ${report.name}`;
+      const body = `<h2>Reporte Automático: ${report.name}</h2>
+        <p>Se adjunta el reporte generado automáticamente.</p>
+        <p><strong>Tipo:</strong> ${getReportTypeName(report.reportType)}</p>
+        <p><strong>Frecuencia:</strong> ${getFrequencyName(report.frequency)}</p>
+        <p><strong>Generado:</strong> ${new Date().toLocaleString("es-CL", { timeZone: REPORT_TIMEZONE })}</p>`;
+      const extension = reportBuffer.subarray(0, 5).toString("ascii") === "%PDF-" ? "pdf" : "txt";
+      const filename = `${report.name.replace(/\s+/g, "_")}_${toBusinessDateChile()}.${extension}`;
+      if (recipients.length === 0) throw new Error("Reporte sin destinatarios");
+      for (const recipient of recipients) {
+        const result = await emailService.sendEmailWithAttachment(
+          recipient,
+          subject,
+          body,
+          reportBuffer,
+          filename,
+        );
+        if (!result.success) throw new Error("No se pudo entregar el reporte");
+      }
+      delivered = true;
+    } finally {
+      // A concurrent edit/toggle owns its newly calculated schedule.
+      await prisma.scheduledReport.updateMany({
+        where: {
+          id: reportId,
+          isActive: true,
+          cronExpression: report.cronExpression,
+          nextRunAt: report.nextRunAt,
+        },
+        data: { ...(delivered ? { lastRunAt: new Date() } : {}), nextRunAt },
+      });
     }
-
-    // Update last run time and calculate next run
-    await prisma.scheduledReport.update({
-      where: { id: reportId },
-      data: {
-        lastRunAt: new Date(),
-        nextRunAt: calculateNextRun(report.frequency),
-      },
-    });
-
-    console.warn(`âœ… Report ${report.name} sent to ${recipients.length} recipients`);
-  } catch (error) {
-    console.error(`Error executing report ${reportId}:`, error);
+  } finally {
+    executingReports.delete(reportId);
   }
 }
 
@@ -238,7 +249,7 @@ function getReportTypeName(type: string): string {
   const types: Record<string, string> = {
     attendance_summary: "Resumen de Asistencia",
     overtime: "Horas Extras",
-    anomalies: "AnomalÃ­as Detectadas",
+    anomalies: "Anomalías Detectadas",
     shift_coverage: "Cobertura de Turnos",
   };
   return types[type] || type;
@@ -257,23 +268,14 @@ function getFrequencyName(frequency: string): string {
 }
 
 /**
- * Calculate next run time based on frequency
- */
-function calculateNextRun(frequency: string): Date {
-  const now = new Date();
-  const intervalMs = getIntervalMs(frequency);
-  return new Date(now.getTime() + intervalMs);
-}
-
-/**
  * Refresh all scheduled jobs (call after report updates)
  */
 export async function refreshScheduler(): Promise<void> {
-  if (stopped) return;
+  if (stopped || !initialized) return;
   const current = ++revision;
   // Stop all current jobs
   for (const [, job] of activeJobs) {
-    clearInterval(job.intervalId);
+    clearTimeout(job.intervalId);
   }
   activeJobs.clear();
 
@@ -281,7 +283,8 @@ export async function refreshScheduler(): Promise<void> {
   try {
     const reports = await prisma.scheduledReport.findMany({ where: { isActive: true } });
     if (stopped || current !== revision) return;
-    for (const report of reports) scheduleReport(report.id, report.frequency);
+    for (const report of reports)
+      scheduleReport(report.id, report.cronExpression, report.nextRunAt);
   } catch (error) {
     logger.error("Error refreshing scheduler", error);
   }
@@ -290,7 +293,7 @@ export async function refreshScheduler(): Promise<void> {
 export async function stopScheduler(): Promise<void> {
   stopped = true;
   revision++;
-  for (const job of activeJobs.values()) clearInterval(job.intervalId);
+  for (const job of activeJobs.values()) clearTimeout(job.intervalId);
   activeJobs.clear();
   await lifecycle.stop(async () => {});
   initialized = false;
@@ -317,7 +320,7 @@ export async function triggerReport(
     await executeReport(reportId);
     return { success: true, message: "Reporte ejecutado exitosamente" };
   } catch (error: unknown) {
-    const caught = toCaughtError(error);
-    return { success: false, message: caught.message || "Error al ejecutar reporte" };
+    logger.error("Error al ejecutar reporte", { reportId, error });
+    return { success: false, message: "Error al ejecutar reporte" };
   }
 }

@@ -1,7 +1,7 @@
 import prisma, { withDirectTransaction } from "./db";
 import type { Prisma } from "../generated/prisma/client";
 import { redactAuditFields } from "../modules/audit";
-import { configAuditValue } from "../modules/configs";
+import { configAuditValue, mergeSmtpSecrets } from "../modules/configs";
 import { closureValidationService } from "./closureValidationService";
 import { SocketService } from "./socketService";
 import { safeJsonParse } from "../utils/configUtils";
@@ -83,10 +83,22 @@ export class ConfigService {
    * Includes validation for accounting_lock_date and auditing.
    */
   static async set(key: string, value: unknown, actorUsername: string = "SYSTEM") {
-    return (await this.replace(key, value, actorUsername)).value;
+    return (
+      await this.replace(
+        key,
+        value,
+        actorUsername,
+        key === "SMTP_CONFIG" ? mergeSmtpSecrets : undefined,
+      )
+    ).value;
   }
 
-  static async replace(key: string, value: unknown, actorUsername: string = "SYSTEM") {
+  static async replace(
+    key: string,
+    value: unknown,
+    actorUsername: string = "SYSTEM",
+    prepare?: (value: unknown, previous: unknown) => unknown,
+  ) {
     // 1. Domain Validation
     if (key === "accounting_lock_date" && value && value !== "null") {
       const today = toBusinessDateChile();
@@ -108,18 +120,19 @@ export class ConfigService {
           // Serialize first writes too: a row lock cannot lock a missing key.
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${key}))`;
           const oldConfig = await tx.systemConfig.findUnique({ where: { key } });
+          const previousValue = oldConfig ? safeJsonParse(oldConfig.value) : null;
+          const prepared = prepare ? prepare(value, previousValue) : value;
           const updated = await tx.systemConfig.upsert({
             where: { key },
-            update: { value: JSON.stringify(value) },
-            create: { key, value: JSON.stringify(value) },
+            update: { value: JSON.stringify(prepared) },
+            create: { key, value: JSON.stringify(prepared) },
           });
-          const previousValue = oldConfig ? safeJsonParse(oldConfig.value) : null;
           const safe = redactAuditFields(
             "CONFIG_SET",
             {
               key,
               previousValue: configAuditValue(key, previousValue),
-              newValue: configAuditValue(key, value),
+              newValue: configAuditValue(key, prepared),
             },
             undefined,
           );
@@ -138,7 +151,7 @@ export class ConfigService {
         }),
     );
     SocketService.emitToAll("auditLog:created", result.audit);
-    SocketService.emit("config:updated", { key, value });
+    SocketService.emit("config:updated", { key, value: result.value });
     return { value: result.value, previousValue: result.previousValue };
   }
 }

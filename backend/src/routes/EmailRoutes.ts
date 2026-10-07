@@ -25,6 +25,12 @@ router.use(authenticateToken, authorizeElevated);
  * /api/email/verify:
  *   post:
  *     summary: Verificar configuración de correo
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmailVerify'
  *     tags: [Email]
  *     security:
  *       - bearerAuth: []
@@ -34,7 +40,7 @@ router.use(authenticateToken, authorizeElevated);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiResponse'
+ *               $ref: '#/components/schemas/EmailOperationResult'
  */
 router.post("/verify", verifyConfig);
 

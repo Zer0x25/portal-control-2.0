@@ -33,3 +33,5 @@ La evidencia y límites detallados permanecen en los resultados 015–024 y en
 cuando se trabaje en él, sin retrasar nuevamente el uso de Fastify por defecto.
 
 Tanda 2: [consistencia de configuración y PDF](config-policy-consistency.md).
+
+Tanda 3: [contrato de correo y reportes](email-reports-consistency.md).

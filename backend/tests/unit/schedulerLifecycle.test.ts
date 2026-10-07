@@ -1,7 +1,9 @@
 import { afterEach, expect, it, vi } from "vitest";
 vi.mock("../../src/services/db", () => ({
   default: {
-    scheduledReport: { findMany: vi.fn(async () => [{ id: "report", frequency: "daily" }]) },
+    scheduledReport: {
+      findMany: vi.fn(async () => [{ id: "report", cronExpression: "0 8 * * *", nextRunAt: null }]),
+    },
   },
 }));
 vi.mock("../../src/services/seedingJobService", () => ({
