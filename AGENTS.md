@@ -138,6 +138,10 @@ To raise the budget again (a deliberate decision, not an accident), edit
      `frontend/src/utils/logger.ts`. `no-console` only permits `warn`/`error`,
      and `frontend/src/utils/logger.ts` is the one sanctioned place where
      `console` output is allowed.
+5. **CI & Test Suite Performance (Bolt Journal)**:
+   - **AST & Static Analysis Memoization**: Las pruebas arquitectónicas y de límites modulares (e.g. `tests/holidays-architecture.test.ts`) nunca deben re-parsear archivos TypeScript (`ts.createSourceFile`) ni re-leer configuración en bucles por suite. Deben memoizar ASTs, contenido y tsconfig a nivel de proceso.
+   - **Monorepo Package Isolation in CI**: Los jobs de CI de un paquete (e.g. `verify-backend`) jamás deben ejecutar `npm ci` en paquetes hermanos para ejecutar herramientas auxiliares. Toda herramienta requerida para validación (como `openapi-typescript` en backend) debe declararse en sus propias `devDependencies` o consumirse exponiendo `.bin` en `PATH`. La clave de caché de `setup-node` debe apuntar únicamente al `package-lock.json` del paquete probado para evitar invalidaciones cruzadas.
+   - **Ephemeral Database Containers**: Toda base de datos PostgreSQL efímera ejecutada en contenedores para pruebas (e.g. `run-fastify-isolated.cjs`) debe montarse con `--tmpfs /var/lib/postgresql:rw` y parámetros de memoria optimizados (`-c shared_buffers=256MB -c checkpoint_timeout=30min`) para eliminar cuellos de botella de sincronización a disco en CI.
 
 El piloto `backend/src/modules/holidays/` tiene API pública en `index.ts`.
 Consumidores externos no importan archivos privados. Su aplicación no importa
