@@ -9,7 +9,6 @@ import { ConfigSlice } from "./slices/configSlice";
 import { CorrectionRequestSlice } from "./slices/correctionRequestSlice";
 import { ShiftSlice } from "./slices/shiftSlice";
 import { UxSlice } from "./slices/uxSlice";
-import { TimeRecordSlice } from "./slices/timeRecordSlice";
 import { SyncSlice } from "./slices/syncSlice";
 import { UserSlice } from "./slices/userSlice";
 import { AbsenceSlice } from "./slices/absenceSlice";
@@ -25,7 +24,6 @@ export type AppState = AuthSlice &
   ConfigSlice &
   CorrectionRequestSlice &
   ShiftSlice &
-  TimeRecordSlice &
   SyncSlice &
   UserSlice &
   AbsenceSlice &

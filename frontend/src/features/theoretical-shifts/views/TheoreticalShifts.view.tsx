@@ -8,10 +8,12 @@ import {
   ClipboardDocumentCheckIcon,
   SparklesIcon,
 } from "../../../components/ui/icons";
-import PatternManager from "../components/PatternManager";
-import AssignmentManager from "../components/AssignmentManager";
-import LeaveManager from "../components/LeaveManager";
-import HolidayManager from "../components/HolidayManager";
+import LazySectionFallback from "../../../components/ui/LazySectionFallback";
+
+const PatternManager = React.lazy(() => import("../components/PatternManager"));
+const AssignmentManager = React.lazy(() => import("../components/AssignmentManager"));
+const LeaveManager = React.lazy(() => import("../components/LeaveManager"));
+const HolidayManager = React.lazy(() => import("../components/HolidayManager"));
 
 export type TheoreticalShiftsTabId = "patterns" | "assignments" | "leaves" | "holidays";
 
@@ -83,10 +85,12 @@ export const TheoreticalShiftsView: React.FC<TheoreticalShiftsViewProps> = ({
       </div>
 
       <div className="relative">
-        {activeTab === "patterns" && <PatternManager />}
-        {activeTab === "assignments" && <AssignmentManager />}
-        {activeTab === "leaves" && <LeaveManager />}
-        {activeTab === "holidays" && <HolidayManager />}
+        <React.Suspense fallback={<LazySectionFallback rows={6} />}>
+          {activeTab === "patterns" && <PatternManager />}
+          {activeTab === "assignments" && <AssignmentManager />}
+          {activeTab === "leaves" && <LeaveManager />}
+          {activeTab === "holidays" && <HolidayManager />}
+        </React.Suspense>
       </div>
     </motion.div>
   );

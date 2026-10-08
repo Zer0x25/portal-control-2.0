@@ -1,9 +1,10 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { APP_TITLE } from "../../constants";
 import { SystemStatusIndicator } from "../ui/IndustrialIndicator";
-import { ChangePasswordModal } from "../../features/auth";
-import UserManualModal from "../ui/UserManualModal";
+const ChangePasswordModal = React.lazy(() =>
+  import("../../features/auth").then((m) => ({ default: m.ChangePasswordModal })),
+);
+const UserManualModal = React.lazy(() => import("../ui/UserManualModal"));
 import NotificationCenter from "./NotificationCenter";
 import { SpeakerWaveIcon, SpeakerXMarkIcon, UserCircleIcon } from "../ui/icons/index";
 
@@ -114,50 +115,42 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                   </div>
                 </button>
 
-                <AnimatePresence>
-                  {isDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden"
-                    >
-                      <div className="px-4 py-3 border-b border-token-border-subtle bg-token-surface-stripe">
-                        <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest mb-1">
-                          Usuario Activo
-                        </p>
-                        <p className="text-xs font-bold text-token-text-primary truncate">
-                          {welcomeName}
-                        </p>
-                      </div>
+                {isDropdownOpen && (
+                  <div className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-token-border-subtle bg-token-surface-stripe">
+                      <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest mb-1">
+                        Usuario Activo
+                      </p>
+                      <p className="text-xs font-bold text-token-text-primary truncate">
+                        {welcomeName}
+                      </p>
+                    </div>
 
-                      <div className="p-1">
-                        <button
-                          onClick={onOpenChangePassword}
-                          className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
-                        >
-                          Seguridad
-                        </button>
-                        <button
-                          onClick={onOpenManual}
-                          className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
-                        >
-                          Ayuda
-                        </button>
-                      </div>
+                    <div className="p-1">
+                      <button
+                        onClick={onOpenChangePassword}
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
+                      >
+                        Seguridad
+                      </button>
+                      <button
+                        onClick={onOpenManual}
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
+                      >
+                        Ayuda
+                      </button>
+                    </div>
 
-                      <div className="p-1 border-t border-token-border-subtle">
-                        <button
-                          onClick={onLogout}
-                          className="flex items-center w-full px-3 py-2 text-xs font-bold text-(--status-error) uppercase tracking-widest hover:bg-(--status-error)/10 rounded-sm transition-all"
-                        >
-                          Finalizar Sesión
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    <div className="p-1 border-t border-token-border-subtle">
+                      <button
+                        onClick={onLogout}
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-(--status-error) uppercase tracking-widest hover:bg-(--status-error)/10 rounded-sm transition-all"
+                      >
+                        Finalizar Sesión
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -175,8 +168,16 @@ const HeaderView: React.FC<HeaderViewProps> = ({
         </div>
       </header>
 
-      <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={onCloseChangePassword} />
-      <UserManualModal isOpen={isManualModalOpen} onClose={onCloseManual} />
+      {isChangePasswordModalOpen && (
+        <React.Suspense fallback={null}>
+          <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={onCloseChangePassword} />
+        </React.Suspense>
+      )}
+      {isManualModalOpen && (
+        <React.Suspense fallback={null}>
+          <UserManualModal isOpen={isManualModalOpen} onClose={onCloseManual} />
+        </React.Suspense>
+      )}
     </>
   );
 };

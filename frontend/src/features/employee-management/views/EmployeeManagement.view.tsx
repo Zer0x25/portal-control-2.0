@@ -1,8 +1,7 @@
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import Button from "../../../components/ui/Button";
-import ConfirmationModal from "../../../components/ui/ConfirmationModal";
-import ShiftHistoryModal from "../../../components/ui/ShiftHistoryModal";
+const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
+const ShiftHistoryModal = React.lazy(() => import("../../../components/ui/ShiftHistoryModal"));
 import CinematicModal from "../../../components/ui/CinematicModal";
 import {
   ExportIcon,
@@ -13,7 +12,7 @@ import {
 } from "../../../components/ui/icons/index";
 import EmployeeForm from "../components/EmployeeForm";
 import EmployeeListCard from "../components/EmployeeListCard";
-import ImportModal from "../../../components/ui/ImportModal";
+const ImportModal = React.lazy(() => import("../../../components/ui/ImportModal"));
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
@@ -241,50 +240,43 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                     Utilitarios
                   </span>
                 </Button>
-                <AnimatePresence>
-                  {isExportMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-2 w-56 bg-token-surface-card rounded-sm shadow-2xl border border-token-border-technical z-50 p-1"
+                {isExportMenuOpen && (
+                  <div className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 bg-token-surface-card rounded-sm shadow-2xl border border-token-border-technical z-50 p-1">
+                    <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
+                      Acciones Masivas
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        setIsImportModalOpen(true);
+                      }}
+                      className="flex w-full items-center text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white rounded-sm transition-colors"
                     >
-                      <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
-                        Acciones Masivas
-                      </div>
-                      <button
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          setIsImportModalOpen(true);
-                        }}
-                        className="flex w-full items-center text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white rounded-sm transition-colors"
-                      >
-                        <DocumentArrowUpIcon className="w-4 h-4 mr-3" /> Importar Excel
-                      </button>
-                      <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-y border-token-border-subtle my-1">
-                        Exportar Lista
-                      </div>
-                      <button
-                        onClick={() => handleExport("csv")}
-                        className="flex items-center w-full text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
-                      >
-                        Formato CSV
-                      </button>
-                      <button
-                        onClick={() => handleExport("excel")}
-                        className="flex items-center w-full text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
-                      >
-                        Formato Excel
-                      </button>
-                      <button
-                        onClick={() => handleExport("pdf")}
-                        className="flex items-center w-full text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
-                      >
-                        IMPRIMIR PDF
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      <DocumentArrowUpIcon className="w-4 h-4 mr-3" /> Importar Excel
+                    </button>
+                    <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-y border-token-border-subtle my-1">
+                      Exportar Lista
+                    </div>
+                    <button
+                      onClick={() => handleExport("csv")}
+                      className="flex items-center w-full text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
+                    >
+                      Formato CSV
+                    </button>
+                    <button
+                      onClick={() => handleExport("excel")}
+                      className="flex items-center w-full text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
+                    >
+                      Formato Excel
+                    </button>
+                    <button
+                      onClick={() => handleExport("pdf")}
+                      className="flex items-center w-full text-left px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
+                    >
+                      IMPRIMIR PDF
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -376,27 +368,33 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         />
       </CinematicModal>
 
-      <ConfirmationModal
-        isOpen={!!employeeToArchive}
-        onClose={() => setEmployeeToArchive(null)}
-        onConfirm={() => {
-          handleConfirmArchive();
-          setEmployeeToArchive(null);
-        }}
-        title="Confirmar Archivo de Personal"
-        message={archiveModalContent}
-        confirmText="Sí, Archivar"
-        cancelText="Cancelar"
-        confirmVariant="danger"
-      />
+      {!!employeeToArchive && (
+        <React.Suspense fallback={null}>
+          <ConfirmationModal
+            isOpen={!!employeeToArchive}
+            onClose={() => setEmployeeToArchive(null)}
+            onConfirm={() => {
+              handleConfirmArchive();
+              setEmployeeToArchive(null);
+            }}
+            title="Confirmar Archivo de Personal"
+            message={archiveModalContent}
+            confirmText="Sí, Archivar"
+            cancelText="Cancelar"
+            confirmVariant="danger"
+          />
+        </React.Suspense>
+      )}
 
       {historyModalEmployee && (
-        <ShiftHistoryModal
-          employeeId={historyModalEmployee.id}
-          employeeName={historyModalEmployee.name}
-          isOpen={true}
-          onClose={() => setHistoryModalEmployee(null)}
-        />
+        <React.Suspense fallback={null}>
+          <ShiftHistoryModal
+            employeeId={historyModalEmployee.id}
+            employeeName={historyModalEmployee.name}
+            isOpen={true}
+            onClose={() => setHistoryModalEmployee(null)}
+          />
+        </React.Suspense>
       )}
 
       <div className="fixed bottom-6 right-6 z-50 md:hidden">
@@ -409,13 +407,17 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         </Button>
       </div>
 
-      <ImportModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onImport={handleImportEmployees}
-        title="Importar Personal"
-        schema={importSchema}
-      />
+      {isImportModalOpen && (
+        <React.Suspense fallback={null}>
+          <ImportModal
+            isOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+            onImport={handleImportEmployees}
+            title="Importar Personal"
+            schema={importSchema}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };

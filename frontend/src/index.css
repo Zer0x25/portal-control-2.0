@@ -31,6 +31,7 @@
   --color-token-surface-hover: var(--surface-hover);
   --color-token-surface-active: var(--surface-active);
   --color-token-surface-stripe: var(--surface-stripe);
+  --color-token-surface-technical: var(--surface-technical);
 
   --color-token-border-technical: var(--border-technical);
   --color-token-border-subtle: var(--border-subtle);
@@ -93,6 +94,131 @@
 
 @utility typo-ui-caption {
   @apply text-[11px] leading-tight font-semibold tracking-wide;
+}
+
+/* --- Micro-animation system (GPU-accelerated entry & exit) --- */
+@keyframes enter {
+  from {
+    opacity: var(--tw-enter-opacity, 1);
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0)
+      scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1));
+  }
+}
+
+@keyframes exit {
+  to {
+    opacity: var(--tw-exit-opacity, 1);
+    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0)
+      scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1));
+  }
+}
+
+@utility animate-in {
+  animation-name: enter;
+  animation-duration: 150ms;
+  animation-fill-mode: both;
+  --tw-enter-opacity: initial;
+  --tw-enter-scale: initial;
+  --tw-enter-translate-x: initial;
+  --tw-enter-translate-y: initial;
+}
+
+@utility animate-out {
+  animation-name: exit;
+  animation-duration: 150ms;
+  animation-fill-mode: both;
+  --tw-exit-opacity: initial;
+  --tw-exit-scale: initial;
+  --tw-exit-translate-x: initial;
+  --tw-exit-translate-y: initial;
+}
+
+@utility fade-in {
+  --tw-enter-opacity: 0;
+}
+
+@utility fade-in-0 {
+  --tw-enter-opacity: 0;
+}
+
+@utility fade-out {
+  --tw-exit-opacity: 0;
+}
+
+@utility fade-out-0 {
+  --tw-exit-opacity: 0;
+}
+
+@utility zoom-in {
+  --tw-enter-scale: 0.95;
+}
+
+@utility zoom-in-95 {
+  --tw-enter-scale: 0.95;
+}
+
+@utility zoom-in-90 {
+  --tw-enter-scale: 0.9;
+}
+
+@utility zoom-in-100 {
+  --tw-enter-scale: 1;
+}
+
+@utility zoom-out {
+  --tw-exit-scale: 0.95;
+}
+
+@utility zoom-out-95 {
+  --tw-exit-scale: 0.95;
+}
+
+@utility slide-in-from-top-1 {
+  --tw-enter-translate-y: -0.25rem;
+}
+
+@utility slide-in-from-top-2 {
+  --tw-enter-translate-y: -0.5rem;
+}
+
+@utility slide-in-from-top-4 {
+  --tw-enter-translate-y: -1rem;
+}
+
+@utility slide-in-from-bottom-1 {
+  --tw-enter-translate-y: 0.25rem;
+}
+
+@utility slide-in-from-bottom-2 {
+  --tw-enter-translate-y: 0.5rem;
+}
+
+@utility slide-in-from-bottom-4 {
+  --tw-enter-translate-y: 1rem;
+}
+
+@utility slide-in-from-left-1 {
+  --tw-enter-translate-x: -0.25rem;
+}
+
+@utility slide-in-from-left-2 {
+  --tw-enter-translate-x: -0.5rem;
+}
+
+@utility slide-in-from-left-4 {
+  --tw-enter-translate-x: -1rem;
+}
+
+@utility slide-in-from-right-1 {
+  --tw-enter-translate-x: 0.25rem;
+}
+
+@utility slide-in-from-right-2 {
+  --tw-enter-translate-x: 0.5rem;
+}
+
+@utility slide-in-from-right-4 {
+  --tw-enter-translate-x: 1rem;
 }
 
 @layer base {
@@ -165,6 +291,9 @@
     --surface-app: #f0f2f5;
     --surface-card: #fdfbf7;
     --surface-stripe: rgba(0, 0, 0, 0.02);
+    --surface-hover: rgba(0, 0, 0, 0.04);
+    --surface-active: rgba(0, 0, 0, 0.08);
+    --surface-technical: #e9ecef;
 
     /* Layout Shell Tokens (Diferenciación del Marco) */
     --surface-header: #ffffff;
@@ -193,6 +322,9 @@
     --surface-app: #020617; /* Navy profunda */
     --surface-card: #0f172a;
     --surface-stripe: rgba(255, 255, 255, 0.02);
+    --surface-hover: rgba(255, 255, 255, 0.05);
+    --surface-active: rgba(255, 255, 255, 0.09);
+    --surface-technical: #1e293b;
 
     /* Layout Shell Tokens - Dark */
     --surface-header: #050816; /* Más oscuro que el fondo app para profundidad */

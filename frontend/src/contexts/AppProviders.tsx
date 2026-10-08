@@ -1,7 +1,11 @@
 import React from "react";
 import { HashRouter } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+const ReactQueryDevtools = React.lazy(() =>
+  import("@tanstack/react-query-devtools").then((m) => ({
+    default: m.ReactQueryDevtools,
+  })),
+);
 
 import { logQueryError, logMutationError } from "../utils/sentryMiddlewares";
 
@@ -42,7 +46,9 @@ export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children
     <QueryClientProvider client={queryClient}>
       <HashRouter>{children}</HashRouter>
       {localStorage.getItem("devModeEnabled") === "true" && (
-        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+        <React.Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+        </React.Suspense>
       )}
     </QueryClientProvider>
   </React.StrictMode>

@@ -1,5 +1,4 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Employee } from "../../../types/index";
 import Button from "../../../components/ui/Button";
 import Badge from "../../../components/ui/Badge";
@@ -52,117 +51,111 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
 }) => {
   const renderMobileView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
-      <AnimatePresence>
-        {paginatedEmployees.length > 0 ? (
-          paginatedEmployees.map((emp, i) => (
-            <motion.div
-              key={emp.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 flex flex-col shadow-sm relative overflow-hidden group"
-            >
-              <div
-                className={`absolute top-0 left-0 w-1 h-full ${
-                  emp.status === "Activo" ? "bg-emerald-500" : "bg-gray-400"
-                }`}
-              />
+      {paginatedEmployees.length > 0 ? (
+        paginatedEmployees.map((emp) => (
+          <div
+            key={emp.id}
+            className="animate-in fade-in duration-150 bg-token-surface-card rounded-lg border border-token-border-technical p-6 flex flex-col shadow-sm relative overflow-hidden group"
+          >
+            <div
+              className={`absolute top-0 left-0 w-1 h-full ${
+                emp.status === "Activo" ? "bg-emerald-500" : "bg-gray-400"
+              }`}
+            />
 
-              <div className="flex justify-between items-start mb-4 pl-2">
-                <div>
-                  <h4 className="text-sm font-black text-token-text-primary uppercase tracking-tight">
-                    {emp.name}
-                  </h4>
-                  <p className="text-[10px] font-black text-sap-blue uppercase tracking-widest mt-1">
-                    {emp.position}
-                  </p>
-                </div>
-                <Badge
-                  variant={emp.status === "Activo" ? "success" : "neutral"}
-                  size="sm"
-                  className="uppercase tracking-widest text-[9px]"
-                >
-                  {emp.status}
-                </Badge>
+            <div className="flex justify-between items-start mb-4 pl-2">
+              <div>
+                <h4 className="text-sm font-black text-token-text-primary uppercase tracking-tight">
+                  {emp.name}
+                </h4>
+                <p className="text-[10px] font-black text-sap-blue uppercase tracking-widest mt-1">
+                  {emp.position}
+                </p>
               </div>
+              <Badge
+                variant={emp.status === "Activo" ? "success" : "neutral"}
+                size="sm"
+                className="uppercase tracking-widest text-[9px]"
+              >
+                {emp.status}
+              </Badge>
+            </div>
 
-              <div className="bg-token-surface-stripe rounded-md p-3 space-y-2 mb-4 border border-token-border-subtle">
-                <div className="flex justify-between">
-                  <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
-                    RUT
-                  </span>
-                  <span className="text-xs font-mono font-bold text-token-text-secondary">
-                    {emp.rut}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
-                    Área
-                  </span>
-                  <span className="text-xs font-bold text-token-text-secondary uppercase">
-                    {emp.area}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
-                    Jornada
-                  </span>
-                  <span className="text-xs font-bold text-token-text-secondary uppercase">
-                    {emp.workdayType}
-                  </span>
-                </div>
+            <div className="bg-token-surface-stripe rounded-md p-3 space-y-2 mb-4 border border-token-border-subtle">
+              <div className="flex justify-between">
+                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                  RUT
+                </span>
+                <span className="text-xs font-mono font-bold text-token-text-secondary">
+                  {emp.rut}
+                </span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                  Área
+                </span>
+                <span className="text-xs font-bold text-token-text-secondary uppercase">
+                  {emp.area}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                  Jornada
+                </span>
+                <span className="text-xs font-bold text-token-text-secondary uppercase">
+                  {emp.workdayType}
+                </span>
+              </div>
+            </div>
 
-              <div className="mt-auto flex justify-end gap-2 pt-2 border-t border-token-border-subtle">
-                {view === "active" ? (
-                  <>
-                    {canEdit && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => onEdit(emp)}
-                        className="flex-1 justify-center bg-white dark:bg-gray-800 hover:bg-sap-blue/10 hover:text-sap-blue border-black/10 dark:border-white/10"
-                      >
-                        <EditIcon className="w-4 h-4 mr-2" />
-                        Editar
-                      </Button>
-                    )}
-                    {canArchive && (
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => onArchive(emp)}
-                        className="w-10 px-0 flex items-center justify-center bg-white dark:bg-gray-800 text-red-500 border-black/10 dark:border-white/10 hover:bg-red-50"
-                      >
-                        <ArchiveBoxIcon className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  canArchive && (
+            <div className="mt-auto flex justify-end gap-2 pt-2 border-t border-token-border-subtle">
+              {view === "active" ? (
+                <>
+                  {canEdit && (
                     <Button
                       size="sm"
-                      variant="primary"
-                      onClick={() => onReactivate(emp.id)}
-                      className="w-full justify-center bg-emerald-600 hover:bg-emerald-700 text-white border-none"
+                      variant="secondary"
+                      onClick={() => onEdit(emp)}
+                      className="flex-1 justify-center bg-white dark:bg-gray-800 hover:bg-sap-blue/10 hover:text-sap-blue border-black/10 dark:border-white/10"
                     >
-                      <ArrowUturnLeftIcon className="w-4 h-4 mr-2" />
-                      Reactivar
+                      <EditIcon className="w-4 h-4 mr-2" />
+                      Editar
                     </Button>
-                  )
-                )}
-              </div>
-            </motion.div>
-          ))
-        ) : (
-          <div className="col-span-full py-16 text-center bg-token-surface-stripe rounded-lg border-2 border-dashed border-token-border-technical">
-            <p className="text-sm font-bold text-gray-500 dark:text-gray-400 italic">
-              No se encontraron empleados.
-            </p>
+                  )}
+                  {canArchive && (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => onArchive(emp)}
+                      className="w-10 px-0 flex items-center justify-center bg-white dark:bg-gray-800 text-red-500 border-black/10 dark:border-white/10 hover:bg-red-50"
+                    >
+                      <ArchiveBoxIcon className="w-4 h-4" />
+                    </Button>
+                  )}
+                </>
+              ) : (
+                canArchive && (
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => onReactivate(emp.id)}
+                    className="w-full justify-center bg-emerald-600 hover:bg-emerald-700 text-white border-none"
+                  >
+                    <ArrowUturnLeftIcon className="w-4 h-4 mr-2" />
+                    Reactivar
+                  </Button>
+                )
+              )}
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        ))
+      ) : (
+        <div className="col-span-full py-16 text-center bg-token-surface-stripe rounded-lg border-2 border-dashed border-token-border-technical">
+          <p className="text-sm font-bold text-gray-500 dark:text-gray-400 italic">
+            No se encontraron empleados.
+          </p>
+        </div>
+      )}
     </div>
   );
 

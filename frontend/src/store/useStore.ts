@@ -14,7 +14,6 @@ import { AppState } from "./types";
 import { createConfigSlice } from "./slices/configSlice";
 import { createCorrectionRequestSlice } from "./slices/correctionRequestSlice";
 import { createShiftSlice } from "./slices/shiftSlice";
-import { createTimeRecordSlice } from "./slices/timeRecordSlice";
 import { createSyncSlice } from "./slices/syncSlice";
 import { createUserSlice } from "./slices/userSlice";
 import { createAbsenceSlice } from "./slices/absenceSlice";
@@ -37,7 +36,6 @@ export const useStore = create<AppState>()(
         ...createConfigSlice(set, get, api),
         ...createCorrectionRequestSlice(set, get, api),
         ...createShiftSlice(set, get, api),
-        ...createTimeRecordSlice(set, get, api),
         ...createSyncSlice(set, get, api),
         ...createUserSlice(set, get, api),
         ...createAbsenceSlice(set, get, api),

@@ -1,9 +1,10 @@
-import React, { Suspense } from "react";
-import { motion } from "framer-motion";
+import React, { Suspense, useRef } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { DeveloperPanel } from "../ui/DeveloperPanel";
-import ShiftHandoverModal from "../ui/ShiftHandoverModal";
+const DeveloperPanel = React.lazy(() =>
+  import("../ui/DeveloperPanel").then((m) => ({ default: m.DeveloperPanel })),
+);
+const ShiftHandoverModal = React.lazy(() => import("../ui/ShiftHandoverModal"));
 import ScreenSizeIndicator from "../ui/ScreenSizeIndicator";
 import { HomeIcon } from "../ui/icons/index";
 import LoadingSpinner from "../ui/LoadingSpinner";
@@ -40,19 +41,31 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
   onGoHome,
   onCloseHandoverModal,
 }) => {
+  const touchStartXRef = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current !== null) {
+      const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+      if (deltaX > 40) {
+        onOpenSidebarFromSwipe(deltaX, 1);
+      }
+      touchStartXRef.current = null;
+    }
+  };
+
   return (
     <>
       <div className="flex h-screen bg-sap-bone dark:bg-sap-dark-gray">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={onToggleSidebar} />
         <div className="flex-1 flex flex-col overflow-hidden">
           {!isSidebarOpen && (
-            <motion.div
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={{ left: 0, right: 0.1 }}
-              onDragEnd={(_, info) => {
-                onOpenSidebarFromSwipe(info.offset.x, info.velocity.x);
-              }}
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
               className="fixed top-0 left-0 w-4 h-full z-40 lg:hidden cursor-pointer touch-none"
               title="Desliza para abrir el menú"
             />
@@ -66,23 +79,21 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
                 isInitialSync ? null : <LoadingSpinner fullScreen label="Sincronizando Módulo..." />
               }
             >
-              <motion.div
+              <div
                 key={currentPath}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="min-h-full flex flex-col"
+                className="min-h-full flex flex-col animate-in fade-in duration-150"
               >
                 {children}
-              </motion.div>
+              </div>
             </Suspense>
           </main>
 
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
             {canShowDevPanel && (
               <div className="pointer-events-auto">
-                <DeveloperPanel />
+                <Suspense fallback={null}>
+                  <DeveloperPanel />
+                </Suspense>
               </div>
             )}
 
@@ -115,11 +126,13 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
       </div>
 
       {isHandoverModalOpen && (
-        <ShiftHandoverModal
-          isOpen={isHandoverModalOpen}
-          onClose={onCloseHandoverModal}
-          data={handoverData}
-        />
+        <Suspense fallback={null}>
+          <ShiftHandoverModal
+            isOpen={isHandoverModalOpen}
+            onClose={onCloseHandoverModal}
+            data={handoverData}
+          />
+        </Suspense>
       )}
     </>
   );

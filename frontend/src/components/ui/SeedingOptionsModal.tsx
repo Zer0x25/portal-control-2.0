@@ -123,7 +123,7 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-70 p-4"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="seeding-options-title"

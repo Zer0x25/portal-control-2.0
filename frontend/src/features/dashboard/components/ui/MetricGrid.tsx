@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
 import MetricCard from "../../../../components/ui/MetricCard";
 
 interface MetricItem {
@@ -71,38 +70,12 @@ export const MetricGrid: React.FC<MetricGridProps> = React.memo(
       [metrics],
     );
 
-    if (!showAnimation) {
-      return <div className={containerClasses}>{renderedMetrics}</div>;
-    }
-
     return (
-      <motion.div
-        className={containerClasses}
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.1,
-            },
-          },
-        }}
+      <div
+        className={`${containerClasses} ${showAnimation ? "animate-in fade-in duration-200" : ""}`}
       >
-        {renderedMetrics.map((metric, index) => (
-          <motion.div
-            key={index}
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            {metric}
-          </motion.div>
-        ))}
-      </motion.div>
+        {renderedMetrics}
+      </div>
     );
   },
 );

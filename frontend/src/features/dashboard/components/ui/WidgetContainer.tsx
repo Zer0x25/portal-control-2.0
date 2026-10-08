@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { motion } from "framer-motion";
 import Card from "../../../../components/ui/Card";
 import { WidgetContainerProps } from "../../types";
 
@@ -38,14 +37,9 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={className}
-    >
+    <div className={`animate-in fade-in duration-200 ${className}`}>
       <Card title={title}>{children}</Card>
-    </motion.div>
+    </div>
   );
 };
 
@@ -57,12 +51,10 @@ export const WelcomeWidgetContainer: React.FC<{
   className?: string;
 }> = ({ children, className = "" }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`col-span-1 md:col-span-2 lg:col-span-3 mb-4 ${className}`}
+    <div
+      className={`animate-in fade-in duration-200 col-span-1 md:col-span-2 lg:col-span-3 mb-4 ${className}`}
     >
       {children}
-    </motion.div>
+    </div>
   );
 };

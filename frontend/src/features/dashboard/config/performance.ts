@@ -1,35 +1,4 @@
 import React from "react";
-import { QueryClient } from "@tanstack/react-query";
-
-// Configuración optimizada de React Query para el dashboard
-export const dashboardQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // Cache más agresivo para datos del dashboard
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      gcTime: 10 * 60 * 1000, // 10 minutos (antes cacheTime)
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: "always",
-      retry: (failureCount, error) => {
-        // Reintentar menos veces para mejor UX
-        if (failureCount >= 2) return false;
-        // No reintentar errores de autenticación
-        if (error?.message?.includes("401") || error?.message?.includes("403")) return false;
-        return true;
-      },
-      // Optimización de re-fetching
-      refetchInterval: false, // Deshabilitar polling automático
-      refetchIntervalInBackground: false,
-    },
-    mutations: {
-      retry: 1, // Solo 1 reintento para mutations
-      onError: (error) => {
-        // Log silencioso para debugging
-        console.warn("Dashboard mutation error:", error);
-      },
-    },
-  },
-});
 
 // Configuración de Zustand para el dashboard
 export const dashboardStoreConfig = {

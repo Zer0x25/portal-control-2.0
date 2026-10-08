@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { motion } from "framer-motion";
 
 /**
  * 🏢 KpiCard: Contenedor Industrial de Métricas
@@ -16,15 +15,13 @@ const KpiCard = React.forwardRef<HTMLDivElement, KpiCardProps>(
     const { onClick, onMouseEnter, onMouseLeave, id } = rest;
 
     return (
-      <motion.div
+      <div
         ref={ref}
         id={id}
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        initial={{ opacity: 0, y: 5 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`relative overflow-hidden rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm p-4 md:p-5 ${className || ""}`}
+        className={`animate-in fade-in duration-150 relative overflow-hidden rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm p-4 md:p-5 ${className || ""}`}
       >
         <div className="flex items-center gap-4 mb-4">
           <div className="w-9 h-9 rounded-sm bg-sap-blue border border-sap-blue shadow-lg shadow-sap-blue/20 flex items-center justify-center shrink-0">
@@ -47,7 +44,7 @@ const KpiCard = React.forwardRef<HTMLDivElement, KpiCardProps>(
         </div>
 
         <div className="space-y-1">{children}</div>
-      </motion.div>
+      </div>
     );
   },
 );

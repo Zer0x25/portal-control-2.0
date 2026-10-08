@@ -17,7 +17,7 @@ vi.mock("../../../features/theoretical-shifts/components/HolidayManager", () => 
 }));
 
 describe("TheoreticalShiftsView", () => {
-  it("renders active tab manager and tab switch callback", () => {
+  it("renders active tab manager and tab switch callback", async () => {
     const handleTabChange = vi.fn();
 
     render(
@@ -25,7 +25,7 @@ describe("TheoreticalShiftsView", () => {
     );
 
     expect(screen.getByText("Matriz de Turnos")).toBeInTheDocument();
-    expect(screen.getByText("PATTERN-MANAGER")).toBeInTheDocument();
+    expect(await screen.findByText("PATTERN-MANAGER")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Asignación/i }));
     expect(handleTabChange).toHaveBeenCalledWith("assignments");

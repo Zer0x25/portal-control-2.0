@@ -103,6 +103,7 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 - [type-safety-lint.md](file:///.agents/rules/type-safety-lint.md): Tipado estricto, Prisma `$extends`, `caughtError`, timezone de Chile y ratchet de linting.
 - [ci-performance.md](file:///.agents/rules/ci-performance.md): Memoización de AST, aislamiento de dependencias y optimización tmpfs en bases de datos efímeras.
 - [dependency-maintenance.md](file:///.agents/rules/dependency-maintenance.md): Cadencia mensual de actualización, aislamiento de jobs y dependencias retenidas (holds).
+- [frontend-performance.md](file:///.agents/rules/frontend-performance.md): Rendimiento web, CSS caching, higiene de animaciones y separación de estado.
 - **Skills (.agents/skills/)**: Runbooks ejecutables de sincronización API (`api-contracts-sync`), preflight CI (`ci-preflight`) y migraciones Prisma (`prisma-migration-safeguard`).
 
 ### Política de Higiene de Reglas (Anti-Rule Creep)
