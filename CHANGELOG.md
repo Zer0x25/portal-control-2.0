@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.25.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.25.1...v8.25.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* **e2e:** execute full test suite on staging and resolve a11y contrast and session eviction ([a991adf](https://github.com/Zer0x25/portal-control-2.0/commit/a991adf0a610b460775f012820ba9b47f4e2bf2e))
+
+
+### Performance Improvements
+
+* **ci:** skip heavy package verification on main merge per adr-0013 ([#25](https://github.com/Zer0x25/portal-control-2.0/issues/25)) ([8042d3c](https://github.com/Zer0x25/portal-control-2.0/commit/8042d3c159e581ec5899365a3b38556a253d2f6d))
+
 ## [8.25.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.25.0...v8.25.1) (2026-10-08)
 
 
