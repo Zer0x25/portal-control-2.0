@@ -6,6 +6,8 @@
     "lint:budget": "node scripts/lint-budget.cjs",
     "lint:budget:update": "node scripts/lint-budget.cjs --update",
     "lint:budget:rules": "node scripts/lint-budget.cjs --rules",
+    "api:sync": "node .agents/skills/api-contracts-sync/scripts/sync.cjs",
+    "preflight": "node .agents/skills/ci-preflight/scripts/preflight.cjs",
     "hooks:pre-commit": "node scripts/check-hook-deps.cjs && lint-staged && npm run lint:budget",
     "hooks:pre-push": "node scripts/pre-push.cjs",
     "spec:check": "node scripts/spec-check.cjs",
