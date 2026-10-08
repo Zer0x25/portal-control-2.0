@@ -103,6 +103,7 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 - [type-safety-lint.md](file:///.agents/rules/type-safety-lint.md): Tipado estricto, Prisma `$extends`, `caughtError`, timezone de Chile y ratchet de linting.
 - [ci-performance.md](file:///.agents/rules/ci-performance.md): Memoización de AST, aislamiento de dependencias y optimización tmpfs en bases de datos efímeras.
 - [dependency-maintenance.md](file:///.agents/rules/dependency-maintenance.md): Cadencia mensual de actualización, aislamiento de jobs y dependencias retenidas (holds).
+- [frontend-performance.md](file:///.agents/rules/frontend-performance.md): Rendimiento web, CSS caching, higiene de animaciones y separación de estado.
 - **Skills (.agents/skills/)**: Runbooks ejecutables de sincronización API (`api-contracts-sync`), preflight CI (`ci-preflight`) y migraciones Prisma (`prisma-migration-safeguard`).
 
 ### Política de Higiene de Reglas (Anti-Rule Creep)
@@ -112,7 +113,6 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 3. **Reglas modulares bajo demanda**: Nuevas guías de dominio deben crearse en `.agents/rules/<dominio>.md` con frontmatter `trigger: model_decision`.
 
 Memorias institucionales:
-
 - [.jules/bolt.md](file:///.jules/bolt.md): Bitácora de optimizaciones de performance y latencia.
 - [.jules/sentinel.md](file:///.jules/sentinel.md): Bitácora de vulnerabilidades y blindaje de seguridad.
 - [specs/roadmap-fastify.md](file:///specs/roadmap-fastify.md) y [specs/025-fastify-cutover/backlog.md](file:///specs/025-fastify-cutover/backlog.md): Estado de especificaciones, contratos de módulos y mejoras post-cutover.

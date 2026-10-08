@@ -1,0 +1,26 @@
+---
+trigger: model_decision
+description: Invariants for frontend performance, bundle optimization, CSS caching, animation overhead, and state boundaries.
+---
+
+# Frontend Architecture & Performance Invariants
+
+1. **CSS Caching & HTML Size**:
+   - Prohibido el inlining masivo de CSS en `index.html` (nunca habilitar plugins como `inline-css` en Vite).
+   - El CSS de producción debe emitirse como archivo estático con hash inmutable (`assets/index-[hash].css`) para permitir HTTP/2 multiplexing, caching inmutable por 1 año y precache eficiente en Workbox PWA.
+   - `dist/index.html` debe mantenerse en &le; 5 KB.
+
+2. **Shell & Critical Path Animation Hygiene**:
+   - Prohibido acoplar `framer-motion` a componentes estructurales del shell (`PersistentLayout`, `Header`, `TopLoadingBar`).
+   - Prohibido envolver componentes atómicos de alta repetición (`Card`, `KpiCard`, `MetricCard`, `ActionButton`, filas de tablas/listas, `DashboardSkeleton`) con `motion.div` para animaciones triviales (`opacity: 0 -> 1`, desplazamientos estáticos de `y: 5`, hover/tap).
+   - Todas las micro-animaciones estándar deben implementarse mediante clases CSS nativas aceleradas por GPU de Tailwind v4 (`animate-in fade-in`, `hover:-translate-y-0.5 active:translate-y-0`, `transition-transform`) y touch handlers nativos (`onTouchStart`/`onTouchEnd`), evitando la sobrecarga del reconciler y RAF de JavaScript.
+
+3. **Code Splitting & Modal Isolation**:
+   - Todo modal secundario (`ShiftHandoverModal`, `DeveloperPanel`, `UserManualModal`, `ChangePasswordModal`, `ImportModal`, `ShiftHistoryModal`) debe cargarse bajo demanda mediante `React.lazy` + `Suspense`.
+   - Vistas complejas con sub-gestores o tabs pesados (ej. `PatternManager`, `AssignmentManager`, `LeaveManager`, `HolidayManager` en `TheoreticalShifts`) deben aplicar code-splitting a nivel de contenedor de pestaña.
+   - En tests unitarios con `Testing Library` sobre vistas con tabs `React.lazy`, usar `findBy*` asíncrono para esperar la resolución del chunk mockeado.
+
+4. **Separación Estricta de Estado (TanStack Query vs Zustand)**:
+   - Toda colección de datos remotos proveniente de APIs (asistencia, paginaciones, registros de tiempo, catálogos) debe ser gestionada exclusivamente por TanStack Query hooks.
+   - Prohibido duplicar colecciones de entidades remotas o paginaciones en slices de Zustand (como el deprecado `timeRecordSlice`).
+   - Zustand se reserva estrictamente para estado de UI del cliente efímero y global (autenticación local, modales, toasts, tema).
