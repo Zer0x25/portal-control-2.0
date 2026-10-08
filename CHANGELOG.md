@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.25.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.25.0...v8.25.1) (2026-10-08)
+
+
+### Performance Improvements
+
+* **frontend:** comprehensive frontend optimization, state hygiene and tailwind v4 styling ([#23](https://github.com/Zer0x25/portal-control-2.0/issues/23)) ([74ffb90](https://github.com/Zer0x25/portal-control-2.0/commit/74ffb908c9194b099ccf6fcd0a2e79c8c84469c6))
+
 ## [8.25.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.24.0...v8.25.0) (2026-10-08)
 
 
