@@ -20,3 +20,17 @@ description: Best practices and performance constraints for CI workflows, monore
 
 4. **Docker Image Pre-fetching**:
    - In CI jobs requiring heavy images, trigger `docker pull <image> &` in the background immediately after repo checkout to overlap network I/O with Node/dependency setup.
+
+5. **Release-Gated Docker Builds & E2E Smoke**:
+   - Production Docker image builds (`docker buildx`) and full browser E2E smoke tests (`compose.staging.yaml` + Playwright) must **never** run on everyday pushes to `main`, feature PRs, or automated bot PRs (e.g. Jules).
+   - Everyday CI (`ci.yml`) is strictly restricted to fast validation: `gates`, `verify-backend` (with ephemeral PostgreSQL tmpfs), and `verify-frontend` (~2.5 min total).
+   - E2E smoke tests and GHCR image publishing belong exclusively to the **Release Pipeline** (`deploy.yml`), triggered only when merging an official release PR from `release-please` (`chore(main): release ...`) or publishing version tags (`v*`).
+   - In the release pipeline, E2E smoke acts as a strict deployment gate: images are built once, validated with Playwright, and only pushed to GHCR / pinned in `compose.yaml` if all tests pass.
+
+6. **Consolidated CI Validation (`validate:ci:coverage`)**:
+   - Packages must provide a consolidated `validate:ci:coverage` script combining formatting checks, lint budget (0/0), strict type-checks, SDK contract verification, and the single full coverage test suite with ratchets.
+   - Avoid executing test subsets (e.g. `test:schemas-refactor`) prior to `test:coverage` inside CI to prevent duplicate test runs.
+   - Keep lightweight `validate:ci` for local developer workflows and `.husky/pre-push` hooks.
+
+7. **High-Speed Dependency Installation**:
+   - All `npm ci` invocations in GitHub Actions workflows must use `--no-audit --no-fund --prefer-offline --loglevel=error` to maximize cache hits and eliminate redundant network overhead and noisy step logs.
