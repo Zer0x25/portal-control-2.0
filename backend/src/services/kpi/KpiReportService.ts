@@ -304,13 +304,16 @@ export class KpiReportService {
       activeCount: activeEmployees.length,
     };
 
-    for (const emp of activeEmployees) {
-      const scheduleInfo = await schedulingService.getEmployeeDailyScheduleInfo(
-        emp.id,
-        today,
-        schedulingContext,
-        emp,
-      );
+    // ⚡ Bolt Optimization: Parallelize schedule lookups
+    // Why: The previous sequential `for...of` loop awaited each promise individually, blocking the event loop (N+1 delay).
+    // Impact: Reduces total latency of schedule lookup from O(N) to O(1) concurrent requests.
+    const scheduleInfos = await Promise.all(
+      activeEmployees.map((emp) =>
+        schedulingService.getEmployeeDailyScheduleInfo(emp.id, today, schedulingContext, emp),
+      ),
+    );
+
+    for (const scheduleInfo of scheduleInfos) {
       if (!scheduleInfo) continue;
 
       if (scheduleInfo.justificationType) {
