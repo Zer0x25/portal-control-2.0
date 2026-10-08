@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.25.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.24.0...v8.25.0) (2026-10-08)
+
+
+### Features
+
+* **agents:** add prisma-migration-safeguard workspace skill and db:precheck ([a928c2b](https://github.com/Zer0x25/portal-control-2.0/commit/a928c2b8fea8c2f8546ed5eb5b162a15dce608a8))
+* **agents:** add workspace skills for api sync and ci preflight ([442da4e](https://github.com/Zer0x25/portal-control-2.0/commit/442da4e30176df936c1e0750c730e7abbd7c682a))
+
+
+### Bug Fixes
+
+* **frontend:** include playwright config in node tsconfig ([f99d837](https://github.com/Zer0x25/portal-control-2.0/commit/f99d8374d92dbc6b2a6df4ff232ca3d282cc68a1))
+
+
+### Performance Improvements
+
+* **ci:** speed up dependency installation with prefer-offline and loglevel ([63475fa](https://github.com/Zer0x25/portal-control-2.0/commit/63475fa929069b304d957d7ba64874e689b57aa5))
+
 ## [8.24.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.23.0...v8.24.0) (2026-10-08)
 
 * Sincronización y publicación de tags de release.
