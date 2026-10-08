@@ -31,6 +31,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.{ts,cjs}\" \"*.{json,md,yml,yaml}\" docs/swagger.json",
     "validate:quick": "npm run check && npm run test:schemas-refactor",
     "validate:ci": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only backend && npm run check && npm run check:sdk && npm run test:schemas-refactor && npm run build",
+    "validate:ci:coverage": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only backend && npm run check && npm run check:sdk && npm run test:coverage && npm run build",
     "validate:full": "npm run lint && npm run check && npm test && npm run build",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
@@ -47,7 +48,9 @@
     "dev:fastify": "npm run dev",
     "start:fastify": "npm start",
     "check:modules": "tsc -p tsconfig.modules.json",
-    "test:fastify:integration": "node scripts/run-fastify-isolated.cjs",
+    "test:api:integration": "node scripts/run-fastify-isolated.cjs",
+    "test:fastify:integration": "npm run test:api:integration",
+    "test:http:integration": "npm run test:api:integration",
     "benchmark:fastify": "node scripts/run-fastify-isolated.cjs --benchmark",
     "prebuild": "node scripts/clean-dist.cjs",
     "runtime:coordination": "tsx --env-file-if-exists=.env scripts/runtime-coordination.ts"

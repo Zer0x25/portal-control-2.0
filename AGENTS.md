@@ -83,7 +83,7 @@ El repositorio mantiene ratchets fijados en cero. No subirlos salvo decisión ex
 | Ratchet | Archivo / Guard | Aplicación |
 | :--- | :--- | :--- |
 | **ESLint Warnings** | `lint-budget.json` (0/0) | `validate:ci`, pre-commit, CI |
-| **Rutas sin validar** | `routeManifest` en `tests/fastify-integration/runtime.test.ts` | `test:fastify:integration` |
+| **Rutas sin validar** | `routeManifest` en `tests/fastify-integration/runtime.test.ts` | `test:api:integration` |
 | **Cobertura de tests** | `backend/vitest.config.ts`, `frontend/vite.config.ts` | `test:coverage`, `verify-*` en CI |
 | **Tamaño AGENTS.md** | `AGENTS.md` (≤ 120 líneas / ≤ 8 KB) | Anti-truncamiento de prompt global |
 

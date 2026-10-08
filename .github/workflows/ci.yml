@@ -212,22 +212,18 @@ jobs:
           DIRECT_URL: postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-codegen
         run: npx prisma generate
 
-      - name: Run backend CI validation
+      # validate:ci:coverage == validate:ci pero con `test:coverage` en vez de
+      # `test:schemas-refactor`: la suite completa corre UNA sola vez con thresholds
+      # (ratchet). Evita doble ejecución de tests de schemas y consolida la validación CI.
+      - name: Run backend CI validation with coverage
         id: validate
-        run: npm run validate:ci
-
-      # La cobertura con thresholds (ratchet) corre aqui dentro en vez de en
-      # un job separado: evita un checkout + doble `npm ci` + espera en cola
-      # extra por PR. validate:ci solo corre el subset de schemas, asi que no
-      # hay doble ejecucion de la suite completa.
-      - name: Backend coverage (thresholds en vitest.config.ts)
         env:
           JWT_SECRET: test-secret
-        run: npm run test:coverage
+        run: npm run validate:ci:coverage
 
-      - name: Fastify integration on disposable PostgreSQL
+      - name: HTTP API integration on disposable PostgreSQL
         id: fastify_integration
-        run: npm run test:fastify:integration
+        run: npm run test:api:integration
 
       - name: Generate Backend Summary
         if: always()
