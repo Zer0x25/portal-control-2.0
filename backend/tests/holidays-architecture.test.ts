@@ -7,6 +7,9 @@ const src = path.resolve(__dirname, "../src");
 const moduleRoot = path.join(src, "modules/holidays");
 const applicationRoot = path.join(moduleRoot, "application");
 
+const astCache = new Map<string, ts.SourceFile>();
+const contentCache = new Map<string, string>();
+
 function filesUnder(directory: string): string[] {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(directory, entry.name);
@@ -14,10 +17,43 @@ function filesUnder(directory: string): string[] {
   });
 }
 
+const srcFiles = filesUnder(src).filter(
+  (file) => !file.includes(`${path.sep}generated${path.sep}`),
+);
+
+const tsConfigModulesParsed = (() => {
+  const config = ts.readConfigFile(
+    path.resolve(__dirname, "../tsconfig.modules.json"),
+    ts.sys.readFile,
+  );
+  return ts.parseJsonConfigFileContent(config.config, ts.sys, path.resolve(__dirname, ".."));
+})();
+
+function getSourceFile(file: string, source: string): ts.SourceFile {
+  if (file.includes("fixture.ts")) {
+    return ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+  }
+  let tree = astCache.get(file);
+  if (!tree) {
+    tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+    astCache.set(file, tree);
+  }
+  return tree;
+}
+
+function readSource(file: string): string {
+  let content = contentCache.get(file);
+  if (!content) {
+    content = fs.readFileSync(file, "utf8");
+    contentCache.set(file, content);
+  }
+  return content;
+}
+
 function inspect(source: string, file: string, name = "holidays"): string[] {
   const moduleRoot = path.join(src, "modules", name);
   const applicationRoot = path.join(moduleRoot, "application");
-  const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+  const tree = getSourceFile(file, source);
   const violations: string[] = [];
   const application = file.startsWith(applicationRoot + path.sep);
   function dependency(target: string) {
@@ -107,15 +143,12 @@ describe("Holiday module boundaries", () => {
   it("enumerates application files and rejects effects or infrastructure dependencies", () => {
     const files = filesUnder(applicationRoot);
     expect(files.length).toBeGreaterThan(0);
-    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file))).toEqual([]);
+    expect(files.flatMap((file) => inspect(readSource(file), file))).toEqual([]);
   });
 
   it("requires external consumers to use the public module entry", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
-    expect(files.length).toBeGreaterThan(0);
-    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file))).toEqual([]);
+    expect(srcFiles.length).toBeGreaterThan(0);
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file))).toEqual([]);
   });
 
   it.each([
@@ -164,15 +197,10 @@ describe("Holiday module boundaries", () => {
 
 describe("Auth module boundaries", () => {
   it("keeps application independent of infrastructure and consumers on public index", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
     expect(
-      files.filter((file) => file.includes("modules/auth/application")).length,
+      srcFiles.filter((file) => file.includes("modules/auth/application")).length,
     ).toBeGreaterThan(0);
-    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "auth"))).toEqual(
-      [],
-    );
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file, "auth"))).toEqual([]);
   });
   it.each([
     'import prisma from "../../../services/db";',
@@ -197,24 +225,12 @@ describe("Auth module boundaries", () => {
 
 describe("Users projection module boundaries", () => {
   it("enumerates a pure application and requires public index consumers", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
     const applicationFiles = filesUnder(path.join(src, "modules/users/application"));
     expect(applicationFiles.length).toBeGreaterThan(0);
-    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "users"))).toEqual(
-      [],
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file, "users"))).toEqual([]);
+    expect(applicationFiles.every((file) => tsConfigModulesParsed.fileNames.includes(file))).toBe(
+      true,
     );
-    const config = ts.readConfigFile(
-      path.resolve(__dirname, "../tsconfig.modules.json"),
-      ts.sys.readFile,
-    );
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      path.resolve(__dirname, ".."),
-    );
-    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
   });
   it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
     "rejects users projection dependency/effect: %s",
@@ -236,24 +252,12 @@ describe("Users projection module boundaries", () => {
 });
 describe("Employees module boundaries", () => {
   it("enumerates a pure application and requires public index consumers", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
     const applicationFiles = filesUnder(path.join(src, "modules/employees/application"));
     expect(applicationFiles.length).toBeGreaterThan(0);
-    expect(
-      files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "employees")),
-    ).toEqual([]);
-    const config = ts.readConfigFile(
-      path.resolve(__dirname, "../tsconfig.modules.json"),
-      ts.sys.readFile,
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file, "employees"))).toEqual([]);
+    expect(applicationFiles.every((file) => tsConfigModulesParsed.fileNames.includes(file))).toBe(
+      true,
     );
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      path.resolve(__dirname, ".."),
-    );
-    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
   });
   it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
     "rejects employees application dependency/effect: %s",
@@ -276,24 +280,12 @@ describe("Employees module boundaries", () => {
 });
 describe("Records module boundaries", () => {
   it("enumerates a pure application and requires public index consumers", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
     const applicationFiles = filesUnder(path.join(src, "modules/records/application"));
     expect(applicationFiles.length).toBeGreaterThan(0);
-    expect(
-      files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "records")),
-    ).toEqual([]);
-    const config = ts.readConfigFile(
-      path.resolve(__dirname, "../tsconfig.modules.json"),
-      ts.sys.readFile,
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file, "records"))).toEqual([]);
+    expect(applicationFiles.every((file) => tsConfigModulesParsed.fileNames.includes(file))).toBe(
+      true,
     );
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      path.resolve(__dirname, ".."),
-    );
-    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
   });
   it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
     "rejects records application dependency/effect: %s",
@@ -315,24 +307,12 @@ describe("Records module boundaries", () => {
 });
 describe("Shifts module boundaries", () => {
   it("enumerates a pure application and requires public index consumers", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
     const applicationFiles = filesUnder(path.join(src, "modules/shifts/application"));
     expect(applicationFiles.length).toBeGreaterThan(0);
-    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, "shifts"))).toEqual(
-      [],
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file, "shifts"))).toEqual([]);
+    expect(applicationFiles.every((file) => tsConfigModulesParsed.fileNames.includes(file))).toBe(
+      true,
     );
-    const config = ts.readConfigFile(
-      path.resolve(__dirname, "../tsconfig.modules.json"),
-      ts.sys.readFile,
-    );
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      path.resolve(__dirname, ".."),
-    );
-    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
   });
   it.each(['import prisma from "../../../services/db";', 'import("fastify");', "Date.now();"])(
     "rejects shifts application dependency/effect: %s",
@@ -370,22 +350,12 @@ describe.each([
   "configs",
 ])("%s module boundaries", (name) => {
   it("enumerates pure application, public consumers and strict files", () => {
-    const files = filesUnder(src).filter(
-      (file) => !file.includes(`${path.sep}generated${path.sep}`),
-    );
     const applicationFiles = filesUnder(path.join(src, "modules", name, "application"));
     expect(applicationFiles.length).toBeGreaterThan(0);
-    expect(files.flatMap((file) => inspect(fs.readFileSync(file, "utf8"), file, name))).toEqual([]);
-    const config = ts.readConfigFile(
-      path.resolve(__dirname, "../tsconfig.modules.json"),
-      ts.sys.readFile,
+    expect(srcFiles.flatMap((file) => inspect(readSource(file), file, name))).toEqual([]);
+    expect(applicationFiles.every((file) => tsConfigModulesParsed.fileNames.includes(file))).toBe(
+      true,
     );
-    const parsed = ts.parseJsonConfigFileContent(
-      config.config,
-      ts.sys,
-      path.resolve(__dirname, ".."),
-    );
-    expect(applicationFiles.every((file) => parsed.fileNames.includes(file))).toBe(true);
   });
   it.each([
     'import prisma from "../../../services/db";',
