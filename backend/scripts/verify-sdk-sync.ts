@@ -20,7 +20,12 @@ function getFileHash(filePath: string): string {
 
 function runCommand(command: string, cwd: string) {
   try {
-    execSync(command, { cwd, stdio: "inherit" });
+    const backendBin = path.join(BACKEND_DIR, "node_modules/.bin");
+    const env = {
+      ...process.env,
+      PATH: `${backendBin}${path.delimiter}${process.env.PATH || ""}`,
+    };
+    execSync(command, { cwd, env, stdio: "inherit" });
   } catch (error) {
     console.error(`❌ Command failed: ${command}`);
     process.exit(1);
