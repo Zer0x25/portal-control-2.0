@@ -2,8 +2,10 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { APP_TITLE } from "../../constants";
 import { SystemStatusIndicator } from "../ui/IndustrialIndicator";
-import { ChangePasswordModal } from "../../features/auth";
-import UserManualModal from "../ui/UserManualModal";
+const ChangePasswordModal = React.lazy(() =>
+  import("../../features/auth").then((m) => ({ default: m.ChangePasswordModal })),
+);
+const UserManualModal = React.lazy(() => import("../ui/UserManualModal"));
 import NotificationCenter from "./NotificationCenter";
 import { SpeakerWaveIcon, SpeakerXMarkIcon, UserCircleIcon } from "../ui/icons/index";
 
@@ -175,8 +177,16 @@ const HeaderView: React.FC<HeaderViewProps> = ({
         </div>
       </header>
 
-      <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={onCloseChangePassword} />
-      <UserManualModal isOpen={isManualModalOpen} onClose={onCloseManual} />
+      {isChangePasswordModalOpen && (
+        <React.Suspense fallback={null}>
+          <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={onCloseChangePassword} />
+        </React.Suspense>
+      )}
+      {isManualModalOpen && (
+        <React.Suspense fallback={null}>
+          <UserManualModal isOpen={isManualModalOpen} onClose={onCloseManual} />
+        </React.Suspense>
+      )}
     </>
   );
 };

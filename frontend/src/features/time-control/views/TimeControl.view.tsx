@@ -13,10 +13,17 @@ import Card from "../../../components/ui/Card";
 import ClockingPanel from "../components/ClockingPanel";
 import TimeRecordFilters from "../components/TimeRecordFilters";
 import TimeRecordTable from "../components/TimeRecordTable";
-import RecordHistoryModal from "../../../components/ui/RecordHistoryModal";
-import ConfirmationModal from "../../../components/ui/ConfirmationModal";
-import { EditTimestampModal, QuickActionModal } from "..";
-import AnomalyResolutionModal from "../../../components/ui/AnomalyResolutionModal";
+const RecordHistoryModal = React.lazy(() => import("../../../components/ui/RecordHistoryModal"));
+const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
+const QuickActionModal = React.lazy(() =>
+  import("..").then((m) => ({ default: m.QuickActionModal })),
+);
+const AnomalyResolutionModal = React.lazy(
+  () => import("../../../components/ui/AnomalyResolutionModal"),
+);
+const EditTimestampModal = React.lazy(() =>
+  import("..").then((m) => ({ default: m.EditTimestampModal })),
+);
 
 /* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
    Presentational layer for TimeControl page.
@@ -194,54 +201,72 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
         </div>
       </Card>
 
-      <RecordHistoryModal
-        isOpen={props.modalState.type === "viewHistory"}
-        onClose={() => props.setModalState({ type: "none" })}
-        recordId={props.modalState.data?.id || null}
-        employeeName={props.modalState.data?.employeeName || ""}
-        date={props.modalState.data?.date || ""}
-      />
-
-      {props.modalState.type === "deleteRecord" && props.modalState.data && (
-        <ConfirmationModal
-          isOpen={true}
-          onClose={() => props.setModalState({ type: "none" })}
-          onConfirm={() => props.handleConfirmDelete(props.modalState.data as DailyTimeRecord)}
-          title="¿Eliminar registro?"
-          message="¿Estás seguro que deseas eliminar este registro de asistencia?"
-        />
+      {props.modalState.type === "viewHistory" && (
+        <React.Suspense fallback={null}>
+          <RecordHistoryModal
+            isOpen={true}
+            onClose={() => props.setModalState({ type: "none" })}
+            recordId={props.modalState.data?.id || null}
+            employeeName={props.modalState.data?.employeeName || ""}
+            date={props.modalState.data?.date || ""}
+          />
+        </React.Suspense>
       )}
 
-      <QuickActionModal
-        isOpen={!!props.quickActionRecord}
-        onClose={props.closeQuickActionModal}
-        record={props.quickActionRecord}
-        clockStatus={props.quickActionClockStatus}
-        onStartBreak={() =>
-          props.quickActionRecord && props.startBreak && props.startBreak(props.quickActionRecord)
-        }
-        onEndBreak={() =>
-          props.quickActionRecord && props.endBreak && props.endBreak(props.quickActionRecord)
-        }
-        onClockOut={() =>
-          props.quickActionRecord && props.clockOut && props.clockOut(props.quickActionRecord)
-        }
-        onEdit={props.handleEditClick}
-        onResolveAnomaly={props.handleResolveAnomalyClick}
-        isActionDisabled={props.isActionDisabledForRole}
-        disabledTooltip={props.roleBasedTooltip}
-      />
+      {props.modalState.type === "deleteRecord" && props.modalState.data && (
+        <React.Suspense fallback={null}>
+          <ConfirmationModal
+            isOpen={true}
+            onClose={() => props.setModalState({ type: "none" })}
+            onConfirm={() => props.handleConfirmDelete(props.modalState.data as DailyTimeRecord)}
+            title="¿Eliminar registro?"
+            message="¿Estás seguro que deseas eliminar este registro de asistencia?"
+          />
+        </React.Suspense>
+      )}
 
-      <AnomalyResolutionModal
-        isOpen={props.isResolutionModalOpen}
-        onClose={() => props.setIsResolutionModalOpen(false)}
-        record={props.recordToResolve}
-        onEdit={(record: AugmentedTimeRecord) => props.handleEditClick(record, "entrada")}
-        onResolve={props.handleConfirmResolution}
-        isProcessing={props.isProcessingResolution}
-      />
+      {props.quickActionRecord && (
+        <React.Suspense fallback={null}>
+          <QuickActionModal
+            isOpen={true}
+            onClose={props.closeQuickActionModal}
+            record={props.quickActionRecord}
+            clockStatus={props.quickActionClockStatus}
+            onStartBreak={() =>
+              props.quickActionRecord &&
+              props.startBreak &&
+              props.startBreak(props.quickActionRecord)
+            }
+            onEndBreak={() =>
+              props.quickActionRecord && props.endBreak && props.endBreak(props.quickActionRecord)
+            }
+            onClockOut={() =>
+              props.quickActionRecord && props.clockOut && props.clockOut(props.quickActionRecord)
+            }
+            onEdit={props.handleEditClick}
+            onResolveAnomaly={props.handleResolveAnomalyClick}
+            isActionDisabled={props.isActionDisabledForRole}
+            disabledTooltip={props.roleBasedTooltip}
+          />
+        </React.Suspense>
+      )}
 
-      <EditTimestampModal />
+      {props.isResolutionModalOpen && (
+        <React.Suspense fallback={null}>
+          <AnomalyResolutionModal
+            isOpen={true}
+            onClose={() => props.setIsResolutionModalOpen(false)}
+            record={props.recordToResolve}
+            onEdit={(record: AugmentedTimeRecord) => props.handleEditClick(record, "entrada")}
+            onResolve={props.handleConfirmResolution}
+            isProcessing={props.isProcessingResolution}
+          />
+        </React.Suspense>
+      )}
+
+      <React.Suspense fallback={null}>
+        <EditTimestampModal />
+      </React.Suspense>
     </div>
   );
 };

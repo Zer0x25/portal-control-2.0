@@ -2,8 +2,10 @@ import React, { Suspense } from "react";
 import { motion } from "framer-motion";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { DeveloperPanel } from "../ui/DeveloperPanel";
-import ShiftHandoverModal from "../ui/ShiftHandoverModal";
+const DeveloperPanel = React.lazy(() =>
+  import("../ui/DeveloperPanel").then((m) => ({ default: m.DeveloperPanel })),
+);
+const ShiftHandoverModal = React.lazy(() => import("../ui/ShiftHandoverModal"));
 import ScreenSizeIndicator from "../ui/ScreenSizeIndicator";
 import { HomeIcon } from "../ui/icons/index";
 import LoadingSpinner from "../ui/LoadingSpinner";
@@ -82,7 +84,9 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
             {canShowDevPanel && (
               <div className="pointer-events-auto">
-                <DeveloperPanel />
+                <Suspense fallback={null}>
+                  <DeveloperPanel />
+                </Suspense>
               </div>
             )}
 
@@ -115,11 +119,13 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
       </div>
 
       {isHandoverModalOpen && (
-        <ShiftHandoverModal
-          isOpen={isHandoverModalOpen}
-          onClose={onCloseHandoverModal}
-          data={handoverData}
-        />
+        <Suspense fallback={null}>
+          <ShiftHandoverModal
+            isOpen={isHandoverModalOpen}
+            onClose={onCloseHandoverModal}
+            data={handoverData}
+          />
+        </Suspense>
       )}
     </>
   );

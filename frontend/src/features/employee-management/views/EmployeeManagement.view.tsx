@@ -1,8 +1,8 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Button from "../../../components/ui/Button";
-import ConfirmationModal from "../../../components/ui/ConfirmationModal";
-import ShiftHistoryModal from "../../../components/ui/ShiftHistoryModal";
+const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
+const ShiftHistoryModal = React.lazy(() => import("../../../components/ui/ShiftHistoryModal"));
 import CinematicModal from "../../../components/ui/CinematicModal";
 import {
   ExportIcon,
@@ -13,7 +13,7 @@ import {
 } from "../../../components/ui/icons/index";
 import EmployeeForm from "../components/EmployeeForm";
 import EmployeeListCard from "../components/EmployeeListCard";
-import ImportModal from "../../../components/ui/ImportModal";
+const ImportModal = React.lazy(() => import("../../../components/ui/ImportModal"));
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
@@ -376,27 +376,33 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         />
       </CinematicModal>
 
-      <ConfirmationModal
-        isOpen={!!employeeToArchive}
-        onClose={() => setEmployeeToArchive(null)}
-        onConfirm={() => {
-          handleConfirmArchive();
-          setEmployeeToArchive(null);
-        }}
-        title="Confirmar Archivo de Personal"
-        message={archiveModalContent}
-        confirmText="Sí, Archivar"
-        cancelText="Cancelar"
-        confirmVariant="danger"
-      />
+      {!!employeeToArchive && (
+        <React.Suspense fallback={null}>
+          <ConfirmationModal
+            isOpen={!!employeeToArchive}
+            onClose={() => setEmployeeToArchive(null)}
+            onConfirm={() => {
+              handleConfirmArchive();
+              setEmployeeToArchive(null);
+            }}
+            title="Confirmar Archivo de Personal"
+            message={archiveModalContent}
+            confirmText="Sí, Archivar"
+            cancelText="Cancelar"
+            confirmVariant="danger"
+          />
+        </React.Suspense>
+      )}
 
       {historyModalEmployee && (
-        <ShiftHistoryModal
-          employeeId={historyModalEmployee.id}
-          employeeName={historyModalEmployee.name}
-          isOpen={true}
-          onClose={() => setHistoryModalEmployee(null)}
-        />
+        <React.Suspense fallback={null}>
+          <ShiftHistoryModal
+            employeeId={historyModalEmployee.id}
+            employeeName={historyModalEmployee.name}
+            isOpen={true}
+            onClose={() => setHistoryModalEmployee(null)}
+          />
+        </React.Suspense>
       )}
 
       <div className="fixed bottom-6 right-6 z-50 md:hidden">
@@ -409,13 +415,17 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         </Button>
       </div>
 
-      <ImportModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onImport={handleImportEmployees}
-        title="Importar Personal"
-        schema={importSchema}
-      />
+      {isImportModalOpen && (
+        <React.Suspense fallback={null}>
+          <ImportModal
+            isOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+            onImport={handleImportEmployees}
+            title="Importar Personal"
+            schema={importSchema}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };
