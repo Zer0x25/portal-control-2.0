@@ -47,6 +47,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  VITE_CONFIG_NATIVE_IGNORE_WARNING: true
+
 jobs:
   changes:
     name: Detect changes
@@ -195,14 +199,16 @@ jobs:
         with:
           node-version: 26
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
       - name: Cache Prisma Schema & Engines
         uses: actions/cache@v4
         with:
           path: |
             ~/.cache/prisma
-            node_modules/.prisma
+            backend/node_modules/@prisma/engines
           key: prisma-${{ runner.os }}-${{ hashFiles('backend/prisma/schema.prisma') }}
           restore-keys: |
             prisma-${{ runner.os }}-
@@ -321,6 +327,7 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Cache Playwright browsers
+        id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -339,22 +346,29 @@ jobs:
       - name: Start compose.staging stack
         run: docker compose --env-file .env.staging -f compose.staging.yaml up -d --build
 
+      # Instalar / verificar Playwright mientras la pila de compose se levanta en segundo plano.
+      # Si el cache de navegador hizo hit, se evita el apt-get update innecesario de --with-deps.
+      - name: Install Playwright chromium
+        working-directory: frontend
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install chromium
+          else
+            npx playwright install --with-deps chromium
+          fi
+
       - name: Wait for gateway health
         run: |
-          for i in $(seq 1 48); do
+          for i in $(seq 1 60); do
             if curl -sf http://127.0.0.1:8080 > /dev/null; then
               echo "gateway healthy"
               exit 0
             fi
-            sleep 5
+            sleep 3
           done
-          echo "::error::gateway no alcanzó http://127.0.0.1:8080 en ~4 min"
+          echo "::error::gateway no alcanzó http://127.0.0.1:8080 en ~3 min"
           docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
           exit 1
-
-      - name: Install Playwright chromium
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
 
       - name: Run smoke spec
         working-directory: frontend

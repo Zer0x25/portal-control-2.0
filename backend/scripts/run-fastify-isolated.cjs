@@ -27,6 +27,13 @@ async function main() {
         "--env",
         "POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=scram-sha-256",
         "postgres:18.4-alpine",
+        "postgres",
+        "-c",
+        "fsync=off",
+        "-c",
+        "synchronous_commit=off",
+        "-c",
+        "full_page_writes=off",
       ],
       { encoding: "utf8" },
     ).trim();
@@ -83,6 +90,7 @@ async function main() {
           "run",
           "--config",
           "vitest.fastify.integration.config.ts",
+          ...process.argv.slice(2),
         ],
         env,
       );
