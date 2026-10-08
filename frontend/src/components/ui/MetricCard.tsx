@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { motion } from "framer-motion";
 
 interface MetricCardProps {
   title: string;
@@ -63,12 +62,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const theme = colorMap[colorKey] || colorMap.slate;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       onClick={onClick}
       className={`
-        relative flex flex-col p-3 rounded-md border border-token-border-subtle shadow-none transition-all duration-150
+        animate-in fade-in duration-150 relative flex flex-col p-3 rounded-md border border-token-border-subtle shadow-none transition-all duration-150
         bg-token-surface-stripe
         ${onClick ? "cursor-pointer active:scale-[0.98] hover:border-token-accent-active hover:bg-token-surface-active" : ""}
         ${className}
@@ -113,7 +110,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           )}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

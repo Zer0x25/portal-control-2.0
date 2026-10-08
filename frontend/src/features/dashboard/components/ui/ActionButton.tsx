@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
 import { ActionConfig, ToolConfig, ColorTheme } from "../../types";
 
 interface BaseActionButtonProps {
@@ -48,7 +47,7 @@ export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
     () => `
     group relative p-3.5 h-[90px] rounded-sm flex flex-col items-center justify-center text-center
     bg-token-surface-stripe border border-token-border-technical shadow-sm transition-all duration-150
-    hover:border-sap-blue/40 hover:bg-token-surface-active active:scale-[0.98]
+    hover:border-sap-blue/40 hover:bg-token-surface-active hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
     ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
     ${colorClasses[color]}
     ${className}
@@ -73,13 +72,11 @@ export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-600"></span>
           </span>
         )}
-        <motion.div
-          className={iconBoxClasses}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
+        <div
+          className={`${iconBoxClasses} transition-transform group-hover:scale-110 group-active:scale-95`}
         >
           <Icon className="w-4 h-4" />
-        </motion.div>
+        </div>
         <span className="text-xs font-bold text-token-text-secondary uppercase tracking-wider leading-none">
           {label}
         </span>
@@ -91,30 +88,17 @@ export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
   if ("href" in props) {
     const { href, target = "_blank", rel = "noopener noreferrer" } = props;
     return (
-      <motion.a
-        href={href}
-        target={target}
-        rel={rel}
-        className={baseClasses}
-        whileHover={{ y: -2 }}
-        whileTap={{ y: 0 }}
-      >
+      <a href={href} target={target} rel={rel} className={baseClasses}>
         {content}
-      </motion.a>
+      </a>
     );
   }
 
   const { onClick } = props;
   return (
-    <motion.button
-      onClick={onClick}
-      disabled={disabled}
-      className={baseClasses}
-      whileHover={{ y: -2 }}
-      whileTap={{ y: 0 }}
-    >
+    <button onClick={onClick} disabled={disabled} className={baseClasses}>
       {content}
-    </motion.button>
+    </button>
   );
 });
 

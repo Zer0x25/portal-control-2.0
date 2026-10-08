@@ -1,5 +1,4 @@
 import React, { ReactNode } from "react";
-import { motion } from "framer-motion";
 
 interface DashboardRowProps {
   icon?: ReactNode;
@@ -77,19 +76,12 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.3,
-        delay: animationDelay,
-        ease: "easeOut",
-      }}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+    <div
+      style={animationDelay > 0 ? { animationDelay: `${animationDelay}s` } : undefined}
+      className="animate-in fade-in slide-in-from-bottom-2 duration-200 transition-transform hover:scale-[1.01] active:scale-[0.99]"
     >
       {content}
-    </motion.div>
+    </div>
   );
 };
 

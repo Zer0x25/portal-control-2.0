@@ -1,7 +1,6 @@
 import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
 
-interface CardProps extends HTMLMotionProps<"div"> {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
   title?: string;
@@ -25,13 +24,10 @@ const Card = React.memo(
         : "bg-token-surface-card border border-token-border-technical shadow-sm rounded-md overflow-hidden";
 
       return (
-        <motion.div
+        <div
           ref={ref}
           {...rest}
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className={`${baseClasses} ${borderClasses}`}
+          className={`animate-in fade-in duration-150 ${baseClasses} ${borderClasses}`}
         >
           {title && (
             <div className="px-5 py-3 border-b border-token-border-technical bg-token-surface-header flex items-center justify-between">
@@ -45,7 +41,7 @@ const Card = React.memo(
             </div>
           )}
           <div className={`${paddingClass} text-token-text-primary h-full`}>{children}</div>
-        </motion.div>
+        </div>
       );
     },
   ),
