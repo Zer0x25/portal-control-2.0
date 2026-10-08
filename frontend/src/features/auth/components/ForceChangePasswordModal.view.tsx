@@ -27,7 +27,7 @@ const ForceChangePasswordModalView: React.FC<ForceChangePasswordModalViewProps> 
 
   return (
     <div
-      className="fixed inset-0 z-101 flex items-center justify-center bg-black bg-opacity-80 p-4"
+      className="fixed inset-0 z-101 flex items-center justify-center bg-black/80 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="force-change-password-modal-title"
