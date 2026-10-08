@@ -194,14 +194,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Pre-descargar la imagen PostgreSQL desechable en segundo plano mientras
+      # corren setup-node, npm ci y validate:ci (~1.5 min), ahorrando ~6-8 s al inicio de integración.
+      - name: Pre-pull PostgreSQL image in background
+        run: docker pull postgres:18.4-alpine &
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 26
           cache: npm
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
+          cache-dependency-path: backend/package-lock.json
 
       - name: Cache Prisma Schema & Engines
         uses: actions/cache@v4
@@ -215,12 +218,6 @@ jobs:
 
       - name: Install backend dependencies
         run: npm ci --no-audit --no-fund
-
-      # `npm run check:sdk` (part of validate:ci) regenerates the frontend SDK
-      # with openapi-typescript, so the frontend toolchain must be available.
-      - name: Install frontend dependencies
-        run: npm ci --no-audit --no-fund
-        working-directory: frontend
 
       - name: Generate Prisma client
         # Prisma 7 evalua prisma.config.ts (exige DIRECT_URL) en todo comando

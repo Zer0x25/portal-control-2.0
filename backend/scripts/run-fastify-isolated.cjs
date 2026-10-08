@@ -18,6 +18,8 @@ async function main() {
       [
         "run",
         "--detach",
+        "--tmpfs",
+        "/var/lib/postgresql:rw",
         "--publish",
         "127.0.0.1::5432",
         "--env",
@@ -34,6 +36,10 @@ async function main() {
         "synchronous_commit=off",
         "-c",
         "full_page_writes=off",
+        "-c",
+        "shared_buffers=256MB",
+        "-c",
+        "checkpoint_timeout=30min",
       ],
       { encoding: "utf8" },
     ).trim();
