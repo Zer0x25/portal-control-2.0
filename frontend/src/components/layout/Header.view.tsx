@@ -81,6 +81,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               onClick={onToggleSound}
               className="p-2.5 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-all group"
               title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
+              aria-label="Silenciar o activar sonidos"
             >
               {soundEnabled ? (
                 <SpeakerWaveIcon className="w-5 h-5 text-token-text-tertiary group-hover:text-(--sidebar-text-active)" />
@@ -98,6 +99,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                   className="group flex items-center gap-3 p-1.5 h-13 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-all"
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
+                  aria-label="Menú de usuario"
                 >
                   <div className="w-10 h-10 rounded-md bg-token-surface-active flex items-center justify-center border border-token-border-subtle">
                     <UserCircleIcon className="w-6 h-6 text-token-text-tertiary group-hover:text-(--sidebar-text-active) transition-colors" />
