@@ -22,6 +22,7 @@ Express está retirado por decisión del usuario. No mantener ni recrear su runt
 Ejecutar dentro del paquete correspondiente para verificar cambios:
 
 ### Backend (`cd backend`)
+
 ```bash
 npm ci
 npx prisma generate
@@ -32,6 +33,7 @@ npm run validate:ci    # Suite completa de validación CI
 ```
 
 ### Frontend (`cd frontend`)
+
 ```bash
 npm ci
 npm run check          # Type check
@@ -40,6 +42,7 @@ npm run validate:ci    # Suite completa de validación CI
 ```
 
 ### Root
+
 ```bash
 npm run lint:budget    # Verifica que el contador de warnings no supere el ratchet (0/0)
 npm run docs:check     # Verifica enlaces relativos y consistencia de ADRs
@@ -70,6 +73,7 @@ npm run docs:check     # Verifica enlaces relativos y consistencia de ADRs
 ## 4. Commit Discipline & Releases
 
 `release-please` parsea los commits bajo el estándar **Conventional Commits**:
+
 - Formato estricto: `tipo(scope opcional): mensaje`. El tipo debe estar en la posición 0.
 - **Prohibidos emojis** en el asunto (`🔒 fix: ...`, `⚡ perf: ...`), ya que rompen el parser de releases.
 - El hook `commit-msg` (`scripts/commit-conventional.cjs`) valida esto localmente.
@@ -80,12 +84,12 @@ npm run docs:check     # Verifica enlaces relativos y consistencia de ADRs
 
 El repositorio mantiene ratchets fijados en cero. No subirlos salvo decisión explícita:
 
-| Ratchet | Archivo / Guard | Aplicación |
-| :--- | :--- | :--- |
-| **ESLint Warnings** | `lint-budget.json` (0/0) | `validate:ci`, pre-commit, CI |
-| **Rutas sin validar** | `routeManifest` en `tests/fastify-integration/runtime.test.ts` | `test:api:integration` |
-| **Cobertura de tests** | `backend/vitest.config.ts`, `frontend/vite.config.ts` | `test:coverage`, `verify-*` en CI |
-| **Tamaño AGENTS.md** | `AGENTS.md` (≤ 120 líneas / ≤ 8 KB) | Anti-truncamiento de prompt global |
+| Ratchet                | Archivo / Guard                                                | Aplicación                         |
+| :--------------------- | :------------------------------------------------------------- | :--------------------------------- |
+| **ESLint Warnings**    | `lint-budget.json` (0/0)                                       | `validate:ci`, pre-commit, CI      |
+| **Rutas sin validar**  | `routeManifest` en `tests/fastify-integration/runtime.test.ts` | `test:api:integration`             |
+| **Cobertura de tests** | `backend/vitest.config.ts`, `frontend/vite.config.ts`          | `test:coverage`, `verify-*` en CI  |
+| **Tamaño AGENTS.md**   | `AGENTS.md` (≤ 120 líneas / ≤ 8 KB)                            | Anti-truncamiento de prompt global |
 
 ---
 
@@ -102,11 +106,13 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 - **Skills (.agents/skills/)**: Runbooks ejecutables de sincronización de contratos API (`api-contracts-sync`) y preflight CI (`ci-preflight`).
 
 ### Política de Higiene de Reglas (Anti-Rule Creep)
+
 1. **AGENTS.md es Always-On**: Debe mantenerse estrictamente en ≤ 120 líneas.
 2. **Prohibido agregar bitácoras o playbooks en AGENTS.md**: Campañas temporales, tablas de "antes vs después" y deudas específicas de módulos pertenecen a `specs/` o `docs/`.
 3. **Reglas modulares bajo demanda**: Nuevas guías de dominio deben crearse en `.agents/rules/<dominio>.md` con frontmatter `trigger: model_decision`.
 
 Memorias institucionales:
+
 - [.jules/bolt.md](file:///.jules/bolt.md): Bitácora de optimizaciones de performance y latencia.
 - [.jules/sentinel.md](file:///.jules/sentinel.md): Bitácora de vulnerabilidades y blindaje de seguridad.
 - [specs/roadmap-fastify.md](file:///specs/roadmap-fastify.md) y [specs/025-fastify-cutover/backlog.md](file:///specs/025-fastify-cutover/backlog.md): Estado de especificaciones, contratos de módulos y mejoras post-cutover.

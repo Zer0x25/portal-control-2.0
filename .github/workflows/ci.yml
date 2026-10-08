@@ -93,13 +93,20 @@ jobs:
           echo "### 🛡️ Agentic Guardrails Audit" >> $GITHUB_STEP_SUMMARY
           FAILED=0
 
-          # 1. Verificar existencia de AGENTS.md y diarios de memoria
+          # 1. Verificar existencia y presupuesto de AGENTS.md y diarios de memoria
           echo "Verificando archivos de gobernanza agéntica..."
           if [ ! -f "AGENTS.md" ]; then
             echo "- ❌ Falta \`AGENTS.md\` en la raíz del repositorio." >> $GITHUB_STEP_SUMMARY
             FAILED=1
           else
-            echo "- ✅ \`AGENTS.md\` presente." >> $GITHUB_STEP_SUMMARY
+            AGENTS_LINES=$(wc -l < AGENTS.md)
+            AGENTS_BYTES=$(wc -c < AGENTS.md)
+            if [ "$AGENTS_LINES" -gt 120 ] || [ "$AGENTS_BYTES" -gt 8192 ]; then
+              echo "- ❌ \`AGENTS.md\` supera el presupuesto de gobernanza ($AGENTS_LINES líneas / $AGENTS_BYTES bytes; máx 120 líneas / 8 KB)." >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+            else
+              echo "- ✅ \`AGENTS.md\` presente y dentro de presupuesto ($AGENTS_LINES líneas / $AGENTS_BYTES bytes)." >> $GITHUB_STEP_SUMMARY
+            fi
           fi
 
           if [ ! -f ".jules/sentinel.md" ] || [ ! -f ".jules/bolt.md" ]; then
@@ -144,6 +151,23 @@ jobs:
         with:
           node-version: 26
 
+      - name: Validate PR Title (Conventional Commits)
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!)?: .+'
+          if [[ "$PR_TITLE" =~ ^Merge ]]; then
+            exit 0
+          fi
+          if ! [[ "$PR_TITLE" =~ $PATTERN ]]; then
+            echo "::error::Título de PR inválido: \"$PR_TITLE\""
+            echo "Formato requerido por release-please: tipo(scope opcional): mensaje"
+            echo "Tipos válidos: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert (sin emojis)"
+            exit 1
+          fi
+          echo "✅ Título de PR cumple Conventional Commits: \"$PR_TITLE\""
+
       - name: Check specs carry acceptance criteria
         run: npm run spec:check
 
@@ -160,8 +184,8 @@ jobs:
           restore-keys: |
             prettier-${{ runner.os }}-
 
-      - name: Check Prettier formatting (docs/adr + specs)
-        run: npx --yes prettier@3.9.9 --check "docs/adr/*.md" "specs/**/*.md"
+      - name: Check Prettier formatting (docs/adr, specs, .agents, AGENTS.md)
+        run: npx --yes prettier@3.9.9 --check "docs/adr/*.md" "specs/**/*.md" ".agents/**/*.md" "AGENTS.md"
 
   verify-backend:
     name: Verify backend

@@ -7,7 +7,15 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const ROOT = path.resolve(__dirname, "..");
-const SCAN_DIRS = [path.join(ROOT, "docs", "adr"), path.join(ROOT, "specs")];
+const SCAN_DIRS = [
+  path.join(ROOT, "docs", "adr"),
+  path.join(ROOT, "specs"),
+  path.join(ROOT, ".agents"),
+];
+const INDIVIDUAL_FILES = [
+  path.join(ROOT, "AGENTS.md"),
+  path.join(ROOT, "README.md"),
+].filter((f) => fs.existsSync(f));
 const INDEX = path.join(ROOT, "docs", "adr", "README.md");
 
 function collectMarkdown(dir, out = []) {
@@ -29,6 +37,11 @@ function extractTargets(markdown) {
     let target = match[1].trim();
     if (/^(https?:|mailto:|data:)/i.test(target)) continue;
     if (target.startsWith("#")) continue;
+    // Permite file:// protocol
+    if (target.startsWith("file://")) {
+      targets.push(target);
+      continue;
+    }
     // Quita ancla (#...) y query (?...) para resolver el archivo.
     target = target.split("#")[0].split("?")[0];
     if (!target) continue;
@@ -42,10 +55,13 @@ function extractTargets(markdown) {
 }
 
 let failed = 0;
-const files = SCAN_DIRS.flatMap((dir) => collectMarkdown(dir));
+const files = [
+  ...SCAN_DIRS.flatMap((dir) => collectMarkdown(dir)),
+  ...INDIVIDUAL_FILES,
+];
 
 if (files.length === 0) {
-  console.error("docs-check: no se encontraron markdown en docs/adr/ ni specs/");
+  console.error("docs-check: no se encontraron markdown para escanear");
   process.exit(1);
 }
 
@@ -53,7 +69,21 @@ for (const file of files) {
   const content = fs.readFileSync(file, "utf8");
   for (const raw of extractTargets(content)) {
     const clean = raw.split("#")[0].split("?")[0];
-    const resolved = path.resolve(path.dirname(file), clean);
+    let resolved;
+    if (clean.startsWith("file://")) {
+      const stripped = clean.replace(/^file:\/\//, "");
+      const repoCandidate = path.join(ROOT, stripped);
+      if (fs.existsSync(repoCandidate)) {
+        resolved = repoCandidate;
+      } else if (fs.existsSync(stripped)) {
+        resolved = stripped;
+      } else {
+        resolved = repoCandidate;
+      }
+    } else {
+      resolved = path.resolve(path.dirname(file), clean);
+    }
+
     if (!fs.existsSync(resolved)) {
       console.error(`docs-check: ENLACE ROTO en ${path.relative(ROOT, file)} -> ${raw}`);
       failed = 1;

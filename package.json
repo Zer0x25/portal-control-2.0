@@ -38,6 +38,12 @@
     ],
     "specs/**/*.md": [
       "backend/node_modules/.bin/prettier --check"
+    ],
+    ".agents/**/*.md": [
+      "backend/node_modules/.bin/prettier --check"
+    ],
+    "AGENTS.md": [
+      "backend/node_modules/.bin/prettier --check"
     ]
   },
   "devDependencies": {

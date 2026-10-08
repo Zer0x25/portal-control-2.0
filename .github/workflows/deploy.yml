@@ -74,6 +74,7 @@ jobs:
         working-directory: frontend
         run: |
           if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install-deps chromium
             npx playwright install chromium
           else
             npx playwright install --with-deps chromium
