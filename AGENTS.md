@@ -113,6 +113,7 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 3. **Reglas modulares bajo demanda**: Nuevas guías de dominio deben crearse en `.agents/rules/<dominio>.md` con frontmatter `trigger: model_decision`.
 
 Memorias institucionales:
+
 - [.jules/bolt.md](file:///.jules/bolt.md): Bitácora de optimizaciones de performance y latencia.
 - [.jules/sentinel.md](file:///.jules/sentinel.md): Bitácora de vulnerabilidades y blindaje de seguridad.
 - [specs/roadmap-fastify.md](file:///specs/roadmap-fastify.md) y [specs/025-fastify-cutover/backlog.md](file:///specs/025-fastify-cutover/backlog.md): Estado de especificaciones, contratos de módulos y mejoras post-cutover.
