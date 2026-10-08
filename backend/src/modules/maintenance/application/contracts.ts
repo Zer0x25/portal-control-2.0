@@ -25,12 +25,12 @@ export interface Phase2Options {
 export interface MaintenanceDependencies {
   operations: {
     start(input: {
-      type: "reset";
+      type: "reset" | "seed";
       actorUsername: string;
       maintenanceMode: boolean;
       message: string;
     }): unknown;
-    finish(): void;
+    finish(): void | Promise<void>;
   };
   clear(options: {
     onProgress: (message: string) => void;

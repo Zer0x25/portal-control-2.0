@@ -1,19 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { swaggerSpec } from "../src/utils/swagger";
-import { ROUTE_MOUNTS } from "../src/app";
-import { collectRoutes, toSwaggerPath } from "./helpers/routeManifest";
+import { swaggerSpec } from "../src/utils/openapi";
 
 /**
  * Paths that are intentionally absent from the public contract.
  * Health checks are infrastructure and the Swagger UI is served outside `/api`.
  */
-const IGNORED_PREFIXES = ["/api/health", "/api-docs", "/api-docs.json"];
 
 /**
  * Normaliza el spec para que el snapshot sea reproducible entre maquinas.
  *
  * `swagger-jsdoc` arma el spec en el orden en que el glob
- * `./src/controllers/*.ts` encuentra los archivos, que es el orden de
+ * `./src/platform/openapi/*.ts` encuentra los archivos, que es el orden de
  * lectura del filesystem (por inode) y no el alfabetico. Ese orden varia
  * entre maquinas: en el runner de GitHub los tags salian como
  * Exports, Holidays, Shifts, Users y en el host como Users, Shifts,
@@ -71,29 +68,6 @@ function identify(item: unknown): string {
 describe("API Contract", () => {
   it("Swagger specification should match the saved snapshot", () => {
     expect(canonicalize(swaggerSpec)).toMatchSnapshot();
-  });
-
-  it("Enumerates the mounted routes", () => {
-    // Guards every other assertion in this file: if route introspection breaks,
-    // they would otherwise pass vacuously.
-    const routes = collectRoutes(ROUTE_MOUNTS);
-    expect(routes.length).toBeGreaterThan(0);
-    expect(ROUTE_MOUNTS.length).toBeGreaterThan(0);
-  });
-
-  it("All registered routes should be documented in Swagger", () => {
-    const swaggerPaths = new Set(Object.keys(swaggerSpec.paths || {}));
-    const routes = collectRoutes(ROUTE_MOUNTS);
-
-    const undocumented = routes
-      .filter((route) => !IGNORED_PREFIXES.some((prefix) => route.fullPath.startsWith(prefix)))
-      .filter((route) => !swaggerPaths.has(toSwaggerPath(route.fullPath)))
-      .map((route) => `${route.methods.join(",")} ${route.fullPath}`);
-
-    expect(
-      undocumented,
-      `Detected undocumented routes (missing JSDoc @openapi): \n${undocumented.join("\n")}`,
-    ).toEqual([]);
   });
 
   it("Swagger components should be correctly registered", () => {

@@ -15,7 +15,7 @@ export interface UsersPluginOptions {
   authenticate: onRequestHookHandler;
 }
 const params = z.object({ id: z.string() });
-// Validate without replacing input, matching the Express middleware contract.
+// Validate without replacing input to preserve the public API contract.
 export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, options) => {
   const admin: onRequestHookHandler = async (request) => {
     if (request.user?.role !== "Administrador")
@@ -74,7 +74,7 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
         ),
       ),
   );
-  // DELETE is path-only; its ignored JSON body is the same contract as Express.
+  // DELETE is path-only; its JSON body is ignored by contract.
   app.delete<{ Params: { id: string } }>(
     "/api/users/:id",
     { ...access, preHandler: validateRequest("params", params) },

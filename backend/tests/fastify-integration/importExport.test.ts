@@ -2,10 +2,8 @@ import { auditService } from "../../src/services/auditService";
 import jwt from "jsonwebtoken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
-import request from "supertest";
 import ExcelJS from "exceljs";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
-import expressApp from "../../src/app";
 import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { ExportService } from "../../src/services/export/ExportService";
@@ -64,9 +62,8 @@ afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (server) => {
+describe("Spec021 import/export on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
     () => ({ "x-forwarded-for": clientIP }),
@@ -79,22 +76,6 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     duplicate = false,
     repeatSchema = false,
   ) {
-    if (server === "Express") {
-      let call = request(expressApp).post("/api/import/preview").set("x-forwarded-for", clientIP);
-      if (access) call = call.set("authorization", `Bearer ${access}`);
-      if (bytes)
-        call = call.attach(field, bytes, {
-          filename: "Data.bin",
-          contentType: "application/octet-stream",
-        });
-      if (duplicate && bytes) call = call.attach(field, bytes, { filename: "Other.xlsx" });
-      if (schema !== undefined) {
-        call = call.field("schema", schema);
-        if (repeatSchema) call = call.field("schema", schema);
-      }
-      const response = await call;
-      return { status: response.status, body: response.body };
-    }
     if (!bytes && schema === undefined) {
       const response = await fastify.inject({
         method: "POST",
@@ -204,7 +185,7 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     expect(await prismaDirect.timeRecord.count()).toBe(0);
     expect(SocketService.emit).not.toHaveBeenCalled();
   });
-  it("rejects missing/corrupt/no-sheet workbook and preserves malformed mapping 500", async () => {
+  it("rejects missing/corrupt/no-sheet workbook and rejects malformed mapping", async () => {
     expect((await upload()).body.message).toBe("No se subió ningún archivo");
     const corrupt = await upload(Buffer.from("bad zip"));
     expect(corrupt.status).toBe(400);
@@ -212,10 +193,39 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     const empty = await upload(await workbook(true));
     expect(empty.status).toBe(400);
     expect(empty.body.message).toBe("El archivo Excel está vacío o no tiene hojas");
-    expect((await upload(await workbook(), "{")).status).toBe(500);
+    expect((await upload(await workbook(), "{")).status).toBe(400);
     expect((await upload(undefined, "{")).status).toBe(400);
-    expect((await upload(await workbook(), '{"Value":null}')).status).toBe(500);
-    expect((await upload(await workbook(), "{}", "file", token, false, true)).status).toBe(500);
+    expect((await upload(await workbook(), '{"Value":null}')).status).toBe(400);
+    expect((await upload(await workbook(), "{}", "file", token, false, true)).status).toBe(400);
+  });
+  it("accepts the frontend mapping with required metadata", async () => {
+    expect(
+      (await upload(await workbook(), '{"Value":{"prop":"value","type":"String","required":true}}'))
+        .status,
+    ).toBe(200);
+  });
+  it.each([
+    "[]",
+    "null",
+    '{"Value":{"prop":"","type":"String"}}',
+    '{"Value":{"prop":"__proto__","type":"String"}}',
+    '{"Value":{"prop":"v","type":"String"},"Name":{"prop":"v","type":"String"}}',
+    '{"Value":{"prop":"v","type":"String","extra":true}}',
+  ])("rejects structurally invalid mapping %s without writes", async (mapping) => {
+    expect((await upload(await workbook(), mapping)).status).toBe(400);
+    expect(await prismaDirect.employee.count()).toBe(0);
+    expect(await prismaDirect.timeRecord.count()).toBe(0);
+  });
+  it.each([
+    "startDate=2026-02-30&endDate=2026-03-01",
+    "startDate=2026-03-01&endDate=2026-02-28",
+    "startDate=0000-01-01&endDate=2026-01-01",
+    "startDate=2026-01-01&startDate=2026-01-02&endDate=2026-01-03",
+  ])("rejects invalid ranges at both export schemas %s", async (range) => {
+    const spy = vi.spyOn(ExportService.prototype, "generateReportPDF");
+    for (const path of ["calendar-pdf", "report-pdf", "report-excel"])
+      expect((await http("GET", `/api/export/${path}?${range}`)).status).toBe(400);
+    expect(spy).not.toHaveBeenCalled();
   });
   it("rejects wrong file field, second file and over-50MiB payload before decoder", async () => {
     expect((await upload(Buffer.from("bad"), undefined, "unexpected")).status).toBe(400);
@@ -247,34 +257,44 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
       expect(response.bytes.toString()).not.toContain(employee.pin);
     },
   );
-  it("generates shift PDF from real persisted report; missing ID keeps service 500", async () => {
-    expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
-    await prismaDirect.shiftReport.create({
-      data: {
-        id: "shift-pdf",
-        folio: "001",
-        shiftName: "Day",
-        responsibleUser: "Operator",
-        startTime: new Date("2020-01-01T12:00:00Z"),
-        date: new Date("2020-01-01T00:00:00Z"),
-        status: "closed",
-        logEntries: "[]",
-        supplierEntries: "[]",
-      },
-    });
-    const response = await http(
-      "GET",
-      "/api/export/shift-report-pdf/shift-pdf",
-      undefined,
-      token,
-      true,
-    );
-    expect(response.status).toBe(200);
-    expect(response.bytes.subarray(0, 5).toString()).toBe("%PDF-");
-    expect(response.headers["content-disposition"]).toBe(
-      "attachment; filename=Reporte_Turno_shift-pdf.pdf",
-    );
-  });
+  it.each([
+    ["[]", "[]"],
+    ["not-json", "null"],
+    [
+      JSON.stringify([{ detail: "Recovered", timestamp: "10" }, null]),
+      JSON.stringify([{ company: "Legacy" }, null]),
+    ],
+  ])(
+    "generates shift PDF from normalized legacy entries (%s); missing ID keeps service 500",
+    async (logEntries, supplierEntries) => {
+      expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
+      await prismaDirect.shiftReport.create({
+        data: {
+          id: "shift-pdf",
+          folio: "001",
+          shiftName: "Day",
+          responsibleUser: "Operator",
+          startTime: new Date("2020-01-01T12:00:00Z"),
+          date: new Date("2020-01-01T00:00:00Z"),
+          status: "closed",
+          logEntries,
+          supplierEntries,
+        },
+      });
+      const response = await http(
+        "GET",
+        "/api/export/shift-report-pdf/shift-pdf",
+        undefined,
+        token,
+        true,
+      );
+      expect(response.status).toBe(200);
+      expect(response.bytes.subarray(0, 5).toString()).toBe("%PDF-");
+      expect(response.headers["content-disposition"]).toBe(
+        "attachment; filename=Reporte_Turno_shift-pdf.pdf",
+      );
+    },
+  );
   it("streams real team and employee XLSX with data columns/rows and no PIN", async () => {
     await prismaDirect.employee.create({ data: employee });
     await prismaDirect.timeRecord.create({
@@ -391,7 +411,7 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     expect((await http("GET", `/api/export/report-excel?${query}&mode=invalid`)).status).toBe(400);
     expect(spy).not.toHaveBeenCalled();
   });
-  it("keeps regex-only reversed/impossible calendar dates and unrestricted quiosco scope", async () => {
+  it("rejects impossible/reversed calendar dates without rendering", async () => {
     const spy = vi
       .spyOn(ExportService.prototype, "generateReportPDF")
       .mockResolvedValue(Buffer.from("%PDF-test"));
@@ -406,11 +426,8 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
           true,
         )
       ).status,
-    ).toBe(200);
-    expect(spy).toHaveBeenCalledWith(
-      "calendar",
-      expect.objectContaining({ startDate: "2020-02-30", endDate: "2020-01-01" }),
-    );
+    ).toBe(400);
+    expect(spy).not.toHaveBeenCalled();
   });
   it("handles renderer failure before bytes with structured JSON and ends after partial bytes", async () => {
     vi.spyOn(ExportService.prototype, "generateReportPDF").mockRejectedValue(
@@ -441,6 +458,15 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     expect(partial.bytes.toString()).toBe("partial");
     expect(auditing).not.toHaveBeenCalled();
   });
+  it("rejects actual detailed PDF calculation failure without exposing internal error as PDF", async () => {
+    vi.spyOn(kpiService, "getDetailedReport").mockRejectedValue(
+      new Error("private DB failure detail"),
+    );
+    const response = await http("GET", `/api/export/report-pdf?${query}`, undefined, token, true);
+    expect(response.status).toBe(500);
+    expect(response.headers["content-type"]).toMatch(/json/);
+    expect(response.bytes.toString()).not.toContain("private DB failure detail");
+  });
   it("preserves partial ZIP when real KPI renderer fails after WorkbookWriter begins", async () => {
     vi.spyOn(kpiService, "getDetailedReport").mockRejectedValue(new Error("DB failure"));
     const response = await http("GET", `/api/export/report-excel?${query}`, undefined, token, true);
@@ -462,7 +488,7 @@ describe.each(["Express", "Fastify"] as const)("Spec021 import/export on %s", (s
     "/api/export/report-pdf",
     "/api/export/report-excel",
     "/api/export/shift-report-pdf/missing",
-  ])("requires live authentication on %s", async (path) => {
+  ])("requires live authentication on Fastify", async (path) => {
     expect(
       (await http(path.startsWith("/api/import") ? "POST" : "GET", path, undefined, null)).status,
     ).toBe(401);

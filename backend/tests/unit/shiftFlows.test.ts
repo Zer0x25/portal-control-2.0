@@ -47,6 +47,15 @@ describe("Shift application TDD", () => {
     );
     expect(f.service.matrix).toHaveBeenCalledWith("2026-10-01", "2026-10-31", ["self"]);
   });
+  it.each(["Usuario", "Kiosk_Employee"])("enforces assignments scope for %s", async (role) => {
+    const f = fixture();
+    await expect(f.flows.assignments({}, { role })).rejects.toMatchObject({ statusCode: 403 });
+    expect(f.service.assignments).not.toHaveBeenCalled();
+    await f.flows.assignments({ employeeId: "foreign", since: "1" }, { role, employeeId: "self" });
+    expect(f.service.assignments).toHaveBeenCalledWith(
+      expect.objectContaining({ role, employeeId: "self", since: "1" }),
+    );
+  });
   it("rejects an unlinked self-only matrix before fetching scheduling context", async () => {
     const f = fixture();
     for (const role of ["Usuario", "Kiosk_Employee"]) {

@@ -1,35 +1,40 @@
 import { z } from "./common";
+import { MultiSmtpConfigSchema, SmtpVerifySchema } from "./smtpProfile.schemas";
 
-export const EmailConfigSchema = z
+export const EmailVerifySchema = SmtpVerifySchema.openapi("EmailVerify");
+export const EmailOperationResultSchema = z
+  .object({ success: z.boolean(), message: z.string() })
+  .openapi("EmailOperationResult");
+
+export const EmailConfigSchema = MultiSmtpConfigSchema.openapi("EmailConfig");
+
+const EmailRuleSchema = z
   .object({
-    host: z.string().min(1),
-    port: z.number().int(),
-    secure: z.boolean(),
-    auth: z.object({
-      user: z.string().min(1),
-      pass: z.string().min(1),
-    }),
-    from: z.string().email(),
+    enabled: z.boolean(),
+    recipient: z
+      .string()
+      .trim()
+      .refine((value) => value === "" || z.email().safeParse(value).success, "Correo inválido"),
   })
-  .openapi("EmailConfig");
-
+  .strict()
+  .refine((value) => !value.enabled || !!value.recipient, {
+    message: "Una regla activa requiere destinatario",
+    path: ["recipient"],
+  });
 export const EmailRulesSchema = z
   .object({
-    notifyOnAbsence: z.boolean(),
-    notifyOnLate: z.boolean(),
-    notifyOnLeaveRequest: z.boolean(),
-    digestFrequency: z.enum(["daily", "weekly", "none"]),
-    recipients: z.array(z.string().email()),
+    autoCloseShift: EmailRuleSchema,
+    latenessOver15: EmailRuleSchema,
+    latenessOver60: EmailRuleSchema,
   })
+  .strict()
   .openapi("EmailRules");
 
 export const SendTestEmailSchema = z
   .object({
-    // Contrato real con el frontend (emailService.sendTestEmail manda
-    // { to, subject, message }). `recipient` nunca existió en el caller y
-    // el endpoint devolvía 400 siempre (caza-bugs 2026-10-04).
-    to: z.string().email(),
+    to: z.string().trim().email(),
     subject: z.string().optional().default(""),
     message: z.string().optional().default(""),
   })
+  .strict()
   .openapi("SendTestEmail");

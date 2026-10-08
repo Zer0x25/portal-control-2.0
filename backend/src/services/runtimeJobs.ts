@@ -1,3 +1,5 @@
+import { workCoordinator } from "./workCoordinator";
+import { seedRuntime } from "./seedRuntime";
 import { systemOperationService } from "./systemOperationService";
 import { processAutoClosures } from "./autoCloseService";
 import { rotateIndefiniteShifts } from "./shiftRotationService";
@@ -21,10 +23,6 @@ const JOB_LOCK_ROTATE_SHIFTS = "job:rotateIndefiniteShifts";
 const JOB_LOCK_DAILY_MAINTENANCE = "job:dailyMaintenance";
 const JOB_LOCK_BACKUP_DATABASE = "job:backupDatabase";
 
-const TTL_10_MIN = 10 * 60 * 1000;
-const TTL_60_MIN = 60 * 60 * 1000;
-const TTL_120_MIN = 120 * 60 * 1000;
-
 // Configuration
 
 const backupEnabled = process.env.BACKUP_ENABLED === "true";
@@ -47,6 +45,7 @@ export function createRuntimeJobs() {
       const id = setInterval(task, ms);
       return () => clearInterval(id);
     },
+    runTask: (task) => workCoordinator.run("runtime-job", task, true),
     reportError: (error) => logger.error("Runtime job failed", error),
   });
   let starting: Promise<void> | undefined;
@@ -64,46 +63,48 @@ export function createRuntimeJobs() {
           // Wrapper para ejecutar tareas con bloqueo distribuido
           const runLockedTask = async (
             key: string,
-            ttlMs: number,
             taskName: string,
             task: () => Promise<unknown>,
           ) => {
             if (systemOperationService.isMaintenanceModeActive()) return;
-            return requestContext.run({ username: "SYSTEM" }, async () => {
-              const result = await LockService.withLock(key, ttlMs, instanceId, async () => {
-                const start = Date.now();
-                try {
-                  logger.logTask("TASK_START", taskName, `[TASK_START] ${taskName}`);
-                  const taskResult = await task();
-                  const durationMs = Date.now() - start;
-                  logger.logTask("TASK_END", taskName, `[TASK_END] ${taskName}`, { durationMs });
-                  jobTelemetryService.recordRun(taskName, "SUCCESS", durationMs);
-                  return taskResult;
-                } catch (err) {
-                  const durationMs = Date.now() - start;
-                  logger.logTask("TASK_ERROR", taskName, `[TASK_ERROR] ${taskName}`, {
-                    durationMs,
-                    error: err,
-                  });
-                  jobTelemetryService.recordRun(taskName, "ERROR", durationMs, err);
-                  throw err;
-                }
-              });
+            return requestContext.run(
+              { ...requestContext.getStore(), username: "SYSTEM" },
+              async () => {
+                const result = await LockService.withLock(key, async () => {
+                  const start = Date.now();
+                  try {
+                    logger.logTask("TASK_START", taskName, `[TASK_START] ${taskName}`);
+                    const taskResult = await task();
+                    const durationMs = Date.now() - start;
+                    logger.logTask("TASK_END", taskName, `[TASK_END] ${taskName}`, { durationMs });
+                    jobTelemetryService.recordRun(taskName, "SUCCESS", durationMs);
+                    return taskResult;
+                  } catch (err) {
+                    const durationMs = Date.now() - start;
+                    logger.logTask("TASK_ERROR", taskName, `[TASK_ERROR] ${taskName}`, {
+                      durationMs,
+                      error: err,
+                    });
+                    jobTelemetryService.recordRun(taskName, "ERROR", durationMs, err);
+                    throw err;
+                  }
+                });
 
-              if (result.ran === false) {
-                logger.logTask(
-                  "TASK_SKIP",
-                  taskName,
-                  `[TASK_SKIP] ${taskName}: Lock denied (LOCKED)`,
-                  {
-                    key,
-                    instanceId,
-                  },
-                );
-                jobTelemetryService.recordRun(taskName, "SKIPPED", 0);
-              }
-              return result;
-            });
+                if (result.ran === false) {
+                  logger.logTask(
+                    "TASK_SKIP",
+                    taskName,
+                    `[TASK_SKIP] ${taskName}: Lock denied (LOCKED)`,
+                    {
+                      key,
+                      instanceId,
+                    },
+                  );
+                  jobTelemetryService.recordRun(taskName, "SKIPPED", 0);
+                }
+                return result;
+              },
+            );
           };
 
           // Wrapper legacy (sin lock) para tareas internas o que no requieren coordinacion multi-instancia
@@ -126,52 +127,47 @@ export function createRuntimeJobs() {
           };
 
           const runDailyMaintenance = async () => {
-            await runLockedTask(
-              JOB_LOCK_DAILY_MAINTENANCE,
-              TTL_60_MIN,
-              "dailyMaintenance",
-              async () => {
-                if (backupEnabled) {
-                  const taskName = "backupDatabase";
-                  // Lock secundario especifico para el backup (opcional segun alcance pero recomendado)
-                  await runLockedTask(JOB_LOCK_BACKUP_DATABASE, TTL_120_MIN, taskName, async () => {
-                    const MAX_RETRIES = 3;
-                    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-                      try {
-                        await backupService.backupDatabase();
-                        backupHealthService.recordSuccess();
-                        break; // Exit loop on success
-                      } catch (error) {
-                        logger.error(
-                          `[TASK_ERROR] ${taskName} (Attempt ${attempt}/${MAX_RETRIES} failed):`,
-                          error,
-                          {
-                            taskName,
-                            attempt,
-                          },
-                        );
-                        backupHealthService.recordFailure(error);
+            await runLockedTask(JOB_LOCK_DAILY_MAINTENANCE, "dailyMaintenance", async () => {
+              if (backupEnabled) {
+                const taskName = "backupDatabase";
+                // Lock secundario especifico para el backup (opcional segun alcance pero recomendado)
+                await runLockedTask(JOB_LOCK_BACKUP_DATABASE, taskName, async () => {
+                  const MAX_RETRIES = 3;
+                  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                    try {
+                      await backupService.backupDatabase();
+                      backupHealthService.recordSuccess();
+                      break; // Exit loop on success
+                    } catch (error) {
+                      logger.error(
+                        `[TASK_ERROR] ${taskName} (Attempt ${attempt}/${MAX_RETRIES} failed):`,
+                        error,
+                        {
+                          taskName,
+                          attempt,
+                        },
+                      );
+                      backupHealthService.recordFailure(error);
 
-                        if (attempt === MAX_RETRIES) {
-                          Sentry.captureException(error);
-                          throw error; // Rethrow to let runLockedTask log it as TASK_ERROR
-                        } else {
-                          jobTelemetryService.recordRetry(taskName);
-                          const delayMs = 5 * 60 * 1000; // 5 minutes
-                          logger.warn(`Retrying backup in ${delayMs / 1000}s...`, {
-                            taskName,
-                            attempt,
-                            delayMs,
-                          });
-                          if (!(await lifecycle.wait(delayMs))) return;
-                        }
+                      if (attempt === MAX_RETRIES) {
+                        Sentry.captureException(error);
+                        throw error; // Rethrow to let runLockedTask log it as TASK_ERROR
+                      } else {
+                        jobTelemetryService.recordRetry(taskName);
+                        const delayMs = 5 * 60 * 1000; // 5 minutes
+                        logger.warn(`Retrying backup in ${delayMs / 1000}s...`, {
+                          taskName,
+                          attempt,
+                          delayMs,
+                        });
+                        if (!(await lifecycle.wait(delayMs))) return;
                       }
                     }
-                  });
-                }
-                await runTask("rotateAuditLogs", () => maintenanceService.rotateAuditLogs());
-              },
-            );
+                  }
+                });
+              }
+              await runTask("rotateAuditLogs", () => maintenanceService.rotateAuditLogs());
+            });
           };
 
           const runRotateIndefiniteShiftsSafely = async (taskName: string) => {
@@ -185,12 +181,7 @@ export function createRuntimeJobs() {
               jobTelemetryService.recordRun(taskName, "SKIPPED", 0);
               return;
             }
-            await runLockedTask(
-              JOB_LOCK_ROTATE_SHIFTS,
-              TTL_10_MIN,
-              taskName,
-              rotateIndefiniteShifts,
-            );
+            await runLockedTask(JOB_LOCK_ROTATE_SHIFTS, taskName, rotateIndefiniteShifts);
           };
 
           const runProcessAutoClosuresSafely = async (taskName: string) => {
@@ -204,7 +195,7 @@ export function createRuntimeJobs() {
               jobTelemetryService.recordRun(taskName, "SKIPPED", 0);
               return;
             }
-            await runLockedTask(JOB_LOCK_AUTO_CLOSURES, TTL_10_MIN, taskName, processAutoClosures);
+            await runLockedTask(JOB_LOCK_AUTO_CLOSURES, taskName, processAutoClosures);
           };
 
           const getDelayToNextDailyRunMs = () => {
@@ -268,6 +259,7 @@ export function createRuntimeJobs() {
     stop: () =>
       lifecycle.stop(async () => {
         await stopScheduler();
+        await seedRuntime.drain();
         await seedingJobService.shutdown();
       }),
   };

@@ -1,8 +1,14 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
+import { AppError, ValidationError } from "../utils/AppError";
 import { LeaveRecord, Prisma, TimeRecord } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
-import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
+import {
+  addBusinessDaysChile,
+  toBusinessDateChile,
+  formatDateUTCISO,
+  parseDateOnlyUTC,
+} from "../utils/timeUtils";
 
 export interface LeaveListParams {
   page?: number;
@@ -28,6 +34,30 @@ export interface LeaveUpsertData {
   startDate?: string;
   endDate?: string;
   notes?: string | null;
+}
+
+function hasPunch(record: TimeRecord): boolean {
+  return !!(record.entrada || record.inicioColacion || record.finColacion || record.salida);
+}
+
+function materializingLeaveId(record: TimeRecord): string | undefined {
+  try {
+    const justification: unknown = JSON.parse(record.justification || "null");
+    if (
+      typeof justification === "object" &&
+      justification !== null &&
+      "leaveId" in justification &&
+      typeof justification.leaveId === "string"
+    )
+      return justification.leaveId;
+  } catch {
+    // Manual or malformed justification is not evidence of leave ownership.
+  }
+  return undefined;
+}
+
+function belongsToLeave(record: TimeRecord, leaveId: string): boolean {
+  return materializingLeaveId(record) === leaveId;
 }
 
 export class LeaveService {
@@ -102,98 +132,137 @@ export class LeaveService {
    */
   static async upsert(data: LeaveUpsertData) {
     const { employeeId, type, startDate, endDate, notes, id } = data;
+    if (
+      !employeeId ||
+      !type ||
+      !startDate ||
+      !endDate ||
+      startDate > endDate ||
+      formatDateUTCISO(parseDateOnlyUTC(startDate)) !== startDate ||
+      formatDateUTCISO(parseDateOnlyUTC(endDate)) !== endDate
+    ) {
+      throw new ValidationError("El rango de la ausencia es inválido.");
+    }
     const todayIso = toBusinessDateChile();
-
-    // Rule: 7-day past limit for new records
     const limitDateIso = addBusinessDaysChile(todayIso, -7);
-
-    if (!id && startDate < limitDateIso) {
-      throw new Error("LIMIT_7_DAYS_EXCEEDED");
-    }
-
-    let leave;
-    const existing = id ? await prisma.leaveRecord.findUnique({ where: { id } }) : null;
-
-    if (existing) {
-      // Incompatibility & Safety checks for updates
-      if (existing.endDate < todayIso) {
-        throw new Error("CANNOT_EDIT_FINALIZED");
-      }
-
-      if (
-        existing.employeeId !== employeeId ||
-        existing.type !== type ||
-        existing.startDate !== startDate
-      ) {
-        throw new Error("IMMUTABLE_FIELDS_CHANGED");
-      }
-
-      if (endDate < todayIso) {
-        throw new Error("INVALID_END_DATE_PAST");
-      }
-
-      // 1. Cleanup old materialized records (only if no punches)
-      const materializedToArchive = await prisma.timeRecord.findMany({
-        where: {
-          employeeId: existing.employeeId,
-          date: { gte: existing.startDate, lte: existing.endDate },
-          status: existing.type,
-          entrada: null,
-          salida: null,
-          isDeleted: false,
-        },
-        select: { id: true, employeeId: true },
-      });
-
-      await prisma.timeRecord.updateMany({
-        where: {
-          employeeId: existing.employeeId,
-          date: { gte: existing.startDate, lte: existing.endDate },
-          status: existing.type,
-          entrada: null,
-          salida: null,
-          isDeleted: false,
-        },
-        data: { isDeleted: true, deletedAt: new Date() },
-      });
-
-      for (const row of materializedToArchive) {
-        await timeRecordIntegrityService.sealAfterMutation(prisma, row.employeeId, row.id, {
-          skipAudit: true,
+    const leave = await withDirectTransaction(
+      async (tx) => {
+        // Serializes leave create/update/delete for this employee, including empty ranges.
+        const employees = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM employees WHERE id = ${employeeId} FOR UPDATE`;
+        if (!employees.length) throw new AppError("Empleado no encontrado.", 404, "NOT_FOUND");
+        const existing = id ? await tx.leaveRecord.findUnique({ where: { id } }) : null;
+        if (existing) {
+          if (existing.isDeleted || existing.endDate < todayIso)
+            throw new Error("CANNOT_EDIT_FINALIZED");
+          if (
+            existing.employeeId !== employeeId ||
+            existing.type !== type ||
+            existing.startDate !== startDate
+          ) {
+            throw new Error("IMMUTABLE_FIELDS_CHANGED");
+          }
+          if (endDate < todayIso) throw new Error("INVALID_END_DATE_PAST");
+        } else if (startDate < limitDateIso) {
+          throw new Error("LIMIT_7_DAYS_EXCEEDED");
+        }
+        const overlap = await tx.leaveRecord.findFirst({
+          where: {
+            employeeId,
+            isDeleted: false,
+            ...(existing ? { id: { not: existing.id } } : {}),
+            startDate: { lte: endDate },
+            endDate: { gte: startDate },
+          },
         });
-      }
+        if (overlap)
+          throw new AppError(
+            "La ausencia se superpone con otra ausencia activa.",
+            409,
+            "LEAVE_OVERLAP",
+          );
 
-      leave = await prisma.leaveRecord.update({
-        where: { id },
-        data: { employeeId, type, startDate, endDate, notes: notes || null },
-      });
-    } else {
-      leave = await prisma.leaveRecord.create({
-        data: { id: id || undefined, employeeId, type, startDate, endDate, notes: notes || null },
-      });
-    }
-
-    // Materialize TimeRecords
-    await this.materializeDays(leave);
-
+        const lastDate = existing && existing.endDate > endDate ? existing.endDate : endDate;
+        // Prevent a concurrent punch from changing rows between inspection and mutation.
+        await tx.$queryRaw`SELECT id FROM time_records
+        WHERE employee_id = ${employeeId} AND date >= ${startDate} AND date <= ${lastDate}
+        ORDER BY id FOR UPDATE`;
+        if (existing && endDate < existing.endDate) {
+          await this.archiveDays(tx, existing, endDate, false);
+        }
+        const saved = existing
+          ? await tx.leaveRecord.update({ where: { id }, data: { endDate, notes: notes || null } })
+          : await tx.leaveRecord.create({
+              data: {
+                id: id || undefined,
+                employeeId,
+                type,
+                startDate,
+                endDate,
+                notes: notes || null,
+              },
+            });
+        await this.materializeDays(tx, saved);
+        return saved;
+      },
+      { timeout: 60000 },
+    );
     SocketService.emit("leave:updated", leave);
     SocketService.emit("timeRecord:updated", { employeeId });
-
     return leave;
+  }
+
+  private static async archiveDays(
+    tx: Prisma.TransactionClient,
+    leave: LeaveRecord,
+    boundary: string,
+    inclusive: boolean,
+  ) {
+    const rows = await tx.timeRecord.findMany({
+      where: {
+        employeeId: leave.employeeId,
+        date: { ...(inclusive ? { gte: boundary } : { gt: boundary }), lte: leave.endDate },
+        isDeleted: false,
+      },
+    });
+    const removable = rows.filter((row) => !hasPunch(row) && belongsToLeave(row, leave.id));
+    if (!removable.length) return;
+    await tx.timeRecord.updateMany({
+      where: { id: { in: removable.map((row) => row.id) } },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+    for (const row of removable) {
+      await timeRecordIntegrityService.sealAfterMutation(tx, row.employeeId, row.id, {
+        skipAudit: true,
+      });
+    }
   }
 
   /**
    * Internal helper to materialize leave days into TimeRecords.
    */
-  private static async materializeDays(leave: LeaveRecord) {
-    const employee = await prisma.employee.findUnique({ where: { id: leave.employeeId } });
+  private static async materializeDays(tx: Prisma.TransactionClient, leave: LeaveRecord) {
+    const employee = await tx.employee.findUnique({ where: { id: leave.employeeId } });
 
-    const existingRecords = await prisma.timeRecord.findMany({
+    const existingRecords = await tx.timeRecord.findMany({
       where: {
         employeeId: leave.employeeId,
         date: { gte: leave.startDate, lte: leave.endDate },
       },
     });
+
+    const priorLeaveIds = [
+      ...new Set(
+        existingRecords
+          .filter((row) => row.isDeleted)
+          .map(materializingLeaveId)
+          .filter((id): id is string => typeof id === "string" && id !== leave.id),
+      ),
+    ];
+    const priorLeaves = priorLeaveIds.length
+      ? await tx.leaveRecord.findMany({ where: { id: { in: priorLeaveIds } } })
+      : [];
+    const priorMap = new Map(priorLeaves.map((prior) => [prior.id, prior]));
 
     const existingMap = new Map<string, TimeRecord>(existingRecords.map((r) => [r.date, r]));
     const recordsToUpdate = [];
@@ -208,7 +277,18 @@ export class LeaveService {
 
       if (existingTR) {
         // Skip if there's already a punch (manual entry takes precedence)
-        if (existingTR.entrada) continue;
+        if (hasPunch(existingTR)) continue;
+        if (existingTR.isDeleted && !belongsToLeave(existingTR, leave.id)) {
+          const prior = priorMap.get(materializingLeaveId(existingTR));
+          if (
+            !prior ||
+            prior.employeeId !== existingTR.employeeId ||
+            (!prior.isDeleted &&
+              existingTR.date >= prior.startDate &&
+              existingTR.date <= prior.endDate)
+          )
+            continue;
+        }
         recordsToUpdate.push(existingTR);
       } else {
         datesToCreate.push(dateStr);
@@ -216,9 +296,11 @@ export class LeaveService {
     }
 
     for (const existingTR of recordsToUpdate) {
-      await prisma.timeRecord.update({
+      await tx.timeRecord.update({
         where: { id: existingTR.id },
         data: {
+          isDeleted: false,
+          deletedAt: null,
           status: leave.type,
           justification: JSON.stringify({
             type: leave.type,
@@ -228,22 +310,19 @@ export class LeaveService {
           scheduledHours: 0,
         },
       });
-      await timeRecordIntegrityService.sealAfterMutation(
-        prisma,
-        existingTR.employeeId,
-        existingTR.id,
-        {
-          skipAudit: true,
-        },
-      );
+      await timeRecordIntegrityService.sealAfterMutation(tx, existingTR.employeeId, existingTR.id, {
+        skipAudit: true,
+      });
     }
 
     for (const dateStr of datesToCreate) {
-      const created = await prisma.timeRecord.create({
+      const created = await tx.timeRecord.create({
         data: {
           employeeId: leave.employeeId,
           employeeName: employee?.name || "Desconocido",
           date: dateStr,
+          isDeleted: false,
+          deletedAt: null,
           status: leave.type,
           source: "SYSTEM_LEAVE",
           justification: JSON.stringify({
@@ -254,7 +333,7 @@ export class LeaveService {
           scheduledHours: 0,
         },
       });
-      await timeRecordIntegrityService.sealAfterMutation(prisma, created.employeeId, created.id, {
+      await timeRecordIntegrityService.sealAfterMutation(tx, created.employeeId, created.id, {
         skipAudit: true,
       });
     }
@@ -264,65 +343,37 @@ export class LeaveService {
    * Deletes a leave record and cleans up associated materialized TimeRecords.
    */
   static async delete(id: string) {
-    const leave = await prisma.leaveRecord.findUnique({ where: { id } });
-    if (!leave) throw new Error("NOT_FOUND");
-
     const todayIso = toBusinessDateChile();
-
-    // Rule: 7-day past limit for deletion
-    const limitDateIso = addBusinessDaysChile(todayIso, -7);
-
-    if (leave.startDate < limitDateIso) {
-      throw new Error("LIMIT_7_DAYS_EXCEEDED");
-    }
-
-    // Rule: Archive Protection with 24h Grace Period
-    const isArchived = leave.endDate < todayIso;
-    const isRecentlyCreated =
-      Date.now() - new Date(leave.createdAt).getTime() < 24 * 60 * 60 * 1000;
-
-    if (isArchived && !isRecentlyCreated) {
-      throw new Error("ARCHIVE_PROTECTION_VIOLATED");
-    }
-
-    // Clean up future materialized records
-    const futureRowsToArchive = await prisma.timeRecord.findMany({
-      where: {
-        employeeId: leave.employeeId,
-        date: { gte: todayIso, lte: leave.endDate },
-        status: leave.type,
-        entrada: null,
+    const leave = await withDirectTransaction(
+      async (tx) => {
+        const initial = await tx.leaveRecord.findUnique({ where: { id } });
+        if (!initial) throw new Error("NOT_FOUND");
+        await tx.$queryRaw`SELECT id FROM employees WHERE id = ${initial.employeeId} FOR UPDATE`;
+        const current = await tx.leaveRecord.findUnique({ where: { id } });
+        if (!current) throw new Error("NOT_FOUND");
+        if (current.startDate < addBusinessDaysChile(todayIso, -7))
+          throw new Error("LIMIT_7_DAYS_EXCEEDED");
+        const isArchived = current.endDate < todayIso;
+        const isRecentlyCreated = Date.now() - current.createdAt.getTime() < 24 * 60 * 60 * 1000;
+        if (isArchived && !isRecentlyCreated) throw new Error("ARCHIVE_PROTECTION_VIOLATED");
+        if (current.isDeleted) return current;
+        await tx.$queryRaw`SELECT id FROM time_records
+        WHERE employee_id = ${current.employeeId} AND date >= ${todayIso} AND date <= ${current.endDate}
+        ORDER BY id FOR UPDATE`;
+        await this.archiveDays(tx, current, todayIso, true);
+        return tx.leaveRecord.update({
+          where: { id },
+          data: {
+            endDate: addBusinessDaysChile(todayIso, -1),
+            isDeleted: true,
+            deletedAt: new Date(),
+          },
+        });
       },
-      select: { id: true, employeeId: true },
-    });
-
-    await prisma.timeRecord.updateMany({
-      where: {
-        employeeId: leave.employeeId,
-        date: { gte: todayIso, lte: leave.endDate },
-        status: leave.type,
-        entrada: null,
-      },
-      data: { isDeleted: true, deletedAt: new Date() },
-    });
-
-    for (const row of futureRowsToArchive) {
-      await timeRecordIntegrityService.sealAfterMutation(prisma, row.employeeId, row.id, {
-        skipAudit: true,
-      });
-    }
-
-    // Yesterday for shortening the effective period
-    const yesterdayIso = addBusinessDaysChile(todayIso, -1);
-
-    await prisma.leaveRecord.update({
-      where: { id },
-      data: { endDate: yesterdayIso, isDeleted: true, deletedAt: new Date() },
-    });
-
-    SocketService.emit("leave:updated", { ...leave, endDate: yesterdayIso });
+      { timeout: 60000 },
+    );
+    SocketService.emit("leave:updated", leave);
     SocketService.emit("timeRecord:updated", { employeeId: leave.employeeId });
-
     return true;
   }
 }

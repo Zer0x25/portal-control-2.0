@@ -1,6 +1,6 @@
 export interface ImportMapping {
   prop: string;
-  type: string;
+  type?: string;
 }
 export interface ImportSheet {
   headers: (string | undefined)[];

@@ -22,7 +22,7 @@ export const noteService = {
    */
   async getAll(since?: number): Promise<QuickNote[]> {
     const response = await apiClient.get("/api/notes", {
-      params: since ? { since: String(since) } : undefined,
+      params: since !== undefined ? { since: String(since) } : undefined,
     });
     const data =
       response &&

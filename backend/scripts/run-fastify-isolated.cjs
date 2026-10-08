@@ -44,6 +44,7 @@ async function main() {
       DISABLE_HOLIDAY_AUTOSYNC: "true",
       NODE_ENV: "test",
       BACKUP_ENABLED: "false",
+      BACKUP_DOCKER_CONTAINER: container,
       SENTRY_DSN: "",
     };
     let ready = false;
@@ -61,7 +62,18 @@ async function main() {
     }
     if (!ready) throw new Error("Disposable PostgreSQL did not become ready");
     command(process.execPath, [require.resolve("prisma/build/index.js"), "migrate", "deploy"], env);
-    if (process.argv.includes("--benchmark")) {
+    if (process.argv.includes("--kpi-contention")) {
+      command(
+        process.execPath,
+        [
+          "--import",
+          "tsx",
+          path.join(__dirname, "benchmark-kpi-contention.ts"),
+          ...(process.argv.includes("--singleton-baseline") ? ["--singleton-baseline"] : []),
+        ],
+        env,
+      );
+    } else if (process.argv.includes("--benchmark")) {
       command(process.execPath, [path.join(__dirname, "benchmark-fastify.cjs")], env);
     } else {
       command(

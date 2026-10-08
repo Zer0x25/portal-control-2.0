@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
@@ -99,9 +100,8 @@ const routes = [
   ["GET", "/api/shifts/suggest-pattern-name", true],
   ["POST", "/api/shifts/validate-conflicts", true],
 ] as const;
-describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server) => {
+describe("Spec 015 shifts on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
   );
@@ -248,7 +248,7 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
     expect(overlap.status).toBe(400);
     expect(await prismaDirect.assignedShift.count()).toBe(1);
   });
-  it("scopes linked Usuario calendar/assignments/matrix and explicitly rejects unlinked matrix", async () => {
+  it.each(["Usuario", "Kiosk_Employee"])("scopes assignments and calendar for %s", async (role) => {
     await setup();
     await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
     await prismaDirect.assignedShift.create({
@@ -259,7 +259,14 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
         endDate: plus(1),
       },
     });
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
+    if (role === "Usuario")
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+    if (role === "Kiosk_Employee")
+      token = jwt.sign(
+        { id: employee.id, username: "kiosk", role, employeeId: employee.id },
+        process.env.JWT_SECRET!,
+        { expiresIn: "5m" },
+      );
     const list = await http("GET", "/api/shifts/assignments?employeeId=foreign");
     expect(list.status).toBe(200);
     expect(list.body.data.map((a: { employeeId: string }) => a.employeeId)).toEqual([employee.id]);
@@ -290,6 +297,14 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
     expect(matrix.status).toBe(200);
     expect(Object.keys(matrix.body)).toEqual([employee.id]);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
+    if (role === "Kiosk_Employee")
+      token = jwt.sign({ id: employee.id, username: "kiosk", role }, process.env.JWT_SECRET!, {
+        expiresIn: "5m",
+      });
+    expect((await http("GET", "/api/shifts/assignments")).status).toBe(403);
+    expect(
+      (await http("GET", `/api/shifts/assignments?employeeId=${employee.id}&since=1`)).status,
+    ).toBe(403);
     expect(
       (
         await http("POST", "/api/shifts/schedule/matrix", {
@@ -343,10 +358,9 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
       `/api/shifts/monthly-plan/${employee.id}/${future.year}/${future.month}`,
     );
     expect(result.status).toBe(200);
-    // Legacy monthly view queries midnight UTC: Santiago observes the preceding date.
-    // Characterize parity explicitly; the daily endpoint reads the stored plan correctly.
-    expect(result.body[0]).toMatchObject({ dateIso: future.start, isWorkDay: false });
-    expect(result.body[1].isWorkDay).toBe(true);
+    // Monthly rows now evaluate their own Chile business date, like the daily route.
+    expect(result.body[0]).toMatchObject({ dateIso: future.start, isWorkDay: true });
+    expect(result.body[1].isWorkDay).toBe(false);
     expect(result.body[2].isWorkDay).toBe(false);
     const dailyWork = await http(
       "GET",
@@ -404,6 +418,80 @@ describe.each(["Express", "Fastify"] as const)("Spec 015 shifts on %s", (server)
       await prismaDirect.$executeRaw`DROP TRIGGER test_monthly_fail ON shift_patterns`;
       await prismaDirect.$executeRaw`DROP FUNCTION test_monthly_fail()`;
     }
+  });
+  it("keeps September calendar dates through DST with one monthly context", async () => {
+    await prismaDirect.shiftPattern.create({
+      data: {
+        ...pattern,
+        cycleLengthDays: 2,
+        worksOnHolidays: false,
+        dailySchedules: JSON.stringify([
+          { dayIndex: 0, isOffDay: false, startTime: "09:00", endTime: "17:00", hours: 8 },
+          { dayIndex: 1, isOffDay: true },
+        ]),
+      },
+    });
+    await prismaDirect.assignedShift.create({
+      data: {
+        employeeId: employee.id,
+        shiftPatternId: pattern.id,
+        startDate: "2026-09-01",
+        endDate: "2026-09-30",
+      },
+    });
+    await prismaDirect.holiday.create({
+      data: { date: "2026-09-01", name: "Month start", type: "Civil" },
+    });
+    await prismaDirect.leaveRecord.create({
+      data: {
+        employeeId: employee.id,
+        type: "Vacaciones",
+        startDate: "2026-09-06",
+        endDate: "2026-09-07",
+      },
+    });
+    const context = vi.spyOn(schedulingService, "getSchedulingContext");
+    const daily = vi.spyOn(schedulingService, "getEmployeeDailyScheduleInfo");
+    const response = await http(
+      "GET",
+      `/api/shifts/schedule/employee/${employee.id}/month?year=2026&month=9`,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(30);
+    expect(response.body[0]).toMatchObject({
+      dateIso: "2026-09-01",
+      dayOfMonth: 1,
+      scheduleText: "Feriado: Month start",
+      isWorkDay: false,
+    });
+    expect(response.body[5]).toMatchObject({
+      dateIso: "2026-09-06",
+      scheduleText: "Vacaciones",
+      isWorkDay: false,
+    });
+    expect(response.body[6]).toMatchObject({
+      dateIso: "2026-09-07",
+      scheduleText: "Vacaciones",
+      isWorkDay: false,
+    });
+    expect(response.body[8]).toMatchObject({
+      dateIso: "2026-09-09",
+      scheduleText: "09:00 - 17:00",
+      isWorkDay: true,
+    });
+    expect(response.body[29]).toMatchObject({
+      dateIso: "2026-09-30",
+      scheduleText: "Día Libre",
+      isWorkDay: false,
+    });
+    expect(context).toHaveBeenCalledExactlyOnceWith([employee.id], "2026-09-01", "2026-09-30");
+    expect(daily).toHaveBeenCalledTimes(30);
+    expect(
+      daily.mock.calls.every(([, , cache, emp]) => cache !== undefined && emp?.id === employee.id),
+    ).toBe(true);
+    const plan = await http("GET", `/api/shifts/monthly-plan/${employee.id}/2026/9`);
+    expect(plan.status).toBe(200);
+    expect(plan.body).toEqual(response.body);
   });
   it("keeps calendar matrix batch-fetch bounded for multiple employees", async () => {
     await setup();

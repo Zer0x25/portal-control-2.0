@@ -324,10 +324,11 @@ El [spec 025](specs/025-fastify-cutover/spec.md) deja Fastify como servidor prin
 y los compose arrancan el mismo runtime Fastify con Socket.IO y jobs.
 `dev:fastify`/`start:fastify` son aliases compatibles.
 
-Express queda como fixture de paridad local: `cd backend && npm run dev:express`.
-La imagen final elimina sus dependencias de desarrollo. Para revertir contenedores,
-usar la imagen/checkout anterior al cutover; omitir compose.fastify-staging.yaml
-ya no cambia servidor. Ese override se conserva solo por compatibilidad.
+Fastify es el único servidor HTTP. Express y su fixture de paridad, dependencias,
+controllers y middleware se retiraron. Las pruebas usan Fastify nativo; el contrato
+OpenAPI tiene una fuente neutral. [Detalle del retiro](specs/025-fastify-cutover/express-retirement.md).
+El override compose.fastify-staging.yaml se conserva por compatibilidad; omitirlo
+ya no cambia servidor.
 
 En desarrollo se permite purgar sesiones y reiniciar; mejoras de mantenimiento
 sin interrupciones y deudas de negocio quedan en el [backlog](specs/025-fastify-cutover/backlog.md).

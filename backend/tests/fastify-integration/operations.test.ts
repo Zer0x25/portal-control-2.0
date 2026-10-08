@@ -81,7 +81,7 @@ beforeAll(async () => {
   await fastify.ready();
 });
 beforeEach(async () => {
-  systemOperationService.finish();
+  await systemOperationService.finish();
   await resetIntegrationDb();
   ip = "192.0.2." + ++sequence;
   gzip = false;
@@ -100,17 +100,16 @@ beforeEach(async () => {
   );
   vi.spyOn(seedingJobService, "run").mockResolvedValue(undefined);
 });
-afterEach(() => {
-  systemOperationService.finish();
+afterEach(async () => {
+  await systemOperationService.finish();
   vi.restoreAllMocks();
 });
 afterAll(async () => {
   await resetIntegrationDb();
   await fastify.close();
 });
-describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (server) => {
+describe("Spec023 operations on Fastify", () => {
   const http = httpClient(
-    server,
     () => fastify,
     () => token,
     () => ({ "x-forwarded-for": ip, ...(gzip ? { "accept-encoding": "gzip" } : {}) }),
@@ -359,7 +358,7 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     expect(response.status).toBe(200);
     expect(response.body.data.backupPath).toBe("owned-backup.sql");
     expect(success).toHaveBeenCalledOnce();
-    expect(systemOperationService.getSnapshot()).toBeNull();
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
     expect(
       await prismaDirect.auditLog.findFirst({ where: { action: "TRIGGER_BACKUP_MANUAL" } }),
     ).toMatchObject({
@@ -374,8 +373,8 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
   it("backup failure releases maintenance and conflicting acquisition keeps previous operation", async () => {
     const response = await http("POST", "/api/admin/trigger-backup", {});
     expect(response.status).toBe(500);
-    expect(systemOperationService.getSnapshot()).toBeNull();
-    systemOperationService.start({
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
+    await systemOperationService.start({
       type: "restore",
       actorUsername: "owner",
       maintenanceMode: true,
@@ -395,7 +394,7 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     expect(runtimeControlService.scheduleRestart).toHaveBeenCalledWith(
       "database restore completed",
     );
-    expect(systemOperationService.getSnapshot()).toBeNull();
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
     expect(SocketService.emitToAll).toHaveBeenCalledWith(
       "auth:force_logout",
       expect.objectContaining({ reason: "DATABASE_RESTORE" }),
@@ -404,9 +403,23 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
   it("restore failure does not invalidate or restart and invalid body is rejected", async () => {
     expect((await http("POST", "/api/admin/restore", { filename: "owned.sql" })).status).toBe(500);
     expect(runtimeControlService.scheduleRestart).not.toHaveBeenCalled();
-    expect(systemOperationService.getSnapshot()).toBeNull();
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
     expect(await prismaDirect.activeSession.count()).toBe(1);
     expect((await http("POST", "/api/admin/restore", { filename: "" })).status).toBe(400);
+  });
+  it("keeps distributed maintenance after a committed restore when revocation fails", async () => {
+    vi.mocked(backupService.restoreDatabase).mockResolvedValueOnce(undefined);
+    vi.spyOn(AuthService, "invalidateAllSessions").mockRejectedValueOnce(
+      new Error("revocation unavailable"),
+    );
+    expect((await http("POST", "/api/admin/restore", { filename: "owned.sql" })).status).toBe(500);
+    expect(systemOperationService.getSnapshot()?.type).toBe("restore");
+    expect((await http("GET", "/api/notes")).status).toBe(503);
+    expect(runtimeControlService.scheduleRestart).not.toHaveBeenCalled();
+    const gate = await prismaDirect.$queryRaw<
+      { operation: string }[]
+    >`SELECT operation FROM portal_runtime.gate WHERE id = 1`;
+    expect(gate[0].operation).toBe("restore");
   });
   it("restart emits success and records actor with only a restart double", async () => {
     expect((await http("POST", "/api/admin/restart", {})).status).toBe(200);
@@ -415,21 +428,15 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
       await prismaDirect.auditLog.findFirst({ where: { action: "RESTART_BACKEND" } }),
     ).toMatchObject({ actorUsername: "operations-admin" });
   });
-  it("maintenance exemption preserves auth and admin budget while blocking ordinary traffic", async () => {
-    systemOperationService.start({
+  it("distributed maintenance blocks all business traffic while health remains available", async () => {
+    await systemOperationService.start({
       type: "restore",
       actorUsername: "owner",
       maintenanceMode: true,
       message: "owned",
     });
-    const response = await http("GET", "/api/admin/stats");
-    expect(response.status).toBe(200);
-    expect(response.headers["ratelimit-policy"]).toBe("1000;w=900");
-    expect((await http("GET", "/api/maintenance/seed/phase2/status")).status).toBe(200);
-    expect((await http("GET", "/api/admin/stats", undefined, null)).status).toBe(401);
-    expect((await http("GET", "/api/maintenance/seed/phase2/status", undefined, null)).status).toBe(
-      401,
-    );
+    expect((await http("GET", "/api/admin/stats")).status).toBe(409);
+    expect((await http("GET", "/api/maintenance/seed/phase2/status")).status).toBe(409);
     expect((await http("GET", "/api/notes")).status).toBe(503);
     expect((await http("GET", "/api/health/ready")).status).toBe(200);
   });
@@ -474,7 +481,7 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
     expect(await prismaDirect.user.findUnique({ where: { username: "admin" } })).toBeNull();
     expect(await prismaDirect.seedingJob.findUnique({ where: { id: job.id } })).toBeNull();
     expect(runtimeControlService.scheduleRestart).toHaveBeenCalledWith("database reset completed");
-    expect(systemOperationService.getSnapshot()).toBeNull();
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
   });
   it("rolls back session/user deletion and keeps admin credentials when reset fails", async () => {
     await prismaDirect.systemConfig.create({ data: { key: "rollback-fixture", value: "true" } });
@@ -516,8 +523,8 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
       { error: "Proceso de limpieza abortado por inactividad prolongada en la DB." },
     ]);
     expect(runtimeControlService.scheduleRestart).not.toHaveBeenCalled();
-    expect(systemOperationService.getSnapshot()).toBeNull();
-    systemOperationService.start({
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
+    await systemOperationService.start({
       type: "restore",
       actorUsername: "owner",
       maintenanceMode: true,
@@ -562,6 +569,18 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
       });
     },
   );
+  it("seed owns maintenance and blocks reset, backup and phase2 until completion", async () => {
+    vi.spyOn(seedingEngine, "runSeedPhase1").mockImplementationOnce(async () => {
+      expect(systemOperationService.getSnapshot()?.type).toBe("seed");
+      expect((await http("DELETE", "/api/maintenance/clear-database")).status).toBe(409);
+      expect((await http("POST", "/api/admin/trigger-backup", {})).status).toBe(409);
+      expect((await http("POST", "/api/maintenance/seed/phase2/start", {})).status).toBe(409);
+      expect((await http("POST", "/api/maintenance/seed/phase1", {})).status).toBe(409);
+    });
+    const response = await http("POST", "/api/maintenance/seed/phase1", {}, token, true);
+    expect(lines(response.bytes).at(-1)).toEqual({ success: true, phase: "phase1" });
+    await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
+  });
   it("runs bounded real phase1 on isolated DB and does not start phase2 worker", async () => {
     const response = await http(
       "POST",
@@ -590,7 +609,9 @@ describe.each(["Express", "Fastify"] as const)("Spec023 operations on %s", (serv
       .mockRejectedValueOnce(new Error("owned seed failure"));
     const failed = await http("POST", "/api/maintenance/seed", {}, token, true);
     expect(failed.status).toBe(200);
-    expect(lines(failed.bytes).at(-1)).toEqual({ error: "owned seed failure" });
+    expect(lines(failed.bytes).at(-1)).toEqual({
+      error: "Error crítico en fase 1; no se confirmó la finalización.",
+    });
     engine.mockResolvedValueOnce(undefined);
     vi.spyOn(seedingJobService, "createStoppedJob").mockRejectedValueOnce(
       new Error("owned job failure"),

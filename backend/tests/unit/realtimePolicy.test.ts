@@ -80,6 +80,18 @@ it("projects lifecycle status without operational messages or seeder errors", ()
   expect(
     projectRealtimeEvent(
       "system:maintenance",
+      {
+        active: true,
+        operation: "seed",
+        message: "private progress",
+        error: "private error",
+      },
+      user("Usuario"),
+    ),
+  ).toEqual({ payload: { active: true, operation: "seed" } });
+  expect(
+    projectRealtimeEvent(
+      "system:maintenance",
       { active: true, operation: "restore", message: "secret", path: "/private" },
       user("Usuario"),
     ),

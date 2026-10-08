@@ -860,3 +860,37 @@ it("keeps prototype poisoning rejection in the shared JSON parser", async () => 
   expect(response.statusCode).toBe(400);
   expect(({} as Record<string, unknown>).isAdmin).toBeUndefined();
 });
+it("applies the IP budget before distributed admission or authentication", async () => {
+  const { app, deps } = fixture({ rateLimit: { max: 1, timeWindow: 900000 } });
+  const admission = vi.fn(async () => async () => {});
+  deps.enterWork = admission;
+  expect((await app.inject({ url: "/api/holidays" })).statusCode).toBe(401);
+  expect((await app.inject({ url: "/api/holidays" })).statusCode).toBe(429);
+  expect(admission).toHaveBeenCalledOnce();
+});
+it("drains authentication already admitted when close starts and rejects later requests", async () => {
+  const { app, deps } = fixture();
+  let release!: () => void;
+  let entered = false;
+  deps.authenticate = async () => {
+    entered = true;
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    return { id: "owner", username: "owner", role: "Administrador" };
+  };
+  const request = app.inject({
+    url: "/api/holidays",
+    headers: { authorization: "Bearer fixture" },
+  });
+  await vi.waitFor(() => expect(entered).toBe(true));
+  let closed = false;
+  const closing = app.close().then(() => {
+    closed = true;
+  });
+  await Promise.resolve();
+  expect(closed).toBe(false);
+  release();
+  expect((await request).statusCode).toBe(200);
+  await closing;
+});

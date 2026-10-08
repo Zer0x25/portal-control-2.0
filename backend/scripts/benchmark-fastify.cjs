@@ -91,10 +91,9 @@ async function measure(framework, round) {
 }
 async function main() {
   const runs = [];
-  // Alternating order and a new server process for every run isolate CPU/RSS from the load generator.
+  // A new Fastify process for every run isolates CPU/RSS from the load generator.
   for (let round = 1; round <= 3; round++) {
-    for (const framework of round % 2 ? ["express", "fastify"] : ["fastify", "express"])
-      runs.push(await measure(framework, round));
+    runs.push(await measure("fastify", round));
   }
   const report = {
     timestamp: new Date().toISOString(),
@@ -110,7 +109,8 @@ async function main() {
   };
   const output = process.env.FASTIFY_BENCHMARK_OUTPUT
     ? path.resolve(process.env.FASTIFY_BENCHMARK_OUTPUT)
-    : path.resolve(__dirname, "../../specs/008-fastify-base-feriados/benchmark.json");
+    : path.resolve(__dirname, "../../scripts/logs/fastify-benchmark.json");
+  fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, JSON.stringify(report, null, 2) + "\n");
   console.log(`Benchmark report: ${output}`);
 }

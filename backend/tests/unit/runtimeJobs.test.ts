@@ -1,3 +1,12 @@
+vi.mock("../../src/services/workCoordinator", () => ({
+  workCoordinator: {
+    run: async (_label: string, task: () => Promise<unknown>) => task(),
+    exclusive: async (_key: string, task: () => Promise<unknown>) => ({
+      ran: true,
+      value: await task(),
+    }),
+  },
+}));
 import { afterEach, expect, it, vi } from "vitest";
 const doubles = vi.hoisted(() => ({
   ensure: vi.fn(async () => {}),
@@ -10,7 +19,7 @@ const doubles = vi.hoisted(() => ({
   stop: vi.fn(async () => {}),
   resume: vi.fn(async () => {}),
   shutdown: vi.fn(async () => {}),
-  lock: vi.fn(async (_key, _ttl, _owner, task) => ({ ran: true, result: await task() })),
+  lock: vi.fn(async (_key, task) => ({ ran: true, result: await task() })),
 }));
 vi.mock("../../src/services/db", () => ({
   prisma: { systemConfig: { findUnique: doubles.config } },
@@ -58,12 +67,7 @@ it("captures owner once, skips rotation/auto during seed, cancels startup and re
   expect(doubles.rotate).not.toHaveBeenCalled();
   doubles.phase2.mockResolvedValue(false);
   await vi.advanceTimersByTimeAsync(300000);
-  expect(doubles.lock).toHaveBeenCalledWith(
-    "job:processAutoClosures",
-    600000,
-    "instance",
-    expect.any(Function),
-  );
+  expect(doubles.lock).toHaveBeenCalledWith("job:processAutoClosures", expect.any(Function));
   expect(doubles.auto).toHaveBeenCalledTimes(1);
   await jobs.stop();
   await jobs.stop();

@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
-import prisma, { prismaDirect, closeDatabase } from "../src/services/db";
+import prisma, { prismaDirect } from "../src/services/db";
 
 async function main() {
   if (new URL(process.env.DATABASE_URL!).pathname !== "/pweb3_test")
@@ -32,34 +32,19 @@ async function main() {
   });
   let close: () => Promise<void>;
   let port: number;
-  if (process.argv[2] === "express") {
-    const { default: app } = await import("../src/app");
-    const server = await new Promise<ReturnType<typeof app.listen>>((resolve) => {
-      const listener = app.listen(0, "127.0.0.1", () => resolve(listener));
-    });
-    const address = server.address();
-    if (!address || typeof address === "string") throw new Error("Missing HTTP address");
-    port = address.port;
-    close = async () => {
-      await new Promise<void>((resolve, reject) =>
-        server.close((error) => (error ? reject(error) : resolve())),
-      );
-      await closeDatabase();
-    };
-  } else if (process.argv[2] === "fastify") {
-    const { createFastifyRuntime } = await import("../src/fastify/runtime");
-    const app = createFastifyRuntime({
-      allowedOrigins: [],
-      trustProxy: 1,
-      rateLimit: { max: 5000, timeWindow: 900000 },
-      logger: false,
-    });
-    await app.listen({ port: 0, host: "127.0.0.1" });
-    const address = app.server.address();
-    if (!address || typeof address === "string") throw new Error("Missing HTTP address");
-    port = address.port;
-    close = () => app.close();
-  } else throw new Error("Unknown framework");
+  const { createFastifyRuntime } = await import("../src/fastify/runtime");
+  const app = createFastifyRuntime({
+    allowedOrigins: [],
+    trustProxy: 1,
+    rateLimit: { max: 5000, timeWindow: 900000 },
+    logger: false,
+  });
+  await app.listen({ port: 0, host: "127.0.0.1" });
+  const address = app.server.address();
+  if (!address || typeof address === "string") throw new Error("Missing HTTP address");
+  port = address.port;
+  close = () => app.close();
+
   let cpu = process.cpuUsage();
   let start = process.hrtime.bigint();
   let peakRss = process.memoryUsage().rss;

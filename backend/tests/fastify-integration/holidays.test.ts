@@ -1,9 +1,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
-import request from "supertest";
 import type { FastifyInstance } from "fastify";
-import expressApp from "../../src/app";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
 import prisma, { prismaDirect } from "../../src/services/db";
 import { SocketService } from "../../src/services/socketService";
@@ -70,7 +68,7 @@ afterAll(async () => {
 });
 
 describe("Fastify + shared authentication + extended Prisma on real PostgreSQL", () => {
-  it("matches Express GET/error contracts using a real signed JWT and persisted session", async () => {
+  it("returns GET/error contracts using a real signed JWT and persisted session", async () => {
     const actor = await session("supervisor");
     const created = await app.inject({
       method: "POST",
@@ -80,15 +78,15 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
     });
     expect(created.statusCode).toBe(201);
     const url = "/api/holidays?showArchived=true&page=1&pageSize=10";
-    const legacy = await request(expressApp).get(url).set(actor.headers);
-    const migrated = await app.inject({ url, headers: actor.headers });
-    expect(migrated.statusCode).toBe(legacy.status);
-    expect(migrated.json()).toEqual(legacy.body);
-    const legacyMissing = await request(expressApp).get(url);
-    expect((await app.inject({ url })).json()).toEqual(legacyMissing.body);
+    const response = await app.inject({ url, headers: actor.headers });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      data: [{ date: body.date, name: body.name }],
+      meta: { total: 1 },
+    });
+    expect((await app.inject({ url })).statusCode).toBe(401);
     await prismaDirect.activeSession.deleteMany({ where: { userId: actor.user.id } });
     expect((await app.inject({ url, headers: actor.headers })).statusCode).toBe(401);
-    expect((await request(expressApp).get(url).set(actor.headers)).status).toBe(401);
   });
   it("keeps concurrent actor context through the real direct transaction and both audit layers", async () => {
     const alice = await session("alice");

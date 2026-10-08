@@ -125,6 +125,7 @@ class SchedulingService {
         prisma.employee.findUnique({ where: { id: employeeId } }),
         prisma.assignedShift.findMany({
           where: {
+            isDeleted: false,
             employeeId,
             startDate: { lte: targetDateString },
             OR: [{ endDate: null }, { endDate: { gte: targetDateString } }],
@@ -132,6 +133,7 @@ class SchedulingService {
         }),
         prisma.leaveRecord.findMany({
           where: {
+            isDeleted: false,
             employeeId,
             startDate: { lte: targetDateString },
             endDate: { gte: targetDateString },
@@ -230,12 +232,23 @@ class SchedulingService {
   ): Promise<MonthlyDayScheduleView[]> {
     const schedule: MonthlyDayScheduleView[] = [];
 
-    // JS months are 0-indexed
-    const startDate = new Date(Date.UTC(year, month - 1, 1));
-    const endDate = new Date(Date.UTC(year, month, 0)); // Last day of the month
+    // Enumerate calendar days at UTC noon: it remains the same date in Santiago,
+    // including the spring transition when local midnight does not exist.
+    const startDate = new Date(Date.UTC(year, month - 1, 1, 12));
+    const endDate = new Date(Date.UTC(year, month, 0, 12));
+    const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
+    const context = employee
+      ? await this.getSchedulingContext(
+          [employeeId],
+          formatDateUTCISO(startDate),
+          formatDateUTCISO(endDate),
+        )
+      : undefined;
 
     for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
-      const scheduleInfo = await this.getEmployeeDailyScheduleInfo(employeeId, d);
+      const scheduleInfo = employee
+        ? await this.getEmployeeDailyScheduleInfo(employeeId, d, context, employee)
+        : null;
       const dateIso = formatDateUTCISO(d);
       const dayOfWeek = d.toLocaleDateString("es-CL", {
         weekday: "short",
@@ -304,6 +317,7 @@ class SchedulingService {
     const [assignedShifts, leaves, holidays, shiftPatternsRaw] = await Promise.all([
       prisma.assignedShift.findMany({
         where: {
+          isDeleted: false,
           employeeId: { in: employeeIds },
           startDate: { lte: endDateStr },
           OR: [{ endDate: null }, { endDate: { gte: startDateStr } }],
@@ -311,6 +325,7 @@ class SchedulingService {
       }),
       prisma.leaveRecord.findMany({
         where: {
+          isDeleted: false,
           employeeId: { in: employeeIds },
           startDate: { lte: endDateStr },
           endDate: { gte: startDateStr },

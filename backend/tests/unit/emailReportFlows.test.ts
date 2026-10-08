@@ -1,4 +1,8 @@
 import { expect, it, vi } from "vitest";
+import {
+  ScheduledReportInputSchema,
+  ScheduledReportUpdateSchema,
+} from "../../src/models/schemas/report.schemas";
 import { createEmailReportFlows } from "../../src/modules/emailReports";
 function fixture() {
   const report = { id: "r" };
@@ -10,10 +14,14 @@ function fixture() {
       saveConfig: vi.fn(),
       config: vi.fn(),
       rules: vi.fn(),
+      parseRules: vi.fn((v) => v),
+      parseSend: vi.fn((v) => v),
       saveRules: vi.fn(),
       send: vi.fn(),
     },
     reports: {
+      parseCreate: vi.fn((value) => ScheduledReportInputSchema.parse(value)),
+      parseUpdate: vi.fn((value) => ScheduledReportUpdateSchema.parse(value)),
       list: vi.fn(),
       get: vi.fn(async () => report),
       create: vi.fn(async () => report),
@@ -36,19 +44,19 @@ it("retains provider failure outcomes and parses config before persistence", asy
 });
 it("requires all legacy create fields before effects and uses persisted actor or System", async () => {
   const { deps, flows, report } = fixture();
-  await expect(flows.create({ name: "x" }, "admin")).rejects.toMatchObject({ statusCode: 400 });
+  expect(() => flows.create({ name: "x" }, "admin")).toThrow();
   expect(deps.reports.create).not.toHaveBeenCalled();
   const data = {
     name: "x",
-    reportType: "attendance",
+    reportType: "attendance_summary",
     frequency: "daily",
     cronExpression: "0 8 * * *",
     recipients: ["a@example.com"],
   };
   expect(await flows.create(data, "admin")).toBe(report);
-  expect(deps.reports.create).toHaveBeenLastCalledWith(data, "admin");
+  expect(deps.reports.create).toHaveBeenLastCalledWith({ ...data, isActive: true }, "admin");
   await flows.create(data);
-  expect(deps.reports.create).toHaveBeenLastCalledWith(data, "System");
+  expect(deps.reports.create).toHaveBeenLastCalledWith({ ...data, isActive: true }, "System");
 });
 it("returns 404 for absent reports and preserves infrastructure error identity", async () => {
   const { deps, flows } = fixture();

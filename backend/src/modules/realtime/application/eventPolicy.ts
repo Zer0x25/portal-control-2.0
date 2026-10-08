@@ -90,7 +90,7 @@ export function projectRealtimeEvent(
     const payload: Payload = { active: value.active === true };
     if (
       typeof value.operation === "string" &&
-      ["backup", "restore", "reset"].includes(value.operation)
+      ["backup", "restore", "reset", "seed"].includes(value.operation)
     )
       payload.operation = value.operation;
     return { payload };

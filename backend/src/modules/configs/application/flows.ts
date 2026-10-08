@@ -1,4 +1,4 @@
-import { maskConfigValue, mergeSmtpSecrets } from "./smtpSecrets";
+import { maskConfigValue } from "./smtpSecrets";
 import { AppError, ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { ConfigDependencies, PolicyFile } from "./contracts";
@@ -33,11 +33,7 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     set: async (key: unknown, value: unknown, actor?: string) => {
       const valid = keyValue(key);
       try {
-        const prepared =
-          valid === "SMTP_CONFIG"
-            ? mergeSmtpSecrets(value, await deps.get(valid, "Administrador"))
-            : value;
-        return maskConfigValue(valid, await deps.set(valid, prepared, actor || "SYSTEM"));
+        return maskConfigValue(valid, await deps.set(valid, value, actor || "SYSTEM"));
       } catch (error) {
         const caught = toCaughtError(error);
         if (caught.message === "LOCK_DATE_BLOCKED")
@@ -66,9 +62,15 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     upload: async (file: PolicyFile | undefined, actor?: string) => {
       if (!file) throw new ValidationError("Debes adjuntar un archivo PDF.");
       const username = actor || "SYSTEM";
-      const previous = await deps.get(policyKey);
+      let previous: unknown;
       const next = { ...file, uploadedAt: deps.now(), uploadedBy: username };
-      await deps.set(policyKey, next, username);
+      try {
+        await deps.validateFile(file);
+        previous = await deps.replacePolicy(next, username);
+      } catch (error) {
+        await deps.removeFile(file.filename);
+        throw error;
+      }
       if (object(previous) && "filename" in previous) {
         const old = String(previous.filename);
         if (old && old !== file.filename) await deps.removeFile(old);

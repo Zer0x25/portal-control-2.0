@@ -5,8 +5,8 @@ import prisma from "../src/services/db";
 vi.mock("../src/services/db", () => ({
   default: {
     systemConfig: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
+      findMany: vi.fn(),
+      createMany: vi.fn(),
     },
   },
 }));
@@ -19,21 +19,19 @@ describe("Phase1Service.seedSystemConfigs - accounting_lock_date", () => {
   it("creates accounting_lock_date as end of month for current-3 months when missing", async () => {
     vi.setSystemTime(new Date("2026-02-26T12:00:00.000Z"));
 
-    (prisma.systemConfig.findUnique as any).mockImplementation(async ({ where }: any) => {
-      if (where.key === "accounting_lock_date") return null;
-      return { key: where.key, value: "existing" };
-    });
-    (prisma.systemConfig.create as any).mockResolvedValue({});
+    vi.mocked(prisma.systemConfig.findMany).mockResolvedValue([
+      { key: "max_weekly_hours" },
+      { key: "AUTH_SESSION_DURATIONS" },
+    ] as any);
+    vi.mocked(prisma.systemConfig.createMany).mockResolvedValue({ count: 1 });
 
     const progress: string[] = [];
     await phase1Service.seedSystemConfigs((msg) => progress.push(msg));
 
-    expect(prisma.systemConfig.create).toHaveBeenCalledTimes(1);
-    expect(prisma.systemConfig.create).toHaveBeenCalledWith({
-      data: {
-        key: "accounting_lock_date",
-        value: JSON.stringify("2025-11-30"),
-      },
+    expect(prisma.systemConfig.createMany).toHaveBeenCalledTimes(1);
+    expect(prisma.systemConfig.createMany).toHaveBeenCalledWith({
+      data: [{ key: "accounting_lock_date", value: JSON.stringify("2025-11-30") }],
+      skipDuplicates: true,
     });
     expect(
       progress.some((m) => m.includes("accounting_lock_date=2025-11-30") && m.includes("3 meses")),
@@ -43,17 +41,16 @@ describe("Phase1Service.seedSystemConfigs - accounting_lock_date", () => {
   it("preserves existing accounting_lock_date and does not overwrite", async () => {
     vi.setSystemTime(new Date("2026-02-26T12:00:00.000Z"));
 
-    (prisma.systemConfig.findUnique as any).mockImplementation(async ({ where }: any) => {
-      if (where.key === "accounting_lock_date") {
-        return { key: "accounting_lock_date", value: JSON.stringify("2024-12-31") };
-      }
-      return { key: where.key, value: "existing" };
-    });
+    vi.mocked(prisma.systemConfig.findMany).mockResolvedValue([
+      { key: "max_weekly_hours" },
+      { key: "AUTH_SESSION_DURATIONS" },
+      { key: "accounting_lock_date" },
+    ] as any);
 
     const progress: string[] = [];
     await phase1Service.seedSystemConfigs((msg) => progress.push(msg));
 
-    expect(prisma.systemConfig.create).not.toHaveBeenCalled();
+    expect(prisma.systemConfig.createMany).toHaveBeenCalledWith({ data: [], skipDuplicates: true });
     expect(
       progress.some(
         (m) =>

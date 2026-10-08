@@ -56,31 +56,19 @@ export class Phase1Service {
       },
     ];
 
-    for (const cfg of configs) {
-      const existing = await prisma.systemConfig.findUnique({
-        where: { key: cfg.key },
-      });
-
-      if (!existing) {
-        await prisma.systemConfig.create({
-          data: cfg,
-        });
-        if (cfg.key === "accounting_lock_date") {
-          progressCb(
-            `[OK] Configuración creada: ${cfg.key}=${seederLockDate} (Seeder: fin de mes de hace 3 meses).`,
-          );
-        } else {
-          progressCb(`[OK] Configuración creada: ${cfg.key}`);
-        }
-      } else {
-        if (cfg.key === "accounting_lock_date") {
-          progressCb(
-            `[INFO] Configuración existente: ${cfg.key} (preservada, no sobrescrita por Seeder).`,
-          );
-        } else {
-          progressCb(`[INFO] Configuración existente: ${cfg.key}`);
-        }
-      }
+    const existing = await prisma.systemConfig.findMany({
+      where: { key: { in: configs.map((config) => config.key) } },
+      select: { key: true },
+    });
+    const existingKeys = new Set(existing.map((config) => config.key));
+    const missing = configs.filter((config) => !existingKeys.has(config.key));
+    await prisma.systemConfig.createMany({ data: missing, skipDuplicates: true });
+    for (const config of configs) {
+      progressCb(
+        existingKeys.has(config.key)
+          ? `[INFO] Configuración existente: ${config.key} (preservada, no sobrescrita por Seeder).`
+          : `[OK] Configuración inicial asegurada: ${config.key}${config.key === "accounting_lock_date" ? `=${seederLockDate} (Seeder: fin de mes de hace 3 meses).` : ""}`,
+      );
     }
   }
 
@@ -316,9 +304,12 @@ export class Phase1Service {
       progressCb(`[OK] Patrones base disponibles: ${patternIds.length}.`);
     }
 
-    const assignmentsByEmployee = new Map(
-      employees.map((e) => [e.id, existingAssignments.filter((a) => a.employeeId === e.id)]),
-    );
+    const assignmentsByEmployee = new Map<string, typeof existingAssignments>();
+    for (const assignment of existingAssignments) {
+      const grouped = assignmentsByEmployee.get(assignment.employeeId);
+      if (grouped) grouped.push(assignment);
+      else assignmentsByEmployee.set(assignment.employeeId, [assignment]);
+    }
     const uniquePatternIds = Array.from(new Set(patternIds)).slice(0, safeBasePatternsCount);
     const activePatternIds = uniquePatternIds;
     progressCb(`[INFO] Patrones activos para distribucion pareja: ${activePatternIds.length}.`);

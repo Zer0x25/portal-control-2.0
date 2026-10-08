@@ -1,8 +1,9 @@
-import prisma from "./db";
-import { configAuditValue } from "../modules/configs";
+import prisma, { withDirectTransaction } from "./db";
+import type { Prisma } from "../generated/prisma/client";
+import { redactAuditFields } from "../modules/audit";
+import { configAuditValue, mergeSmtpSecrets } from "../modules/configs";
 import { closureValidationService } from "./closureValidationService";
 import { SocketService } from "./socketService";
-import { auditService } from "./auditService";
 import { safeJsonParse } from "../utils/configUtils";
 import { requestContext } from "../utils/context";
 import { toBusinessDateChile, getChileNow, getMonthEndBusinessDateChile } from "../utils/timeUtils";
@@ -82,6 +83,22 @@ export class ConfigService {
    * Includes validation for accounting_lock_date and auditing.
    */
   static async set(key: string, value: unknown, actorUsername: string = "SYSTEM") {
+    return (
+      await this.replace(
+        key,
+        value,
+        actorUsername,
+        key === "SMTP_CONFIG" ? mergeSmtpSecrets : undefined,
+      )
+    ).value;
+  }
+
+  static async replace(
+    key: string,
+    value: unknown,
+    actorUsername: string = "SYSTEM",
+    prepare?: (value: unknown, previous: unknown) => unknown,
+  ) {
     // 1. Domain Validation
     if (key === "accounting_lock_date" && value && value !== "null") {
       const today = toBusinessDateChile();
@@ -96,37 +113,45 @@ export class ConfigService {
       }
     }
 
-    // 2. Persistence and Auditing
-    const config = await requestContext.run(
+    const result = await requestContext.run(
       { ...requestContext.getStore(), skipTrigger: true },
-      async () => {
-        const oldConfig = await prisma.systemConfig.findUnique({ where: { key } });
-
-        const updated = await prisma.systemConfig.upsert({
-          where: { key },
-          update: { value: JSON.stringify(value) },
-          create: { key, value: JSON.stringify(value) },
-        });
-
-        await auditService.log({
-          actorUsername,
-          action: "CONFIG_SET",
-          category: "OPERATIONS",
-          severity: "WARNING",
-          details: {
-            key,
-            previousValue: configAuditValue(key, oldConfig ? safeJsonParse(oldConfig.value) : null),
-            newValue: configAuditValue(key, value),
-          },
-        });
-
-        return updated;
-      },
+      () =>
+        withDirectTransaction(async (tx) => {
+          // Serialize first writes too: a row lock cannot lock a missing key.
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${key}))`;
+          const oldConfig = await tx.systemConfig.findUnique({ where: { key } });
+          const previousValue = oldConfig ? safeJsonParse(oldConfig.value) : null;
+          const prepared = prepare ? prepare(value, previousValue) : value;
+          const updated = await tx.systemConfig.upsert({
+            where: { key },
+            update: { value: JSON.stringify(prepared) },
+            create: { key, value: JSON.stringify(prepared) },
+          });
+          const safe = redactAuditFields(
+            "CONFIG_SET",
+            {
+              key,
+              previousValue: configAuditValue(key, previousValue),
+              newValue: configAuditValue(key, prepared),
+            },
+            undefined,
+          );
+          const audit = await tx.auditLog.create({
+            data: {
+              actorUsername,
+              action: "CONFIG_SET",
+              category: "OPERATIONS",
+              severity: "WARNING",
+              outcome: "SUCCESS",
+              details: safe.details as Prisma.InputJsonValue,
+              metadata: safe.metadata as Prisma.InputJsonValue,
+            },
+          });
+          return { value: safeJsonParse(updated.value), previousValue, audit };
+        }),
     );
-
-    // 3. Real-time Notification
-    SocketService.emit("config:updated", { key, value });
-
-    return safeJsonParse(config.value);
+    SocketService.emitToAll("auditLog:created", result.audit);
+    SocketService.emit("config:updated", { key, value: result.value });
+    return { value: result.value, previousValue: result.previousValue };
   }
 }

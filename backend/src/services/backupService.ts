@@ -1,6 +1,8 @@
 import prisma from "./db";
 import fs, { createReadStream, createWriteStream } from "fs";
 import path from "path";
+import os from "os";
+import { logger } from "../utils/logger";
 import { spawn, execFile } from "child_process";
 import { promisify } from "util";
 import { createGzip, createGunzip } from "zlib";
@@ -116,7 +118,7 @@ export class BackupService {
       return this.backupPostgres(rawUrl);
     }
 
-    console.warn("Backup omitido: protocolo de base de datos no soportado.");
+    logger.warn("Backup omitido: protocolo de base de datos no soportado.");
     return "not-supported";
   }
 
@@ -125,36 +127,30 @@ export class BackupService {
    */
   private async backupPostgres(url: string): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const backupPath = path.join(this.backupDir, `backup-pg-${timestamp}.sql`);
-
+    // Only a verified artifact becomes visible to listings/restore/retention.
+    // Work directories are on the destination filesystem for atomic rename.
+    const workDir = await fs.promises.mkdtemp(path.join(this.backupDir, ".backup-work-"));
+    const backupPath = path.join(workDir, `backup-pg-${timestamp}.sql`);
     try {
-      // Uses pg_dump from host or Docker container.
-      console.warn("Iniciando backup de PostgreSQL...");
+      logger.info("Iniciando backup de PostgreSQL...");
       await this.runPgDump(url, backupPath);
-
-      let finalPath = backupPath;
-      if (this.compressEnabled) {
-        finalPath = await this.compressBackupFile(backupPath);
+      const source = this.compressEnabled ? await this.compressBackupFile(backupPath) : backupPath;
+      await this.verifyBackupIntegrity(source);
+      const finalPath = path.join(this.backupDir, path.basename(source));
+      await fs.promises.rename(source, finalPath);
+      logger.info("Backup de PostgreSQL creado y verificado", { file: path.basename(finalPath) });
+      // Retention failure must not turn a successfully published backup into failure.
+      try {
+        this.cleanupOldBackups();
+      } catch (error) {
+        logger.error("No se pudo aplicar retencion de backups", error);
       }
-
-      // Verify Integrity immediately
-      await this.verifyBackupIntegrity(finalPath);
-
-      console.warn(`Backup de PostgreSQL creado y verificado: ${finalPath}`);
-      this.cleanupOldBackups();
       return finalPath;
     } catch (error) {
-      if (fs.existsSync(backupPath)) {
-        fs.unlinkSync(backupPath);
-      }
-      // If compressed version exists, delete it too
-      const compressedPath = `${backupPath}.gz`;
-      if (fs.existsSync(compressedPath)) {
-        fs.unlinkSync(compressedPath);
-      }
-
-      console.error("Error al realizar pg_dump o verificacion:", error);
+      logger.error("Error al realizar pg_dump o verificacion", error);
       throw error;
+    } finally {
+      await fs.promises.rm(workDir, { recursive: true, force: true });
     }
   }
 
@@ -183,14 +179,20 @@ export class BackupService {
   private async runPgDumpFromHost(url: string, backupPath: string): Promise<void> {
     // The vulnerability (Command Injection via execAsync) was previously mitigated here,
     // we use spawnWithRedirect to pass arguments safely.
-    await spawnWithRedirect("pg_dump", [url], { outputFile: backupPath });
+    await spawnWithRedirect("pg_dump", ["--exclude-schema=portal_runtime", url], {
+      outputFile: backupPath,
+    });
   }
 
   private async runPgDumpFromDocker(url: string, backupPath: string): Promise<void> {
     const containerName = await this.resolveDockerContainerName();
-    await spawnWithRedirect("docker", ["exec", containerName, "pg_dump", url], {
-      outputFile: backupPath,
-    });
+    await spawnWithRedirect(
+      "docker",
+      ["exec", containerName, "pg_dump", "--exclude-schema=portal_runtime", url],
+      {
+        outputFile: backupPath,
+      },
+    );
   }
 
   /**
@@ -219,44 +221,25 @@ export class BackupService {
   }
 
   private async restorePostgres(url: string, backupPath: string): Promise<void> {
-    console.warn(`Iniciando restauracion desde: ${backupPath}`);
+    logger.warn(`Iniciando restauracion desde: ${backupPath}`);
 
-    // 1. Decompress if needed
-    let restoreSource = backupPath;
-    let tempFile: string | null = null;
-
-    if (backupPath.endsWith(".gz")) {
-      tempFile = backupPath.replace(".gz", "");
-      await this.decompressFile(backupPath, tempFile);
-      restoreSource = tempFile;
-    }
-
+    // Every attempt owns its temporary directory, including failed decompression.
+    const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "portal-restore-"));
     try {
-      // 2. Drop Schema Public
-      await this.dropPublicSchema(url);
-
-      // 3. Restore with psql
-      await this.runPsqlRestore(url, restoreSource);
-
-      console.warn("Restauracion completada exitosamente.");
-    } finally {
-      // Clean up temp file
-      if (tempFile && fs.existsSync(tempFile)) {
-        fs.unlinkSync(tempFile);
+      let restoreSource = backupPath;
+      if (backupPath.endsWith(".gz")) {
+        restoreSource = path.join(tempDir, "restore.sql");
+        await this.decompressFile(backupPath, restoreSource);
       }
+      await this.runPsqlRestore(url, restoreSource);
+      logger.info("Restauracion completada exitosamente.");
+    } finally {
+      await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
   }
 
   private async decompressFile(inputPath: string, outputPath: string): Promise<void> {
     await pipeline(createReadStream(inputPath), createGunzip(), createWriteStream(outputPath));
-  }
-
-  private async dropPublicSchema(url: string): Promise<void> {
-    // We utilize prisma.$executeRawUnsafe or a direct pg connection if available,
-    // but here we are in backupService which uses system commands.
-    // Let's use psql to run the drop command.
-    const dropCommand = "DROP SCHEMA public CASCADE; CREATE SCHEMA public;";
-    await this.runPsqlCommand(url, dropCommand);
   }
 
   private async isHostPgDumpAvailable(): Promise<boolean> {
@@ -285,33 +268,32 @@ export class BackupService {
     }
   }
 
-  private async runPsqlCommand(url: string, sqlCommand: string): Promise<void> {
-    const cleanUrl = this.toPgDumpUrl(url);
-    const hostAvailable = await this.isHostPsqlAvailable();
-
-    if (this.backupMode === "docker" || (!hostAvailable && this.backupMode === "auto")) {
-      const containerName = await this.resolveDockerContainerName();
-      await execFileAsync("docker", ["exec", containerName, "psql", cleanUrl, "-c", sqlCommand]);
-      return;
-    }
-
-    await execFileAsync("psql", [cleanUrl, "-c", sqlCommand]);
-  }
-
   private async runPsqlRestore(url: string, filePath: string): Promise<void> {
     const cleanUrl = this.toPgDumpUrl(url);
-    const hostAvailable = await this.isHostPsqlAvailable();
+    const hostAvailable = this.backupMode === "auto" && (await this.isHostPsqlAvailable());
+    // -1 covers BOTH the schema replacement and the dump. ON_ERROR_STOP makes
+    // any SQL/meta-command failure abort psql and roll back the entire restore.
+    const restoreArgs = [
+      "--no-psqlrc",
+      "--set=ON_ERROR_STOP=on",
+      "--single-transaction",
+      "--dbname",
+      cleanUrl,
+      "--command",
+      "DROP SCHEMA public CASCADE; CREATE SCHEMA public;",
+      "--file=-",
+    ];
 
     if (this.backupMode === "docker" || (!hostAvailable && this.backupMode === "auto")) {
       const containerName = await this.resolveDockerContainerName();
       // We pipe the file content from HOST to DOCKER container input using spawnWithRedirect
-      await spawnWithRedirect("docker", ["exec", "-i", containerName, "psql", cleanUrl], {
+      await spawnWithRedirect("docker", ["exec", "-i", containerName, "psql", ...restoreArgs], {
         inputFile: filePath,
       });
       return;
     }
 
-    await spawnWithRedirect("psql", [cleanUrl], { inputFile: filePath });
+    await spawnWithRedirect("psql", restoreArgs, { inputFile: filePath });
   }
 
   private toPgDumpUrl(url: string): string {
@@ -333,22 +315,22 @@ export class BackupService {
     const { stdout } = await execFileAsync("docker", [
       "ps",
       "--filter",
-      "ancestor=postgres:15-alpine",
+      "ancestor=postgres:18.4-alpine",
       "--format",
       "{{.Names}}",
     ]);
-    const container = stdout
+    const containers = stdout
       .split(/\r?\n/)
       .map((v) => v.trim())
-      .find((v) => v.length > 0);
+      .filter((v) => v.length > 0);
 
-    if (!container) {
+    if (containers.length !== 1) {
       throw new Error(
-        "No se encontro contenedor Postgres para backup. Define BACKUP_DOCKER_CONTAINER.",
+        "Se requiere un unico contenedor PostgreSQL 18.4. Define BACKUP_DOCKER_CONTAINER.",
       );
     }
 
-    return container;
+    return containers[0];
   }
 
   private parsePositiveInt(value: string | undefined, fallback: number): number {
@@ -509,13 +491,13 @@ export class BackupService {
     for (const file of backupFiles) {
       if (!keep.has(file.filePath)) {
         fs.unlinkSync(file.filePath);
-        console.warn(`[GFS] Backup eliminado por rotacion: ${file.name}`);
+        logger.warn(`[GFS] Backup eliminado por rotacion: ${file.name}`);
         deletedCount++;
       }
     }
 
     if (deletedCount > 0) {
-      console.warn(
+      logger.warn(
         `[GFS] Rotacion completada. Archivos retenidos: ${keep.size}. Eliminados: ${deletedCount}`,
       );
     }
@@ -547,7 +529,7 @@ export class BackupService {
       const size = fs.statSync(file.filePath).size;
       if (size === 0) {
         fs.unlinkSync(file.filePath);
-        console.warn(`Backup vacio eliminado: ${file.name}`);
+        logger.warn(`Backup vacio eliminado: ${file.name}`);
       }
     }
 
@@ -587,7 +569,7 @@ export class BackupService {
     for (const file of existingFiles) {
       if (!keep.has(file.filePath)) {
         fs.unlinkSync(file.filePath);
-        console.warn(`Backup eliminado por retencion: ${file.name}`);
+        logger.warn(`Backup eliminado por retencion: ${file.name}`);
       }
     }
   }
@@ -622,7 +604,7 @@ export class BackupService {
         const delegate = (prisma as unknown as Record<string, ExportedModelDelegate>)[model];
         data[model] = await delegate.findMany();
       } catch (error) {
-        console.error(`Error exporting model ${model}:`, error);
+        logger.error(`Error exporting model ${model}:`, error);
       }
     }
 

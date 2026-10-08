@@ -19,9 +19,9 @@ Regla condicional: un `404` por recurso ausente es diseño; el mismo
 
 ## Diseño intencional (no deuda)
 
-| ID    | Item                                                   | Por qué es diseño                                                                                                              |
-| ----- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| D-001 | `GET /api/configs/public/company-policy` → 404 sin PDF | Respuesta "vacío" esperada (`backend/src/controllers/configController.ts:91-95`); solo es bug si hay PDF cargado y aun así 404 |
-| D-002 | Tokens de rol `Usuario` ~2 min                         | Kiosco de corta duración, por diseño (ver ADR-0016)                                                                            |
-| D-003 | Integración backend contra BD de dev compartida        | Estrategia aceptada; Testcontainers queda como mejora no requerida                                                             |
-| D-004 | Staging exige `--env-file .env.staging` siempre        | Explícito a propósito (ver ADR-0016)                                                                                           |
+| ID    | Item                                                   | Por qué es diseño                                                                                                             |
+| ----- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| D-001 | `GET /api/configs/public/company-policy` → 404 sin PDF | Respuesta "vacío" esperada (`backend/src/modules/configs/application/flows.ts`); solo es bug si hay PDF cargado y aun así 404 |
+| D-002 | Tokens de rol `Usuario` ~2 min                         | Kiosco de corta duración, por diseño (ver ADR-0016)                                                                           |
+| D-003 | Integración backend contra BD de dev compartida        | Estrategia aceptada; Testcontainers queda como mejora no requerida                                                            |
+| D-004 | Staging exige `--env-file .env.staging` siempre        | Explícito a propósito (ver ADR-0016)                                                                                          |

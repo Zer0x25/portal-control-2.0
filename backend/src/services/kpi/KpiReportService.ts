@@ -7,7 +7,12 @@ import { KpiStatsService } from "./KpiStatsService";
 import { KpiAggregationService } from "./KpiAggregationService";
 import { KpiFormattingService } from "./KpiFormattingService";
 import { KpiFilters, DashboardOverview, PeriodStats, AnomalyRecord } from "./types";
-import { addBusinessDaysChile, formatDateUTCISO, toBusinessDateChile } from "../../utils/timeUtils";
+import {
+  addBusinessDaysChile,
+  formatDateUTCISO,
+  parseDateOnlyUTC,
+  toBusinessDateChile,
+} from "../../utils/timeUtils";
 import { toEndInclusive } from "../../utils/timePolicy";
 
 const kpiCache = new KpiCache();
@@ -23,10 +28,21 @@ export class KpiReportService {
     this.kpiFormattingService = new KpiFormattingService();
   }
 
-  async prepareKpiBulkData(employees: Employee[], startDate: string, endDate: string) {
+  async prepareKpiBulkData(
+    employees: Employee[],
+    startDate: string,
+    endDate: string,
+    sourceRevision: string,
+  ) {
     const tIds = employees.map((e) => e.id);
+    // Cache misses materialize whole months even for a one-day request.
+    const contextStart = `${startDate.slice(0, 7)}-01`;
+    const end = new Date(endDate);
+    const contextEnd = formatDateUTCISO(
+      new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 1, 0, 12)),
+    );
     const [context, timeRecordsRaw, lockConfig] = await Promise.all([
-      schedulingService.getSchedulingContext(tIds, startDate, endDate),
+      schedulingService.getSchedulingContext(tIds, contextStart, contextEnd),
       prisma.timeRecord.findMany({
         where: { employeeId: { in: tIds }, date: { gte: startDate, lte: endDate } },
       }),
@@ -51,10 +67,10 @@ export class KpiReportService {
     curr.setUTCDate(1);
     curr.setUTCHours(0, 0, 0, 0);
 
-    const end = new Date(endDate);
-    end.setUTCHours(23, 59, 59, 999);
+    const periodEnd = new Date(endDate);
+    periodEnd.setUTCHours(23, 59, 59, 999);
 
-    while (curr <= end) {
+    while (curr <= periodEnd) {
       months.add(`${curr.getUTCFullYear()}-${String(curr.getUTCMonth() + 1).padStart(2, "0")}`);
       curr.setUTCMonth(curr.getUTCMonth() + 1);
     }
@@ -76,6 +92,7 @@ export class KpiReportService {
     }
 
     return {
+      sourceRevision,
       context: context as SchedulingContext,
       timeRecordsMap,
       statsCacheMap,
@@ -85,13 +102,14 @@ export class KpiReportService {
 
   async getKpiSummary(filters: KpiFilters) {
     const { startDate, endDate } = this.resolveInclusiveRange(filters);
+    const sourceRevision = await kpiCache.getSourceRevision();
     const employees = await this.getEmployees(filters);
 
     if (employees.length === 0) {
       return { kpis: {}, kpiDetails: {} };
     }
 
-    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate);
+    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate, sourceRevision);
     const allEmpStats = await this.calculateAllPeriodStats(employees, startDate, endDate, bulkData);
 
     const summary = this.kpiAggregationService.createSummaryAccumulator();
@@ -121,11 +139,12 @@ export class KpiReportService {
 
   async getDetailedReport(filters: KpiFilters) {
     const { startDate, endDate } = this.resolveInclusiveRange(filters);
+    const sourceRevision = await kpiCache.getSourceRevision();
     const employees = await this.getEmployees(filters);
 
     if (employees.length === 0) return { summary: [], details: {} };
 
-    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate);
+    const bulkData = await this.prepareKpiBulkData(employees, startDate, endDate, sourceRevision);
     const allEmpStats = await this.calculateAllPeriodStats(employees, startDate, endDate, bulkData);
 
     for (let idx = 0; idx < allEmpStats.length; idx++) {
@@ -141,13 +160,19 @@ export class KpiReportService {
     const activeEmployees = await prisma.employee.findMany({ where: { status: "Activo" } });
 
     const today = new Date();
-    const yesterdayStr = addBusinessDaysChile(toBusinessDateChile(today), -1);
+    const todayStr = toBusinessDateChile(today);
+    const yesterdayStr = addBusinessDaysChile(todayStr, -1);
 
     const recentRecords = await prisma.timeRecord.findMany({
-      where: { date: { gte: yesterdayStr } },
+      where: { date: { gte: yesterdayStr, lte: todayStr } },
       orderBy: { date: "desc" },
     });
 
+    const yesterdayEmployees = new Set(
+      recentRecords
+        .filter((record) => record.date === yesterdayStr)
+        .map((record) => record.employeeId),
+    );
     const latestByEmployee = new Map<string, TimeRecord>();
     recentRecords.forEach((rec) => {
       if (!latestByEmployee.has(rec.employeeId)) {
@@ -157,7 +182,11 @@ export class KpiReportService {
 
     const nowMs = Date.now();
     const fourteenHoursInMs = 14 * 60 * 60 * 1000;
-    const schedulingContext = await this.getDailySchedulingContext(today);
+    const schedulingContext = await schedulingService.getSchedulingContext(
+      activeEmployees.map((emp) => emp.id),
+      yesterdayStr,
+      todayStr,
+    );
 
     const employeeStatuses = await Promise.all(
       activeEmployees.map(async (emp) => {
@@ -213,13 +242,12 @@ export class KpiReportService {
       }
 
       // Check for "Missing Marks" from YESTERDAY
-      // If employee had a shift yesterday and there's no record (or last record is older than yesterday)
-      const lastRecDate = s.lastRecord?.date;
-      if (!lastRecDate || lastRecDate < yesterdayStr) {
+      // Today's record does not prove that yesterday's assigned shift was recorded.
+      if (!yesterdayEmployees.has(s.employee.id)) {
         // We only check yesterday to keep it fast
         const yesterdaySchedule = await schedulingService.getEmployeeDailyScheduleInfo(
           s.employee.id,
-          new Date(yesterdayStr + "T12:00:00Z"),
+          new Date(parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000),
           schedulingContext,
           s.employee,
         );
@@ -260,7 +288,12 @@ export class KpiReportService {
   async getDailyPlanningSummary() {
     const today = new Date();
     const activeEmployees = await prisma.employee.findMany({ where: { status: "Activo" } });
-    const schedulingContext = await this.getDailySchedulingContext(today);
+    const todayStr = toBusinessDateChile(today);
+    const schedulingContext = await schedulingService.getSchedulingContext(
+      activeEmployees.map((emp) => emp.id),
+      todayStr,
+      todayStr,
+    );
 
     const stats = {
       onVacation: 0,
@@ -326,6 +359,7 @@ export class KpiReportService {
     startDate: string,
     endDate: string,
     bulkData: {
+      sourceRevision: string;
       context: SchedulingContext;
       timeRecordsMap: Map<string, TimeRecord[]>;
       statsCacheMap: Map<string, MonthlyEmployeeStats>;
@@ -344,6 +378,7 @@ export class KpiReportService {
             new Date(startDate),
             new Date(endDate),
             bulkData.context,
+            bulkData.sourceRevision,
             bulkData.timeRecordsMap,
             bulkData.statsCacheMap,
             bulkData.lockConfigValue,
@@ -355,30 +390,5 @@ export class KpiReportService {
     }
 
     return allEmpStats;
-  }
-
-  private async getDailySchedulingContext(today: Date) {
-    const todayStr = formatDateUTCISO(today);
-    const [assignedShifts, leaves, holidays] = await Promise.all([
-      prisma.assignedShift.findMany({
-        where: {
-          startDate: { lte: todayStr },
-          OR: [{ endDate: null }, { endDate: { gte: todayStr } }],
-        },
-      }),
-      prisma.leaveRecord.findMany({
-        where: { startDate: { lte: todayStr }, endDate: { gte: todayStr } },
-      }),
-      prisma.holiday.findMany({ where: { date: todayStr } }),
-    ]);
-
-    const shiftPatternsRaw = await prisma.shiftPattern.findMany({});
-    const shiftPatterns = shiftPatternsRaw.map((p) => ({
-      ...p,
-      dailySchedules:
-        typeof p.dailySchedules === "string" ? JSON.parse(p.dailySchedules) : p.dailySchedules,
-    }));
-
-    return { assignedShifts, shiftPatterns, leaves, holidays } as SchedulingContext;
   }
 }

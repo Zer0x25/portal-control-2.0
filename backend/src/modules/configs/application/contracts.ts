@@ -12,6 +12,8 @@ export interface ConfigDependencies<Time, Closure> {
   get(key: string, role?: string): Promise<unknown>;
   list(role?: string): Promise<{ key: string; value: unknown }[]>;
   set(key: string, value: unknown, actor: string): Promise<unknown>;
+  replacePolicy(value: unknown, actor: string): Promise<unknown>;
+  validateFile(file: PolicyFile): Promise<void>;
   time(): Time;
   closure(date: string): Promise<Closure>;
   download(meta: Record<string, unknown>): Promise<PolicyDownload | null>;

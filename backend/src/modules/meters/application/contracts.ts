@@ -1,7 +1,8 @@
 export interface MeterListParams {
-  since?: string;
+  since?: string | number;
   page?: string | number;
   pageSize?: string | number;
+  month?: string;
   meterId?: string;
   startDate?: string;
   endDate?: string;
@@ -14,6 +15,7 @@ export interface MeterInput {
   notes?: string | null;
 }
 export interface MeterDependencies<Reading> {
+  parseQuery(value: unknown): MeterListParams;
   list(params: MeterListParams): Promise<{
     items: Reading[];
     total: number;
@@ -22,5 +24,5 @@ export interface MeterDependencies<Reading> {
     totalPages: number;
   }>;
   parse(value: unknown): MeterInput[];
-  create(readings: MeterInput[]): Promise<Reading[]>;
+  create(readings: MeterInput[], actorUsername: string): Promise<Reading[]>;
 }

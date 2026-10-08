@@ -30,6 +30,7 @@ export const metersPlugin: FastifyPluginAsync<{
   app.post(
     "/api/meters/bulk",
     { ...base, preHandler: validateRequest("body", BulkMeterReadingSchema) },
-    async (req, reply) => reply.code(201).send(await options.service.create(req.body)),
+    async (req, reply) =>
+      reply.code(201).send(await options.service.create(req.body, req.user?.username || "")),
   );
 };

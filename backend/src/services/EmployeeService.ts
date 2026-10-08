@@ -3,21 +3,18 @@ import { Prisma, EmployeeStatus } from "../generated/prisma/client";
 import bcryptjs from "bcryptjs";
 import { auditService } from "./auditService";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
-import type { AuthRequest } from "../middleware/authMiddleware";
+import type { AuthUser } from "../modules/auth";
 
 const EMPLOYEE_ID_PREFIX = "EMP-";
 const EMPLOYEE_ID_BASE = 1000;
 type EmployeeDbClient =
   Pick<Prisma.TransactionClient, "employee"> | Pick<typeof prisma, "employee">;
 
-/** Authenticated principal as attached by `authenticateToken`. */
-type AuthUser = NonNullable<AuthRequest["user"]>;
-
 /** Role fields `listEmployees` reads for row-level scoping. */
 type EmployeeListAuthUser = Partial<Pick<AuthUser, "role" | "employeeId">>;
 
 /**
- * Filter fields read by `listEmployees`. Express query values arrive untyped and
+ * Filter fields read by `listEmployees`. HTTP query values arrive untyped and
  * may repeat, so the raw input is also accepted and narrowed per field.
  */
 export interface EmployeeListQuery {

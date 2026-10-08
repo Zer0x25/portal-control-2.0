@@ -2,11 +2,16 @@
 
 This document provides conventions, operational commands, and architectural constraints for AI agents (including Google Jules) and contributors working on `portal-control`.
 
+Express está retirado por decisión del usuario. No mantener ni recrear su runtime,
+controllers, routers, middleware, dependencias o pruebas de paridad. Las referencias
+históricas a Express en las specs/ADR describen la migración, no autorizan su uso.
+Toda corrección y validación HTTP se implementa exclusivamente en Fastify.
+
 ---
 
 ## 1. Project Structure
 
-- **`backend/`**: Node.js (v26), Fastify (principal), Express (fixture de paridad local), TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
+- **`backend/`**: Node.js (v26), Fastify (único servidor HTTP), TypeScript, Prisma ORM, PostgreSQL (via PgBouncer in transaction mode).
 - **`frontend/`**: React 19, Vite, TypeScript, Zustand, TanStack Query, Tailwind CSS.
 - **`compose.yaml`**: Production-style stack (PostgreSQL 18.4, PgBouncer, backend, frontend, Nginx/Caddy). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Fastify en el host. `compose.staging.yaml` es prod-like vía gateway :8080 (`pweb3_staging`, host port 5434); ver README §5.
 - **PostgreSQL 18.4** en todos los compose. Dos detalles no negociables:
@@ -143,7 +148,7 @@ de autenticación (login/logout/quiosco/MFA) y las cuatro de usuarios (CRUD Admi
 y las seis de empleados (incluido Excel), con casos de uso compartidos.
 `check:modules` aplica strict a auth, users, employees, records, shifts, leaves,
 corrections, shiftReports, kpis, emailReports, meters, notes, configs, feriados y plataforma HTTP.
-Fastify es el servidor principal tras 025. Express queda solo para pruebas de paridad/rollback local.
+Fastify es el único servidor HTTP; las pruebas HTTP usan solo Fastify.
 `npm run test:fastify:integration` crea y elimina PostgreSQL 18.4 desechable;
 no reutiliza URLs de BD del entorno. Corre también en verify-backend de CI.
 Los consumidores de auth usan index.ts; aplicación solo admite puertos y errores
@@ -165,14 +170,14 @@ sobre el mismo cliente. No exponer PIN en HTTP/employee:updated; quiosco conserv
 seis campos. Validar el lote completo y conservar streaming Excel sin casts a
 Express.Response. Los borradores siguientes están en specs/roadmap-fastify.md.
 Records y shifts tienen API pública index.ts y aplicación pura con puertos.
-Fastify añade nueve rutas records y dieciocho shifts con flujos compartidos Express.
+Fastify expone nueve rutas records y dieciocho shifts con flujos de aplicación.
 Bulks conservan límite 10 MiB, resto 1 MiB. MonthlyShiftService conserva transacción
 con withDirectTransaction. Matriz Usuario/quiosco sin vínculo devuelve 403.
 Deudas 015: calendario mensual consulta UTC y muestra el día anterior en Chile,
 con queries por día heredadas; no replicar. Assignments sin vínculo de Usuario y
 quiosco mantienen scope legacy pendiente de decisión. Matriz sí usa batch context.
 Leaves/corrections tienen API pública index.ts y aplicación pura con puertos.
-Tres rutas leaves y cinco corrections comparten flujos Express/Fastify. POST leaves
+Tres rutas leaves y cinco corrections usan flujos de aplicación y Fastify. POST leaves
 conserva parse explícito del schema; corrections valida sin reemplazar body.
 Reloj_Control gestiona leaves pero no resuelve corrections. Aprobación conserva
 withDirectTransaction, claim pending e idempotencia concurrente. Errores compartidos
@@ -182,7 +187,7 @@ no atómica y solapamiento permitido. Correcciones no coteja employeeId/timeReco
 y conserva lectura sin vínculo Usuario y scope quiosco legacy. Resolver antes de cutover.
 ShiftReports tiene API pública index.ts, aplicación pura y tres rutas nativas
 list/save/export Excel. Conserva MAX numérico/retry de folios, conflicto 409 y
-orquestación Express compartida. Exportador acepta Writable neutral; helper stream
+orquestación de aplicación. Exportador acepta Writable neutral; helper stream
 sincroniza headers del response hasta primer byte para errores JSON y XLSX.
 Deudas 017: id opcional en schema falla en servicio, abierto soft-deleted bloquea,
 open no es exclusivo bajo concurrencia; audit previo a write no atómico y JSON
@@ -249,10 +254,9 @@ details?, statusCode, isAppError }`. Keep `throw x` rethrows and raw logger
   stacks and `instanceof` survive.
 - **`const where: any = {}`** as a Prisma filter — use `Prisma.XWhereInput`;
   build it per branch or use `Prisma.XWhereInput[]` with `AND`.
-- **`(req as any).user`** — import `AuthRequest` from
-  `src/middleware/authMiddleware.ts`. Note some controllers pass a narrowed
-  literal, so `NonNullable<AuthRequest["user"]>` may be too strict; declare the
-  precise fields actually read instead of falling back to `any`.
+- **`(req as any).user`** — use the native Fastify principal or import `AuthUser`
+  from `backend/src/modules/auth/index.ts`. Declare the precise fields read;
+  never import a retired Express request type or fall back to `any`.
 - **JSON Prisma columns** — `Prisma.InputJsonValue` for writes, `Prisma.JsonValue`
   for reads. Prisma serializes, so no `JSON.stringify` is needed.
 - **Generic components** — a component that maps over caller-supplied rows is
@@ -311,19 +315,14 @@ Both route-introspection guards used to pass **vacuously**. Express 5 removed
 `layer.regexp` and leaves `layer.path` `undefined` for mounted routers, so
 `app._router.stack` no longer resolves and the route list was always empty.
 
-1. **Declare mounts, do not rediscover them.** `src/app.ts` exports
-   `ROUTE_MOUNTS` (`{ prefix, router }[]`). `tests/helpers/routeManifest.ts`
-   joins those prefixes with each router's own routes. Never walk
-   `app._router`/`app.router` to recover prefixes again.
-2. **`/api/health` is mounted separately** in `app.ts` because it must bypass
-   the global rate limiter and the maintenance gate. It still appears in
-   `ROUTE_MOUNTS` so guards see it.
-3. **Detect `validate` with a marker, not `fn.name`.** The middleware factory
-   returns anonymous arrows, so the runtime name is `middleware`. Use
-   `isValidateMiddleware()` from `backend/src/middleware/validate.ts`.
-4. **Anti-vacuity assertions are mandatory.** Any guard that enumerates
-   collections must assert the collection is non-empty, otherwise a broken
-   enumerator silently passes forever.
+1. **Enumerate Fastify's real routes.** `buildFastifyApp` registra `routeManifest`
+   mediante `onRoute`; no recrear `ROUTE_MOUNTS` ni introspección Express.
+2. **`/api/health` bypasses maintenance and the global rate limiter.** Conservar
+   los tests HTTP nativos que verifican esas excepciones.
+3. **Detect validation by its marker.** `isRequestValidator` identifica los
+   preHandlers nativos; todas las mutaciones del manifiesto deben estar validadas.
+4. **Anti-vacuity assertions are mandatory.** El test del runtime compara métodos
+   y rutas reales con OpenAPI y exige que el manifiesto no esté vacío.
 5. **OpenAPI paths must match the mount prefix exactly.** `@openapi` blocks
    were written as `/api/emails`, `/api/configs`, `/api/exports` while the
    routers mount at `/api/email`, `/api/configs`, `/api/export`. Documented
@@ -332,11 +331,10 @@ Both route-introspection guards used to pass **vacuously**. Express 5 removed
    `docs/swagger.json` and `frontend/src/types/api-schema.ts` and fails if
    either changes. It runs inside `validate:ci`. Its `FRONTEND_DIR` used to be
    `Frontend` (capital F), which made the command unrunnable on Linux.
-7. **Validation ratchet.** `tests/architecture-guard.test.ts` compares the
-   unvalidated mutating routes against `ALLOWED_UNVALIDATED_ROUTES`. Each
-   baseline entry is justified inline (no JSON body, path-only, or multipart
-   with a controller-side parse). Adding an unvalidated route fails until it is
-   validated or justified.
+7. **Validation ratchet.** Los guards nativos verifican todas las mutaciones.
+   `tests/architecture-guard.test.ts` prohíbe dependencias/imports Express y
+   la reaparición de sus carpetas/adaptadores. OpenAPI se genera desde
+   `src/platform/openapi/operations.ts`, sin controllers o routers retirados.
 
 ### Ratchet baselines
 
@@ -345,7 +343,7 @@ Both are set to zero. Raise them only with a deliberate, explained edit:
 | Ratchet                     | File                                                                 | Enforced by                                                                     |
 | --------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | ESLint warnings             | `lint-budget.json`                                                   | `validate:ci`, pre-commit, CI                                                   |
-| Unvalidated mutating routes | `ALLOWED_UNVALIDATED_ROUTES` in `tests/architecture-guard.test.ts`   | `test:unit`                                                                     |
+| Unvalidated mutating routes | manifiesto Fastify en `tests/fastify-integration/runtime.test.ts`    | `test:fastify:integration`                                                      |
 | Coverage thresholds         | `coverage` en `backend/vitest.config.ts` y `frontend/vite.config.ts` | `verify-backend` (`test:coverage`) y `verify-frontend` (`validate:ci:coverage`) |
 
 Coverage, docs y smoke (spec 003, ADR-0012):
@@ -433,7 +431,7 @@ SYSTEM de verificación. Ver specs/022-fastify-auditoria/spec.md.
 Admin/maintenance usa módulos públicos index.ts y aplicación pura; 12 rutas admin
 y 9 maintenance exigen solo Administrador. Mantener 1000/IP/15 min admin antes
 de auth, exclusión global/maintenance y límite JSON 1 MiB. Maintenance no comprime:
-Express filtra originalUrl, Fastify usa opción de ruta compress=false.
+Fastify usa opción de ruta compress=false.
 Respuesta precede restart/finish por callbacks de puertos. Seed watchdog/contexto
 SYSTEM_SEEDER/skipTrigger se compone fuera de aplicación.
 Deudas 023: reset TRUNCATE CASCADE borra users aunque informa preservedUser,
@@ -444,7 +442,7 @@ index.ts. Ver specs/023-fastify-operaciones-admin/spec.md antes de cutover.
 Runtime integrado (024): modules/runtime/index.ts exporta lifecycle puro con
 puertos de timers y tareas; strict y guard de arquitectura. HTTP-only factory
 no inicia sockets/jobs; fastify/main.ts opta por integrateFastifyRuntime.
-Express y Fastify comparten runtimeJobs, huella validada antes de locks,
+Fastify usa runtimeJobs, huella validada antes de locks,
 autocierre inicial/5 min, scheduler nocturno único y drenaje antes de pools.
 refreshScheduler no vuelve a inicializar mantenimiento ni autocierre horario.
 Seeder shutdown espera workers y operaciones aún vivas tras timeout, conserva
@@ -505,10 +503,19 @@ AuthService.createSession se conserva solo para productores internos confiables
 B2d2 (admisión/drenaje universal de operaciones) queda en backlog posterior.
 
 Cierre 025 en desarrollo: index.ts carga fastify/main; dev/start/compose usan
-Fastify. Express/middleware solo devDependencies; Docker instala solo dependencias runtime en una etapa separada. Prisma
+Fastify. Express y su middleware están eliminados de todas las dependencias; Docker instala
+solo dependencias runtime en una etapa separada. Prisma
 CLI y swagger-ui-dist son dependencias runtime explícitas. UploadError neutral
-conserva códigos multipart sin importar Multer en Fastify. dev:express es rollback
-local con dependencias dev, no está disponible en imagen final. Deudas funcionales
+conserva códigos multipart sin importar Multer en Fastify. El comando dev:express se retiró; cualquier rollback histórico requiere otro checkout. Deudas funcionales
 y drenaje universal pasan a specs/025-fastify-cutover/backlog.md por instrucción
 del usuario; no crear más specs de migración ni bloquear cutover con continuidad
 de producción. En desarrollo se autoriza purgar sesiones y reiniciar.
+
+Cierre de tanda 5: ver specs/025-fastify-cutover/runtime-coordination.md.
+HTTP/jobs/scheduler/seed/sockets usan permisos persistentes de WorkCoordinator
+en portal_runtime fuera de public. No introducir trabajo DB/proveedor sin
+propietario, expirar locks ni limpiar claims automáticamente tras reinicio.
+Todo proceso previo debe detenerse antes de aplicar la migración de coordinación.
+Backup excluye portal_runtime; restore/reset deben conservarlo. La recuperación
+requiere detener runtimes y motores externos y confirmación explícita en el CLI.
+Health/documentación permanecen de lectura durante mantenimiento.

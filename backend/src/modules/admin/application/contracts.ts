@@ -9,7 +9,7 @@ export interface OperationPort {
     maintenanceMode: boolean;
     message: string;
   }): unknown;
-  finish(): void;
+  finish(): void | Promise<void>;
 }
 export interface AdminDependencies {
   stats(): Promise<unknown>;

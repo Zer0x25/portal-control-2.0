@@ -35,12 +35,22 @@ export interface CreateCorrectionData {
   reason?: string;
 }
 
+const isSelfOnly = (user: { role: string }) =>
+  user.role === "Usuario" || user.role === "Kiosk_Employee";
+
+function requireLinkedEmployee(user: { role: string; employeeId?: string }) {
+  if (isSelfOnly(user) && !user.employeeId) {
+    throw new AppError("Usuario sin empleado vinculado.", 403, "FORBIDDEN");
+  }
+}
+
 export class CorrectionService {
   /**
    * Lists correction requests with optional filtering and pagination.
    * Enforces role-based visibility rules.
    */
   static async list(params: CorrectionListParams, user: { role: string; employeeId?: string }) {
+    requireLinkedEmployee(user);
     const { since, limit, offset, status } = params;
     const where: Prisma.CorrectionRequestWhereInput = {};
 
@@ -58,7 +68,7 @@ export class CorrectionService {
     }
 
     // Role-based visibility: Users only see their own requests
-    if (user.role === "Usuario" && user.employeeId) {
+    if (isSelfOnly(user) && user.employeeId) {
       where.employeeId = user.employeeId;
     }
 
@@ -89,13 +99,21 @@ export class CorrectionService {
     user: { role: string; employeeId?: string; username?: string; id?: string },
   ) {
     // 1. Security Check: Ownership validation for regular users
-    if (user.role === "Usuario") {
+    if (isSelfOnly(user)) {
       const userEmpId = user.employeeId?.toString();
       const dataEmpId = data.employeeId?.toString();
 
       if (!userEmpId || dataEmpId !== userEmpId) {
         throw new Error("FORBIDDEN_OWNERSHIP");
       }
+    }
+
+    const record = await prisma.timeRecord.findUnique({ where: { id: data.timeRecordId } });
+    if (!record) {
+      throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
+    }
+    if (record.employeeId !== data.employeeId) {
+      throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
     }
 
     // 2. Overtime Validation: Check legal limits if altering core times
@@ -105,7 +123,6 @@ export class CorrectionService {
       data.recordField === "finColacion" ||
       data.recordField === "salida"
     ) {
-      const record = await prisma.timeRecord.findUnique({ where: { id: data.timeRecordId } });
       const employee = await prisma.employee.findUnique({ where: { id: data.employeeId } });
 
       if (record && employee) {
@@ -292,6 +309,10 @@ export class CorrectionService {
           throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
         }
 
+        if (currentTimeRecord.employeeId !== currentRequest.employeeId) {
+          throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
+        }
+
         const patch: Record<string, string> = {
           [recordField]: currentRequest.requestedValue,
         };
@@ -416,11 +437,12 @@ export class CorrectionService {
    * Total pending, and approved/rejected in the last 30 days.
    */
   static async getStats(user: { role: string; employeeId?: string }) {
+    requireLinkedEmployee(user);
     const last30Days = new Date();
     last30Days.setDate(last30Days.getDate() - 30);
 
     const baseWhere: Prisma.CorrectionRequestWhereInput = { isDeleted: false };
-    if (user.role === "Usuario" && user.employeeId) {
+    if (isSelfOnly(user) && user.employeeId) {
       baseWhere.employeeId = user.employeeId;
     }
 
@@ -452,13 +474,14 @@ export class CorrectionService {
    * Uses audit logs as source of truth for timeline entries.
    */
   static async getHistory(id: string, user: { role: string; employeeId?: string }) {
+    requireLinkedEmployee(user);
     const request = await prisma.correctionRequest.findUnique({ where: { id } });
 
     if (!request) {
       throw new Error("NOT_FOUND");
     }
 
-    if (user.role === "Usuario" && user.employeeId && request.employeeId !== user.employeeId) {
+    if (isSelfOnly(user) && user.employeeId && request.employeeId !== user.employeeId) {
       throw new AppError("Acceso denegado a historial de corrección", 403, "FORBIDDEN");
     }
 

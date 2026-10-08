@@ -47,7 +47,7 @@ export class ValidationError<TIssue = unknown> extends AppError {
 /**
  * Raised when a manual accounting-period closure is rejected because pending
  * items would be locked. The blocking items ride along in `blocking`; the API
- * layer (`configController`) matches on `message` and surfaces a display string,
+ * layer (config flows) matches on `message` and surfaces a display string,
  * so the generic parameter lets the caller keep its concrete payload type.
  */
 export class ClosureBlockedError<TBlocking = unknown> extends AppError {

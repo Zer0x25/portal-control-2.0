@@ -8,7 +8,7 @@ export const normalizeString = (str: string | undefined | null): string => {
 };
 
 /**
- * Narrows an Express query value to a single string.
+ * Narrows an HTTP query value to a single string.
  *
  * `req.query` is typed as `string | ParsedQs | (string | ParsedQs)[]`, so reaching
  * a service that expects a plain `string` normally requires a blind `as string`

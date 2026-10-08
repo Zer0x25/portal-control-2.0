@@ -1,4 +1,4 @@
-// These are wire DTOs: Prisma dates are serialized to ISO strings, as in Express JSON responses.
+// Wire DTOs serialize Prisma dates to ISO strings.
 const recordProperties = {
   id: { type: "string" },
   date: { type: "string" },

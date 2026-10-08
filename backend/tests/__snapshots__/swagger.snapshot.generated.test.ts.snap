@@ -649,81 +649,172 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "type": "object",
       },
       "EmailConfig": {
+        "additionalProperties": false,
         "properties": {
-          "auth": {
-            "properties": {
-              "pass": {
-                "minLength": 1,
-                "type": "string",
+          "activeProfileIndex": {
+            "maximum": 2,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "profiles": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "fromEmail": {
+                  "type": "string",
+                },
+                "fromName": {
+                  "type": "string",
+                },
+                "host": {
+                  "type": "string",
+                },
+                "pass": {
+                  "type": "string",
+                },
+                "port": {
+                  "maximum": 65535,
+                  "minimum": 1,
+                  "type": "integer",
+                },
+                "secure": {
+                  "type": "boolean",
+                },
+                "user": {
+                  "type": "string",
+                },
               },
-              "user": {
-                "minLength": 1,
+              "required": [
+                "host",
+                "port",
+                "secure",
+                "user",
+                "pass",
+                "fromEmail",
+                "fromName",
+              ],
+              "type": "object",
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "profiles",
+          "activeProfileIndex",
+        ],
+        "type": "object",
+      },
+      "EmailOperationResult": {
+        "properties": {
+          "message": {
+            "type": "string",
+          },
+          "success": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "success",
+          "message",
+        ],
+        "type": "object",
+      },
+      "EmailRules": {
+        "additionalProperties": false,
+        "properties": {
+          "autoCloseShift": {
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+              },
+              "recipient": {
                 "type": "string",
               },
             },
             "required": [
-              "user",
-              "pass",
+              "enabled",
+              "recipient",
             ],
             "type": "object",
           },
-          "from": {
+          "latenessOver15": {
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+              },
+              "recipient": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "enabled",
+              "recipient",
+            ],
+            "type": "object",
+          },
+          "latenessOver60": {
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+              },
+              "recipient": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "enabled",
+              "recipient",
+            ],
+            "type": "object",
+          },
+        },
+        "required": [
+          "autoCloseShift",
+          "latenessOver15",
+          "latenessOver60",
+        ],
+        "type": "object",
+      },
+      "EmailVerify": {
+        "additionalProperties": false,
+        "properties": {
+          "fromEmail": {
             "format": "email",
+            "type": "string",
+          },
+          "fromName": {
             "type": "string",
           },
           "host": {
             "minLength": 1,
             "type": "string",
           },
+          "pass": {
+            "type": "string",
+          },
           "port": {
+            "maximum": 65535,
+            "minimum": 1,
             "type": "integer",
           },
           "secure": {
             "type": "boolean",
+          },
+          "user": {
+            "type": "string",
           },
         },
         "required": [
           "host",
           "port",
           "secure",
-          "auth",
-          "from",
-        ],
-        "type": "object",
-      },
-      "EmailRules": {
-        "properties": {
-          "digestFrequency": {
-            "enum": [
-              "daily",
-              "weekly",
-              "none",
-            ],
-            "type": "string",
-          },
-          "notifyOnAbsence": {
-            "type": "boolean",
-          },
-          "notifyOnLate": {
-            "type": "boolean",
-          },
-          "notifyOnLeaveRequest": {
-            "type": "boolean",
-          },
-          "recipients": {
-            "items": {
-              "format": "email",
-              "type": "string",
-            },
-            "type": "array",
-          },
-        },
-        "required": [
-          "notifyOnAbsence",
-          "notifyOnLate",
-          "notifyOnLeaveRequest",
-          "digestFrequency",
-          "recipients",
+          "user",
+          "pass",
+          "fromEmail",
+          "fromName",
         ],
         "type": "object",
       },
@@ -1275,17 +1366,32 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       },
       "MeterReadingQuery": {
         "properties": {
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "meterId": {
+            "minLength": 1,
+            "type": "string",
+          },
           "month": {
-            "pattern": "^\\d{4}-\\d{2}$",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
             "type": "string",
           },
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "since": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "type": "string",
           },
         },
@@ -1709,6 +1815,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "QuickNoteQuery": {
         "properties": {
           "since": {
+            "pattern": "^\\d+$",
             "type": "string",
           },
         },
@@ -1831,20 +1938,79 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "type": "object",
       },
       "ScheduledReport": {
+        "additionalProperties": false,
         "properties": {
-          "active": {
-            "type": "boolean",
+          "createdAt": {
+            "type": "string",
           },
-          "config": {
-            "additionalProperties": {
-              "nullable": true,
+          "createdBy": {
+            "type": "string",
+          },
+          "cronExpression": {
+            "maxLength": 256,
+            "type": "string",
+          },
+          "description": {
+            "nullable": true,
+            "type": "string",
+          },
+          "filters": {
+            "additionalProperties": false,
+            "nullable": true,
+            "properties": {
+              "area": {
+                "type": "string",
+              },
+              "cargo": {
+                "type": "string",
+              },
+              "employeeId": {
+                "type": "string",
+              },
+              "endDate": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "type": "string",
+              },
+              "mode": {
+                "enum": [
+                  "summary",
+                  "compiled_detailed",
+                ],
+                "type": "string",
+              },
+              "shiftReportId": {
+                "type": "string",
+              },
+              "startDate": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "type": "string",
+              },
+              "viewMode": {
+                "enum": [
+                  "month",
+                  "week",
+                  "day",
+                ],
+                "type": "string",
+              },
             },
             "type": "object",
+          },
+          "frequency": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+            ],
+            "type": "string",
           },
           "id": {
             "type": "string",
           },
-          "lastRun": {
+          "isActive": {
+            "type": "boolean",
+          },
+          "lastRunAt": {
             "nullable": true,
             "type": "string",
           },
@@ -1852,7 +2018,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "minLength": 1,
             "type": "string",
           },
-          "nextRun": {
+          "nextRunAt": {
             "nullable": true,
             "type": "string",
           },
@@ -1861,9 +2027,137 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "format": "email",
               "type": "string",
             },
+            "minItems": 1,
             "type": "array",
           },
-          "type": {
+          "reportType": {
+            "enum": [
+              "attendance_summary",
+              "overtime",
+              "anomalies",
+              "shift_coverage",
+              "calendar",
+              "detailed",
+              "shift_report",
+            ],
+            "type": "string",
+          },
+          "updatedAt": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "description",
+          "reportType",
+          "frequency",
+          "cronExpression",
+          "recipients",
+          "filters",
+          "isActive",
+          "id",
+          "lastRunAt",
+          "nextRunAt",
+          "createdBy",
+          "createdAt",
+          "updatedAt",
+        ],
+        "type": "object",
+      },
+      "ScheduledReportFilters": {
+        "additionalProperties": false,
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "cargo": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "mode": {
+            "enum": [
+              "summary",
+              "compiled_detailed",
+            ],
+            "type": "string",
+          },
+          "shiftReportId": {
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "viewMode": {
+            "enum": [
+              "month",
+              "week",
+              "day",
+            ],
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "ScheduledReportInput": {
+        "additionalProperties": false,
+        "properties": {
+          "cronExpression": {
+            "maxLength": 256,
+            "type": "string",
+          },
+          "description": {
+            "type": "string",
+          },
+          "filters": {
+            "additionalProperties": false,
+            "nullable": true,
+            "properties": {
+              "area": {
+                "type": "string",
+              },
+              "cargo": {
+                "type": "string",
+              },
+              "employeeId": {
+                "type": "string",
+              },
+              "endDate": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "type": "string",
+              },
+              "mode": {
+                "enum": [
+                  "summary",
+                  "compiled_detailed",
+                ],
+                "type": "string",
+              },
+              "shiftReportId": {
+                "type": "string",
+              },
+              "startDate": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "type": "string",
+              },
+              "viewMode": {
+                "enum": [
+                  "month",
+                  "week",
+                  "day",
+                ],
+                "type": "string",
+              },
+            },
+            "type": "object",
+          },
+          "frequency": {
             "enum": [
               "daily",
               "weekly",
@@ -1871,35 +2165,139 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             ],
             "type": "string",
           },
+          "isActive": {
+            "default": true,
+            "type": "boolean",
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "recipients": {
+            "items": {
+              "format": "email",
+              "type": "string",
+            },
+            "minItems": 1,
+            "type": "array",
+          },
+          "reportType": {
+            "enum": [
+              "attendance_summary",
+              "overtime",
+              "anomalies",
+              "shift_coverage",
+              "calendar",
+              "detailed",
+              "shift_report",
+            ],
+            "type": "string",
+          },
         },
         "required": [
           "name",
-          "type",
-          "active",
+          "reportType",
+          "frequency",
+          "cronExpression",
           "recipients",
         ],
         "type": "object",
       },
       "ScheduledReportListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse",
+        "items": {
+          "$ref": "#/components/schemas/ScheduledReport",
+        },
+        "type": "array",
+      },
+      "ScheduledReportUpdate": {
+        "additionalProperties": false,
+        "properties": {
+          "cronExpression": {
+            "maxLength": 256,
+            "type": "string",
           },
-          {
+          "description": {
+            "type": "string",
+          },
+          "filters": {
+            "additionalProperties": false,
+            "nullable": true,
             "properties": {
-              "data": {
-                "items": {
-                  "$ref": "#/components/schemas/ScheduledReport",
-                },
-                "type": "array",
+              "area": {
+                "type": "string",
+              },
+              "cargo": {
+                "type": "string",
+              },
+              "employeeId": {
+                "type": "string",
+              },
+              "endDate": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "type": "string",
+              },
+              "mode": {
+                "enum": [
+                  "summary",
+                  "compiled_detailed",
+                ],
+                "type": "string",
+              },
+              "shiftReportId": {
+                "type": "string",
+              },
+              "startDate": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "type": "string",
+              },
+              "viewMode": {
+                "enum": [
+                  "month",
+                  "week",
+                  "day",
+                ],
+                "type": "string",
               },
             },
-            "required": [
-              "data",
-            ],
             "type": "object",
           },
-        ],
+          "frequency": {
+            "enum": [
+              "daily",
+              "weekly",
+              "monthly",
+            ],
+            "type": "string",
+          },
+          "isActive": {
+            "type": "boolean",
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "recipients": {
+            "items": {
+              "format": "email",
+              "type": "string",
+            },
+            "minItems": 1,
+            "type": "array",
+          },
+          "reportType": {
+            "enum": [
+              "attendance_summary",
+              "overtime",
+              "anomalies",
+              "shift_coverage",
+              "calendar",
+              "detailed",
+              "shift_report",
+            ],
+            "type": "string",
+          },
+        },
+        "type": "object",
       },
       "SecurityInsights": {
         "properties": {
@@ -2060,6 +2458,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "type": "object",
       },
       "SendTestEmail": {
+        "additionalProperties": false,
         "properties": {
           "message": {
             "default": "",
@@ -3935,12 +4334,22 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/email/verify": {
       "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailVerify",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApiResponse",
+                  "$ref": "#/components/schemas/EmailOperationResult",
                 },
               },
             },
@@ -5102,6 +5511,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "in": "query",
             "name": "page",
             "schema": {
+              "maximum": 1000000,
+              "minimum": 1,
               "type": "integer",
             },
           },
@@ -5109,7 +5520,18 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "in": "query",
             "name": "pageSize",
             "schema": {
+              "maximum": 500,
+              "minimum": 1,
               "type": "integer",
+            },
+          },
+          {
+            "description": "Mes de Chile, excluyente con startDate/endDate",
+            "in": "query",
+            "name": "month",
+            "schema": {
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "type": "string",
             },
           },
           {
@@ -5752,7 +6174,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ScheduledReport",
+                "$ref": "#/components/schemas/ScheduledReportInput",
               },
             },
           },
@@ -5834,7 +6256,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ScheduledReport",
+                "$ref": "#/components/schemas/ScheduledReportUpdate",
               },
             },
           },

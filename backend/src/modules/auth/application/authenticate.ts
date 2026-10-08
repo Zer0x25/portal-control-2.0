@@ -42,7 +42,7 @@ export function createAuthenticate(deps: AuthenticationDependencies) {
     }
     const now = deps.now();
     if (session.lastActive.getTime() < now.getTime() - 60000)
-      void deps.sessions.touch(session.id, now).catch(() => {});
+      await deps.sessions.touch(session.id, now).catch(() => {});
     return (await deps.users.find(session.userId)) || user;
   };
 }

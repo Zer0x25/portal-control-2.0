@@ -15,13 +15,24 @@ import { addBusinessDaysChile, toBusinessDateChile } from "../src/utils/timeUtil
  * These tests drive the real service through the mocked Prisma module instead.
  */
 
-vi.mock("../src/services/db", () => ({
-  default: {
+vi.mock("../src/services/db", () => {
+  const db = {
+    $queryRaw: vi.fn().mockResolvedValue([{ id: "emp1" }]),
     employee: { findUnique: vi.fn() },
-    leaveRecord: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
+    leaveRecord: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
     timeRecord: { findMany: vi.fn(), update: vi.fn(), create: vi.fn(), updateMany: vi.fn() },
-  },
-}));
+  };
+  return {
+    default: db,
+    withDirectTransaction: async (run: (tx: typeof db) => Promise<unknown>) => run(db),
+  };
+});
 
 vi.mock("../src/services/socketService", () => ({
   SocketService: { emit: vi.fn() },
