@@ -1,20 +1,29 @@
 name: Portal Control CD
 
 on:
-  workflow_run:
-    workflows:
-      - Portal Control CI
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      tag_name:
+        description: 'Release tag or version name (e.g. v8.24.1)'
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release tag or version to deploy'
+        required: false
+        default: 'latest'
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
   packages: write
 
-# Los deploys se encolan en vez de competir: dos merges seguidos a main
-# publican y pinean en orden, sin carreras sobre compose.yaml.
 concurrency:
-  group: deploy-main
+  group: deploy-release
   cancel-in-progress: false
 
 env:
@@ -22,44 +31,85 @@ env:
   IMAGE_OWNER: ${{ github.repository_owner }}
 
 jobs:
-  check-deployable:
-    name: Check deployable changes
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.actor.login != 'github-actions[bot]' }}
+  e2e-smoke:
+    name: E2E Smoke (staging release validation)
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-          fetch-depth: 2
+          node-version: 26
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Check changed files
-        id: check
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund --prefer-offline --loglevel=error
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Create staging env
         run: |
-          PARENT=$(git rev-parse --verify HEAD~1 2>/dev/null || true)
-          if [ -z "$PARENT" ]; then
-            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          CHANGED=$(git diff --name-only HEAD~1 HEAD)
-          echo "Archivos modificados en este push:"
-          echo "$CHANGED"
+          cp .env.staging.example .env.staging
+          printf '\nJWT_SECRET=%s\nSEED_ADMIN_PASSWORD=%s\n' \
+            "${{ secrets.JWT_SECRET || github.run_id }}" \
+            "${{ secrets.SEED_ADMIN_PASSWORD || '999.666' }}" \
+            >> .env.staging
 
-          if echo "$CHANGED" | grep -q -E '^(backend/|frontend/|nginx/|compose\.yaml|Dockerfile)'; then
-            echo "Cambios en componentes desplegables detectados."
-            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+      - name: Start compose.staging stack
+        run: docker compose --env-file .env.staging -f compose.staging.yaml up -d --build
+
+      - name: Install Playwright chromium
+        working-directory: frontend
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            npx playwright install chromium
           else
-            echo "Sin cambios en código desplegable (solo docs, scripts o config). Despliegue omitido."
-            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            npx playwright install --with-deps chromium
           fi
+
+      - name: Wait for gateway health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080 > /dev/null; then
+              echo "gateway healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::gateway no alcanzó http://127.0.0.1:8080 en ~3 min"
+          docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
+          exit 1
+
+      - name: Run smoke spec
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8080
+          E2E_API_URL: http://127.0.0.1:8080/api
+        run: npx playwright test e2e/smoke.spec.ts
+
+      - name: Dump stack logs on failure
+        if: failure()
+        run: docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
+
+      - name: Stop stack
+        if: always()
+        run: docker compose --env-file .env.staging -f compose.staging.yaml down
 
   publish-images:
     name: Publish images
-    needs: check-deployable
-    if: ${{ needs.check-deployable.outputs.should_deploy == 'true' }}
+    needs: e2e-smoke
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -78,8 +128,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -99,6 +147,7 @@ jobs:
           tags: |
             type=raw,value=latest
             type=sha,format=short
+            ${{ (inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name)) && format('type=raw,value={0}', inputs.tag_name || github.ref_name) || '' }}
 
       - name: Build and push image
         uses: docker/build-push-action@v6
@@ -109,16 +158,12 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Cache GHA por imagen (scope aislado por la matriz): las capas de
-          # `npm ci` se reutilizan cuando no cambian los lockfiles y cada
-          # deploy solo reconstruye lo que cambio.
           cache-from: type=gha,scope=${{ matrix.image_name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image_name }}
 
   pin-stack-images:
     name: Pin stack images
-    needs: [check-deployable, publish-images]
-    if: ${{ needs.check-deployable.outputs.should_deploy == 'true' }}
+    needs: [e2e-smoke, publish-images]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -127,18 +172,14 @@ jobs:
         with:
           ref: main
 
-      - name: Pin compose images to published SHA
+      - name: Pin compose images to published tag
         env:
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
-          # Sin hardcodear el owner: el patron debe coincidir tambien en
-          # clones/forks cuyo compose.yaml apunte a otro namespace de GHCR.
-          # GHCR normaliza el namespace a minusculas (compose.yaml usa
-          # `zer0x25` aunque el login sea `Zer0x25`), asi que se compara en
-          # minusculas.
+          HEAD_SHA: ${{ github.sha }}
+          TAG_INPUT: ${{ inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
           OWNER: ${{ github.repository_owner }}
         run: |
           SHORT_SHA="${HEAD_SHA::7}"
-          TAG="sha-${SHORT_SHA}"
+          TAG="${TAG_INPUT:-sha-${SHORT_SHA}}"
           OWNER_LC="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
 
           sed -i \
@@ -149,16 +190,17 @@ jobs:
 
       - name: Commit pinned compose
         env:
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_SHA: ${{ github.sha }}
+          TAG_INPUT: ${{ inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
         run: |
           if git diff --quiet -- compose.yaml; then
-            echo "compose.yaml already pinned to target SHA"
+            echo "compose.yaml already pinned to target tag"
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add compose.yaml
-          git commit -m "chore(deploy): pin portal images to ${HEAD_SHA::7} [skip ci]"
+          COMMIT_TAG="${TAG_INPUT:-${HEAD_SHA::7}}"
+          git commit -m "chore(deploy): pin portal images to ${COMMIT_TAG} [skip ci]"
           git push origin HEAD:main
-
