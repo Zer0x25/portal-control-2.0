@@ -197,15 +197,13 @@ jobs:
       - name: Cache Prisma Schema & Engines
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.cache/prisma
-            backend/node_modules/@prisma/engines
+          path: ~/.cache/prisma
           key: prisma-${{ runner.os }}-${{ hashFiles('backend/prisma/schema.prisma') }}
           restore-keys: |
             prisma-${{ runner.os }}-
 
       - name: Install backend dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --prefer-offline --loglevel=error
 
       - name: Generate Prisma client
         # Prisma 7 evalua prisma.config.ts (exige DIRECT_URL) en todo comando
@@ -269,7 +267,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --prefer-offline --loglevel=error
 
       # validate:ci:coverage == validate:ci pero con `test:coverage` en vez de
       # `test:run:ci`: la suite completa corre UNA vez con thresholds
@@ -315,7 +313,7 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --prefer-offline --loglevel=error
 
       - name: Cache Playwright browsers
         id: playwright-cache
