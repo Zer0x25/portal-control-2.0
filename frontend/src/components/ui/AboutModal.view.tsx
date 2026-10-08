@@ -146,6 +146,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
               <button
                 onClick={onCloseMonkey}
                 className="absolute -top-4 -right-4 bg-white text-black p-2 rounded-full shadow-2xl"
+                aria-label="Cerrar"
               >
                 <CloseIcon className="w-5 h-5" />
               </button>
