@@ -8,6 +8,7 @@
     "lint:budget:rules": "node scripts/lint-budget.cjs --rules",
     "api:sync": "node .agents/skills/api-contracts-sync/scripts/sync.cjs",
     "preflight": "node .agents/skills/ci-preflight/scripts/preflight.cjs",
+    "db:precheck": "node .agents/skills/prisma-migration-safeguard/scripts/precheck.cjs",
     "hooks:pre-commit": "node scripts/check-hook-deps.cjs && lint-staged && npm run lint:budget",
     "hooks:pre-push": "node scripts/pre-push.cjs",
     "spec:check": "node scripts/spec-check.cjs",
