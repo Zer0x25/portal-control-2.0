@@ -309,13 +309,8 @@ export class KpiReportService {
     // Impact: Reduces total latency of schedule lookup from O(N) to O(1) concurrent requests.
     const scheduleInfos = await Promise.all(
       activeEmployees.map((emp) =>
-        schedulingService.getEmployeeDailyScheduleInfo(
-          emp.id,
-          today,
-          schedulingContext,
-          emp,
-        )
-      )
+        schedulingService.getEmployeeDailyScheduleInfo(emp.id, today, schedulingContext, emp),
+      ),
     );
 
     for (const scheduleInfo of scheduleInfos) {
