@@ -1,35 +1,21 @@
 name: Portal Control CI
 
-# Reparto de responsabilidades entre PR y main (ver ADR-0013):
+# Reparto de responsabilidades entre PR y main:
 #
-#   `pull_request` -> VALIDACION POR CAMBIOS. `changes` detecta que areas
-#     tocaron backend/frontend/stack y solo esos jobs pesados corren, siempre
-#     despues de `gates`. Corre sobre el *merge ref*.
-#   `push` a main  -> SOLO GATES (~0.5 runner-min). La bateria pesada ya corrio
-#     en el PR sobre el mismo codigo (ADR-0013); el hook `pre-push` cubre los
-#     pushes directos en la maquina del autor.
+#   Tanto `pull_request` como `push` a main -> VALIDACIÓN POR CAMBIOS.
+#   `changes` detecta qué áreas tocaron backend/frontend/stack y solo esos jobs
+#   pesados corren después de `gates`. Si solo cambió documentación o configuración,
+#   la ejecución termina en ~30 s (solo gates).
+#   En push a main, esto blinda los despliegues directos sin correr jobs innecesarios,
+#   y garantiza que Portal Control CD solo despliegue código verificado.
 #
-# Etapas (ver ADR-0014):
-#   ETAPA 0 `changes` -> paths-filter, sin npm ci (~15 s). Solo en PR.
-#   ETAPA 1 `gates`   -> secret scan + guardrails + spec + docs en UN job
-#     (~30 s, un checkout). Antes eran 3 jobs con 3 checkouts y 3 colas.
-#   ETAPA 2 `verify-*`-> backend/frontend en paralelo, SOLO si su area cambio
-#     y el PR no es de release-please ni dependabot. La cobertura con thresholds (ratchet)
-#     corre DENTRO de cada verify: backend anade `test:coverage` (su
-#     validate:ci solo corre el subset de schemas) y frontend usa
-#     `validate:ci:coverage` (suite completa con --coverage). El antiguo job
-#     `coverage-ratchet` duplicaba los `npm ci` y re-corria la suite de
-#     frontend una segunda vez (~193 s medidos en ADR-0013).
-#   ETAPA 3 `e2e-smoke` -> SOLO si backend/frontend/stack cambio, el PR no es
-#     de release-please ni dependabot, y los verifys terminaron en success o skipped. En un
-#     PR rojo el e2e ya no quema ~176 s sobre codigo que no pasa validacion.
-#
-# Ahorro estimado por PR verde completo: ~35% (651 s -> ~400 s). PRs de
-# release-please, dependabot o solo-docs pasan de ~11 min a ~40 s
-# (changes + gates).
-#
-# Nota: sin branch protection (plan gratis, ver ADR-0013), los jobs en
-# `skipped` no bloquean el merge.
+# Etapas:
+#   ETAPA 0 `changes` -> paths-filter (~10 s). Corre en PR y push a main.
+#   ETAPA 1 `gates`   -> secret scan + guardrails + spec + docs (~25 s).
+#   ETAPA 2 `verify-*`-> backend/frontend en paralelo, SOLO si su área cambió
+#     (y fuera de bots como release-please o dependabot).
+#   ETAPA 3 `e2e-smoke` -> SOLO si backend/frontend/stack cambió y los verifys
+#     pasaron o fueron skipped.
 on:
   pull_request:
   push:
@@ -38,10 +24,6 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # Cancelar siempre es correcto: el codigo mas nuevo invalida al anterior.
-  # En `main` el ref es identico para todos los merges, asi que un merge
-  # rapido cancela la corrida del previo. Main solo ejecuta gates
-  # (~0.5 runner-min), de modo que cancelar es casi gratis.
   cancel-in-progress: true
 
 permissions:
@@ -54,10 +36,11 @@ env:
 jobs:
   changes:
     name: Detect changes
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      contents: read
       pull-requests: read
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
@@ -66,6 +49,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'push' && 2 || 1 }}
 
       - name: Detect changed paths
         id: filter
@@ -181,10 +166,13 @@ jobs:
   verify-backend:
     name: Verify backend
     needs: [gates, changes]
-    # Solo en PR con cambios en el area y fuera de PRs de release-please
-    # (solo bumpean versiones/changelogs). `!cancelled()` evita que un
-    # `needs` en skipped cancele la evaluacion del resto de la condicion.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/') && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' }}
+    # Corre en PR o en push a main si su área cambió (excluyendo bots de release o dependabot).
+    # `!cancelled()` evita que un `needs` en skipped cancele la evaluación del resto de la condición.
+    if: >-
+      ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' && (
+        (github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/')) ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]')
+      ) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -258,8 +246,12 @@ jobs:
   verify-frontend:
     name: Verify frontend
     needs: [gates, changes]
-    # Solo en PR con cambios en el area y fuera de PRs de release-please.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/') && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' }}
+    # Corre en PR o en push a main si su área cambió (excluyendo bots de release o dependabot).
+    if: >-
+      ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' && (
+        (github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/')) ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]')
+      ) }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -302,10 +294,12 @@ jobs:
   e2e-smoke:
     name: E2E Smoke (compose.staging)
     needs: [gates, changes, verify-backend, verify-frontend]
-    # Solo si toco backend/frontend/stack y los verifys no fallaron (success
-    # o skipped cuando su area no cambio). En un PR rojo el e2e ya no quema
-    # ~176 s sobre codigo que no pasa validacion.
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/') && needs.gates.result == 'success' && (needs.verify-backend.result == 'success' || needs.verify-backend.result == 'skipped') && (needs.verify-frontend.result == 'success' || needs.verify-frontend.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.stack == 'true') }}
+    # Solo si tocó backend/frontend/stack y los verifys no fallaron (success o skipped).
+    if: >-
+      ${{ !cancelled() && needs.gates.result == 'success' && (needs.verify-backend.result == 'success' || needs.verify-backend.result == 'skipped') && (needs.verify-frontend.result == 'success' || needs.verify-frontend.result == 'skipped') && (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.stack == 'true') && (
+        (github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/')) ||
+        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]')
+      ) }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
