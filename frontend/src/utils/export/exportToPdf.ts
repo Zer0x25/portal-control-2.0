@@ -1,4 +1,4 @@
-import { RowInput } from "jspdf-autotable";
+export type RowInput = (string | number | boolean | null | undefined)[];
 
 interface LogEntry {
   time: string;
@@ -149,7 +149,7 @@ export const exportToPDF = (
         <tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
       </thead>
       <tbody>
-        ${(rows as RowInput[][])
+        ${rows
           .map(
             (row) => `
           <tr>${row.map((cell) => `<td>${escapeHtml(String(cell))}</td>`).join("")}</tr>

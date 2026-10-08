@@ -38,41 +38,6 @@ export default defineConfig(({ mode }) => {
     base: "/",
     plugins: [
       react(),
-      {
-        name: "inline-css",
-        enforce: "post",
-        apply: "build",
-        transformIndexHtml(html: string, ctx: any) {
-          if (!ctx.bundle) return html;
-
-          let newHtml = html;
-          // Find all CSS assets
-          for (const [, value] of Object.entries(ctx.bundle)) {
-            const chunk = value as any;
-            if (
-              chunk.fileName.endsWith(".css") &&
-              chunk.type === "asset" &&
-              typeof chunk.source === "string"
-            ) {
-              const cssTag = `<style>${chunk.source}</style>`;
-              // Handle both absolute and relative path injections by Vite
-              // Vite might inject /assets/file.css or assets/file.css
-              const cssPathMatcher = new RegExp(
-                `<link[^>]+href=["'].*${chunk.fileName}["'][^>]*>`,
-                "g",
-              );
-
-              if (cssPathMatcher.test(newHtml)) {
-                newHtml = newHtml.replace(cssPathMatcher, cssTag);
-                // Remove the asset from the bundle so it doesn't get emitted as a separate file
-                // delete ctx.bundle[chunk.fileName]; // Optional: keeping it is safer for debugging, but deleting it saves space.
-                // Let's keep it for now to avoid side effects with PWA manifest generation potentially looking for it.
-              }
-            }
-          }
-          return newHtml;
-        },
-      },
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.svg"],
@@ -148,13 +113,13 @@ export default defineConfig(({ mode }) => {
             if (id.includes("node_modules/framer-motion")) {
               return "framer-motion";
             }
+            // Devtools (cargadas bajo demanda)
+            if (id.includes("node_modules/@tanstack/react-query-devtools")) {
+              return "devtools";
+            }
             // Estado y data fetching
             if (id.includes("node_modules/@tanstack") || id.includes("node_modules/zustand")) {
               return "state";
-            }
-            // Generación de PDFs
-            if (id.includes("node_modules/jspdf")) {
-              return "pdf";
             }
             // Charting
             if (
