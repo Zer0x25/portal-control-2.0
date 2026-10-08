@@ -109,7 +109,7 @@ export const useTeamMetrics = (
     title: "Anomalías",
     value: anomaliesCount,
     indicatorColor: anomaliesCount > 0 ? "orange" : "gray",
-    className: anomaliesCount > 0 ? "cursor-pointer" : "opacity-60",
+    className: anomaliesCount > 0 ? "cursor-pointer" : "",
     onClick: anomaliesCount > 0 ? onAnomaliesClick : undefined,
     clickable: anomaliesCount > 0,
   },

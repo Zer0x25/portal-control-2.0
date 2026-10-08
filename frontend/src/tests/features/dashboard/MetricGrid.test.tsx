@@ -158,7 +158,7 @@ describe("useTeamMetrics", () => {
 
     const { result } = renderHook(() => useTeamMetrics(5, 10, 0, undefined, onAnomaliesClick));
 
-    expect(result.current[2].className).toBe("opacity-60");
+    expect(result.current[2].className).toBe("");
     expect(result.current[2].onClick).toBeUndefined();
   });
 

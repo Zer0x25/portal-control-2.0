@@ -106,7 +106,9 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
 
     // Rows are absolutely-positioned virtualized divs, not <tr>s (the only
     // <tr> is the header). Audit activity (logins included) guarantees rows.
-    const rowCount = await page.locator("div[style*='translateY']").count();
+    const rows = page.locator("div[style*='translateY']");
+    await expect(rows.first()).toBeVisible({ timeout: 30000 });
+    const rowCount = await rows.count();
     expect(rowCount).toBeGreaterThan(0);
   });
 });

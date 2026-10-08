@@ -46,35 +46,51 @@ const ROLE_CREDS: Record<E2ERole, { username: string; password: string }> = {
   },
 };
 
+const cachedSessions: Partial<Record<E2ERole, { token: string; user: unknown }>> = {};
+
 // Login rápido (post-004): autentica por API (~200ms) y siembra
 // sessionStorage ANTES de navegar, replicando lo que guarda el slice de
 // auth tras un login UI (`authToken` + `currentUser` → `_verifyAuth`
-// restaura sesión sin roundtrip). Evita pagar el boot de Vite (~20s) en
-// la página de login en cada test. El smoke mantiene el login UI real
-// como gate de la ruta crítica; todo lo demás usa esto.
+// restaura sesión sin roundtrip). Reutiliza la sesión por worker para
+// evitar saturar el límite de sesiones concurrentes del rol (10).
 export async function loginFast(page: Page, request: APIRequestContext, role: E2ERole) {
   const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:4000/api";
   const { username, password } = ROLE_CREDS[role];
-  const res = await request.post(`${apiBase}/auth/login`, { data: { username, password } });
-  expect(res.ok()).toBe(true);
-  const body = await res.json();
-  if (body.mustChangePassword === true) {
-    throw new Error(`loginFast: ${username} requires password change, UI flow needed`);
+
+  if (cachedSessions[role]) {
+    const probe = await request.get(`${apiBase}/configs`, {
+      headers: { Authorization: `Bearer ${cachedSessions[role]!.token}` },
+    });
+    if (!probe.ok()) {
+      delete cachedSessions[role];
+    }
   }
-  const user = {
-    id: body.userId,
-    username: body.username,
-    role: body.role,
-    employeeId: body.employeeId ?? null,
-    isDeleted: false,
-    lastModified: Date.now(),
-    syncStatus: "synced",
-  };
+
+  if (!cachedSessions[role]) {
+    const res = await request.post(`${apiBase}/auth/login`, { data: { username, password } });
+    expect(res.ok()).toBe(true);
+    const body = await res.json();
+    if (body.mustChangePassword === true) {
+      throw new Error(`loginFast: ${username} requires password change, UI flow needed`);
+    }
+    const user = {
+      id: body.userId,
+      username: body.username,
+      role: body.role,
+      employeeId: body.employeeId ?? null,
+      isDeleted: false,
+      lastModified: Date.now(),
+      syncStatus: "synced",
+    };
+    cachedSessions[role] = { token: body.token, user };
+  }
+
+  const { token, user } = cachedSessions[role]!;
   await page.addInitScript(
     ({ token, storedUser }: { token: string; storedUser: unknown }) => {
       sessionStorage.setItem("authToken", token);
       sessionStorage.setItem("currentUser", JSON.stringify(storedUser));
     },
-    { token: body.token, storedUser: user },
+    { token, storedUser: user },
   );
 }
