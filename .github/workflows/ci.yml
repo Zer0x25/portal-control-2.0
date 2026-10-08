@@ -1,21 +1,13 @@
 name: Portal Control CI
 
-# Reparto de responsabilidades entre PR y main:
+# Reparto de responsabilidades entre PR y main (ADR-0013 / ADR-0014):
 #
-#   Tanto `pull_request` como `push` a main -> VALIDACIÓN POR CAMBIOS.
-#   `changes` detecta qué áreas tocaron backend/frontend/stack y solo esos jobs
-#   pesados corren después de `gates`. Si solo cambió documentación o configuración,
-#   la ejecución termina en ~30 s (solo gates).
-#   En push a main, esto blinda los despliegues directos sin correr jobs innecesarios,
-#   y garantiza que Portal Control CD solo despliegue código verificado.
-#
-# Etapas:
-#   ETAPA 0 `changes` -> paths-filter (~10 s). Corre en PR y push a main.
-#   ETAPA 1 `gates`   -> secret scan + guardrails + spec + docs (~25 s).
-#   ETAPA 2 `verify-*`-> backend/frontend en paralelo, SOLO si su área cambió
-#     (y fuera de bots como release-please o dependabot).
-#   ETAPA 3 `e2e-smoke` -> SOLO si backend/frontend/stack cambió y los verifys
-#     pasaron o fueron skipped.
+#   `pull_request`: Validación completa por cambios.
+#   `changes` detecta qué áreas tocaron backend/frontend y solo esos jobs
+#   pesados corren después de `gates`.
+#   `push` a main: SOLO los gates rápidos de gobernanza (~20 s).
+#   Evita repetir la batería funcional pesada que el PR ya validó antes del merge.
+#   Para pushes directos a main, el hook local .husky/pre-push cubre la validación.
 on:
   pull_request:
   push:
@@ -190,13 +182,15 @@ jobs:
   verify-backend:
     name: Verify backend
     needs: [gates, changes]
-    # Corre en PR o en push a main si su área cambió (excluyendo bots de release o dependabot).
+    # Corre exclusivamente en PR si su área cambió (excluyendo bots de release o dependabot).
+    # En push a main se salta por diseño (ADR-0013): el PR ya validó la batería pesada.
     # `!cancelled()` evita que un `needs` en skipped cancele la evaluación del resto de la condición.
     if: >-
-      ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' && (
-        (github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/')) ||
-        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]')
-      ) }}
+      ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' &&
+        github.event_name == 'pull_request' &&
+        !startsWith(github.head.ref, 'release-please--') &&
+        !startsWith(github.head.ref, 'dependabot/')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -264,12 +258,14 @@ jobs:
   verify-frontend:
     name: Verify frontend
     needs: [gates, changes]
-    # Corre en PR o en push a main si su área cambió (excluyendo bots de release o dependabot).
+    # Corre exclusivamente en PR si su área cambió (excluyendo bots de release o dependabot).
+    # En push a main se salta por diseño (ADR-0013): el PR ya validó la batería pesada.
     if: >-
-      ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' && (
-        (github.event_name == 'pull_request' && !startsWith(github.head.ref, 'release-please--') && !startsWith(github.head.ref, 'dependabot/')) ||
-        (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]')
-      ) }}
+      ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' &&
+        github.event_name == 'pull_request' &&
+        !startsWith(github.head.ref, 'release-please--') &&
+        !startsWith(github.head.ref, 'dependabot/')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
