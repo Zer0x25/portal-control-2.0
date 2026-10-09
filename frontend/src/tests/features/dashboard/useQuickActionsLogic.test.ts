@@ -70,7 +70,7 @@ describe("useQuickActionsLogic", () => {
     expect(result.current.colorClasses).toEqual({
       emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
       indigo: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
-      slate: "text-slate-600 dark:text-gray-400 bg-gray-500/10",
+      slate: "text-token-text-secondary bg-token-surface-hover",
       orange: "text-orange-600 dark:text-orange-400 bg-orange-500/10",
     });
   });
