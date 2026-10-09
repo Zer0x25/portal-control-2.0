@@ -1,5 +1,10 @@
 import { maskConfigValue } from "./smtpSecrets";
-import { BRAND_LOGO_KEY, validateBrandLogoValue } from "./brandLogo";
+import {
+  BRAND_LOGO_FALLBACK,
+  BRAND_LOGO_KEY,
+  validateBrandLogoValue,
+  type BrandLogoValue,
+} from "./brandLogo";
 import { AppError, ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { ConfigDependencies, PolicyFile } from "./contracts";
@@ -79,6 +84,63 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
         if (old && old !== file.filename) await deps.removeFile(old);
       }
       return { message: "Reglamento actualizado correctamente.", ...next, url };
+    },
+    brandLogo: async () => {
+      let stored: unknown;
+      try {
+        stored = await deps.get(BRAND_LOGO_KEY);
+      } catch {
+        return null;
+      }
+      let parsed: BrandLogoValue;
+      try {
+        parsed = validateBrandLogoValue(stored);
+      } catch {
+        return null;
+      }
+      const logoUrl =
+        parsed.source.kind === "upload" ? "/api/configs/public/brand-logo/file" : undefined;
+      return { ...parsed, url: logoUrl };
+    },
+    downloadLogo: async () => {
+      const value = await deps.get(BRAND_LOGO_KEY);
+      if (!object(value)) return null;
+      try {
+        const parsed = validateBrandLogoValue(value);
+        if (parsed.source.kind !== "upload") return null;
+        return deps.downloadLogo({ filename: parsed.source.ref, originalName: parsed.source.ref });
+      } catch {
+        return null;
+      }
+    },
+    uploadLogo: async (file: PolicyFile | undefined, actor?: string) => {
+      if (!file) throw new ValidationError("Debes adjuntar una imagen PNG, JPG o WebP.");
+      const username = actor || "SYSTEM";
+      let previous: BrandLogoValue | null = null;
+      try {
+        previous = validateBrandLogoValue(await deps.get(BRAND_LOGO_KEY));
+      } catch {
+        previous = null;
+      }
+      const next: BrandLogoValue = {
+        source: { kind: "upload", ref: file.filename },
+        width: previous?.width ?? BRAND_LOGO_FALLBACK.width,
+        height: previous?.height ?? BRAND_LOGO_FALLBACK.height,
+      };
+      try {
+        await deps.validateLogoFile(file);
+        await deps.set(BRAND_LOGO_KEY, next, username);
+      } catch (error) {
+        await deps.removeLogoFile(file.filename);
+        throw error;
+      }
+      const oldRef = previous?.source.kind === "upload" ? previous.source.ref : null;
+      if (oldRef && oldRef !== file.filename) await deps.removeLogoFile(oldRef);
+      return {
+        message: "Logo actualizado correctamente.",
+        ...next,
+        url: "/api/configs/public/brand-logo/file",
+      };
     },
   };
 }
