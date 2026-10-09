@@ -39,7 +39,13 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     set: async (key: unknown, value: unknown, actor?: string) => {
       const valid = keyValue(key);
       // Spec 027: la clave de marca se valida en el flow (400 en español).
-      const prepared = valid === BRAND_LOGO_KEY ? validateBrandLogoValue(value) : value;
+      // `null` restablece al asset empaquetado (el GET público retorna null → fallback).
+      const prepared =
+        valid === BRAND_LOGO_KEY
+          ? value === null
+            ? null
+            : validateBrandLogoValue(value)
+          : value;
       try {
         return maskConfigValue(valid, await deps.set(valid, prepared, actor || "SYSTEM"));
       } catch (error) {
