@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { SearchIcon, XCircleIcon } from "./icons";
 
 interface PremiumSearchInputProps {
@@ -39,15 +38,11 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
       <div className="relative flex items-center">
         {/* Search Icon Wrap */}
         <div className="absolute left-4 flex items-center justify-center">
-          <motion.div
-            animate={{
-              scale: isFocused ? 1.1 : 1,
-              rotate: isFocused ? 5 : 0,
-            }}
-            className={`${isFocused ? "text-sap-blue" : "text-token-text-tertiary"} transition-colors duration-300`}
+          <div
+            className={`transition-transform duration-300 ${isFocused ? "scale-110 rotate-5 text-sap-blue" : "scale-100 text-token-text-tertiary"}`}
           >
             <SearchIcon className="w-4 h-4" />
-          </motion.div>
+          </div>
         </div>
 
         <input
@@ -70,38 +65,30 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
             rounded-md outline-none
             text-[10px] font-black uppercase tracking-wider text-token-text-primary
             placeholder:text-token-text-tertiary
-            transition-all duration-300
+            transition duration-300
             ${disabled ? "opacity-50 cursor-not-allowed bg-token-surface-stripe" : isFocused ? "border-sap-blue shadow-lg shadow-sap-blue/10 bg-token-surface-card" : "hover:border-token-border-subtle"}
           `}
         />
 
         {/* Action Elements (Shortcut or Clear) */}
         <div className="absolute right-3 flex items-center gap-2">
-          <AnimatePresence mode="wait">
-            {value ? (
-              <motion.button
-                key="clear"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                onClick={handleClear}
-                className="p-1 hover:text-sap-error text-token-text-tertiary transition-colors"
-                title="Limpiar búsqueda"
-              >
-                <XCircleIcon className="w-5 h-5" />
-              </motion.button>
-            ) : (
-              <motion.div
-                key="shortcut"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded border border-token-border-subtle bg-token-surface-stripe text-[8px] font-black text-token-text-tertiary uppercase tracking-tighter"
-              >
-                {shortcut}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {value ? (
+            <button
+              key="clear"
+              onClick={handleClear}
+              className="p-1 hover:text-sap-error text-token-text-tertiary transition-colors animate-in fade-in zoom-in-90"
+              title="Limpiar búsqueda"
+            >
+              <XCircleIcon className="w-5 h-5" />
+            </button>
+          ) : (
+            <div
+              key="shortcut"
+              className="hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded border border-token-border-subtle bg-token-surface-stripe text-[8px] font-black text-token-text-tertiary uppercase tracking-tighter animate-in fade-in"
+            >
+              {shortcut}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
 interface TooltipProps {
   content: string;
@@ -30,25 +29,20 @@ const Tooltip: React.FC<TooltipProps> = ({
       onMouseLeave={() => setIsVisible(false)}
     >
       {children}
-      <AnimatePresence>
-        {isVisible && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className={`
-              absolute z-100 px-4 py-2.5 
-              bg-token-surface-card text-token-text-primary text-[11px] font-mono tracking-tight 
-              rounded-md border border-token-border-technical shadow-2xl 
+      {isVisible && (
+        <div
+          className={`
+              absolute z-100 px-4 py-2.5
+              bg-token-surface-card text-token-text-primary text-[11px] font-mono tracking-tight
+              rounded-md border border-token-border-technical shadow-2xl
               max-w-[400px] w-max whitespace-normal wrap-break-word pointer-events-none
+              animate-in fade-in zoom-in-95
               ${positionStyles[position]}
             `}
-          >
-            {content}
-          </motion.div>
-        )}
-      </AnimatePresence>
+        >
+          {content}
+        </div>
+      )}
     </div>
   );
 };

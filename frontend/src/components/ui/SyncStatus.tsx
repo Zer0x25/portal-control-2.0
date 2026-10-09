@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon } from "./icons/index";
 import { idbGetAllBy, STORES } from "../../utils/indexedDB";
 import SyncErrorsModal from "./SyncErrorsModal";
@@ -153,16 +152,14 @@ const SyncStatus: React.FC = () => {
 
   return (
     <>
-      <motion.div
-        className={`p-2 rounded-full cursor-pointer transition-colors hover:bg-white/10 ${action ? "cursor-pointer" : "cursor-default"}`}
+      <div
+        className={`p-2 rounded-full cursor-pointer transition hover:bg-white/10 ${action ? "cursor-pointer" : "cursor-default"} hover:scale-110 active:scale-95`}
         title={tooltip}
         aria-label={tooltip}
         onClick={action}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
       >
         <Icon className={`w-5 h-5 ${color} ${spin ? "animate-spin" : ""}`} />
-      </motion.div>
+      </div>
       <SyncErrorsModal
         isOpen={isErrorsModalOpen}
         onClose={() => setIsErrorsModalOpen(false)}

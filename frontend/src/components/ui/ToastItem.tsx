@@ -14,19 +14,26 @@ interface ToastItemProps {
 }
 
 import Button from "./Button";
-import { motion } from "framer-motion";
+
+const EXIT_MS = 150;
 
 const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
   const { id, message, type, duration } = toast;
+  const [closing, setClosing] = React.useState(false);
+
+  const dismiss = React.useCallback(() => {
+    setClosing((prev) => {
+      if (!prev) setTimeout(() => onDismiss(id), EXIT_MS);
+      return true;
+    });
+  }, [id, onDismiss]);
 
   useEffect(() => {
     if (duration) {
-      const timer = setTimeout(() => {
-        onDismiss(id);
-      }, duration);
+      const timer = setTimeout(dismiss, duration);
       return () => clearTimeout(timer);
     }
-  }, [id, duration, onDismiss]);
+  }, [id, duration, dismiss]);
 
   const statusConfig = useMemo(() => {
     switch (type) {
@@ -71,17 +78,14 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
   const { Icon, color } = statusConfig;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, x: 50, scale: 0.9 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+    <div
       className={`
         pointer-events-auto w-full max-w-sm overflow-hidden
         bg-token-surface-card rounded-lg
         border border-token-border-technical
         border-l-4 ${type === "success" ? "border-l-sap-success" : type === "error" ? "border-l-sap-error" : type === "warning" ? "border-l-sap-warning" : "border-l-sap-blue"}
         shadow-lg flex items-stretch
+        ${closing ? "animate-out fade-out zoom-out-90" : "animate-in fade-in zoom-in-90 [--tw-enter-translate-x:50px] [animation-duration:200ms]"}
       `}
     >
       <div className="flex-1 px-5 py-4 flex items-center gap-4">
@@ -105,14 +109,14 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
       <div className="flex items-center pr-2">
         <Button
           variant="none"
-          onClick={() => onDismiss(id)}
+          onClick={dismiss}
           className="p-2 rounded-lg text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-hover transition-colors group"
           aria-label="Cerrar notificación"
         >
           <CloseIcon className="w-4 h-4 transition-transform group-active:scale-90" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
