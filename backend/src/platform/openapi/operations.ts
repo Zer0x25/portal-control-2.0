@@ -2210,6 +2210,76 @@
 
 /**
  * @openapi
+ * /api/configs/public/brand-logo:
+ *   get:
+ *     summary: Obtener el logo de marca configurado
+ *     tags: [Configs]
+ *     responses:
+ *       200:
+ *         description: Logo de marca vigente con fuente y tamaño
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   additionalProperties: true
+ */
+
+/**
+ * @openapi
+ * /api/configs/public/brand-logo/file:
+ *   get:
+ *     summary: Descargar el archivo del logo de marca
+ *     tags: [Configs]
+ *     responses:
+ *       200:
+ *         description: Archivo de imagen del logo (PNG, JPG o WebP)
+ *         content:
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
+
+/**
+ * @openapi
+ * /api/configs/brand-logo:
+ *   post:
+ *     summary: Subir el logo de marca (PNG, JPG o WebP)
+ *     tags: [Configs]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Logo de marca actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   additionalProperties: true
+ */
+
+/**
+ * @openapi
  * /api/configs/server-time:
  *   get:
  *     summary: Obtener hora actual del servidor
