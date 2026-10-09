@@ -4,7 +4,7 @@ Spec: [spec.md](file:///specs/027-client-logo-config/spec.md). Plan: [plan.md](f
 
 Reglas: una tarea = un commit o PR revisable. Cada tarea cita su AC. Convencional Commits sin emojis. Ninguna tarea toca código fuera de lo listado en el plan.
 
-- [ ] T1: `docs(specs): registrar decisión de modelo branding global vs por-cliente y forma de la clave` — cerrar la decisión abierta del plan (Opción A/B/C), fijar nombre de clave (`branding_logo` JSON) y si el tamaño es ancho/alto o escala (AC1, AC2)
+- [x] T1: `docs(specs): registrar decisión de modelo branding global vs por-cliente y forma de la clave` — cerrar la decisión abierta del plan (Opción A/B/C), fijar nombre de clave (`branding_logo` JSON) y si el tamaño es ancho/alto o escala (AC1, AC2)
 - [ ] T2: `feat(configs): agregar esquema y validación de branding_logo con rangos de tamaño` — Zod en el módulo `configs` + validación en `set` con 400 en español ante MIME/URL/dimensiones inválidas (AC1, AC2)
 - [ ] T3: `feat(configs): exponer lectura pública y subida de logo con guards de rol` — endpoints público/autenticado en `routes.ts` + manifiesto en `routeContracts.ts` + almacenamiento con `basename` y limpieza ante fallo (AC5, AC6)
 - [ ] T4: `feat(configs): documentar endpoints en OpenAPI y sincronizar SDK frontend` — `operations.ts`, `swagger.json` y `api-schema.ts` regenerados, `npm run check:sdk` en verde (AC7)
