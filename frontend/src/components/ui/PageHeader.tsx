@@ -30,14 +30,18 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex flex-col gap-1">
         {showEyebrow && (
           <div className="flex items-center gap-2 mb-1.5">
-            {eyebrowIcon && <span className="opacity-70 text-sap-blue">{eyebrowIcon}</span>}
-            <p className="text-[11px] font-bold text-sap-blue tracking-wide uppercase">{eyebrow}</p>
+            {eyebrowIcon && (
+              <span className="opacity-70 text-token-accent-brand">{eyebrowIcon}</span>
+            )}
+            <p className="text-[11px] font-bold text-token-accent-brand tracking-wide uppercase">
+              {eyebrow}
+            </p>
           </div>
         )}
 
         <div className="flex items-center gap-4">
           {icon && (
-            <div className="w-10 h-10 rounded-sm bg-sap-blue flex items-center justify-center text-white shrink-0 shadow-sm">
+            <div className="w-10 h-10 rounded-sm bg-token-accent-brand flex items-center justify-center text-token-text-onAccent shrink-0 shadow-sm">
               {icon}
             </div>
           )}

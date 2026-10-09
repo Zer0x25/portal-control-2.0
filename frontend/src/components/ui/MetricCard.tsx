@@ -27,22 +27,22 @@ const MetricCard: React.FC<MetricCardProps> = ({
   // Map simple color names to Tailwind sets to avoid fragile string manipulation
   const colorMap: Record<string, { dot: string; bg: string; border: string; text: string }> = {
     emerald: {
-      dot: "bg-emerald-500",
-      bg: "bg-emerald-500/10",
-      border: "border-emerald-500/20",
-      text: "text-emerald-600",
+      dot: "bg-token-status-success",
+      bg: "bg-token-status-success/10",
+      border: "border-token-status-success/20",
+      text: "text-token-status-success",
     },
     indigo: {
-      dot: "bg-sap-blue",
-      bg: "bg-sap-blue/10",
-      border: "border-sap-blue/20",
-      text: "text-sap-blue",
+      dot: "bg-token-accent-brand",
+      bg: "bg-token-accent-brand/10",
+      border: "border-token-accent-brand/20",
+      text: "text-token-accent-brand",
     },
     orange: {
-      dot: "bg-orange-500",
-      bg: "bg-orange-500/10",
-      border: "border-orange-500/20",
-      text: "text-orange-600",
+      dot: "bg-token-status-warning",
+      bg: "bg-token-status-warning/10",
+      border: "border-token-status-warning/20",
+      text: "text-token-status-warning",
     },
     slate: {
       dot: "bg-token-text-tertiary",
@@ -51,10 +51,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
       text: "text-token-text-secondary",
     },
     gray: {
-      dot: "bg-gray-500",
-      bg: "bg-gray-500/10",
-      border: "border-gray-500/20",
-      text: "text-gray-500",
+      dot: "bg-token-text-tertiary",
+      bg: "bg-token-surface-stripe",
+      border: "border-token-border-subtle",
+      text: "text-token-text-secondary",
     },
   };
 
@@ -67,7 +67,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       className={`
         animate-in fade-in duration-150 relative flex flex-col p-3 rounded-md border border-token-border-subtle shadow-none transition-all duration-150
         bg-token-surface-stripe
-        ${onClick ? "cursor-pointer active:scale-[0.98] hover:border-token-accent-active hover:bg-token-surface-active" : ""}
+        ${onClick ? "cursor-pointer active:scale-[0.98] hover:border-token-accent-brand hover:bg-token-surface-active" : ""}
         ${className}
       `}
     >
@@ -103,7 +103,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           )}
           {trend && (
             <span
-              className={`text-[9px] font-bold ${trend.isPositive ? "text-emerald-600" : "text-rose-600"} whitespace-nowrap text-center`}
+              className={`text-[9px] font-bold ${trend.isPositive ? "text-token-status-success" : "text-token-status-error"} whitespace-nowrap text-center`}
             >
               {trend.isPositive ? "↑" : "↓"} {trend.value}
             </span>

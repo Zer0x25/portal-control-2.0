@@ -32,17 +32,17 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           disabled={currentPage === 1}
           variant="secondary"
           size="sm"
-          className="p-2 hidden sm:inline-flex rounded-xl border-gray-200 dark:border-gray-700 shadow-sm"
+          className="p-2 hidden sm:inline-flex rounded-md shadow-sm"
           title="Primera página"
         >
-          <ChevronDoubleLeftIcon className="w-5 h-5 text-gray-500" />
+          <ChevronDoubleLeftIcon className="w-5 h-5 text-token-text-secondary" />
         </Button>
         <Button
           onClick={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
           variant="secondary"
           size="sm"
-          className="flex items-center px-4 py-2 rounded-xl border-gray-200 dark:border-gray-700 shadow-sm font-bold text-[10px] uppercase tracking-wider"
+          className="flex items-center px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
           title="Página anterior"
         >
           <ChevronLeftIcon className="w-4 h-4 mr-1.5" />
@@ -51,12 +51,11 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       </div>
 
       <div className="flex flex-col items-center">
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+        <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.2em]">
           Página
         </span>
-        <span className="text-sm font-black text-sap-blue dark:text-blue-400 tabular-nums">
-          {currentPage} <span className="text-gray-300 dark:text-gray-600 font-medium">/</span>{" "}
-          {totalPages}
+        <span className="text-sm font-black text-token-accent-brand tabular-nums">
+          {currentPage} <span className="text-token-text-tertiary font-medium">/</span> {totalPages}
         </span>
       </div>
 
@@ -66,7 +65,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           disabled={currentPage === totalPages}
           variant="secondary"
           size="sm"
-          className="flex items-center px-4 py-2 rounded-xl border-gray-200 dark:border-gray-700 shadow-sm font-bold text-[10px] uppercase tracking-wider"
+          className="flex items-center px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
           title="Página siguiente"
         >
           Siguiente
@@ -77,10 +76,10 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           disabled={currentPage === totalPages}
           variant="secondary"
           size="sm"
-          className="p-2 hidden sm:inline-flex rounded-xl border-gray-200 dark:border-gray-700 shadow-sm"
+          className="p-2 hidden sm:inline-flex rounded-md shadow-sm"
           title="Última página"
         >
-          <ChevronDoubleRightIcon className="w-5 h-5 text-gray-500" />
+          <ChevronDoubleRightIcon className="w-5 h-5 text-token-text-secondary" />
         </Button>
       </div>
     </div>

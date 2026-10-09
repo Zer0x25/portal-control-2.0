@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 interface SelectOption {
   value: string | number;
@@ -14,7 +14,8 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, className = "", id, ...props }, ref) => {
-    const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const selectId = id || generatedId;
 
     return (
       <div className={`w-full flex flex-col gap-2 ${className}`}>
@@ -30,12 +31,14 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           <select
             id={selectId}
             ref={ref}
+            aria-invalid={error ? "true" : undefined}
+            aria-describedby={error ? `${selectId}-error` : undefined}
             className={`
               w-full appearance-none px-5 py-4 bg-token-surface-card
-              border ${error ? "border-sap-error" : "border-token-border-technical"} 
+              border ${error ? "border-token-status-error" : "border-token-border-technical"} 
               rounded-md shadow-sm
               text-token-text-primary
-              focus:ring-2 focus:ring-sap-blue/30 focus:border-sap-blue 
+              focus:ring-2 focus:ring-token-border-focus focus:border-token-accent-brand 
               outline-none transition-all duration-300
               disabled:opacity-50 disabled:cursor-not-allowed
               sm:text-sm font-bold cursor-pointer
@@ -50,7 +53,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </select>
 
           {/* Custom Chevron Icon */}
-          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-token-text-tertiary group-hover:text-sap-blue transition-colors">
+          <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-token-text-tertiary group-hover:text-token-accent-brand transition-colors">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -68,7 +71,10 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </div>
         </div>
         {error && (
-          <p className="ml-1 text-[10px] font-black uppercase tracking-widest text-sap-error animate-pulse">
+          <p
+            id={`${selectId}-error`}
+            className="mt-1.5 ml-1 text-[10px] font-black uppercase tracking-widest text-token-status-error animate-pulse"
+          >
             {error}
           </p>
         )}
