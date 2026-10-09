@@ -1,4 +1,5 @@
 import { maskConfigValue } from "./smtpSecrets";
+import { BRAND_LOGO_KEY, validateBrandLogoValue } from "./brandLogo";
 import { AppError, ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { ConfigDependencies, PolicyFile } from "./contracts";
@@ -32,8 +33,10 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     },
     set: async (key: unknown, value: unknown, actor?: string) => {
       const valid = keyValue(key);
+      // Spec 027: la clave de marca se valida en el flow (400 en español).
+      const prepared = valid === BRAND_LOGO_KEY ? validateBrandLogoValue(value) : value;
       try {
-        return maskConfigValue(valid, await deps.set(valid, value, actor || "SYSTEM"));
+        return maskConfigValue(valid, await deps.set(valid, prepared, actor || "SYSTEM"));
       } catch (error) {
         const caught = toCaughtError(error);
         if (caught.message === "LOCK_DATE_BLOCKED")
