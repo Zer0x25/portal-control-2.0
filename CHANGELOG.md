@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.26.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.25.2...v8.26.0) (2026-10-09)
+
+
+### Features
+
+* **frontend:** establish design system governance, living showcase, and drift auditor ([#28](https://github.com/Zer0x25/portal-control-2.0/issues/28)) ([ca7611a](https://github.com/Zer0x25/portal-control-2.0/commit/ca7611a4474345e125288b22d6e50c0c4fb5e771))
+* **governance:** enforce sdd cycle and adr scaffolding workflow ([9c71c92](https://github.com/Zer0x25/portal-control-2.0/commit/9c71c92af50b487ec872175ba6b4f84036c6f3ea))
+* **ui:** standardize application views with responsive container and design system governance ([#30](https://github.com/Zer0x25/portal-control-2.0/issues/30)) ([dcab8f9](https://github.com/Zer0x25/portal-control-2.0/commit/dcab8f9e1b135339a22add32041176d95258c3d0))
+
 ## [8.25.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.25.1...v8.25.2) (2026-10-08)
 
 
