@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.27.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.26.2...v8.27.0) (2026-10-09)
+
+
+### Features
+
+* **configs:** agregar esquema y validación de branding_logo con rangos de tamaño ([9e1ee93](https://github.com/Zer0x25/portal-control-2.0/commit/9e1ee9324304f47c5a69589973dc10325848c69e))
+* **configs:** configurable brand logo with public read and admin upload ([3f12c18](https://github.com/Zer0x25/portal-control-2.0/commit/3f12c189595cf640eab71c56e64c70692d7366bc))
+* **configs:** documentar endpoints en OpenAPI y sincronizar SDK frontend ([2ae3157](https://github.com/Zer0x25/portal-control-2.0/commit/2ae31573f6801525916edadcfa3d8f9d55514487))
+* **configs:** exponer lectura pública y subida de logo con guards de rol ([844ee04](https://github.com/Zer0x25/portal-control-2.0/commit/844ee042741beadca2872cf221557c94f3dc23bb))
+* **frontend:** agregar hook público y componente BrandLogo con fallback anti-CLS ([b4017e5](https://github.com/Zer0x25/portal-control-2.0/commit/b4017e5705f43e06c5ac222485523409b928b2b3))
+* **frontend:** agregar sección de marca en Configuración con vista previa y restablecer ([41a7090](https://github.com/Zer0x25/portal-control-2.0/commit/41a7090aa7bdc572f6250d4cb93a4d373462a701))
+* **frontend:** consumir BrandLogo en LoginPage sin regresión visual ([5fecfaa](https://github.com/Zer0x25/portal-control-2.0/commit/5fecfaae1e6446ef58058ee83fb985f531db1788))
+
 ## [8.26.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.26.1...v8.26.2) (2026-10-09)
 
 
