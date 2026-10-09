@@ -97,3 +97,44 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 - **Presupuesto Monótono en Cero (`design-system-budget.json`)**:
   - El presupuesto de desvíos (`totalIssuesBudget`) se encuentra fijado en `0`. Ningún cambio puede elevar este valor.
   - Al certificar nuevos componentes o migrar vistas, actualizar el recuento ejecutando `node scripts/audit-design-system.cjs --update` y validar con `npm run test:guardrails`.
+
+---
+
+## 8. Estandarización de Vistas (.view.tsx), Guardrails y Mocking en Tests
+
+- **Envoltorio Canónico Obligatorio en Vistas**:
+  - Todo archivo de vista (`*.view.tsx`) debe envolver su JSX principal en el componente `Container`:
+    ```tsx
+    <Container
+      variant="wide" // o "standard" / "fluid" según el tipo de pantalla
+      noPadding
+      data-ui-protected
+      className="[clases-existentes-de-la-vista]"
+    >
+      {/* contenido de la vista */}
+    </Container>
+    ```
+  - Debe conservarse siempre el comentario superior: `/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL */`.
+  - La vista debe registrarse en el listado `migratedViews` de `frontend/src/tests/guardrails/responsiveViewportGuardrails.test.ts`.
+
+- **Aserciones en Pruebas Unitarias de Vistas**:
+  - Los tests de componentes de vista deben asertar explícitamente:
+    `expect(screen.getByTestId("page-container")).toBeInTheDocument();`.
+
+- **Higiene en Mocking de `framer-motion`**:
+  - Al mockear `motion` en Vitest, filtrar propiedades no estándar del DOM (`layout`, `layoutId`, `whileHover`, etc.) para evitar advertencias en consola de React:
+    ```tsx
+    vi.mock("framer-motion", () => ({
+      motion: {
+        div: ({
+          children,
+          layout: _layout,
+          layoutId: _layoutId,
+          ...props
+        }: React.HTMLAttributes<HTMLDivElement> & { layout?: unknown; layoutId?: unknown }) => (
+          <div {...props}>{children}</div>
+        ),
+      },
+      AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    }));
+    ```
