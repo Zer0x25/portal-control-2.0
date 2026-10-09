@@ -10,10 +10,13 @@ import path from "node:path";
 import type { Readable } from "node:stream";
 import type { ConfigFlows } from "../application/flows";
 import type { PolicyFile } from "../application/contracts";
+import { validateBrandLogoMime } from "../application/brandLogo";
 import { ValidationError } from "../../../utils/AppError";
 export interface ConfigHttpService extends ConfigFlows {
   storePolicy(stream: Readable, name: string, mime: string): Promise<PolicyFile>;
   removeUploaded(filename: string): Promise<void>;
+  storeLogo(stream: Readable, name: string, mime: string): Promise<PolicyFile>;
+  removeUploadedLogo(filename: string): Promise<void>;
 }
 export const configsPlugin: FastifyPluginAsync<{
   service: ConfigHttpService;
@@ -49,6 +52,31 @@ export const configsPlugin: FastifyPluginAsync<{
   );
   app.get("/api/configs/server-time", { ...auth, preHandler: noQuery }, () =>
     options.service.time(),
+  );
+  app.get("/api/configs/public/brand-logo", { preHandler: noQuery }, async (_req, reply) => {
+    const value = await options.service.brandLogo();
+    return value || reply.code(404).send({ message: "No hay logo configurado" });
+  });
+  app.get(
+    "/api/configs/public/brand-logo/file",
+    { preHandler: noQuery },
+    async (_req, reply) => {
+      const file = await options.service.downloadLogo();
+      if (!file) return reply.code(404).send({ message: "No hay logo configurado" });
+      const contentType =
+        file.originalName.toLowerCase().endsWith(".png")
+          ? "image/png"
+          : file.originalName.toLowerCase().endsWith(".webp")
+            ? "image/webp"
+            : "image/jpeg";
+      return reply
+        .header("Content-Type", contentType)
+        .header(
+          "Content-Disposition",
+          `inline; filename="${encodeURIComponent(file.originalName)}"`,
+        )
+        .sendFile(path.basename(file.path), path.dirname(file.path));
+    },
   );
   app.get<{ Querystring: { date?: string } }>(
     "/api/configs/validate-closure",
@@ -105,6 +133,32 @@ export const configsPlugin: FastifyPluginAsync<{
         throw error;
       }
       return reply.code(201).send(await options.service.upload(stored, req.user?.username));
+    },
+  );
+  app.post(
+    "/api/configs/brand-logo",
+    { ...elevated, preHandler: validateRequest("query", z.unknown()) },
+    async (req, reply) => {
+      let stored: PolicyFile | undefined;
+      try {
+        if (req.isMultipart())
+          for await (const part of req.parts()) {
+            if (part.type !== "file") continue;
+            if (part.fieldname !== "file" || stored) {
+              part.file.resume();
+              throw new UploadError("LIMIT_UNEXPECTED_FILE", part.fieldname);
+            }
+            validateBrandLogoMime(part.mimetype);
+            stored = await options.service.storeLogo(part.file, part.filename, part.mimetype);
+            if (part.file.truncated) throw new UploadError("LIMIT_FILE_SIZE");
+          }
+      } catch (error) {
+        if (stored) await options.service.removeUploadedLogo(stored.filename);
+        if (error instanceof app.multipartErrors.RequestFileTooLargeError)
+          throw new UploadError("LIMIT_FILE_SIZE");
+        throw error;
+      }
+      return reply.code(201).send(await options.service.uploadLogo(stored, req.user?.username));
     },
   );
 };
