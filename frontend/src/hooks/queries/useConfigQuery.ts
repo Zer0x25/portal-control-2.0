@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { configService } from "../../services/configService";
+import type { BrandLogo } from "../../services/configService";
 import { authService } from "../../services/authService";
 
 export const useConfigQuery = <T = unknown>(key: string) => {
@@ -75,5 +76,19 @@ export const useControlInternoEnabledQuery = () => {
     queryFn: async () => (await configService.get<boolean>("is_control_interno_enabled")) ?? true,
     staleTime: 1000 * 60 * 5,
     enabled: hasToken,
+  });
+};
+
+/**
+ * Logo de marca público (spec 027): sin gate de token para el login anónimo.
+ * Nunca bloquea: ante fallo retorna null y el consumidor usa el asset empaquetado.
+ */
+export const useBrandLogoQuery = () => {
+  return useQuery<BrandLogo | null>({
+    queryKey: ["config", "public", "branding_logo"],
+    queryFn: () => configService.getPublicBrandLogo(),
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 };

@@ -11,6 +11,14 @@ type CompanyPolicy = {
   uploadedBy: string;
 };
 
+export type BrandLogo = {
+  source: { kind: "upload" | "url"; ref: string };
+  width: number;
+  height: number;
+  /** Solo presente cuando la fuente es un archivo subido (ruta relativa del backend). */
+  url?: string;
+};
+
 const normalizeApiUrl = (url: string): string => {
   try {
     return new URL(url, API_ORIGIN_URL).toString();
@@ -32,6 +40,45 @@ export const configService = {
     } catch {
       return null;
     }
+  },
+
+  async getPublicBrandLogo(): Promise<BrandLogo | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/configs/public/brand-logo`);
+      if (!response.ok) return null;
+      const logo = (await response.json()) as BrandLogo;
+      if (!logo || typeof logo !== "object" || !logo.source) return null;
+      return {
+        ...logo,
+        url: logo.url ? normalizeApiUrl(logo.url) : undefined,
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  async uploadBrandLogo(file: File): Promise<BrandLogo> {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_BASE_URL}/configs/brand-logo`, {
+      method: "POST",
+      headers: {
+        ...(authService.getAuthHeader() as Record<string, string>),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Error al subir logo" }));
+      throw new Error(error.message || "Error al subir logo");
+    }
+
+    const logo = (await response.json()) as BrandLogo;
+    return {
+      ...logo,
+      url: logo.url ? normalizeApiUrl(logo.url) : undefined,
+    };
   },
 
   async uploadCompanyPolicy(file: File): Promise<CompanyPolicy> {
