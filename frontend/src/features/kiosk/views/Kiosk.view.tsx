@@ -5,6 +5,7 @@
 import React from "react";
 import NumericKeypad from "../../../components/ui/NumericKeypad";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import SimpleConnectionIndicator from "../../../components/ui/SimpleConnectionIndicator";
 import {
   LogoutIcon,
@@ -382,7 +383,12 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   }
 
   return (
-    <div className="min-h-dvh lg:min-h-screen bg-token-surface-stripe flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-sap-blue/30 selection:text-white">
+    <Container
+      variant="fluid"
+      noPadding
+      data-ui-protected
+      className="min-h-dvh lg:min-h-screen bg-token-surface-stripe flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-sap-blue/30 selection:text-white"
+    >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] z-0" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] z-0" />
@@ -450,7 +456,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
           <SimpleConnectionIndicator />
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

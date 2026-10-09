@@ -19,6 +19,7 @@ import ShiftReportModal from "../../../components/ui/ShiftReportModal";
 import ClosedReportsModal from "../../../components/ui/ClosedReportsModal";
 import LogEntriesCard from "../components/LogEntriesCard";
 import SupplierEntriesCard from "../components/SupplierEntriesCard";
+import Container from "../../../components/ui/Container";
 import type { ShiftReport } from "../../../types";
 
 export interface LogbookViewProps {
@@ -89,7 +90,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
   }
 
   return (
-    <div className="space-y-6 pb-20 sm:pb-6" data-ui-protected>
+    <Container variant="wide" noPadding data-ui-protected className="space-y-6 pb-20 sm:pb-6">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -362,6 +363,6 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
         canNavigatePrev={false}
         canNavigateNext={false}
       />
-    </div>
+    </Container>
   );
 };

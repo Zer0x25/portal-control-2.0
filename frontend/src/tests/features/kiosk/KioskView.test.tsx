@@ -26,6 +26,7 @@ describe("KioskView", () => {
     );
 
     expect(screen.getByText("Identificación")).toBeInTheDocument();
+    expect(screen.getByTestId("page-container")).toBeInTheDocument();
     expect(screen.getByText("NUMERIC-KEYPAD")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Seleccionar de la lista/i }));

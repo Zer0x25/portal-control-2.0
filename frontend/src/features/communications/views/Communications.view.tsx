@@ -1,7 +1,12 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for Communications feature.
+*/
+
 import React from "react";
 import DOMPurify from "dompurify";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import PageHeader from "../../../components/ui/PageHeader";
 import { MegaphoneIcon, EditIcon, CheckIcon, XMarkIcon } from "../../../components/ui/icons";
 
@@ -31,7 +36,12 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
     }
 
     return (
-      <div className="space-y-6 animate-in fade-in duration-500" data-ui-protected>
+      <Container
+        variant="standard"
+        noPadding
+        data-ui-protected
+        className="space-y-6 animate-in fade-in duration-500"
+      >
         <PageHeader
           eyebrow="Institucional"
           eyebrowIcon={<MegaphoneIcon className="w-3.5 h-3.5" />}
@@ -105,7 +115,7 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
             </div>
           )}
         </Card>
-      </div>
+      </Container>
     );
   },
 );

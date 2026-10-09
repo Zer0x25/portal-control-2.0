@@ -18,6 +18,7 @@ describe("CommunicationsView", () => {
     render(<CommunicationsView {...baseProps} />);
 
     expect(screen.getByText("Comunicados Internos")).toBeInTheDocument();
+    expect(screen.getByTestId("page-container")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Editar Comunicado/i }));
     expect(baseProps.setIsEditing).toHaveBeenCalledWith(true);
   });

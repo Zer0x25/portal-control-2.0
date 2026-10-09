@@ -28,6 +28,7 @@ describe("MeterReadingsView", () => {
     render(<MeterReadingsView {...baseProps} />);
 
     expect(screen.getByText("Registro de Medidores")).toBeInTheDocument();
+    expect(screen.getByTestId("page-container")).toBeInTheDocument();
     expect(screen.getByText("METER-HISTORY")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /Ingresar Lecturas/i }));

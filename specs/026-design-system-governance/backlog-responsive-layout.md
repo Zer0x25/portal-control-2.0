@@ -50,16 +50,16 @@ Consolas técnicas, métricas de seguridad y respaldos:
 - [x] `src/features/governance/views/SystemMaintenance.view.tsx` (`variant="standard"`)
 - [x] `src/features/governance/views/BackupListModal.view.tsx` (`variant="standard"`)
 
-### Tanda 5: Registro, Medidores, Configuración y Quiosco (7 vistas)
+### Tanda 5: Registro, Medidores, Configuración y Quiosco (8 vistas) [Completada]
 Herramientas secundarias y vistas de pantalla completa:
-- [ ] `src/features/shift-calendar/views/ShiftCalendar.view.tsx` (`variant="wide"`)
-- [ ] `src/features/logbook/views/Logbook.view.tsx` (`variant="wide"`)
-- [ ] `src/features/meters/views/MeterReadings.view.tsx` (`variant="wide"`)
-- [ ] `src/features/configuration/views/Configuration.view.tsx` (`variant="standard"`)
-- [ ] `src/features/configuration/views/MasterDataExport.view.tsx` (`variant="standard"`)
-- [ ] `src/features/configuration/views/EmailCenter.view.tsx` (`variant="standard"`)
-- [ ] `src/features/communications/views/Communications.view.tsx` (`variant="standard"`)
-- [ ] `src/features/kiosk/views/Kiosk.view.tsx` (`variant="fluid"`)
+- [x] `src/features/shift-calendar/views/ShiftCalendar.view.tsx` (`variant="wide"`)
+- [x] `src/features/logbook/views/Logbook.view.tsx` (`variant="wide"`)
+- [x] `src/features/meters/views/MeterReadings.view.tsx` (`variant="wide"`)
+- [x] `src/features/configuration/views/Configuration.view.tsx` (`variant="standard"`)
+- [x] `src/features/configuration/views/MasterDataExport.view.tsx` (`variant="standard"`)
+- [x] `src/features/configuration/views/EmailCenter.view.tsx` (`variant="standard"`)
+- [x] `src/features/communications/views/Communications.view.tsx` (`variant="standard"`)
+- [x] `src/features/kiosk/views/Kiosk.view.tsx` (`variant="fluid"`)
 
 ---
 

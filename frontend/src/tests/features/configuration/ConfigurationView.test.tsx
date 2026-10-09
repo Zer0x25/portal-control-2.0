@@ -36,6 +36,7 @@ describe("ConfigurationView", () => {
 
     render(<ConfigurationView activeTab="variables" handleTabChange={handleTabChange} />);
 
+    expect(screen.getByTestId("page-container")).toBeInTheDocument();
     expect(screen.getByText("Control de Sistema")).toBeInTheDocument();
     expect(screen.getByText("Variables Globales")).toBeInTheDocument();
     expect(screen.getByText("Centro de Correos")).toBeInTheDocument();

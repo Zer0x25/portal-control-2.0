@@ -1,3 +1,7 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for Meter Readings feature.
+*/
+
 import React from "react";
 import {
   CalculatorIcon,
@@ -6,6 +10,7 @@ import {
   CloseIcon,
 } from "../../../components/ui/icons/index";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import MeterConfigPanel from "../components/MeterConfigPanel";
 import MeterForm from "../components/MeterForm";
 import MeterHistory from "../components/MeterHistory";
@@ -26,7 +31,7 @@ export const MeterReadingsView: React.FC<MeterReadingsViewProps> = ({
   setIsFormOpen,
 }) => {
   return (
-    <div className="space-y-6" data-ui-protected>
+    <Container variant="wide" noPadding data-ui-protected className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <h1 className="text-3xl font-semibold text-token-text-primary flex items-center gap-3">
           <CalculatorIcon className="w-8 h-8 text-sap-blue" />
@@ -92,6 +97,6 @@ export const MeterReadingsView: React.FC<MeterReadingsViewProps> = ({
       </div>
 
       <MeterConfigPanel isOpen={isConfigPanelOpen} onClose={() => setIsConfigPanelOpen(false)} />
-    </div>
+    </Container>
   );
 };

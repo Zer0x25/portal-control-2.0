@@ -51,6 +51,7 @@ describe("ShiftCalendarFeatureView", () => {
     render(<ShiftCalendarFeatureView {...baseProps} />);
 
     expect(screen.getByText("Calendario de Turnos")).toBeInTheDocument();
+    expect(screen.getByTestId("page-container")).toBeInTheDocument();
     expect(screen.getByText("MONTH-SELECTOR")).toBeInTheDocument();
     expect(screen.getByText("SHIFT-CALENDAR-GRID")).toBeInTheDocument();
 

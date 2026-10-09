@@ -163,7 +163,7 @@ describe("Responsive Viewport & Mobile-Desktop Coverage Guardrails", () => {
     expect(navItemContent).toContain("data-nav-active");
   });
 
-  it("verifies canonical Container adoption across completed migration tandas (Tanda 1, 2, 3 & 4)", () => {
+  it("verifies canonical Container adoption across all migration tandas (Tanda 1, 2, 3, 4 & 5)", () => {
     const migratedViews = [
       // Tanda 1 (Core Operativo)
       "src/features/time-control/views/TimeControl.view.tsx",
@@ -186,6 +186,15 @@ describe("Responsive Viewport & Mobile-Desktop Coverage Guardrails", () => {
       "src/features/governance/views/SecurityInsights.view.tsx",
       "src/features/governance/views/SystemMaintenance.view.tsx",
       "src/features/governance/views/BackupListModal.view.tsx",
+      // Tanda 5 (Registro, Medidores, Configuración y Quiosco)
+      "src/features/shift-calendar/views/ShiftCalendar.view.tsx",
+      "src/features/logbook/views/Logbook.view.tsx",
+      "src/features/meters/views/MeterReadings.view.tsx",
+      "src/features/configuration/views/Configuration.view.tsx",
+      "src/features/configuration/views/MasterDataExport.view.tsx",
+      "src/features/configuration/views/EmailCenter.view.tsx",
+      "src/features/communications/views/Communications.view.tsx",
+      "src/features/kiosk/views/Kiosk.view.tsx",
     ];
 
     const unmigrated: string[] = [];

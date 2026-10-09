@@ -12,6 +12,7 @@ import PageHeader from "../../../components/ui/PageHeader";
 import CalendarMonthSelector from "../../../components/ui/CalendarMonthSelector";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
+import Container from "../../../components/ui/Container";
 
 type ShiftCalendarEmployeeOption = {
   id: string;
@@ -231,7 +232,12 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500" data-ui-protected>
+    <Container
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 animate-in fade-in duration-500"
+    >
       <PageHeader
         eyebrow="Planificación"
         eyebrowIcon={<CalendarDaysIcon className="w-3.5 h-3.5" />}
@@ -403,6 +409,6 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
           />
         )}
       </Card>
-    </div>
+    </Container>
   );
 };
