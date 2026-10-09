@@ -15,6 +15,8 @@ let fastify: FastifyInstance, token: string, actorId: string;
 const emit = vi.spyOn(SocketService, "emit");
 const owned = new Set<string>();
 const directory = path.resolve(process.cwd(), "uploads", "company-policy");
+const brandDirectory = path.resolve(process.cwd(), "uploads", "brand-logo");
+const ownedLogo = new Set<string>();
 const originalUpload = configFlows.upload;
 vi.spyOn(configFlows, "upload").mockImplementation((file, actor) => {
   if (file) owned.add(file.filename);
@@ -41,11 +43,15 @@ const routes = [
   ["GET", "/api/configs/validate-closure?date=2020-01-01"],
   ["POST", "/api/configs/custom"],
   ["POST", "/api/configs/company-policy"],
+  ["POST", "/api/configs/brand-logo"],
 ] as const;
 async function cleanup() {
   for (const filename of owned)
     await fs.unlink(path.join(directory, path.basename(filename))).catch(() => undefined);
   owned.clear();
+  for (const filename of ownedLogo)
+    await fs.unlink(path.join(brandDirectory, path.basename(filename))).catch(() => undefined);
+  ownedLogo.clear();
 }
 beforeAll(async () => {
   await assertConnectedToTestDb();
@@ -754,4 +760,128 @@ describe("Spec020 data/configs on Fastify", () => {
       expect(await prismaDirect.systemConfig.count()).toBe(0);
     },
   );
+});
+
+const PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==";
+
+describe("Spec027 brand logo (branding_logo)", () => {
+  const http = httpClient(
+    () => fastify,
+    () => token,
+  );
+  const brandDirectory = path.resolve(process.cwd(), "uploads", "brand-logo");
+
+  async function uploadLogo(
+    bytes: Buffer,
+    name = "logo.png",
+    mime = "image/png",
+    field = "file",
+    access: string | null = token,
+  ) {
+    const boundary = "spec027-boundary";
+    const payload = Buffer.concat([
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${field}"; filename="${name}"\r\nContent-Type: ${mime}\r\n\r\n`,
+      ),
+      bytes,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+    const res = await fastify.inject({
+      method: "POST",
+      url: "/api/configs/brand-logo",
+      headers: {
+        "content-type": `multipart/form-data; boundary=${boundary}`,
+        ...(access ? { authorization: `Bearer ${access}` } : {}),
+      },
+      payload,
+    });
+    return { status: res.statusCode, body: res.json(), bytes: res.rawPayload };
+  }
+
+  it("exposes the logo anonymously and rejects every non-image upload", async () => {
+    // Lectura pública sin token: 404 cuando no hay configuración.
+    expect((await http("GET", "/api/configs/public/brand-logo", undefined, null)).status).toBe(404);
+    expect(
+      (await http("GET", "/api/configs/public/brand-logo/file", undefined, null)).body,
+    ).toEqual({ message: "No hay logo configurado" });
+
+    // Subida sin token: 401.
+    expect((await uploadLogo(Buffer.from("x"), "logo.png", "image/png", "file", null)).status).toBe(
+      401,
+    );
+    // Rol sin permisos: 403.
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
+    expect((await uploadLogo(Buffer.from("x"))).status).toBe(403);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+
+    // MIME y contenido rechazados, sin dejar archivo.
+    expect((await uploadLogo(Buffer.from("text"), "logo.png", "text/plain")).status).toBe(400);
+    expect((await uploadLogo(Buffer.from("x"), "logo.png", "application/pdf")).status).toBe(400);
+    expect((await uploadLogo(Buffer.from("falso png"), "logo.png", "image/png")).status).toBe(400);
+    expect(await prismaDirect.systemConfig.count({ where: { key: "branding_logo" } })).toBe(0);
+    const dir = await fs.readdir(brandDirectory).catch(() => [] as string[]);
+    expect(dir).toEqual([]);
+  });
+
+  it("stores the uploaded logo, audits CONFIG_SET and serves it inline", async () => {
+    const bytes = Buffer.from(PNG_BASE64, "base64");
+    const res = await uploadLogo(bytes);
+    expect(res.status).toBe(201);
+    expect(res.body.source).toEqual({ kind: "upload", ref: expect.any(String) });
+    expect(res.body.width).toBe(512);
+    expect(res.body.height).toBe(188);
+
+    const audits = await prismaDirect.auditLog.findMany({ where: { action: "CONFIG_SET" } });
+    expect(audits.at(-1)?.actorUsername).toBe("data-admin");
+    expect(JSON.stringify(audits.at(-1)?.details)).toContain("branding_logo");
+
+    const meta = await http("GET", "/api/configs/public/brand-logo", undefined, null);
+    expect(meta.body.source.kind).toBe("upload");
+    const file = await http("GET", "/api/configs/public/brand-logo/file", undefined, null, true);
+    expect(file.status).toBe(200);
+    expect(file.headers["content-type"]).toContain("image/png");
+    expect(file.headers["content-disposition"]).toContain("inline; filename=");
+
+    // El tamaño configurado se aplica desde la clave (sin tocar el flujo de archivo).
+    await prismaDirect.systemConfig.update({
+      where: { key: "branding_logo" },
+      data: {
+        value: JSON.stringify({
+          source: JSON.parse(res.body.source ? JSON.stringify(res.body.source) : "{}"),
+          width: 320,
+          height: 120,
+        }),
+      },
+    });
+    const sized = await http("GET", "/api/configs/public/brand-logo", undefined, null);
+    expect(sized.body.width).toBe(320);
+    expect(sized.body.height).toBe(120);
+  });
+
+  it("accepts a remote https URL, rejects http and validates 16–512 dimensions", async () => {
+    const url = {
+      source: { kind: "url", ref: "https://cdn.cliente.cl/logo.webp" },
+      width: 256,
+      height: 100,
+    };
+    expect((await http("POST", "/api/configs/branding_logo", { value: url })).status).toBe(200);
+    const stored = await http("GET", "/api/configs/:key".replace(":key", "branding_logo"));
+    expect(stored.body.source.ref).toBe("https://cdn.cliente.cl/logo.webp");
+
+    const insecure = { ...url, source: { kind: "url", ref: "http://cliente.cl/logo.webp" } };
+    const bad = await http("POST", "/api/configs/branding_logo", { value: insecure });
+    expect(bad.status).toBe(400);
+    expect(bad.body.message).toMatch(/HTTPS/);
+
+    const outOfRange = await http("POST", "/api/configs/branding_logo", {
+      value: { ...url, width: 8 },
+    });
+    expect(outOfRange.status).toBe(400);
+    expect(outOfRange.body.message).toMatch(/píxeles/);
+
+    const nulled = await http("POST", "/api/configs/branding_logo", { value: null });
+    expect(nulled.status).toBe(200);
+    expect((await http("GET", "/api/configs/public/brand-logo", undefined, null)).status).toBe(404);
+  });
 });

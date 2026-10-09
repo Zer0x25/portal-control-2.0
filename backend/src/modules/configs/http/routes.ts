@@ -57,27 +57,19 @@ export const configsPlugin: FastifyPluginAsync<{
     const value = await options.service.brandLogo();
     return value || reply.code(404).send({ message: "No hay logo configurado" });
   });
-  app.get(
-    "/api/configs/public/brand-logo/file",
-    { preHandler: noQuery },
-    async (_req, reply) => {
-      const file = await options.service.downloadLogo();
-      if (!file) return reply.code(404).send({ message: "No hay logo configurado" });
-      const contentType =
-        file.originalName.toLowerCase().endsWith(".png")
-          ? "image/png"
-          : file.originalName.toLowerCase().endsWith(".webp")
-            ? "image/webp"
-            : "image/jpeg";
-      return reply
-        .header("Content-Type", contentType)
-        .header(
-          "Content-Disposition",
-          `inline; filename="${encodeURIComponent(file.originalName)}"`,
-        )
-        .sendFile(path.basename(file.path), path.dirname(file.path));
-    },
-  );
+  app.get("/api/configs/public/brand-logo/file", { preHandler: noQuery }, async (_req, reply) => {
+    const file = await options.service.downloadLogo();
+    if (!file) return reply.code(404).send({ message: "No hay logo configurado" });
+    const contentType = file.originalName.toLowerCase().endsWith(".png")
+      ? "image/png"
+      : file.originalName.toLowerCase().endsWith(".webp")
+        ? "image/webp"
+        : "image/jpeg";
+    return reply
+      .header("Content-Type", contentType)
+      .header("Content-Disposition", `inline; filename="${encodeURIComponent(file.originalName)}"`)
+      .sendFile(path.basename(file.path), path.dirname(file.path));
+  });
   app.get<{ Querystring: { date?: string } }>(
     "/api/configs/validate-closure",
     { ...elevated, preHandler: noQuery },
