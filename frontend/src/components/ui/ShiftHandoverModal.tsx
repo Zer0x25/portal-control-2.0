@@ -57,6 +57,7 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
 
               <button
                 onClick={onClose}
+                aria-label="Cerrar modal"
                 className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 rounded-xl transition-all"
               >
                 <CloseIcon className="w-6 h-6" />
