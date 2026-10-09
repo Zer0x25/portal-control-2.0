@@ -50,8 +50,7 @@ export function validateBrandLogoValue(value: unknown): BrandLogoValue {
   if (!source || typeof source !== "object" || Array.isArray(source))
     fail("El logo debe indicar su fuente (archivo subido o URL)");
   const { kind, ref } = source as Record<string, unknown>;
-  if (kind !== "upload" && kind !== "url")
-    fail("La fuente del logo debe ser 'upload' o 'url'");
+  if (kind !== "upload" && kind !== "url") fail("La fuente del logo debe ser 'upload' o 'url'");
   if (typeof ref !== "string" || ref.length === 0) fail("Falta la referencia del logo");
   if (kind === "url") {
     let parsed: URL;
@@ -60,14 +59,12 @@ export function validateBrandLogoValue(value: unknown): BrandLogoValue {
     } catch {
       fail("La URL del logo no es válida");
     }
-    if (parsed!.protocol !== "https:")
-      fail("La URL del logo debe usar HTTPS");
+    if (parsed!.protocol !== "https:") fail("La URL del logo debe usar HTTPS");
   } else {
     // upload: solo el filename generado por brandLogoStorage (sin rutas).
     if (ref.includes("/") || ref.includes("\\") || ref.includes(".."))
       fail("La referencia del archivo del logo no es válida");
-    if (!/\.(png|jpe?g|webp)$/i.test(ref))
-      fail("El archivo del logo debe ser PNG, JPG o WebP");
+    if (!/\.(png|jpe?g|webp)$/i.test(ref)) fail("El archivo del logo debe ser PNG, JPG o WebP");
   }
   return {
     source: { kind, ref },
