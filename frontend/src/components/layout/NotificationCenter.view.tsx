@@ -42,8 +42,9 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} data-testid="notification-center">
       <button
+        data-testid="notification-bell-button"
         onClick={onToggleOpen}
         className={`
           group relative p-2.5 rounded-md transition-all active:scale-95 border

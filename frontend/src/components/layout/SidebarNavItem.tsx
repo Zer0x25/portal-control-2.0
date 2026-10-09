@@ -9,12 +9,17 @@ interface SidebarNavItemProps extends SidebarMenuItem {
 
 const SidebarNavItem = React.memo(
   ({ to, icon: Icon, label, end = false, isExpanded, onClick }: SidebarNavItemProps) => {
+    const itemSlug = to.replace(/^\//, "").replace(/\//g, "-") || "home";
+
     return (
       <li>
         <NavLink
           to={to}
           end={end}
           onClick={onClick}
+          data-testid={`nav-item-${itemSlug}`}
+          data-nav-to={to}
+          data-nav-label={label}
           className={({ isActive }) => `
           group flex items-center px-4 py-2.5 mb-1 mx-2 rounded-md transition-all duration-150
           ${
@@ -26,7 +31,10 @@ const SidebarNavItem = React.memo(
         >
           {({ isActive }) => (
             <>
-              <div className="shrink-0 flex items-center justify-center w-6 h-6">
+              <div
+                className="shrink-0 flex items-center justify-center w-6 h-6"
+                data-nav-active={isActive ? "true" : "false"}
+              >
                 <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "text-white" : ""}`} />
               </div>
               <span

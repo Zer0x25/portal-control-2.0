@@ -151,6 +151,7 @@ describe("Design System & UI Governance Guardrails", () => {
       "src/components/ui/Button.tsx",
       "src/components/ui/Input.tsx",
       "src/components/ui/Card.tsx",
+      "src/components/ui/Container.tsx",
       "src/components/ui/Badge.tsx",
       "src/components/ui/Select.tsx",
       "src/components/ui/Checkbox.tsx",
