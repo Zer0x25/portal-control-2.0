@@ -47,7 +47,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
 }) => {
   return (
     <>
-      <header className="sticky top-0 left-0 right-0 z-60 bg-(--surface-header) border-b border-token-border-technical transition-all shadow-sm">
+      <header className="sticky top-0 left-0 right-0 z-60 bg-token-surface-header border-b border-token-border-technical transition-all shadow-sm">
         <div className="mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -55,7 +55,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               className="group flex items-center justify-center transition-all active:scale-95"
               aria-label="Abrir Menú"
             >
-              <div className="w-12 h-12 rounded-md bg-(--sidebar-text-active) flex items-center justify-center text-white font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition-all border border-token-border-technical">
+              <div className="w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition-all border border-token-border-technical">
                 {APP_TITLE ? APP_TITLE.charAt(0) : "P"}
               </div>
             </button>
@@ -63,7 +63,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
             <div className="hidden lg:flex items-center gap-2">
               <h1 className="text-xs font-bold text-token-text-secondary uppercase tracking-tighter">
                 {APP_TITLE} <span className="text-token-border-technical mx-1">|</span>{" "}
-                <span className="text-(--sidebar-text-active) font-bold tracking-widest opacity-80">
+                <span className="text-token-accent-brand font-bold tracking-widest opacity-80">
                   CONTROL SYSTEM
                 </span>
               </h1>
@@ -85,9 +85,9 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               aria-label="Silenciar o activar sonidos"
             >
               {soundEnabled ? (
-                <SpeakerWaveIcon className="w-5 h-5 text-token-text-tertiary group-hover:text-(--sidebar-text-active)" />
+                <SpeakerWaveIcon className="w-5 h-5 text-token-text-tertiary group-hover:text-token-accent-brand" />
               ) : (
-                <SpeakerXMarkIcon className="w-5 h-5 text-rose-500/60 group-hover:text-rose-500" />
+                <SpeakerXMarkIcon className="w-5 h-5 text-token-status-error/60 group-hover:text-token-status-error" />
               )}
             </button>
 
@@ -103,7 +103,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                   aria-label="Menú de usuario"
                 >
                   <div className="w-10 h-10 rounded-md bg-token-surface-active flex items-center justify-center border border-token-border-subtle">
-                    <UserCircleIcon className="w-6 h-6 text-token-text-tertiary group-hover:text-(--sidebar-text-active) transition-colors" />
+                    <UserCircleIcon className="w-6 h-6 text-token-text-tertiary group-hover:text-token-accent-brand transition-colors" />
                   </div>
                   <div className="hidden sm:block text-left">
                     <p className="text-xs font-bold text-token-text-primary uppercase tracking-tight leading-none">
@@ -144,7 +144,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                     <div className="p-1 border-t border-token-border-subtle">
                       <button
                         onClick={onLogout}
-                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-(--status-error) uppercase tracking-widest hover:bg-(--status-error)/10 rounded-sm transition-all"
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-status-error uppercase tracking-widest hover:bg-token-status-error/10 rounded-sm transition-all"
                       >
                         Finalizar Sesión
                       </button>
@@ -158,7 +158,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               {currentUser && (
                 <button
                   onClick={onLogout}
-                  className="px-4 py-2.5 h-11 rounded-md border border-(--status-error)/20 bg-(--status-error)/5 hover:bg-(--status-error)/10 text-red-700 dark:text-(--status-error) text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                  className="px-4 py-2.5 h-11 rounded-md border border-token-status-error/20 bg-token-status-error/10 hover:bg-token-status-error/20 text-token-status-error text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                 >
                   Salir
                 </button>

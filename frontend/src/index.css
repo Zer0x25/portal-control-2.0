@@ -28,6 +28,7 @@
   --color-token-surface-app: var(--surface-app);
   --color-token-surface-card: var(--surface-card);
   --color-token-surface-header: var(--surface-header);
+  --color-token-surface-sidebar: var(--surface-sidebar);
   --color-token-surface-hover: var(--surface-hover);
   --color-token-surface-active: var(--surface-active);
   --color-token-surface-stripe: var(--surface-stripe);
@@ -48,6 +49,8 @@
   --color-token-status-info: var(--status-info);
 
   --color-token-accent-brand: var(--accent-professional);
+  --color-token-sidebar-text-active: var(--sidebar-text-active);
+  --color-token-sidebar-item-hover: var(--sidebar-item-hover);
 
   --font-sans: Inter, system-ui, sans-serif;
   --font-mono: "Roboto Mono", monospace;

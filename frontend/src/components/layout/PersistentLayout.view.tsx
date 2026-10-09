@@ -59,7 +59,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
 
   return (
     <>
-      <div className="flex h-screen bg-sap-bone dark:bg-sap-dark-gray">
+      <div className="flex h-screen bg-token-surface-app">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={onToggleSidebar} />
         <div className="flex-1 flex flex-col overflow-hidden">
           {!isSidebarOpen && (
@@ -100,7 +100,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
             {showHomeFab && (
               <button
                 onClick={onGoHome}
-                className="hidden md:flex bg-sap-blue hover:bg-sap-light-blue text-white p-4 rounded-full shadow-md dark:bg-sap-light-blue dark:hover:bg-blue-600 transition-transform hover:scale-110 pointer-events-auto"
+                className="hidden md:flex bg-token-accent-brand hover:opacity-90 text-token-text-onAccent p-4 rounded-full shadow-md transition-transform hover:scale-110 pointer-events-auto"
                 aria-label={homeFabTitle}
                 title={homeFabTitle}
               >
@@ -113,7 +113,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
             <div className="fixed bottom-6 left-6 z-50 md:hidden">
               <button
                 onClick={onGoHome}
-                className="bg-sap-blue text-white p-4 rounded-full shadow-lg dark:bg-sap-light-blue transition-transform active:scale-95"
+                className="bg-token-accent-brand text-token-text-onAccent p-4 rounded-full shadow-lg transition-transform active:scale-95"
                 aria-label={homeFabTitle}
               >
                 <HomeIcon className="w-7 h-7" />

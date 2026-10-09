@@ -47,7 +47,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
         onMouseLeave={onMouseLeave}
         className={`
           fixed top-16 left-0 h-[calc(100vh-4rem)] z-58 flex flex-col
-          bg-(--surface-sidebar)
+          bg-token-surface-sidebar
           border-r border-token-border-technical
           transition-all duration-200 ease-out
           overflow-hidden
@@ -71,10 +71,10 @@ const SidebarView: React.FC<SidebarViewProps> = ({
         <div className="p-3 pb-6 space-y-2 border-t border-token-border-technical">
           <button
             onClick={onToggleTheme}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-(--sidebar-item-hover) hover:text-(--sidebar-text-active) transition-all"
+            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-all"
           >
             <div
-              className={`w-6 h-6 flex items-center justify-center ${effectiveTheme === "dark" ? "text-(--status-warning)" : "text-(--sidebar-text-active)"}`}
+              className={`w-6 h-6 flex items-center justify-center ${effectiveTheme === "dark" ? "text-token-status-warning" : "text-token-sidebar-text-active"}`}
             >
               {effectiveTheme === "dark" ? (
                 <SunIcon className="w-5 h-5" />
@@ -91,7 +91,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
 
           <button
             onClick={onOpenAbout}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-(--sidebar-item-hover) hover:text-(--sidebar-text-active) transition-all"
+            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-all"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <InformationCircleIcon className="w-5 h-5" />
