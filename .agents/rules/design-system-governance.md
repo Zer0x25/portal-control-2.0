@@ -126,14 +126,7 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
     ```tsx
     vi.mock("framer-motion", () => ({
       motion: {
-        div: ({
-          children,
-          layout: _layout,
-          layoutId: _layoutId,
-          ...props
-        }: React.HTMLAttributes<HTMLDivElement> & { layout?: unknown; layoutId?: unknown }) => (
-          <div {...props}>{children}</div>
-        ),
+        div: ({ children, layout: _layout, layoutId: _layoutId, ...props }: React.HTMLAttributes<HTMLDivElement> & { layout?: unknown; layoutId?: unknown }) => <div {...props}>{children}</div>,
       },
       AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     }));

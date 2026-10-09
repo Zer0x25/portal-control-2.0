@@ -29,7 +29,9 @@ Este documento centraliza el inventario, estado de avance y plan de tandas para 
 Las 20 vistas restantes se encuentran organizadas en 4 tandas atómicas para su migración gradual:
 
 ### Tanda 2: Módulo de Turnos Teóricos y Planificación (6 vistas) [Completada]
+
 Adecuación para matrices densas de programación mensual y gestión de turnos:
+
 - [x] `src/features/theoretical-shifts/views/TheoreticalShifts.view.tsx` (`variant="wide"`)
 - [x] `src/features/theoretical-shifts/views/AssignmentManager.view.tsx` (`variant="wide"`)
 - [x] `src/features/theoretical-shifts/views/PatternManager.view.tsx` (`variant="wide"`)
@@ -38,20 +40,26 @@ Adecuación para matrices densas de programación mensual y gestión de turnos:
 - [x] `src/features/planning/views/MonthlyPlanning.view.tsx` (`variant="wide"`)
 
 ### Tanda 3: Gestión de Personal, Empleados y Usuarios (3 vistas) [Completada]
+
 Listas y formularios con soporte de búsqueda y roles:
+
 - [x] `src/features/employee-management/views/EmployeeManagement.view.tsx` (`variant="wide"`)
 - [x] `src/features/user-management/views/UserManagement.view.tsx` (`variant="wide"`)
 - [x] `src/features/personnel-management/views/PersonnelManagement.view.tsx` (`variant="wide"`)
 
 ### Tanda 4: Gobernanza, Auditoría y Mantenimiento (4 vistas) [Completada]
+
 Consolas técnicas, métricas de seguridad y respaldos:
+
 - [x] `src/features/governance/views/GovernanceHub.view.tsx` (`variant="wide"`)
 - [x] `src/features/governance/views/SecurityInsights.view.tsx` (`variant="standard"`)
 - [x] `src/features/governance/views/SystemMaintenance.view.tsx` (`variant="standard"`)
 - [x] `src/features/governance/views/BackupListModal.view.tsx` (`variant="standard"`)
 
 ### Tanda 5: Registro, Medidores, Configuración y Quiosco (8 vistas) [Completada]
+
 Herramientas secundarias y vistas de pantalla completa:
+
 - [x] `src/features/shift-calendar/views/ShiftCalendar.view.tsx` (`variant="wide"`)
 - [x] `src/features/logbook/views/Logbook.view.tsx` (`variant="wide"`)
 - [x] `src/features/meters/views/MeterReadings.view.tsx` (`variant="wide"`)
