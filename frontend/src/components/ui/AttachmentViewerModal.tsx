@@ -71,6 +71,7 @@ const AttachmentViewerModal: React.FC<AttachmentViewerModalProps> = ({
             <img
               src={attachment.data}
               alt={attachment.filename}
+              decoding="async"
               className="max-w-full h-auto mx-auto shadow-sm border border-token-border-subtle"
             />
           ) : isPdf ? (

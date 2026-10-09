@@ -23,7 +23,7 @@ const parseMarkdown = (text: string): string => {
         // Images - Updated to use a valid image from the project
         line = line.replace(
           /!\[(.*?)\]\((.*?)\)/g,
-          '<img alt="$1" src="imagens/Mini_Zer0x.jpg" class="mx-auto my-4 rounded shadow-md dark:shadow-lg dark:shadow-black/50" style="max-width: 80%;" />',
+          '<img alt="$1" src="imagens/Mini_Zer0x.jpg" loading="lazy" decoding="async" class="mx-auto my-4 rounded shadow-md dark:shadow-lg dark:shadow-black/50" style="max-width: 80%;" />',
         );
 
         // Bold and Italic

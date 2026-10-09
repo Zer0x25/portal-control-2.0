@@ -142,6 +142,8 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
               <img
                 src={easterEggImg}
                 alt="Easter egg"
+                loading="lazy"
+                decoding="async"
                 className="max-h-[85vh] max-w-[90vw] rounded-2xl shadow-4xl border-4 border-white/10"
               />
               <Button

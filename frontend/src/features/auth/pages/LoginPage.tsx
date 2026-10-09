@@ -108,6 +108,8 @@ const LoginPage: React.FC = () => {
                 <img
                   src={logoImg}
                   alt="Logo"
+                  fetchPriority="high"
+                  decoding="async"
                   className="h-20 sm:h-16 w-auto relative z-10 rounded-2xl shadow-2xl"
                 />
               </motion.div>

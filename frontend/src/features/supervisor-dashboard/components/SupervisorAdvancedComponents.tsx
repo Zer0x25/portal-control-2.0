@@ -516,7 +516,13 @@ export const SupervisorEmployeeCard: React.FC<SupervisorEmployeeCardProps> = ({
         <div className="flex items-center gap-3">
           <div className="shrink-0">
             {employee.avatar ? (
-              <img src={employee.avatar} alt={employee.name} className="w-10 h-10 rounded-full" />
+              <img
+                src={employee.avatar}
+                alt={employee.name}
+                loading="lazy"
+                decoding="async"
+                className="w-10 h-10 rounded-full"
+              />
             ) : (
               <div className="w-10 h-10 rounded-full bg-token-surface-hover flex items-center justify-center">
                 <span className="text-sm font-medium text-token-text-primary">

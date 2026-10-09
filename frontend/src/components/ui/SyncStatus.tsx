@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon } from "./icons/index";
 import { idbGetAllBy, STORES } from "../../utils/indexedDB";
 import SyncErrorsModal from "./SyncErrorsModal";
 import { Syncable, SyncState } from "../../types/index";
 import { useStore } from "../../store/useStore";
-import { API_ORIGIN_URL } from "../../services/apiBase";
+import { useHealthQuery } from "../../hooks/queries/useHealthQuery";
 
 // A cloud icon with an arrow for syncing
 const SyncIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -76,41 +76,9 @@ const SyncStatus: React.FC = () => {
   const [isErrorsModalOpen, setIsErrorsModalOpen] = useState(false);
   const [erroredItems, setErroredItems] = useState<Syncable[]>([]);
 
-  // Backend Health State
-  const [isBackendOnline, setIsBackendOnline] = useState<boolean>(true);
-
-  useEffect(() => {
-    const healthUrl = `${API_ORIGIN_URL}/api/health`;
-
-    const checkHealth = async () => {
-      try {
-        // Short timeout for health check
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(healthUrl, {
-          method: "GET",
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          setIsBackendOnline(true);
-        } else {
-          setIsBackendOnline(false);
-        }
-      } catch {
-        setIsBackendOnline(false);
-      }
-    };
-
-    // Initial check
-    checkHealth();
-
-    // Poll every 10 seconds
-    const interval = setInterval(checkHealth, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  // Backend Health State (shared query: deduped with header/indicators)
+  const { isError } = useHealthQuery();
+  const isBackendOnline = !isError;
 
   const getStatusInfo = (
     state: SyncState,
@@ -173,12 +141,12 @@ const SyncStatus: React.FC = () => {
   };
 
   const fetchErroredItems = async () => {
-    const allErroredItems: Syncable[] = [];
-    for (const storeName of SYNCABLE_STORES_FOR_ERRORS) {
-      const items = await idbGetAllBy<Syncable>(storeName, "syncStatus", "error");
-      allErroredItems.push(...items);
-    }
-    setErroredItems(allErroredItems);
+    const settled = await Promise.all(
+      SYNCABLE_STORES_FOR_ERRORS.map((storeName) =>
+        idbGetAllBy<Syncable>(storeName, "syncStatus", "error"),
+      ),
+    );
+    setErroredItems(settled.flat());
   };
 
   const { Icon, color, tooltip, spin, action } = getStatusInfo(syncState, isBackendOnline);
