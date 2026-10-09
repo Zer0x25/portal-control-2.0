@@ -59,7 +59,13 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 ## 5. Accesibilidad (A11y) y Dark Mode Nativo
 
 - **A11y de Formularios**: Todo `Input` o control interactivo debe proveer `id` explícito vinculado a su `label` (`htmlFor`). Si hay error, vincular con `aria-invalid` y `aria-describedby`.
-- **Contraste & Dark Mode**: El soporte para Dark Mode es automático mediante las variables semánticas de `index.css`. No agregar overrides condicionales redundantes como `dark:bg-slate-900` cuando `bg-token-surface-card` resuelve ambos temas sin fricción.
+- **Contraste & Dark Mode**:
+  - El soporte para Dark Mode es automático mediante las variables semánticas de `index.css`. No agregar overrides condicionales redundantes como `dark:bg-slate-900` cuando `bg-token-surface-card` resuelve ambos temas sin fricción.
+  - **Ratios WCAG AA Obligatorios (≥ 4.5:1)**:
+    - Para textos sobre fondos de estado de error/alerta en modo claro, usar obligatoriamente `text-token-status-error-text` (`#b91c1c`).
+    - Para textos o iconos sobre fondos de acento celeste (`sky-400` / SAP blue) en modo oscuro, usar obligatoriamente `text-token-text-onAccent` (`#020617`).
+- **Cierre Accesible de Modales (WAI-ARIA)**:
+  - Todo componente modal o diálogo interactivo (`role="dialog"`, `aria-modal="true"`) debe implementar un manejador de teclado para la tecla `Escape` que ejecute `onClose()` y libere las capas de bloqueo de puntero (`z-50`, `z-100`).
 - **Áreas táctiles mínimas**: En elementos interactivos móviles, asegurar altura mínima táctil de 40px–44px.
 
 ---

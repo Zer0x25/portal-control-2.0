@@ -34,3 +34,10 @@ description: Best practices and performance constraints for CI workflows, monore
 
 7. **High-Speed Dependency Installation**:
    - All `npm ci` invocations in GitHub Actions workflows must use `--no-audit --no-fund --prefer-offline --loglevel=error` to maximize cache hits and eliminate redundant network overhead and noisy step logs.
+
+8. **Playwright E2E Invariants & Headless Automation**:
+   - **Límites de Concurrencia de Sesiones**: En `playwright.config.ts`, la concurrencia debe limitarse a `workers: process.env.CI ? 1 : 2`. Esto previene sobrepasar el límite de sesiones activas del backend (`sessionLimitForRole = 10`), evitando evicciones de tokens y redirects espurios a `/` por 401.
+   - **Sincronización de Arranque vs Overlays (`InitialSyncOverlay`)**:
+     - Prohibido falsear `localStorage.setItem("lastSyncTime", ...)` en helpers como `loginFast` para saltarse pantallas de carga; esto engaña al motor de delta sync (`since = lastSyncTime`) y causa que la base de datos local quede vacía sin empleados ni turnos.
+     - En tests headless, esperar deterministamente la disolución del overlay con `await expect(page.getByText(/sincronizando entorno/i)).not.toBeVisible({ timeout: 15000 })` antes de interactuar con la interfaz.
+   - **Localizadores Unívocos Anti-Colisión**: En aserciones de modales, evitar `getByText` con selectores genéricos (ej. nombres de la aplicación) que colisionen con los encabezados persistentes del `Header`, usando roles y encabezados semánticos (`getByRole("heading", { name: ... })`).
