@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
@@ -141,5 +141,58 @@ describe("Design System & UI Governance Guardrails", () => {
     for (const token of requiredTokens) {
       expect(indexCss).toContain(token);
     }
+  });
+
+  it("enforces zero design drift in certified primitives and layouts", () => {
+    const budgetPath = path.join(frontendRoot, "design-system-budget.json");
+    expect(existsSync(budgetPath), "design-system-budget.json must exist").toBe(true);
+
+    const certifiedFiles = [
+      "src/components/ui/Button.tsx",
+      "src/components/ui/Input.tsx",
+      "src/components/ui/Card.tsx",
+      "src/components/ui/Badge.tsx",
+      "src/components/ui/Select.tsx",
+      "src/components/ui/Checkbox.tsx",
+      "src/components/ui/Switch.tsx",
+      "src/components/ui/Textarea.tsx",
+      "src/components/ui/EmptyState.tsx",
+      "src/components/ui/Skeleton.tsx",
+      "src/components/ui/LoadingSpinner.tsx",
+      "src/components/ui/PaginationControls.tsx",
+      "src/components/ui/PageHeader.tsx",
+      "src/components/ui/KpiCard.tsx",
+      "src/components/ui/MetricCard.tsx",
+      "src/components/ui/CinematicModal.tsx",
+      "src/components/ui/ConfirmationModal.tsx",
+      "src/components/ui/SortableHeader.tsx",
+      "src/components/ui/ReportTable.tsx",
+      "src/components/ui/DesignSystemShowcaseModal.tsx",
+      "src/components/layout/Header.view.tsx",
+      "src/components/layout/Sidebar.view.tsx",
+      "src/components/layout/SidebarNavItem.tsx",
+      "src/components/layout/PersistentLayout.view.tsx",
+      "src/components/layout/NotificationCenter.view.tsx",
+      "src/features/theoretical-shifts/components/listTokens.ts",
+    ];
+
+    const rawPaletteRegex =
+      /\b(?:bg|text|border|ring|divide)-(?:slate|gray|zinc|neutral|stone)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:\/[0-9]+)?\b/g;
+
+    const certifiedViolations: { file: string; match: string }[] = [];
+
+    for (const relPath of certifiedFiles) {
+      const fullPath = path.join(frontendRoot, relPath);
+      const content = readFileSync(fullPath, "utf8");
+      const matches = content.match(rawPaletteRegex);
+      if (matches) {
+        certifiedViolations.push({ file: relPath, match: matches.join(", ") });
+      }
+    }
+
+    expect(
+      certifiedViolations,
+      `Found raw palette colors in certified primitives/layouts:\n${JSON.stringify(certifiedViolations, null, 2)}`,
+    ).toEqual([]);
   });
 });

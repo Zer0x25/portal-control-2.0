@@ -14,6 +14,7 @@
     "spec:new": "node scripts/spec-new.cjs",
     "spec:check": "node scripts/spec-check.cjs",
     "docs:check": "node scripts/docs-check.cjs",
+    "audit:design-system": "npm --prefix frontend run audit:design-system",
     "secrets:scan": "node scripts/secret-scan.cjs",
     "dev": "npm run dev:up && node scripts/dev.cjs",
     "dev:up": "docker compose -f compose.db.dev.yaml up -d --wait",
