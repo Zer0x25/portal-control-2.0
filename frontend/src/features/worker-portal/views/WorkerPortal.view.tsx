@@ -316,7 +316,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </select>
             <button
               onClick={() => handleExportPDF && handleExportPDF()}
-              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
+              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-token-text-onAccent rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               Descargar PDF

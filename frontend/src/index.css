@@ -45,6 +45,7 @@
 
   --color-token-status-success: var(--status-success);
   --color-token-status-error: var(--status-error);
+  --color-token-status-error-text: var(--status-error-text);
   --color-token-status-warning: var(--status-warning);
   --color-token-status-info: var(--status-info);
 
@@ -340,6 +341,7 @@
     /* State Colors - Reverted to HEX for solid visibility */
     --status-success: #10b981; /* emerald-500 */
     --status-error: #ef4444; /* red-500 */
+    --status-error-text: #b91c1c; /* red-700 (accessible high contrast in light mode) */
     --status-warning: #f59e0b; /* amber-500 */
     --status-info: #0ea5e9; /* sky-500 */
 
@@ -366,6 +368,10 @@
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-tertiary: #7c8da6;
+    --text-on-accent: #020617; /* Slate-950 for high contrast on light sky-400 accent */
+
+    --status-error: #ef4444;
+    --status-error-text: #ef4444;
 
     --accent-professional: #38bdf8;
   }
