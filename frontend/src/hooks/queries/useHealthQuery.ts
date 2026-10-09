@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiClient, ApiHttpError } from "../../services/apiClient";
+import { apiClient } from "../../services/apiClient";
 
 export interface HealthData {
   status: "healthy" | "degraded";
@@ -92,9 +92,8 @@ export type BackendStatus = "healthy" | "degraded" | "offline";
 /**
  * Unified mapping (Fase 1, sin cambio visual intencional):
  * - data.status degraded => degraded
- * - HTTP 503 (DB down, body success:false) => degraded (antes inconsistente:
- *   useSystemStatus decía degraded, SimpleConnectionIndicator decía offline).
- *   NOTA HUMANO: confirmar si 503 debe ser rojo "offline" o ámbar "degraded".
+ * - HTTP 503 (DB down) => offline (rojo). Decisión producto 2026-10-09:
+ *   caída de DB es "Servidor Desconectado", no ámbar.
  * - resto de errores/red => offline
  */
 export function deriveBackendStatus(
@@ -104,8 +103,6 @@ export function deriveBackendStatus(
 ): BackendStatus {
   if (data?.status === "degraded") return "degraded";
   if (data) return "healthy";
-  if (error instanceof ApiHttpError && error.status === 503) return "degraded";
   if (isLoading) return "healthy";
-  if (error) return "offline";
-  return "healthy";
+  return "offline";
 }
