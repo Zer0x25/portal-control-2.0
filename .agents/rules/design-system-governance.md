@@ -29,6 +29,7 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
   - No usar `<input>` nativo con clases ad-hoc: usar `Input` de `src/components/ui/Input.tsx`.
   - No usar contenedores con bordes manuales para paneles principales: usar `Card` de `src/components/ui/Card.tsx`.
   - No armar píldoras de estado desde cero: usar `Badge` de `src/components/ui/Badge.tsx`.
+  - Para envolver vistas y secciones principales: usar `Container` de `src/components/ui/Container.tsx` (`standard`: máx 1280px / 7xl, `wide`: máx 1440px, `narrow`: máx 896px / 4xl, `fluid`: ancho completo), garantizando centrado automático (`mx-auto`) y paddings elásticos.
   - Para ventanas flotantes y modales: usar `CinematicModal` de `src/components/ui/CinematicModal.tsx` o dialogs oficiales.
   - Para listas vacías o estados de error: usar `EmptyState` de `src/components/ui/EmptyState.tsx`.
 
@@ -60,3 +61,26 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 - **A11y de Formularios**: Todo `Input` o control interactivo debe proveer `id` explícito vinculado a su `label` (`htmlFor`). Si hay error, vincular con `aria-invalid` y `aria-describedby`.
 - **Contraste & Dark Mode**: El soporte para Dark Mode es automático mediante las variables semánticas de `index.css`. No agregar overrides condicionales redundantes como `dark:bg-slate-900` cuando `bg-token-surface-card` resuelve ambos temas sin fricción.
 - **Áreas táctiles mínimas**: En elementos interactivos móviles, asegurar altura mínima táctil de 40px–44px.
+
+---
+
+## 6. Layout Responsivo, PWA y Navegación Headless para Agentes
+
+- **Tolerancia 320px (WCAG 1.4.10 Reflow)**:
+  - Prohibidos anchos rígidos incondicionales en píxeles mayores a 320px (ej. `w-[400px]`, `min-w-[500px]`) que provoquen scroll horizontal en pantallas móviles. Todo ancho debe estar acotado por `max-w-*` o condicionado por breakpoints (`sm:`, `md:`, `lg:`).
+  - Escala de padding lateral seguro: `px-4` móvil (16px), `sm:px-6` tablet (24px), `lg:px-8` desktop (32px).
+- **Viewport Dinámico y Safe Areas en PWA**:
+  - Para alturas completas de pantalla en layouts o shells, usar siempre `min-h-dvh` o `h-dvh` en vez de `100vh` / `h-screen` para evitar saltos de interfaz por barras dinámicas del navegador móvil.
+  - Para notch y barra inferior en PWA, consumir utilidades semánticas `pb-safe`, `pt-safe`, `p-safe` de `frontend/src/index.css`.
+- **Navegación Determinista para Agentes (Headless Automation)**:
+  - Landmarks semánticos obligatorios en el shell:
+    - `<header role="banner" data-testid="app-header">`
+    - `<aside role="complementary" data-testid="app-sidebar">`
+    - `<nav role="navigation" aria-label="Menú principal" data-testid="main-navigation">`
+    - `<main id="main-content" role="main" data-testid="main-content">`
+    - `<a href="#main-content" data-testid="skip-to-content">` (Skip link accesible)
+  - Enlaces de navegación con atributos de introspección:
+    - `data-testid={`nav-item-${slug}`}`
+    - `data-nav-to={to}`
+    - `data-nav-active="true|false"`
+  - El shell raíz debe publicar metadatos de ruta: `data-testid="app-shell"` y `data-current-path={path}`.
