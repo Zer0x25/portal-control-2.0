@@ -1,18 +1,13 @@
 import React, { memo } from "react";
 import { ReportStat } from "../../types/index";
 import { formatDecimalHoursToHHMM } from "../../utils/formatters";
-import { motion } from "framer-motion";
 
 interface MobileSummaryCardProps {
   stat: ReportStat;
 }
 
 const ReportTableMobileSummaryCard: React.FC<MobileSummaryCardProps> = ({ stat }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="relative overflow-hidden p-4 rounded-2xl shadow-xl shadow-black/5 bg-token-surface-card backdrop-blur-xl border border-token-border-subtle"
-  >
+  <div className="relative overflow-hidden p-4 rounded-2xl shadow-xl shadow-black/5 bg-token-surface-card backdrop-blur-xl border border-token-border-subtle animate-in fade-in [--tw-enter-translate-y:10px] [animation-duration:200ms]">
     <div className="absolute top-0 left-0 w-1.5 h-full bg-token-accent-brand"></div>
 
     <p className="font-extrabold text-token-text-primary text-base leading-tight">{stat.name}</p>
@@ -68,7 +63,7 @@ const ReportTableMobileSummaryCard: React.FC<MobileSummaryCardProps> = ({ stat }
         </div>
       </div>
     </div>
-  </motion.div>
+  </div>
 );
 
 export default memo(ReportTableMobileSummaryCard);
