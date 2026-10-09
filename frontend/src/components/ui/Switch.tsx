@@ -6,6 +6,8 @@ interface SwitchProps {
   disabled?: boolean;
   className?: string;
   size?: "sm" | "md";
+  id?: string;
+  "aria-label"?: string;
 }
 
 const Switch: React.FC<SwitchProps> = ({
@@ -14,10 +16,20 @@ const Switch: React.FC<SwitchProps> = ({
   disabled,
   className = "",
   size = "md",
+  id,
+  "aria-label": ariaLabel,
 }) => {
   const toggle = () => {
     if (!disabled) {
       onChange(!checked);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggle();
     }
   };
 
@@ -38,10 +50,17 @@ const Switch: React.FC<SwitchProps> = ({
 
   return (
     <div
+      id={id}
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      tabIndex={disabled ? -1 : 0}
+      onKeyDown={handleKeyDown}
       onClick={toggle}
       className={`
         relative inline-flex items-center rounded-full transition-colors duration-300 ease-in-out cursor-pointer
-        ${checked ? "bg-sap-blue border-transparent" : "bg-token-surface-stripe border-transparent"}
+        focus:outline-none focus:ring-2 focus:ring-token-border-focus focus:ring-offset-2 dark:focus:ring-offset-token-surface-app
+        ${checked ? "bg-token-accent-brand border-transparent" : "bg-token-surface-technical border border-token-border-subtle"}
         ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         ${currentSize.wrapper}
         ${className}

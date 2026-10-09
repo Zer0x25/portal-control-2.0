@@ -19,24 +19,23 @@ export const LIST_MOBILE_HEIGHT_STYLE = {
 
 // ── Row state classes ─────────────────────────────────────────────────────────
 /** Bottom border applied to every row */
-export const ROW_BASE_CLASS =
-  "border-b border-gray-100 dark:border-gray-800 transition-colors duration-150";
+export const ROW_BASE_CLASS = "border-b border-token-border-subtle transition-colors duration-150";
 
 /** Hover background for active (non-archived) rows */
-export const ROW_HOVER_CLASS = "hover:bg-white/60 dark:hover:bg-gray-700/60";
+export const ROW_HOVER_CLASS = "hover:bg-token-surface-hover";
 
 /** Opacity + grayscale for archived/past rows */
 export const ROW_ARCHIVED_CLASS = "opacity-40 grayscale-[0.5]";
 
 // ── Text classes ──────────────────────────────────────────────────────────────
 /** Main cell text — employee name, pattern name, etc. */
-export const TEXT_PRIMARY = "text-sm font-semibold text-gray-900 dark:text-gray-100";
+export const TEXT_PRIMARY = "text-sm font-semibold text-token-text-primary";
 
 /** Secondary cell text — dates, labels, etc. */
-export const TEXT_SECONDARY = "text-sm text-gray-600 dark:text-gray-300";
+export const TEXT_SECONDARY = "text-sm text-token-text-secondary";
 
 /** Muted/empty state text — "Indefinido", notes placeholder, etc. */
-export const TEXT_MUTED = "text-sm text-gray-400 dark:text-gray-500 italic";
+export const TEXT_MUTED = "text-sm text-token-text-tertiary italic";
 
 /** Monospaced cell text — hours, numeric values */
-export const TEXT_MONO = "text-sm font-mono text-gray-600 dark:text-gray-300";
+export const TEXT_MONO = "text-sm font-mono text-token-text-secondary";

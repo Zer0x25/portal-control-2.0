@@ -47,7 +47,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-[#fdfbf7] dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col max-h-[80vh]"
+          className="relative w-full max-w-2xl bg-token-surface-card rounded-xl shadow-2xl overflow-hidden border border-token-border-technical flex flex-col max-h-[80vh]"
         >
           {/* Header */}
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-950">

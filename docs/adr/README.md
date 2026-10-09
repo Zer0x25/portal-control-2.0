@@ -27,6 +27,7 @@ con Prettier (`printWidth: 100`).
 | [0017](0017-modulos-estrictos-node26-fastify-piloto.md) | Propuesto | Módulo estricto, Node 26 y piloto HTTP |
 | [0018](0018-fastify-base-migracion-modular.md)          | Aceptado  | Base Fastify y migración por módulos   |
 | [0019](0019-auth-mfa-pin-estado-persistente.md)         | Aceptado  | Estado persistente para MFA y PIN      |
+| [0020](0020-design-system-governance.md)                | Aceptado  | Design System & Gobernanza Agéntica    |
 | [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida
@@ -57,3 +58,4 @@ Reglas:
 - `README.md`: cómo desplegar. Los ADR explican por qué se despliega así.
 - `OBSERVABILITY.md`: señales actuales. Detalle operativo de ADR-0009.
 - `backend/docs/swagger.json`: contrato generado. Ver ADR-0003.
+  | [0020](0020-design-system-governance.md) | Propuesto | Design System Governance |

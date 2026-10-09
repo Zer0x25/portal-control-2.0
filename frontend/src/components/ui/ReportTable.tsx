@@ -119,101 +119,101 @@ const ReportTable: React.FC<ReportTableProps> = ({
   }, [dataToPaginate, currentPage]);
 
   const renderSummaryTable = () => (
-    <div className="overflow-hidden rounded-lg border border-black/10 dark:border-white/5 shadow-sm bg-white dark:bg-gray-900">
+    <div className="overflow-hidden rounded-lg border border-token-border-technical shadow-sm bg-token-surface-card">
       <table className="min-w-full">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-black/10 dark:border-white/5">
+          <tr className="bg-token-surface-header border-b border-token-border-technical">
             <SortableHeader<ReportHeaderRowShape>
               title="Nombre"
               sortKey="name"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Días Prog."
               sortKey="scheduledDays"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Hrs. Prog."
               sortKey="totalHoursScheduled"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Días Trab."
               sortKey="workedDays"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Hrs. Trab."
               sortKey="totalHoursWorked"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Diferencia"
               sortKey="differenceHours"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Atrasos"
               sortKey="tardinessIncidents"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Ausencias"
               sortKey="absenceDays"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5 dark:divide-white/5">
+        <tbody className="divide-y divide-token-border-subtle">
           {(paginatedData as ReportStat[]).map((stat) => (
             <tr
               key={stat.employeeId}
-              className="group hover:bg-sap-blue/5 dark:hover:bg-white/5 transition-all duration-300"
+              className="group hover:bg-token-surface-hover transition-all duration-150"
             >
-              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight italic">
+              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-token-text-primary uppercase tracking-tight italic">
                 {stat.name}
               </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400">
+              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary">
                 {stat.scheduledDays}
               </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400 font-mono italic">
+              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
                 {formatDecimalHoursToHHMM(stat.totalHoursScheduled)}
               </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400">
+              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary">
                 {stat.workedDays}
               </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400 font-mono italic">
+              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
                 {formatDecimalHoursToHHMM(stat.totalHoursWorked)}
               </td>
               <td
-                className={`px-6 py-5 whitespace-nowrap text-xs font-black italic ${stat.differenceHours >= 0 ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}
+                className={`px-6 py-5 whitespace-nowrap text-xs font-black italic ${stat.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
               >
                 {formatDecimalHoursToHHMM(stat.differenceHours)}
               </td>
               <td
-                className={`px-6 py-5 whitespace-nowrap text-xs font-black ${stat.tardinessIncidents > 0 ? "text-amber-600 dark:text-amber-400" : "text-gray-400 dark:text-gray-600"}`}
+                className={`px-6 py-5 whitespace-nowrap text-xs font-black ${stat.tardinessIncidents > 0 ? "text-token-status-warning" : "text-token-text-tertiary"}`}
               >
                 {stat.tardinessIncidents}
               </td>
               <td
-                className={`px-6 py-5 whitespace-nowrap text-xs font-black ${stat.absenceDays > 0 ? "text-rose-600 dark:text-rose-400" : "text-gray-400 dark:text-gray-600"}`}
+                className={`px-6 py-5 whitespace-nowrap text-xs font-black ${stat.absenceDays > 0 ? "text-token-status-error" : "text-token-text-tertiary"}`}
               >
                 {stat.absenceDays}
               </td>
@@ -225,101 +225,101 @@ const ReportTable: React.FC<ReportTableProps> = ({
   );
 
   const renderDailyTable = () => (
-    <div className="overflow-hidden rounded-lg border border-black/10 dark:border-white/5 shadow-sm bg-white dark:bg-gray-900">
+    <div className="overflow-hidden rounded-lg border border-token-border-technical shadow-sm bg-token-surface-card">
       <table className="min-w-full">
         <thead>
-          <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-black/10 dark:border-white/5">
+          <tr className="bg-token-surface-header border-b border-token-border-technical">
             <SortableHeader<ReportHeaderRowShape>
               title="Fecha"
               sortKey="isoDate"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Día"
               sortKey="dayOfWeek"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Turno Prog."
               sortKey="scheduledShift"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Marcaje Real"
               sortKey="actualClocks"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Hrs. Prog."
               sortKey="scheduledHours"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Colación"
               sortKey="colacionMinutes"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Hrs. Trab."
               sortKey="workedHours"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Diferencia"
               sortKey="differenceHours"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
             <SortableHeader<ReportHeaderRowShape>
               title="Estado"
               sortKey="justificationType"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500"
+              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
             />
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5 dark:divide-white/5">
+        <tbody className="divide-y divide-token-border-subtle">
           {(paginatedData as (DailyReportItem | ReportSubtotal)[]).map((item, index) => {
             if ("type" in item) {
               if (item.type === "subtotal")
                 return (
                   <tr
-                    key={`subtotal - ${item.weekId} `}
-                    className="bg-sap-blue/5 dark:bg-white/5 font-black text-[9px] uppercase tracking-[0.3em]"
+                    key={`subtotal-${item.weekId}`}
+                    className="bg-token-surface-active font-black text-[9px] uppercase tracking-[0.3em]"
                   >
                     <td
                       colSpan={4}
-                      className="px-8 py-4 text-right text-sap-blue italic opacity-70"
+                      className="px-8 py-4 text-right text-token-accent-brand italic opacity-90"
                     >
                       Resumen Semanal
                     </td>
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-mono italic">
+                    <td className="px-6 py-4 text-token-text-secondary font-mono italic">
                       {formatDecimalHoursToHHMM(item.totals.scheduledHours)}
                     </td>
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-mono italic">
+                    <td className="px-6 py-4 text-token-text-secondary font-mono italic">
                       {formatDecimalHoursToHHMM(item.totals.colacionMinutes / 60)}
                     </td>
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-mono italic">
+                    <td className="px-6 py-4 text-token-text-secondary font-mono italic">
                       {formatDecimalHoursToHHMM(item.totals.workedHours)}
                     </td>
                     <td
-                      className={`px - 6 py - 4 font - black italic ${item.totals.differenceHours >= 0 ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"} `}
+                      className={`px-6 py-4 font-black italic ${item.totals.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
                     >
                       {formatDecimalHoursToHHMM(item.totals.differenceHours)}
                     </td>
@@ -329,8 +329,8 @@ const ReportTable: React.FC<ReportTableProps> = ({
               if (item.type === "total")
                 return (
                   <tr
-                    key={`total - ${item.weekId} `}
-                    className="bg-linear-to-r from-sap-blue to-indigo-700 text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl relative overflow-hidden"
+                    key={`total-${item.weekId}`}
+                    className="bg-linear-to-r from-token-accent-brand to-indigo-700 text-token-text-onAccent font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl relative overflow-hidden"
                   >
                     <td colSpan={4} className="px-8 py-6 text-right opacity-80 italic">
                       Corte de Periodo Finalizado
@@ -345,7 +345,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                       {formatDecimalHoursToHHMM(item.totals.workedHours)}
                     </td>
                     <td
-                      className={`px - 6 py - 6 font - black italic text - md ${item.totals.differenceHours >= 0 ? "text-green-300" : "text-rose-300"} `}
+                      className={`px-6 py-6 font-black italic text-md ${item.totals.differenceHours >= 0 ? "text-green-300" : "text-rose-300"}`}
                     >
                       {formatDecimalHoursToHHMM(item.totals.differenceHours)}
                     </td>
@@ -359,31 +359,31 @@ const ReportTable: React.FC<ReportTableProps> = ({
             return (
               <tr
                 key={String(dailyItem.isoDate) + index}
-                className={`group hover: bg - sap - blue / 5 dark: hover: bg - white / 5 transition - all duration - 300 ${isJustified ? "bg-gray-50/20 dark:bg-white/2" : ""} `}
+                className={`group hover:bg-token-surface-hover transition-all duration-150 ${isJustified ? "bg-token-surface-stripe" : ""}`}
               >
-                <td className="px-8 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400 font-mono">
+                <td className="px-8 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono">
                   {dailyItem.date}
                 </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-black text-gray-500 dark:text-gray-600 uppercase italic">
+                <td className="px-6 py-5 whitespace-nowrap text-xs font-black text-token-text-tertiary uppercase italic">
                   {dailyItem.dayOfWeek}
                 </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-black text-sap-blue dark:text-blue-400 uppercase tracking-tighter italic">
+                <td className="px-6 py-5 whitespace-nowrap text-xs font-black text-token-accent-brand uppercase tracking-tighter italic">
                   {dailyItem.scheduledShift}
                 </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-medium text-gray-600 dark:text-gray-400 font-mono">
+                <td className="px-6 py-5 whitespace-nowrap text-xs font-medium text-token-text-secondary font-mono">
                   {dailyItem.actualClocks}
                 </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400 font-mono italic">
+                <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
                   {formatDecimalHoursToHHMM(dailyItem.scheduledHours)}
                 </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs text-gray-500 font-mono italic">
+                <td className="px-6 py-5 whitespace-nowrap text-xs text-token-text-tertiary font-mono italic">
                   {dailyItem.colacionMinutes.toFixed(0)}m
                 </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-600 dark:text-gray-400 font-mono italic">
+                <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
                   {formatDecimalHoursToHHMM(dailyItem.workedHours)}
                 </td>
                 <td
-                  className={`px-6 py-5 whitespace-nowrap text-xs font-black italic ${dailyItem.differenceHours >= 0 ? "text-green-600 dark:text-green-400" : "text-rose-600 dark:text-rose-400"}`}
+                  className={`px-6 py-5 whitespace-nowrap text-xs font-black italic ${dailyItem.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
                 >
                   {formatDecimalHoursToHHMM(dailyItem.differenceHours)}
                 </td>
@@ -395,7 +395,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                       {dailyItem.justificationType}
                     </span>
                   ) : (
-                    <span className="text-gray-200 dark:text-gray-800">—</span>
+                    <span className="text-token-text-tertiary opacity-40">—</span>
                   )}
                 </td>
               </tr>
@@ -414,27 +414,27 @@ const ReportTable: React.FC<ReportTableProps> = ({
               if (item.type === "subtotal")
                 return (
                   <div
-                    key={`subtotal - mob - ${item.weekId} `}
-                    className="p-5 rounded-4xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-xl"
+                    key={`subtotal-mob-${item.weekId}`}
+                    className="p-5 rounded-2xl bg-token-surface-card backdrop-blur-xl border border-token-border-subtle shadow-xl"
                   >
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-sap-blue block text-center mb-4 italic">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-token-accent-brand block text-center mb-4 italic">
                       CORTE SEMANAL
                     </span>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="text-center bg-white/30 dark:bg-black/20 p-3 rounded-2xl border border-white/20">
-                        <div className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                      <div className="text-center bg-token-surface-active/50 p-3 rounded-2xl border border-token-border-subtle">
+                        <div className="text-[8px] font-black text-token-text-tertiary uppercase tracking-widest mb-1">
                           Colación
                         </div>
-                        <div className="text-sm font-black text-gray-800 dark:text-gray-100 font-mono italic">
+                        <div className="text-sm font-black text-token-text-primary font-mono italic">
                           {formatDecimalHoursToHHMM(item.totals.colacionMinutes / 60)}
                         </div>
                       </div>
-                      <div className="text-center bg-white/30 dark:bg-black/20 p-3 rounded-2xl border border-white/20">
-                        <div className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                      <div className="text-center bg-token-surface-active/50 p-3 rounded-2xl border border-token-border-subtle">
+                        <div className="text-[8px] font-black text-token-text-tertiary uppercase tracking-widest mb-1">
                           Diferencia
                         </div>
                         <div
-                          className={`text - sm font - black italic ${item.totals.differenceHours >= 0 ? "text-green-600" : "text-rose-600"} `}
+                          className={`text-sm font-black italic ${item.totals.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
                         >
                           {formatDecimalHoursToHHMM(item.totals.differenceHours)}
                         </div>
@@ -445,8 +445,8 @@ const ReportTable: React.FC<ReportTableProps> = ({
               if (item.type === "total")
                 return (
                   <div
-                    key={`total - mob - ${item.weekId} `}
-                    className="p-8 rounded-[2.5rem] bg-linear-to-br from-sap-blue to-indigo-800 text-white shadow-2xl relative overflow-hidden group"
+                    key={`total-mob-${item.weekId}`}
+                    className="p-8 rounded-[2.5rem] bg-linear-to-br from-token-accent-brand to-indigo-800 text-token-text-onAccent shadow-2xl relative overflow-hidden group"
                   >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000"></div>
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] opacity-80 block text-center mb-6 italic">
@@ -479,7 +479,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
             const dailyItem = item as DailyReportItem;
             return (
               <ReportTableMobileDailyCard
-                key={`${dailyItem.isoDate} -${index} `}
+                key={`${dailyItem.isoDate}-${index}`}
                 item={dailyItem}
                 justificationStyles={justificationStyles}
               />
@@ -495,7 +495,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
     <div className="space-y-10">
       {/* Top Pagination Capsule */}
       <div className="flex justify-center">
-        <div className="bg-white dark:bg-gray-900 rounded-full border border-black/10 dark:border-white/5 p-1 shadow-sm px-6">
+        <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={totalPages}
@@ -521,7 +521,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
 
       {/* Bottom Pagination & Metadata */}
       <div className="flex flex-col items-center gap-6">
-        <div className="bg-white dark:bg-gray-900 rounded-full border border-black/10 dark:border-white/5 p-1 shadow-sm px-6">
+        <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
           <PaginationControls
             currentPage={currentPage}
             totalPages={totalPages}
@@ -540,7 +540,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
           paginatedData.length === 0 &&
           currentPage > 1 && (
             <div className="text-center py-10 opacity-40">
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-token-text-tertiary">
                 FIN DEL ARCHIVO ANALÍTICO
               </p>
             </div>

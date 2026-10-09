@@ -11,58 +11,57 @@ const ReportTableMobileSummaryCard: React.FC<MobileSummaryCardProps> = ({ stat }
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="relative overflow-hidden p-4 rounded-2xl shadow-xl shadow-black/5 bg-white/70 dark:bg-gray-800/60 backdrop-blur-xl border border-white/20 dark:border-white/5"
+    className="relative overflow-hidden p-4 rounded-2xl shadow-xl shadow-black/5 bg-token-surface-card backdrop-blur-xl border border-token-border-subtle"
   >
-    <div className="absolute top-0 left-0 w-1.5 h-full bg-sap-blue"></div>
+    <div className="absolute top-0 left-0 w-1.5 h-full bg-token-accent-brand"></div>
 
-    <p className="font-extrabold text-gray-900 dark:text-white text-base leading-tight">
-      {stat.name}
-    </p>
+    <p className="font-extrabold text-token-text-primary text-base leading-tight">{stat.name}</p>
 
     <div className="mt-4 grid grid-cols-2 gap-y-3 gap-x-2">
       <div className="space-y-0.5">
-        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        <span className="block text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
           Días Prog / Trab
         </span>
-        <span className="text-sm font-black text-gray-800 dark:text-gray-200">
-          {stat.scheduledDays} <span className="text-gray-300 mx-1">/</span> {stat.workedDays}
+        <span className="text-sm font-black text-token-text-primary">
+          {stat.scheduledDays} <span className="text-token-text-tertiary opacity-40 mx-1">/</span>{" "}
+          {stat.workedDays}
         </span>
       </div>
 
       <div className="space-y-0.5">
-        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        <span className="block text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
           Hrs. Prog / Trab
         </span>
-        <span className="text-sm font-black text-gray-800 dark:text-gray-200">
+        <span className="text-sm font-black text-token-text-primary font-mono">
           {formatDecimalHoursToHHMM(stat.totalHoursScheduled)}{" "}
-          <span className="text-gray-300 mx-1">/</span>{" "}
+          <span className="text-token-text-tertiary opacity-40 mx-1">/</span>{" "}
           {formatDecimalHoursToHHMM(stat.totalHoursWorked)}
         </span>
       </div>
 
       <div className="space-y-0.5">
-        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        <span className="block text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
           Diferencia
         </span>
         <span
-          className={`text-sm font-black ${stat.differenceHours >= 0 ? "text-green-600 dark:text-green-400" : "text-red-500"}`}
+          className={`text-sm font-black ${stat.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
         >
           {formatDecimalHoursToHHMM(stat.differenceHours)}h
         </span>
       </div>
 
       <div className="space-y-0.5">
-        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        <span className="block text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
           Anomalías
         </span>
         <div className="flex gap-2">
           <span
-            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.tardinessIncidents > 0 ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300" : "bg-gray-100 dark:bg-gray-700 text-gray-400"}`}
+            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.tardinessIncidents > 0 ? "bg-amber-500/15 text-token-status-warning" : "bg-token-surface-active text-token-text-tertiary"}`}
           >
             {stat.tardinessIncidents} A
           </span>
           <span
-            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.absenceDays > 0 ? "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400" : "bg-gray-100 dark:bg-gray-700 text-gray-400"}`}
+            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.absenceDays > 0 ? "bg-red-500/15 text-token-status-error" : "bg-token-surface-active text-token-text-tertiary"}`}
           >
             {stat.absenceDays} F
           </span>

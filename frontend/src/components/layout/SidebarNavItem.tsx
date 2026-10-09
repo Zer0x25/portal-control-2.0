@@ -19,8 +19,8 @@ const SidebarNavItem = React.memo(
           group flex items-center px-4 py-2.5 mb-1 mx-2 rounded-md transition-all duration-150
           ${
             isActive
-              ? "bg-(--sidebar-text-active) text-white shadow-sm"
-              : "text-token-text-secondary hover:bg-(--sidebar-item-hover) hover:text-(--sidebar-text-active)"
+              ? "bg-token-sidebar-text-active text-white shadow-sm"
+              : "text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active"
           }
       `}
         >

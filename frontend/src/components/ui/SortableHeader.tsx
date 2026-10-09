@@ -36,11 +36,11 @@ const SortableHeader = <T,>({
       );
     }
     return (
-      <div className="ml-1.5 w-4 h-4 rounded-sm bg-sap-blue flex items-center justify-center shadow-sm transition-all">
+      <div className="ml-1.5 w-4 h-4 rounded-sm bg-token-accent-brand flex items-center justify-center shadow-sm transition-all">
         {isAscending ? (
-          <ChevronUpIcon className="w-2.5 h-2.5 text-white" />
+          <ChevronUpIcon className="w-2.5 h-2.5 text-token-text-onAccent" />
         ) : (
-          <ChevronDownIcon className="w-2.5 h-2.5 text-white" />
+          <ChevronDownIcon className="w-2.5 h-2.5 text-token-text-onAccent" />
         )}
       </div>
     );

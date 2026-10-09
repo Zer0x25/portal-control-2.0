@@ -22,7 +22,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       <div className="relative">
         <div className={`rounded-full border-token-border-subtle ${sizeClasses[size]}`} />
         <div
-          className={`absolute inset-0 rounded-full border-t-sap-blue animate-spin ${sizeClasses[size]}`}
+          className={`absolute inset-0 rounded-full border-t-token-accent-brand animate-spin ${sizeClasses[size]}`}
           style={{
             borderRightColor: "transparent",
             borderLeftColor: "transparent",

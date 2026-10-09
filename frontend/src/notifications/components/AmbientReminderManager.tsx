@@ -77,13 +77,13 @@ const AmbientReminderManager: React.FC = () => {
 
   const NOTE_COLORS: Record<string, string> = {
     amber:
-      "bg-[#fffbeb] dark:bg-amber-900 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100",
-    blue: "bg-[#eff6ff] dark:bg-blue-900 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-100",
+      "bg-amber-50 dark:bg-amber-900 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100",
+    blue: "bg-blue-50 dark:bg-blue-900 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-100",
     emerald:
-      "bg-[#ecfdf5] dark:bg-emerald-900 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100",
-    rose: "bg-[#fff1f2] dark:bg-rose-900 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-100",
+      "bg-emerald-50 dark:bg-emerald-900 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100",
+    rose: "bg-rose-50 dark:bg-rose-900 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-100",
     indigo:
-      "bg-[#eef2ff] dark:bg-indigo-900 border-indigo-300 dark:border-indigo-700 text-indigo-900 dark:text-indigo-100",
+      "bg-indigo-50 dark:bg-indigo-900 border-indigo-300 dark:border-indigo-700 text-indigo-900 dark:text-indigo-100",
   };
 
   const currentColor = activeNote?.color || "amber";

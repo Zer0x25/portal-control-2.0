@@ -31,11 +31,13 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
   const getIconForType = (type: "request" | "communication" | "alert") => {
     switch (type) {
       case "alert":
-        return <ExclamationTriangleIcon className="w-5 h-5 text-rose-500 animate-pulse" />;
+        return (
+          <ExclamationTriangleIcon className="w-5 h-5 text-token-status-error animate-pulse" />
+        );
       case "request":
-        return <CheckCircleIcon className="w-5 h-5 text-amber-500" />;
+        return <CheckCircleIcon className="w-5 h-5 text-token-status-warning" />;
       case "communication":
-        return <InformationCircleIcon className="w-5 h-5 text-(--sidebar-text-active)" />;
+        return <InformationCircleIcon className="w-5 h-5 text-token-accent-brand" />;
     }
   };
 
@@ -58,14 +60,14 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
         <BellIcon
           className={`w-5 h-5 sm:w-6 sm:h-6 transition-colors ${
             isOpen
-              ? "text-(--sidebar-text-active)"
-              : "text-token-text-tertiary group-hover:text-(--sidebar-text-active)"
+              ? "text-token-accent-brand"
+              : "text-token-text-tertiary group-hover:text-token-accent-brand"
           }`}
         />
         {unreadCount > 0 && (
           <span className="absolute top-1.5 right-1.5 flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-rose-600 text-white text-[9px] font-black border border-(--surface-header)">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-token-status-error opacity-75"></span>
+            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-token-status-error text-token-text-onAccent text-[9px] font-black border border-token-surface-header">
               {unreadCount}
             </span>
           </span>

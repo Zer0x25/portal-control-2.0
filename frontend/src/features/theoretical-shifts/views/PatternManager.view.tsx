@@ -90,8 +90,8 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
     <div id="pattern-manager-section" className="space-y-6 h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Patrones de Turno</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <h2 className="typo-ui-title text-token-text-primary">Patrones de Turno</h2>
+          <p className="text-xs text-token-text-secondary mt-1">
             Define los ciclos horarios base para los empleados.
           </p>
         </div>
@@ -105,7 +105,7 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
               <Button
                 onClick={handleOpenNewForm}
                 variant="primary"
-                className="shadow-lg shadow-sap-blue/20 flex items-center gap-2"
+                className="flex items-center gap-2"
               >
                 <PlusCircleIcon className="w-5 h-5" />
                 Nuevo Patrón
@@ -121,7 +121,7 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/50 p-6 overflow-hidden shadow-xl"
+            className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 overflow-hidden shadow-sm"
           >
             <PatternForm
               onCancel={handleCancelForm}
@@ -133,13 +133,13 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
       </AnimatePresence>
 
       <div className="relative flex-1 group w-full">
-        <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-sap-blue transition-colors" />
+        <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors z-10" />
         <Input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar patrones por nombre..."
-          className="pl-12! py-3! bg-white/30! dark:bg-gray-800/20! border-white/20! dark:border-gray-700/50! rounded-2xl! w-full"
+          className="pl-12! w-full"
         />
       </div>
 

@@ -78,10 +78,10 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
   const gridTemplateColumns = "1.5fr 1fr 0.8fr 0.8fr 1.5fr 100px";
 
   return (
-    <div className="overflow-hidden border border-white/20 dark:border-white/5 rounded-3xl shadow-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl">
+    <div className="overflow-hidden border border-token-border-technical rounded-lg shadow-sm bg-token-surface-card">
       {/* Standard Grid Header */}
       <div
-        className="grid items-center px-0 py-3 bg-gray-50/90 dark:bg-gray-800/90 border-b border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+        className="grid items-center px-0 py-3 bg-token-surface-header border-b border-token-border-technical text-xs font-bold text-token-text-tertiary uppercase tracking-wider"
         style={{ gridTemplateColumns }}
       >
         <div className="pl-6">Empleado</div>
@@ -99,8 +99,8 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
       >
         {isError ? (
           <div className="flex flex-col justify-center items-center h-full text-center p-4">
-            <div className="text-red-500 mb-2">Error al cargar permisos</div>
-            <div className="text-gray-500 text-sm mb-4">
+            <div className="text-token-status-error mb-2">Error al cargar permisos</div>
+            <div className="text-token-text-secondary text-sm mb-4">
               {(error as Error)?.message || "Error desconocido"}
             </div>
             <Button onClick={() => refetch()} variant="secondary" size="sm">
@@ -109,7 +109,7 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
           </div>
         ) : (
           <div
@@ -152,7 +152,7 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
                 >
                   <div className={`pl-6 truncate pr-4 ${TEXT_PRIMARY}`}>{leave.employeeName}</div>
                   <div className={`px-4 ${TEXT_SECONDARY}`}>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 uppercase tracking-tighter">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-token-surface-active text-token-text-primary border border-token-border-subtle uppercase tracking-tighter">
                       {leave.type}
                     </span>
                   </div>

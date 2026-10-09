@@ -75,7 +75,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-md bg-[#0a0a0c] border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10"
+            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-3xl p-8 shadow-2xl relative z-10"
           >
             <div className="text-center mb-6">
               <h2 className="text-2xl font-black text-white uppercase tracking-tighter">

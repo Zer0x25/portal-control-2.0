@@ -52,7 +52,7 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-md bg-[#0a0a0c] border border-white/10 rounded-3xl p-8 shadow-2xl relative z-10"
+            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-3xl p-8 shadow-2xl relative z-10"
           >
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">

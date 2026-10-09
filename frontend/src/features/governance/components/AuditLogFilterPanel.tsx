@@ -37,7 +37,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
     (filters.endDate ? 1 : 0);
 
   return (
-    <div className="bg-[#fdfbf7] dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md shadow-sm">
+    <div className="bg-token-surface-card border border-token-border-technical rounded-md shadow-sm">
       <button
         onClick={onToggle}
         className="w-full px-8 py-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group"
@@ -79,7 +79,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
           transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
           className="overflow-hidden"
         >
-          <div className="p-8 space-y-6 border-t border-gray-300 dark:border-gray-800 bg-[#fdfbf7] dark:bg-gray-950">
+          <div className="p-8 space-y-6 border-t border-token-border-technical bg-token-surface-card">
             {/* Filter Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Category/Domain Filter */}

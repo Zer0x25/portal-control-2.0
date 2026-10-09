@@ -155,7 +155,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
         </div>
 
         {/* Table Content */}
-        <div className="relative overflow-hidden rounded-md bg-[#fdfbf7] dark:bg-gray-950 border border-gray-300 dark:border-gray-800 shadow-sm">
+        <div className="relative overflow-hidden rounded-md bg-token-surface-card border border-token-border-technical shadow-sm">
           <div className="overflow-x-auto custom-scrollbar max-h-[55vh]">
             <table className="w-full text-left border-collapse">
               <thead>

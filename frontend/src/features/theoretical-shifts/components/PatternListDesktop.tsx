@@ -58,10 +58,10 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
   const gridTemplateColumns = "minmax(200px, 1fr) 120px 120px 80px 140px";
 
   return (
-    <div className="flex flex-col h-full bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-token-surface-card border border-token-border-technical rounded-lg shadow-sm overflow-hidden">
       {/* Header */}
       <div
-        className="grid items-center px-4 py-3 bg-gray-50/90 dark:bg-gray-800/90 border-b border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky top-0 z-10"
+        className="grid items-center px-4 py-3 bg-token-surface-header border-b border-token-border-technical text-xs font-bold text-token-text-tertiary uppercase tracking-wider sticky top-0 z-10"
         style={{ gridTemplateColumns }}
       >
         <div className="pl-4">Nombre del Patrón</div>
@@ -79,7 +79,7 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
       >
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
           </div>
         ) : (
           <div
@@ -109,20 +109,20 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
 
                   {/* Cycle Length */}
                   <div className="flex justify-center">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-token-accent-brand/10 text-token-accent-brand border border-token-accent-brand/20">
                       {p.cycleLengthDays} días
                     </span>
                   </div>
 
                   {/* Max Hours */}
-                  <div className="text-center font-mono text-sm font-bold text-sap-blue dark:text-sap-light-blue">
+                  <div className="text-center font-mono text-sm font-bold text-token-accent-brand">
                     {p.maxHoursPattern?.toFixed(2) || globalMaxWeeklyHours}
                   </div>
 
                   {/* Color */}
                   <div className="flex justify-center">
                     <div
-                      className="w-6 h-6 rounded-lg shadow-sm border-2 border-white dark:border-gray-600 ring-4 ring-transparent hover:ring-white/20 transition-all duration-200"
+                      className="w-5 h-5 rounded-md shadow-sm border border-token-border-technical ring-2 ring-transparent hover:ring-token-border-focus transition-all duration-200"
                       style={{ backgroundColor: p.color || "transparent" }}
                     />
                   </div>

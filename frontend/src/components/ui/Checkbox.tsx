@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   label?: string;
@@ -7,7 +7,8 @@ interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, error, className = "", id, ...props }, ref) => {
-    const inputId = id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const inputId = id || generatedId;
 
     return (
       <div className={`flex flex-col gap-1 ${className}`}>
@@ -17,7 +18,9 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               type="checkbox"
               id={inputId}
               ref={ref}
-              className="peer appearance-none w-5 h-5 bg-token-surface-card border border-token-border-technical rounded-sm checked:bg-sap-blue checked:border-sap-blue transition-all duration-300 cursor-pointer outline-none focus:ring-2 focus:ring-sap-blue/30"
+              aria-invalid={error ? "true" : undefined}
+              aria-describedby={error ? `${inputId}-error` : undefined}
+              className="peer appearance-none w-5 h-5 bg-token-surface-card border border-token-border-technical rounded-sm checked:bg-token-accent-brand checked:border-token-accent-brand transition-all duration-300 cursor-pointer outline-none focus:ring-2 focus:ring-token-border-focus/30"
               {...props}
             />
             {/* Custom Checkmark */}
@@ -39,14 +42,17 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           {label && (
             <label
               htmlFor={inputId}
-              className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary cursor-pointer select-none group-hover:text-sap-blue transition-colors"
+              className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary cursor-pointer select-none group-hover:text-token-accent-brand transition-colors"
             >
               {label}
             </label>
           )}
         </div>
         {error && (
-          <p className="ml-8 text-[9px] font-black uppercase tracking-widest text-sap-error animate-pulse">
+          <p
+            id={`${inputId}-error`}
+            className="ml-8 text-[9px] font-black uppercase tracking-widest text-token-status-error animate-pulse"
+          >
             {error}
           </p>
         )}

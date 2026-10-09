@@ -16,10 +16,8 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
     ? justificationStyles[item.justificationType] || ""
     : "";
   const isJustified = !!item.justificationType;
-  const cardBg = isJustified
-    ? "bg-white/40 dark:bg-gray-800/30"
-    : "bg-white/70 dark:bg-gray-800/60";
-  const borderClass = isJustified ? "border-gray-200 dark:border-gray-700" : "border-sap-blue";
+  const cardBg = isJustified ? "bg-token-surface-stripe" : "bg-token-surface-card";
+  const borderClass = isJustified ? "border-token-border-subtle" : "border-token-accent-brand";
 
   return (
     <motion.div
@@ -29,8 +27,8 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
     >
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-extrabold text-gray-900 dark:text-white text-sm">{item.date}</p>
-          <p className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider">
+          <p className="font-extrabold text-token-text-primary text-sm">{item.date}</p>
+          <p className="text-[10px] uppercase font-bold text-token-text-tertiary tracking-wider">
             {item.dayOfWeek}
           </p>
         </div>
@@ -46,58 +44,60 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
       {!isJustified ? (
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-sap-blue/10 text-sap-blue dark:text-sap-light-blue rounded-md text-[10px] font-bold uppercase">
+            <span className="px-2 py-0.5 bg-token-accent-brand/10 text-token-accent-brand rounded-md text-[10px] font-bold uppercase">
               Turno: {item.scheduledShift}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
                 Marcaje
               </span>
-              <span className="text-xs font-black text-gray-800 dark:text-gray-200">
+              <span className="text-xs font-black text-token-text-primary font-mono">
                 {item.actualClocks || "--:--"}
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
                 Hrs. Prog
               </span>
-              <span className="text-xs font-black text-gray-800 dark:text-gray-200">
+              <span className="text-xs font-black text-token-text-primary font-mono">
                 {formatDecimalHoursToHHMM(item.scheduledHours)}h
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
                 Colación
               </span>
-              <span className="text-xs font-black text-gray-800 dark:text-gray-200">
+              <span className="text-xs font-black text-token-text-primary font-mono">
                 {item.colacionMinutes.toFixed(0)} min
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
                 Trabajadas
               </span>
-              <span className="text-xs font-black text-gray-800 dark:text-gray-200">
+              <span className="text-xs font-black text-token-text-primary font-mono">
                 {formatDecimalHoursToHHMM(item.workedHours)}h
               </span>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-700/50 flex justify-between items-center">
-            <span className="text-[10px] font-bold text-gray-400 uppercase">Diferencia</span>
+          <div className="pt-2 border-t border-token-border-subtle flex justify-between items-center">
+            <span className="text-[10px] font-bold text-token-text-tertiary uppercase">
+              Diferencia
+            </span>
             <span
-              className={`text-sm font-black ${item.differenceHours >= 0 ? "text-green-600" : "text-red-500"}`}
+              className={`text-sm font-black ${item.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
             >
               {formatDecimalHoursToHHMM(item.differenceHours)}h
             </span>
           </div>
         </div>
       ) : (
-        <div className="mt-3 py-2 px-3 bg-gray-50/50 dark:bg-gray-900/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 italic">
+        <div className="mt-3 py-2 px-3 bg-token-surface-stripe rounded-xl border border-dashed border-token-border-subtle">
+          <p className="text-[10px] text-token-text-tertiary italic">
             Día no laboral o con justificación registrada.
           </p>
         </div>

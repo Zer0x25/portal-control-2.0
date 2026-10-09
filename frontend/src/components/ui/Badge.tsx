@@ -20,23 +20,23 @@ const Badge: React.FC<BadgeProps> = ({
   const baseStyles = `inline-flex items-center font-black uppercase tracking-widest rounded-md border transition-all duration-300 ${fontMono ? "font-mono" : ""}`;
 
   const variantStyles = {
-    primary: "bg-sap-blue/10 text-sap-blue border-sap-blue/10",
+    primary: "bg-token-accent-brand/10 text-token-accent-brand border-token-accent-brand/20",
     secondary: "bg-token-surface-stripe text-token-text-secondary border-token-border-subtle",
-    success: "bg-sap-success/10 text-sap-success border-sap-success/10",
-    danger: "bg-sap-error/10 text-sap-error border-sap-error/10",
-    warning: "bg-sap-warning/10 text-sap-warning border-sap-warning/10",
-    info: "bg-sap-info/10 text-sap-info border-sap-info/10",
+    success: "bg-token-status-success/10 text-token-status-success border-token-status-success/20",
+    danger: "bg-token-status-error/10 text-token-status-error border-token-status-error/20",
+    warning: "bg-token-status-warning/10 text-token-status-warning border-token-status-warning/20",
+    info: "bg-token-status-info/10 text-token-status-info border-token-status-info/20",
     neutral: "bg-token-surface-stripe text-token-text-tertiary border-token-border-subtle",
   };
 
   const dotStyles = {
-    primary: "bg-sap-blue",
-    secondary: "bg-gray-400",
-    success: "bg-sap-success",
-    danger: "bg-sap-error",
-    warning: "bg-sap-warning",
-    info: "bg-sap-info",
-    neutral: "bg-gray-500",
+    primary: "bg-token-accent-brand",
+    secondary: "bg-token-text-secondary",
+    success: "bg-token-status-success",
+    danger: "bg-token-status-error",
+    warning: "bg-token-status-warning",
+    info: "bg-token-status-info",
+    neutral: "bg-token-text-tertiary",
   };
 
   const sizeStyles = {

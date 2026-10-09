@@ -65,16 +65,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       title={
         <div className="flex items-center gap-3">
           <IconBox icon={<ExclamationTriangleIcon />} variant={getIconVariant()} size="md" />
-          <span className="text-slate-900 dark:text-white">{title}</span>
+          <span className="text-token-text-primary">{title}</span>
         </div>
       }
       maxWidth="max-w-lg"
     >
       <div className="text-center sm:text-left">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500 mb-2">
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-token-text-tertiary mb-2">
           Acción Requerida
         </p>
-        <div className="text-sm font-bold text-slate-700 dark:text-gray-300 leading-relaxed mb-8">
+        <div className="text-sm font-bold text-token-text-secondary leading-relaxed mb-8">
           {message}
         </div>
       </div>

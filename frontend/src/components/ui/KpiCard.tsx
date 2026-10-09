@@ -24,7 +24,7 @@ const KpiCard = React.forwardRef<HTMLDivElement, KpiCardProps>(
         className={`animate-in fade-in duration-150 relative overflow-hidden rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm p-4 md:p-5 ${className || ""}`}
       >
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-9 h-9 rounded-sm bg-sap-blue border border-sap-blue shadow-lg shadow-sap-blue/20 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-sm bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20 flex items-center justify-center shrink-0">
             {React.isValidElement(icon)
               ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
                   className: "w-4.5 h-4.5 text-white",
@@ -39,7 +39,7 @@ const KpiCard = React.forwardRef<HTMLDivElement, KpiCardProps>(
             ) : (
               title
             )}
-            <div className="h-0.5 w-6 bg-sap-blue mt-1.5 opacity-30" />
+            <div className="h-0.5 w-6 bg-token-accent-brand mt-1.5 opacity-30" />
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export const KpiStat: React.FC<KpiStatProps> = ({ value, label, onClick, isActiv
       </span>
       <span
         className={`text-lg font-black tabular-nums tracking-tighter transition-colors ${
-          isActive ? "text-white" : "text-token-text-primary group-hover:text-sap-blue"
+          isActive ? "text-white" : "text-token-text-primary group-hover:text-token-accent-brand"
         }`}
       >
         {value}
@@ -85,8 +85,8 @@ export const KpiStat: React.FC<KpiStatProps> = ({ value, label, onClick, isActiv
         onClick={onClick}
         className={`group relative flex items-center w-full py-2.5 px-3.5 rounded-sm transition-all duration-150 border active:scale-[0.98] ${
           isActive
-            ? "bg-indigo-700 border-indigo-800 shadow-md text-white"
-            : "bg-token-surface-stripe border-token-border-subtle hover:border-sap-blue hover:bg-token-surface-active"
+            ? "bg-token-accent-brand border-token-accent-brand shadow-md text-white"
+            : "bg-token-surface-stripe border-token-border-subtle hover:border-token-border-focus hover:bg-token-surface-active"
         }`}
       >
         {content}
