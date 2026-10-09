@@ -34,6 +34,7 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
     // Explicit navigation to the hash route
     await page.goto("/#/admin/governance?tab=integrity");
     await expect(page).toHaveURL(/tab=integrity/, { timeout: 30000 });
+    await expect(page.getByText(/sincronizando entorno/i)).not.toBeVisible({ timeout: 15000 });
 
     // Wait for content to appear (even if it takes a bit)
     await expect(page.getByText(/INTEGRA|DEGRADADA/)).toBeVisible({ timeout: 30000 });
@@ -43,9 +44,10 @@ test.describe("Governance Hub - Simplified Data Validation", () => {
       await expect(page.getByText(expectedStatus).first()).toBeVisible();
 
       if (apiData.lastCheckedCount && apiData.lastCheckedCount > 0) {
-        await expect(
-          page.getByText(apiData.lastCheckedCount.toLocaleString()).first(),
-        ).toBeVisible();
+        const countPattern = new RegExp(
+          `\\b(${apiData.lastCheckedCount.toLocaleString("es-CL")}|${apiData.lastCheckedCount.toLocaleString("en-US")}|${apiData.lastCheckedCount})\\b`,
+        );
+        await expect(page.getByText(countPattern).first()).toBeVisible();
       }
     }
   });

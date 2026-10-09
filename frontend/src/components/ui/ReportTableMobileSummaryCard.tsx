@@ -56,12 +56,12 @@ const ReportTableMobileSummaryCard: React.FC<MobileSummaryCardProps> = ({ stat }
         </span>
         <div className="flex gap-2">
           <span
-            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.tardinessIncidents > 0 ? "bg-amber-500/15 text-token-status-warning" : "bg-token-surface-active text-token-text-tertiary"}`}
+            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.tardinessIncidents > 0 ? "bg-amber-500/15 text-token-status-warning" : "bg-token-surface-active text-token-text-secondary"}`}
           >
             {stat.tardinessIncidents} A
           </span>
           <span
-            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.absenceDays > 0 ? "bg-red-500/15 text-token-status-error" : "bg-token-surface-active text-token-text-tertiary"}`}
+            className={`text-xs font-black px-2 py-0.5 rounded-md ${stat.absenceDays > 0 ? "bg-red-500/15 text-token-status-error" : "bg-token-surface-active text-token-text-secondary"}`}
           >
             {stat.absenceDays} F
           </span>

@@ -67,7 +67,12 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
         </button>
       </div>
 
-      <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar px-1">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Alertas operativas"
+        className="space-y-2 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar px-1 focus:outline-hidden"
+      >
         {activeAlertTab === "upcoming" ? (
           upcomingEmployees.length > 0 ? (
             upcomingEmployees.map((status) => (

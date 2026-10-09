@@ -39,7 +39,12 @@ export const TeamStatusPanel: React.FC<TeamStatusPanelProps> = ({
                 Sin Horario Asignado
               </h4>
             </div>
-            <div className="space-y-2 max-h-56 overflow-y-auto pr-1 px-1 custom-scrollbar">
+            <div
+              tabIndex={0}
+              role="region"
+              aria-label="Personal presente sin horario asignado"
+              className="space-y-2 max-h-56 overflow-y-auto pr-1 px-1 custom-scrollbar focus:outline-hidden"
+            >
               {unscheduledPresent.map((record: DailyTimeRecord, index) => (
                 <DashboardRow
                   key={record.id}

@@ -16,7 +16,12 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
 }) => {
   return (
     <Card title="Historial de Turnos">
-      <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1 px-1 custom-scrollbar">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Historial de turnos"
+        className="space-y-2 max-h-[320px] overflow-y-auto pr-1 px-1 custom-scrollbar focus:outline-hidden"
+      >
         {shiftReports.slice(0, 5).map((report) => (
           <DashboardRow
             key={report.id}
@@ -32,7 +37,7 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
                 className={`px-2.5 py-1 rounded-sm text-[11px] font-semibold uppercase tracking-wider border ${
                   report.status === "open"
                     ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-300 border-emerald-600/20"
-                    : "bg-token-surface-active text-token-text-tertiary border-token-border-technical"
+                    : "bg-token-surface-active text-token-text-secondary border-token-border-technical"
                 }`}
               >
                 {report.status === "open" ? "En Curso" : "Cerrado"}
