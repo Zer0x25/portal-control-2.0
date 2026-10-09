@@ -1,6 +1,6 @@
 # Tareas 026: Design System Governance
 
-Spec: [spec.md](file:///specs/026-design-system-governance/spec.md). Plan: [plan.md](file:///specs/026-design-system-governance/plan.md).
+Spec: [spec.md](file:///specs/026-design-system-governance/spec.md). Plan: [plan.md](file:///specs/026-design-system-governance/plan.md). Backlog: [backlog-responsive-layout.md](file:///specs/026-design-system-governance/backlog-responsive-layout.md).
 
 Reglas: una tarea = un commit o PR revisable. Cada tarea cita su AC.
 
@@ -25,4 +25,8 @@ Reglas: una tarea = un commit o PR revisable. Cada tarea cita su AC.
 - [x] T19: Estandarizar Componentes y Badges Auxiliares en [src/components/ui/](file:///frontend/src/components/ui/) (ShiftCalendarDayCell, TabNav, ShiftPatternLegend, PremiumSearchInput, RoleBadge, IconBox) (AC1, AC3)
 - [x] T20: Estandarizar Overlays y Widgets Especiales en [src/components/ui/](file:///frontend/src/components/ui/) (WeatherDisplay, SyncErrorsModal, SessionExpiredOverlay) (AC1, AC3)
 - [x] T21: Certificar los 25 archivos en `CERTIFIED_FILES`, actualizar `design-system-budget.json` a 0 incidencias y ejecutar suite CI completa (AC1, AC3, AC5)
+- [x] T22: Implementar primitivo canónico [Container.tsx](file:///frontend/src/components/ui/Container.tsx), tokens PWA/safe-areas y adaptación de shell en [PersistentLayout.view.tsx](file:///frontend/src/components/layout/PersistentLayout.view.tsx) (AC1)
+- [x] T23: Implementar suite de pruebas responsivas y guardrail de cobertura [ResponsiveLayoutCoverage.spec.tsx](file:///frontend/src/tests/components/layout/ResponsiveLayoutCoverage.spec.tsx) y [responsiveViewportGuardrails.test.ts](file:///frontend/src/tests/guardrails/responsiveViewportGuardrails.test.ts) (AC3)
+- [x] T24: Migrar vistas core de operación a `Container` ([TimeControl.view.tsx](file:///frontend/src/features/time-control/views/TimeControl.view.tsx), [SupervisorDashboard.view.tsx](file:///frontend/src/features/supervisor-dashboard/views/SupervisorDashboard.view.tsx), [Dashboard.view.tsx](file:///frontend/src/features/dashboard/views/Dashboard.view.tsx), [WorkerPortal.view.tsx](file:///frontend/src/features/worker-portal/views/WorkerPortal.view.tsx)) (AC1)
+- [x] T25: Persistir reglas de layout responsivo, safe-areas, navegación headless y paridad de guardrails en [.agents/rules/design-system-governance.md](file:///.agents/rules/design-system-governance.md) (AC2)
 
