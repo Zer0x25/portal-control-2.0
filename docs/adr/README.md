@@ -28,6 +28,7 @@ con Prettier (`printWidth: 100`).
 | [0018](0018-fastify-base-migracion-modular.md)          | Aceptado  | Base Fastify y migración por módulos   |
 | [0019](0019-auth-mfa-pin-estado-persistente.md)         | Aceptado  | Estado persistente para MFA y PIN      |
 | [0020](0020-design-system-governance.md)                | Aceptado  | Design System & Gobernanza Agéntica    |
+| [0021](0021-branding-por-instancia-logo.md)             | Propuesto | Branding por instancia en SystemConfig |
 | [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida
