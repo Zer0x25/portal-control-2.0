@@ -95,6 +95,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
             <Button
               variant="none"
               onClick={onClose}
+              aria-label="Cerrar modal"
               className="group flex h-10 w-10 items-center justify-center rounded-2xl bg-token-surface-stripe transition-all hover:bg-token-surface-hover"
             >
               <CloseIcon className="h-5 w-5 opacity-40 group-hover:opacity-100" />

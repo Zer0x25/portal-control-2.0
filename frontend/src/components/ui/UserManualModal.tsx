@@ -125,6 +125,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
               type="button"
               variant="none"
               onClick={onClose}
+              aria-label="Cerrar modal"
               className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-token-text-tertiary hover:text-red-500 rounded-xl transition-all shadow-none"
             >
               <CloseIcon className="w-6 h-6" />
