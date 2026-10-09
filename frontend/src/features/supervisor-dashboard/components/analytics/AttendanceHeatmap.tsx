@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
 import { format, eachDayOfInterval, subDays, getDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useBusinessNow } from "../../../../hooks/useBusinessNow";
@@ -125,21 +124,16 @@ export const AttendanceHeatmap: React.FC<AttendanceHeatmapProps> = React.memo(
 
             {/* Semanas */}
             {heatmapData.map((week, weekIndex) => (
-              <motion.div
+              <div
                 key={weekIndex}
-                className="flex flex-col gap-1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: showAnimation ? weekIndex * 0.05 : 0,
-                  duration: 0.3,
-                }}
+                className="flex flex-col gap-1 animate-in fade-in slide-in-from-right-4 [animation-duration:300ms]"
+                style={showAnimation ? { animationDelay: `${weekIndex * 50}ms` } : undefined}
               >
                 {week.map((day, dayIndex) => (
-                  <motion.div
+                  <div
                     key={`${weekIndex}-${dayIndex}`}
                     className={`
-                    w-3 h-3 rounded-sm cursor-pointer transition-all duration-200
+                    w-3 h-3 rounded-sm cursor-pointer transition duration-200 hover:scale-120 active:scale-90
                     hover:ring-2 hover:ring-token-border-focus hover:ring-offset-1
                     ${getColorClass(day?.value || null)}
                   `}
@@ -148,11 +142,9 @@ export const AttendanceHeatmap: React.FC<AttendanceHeatmapProps> = React.memo(
                         ? `${format(parseBusinessDateCL(day.date), "dd/MM/yyyy", { locale: es })}: ${(day.value * 100).toFixed(0)}%`
                         : ""
                     }
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.9 }}
                   />
                 ))}
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

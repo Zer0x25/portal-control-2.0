@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import Button from "./Button";
 
 export interface TabItem {
@@ -17,9 +16,9 @@ interface TabNavProps {
 }
 
 /**
- * Cinematic Tab Navigation
- * Features a glassmorphic background and a motion pill for the active state.
- * Adheres to the "Industrial Sobriety" aesthetic with high-impact animations.
+ * Tab Navigation (CSS-first, estandarizado con el resto del shell:
+ * `animate-in fade-in` como el dropdown del header y CinematicModal).
+ * Sin pill deslizante JS: el estado activo es una pill estática.
  */
 const TabNav: React.FC<TabNavProps> = ({
   tabs,
@@ -48,7 +47,7 @@ const TabNav: React.FC<TabNavProps> = ({
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`
-                                    relative whitespace-nowrap shrink-0 min-h-11 px-5 py-2 typo-ui-tab transition-all duration-150 rounded-md flex items-center justify-center gap-2 shadow-none
+                                    relative whitespace-nowrap shrink-0 min-h-11 px-5 py-2 typo-ui-tab transition-colors duration-150 rounded-md flex items-center justify-center gap-2 shadow-none
                                     ${
                                       isActive
                                         ? "text-token-text-primary"
@@ -57,10 +56,9 @@ const TabNav: React.FC<TabNavProps> = ({
                                 `}
               >
                 {isActive && (
-                  <motion.div
-                    layoutId="activeTabPill"
-                    className="absolute inset-0 bg-token-surface-stripe border border-token-border-subtle shadow-sm rounded-md -z-10"
-                    transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  <div
+                    key={tab.id}
+                    className="absolute inset-0 bg-token-surface-stripe border border-token-border-subtle shadow-sm rounded-md -z-10 animate-in fade-in"
                   />
                 )}
                 <span className="relative z-10">{tab.label}</span>

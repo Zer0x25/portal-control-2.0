@@ -1,6 +1,5 @@
 import React, { useMemo, memo } from "react";
 import { DailyReportItem, ReportStat, SortableReportKey, ReportDataType } from "../../types/index";
-import { motion } from "framer-motion";
 import { getWeekStartDate, parseDateOnlyUTC } from "../../utils/dateUtils";
 import { formatDecimalHoursToHHMM } from "../../utils/formatters";
 import { TableCellsIcon } from "../ui/icons/index";
@@ -508,13 +507,9 @@ const ReportTable: React.FC<ReportTableProps> = ({
         mobile={renderMobileView()}
         desktop={
           <div className="no-scrollbar perspective-1000">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
+            <div className="animate-in fade-in [--tw-enter-translate-y:30px] [animation-duration:600ms]">
               {isSingleEmployeeReport ? renderDailyTable() : renderSummaryTable()}
-            </motion.div>
+            </div>
           </div>
         }
       />

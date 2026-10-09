@@ -72,6 +72,20 @@ export default defineConfig(({ mode }) => {
                 },
               },
             },
+            {
+              // Fuentes woff2 hasheadas (immutable): primer uso va a red,
+              // luego 1 año en caché. Se excluyen del precache (globIgnores)
+              // para no inflar la instalación del SW en ~350KB.
+              urlPattern: ({ request }) => request.destination === "font",
+              handler: "CacheFirst",
+              options: {
+                cacheName: "portal-fonts",
+                expiration: {
+                  maxEntries: 10,
+                  maxAgeSeconds: 60 * 60 * 24 * 365,
+                },
+              },
+            },
           ],
         },
         manifest: {

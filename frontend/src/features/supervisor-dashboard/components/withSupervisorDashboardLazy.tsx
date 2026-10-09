@@ -1,5 +1,4 @@
 import React, { Suspense, ComponentType } from "react";
-import { motion } from "framer-motion";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
 
 /**
@@ -16,13 +15,9 @@ export function withSupervisorDashboardLazy<P extends object>(
     <Suspense
       fallback={Fallback ? <Fallback /> : <LazySectionFallback rows={7} className="py-6" />}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-      >
+      <div className="animate-in fade-in slide-in-from-top-2 [animation-duration:200ms]">
         <LazyComponent {...props} />
-      </motion.div>
+      </div>
     </Suspense>
   );
 

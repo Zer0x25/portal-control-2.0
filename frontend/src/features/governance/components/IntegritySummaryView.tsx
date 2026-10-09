@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import Card from "../../../components/ui/Card";
 import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
 import Button from "../../../components/ui/Button";
@@ -234,11 +233,7 @@ const IntegritySummaryView: React.FC = () => {
 
       {/* Extra Info Banner */}
       {status?.status === "degraded" && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-5 bg-sap-error/5 border border-sap-error/20 rounded-sm flex items-start gap-4"
-        >
+        <div className="p-5 bg-sap-error/5 border border-sap-error/20 rounded-sm flex items-start gap-4 animate-in fade-in zoom-in-95">
           <div className="p-2 bg-sap-error/10 rounded-full">
             <ExclamationTriangleIcon className="w-5 h-5 text-sap-error" />
           </div>
@@ -252,7 +247,7 @@ const IntegritySummaryView: React.FC = () => {
               daños.
             </p>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   );

@@ -14,7 +14,6 @@ import {
   isValid,
 } from "date-fns";
 import { es } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, XCircleIcon } from "./icons/index";
 import Button from "./Button";
 
@@ -192,45 +191,38 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
         )}
       </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute left-0 right-0 md:right-auto md:w-80 z-100 mt-2 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl overflow-hidden"
-          >
-            {renderHeader()}
-            <div className="p-3">
-              {renderDays()}
-              {renderCells()}
-            </div>
-            <div className="py-3 px-4 bg-token-surface-header border-t border-token-border-technical flex justify-between items-center">
+      {isOpen && (
+        <div className="absolute left-0 right-0 md:right-auto md:w-80 z-100 mt-2 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
+          {renderHeader()}
+          <div className="p-3">
+            {renderDays()}
+            {renderCells()}
+          </div>
+          <div className="py-3 px-4 bg-token-surface-header border-t border-token-border-technical flex justify-between items-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentMonth(new Date());
+              }}
+              className="text-[9px] font-black uppercase tracking-tighter text-sap-blue hover:underline"
+            >
+              Ir a hoy
+            </button>
+            {value && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setCurrentMonth(new Date());
+                  onChange("");
+                  setIsOpen(false);
                 }}
-                className="text-[9px] font-black uppercase tracking-tighter text-sap-blue hover:underline"
+                className="text-[9px] font-black uppercase tracking-tighter text-red-500 hover:underline"
               >
-                Ir a hoy
+                Borrar
               </button>
-              {value && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onChange("");
-                    setIsOpen(false);
-                  }}
-                  className="text-[9px] font-black uppercase tracking-tighter text-red-500 hover:underline"
-                >
-                  Borrar
-                </button>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

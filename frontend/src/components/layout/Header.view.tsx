@@ -50,7 +50,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
       <header
         role="banner"
         data-testid="app-header"
-        className="sticky top-0 left-0 right-0 z-60 bg-token-surface-header border-b border-token-border-technical transition-all shadow-sm"
+        className="sticky top-0 left-0 right-0 z-60 bg-token-surface-header border-b border-token-border-technical shadow-sm"
       >
         <div className="mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -58,10 +58,10 @@ const HeaderView: React.FC<HeaderViewProps> = ({
               data-testid="sidebar-toggle-button"
               aria-controls="app-sidebar"
               onClick={toggleSidebar}
-              className="group flex items-center justify-center transition-all active:scale-95"
+              className="group flex items-center justify-center transition-transform active:scale-95"
               aria-label="Abrir Menú"
             >
-              <div className="w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition-all border border-token-border-technical">
+              <div className="w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical">
                 {APP_TITLE ? APP_TITLE.charAt(0) : "P"}
               </div>
             </button>
@@ -87,7 +87,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
             <button
               data-testid="sound-toggle-button"
               onClick={onToggleSound}
-              className="p-2.5 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-all group"
+              className="p-2.5 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-colors group"
               title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
               aria-label="Silenciar o activar sonidos"
             >
@@ -105,7 +105,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                 <button
                   data-testid="user-menu-button"
                   onClick={onToggleDropdown}
-                  className="group flex items-center gap-3 p-1.5 h-13 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-all"
+                  className="group flex items-center gap-3 p-1.5 h-13 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-colors"
                   aria-haspopup="true"
                   aria-expanded={isDropdownOpen}
                   aria-label="Menú de usuario"
@@ -141,14 +141,14 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                       <button
                         data-testid="security-modal-button"
                         onClick={onOpenChangePassword}
-                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-colors"
                       >
                         Seguridad
                       </button>
                       <button
                         data-testid="help-modal-button"
                         onClick={onOpenManual}
-                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-colors"
                       >
                         Ayuda
                       </button>
@@ -158,7 +158,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                       <button
                         data-testid="dropdown-logout-button"
                         onClick={onLogout}
-                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-status-error-text uppercase tracking-widest hover:bg-token-status-error/10 rounded-sm transition-all"
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-status-error-text uppercase tracking-widest hover:bg-token-status-error/10 rounded-sm transition-colors"
                       >
                         Finalizar Sesión
                       </button>
@@ -173,7 +173,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                 <button
                   data-testid="header-logout-button"
                   onClick={onLogout}
-                  className="px-4 py-2.5 h-11 rounded-md border border-token-status-error/20 bg-token-status-error/10 hover:bg-token-status-error/20 text-token-status-error-text text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                  className="px-4 py-2.5 h-11 rounded-md border border-token-status-error/20 bg-token-status-error/10 hover:bg-token-status-error/20 text-token-status-error-text text-xs font-bold uppercase tracking-widest transition active:scale-95"
                 >
                   Salir
                 </button>

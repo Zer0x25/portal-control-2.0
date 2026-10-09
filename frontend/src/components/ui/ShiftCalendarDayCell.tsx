@@ -1,5 +1,4 @@
 import React, { memo } from "react";
-import { motion } from "framer-motion";
 import {
   EmployeeDailyScheduleInfo,
   ScheduledEmployeeDetail,
@@ -133,14 +132,13 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
     dayData?.type === "employee" ? (dayData.data as EmployeeDailyScheduleInfo) : null;
 
   return (
-    <motion.div
-      whileHover={{ backgroundColor: "rgba(0, 102, 204, 0.05)" }}
+    <div
       onClick={() => onDayClick(day)}
       className={`
-                group relative p-2 ${cellHeightClass} overflow-hidden cursor-pointer transition-all duration-150
+                group relative p-2 ${cellHeightClass} overflow-hidden cursor-pointer transition-colors duration-150
                 ${isToday ? "bg-token-accent-brand/5 dark:bg-token-accent-brand/20" : "bg-token-surface-card"}
                 border-r border-b border-token-border-subtle
-                hover:z-10 hover:shadow-sm
+                hover:z-10 hover:shadow-sm hover:bg-sap-blue/5
             `}
     >
       {/* Header: Date number & Today tag */}
@@ -171,7 +169,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
 
       {/* Active/Today status pulse effect */}
       {isToday && <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-sap-blue" />}
-    </motion.div>
+    </div>
   );
 };
 

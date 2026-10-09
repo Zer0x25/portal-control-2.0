@@ -1,7 +1,6 @@
 import React, { memo } from "react";
 import { DailyReportItem } from "../../types/index";
 import { formatDecimalHoursToHHMM } from "../../utils/formatters";
-import { motion } from "framer-motion";
 
 interface MobileDailyCardProps {
   item: DailyReportItem;
@@ -20,10 +19,8 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
   const borderClass = isJustified ? "border-token-border-subtle" : "border-token-accent-brand";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      className={`p-4 rounded-2xl shadow-lg ${cardBg} backdrop-blur-md border-l-4 ${borderClass} relative overflow-hidden transition-all duration-300 hover:shadow-xl`}
+    <div
+      className={`p-4 rounded-2xl shadow-lg ${cardBg} backdrop-blur-md border-l-4 ${borderClass} relative overflow-hidden transition-shadow duration-300 hover:shadow-xl animate-in fade-in [--tw-enter-translate-x:-10px] [animation-duration:200ms]`}
     >
       <div className="flex justify-between items-start">
         <div>
@@ -102,7 +99,7 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
           </p>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

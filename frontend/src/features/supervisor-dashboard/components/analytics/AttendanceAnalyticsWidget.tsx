@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { useAttendanceAnalytics, useAttendanceTrends } from "../../hooks/useAttendanceAnalytics";
 import { WidgetContainer } from "../../../dashboard/components/ui/WidgetContainer";
 import MetricCard from "../../../../components/ui/MetricCard";
@@ -67,29 +66,19 @@ export const AttendanceAnalyticsWidget: React.FC<AttendanceAnalyticsWidgetProps>
     <WidgetContainer title="Analytics de Asistencia" className={className}>
       {/* Información de tendencia en el contenido */}
       {trends && (
-        <motion.div
-          className="flex items-center gap-2 mb-4 p-3 bg-token-surface-stripe rounded-lg"
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="flex items-center gap-2 mb-4 p-3 bg-token-surface-stripe rounded-lg animate-in fade-in slide-in-from-right-2 [animation-delay:300ms]">
           <TrendIcon className={`w-4 h-4 ${trendIconColorClass[trendColor]}`} />
           <span className={`font-medium ${trendTextColorClass[trendColor]}`}>
             {trends.weeklyChange > 0 ? "+" : ""}
             {trends.weeklyChange.toFixed(1)}%
           </span>
           <span className="text-token-text-secondary text-sm">vs semana anterior</span>
-        </motion.div>
+        </div>
       )}
       <div className="space-y-6">
         {/* Estadísticas principales */}
         {stats && (
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-4 [animation-delay:100ms]">
             <MetricCard
               title="Asistencia Promedio"
               value={`${stats.averageAttendance.toFixed(1)}%`}
@@ -114,16 +103,11 @@ export const AttendanceAnalyticsWidget: React.FC<AttendanceAnalyticsWidgetProps>
               indicatorColor="emerald"
               className="text-sm"
             />
-          </motion.div>
+          </div>
         )}
 
         {/* Gráfico */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="relative"
-        >
+        <div className="relative animate-in fade-in zoom-in-95 [animation-delay:200ms]">
           {isLoading ? (
             <>
               <div className="w-full h-80 bg-token-surface-stripe rounded-lg animate-pulse" />
@@ -138,20 +122,15 @@ export const AttendanceAnalyticsWidget: React.FC<AttendanceAnalyticsWidgetProps>
               <AttendanceChart data={data} days={30} showAnimation={showAnimation} />
             </React.Suspense>
           )}
-        </motion.div>
+        </div>
 
         {/* Información adicional */}
         {stats && (
-          <motion.div
-            className="text-sm text-token-text-secondary space-y-1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div className="text-sm text-token-text-secondary space-y-1 animate-in fade-in [animation-delay:400ms]">
             <p>• Análisis de los últimos {stats.totalDays} días</p>
             <p>• Día con mejor asistencia: {formatBusinessDate(stats.bestDay.date)}</p>
             <p>• Día con peor asistencia: {formatBusinessDate(stats.worstDay.date)}</p>
-          </motion.div>
+          </div>
         )}
       </div>
     </WidgetContainer>

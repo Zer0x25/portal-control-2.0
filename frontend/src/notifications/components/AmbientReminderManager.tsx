@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useQuickNotes } from "../../hooks/useQuickNotes";
-import { motion, AnimatePresence } from "framer-motion";
 import { BellIcon, CheckIcon, SparklesIcon } from "../../components/ui/icons/index";
 import { useAudio } from "../../hooks/useAudio";
 import { QuickNote } from "../../types/index";
@@ -89,50 +88,44 @@ const AmbientReminderManager: React.FC = () => {
   const currentColor = activeNote?.color || "amber";
 
   return (
-    <AnimatePresence>
-      {activeNote && (
-        <div className="fixed inset-0 z-10000 flex items-start justify-center pointer-events-none p-6 pt-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5, y: -100, rotate: -5 }}
-            animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-            exit={{ opacity: 0, scale: 0.5, y: -100, rotate: 5 }}
-            transition={{ type: "spring", damping: 15, stiffness: 200 }}
-            className={`pointer-events-auto max-w-sm w-full p-6 shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] border-b-4 ${NOTE_COLORS[currentColor]} rounded-2xl overflow-hidden relative`}
-          >
-            {/* Sticky Note Pin/Visual */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-1 bg-black/10 dark:bg-white/10 rounded-full" />
+    activeNote && (
+      <div className="fixed inset-0 z-10000 flex items-start justify-center pointer-events-none p-6 pt-16">
+        <div
+          className={`pointer-events-auto max-w-sm w-full p-6 shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] border-b-4 ${NOTE_COLORS[currentColor]} rounded-2xl overflow-hidden relative animate-in fade-in slide-in-from-top-8 [animation-duration:300ms]`}
+        >
+          {/* Sticky Note Pin/Visual */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-1 bg-black/10 dark:bg-white/10 rounded-full" />
 
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="flex items-center gap-2 mb-1">
-                <BellIcon className="w-4 h-4 opacity-40" />
-                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-                  Recordatorio
-                </h4>
-              </div>
-
-              <div className="relative py-2">
-                <p className="text-[15px] font-bold leading-relaxed px-2">{activeNote.content}</p>
-              </div>
-
-              <div className="flex items-center w-full mt-2">
-                <button
-                  onClick={handleAcknowledge}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-black/80 dark:bg-white/90 text-white dark:text-black hover:opacity-90 transition-all text-[11px] font-black uppercase tracking-widest shadow-lg active:scale-95"
-                >
-                  <CheckIcon className="w-3.5 h-3.5" />
-                  Reconocer
-                </button>
-              </div>
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex items-center gap-2 mb-1">
+              <BellIcon className="w-4 h-4 opacity-40" />
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
+                Recordatorio
+              </h4>
             </div>
 
-            {/* Micro Sparkle for "Aesthetics" */}
-            <div className="absolute top-2 right-6 opacity-20">
-              <SparklesIcon className="w-4 h-4" />
+            <div className="relative py-2">
+              <p className="text-[15px] font-bold leading-relaxed px-2">{activeNote.content}</p>
             </div>
-          </motion.div>
+
+            <div className="flex items-center w-full mt-2">
+              <button
+                onClick={handleAcknowledge}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-black/80 dark:bg-white/90 text-white dark:text-black hover:opacity-90 transition text-[11px] font-black uppercase tracking-widest shadow-lg active:scale-95"
+              >
+                <CheckIcon className="w-3.5 h-3.5" />
+                Reconocer
+              </button>
+            </div>
+          </div>
+
+          {/* Micro Sparkle for "Aesthetics" */}
+          <div className="absolute top-2 right-6 opacity-20">
+            <SparklesIcon className="w-4 h-4" />
+          </div>
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+    )
   );
 };
 

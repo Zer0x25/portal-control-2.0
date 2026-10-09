@@ -1,5 +1,4 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
 import Container from "../../../components/ui/Container";
 import TabNav from "../../../components/ui/TabNav";
@@ -24,11 +23,7 @@ export const PersonnelManagementView: React.FC<PersonnelManagementViewProps> = (
 }) => {
   return (
     <Container variant="wide" noPadding data-ui-protected className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.99 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="space-y-6 animate-in fade-in duration-500"
-      >
+      <div className="space-y-6 animate-in fade-in duration-500">
         <PageHeader
           eyebrow="Recursos Humanos"
           eyebrowIcon={<UsersIcon className="w-3.5 h-3.5" />}
@@ -47,20 +42,12 @@ export const PersonnelManagementView: React.FC<PersonnelManagementViewProps> = (
         />
 
         <div className="relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            >
-              {activeTab === "employees" && employeesContent}
-              {activeTab === "users" && usersContent}
-            </motion.div>
-          </AnimatePresence>
+          <div key={activeTab} className="animate-in fade-in slide-in-from-right-2">
+            {activeTab === "employees" && employeesContent}
+            {activeTab === "users" && usersContent}
+          </div>
         </div>
-      </motion.div>
+      </div>
     </Container>
   );
 };

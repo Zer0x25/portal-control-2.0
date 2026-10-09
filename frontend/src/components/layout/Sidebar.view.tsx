@@ -53,7 +53,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           fixed top-16 left-0 h-[calc(100dvh-4rem)] z-58 flex flex-col
           bg-token-surface-sidebar
           border-r border-token-border-technical
-          transition-all duration-200 ease-out
+          transition-[width,transform] duration-200 ease-out
           overflow-hidden
           ${isOpen ? "translate-x-0 w-72" : "-translate-x-full lg:translate-x-0"}
           ${isExpanded ? "lg:w-72" : "lg:w-20"}
@@ -81,7 +81,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="theme-toggle-button"
             onClick={onToggleTheme}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-all"
+            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div
               className={`w-6 h-6 flex items-center justify-center ${effectiveTheme === "dark" ? "text-token-status-warning" : "text-token-sidebar-text-active"}`}
@@ -93,7 +93,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
               )}
             </div>
             <span
-              className={`ml-4 whitespace-nowrap overflow-hidden transition-all duration-300 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}`}
+              className={`ml-4 whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-300 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}`}
             >
               {effectiveTheme === "dark" ? "Modo Luz" : "Modo Noche"}
             </span>
@@ -102,13 +102,13 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="about-modal-button"
             onClick={onOpenAbout}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-all"
+            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <InformationCircleIcon className="w-5 h-5" />
             </div>
             <span
-              className={`ml-4 whitespace-nowrap overflow-hidden transition-all duration-300 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}`}
+              className={`ml-4 whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-300 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}`}
             >
               Acerca de
             </span>

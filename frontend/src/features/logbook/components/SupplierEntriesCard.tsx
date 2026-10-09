@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { ShiftReport, SupplierEntry } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
@@ -110,12 +109,10 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
       {activeShift.supplierEntries.length > 0 ? (
         <div className="flex flex-col gap-3">
           {activeShift.supplierEntries.map((se, index) => (
-            <motion.div
+            <div
               key={se.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="relative p-5 rounded-sm bg-token-surface-card border border-token-border-technical group shadow-sm"
+              style={{ animationDelay: `${Math.min(index, 10) * 50}ms` }}
+              className="relative p-5 rounded-sm bg-token-surface-card border border-token-border-technical group shadow-sm animate-in fade-in slide-in-from-bottom-2"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex flex-col">
@@ -186,7 +183,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       ) : (

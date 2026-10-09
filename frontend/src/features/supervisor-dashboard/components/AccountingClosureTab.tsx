@@ -10,7 +10,6 @@ import {
   ShieldCheckIcon,
   ArrowPathIcon,
 } from "../../../components/ui/icons/index";
-import { AnimatePresence, motion } from "framer-motion";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { formatBusinessDate } from "../../../utils/dateUtils";
 import { useAccountingClosureTabController } from "../hooks/useAccountingClosureTabController";
@@ -176,120 +175,113 @@ const AccountingClosureTab: React.FC = () => {
             )}
 
             {/* Resultados de Validación Industrial */}
-            <AnimatePresence mode="wait">
-              {validationResult.status !== "idle" && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="pt-6"
-                >
-                  {validationResult.status === "success" ? (
-                    <div className="p-8 bg-emerald-600/5 border border-emerald-600/20 rounded-sm text-center relative overflow-hidden group/success shadow-inner">
-                      <div className="absolute -top-10 -right-10 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity rotate-12">
-                        <ShieldCheckIcon className="w-40 h-40" />
+            {validationResult.status !== "idle" && (
+              <div key={validationResult.status} className="pt-6 animate-in fade-in zoom-in-95">
+                {validationResult.status === "success" ? (
+                  <div className="p-8 bg-emerald-600/5 border border-emerald-600/20 rounded-sm text-center relative overflow-hidden group/success shadow-inner">
+                    <div className="absolute -top-10 -right-10 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity rotate-12">
+                      <ShieldCheckIcon className="w-40 h-40" />
+                    </div>
+                    <div className="flex flex-col items-center gap-6 relative z-10">
+                      <div className="w-16 h-16 rounded-sm bg-emerald-600 text-white flex items-center justify-center shadow-lg border border-emerald-500/20">
+                        <ShieldCheckIcon className="w-9 h-9" />
                       </div>
-                      <div className="flex flex-col items-center gap-6 relative z-10">
-                        <div className="w-16 h-16 rounded-sm bg-emerald-600 text-white flex items-center justify-center shadow-lg border border-emerald-500/20">
-                          <ShieldCheckIcon className="w-9 h-9" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <p className="text-2xl font-bold text-emerald-700 uppercase tracking-tight">
-                            Integridad Confirmada
-                          </p>
-                          <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
-                            Auditado: Zero Anomalías Detectadas • Protocolo Seguro Activo
-                          </p>
-                        </div>
-                        <div className="max-w-md mx-auto p-4 bg-white dark:bg-black/20 rounded-sm border border-emerald-600/10 text-[13px] text-token-text-secondary leading-relaxed shadow-sm">
-                          Todos los registros dentro del segmento temporal cumplen con los
-                          parámetros de coherencia maestra. El periodo es apto para sellado digital
-                          inalterable.
-                        </div>
-                        <Button
-                          onClick={() => setIsConfirmModalOpen(true)}
-                          className="py-4 px-12 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-md transition-all active:scale-95 border-none"
-                        >
-                          Ejecutar Sello de Seguridad
-                        </Button>
+                      <div className="space-y-1.5">
+                        <p className="text-2xl font-bold text-emerald-700 uppercase tracking-tight">
+                          Integridad Confirmada
+                        </p>
+                        <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">
+                          Auditado: Zero Anomalías Detectadas • Protocolo Seguro Activo
+                        </p>
+                      </div>
+                      <div className="max-w-md mx-auto p-4 bg-white dark:bg-black/20 rounded-sm border border-emerald-600/10 text-[13px] text-token-text-secondary leading-relaxed shadow-sm">
+                        Todos los registros dentro del segmento temporal cumplen con los parámetros
+                        de coherencia maestra. El periodo es apto para sellado digital inalterable.
+                      </div>
+                      <Button
+                        onClick={() => setIsConfirmModalOpen(true)}
+                        className="py-4 px-12 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-md transition-all active:scale-95 border-none"
+                      >
+                        Ejecutar Sello de Seguridad
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 bg-rose-600/5 border border-rose-600/20 rounded-sm space-y-8 relative overflow-hidden shadow-inner">
+                    <div className="flex items-center gap-5 relative z-10">
+                      <div className="w-12 h-12 rounded-sm bg-rose-600 text-white flex items-center justify-center shadow-lg border border-rose-500/20">
+                        <ExclamationTriangleIcon className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <p className="text-xl font-bold text-rose-700 uppercase tracking-tight leading-none">
+                          Bloqueo de Seguridad
+                        </p>
+                        <p className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider mt-2.5">
+                          Detección de incongruencias críticas en el período
+                        </p>
                       </div>
                     </div>
-                  ) : (
-                    <div className="p-8 bg-rose-600/5 border border-rose-600/20 rounded-sm space-y-8 relative overflow-hidden shadow-inner">
-                      <div className="flex items-center gap-5 relative z-10">
-                        <div className="w-12 h-12 rounded-sm bg-rose-600 text-white flex items-center justify-center shadow-lg border border-rose-500/20">
-                          <ExclamationTriangleIcon className="w-7 h-7" />
-                        </div>
-                        <div>
-                          <p className="text-xl font-bold text-rose-700 uppercase tracking-tight leading-none">
-                            Bloqueo de Seguridad
-                          </p>
-                          <p className="text-[11px] font-semibold text-rose-600 uppercase tracking-wider mt-2.5">
-                            Detección de incongruencias críticas en el período
-                          </p>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
-                        {validationResult.openShifts.length > 0 && (
-                          <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-amber-500 rounded-sm flex flex-col justify-between gap-5 shadow-sm">
-                            <div>
-                              <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
-                                {validationResult.openShifts.length}
-                              </p>
-                              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 leading-tight">
-                                Jornadas Abiertas
-                              </p>
-                            </div>
-                            <Button
-                              onClick={() => handleNavigateToCorrections("openShifts")}
-                              className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-amber-600 hover:text-white transition-all rounded-sm shadow-sm"
-                            >
-                              Sincronizar
-                            </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
+                      {validationResult.openShifts.length > 0 && (
+                        <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-amber-500 rounded-sm flex flex-col justify-between gap-5 shadow-sm">
+                          <div>
+                            <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
+                              {validationResult.openShifts.length}
+                            </p>
+                            <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 leading-tight">
+                              Jornadas Abiertas
+                            </p>
                           </div>
-                        )}
-                        {validationResult.anomalies.length > 0 && (
-                          <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-rose-600 rounded-sm flex flex-col justify-between gap-5 shadow-sm">
-                            <div>
-                              <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
-                                {validationResult.anomalies.length}
-                              </p>
-                              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 leading-tight">
-                                Anomalías Directas
-                              </p>
-                            </div>
-                            <Button
-                              onClick={() => handleNavigateToCorrections("anomalies")}
-                              className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all rounded-sm shadow-sm"
-                            >
-                              Intervenir
-                            </Button>
+                          <Button
+                            onClick={() => handleNavigateToCorrections("openShifts")}
+                            className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-amber-600 hover:text-white transition-all rounded-sm shadow-sm"
+                          >
+                            Sincronizar
+                          </Button>
+                        </div>
+                      )}
+                      {validationResult.anomalies.length > 0 && (
+                        <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-rose-600 rounded-sm flex flex-col justify-between gap-5 shadow-sm">
+                          <div>
+                            <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
+                              {validationResult.anomalies.length}
+                            </p>
+                            <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 leading-tight">
+                              Anomalías Directas
+                            </p>
                           </div>
-                        )}
-                        {validationResult.pendingRequests.length > 0 && (
-                          <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-sap-blue rounded-sm flex flex-col justify-between gap-5 shadow-sm">
-                            <div>
-                              <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
-                                {validationResult.pendingRequests.length}
-                              </p>
-                              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 leading-tight">
-                                Ediciones Pendientes
-                              </p>
-                            </div>
-                            <Button
-                              onClick={() => handleNavigateToCorrections("requests")}
-                              className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-sap-blue hover:text-white transition-all rounded-sm shadow-sm"
-                            >
-                              Liquidar
-                            </Button>
+                          <Button
+                            onClick={() => handleNavigateToCorrections("anomalies")}
+                            className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all rounded-sm shadow-sm"
+                          >
+                            Intervenir
+                          </Button>
+                        </div>
+                      )}
+                      {validationResult.pendingRequests.length > 0 && (
+                        <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-sap-blue rounded-sm flex flex-col justify-between gap-5 shadow-sm">
+                          <div>
+                            <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
+                              {validationResult.pendingRequests.length}
+                            </p>
+                            <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 leading-tight">
+                              Ediciones Pendientes
+                            </p>
                           </div>
-                        )}
-                      </div>
+                          <Button
+                            onClick={() => handleNavigateToCorrections("requests")}
+                            className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-sap-blue hover:text-white transition-all rounded-sm shadow-sm"
+                          >
+                            Liquidar
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         </div>
       </div>

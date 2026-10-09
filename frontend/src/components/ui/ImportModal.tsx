@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { motion } from "framer-motion";
 import Button from "./Button";
 import LoadingSpinner from "./LoadingSpinner";
 import { importService } from "../../services/importService";
@@ -117,20 +116,9 @@ const ImportModal = <T extends ImportPreviewRow>({
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={handleClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-2xl bg-token-surface-card rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-token-border-technical"
-      >
+      <div className="relative w-full max-w-2xl bg-token-surface-card rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-token-border-technical animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
         {/* Header */}
         <div className="p-6 border-b border-token-border-subtle flex justify-between items-center bg-token-surface-stripe">
           <div>
@@ -286,7 +274,7 @@ const ImportModal = <T extends ImportPreviewRow>({
             </Button>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };

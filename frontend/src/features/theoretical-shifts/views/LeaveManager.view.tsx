@@ -22,7 +22,6 @@ import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { LEAVE_TYPES } from "../../../utils/mappings";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
 import EmptyState from "../../../components/ui/EmptyState";
-import { motion, AnimatePresence } from "framer-motion";
 import LeaveListDesktop from "../components/LeaveListDesktop";
 import LeaveListMobile from "../components/LeaveListMobile";
 import { formatBusinessDate } from "../../../utils/dateUtils";
@@ -136,11 +135,7 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
           </p>
         </div>
         {!isFormVisible && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
+          <div className="animate-in fade-in zoom-in-90">
             <Button
               onClick={() => setIsFormVisible(true)}
               variant="primary"
@@ -149,18 +144,15 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
               <PlusCircleIcon className="w-5 h-5" />
               Registrar Ausencia
             </Button>
-          </motion.div>
+          </div>
         )}
       </div>
 
-      <AnimatePresence>
-        {isFormVisible && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm"
-          >
+      <div
+        className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ${isFormVisible ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm">
             <form onSubmit={handleSave} className="space-y-8">
               <h3 className="typo-ui-title text-token-text-primary flex items-center gap-2">
                 <div className="w-1.5 h-5 bg-token-accent-brand rounded-full"></div>
@@ -190,32 +182,25 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                         }}
                       />
                     </div>
-                    <AnimatePresence>
-                      {isDropdownOpen && searchTerm && (
-                        <motion.ul
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute z-50 w-full bg-token-surface-card border border-token-border-technical rounded-xl mt-2 max-h-60 overflow-y-auto shadow-2xl"
-                        >
-                          {filteredEmployeesForSearch.length > 0 ? (
-                            filteredEmployeesForSearch.map((employee: Employee) => (
-                              <li
-                                key={employee.id}
-                                onClick={() => handleSelectEmployee(employee)}
-                                className="px-5 py-3 cursor-pointer text-token-text-primary hover:bg-token-surface-hover hover:text-token-accent-brand transition-colors font-medium border-b border-token-border-subtle last:border-0 text-sm"
-                              >
-                                {employee.name}
-                              </li>
-                            ))
-                          ) : (
-                            <li className="px-5 py-3 text-token-text-secondary italic text-sm">
-                              Sin resultados
+                    {isDropdownOpen && searchTerm && (
+                      <ul className="absolute z-50 w-full bg-token-surface-card border border-token-border-technical rounded-xl mt-2 max-h-60 overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-top-2">
+                        {filteredEmployeesForSearch.length > 0 ? (
+                          filteredEmployeesForSearch.map((employee: Employee) => (
+                            <li
+                              key={employee.id}
+                              onClick={() => handleSelectEmployee(employee)}
+                              className="px-5 py-3 cursor-pointer text-token-text-primary hover:bg-token-surface-hover hover:text-token-accent-brand transition-colors font-medium border-b border-token-border-subtle last:border-0 text-sm"
+                            >
+                              {employee.name}
                             </li>
-                          )}
-                        </motion.ul>
-                      )}
-                    </AnimatePresence>
+                          ))
+                        ) : (
+                          <li className="px-5 py-3 text-token-text-secondary italic text-sm">
+                            Sin resultados
+                          </li>
+                        )}
+                      </ul>
+                    )}
                   </div>
 
                   <div>
@@ -327,9 +312,9 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                 </Button>
               </div>
             </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
         <div className="relative flex-1 group w-full">
@@ -434,19 +419,17 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
         )}
       </div>
 
-      <AnimatePresence>
-        {leaveToDelete && (
-          <ConfirmationModal
-            isOpen
-            onClose={() => setLeaveToDelete(null)}
-            onConfirm={handleConfirmDeleteLeave}
-            title="Finalizar Registro"
-            message={`¿Está seguro de finalizar la ausencia de ${leaveToDelete.employeeName}? Se fijará la fecha de término al día de ayer para archivar el registro inmediatamente.`}
-            confirmVariant="primary"
-            confirmText="Finalizar"
-          />
-        )}
-      </AnimatePresence>
+      {leaveToDelete && (
+        <ConfirmationModal
+          isOpen
+          onClose={() => setLeaveToDelete(null)}
+          onConfirm={handleConfirmDeleteLeave}
+          title="Finalizar Registro"
+          message={`¿Está seguro de finalizar la ausencia de ${leaveToDelete.employeeName}? Se fijará la fecha de término al día de ayer para archivar el registro inmediatamente.`}
+          confirmVariant="primary"
+          confirmText="Finalizar"
+        />
+      )}
     </Container>
   );
 };

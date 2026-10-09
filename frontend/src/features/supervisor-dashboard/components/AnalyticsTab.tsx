@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { AttendanceAnalyticsWidget } from "./analytics/AttendanceAnalyticsWidget";
 import { AttendanceHeatmap } from "./analytics/AttendanceHeatmap";
 import { TrendAnalysis } from "./analytics/TrendAnalysis";
@@ -15,12 +14,7 @@ const AnalyticsTab: React.FC = React.memo(() => {
   const { heatmapData, trendData } = useAnalyticsTabController();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 [animation-duration:300ms]">
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-token-text-primary mb-2">Centro de Analytics</h2>
@@ -33,38 +27,25 @@ const AnalyticsTab: React.FC = React.memo(() => {
       {/* Analytics Widgets */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Widget Principal de Analytics */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          className="xl:col-span-2"
-        >
+        <div className="xl:col-span-2 animate-in fade-in slide-in-from-left-4 [animation-delay:100ms]">
           <AttendanceAnalyticsWidget />
-        </motion.div>
+        </div>
 
         {/* Mapa de Calor */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <div className="animate-in fade-in slide-in-from-bottom-4 [animation-delay:200ms]">
           <WidgetContainer title="Patrones de Asistencia">
             <AttendanceHeatmap data={heatmapData} weeks={12} showAnimation={true} />
           </WidgetContainer>
-        </motion.div>
+        </div>
 
         {/* Análisis de Tendencias */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="animate-in fade-in slide-in-from-bottom-4 [animation-delay:300ms]">
           <WidgetContainer title="Tendencias y Predicciones">
             <TrendAnalysis data={trendData} showAnimation={true} />
           </WidgetContainer>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 });
 

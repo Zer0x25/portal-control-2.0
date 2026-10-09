@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence, type MotionProps } from "framer-motion";
 import { WeatherData } from "../../types/index";
 import { SunIcon, CloudIcon, CloudRainIcon, PartlyCloudyIcon, UvIndexIcon } from "./icons/index";
 
@@ -55,20 +54,6 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
 
   const uvInfo = getUvInfo(weather.uvIndex);
 
-  const mainDisplayVariants = {
-    initial: { opacity: 0, y: -10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: 10 },
-  };
-
-  const motionProps: MotionProps = {
-    initial: "initial",
-    animate: "animate",
-    exit: "exit",
-    variants: mainDisplayVariants,
-    transition: { duration: 0.4 },
-  };
-
   return (
     <div className="flex items-center gap-2 sm:gap-3">
       <div className="shrink-0">
@@ -79,20 +64,24 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
       </div>
       <div className="text-token-text-primary text-left">
         <div className="font-black text-lg sm:text-2xl leading-none h-6 sm:h-8 flex items-center tracking-tighter">
-          <AnimatePresence mode="wait" initial={false}>
-            {displayMode === "temp" ? (
-              <motion.div key="temp" {...motionProps}>
-                {Math.round(weather.temperature)}°C
-              </motion.div>
-            ) : (
-              <motion.div key="uv" {...motionProps}>
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mr-1 text-token-text-tertiary">
-                  UV
-                </span>
-                {weather.uvIndex}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {displayMode === "temp" ? (
+            <div
+              key="temp"
+              className="animate-in fade-in slide-in-from-top-2 [animation-duration:400ms]"
+            >
+              {Math.round(weather.temperature)}°C
+            </div>
+          ) : (
+            <div
+              key="uv"
+              className="animate-in fade-in slide-in-from-top-2 [animation-duration:400ms]"
+            >
+              <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mr-1 text-token-text-tertiary">
+                UV
+              </span>
+              {weather.uvIndex}
+            </div>
+          )}
         </div>
         <p className="text-[9px] sm:text-[10px] font-black text-token-text-secondary uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
           {weather.location}

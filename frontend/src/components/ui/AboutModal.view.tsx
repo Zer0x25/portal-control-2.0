@@ -1,5 +1,4 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { CloseIcon, InformationCircleIcon } from "./icons/index";
 import easterEggImg from "../../assets/images/Mini_Zer0x.jpg";
 import CinematicModal from "./CinematicModal";
@@ -122,40 +121,34 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
         </div>
       </CinematicModal>
 
-      <AnimatePresence>
-        {showMonkey && (
-          <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onCloseMonkey}
-              className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+      {showMonkey && (
+        <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+          <div
+            onClick={onCloseMonkey}
+            className="absolute inset-0 bg-black/95 backdrop-blur-xl animate-in fade-in"
+          />
+          <div
+            className="relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={easterEggImg}
+              alt="Easter egg"
+              loading="lazy"
+              decoding="async"
+              className="max-h-[85vh] max-w-[90vw] rounded-2xl shadow-4xl border-4 border-white/10"
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="relative z-10"
-              onClick={(e) => e.stopPropagation()}
+            <Button
+              variant="none"
+              onClick={onCloseMonkey}
+              className="absolute -top-4 -right-4 bg-white text-black p-2 rounded-full shadow-2xl"
+              aria-label="Cerrar"
             >
-              <img
-                src={easterEggImg}
-                alt="Easter egg"
-                className="max-h-[85vh] max-w-[90vw] rounded-2xl shadow-4xl border-4 border-white/10"
-              />
-              <Button
-                variant="none"
-                onClick={onCloseMonkey}
-                className="absolute -top-4 -right-4 bg-white text-black p-2 rounded-full shadow-2xl"
-                aria-label="Cerrar"
-              >
-                <CloseIcon className="w-5 h-5" />
-              </Button>
-            </motion.div>
+              <CloseIcon className="w-5 h-5" />
+            </Button>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </>
   );
 };

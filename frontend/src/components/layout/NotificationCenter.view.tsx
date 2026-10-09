@@ -47,7 +47,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
         data-testid="notification-bell-button"
         onClick={onToggleOpen}
         className={`
-          group relative p-2.5 rounded-md transition-all active:scale-95 border
+          group relative p-2.5 rounded-md transition active:scale-95 border
           ${
             isOpen
               ? "bg-token-surface-active border-token-border-technical shadow-inner"

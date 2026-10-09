@@ -16,7 +16,6 @@ import {
 } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons/index";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface CalendarMonthSelectorProps {
   currentDate: Date;
@@ -183,36 +182,27 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
       </div>
 
       {/* Dropdown Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, x: "-50%" }}
-            animate={{ opacity: 1, y: 4, x: "-50%" }}
-            exit={{ opacity: 0, y: 10, x: "-50%" }}
-            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-1/2 top-full z-100 w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden"
-            style={{ transformOrigin: "top center" }}
-          >
-            <div className="space-y-6">
-              <YearPicker
-                currentDate={currentDate}
-                onChange={onChange}
-                onGoToToday={() => {
-                  onChange(today);
-                  setIsOpen(false);
-                }}
-              />
-              <MonthPicker
-                currentDate={currentDate}
-                onChange={(idx) => {
-                  onChange(setMonth(currentDate, idx));
-                  setIsOpen(false);
-                }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isOpen && (
+        <div className="absolute left-1/2 top-full -translate-x-1/2 z-100 w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2">
+          <div className="space-y-6">
+            <YearPicker
+              currentDate={currentDate}
+              onChange={onChange}
+              onGoToToday={() => {
+                onChange(today);
+                setIsOpen(false);
+              }}
+            />
+            <MonthPicker
+              currentDate={currentDate}
+              onChange={(idx) => {
+                onChange(setMonth(currentDate, idx));
+                setIsOpen(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
