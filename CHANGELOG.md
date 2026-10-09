@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.26.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.26.0...v8.26.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **e2e:** harden test suite, resolve a11y contrast regressions and add headless navigation coverage ([#31](https://github.com/Zer0x25/portal-control-2.0/issues/31)) ([f848754](https://github.com/Zer0x25/portal-control-2.0/commit/f8487549371f80952ec9a33f511f5d6dfa7223ba))
+
 ## [8.26.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.25.2...v8.26.0) (2026-10-09)
 
 
