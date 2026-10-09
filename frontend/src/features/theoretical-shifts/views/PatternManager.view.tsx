@@ -1,6 +1,11 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for PatternManager.
+*/
+
 import React from "react";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Container from "../../../components/ui/Container";
 import PatternForm from "../components/PatternForm";
 import { PlusCircleIcon, EyeIcon } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
@@ -88,7 +93,13 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
   handleCopyPattern,
 }) => {
   return (
-    <div id="pattern-manager-section" className="space-y-6 h-full flex flex-col">
+    <Container
+      id="pattern-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 h-full flex flex-col"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Patrones de Turno</h2>
@@ -214,6 +225,6 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
         confirmText="Eliminar permanentemente"
         confirmVariant="danger"
       />
-    </div>
+    </Container>
   );
 };

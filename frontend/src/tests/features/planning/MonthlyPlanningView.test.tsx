@@ -29,4 +29,18 @@ describe("MonthlyPlanningView", () => {
     expect(screen.getByText("Gestión estratégica de turnos y dotación")).toBeInTheDocument();
     expect(screen.getByText("WIZARD-CONTAINER-MOCK")).toBeInTheDocument();
   });
+
+  it("renders within canonical wide Container for scheduling matrix", () => {
+    render(
+      <MonthlyPlanningView
+        title="Planificación Mensual"
+        subtitle="Gestión estratégica de turnos y dotación"
+      />,
+    );
+
+    const container = screen.getByTestId("page-container");
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveAttribute("data-ui-protected");
+  });
 });

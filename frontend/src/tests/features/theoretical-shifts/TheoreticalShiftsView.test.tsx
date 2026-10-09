@@ -30,4 +30,13 @@ describe("TheoreticalShiftsView", () => {
     fireEvent.click(screen.getByRole("button", { name: /Asignación/i }));
     expect(handleTabChange).toHaveBeenCalledWith("assignments");
   });
+
+  it("renders within canonical wide Container for dense scheduling matrix", () => {
+    render(<TheoreticalShiftsView activeTab="patterns" handleTabChange={vi.fn()} />);
+
+    const container = screen.getByTestId("page-container");
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveAttribute("data-ui-protected");
+  });
 });

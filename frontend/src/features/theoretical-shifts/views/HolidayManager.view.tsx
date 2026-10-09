@@ -1,5 +1,10 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for HolidayManager.
+*/
+
 import React from "react";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
   PlusCircleIcon,
@@ -62,7 +67,13 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
   handleConfirmDeleteHoliday,
 }) => {
   return (
-    <div id="holiday-manager-section" className="space-y-6 h-full flex flex-col">
+    <Container
+      id="holiday-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 h-full flex flex-col"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Gestión de Feriados</h2>
@@ -191,6 +202,6 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
           />
         )}
       </AnimatePresence>
-    </div>
+    </Container>
   );
 };

@@ -162,4 +162,36 @@ describe("Responsive Viewport & Mobile-Desktop Coverage Guardrails", () => {
     expect(navItemContent).toContain("data-nav-to={to}");
     expect(navItemContent).toContain("data-nav-active");
   });
+
+  it("verifies canonical Container adoption across completed migration tandas (Tanda 1 & Tanda 2)", () => {
+    const migratedViews = [
+      // Tanda 1 (Core Operativo)
+      "src/features/time-control/views/TimeControl.view.tsx",
+      "src/features/supervisor-dashboard/views/SupervisorDashboard.view.tsx",
+      "src/features/dashboard/views/Dashboard.view.tsx",
+      "src/features/worker-portal/views/WorkerPortal.view.tsx",
+      // Tanda 2 (Turnos Teóricos & Planificación)
+      "src/features/theoretical-shifts/views/TheoreticalShifts.view.tsx",
+      "src/features/theoretical-shifts/views/AssignmentManager.view.tsx",
+      "src/features/theoretical-shifts/views/PatternManager.view.tsx",
+      "src/features/theoretical-shifts/views/HolidayManager.view.tsx",
+      "src/features/theoretical-shifts/views/LeaveManager.view.tsx",
+      "src/features/planning/views/MonthlyPlanning.view.tsx",
+    ];
+
+    const unmigrated: string[] = [];
+
+    for (const relPath of migratedViews) {
+      const fullPath = path.join(frontendRoot, relPath);
+      const content = readFileSync(fullPath, "utf8");
+      if (!content.includes("<Container") || !content.includes("data-ui-protected")) {
+        unmigrated.push(relPath);
+      }
+    }
+
+    expect(
+      unmigrated,
+      `Expected all completed tanda views to wrap with <Container data-ui-protected>:\n${JSON.stringify(unmigrated, null, 2)}`,
+    ).toEqual([]);
+  });
 });

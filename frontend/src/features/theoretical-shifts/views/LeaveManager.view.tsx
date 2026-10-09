@@ -1,7 +1,12 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for LeaveManager.
+*/
+
 import React from "react";
 import { Employee, LeaveRecord } from "../../../types";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Container from "../../../components/ui/Container";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
   PlusCircleIcon,
@@ -116,7 +121,13 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
   handleConfirmDeleteLeave,
 }) => {
   return (
-    <div id="leave-manager-section" className="space-y-6">
+    <Container
+      id="leave-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Gestión de Ausencias</h2>
@@ -436,6 +447,6 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
           />
         )}
       </AnimatePresence>
-    </div>
+    </Container>
   );
 };

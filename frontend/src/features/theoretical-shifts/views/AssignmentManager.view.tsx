@@ -1,7 +1,12 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for AssignmentManager.
+*/
+
 import React from "react";
 import { AssignedShift } from "../../../types";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Container from "../../../components/ui/Container";
 import { PlusCircleIcon, EyeIcon, CalendarDaysIcon, UserIcon } from "../../../components/ui/icons";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
@@ -126,7 +131,13 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
   formatBusinessDate,
 }) => {
   return (
-    <div id="assignment-manager-section" className="space-y-6">
+    <Container
+      id="assignment-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Asignaciones de Turnos</h2>
@@ -439,6 +450,6 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
         confirmText={terminationMode === "DELETE" ? "Eliminar" : "Finalizar"}
         confirmDelay={5}
       />
-    </div>
+    </Container>
   );
 };

@@ -28,14 +28,14 @@ Este documento centraliza el inventario, estado de avance y plan de tandas para 
 
 Las 20 vistas restantes se encuentran organizadas en 4 tandas atómicas para su migración gradual:
 
-### Tanda 2: Módulo de Turnos Teóricos y Planificación (6 vistas)
+### Tanda 2: Módulo de Turnos Teóricos y Planificación (6 vistas) [Completada]
 Adecuación para matrices densas de programación mensual y gestión de turnos:
-- [ ] `src/features/theoretical-shifts/views/TheoreticalShifts.view.tsx` (`variant="wide"`)
-- [ ] `src/features/theoretical-shifts/views/AssignmentManager.view.tsx` (`variant="wide"`)
-- [ ] `src/features/theoretical-shifts/views/PatternManager.view.tsx` (`variant="wide"`)
-- [ ] `src/features/theoretical-shifts/views/HolidayManager.view.tsx` (`variant="wide"`)
-- [ ] `src/features/theoretical-shifts/views/LeaveManager.view.tsx` (`variant="wide"`)
-- [ ] `src/features/planning/views/MonthlyPlanning.view.tsx` (`variant="wide"`)
+- [x] `src/features/theoretical-shifts/views/TheoreticalShifts.view.tsx` (`variant="wide"`)
+- [x] `src/features/theoretical-shifts/views/AssignmentManager.view.tsx` (`variant="wide"`)
+- [x] `src/features/theoretical-shifts/views/PatternManager.view.tsx` (`variant="wide"`)
+- [x] `src/features/theoretical-shifts/views/HolidayManager.view.tsx` (`variant="wide"`)
+- [x] `src/features/theoretical-shifts/views/LeaveManager.view.tsx` (`variant="wide"`)
+- [x] `src/features/planning/views/MonthlyPlanning.view.tsx` (`variant="wide"`)
 
 ### Tanda 3: Gestión de Personal, Empleados y Usuarios (3 vistas)
 Listas y formularios con soporte de búsqueda y roles:
