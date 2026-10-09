@@ -14,6 +14,10 @@ export const useConfigMutations = () => {
     onSuccess: (data, variables) => {
       queryClient.setQueryData(["config", variables.key], variables.value);
       queryClient.invalidateQueries({ queryKey: ["config", variables.key] });
+      // Spec 027: el logo se lee por endpoint público con otra query key.
+      if (variables.key === "branding_logo") {
+        queryClient.invalidateQueries({ queryKey: ["config", "public", "branding_logo"] });
+      }
 
       // Map keys to pretty names for audit and toasts
       const keyMap: Record<string, string> = {
@@ -23,6 +27,7 @@ export const useConfigMutations = () => {
         email_recipients: "Lista de destinatarios de correo",
         accounting_lock_date: "Fecha de cierre contable",
         is_control_interno_enabled: "Módulo Control Interno",
+        branding_logo: "Logo de marca",
       };
 
       const prettyName = keyMap[variables.key] || variables.key;
