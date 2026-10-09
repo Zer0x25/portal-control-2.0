@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { motion } from "framer-motion";
 import {
   DocumentArrowDownIcon,
   DocumentChartBarIcon,
@@ -126,7 +125,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
             <Button
               variant="none"
               onClick={() => setIsDatePickerOpen(true)}
-              className="flex items-center gap-3 px-5 h-12 bg-token-surface-card rounded-md border border-token-border-technical hover:border-token-border-focus transition-all shadow-sm group"
+              className="flex items-center gap-3 px-5 h-12 bg-token-surface-card rounded-md border border-token-border-technical hover:border-token-border-focus transition shadow-sm group"
             >
               <CalendarDaysIcon className="w-5 h-5 text-token-text-tertiary group-hover:text-token-accent-brand" />
               <span
@@ -147,7 +146,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
             variant="secondary"
             onClick={clearFilters}
             disabled={!searchTerm && !dateFilter}
-            className="h-12 px-6 rounded-md flex items-center gap-2 bg-token-surface-card! border-token-border-technical! shadow-sm disabled:opacity-30 active:scale-95 transition-all"
+            className="h-12 px-6 rounded-md flex items-center gap-2 bg-token-surface-card! border-token-border-technical! shadow-sm disabled:opacity-30 active:scale-95"
           >
             <ArrowPathIcon
               className={`w-4 h-4 text-token-text-tertiary ${searchTerm || dateFilter ? "animate-spin-slow" : ""}`}
@@ -202,14 +201,11 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                     </td>
                   </tr>
                 ) : (
-                  filteredReports.map((report, index) => (
-                    <motion.tr
+                  filteredReports.map((report) => (
+                    <tr
                       key={report.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
                       onDoubleClick={() => onPreview(report)}
-                      className="group hover:bg-token-surface-hover transition-all cursor-pointer"
+                      className="group hover:bg-token-surface-hover transition-colors cursor-pointer"
                     >
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
@@ -248,7 +244,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                           <Button
                             variant="none"
                             onClick={() => onPreview(report)}
-                            className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-accent-brand hover:border-token-border-focus shadow-sm transition-all active:scale-95"
+                            className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-accent-brand hover:border-token-border-focus shadow-sm transition active:scale-95"
                             title="Ver Detalle"
                           >
                             <EyeIcon className="w-4 h-4" />
@@ -256,7 +252,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                           <Button
                             variant="none"
                             onClick={() => onDownloadPDF(report)}
-                            className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-status-error hover:border-token-status-error/30 shadow-sm transition-all active:scale-95"
+                            className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-status-error hover:border-token-status-error/30 shadow-sm transition active:scale-95"
                             title="Descargar PDF"
                           >
                             <DocumentArrowDownIcon className="w-4 h-4" />
@@ -264,14 +260,14 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                           <Button
                             variant="none"
                             onClick={() => onExportExcel(report)}
-                            className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-status-success hover:border-token-status-success/30 shadow-sm transition-all active:scale-95"
+                            className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-status-success hover:border-token-status-success/30 shadow-sm transition active:scale-95"
                             title="Exportar Excel"
                           >
                             <DocumentChartBarIcon className="w-4 h-4" />
                           </Button>
                         </div>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))
                 )}
                 <tr ref={sentinelRef}>

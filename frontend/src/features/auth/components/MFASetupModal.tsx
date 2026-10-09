@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { authService } from "../../../services/authService";
 import { useToasts } from "../../../hooks/useToasts";
 import Button from "../../../components/ui/Button";
@@ -60,108 +59,96 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
   }, [isOpen]);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
-            onClick={onClose}
-          />
+    isOpen && (
+      <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
+        <div
+          className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in"
+          onClick={onClose}
+        />
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative z-10"
-          >
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
-                Configurar MFA
-              </h2>
-              <p className="text-token-text-secondary text-sm mt-2">
-                Seguridad de Dos Pasos (TOTP)
-              </p>
+        <div className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
+              Configurar MFA
+            </h2>
+            <p className="text-token-text-secondary text-sm mt-2">Seguridad de Dos Pasos (TOTP)</p>
+          </div>
+
+          {step === "initial" && (
+            <div className="space-y-6 text-center">
+              <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 text-token-text-secondary text-sm leading-relaxed">
+                MFA añade una capa adicional de seguridad. Necesitará una aplicación como Google
+                Authenticator o Authy.
+              </div>
+              <Button
+                onClick={handleStartSetup}
+                disabled={loading}
+                className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
+              >
+                {loading ? "Iniciando..." : "Comenzar Configuración"}
+              </Button>
             </div>
+          )}
 
-            {step === "initial" && (
-              <div className="space-y-6 text-center">
-                <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 text-token-text-secondary text-sm leading-relaxed">
-                  MFA añade una capa adicional de seguridad. Necesitará una aplicación como Google
-                  Authenticator o Authy.
-                </div>
+          {step === "scanning" && mfaData && (
+            <div className="space-y-6 text-center">
+              <div className="bg-white p-4 rounded-2xl inline-block shadow-xl mx-auto">
+                <img src={mfaData.qrCode} alt="QR Code" className="w-48 h-48" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest">
+                  O use el código manual:
+                </p>
+                <code className="block p-3 bg-white/5 rounded-xl text-indigo-400 font-mono text-lg tracking-widest">
+                  {mfaData.secret}
+                </code>
+              </div>
+              <Button
+                onClick={() => setStep("verifying")}
+                className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
+              >
+                Ya escaneé el código
+              </Button>
+            </div>
+          )}
+
+          {step === "verifying" && (
+            <form onSubmit={handleVerify} className="space-y-6">
+              <div className="text-center">
+                <p className="text-token-text-secondary text-sm mb-6">
+                  Ingrese el código de 6 dígitos para confirmar la vinculación.
+                </p>
+                <Input
+                  type="text"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="000000"
+                  className="bg-black/40 border-white/10 text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-indigo-500"
+                  autoFocus
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <Button
-                  onClick={handleStartSetup}
-                  disabled={loading}
-                  className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
+                  type="button"
+                  onClick={() => setStep("scanning")}
+                  variant="secondary"
+                  className="h-12 rounded-xl text-token-text-secondary font-bold uppercase tracking-widest text-[10px]"
                 >
-                  {loading ? "Iniciando..." : "Comenzar Configuración"}
+                  Volver al QR
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || token.length !== 6}
+                  className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-[10px]"
+                >
+                  {loading ? "Verificando..." : "Habilitar MFA"}
                 </Button>
               </div>
-            )}
-
-            {step === "scanning" && mfaData && (
-              <div className="space-y-6 text-center">
-                <div className="bg-white p-4 rounded-2xl inline-block shadow-xl mx-auto">
-                  <img src={mfaData.qrCode} alt="QR Code" className="w-48 h-48" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest">
-                    O use el código manual:
-                  </p>
-                  <code className="block p-3 bg-white/5 rounded-xl text-indigo-400 font-mono text-lg tracking-widest">
-                    {mfaData.secret}
-                  </code>
-                </div>
-                <Button
-                  onClick={() => setStep("verifying")}
-                  className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
-                >
-                  Ya escaneé el código
-                </Button>
-              </div>
-            )}
-
-            {step === "verifying" && (
-              <form onSubmit={handleVerify} className="space-y-6">
-                <div className="text-center">
-                  <p className="text-token-text-secondary text-sm mb-6">
-                    Ingrese el código de 6 dígitos para confirmar la vinculación.
-                  </p>
-                  <Input
-                    type="text"
-                    value={token}
-                    onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="000000"
-                    className="bg-black/40 border-white/10 text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-indigo-500"
-                    autoFocus
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    type="button"
-                    onClick={() => setStep("scanning")}
-                    variant="secondary"
-                    className="h-12 rounded-xl text-token-text-secondary font-bold uppercase tracking-widest text-[10px]"
-                  >
-                    Volver al QR
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading || token.length !== 6}
-                    className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-[10px]"
-                  >
-                    {loading ? "Verificando..." : "Habilitar MFA"}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </motion.div>
+            </form>
+          )}
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+    )
   );
 };
 

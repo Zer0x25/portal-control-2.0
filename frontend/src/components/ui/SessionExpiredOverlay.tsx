@@ -1,27 +1,17 @@
 import React from "react";
 import { ShieldIcon } from "./icons";
-import { motion } from "framer-motion";
 
 const SessionExpiredOverlay: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-md">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="bg-token-surface-card rounded-2xl p-8 shadow-2xl max-w-md w-full text-center border border-token-border-subtle relative overflow-hidden"
-      >
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in">
+      <div className="bg-token-surface-card rounded-2xl p-8 shadow-2xl max-w-md w-full text-center border border-token-border-subtle relative overflow-hidden animate-in fade-in zoom-in-90">
         {/* Decorative background pulse */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-3xl animate-pulse" />
 
         <div className="relative z-10 flex flex-col items-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6"
-          >
+          <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6 animate-in fade-in zoom-in-95 [animation-delay:100ms]">
             <ShieldIcon className="w-10 h-10 text-red-600 dark:text-red-400" />
-          </motion.div>
+          </div>
 
           <h2 className="text-2xl font-black text-token-text-primary mb-2">Sesión Expirada</h2>
 
@@ -37,13 +27,8 @@ const SessionExpiredOverlay: React.FC = () => {
         </div>
 
         {/* Loading Bar at bottom */}
-        <motion.div
-          initial={{ width: "0%" }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 3, ease: "linear" }}
-          className="absolute bottom-0 left-0 h-1.5 bg-linear-to-r from-red-500 to-orange-500"
-        />
-      </motion.div>
+        <div className="absolute bottom-0 left-0 h-1.5 w-full bg-linear-to-r from-red-500 to-orange-500" />
+      </div>
     </div>
   );
 };
