@@ -415,7 +415,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 return (
                   <div
                     key={`subtotal-mob-${item.weekId}`}
-                    className="p-5 rounded-4xl bg-token-surface-card backdrop-blur-xl border border-token-border-subtle shadow-xl"
+                    className="p-5 rounded-2xl bg-token-surface-card backdrop-blur-xl border border-token-border-subtle shadow-xl"
                   >
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-token-accent-brand block text-center mb-4 italic">
                       CORTE SEMANAL

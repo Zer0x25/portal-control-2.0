@@ -29,17 +29,18 @@ function getFilesRecursively(dir: string, extensions: string[]): string[] {
 }
 
 describe("Design System & UI Governance Guardrails", () => {
-  it("prevents arbitrary hex color utility classes in core UI components and views", () => {
-    const viewAndUiFiles = [
+  it("prevents arbitrary hex color utility classes in core UI components, layouts, and features", () => {
+    const allScannedFiles = [
       ...getFilesRecursively(path.join(srcDir, "components/ui"), [".tsx"]),
-      ...getFilesRecursively(path.join(srcDir, "features"), [".view.tsx"]),
+      ...getFilesRecursively(path.join(srcDir, "components/layout"), [".tsx"]),
+      ...getFilesRecursively(path.join(srcDir, "features"), [".tsx"]),
     ];
 
     const arbitraryHexRegex = /(?:bg|text|border|ring|fill|stroke)-\[#[0-9a-fA-F]{3,8}\]/;
 
     const violations: { file: string; match: string }[] = [];
 
-    for (const file of viewAndUiFiles) {
+    for (const file of allScannedFiles) {
       const content = readFileSync(file, "utf8");
       const match = content.match(arbitraryHexRegex);
       if (match) {
@@ -75,6 +76,48 @@ describe("Design System & UI Governance Guardrails", () => {
       violations,
       `Found hardcoded colors in inline styles. Use Tailwind token classes:\n${violations.join("\n")}`,
     ).toEqual([]);
+  });
+
+  it("prevents outlier radius classes (rounded-3xl, rounded-4xl) in desktop tables and list containers", () => {
+    const desktopListFiles = [
+      ...getFilesRecursively(path.join(srcDir, "features"), [".tsx"]).filter((f) =>
+        f.includes("ListDesktop.tsx"),
+      ),
+      path.join(srcDir, "components/ui/ReportTable.tsx"),
+    ];
+
+    const outlierRadiusRegex = /rounded-(?:3xl|4xl)/;
+    const violations: { file: string; match: string }[] = [];
+
+    for (const file of desktopListFiles) {
+      const content = readFileSync(file, "utf8");
+      const match = content.match(outlierRadiusRegex);
+      if (match) {
+        violations.push({
+          file: path.relative(frontendRoot, file),
+          match: match[0],
+        });
+      }
+    }
+
+    expect(
+      violations,
+      `Found outlier border-radius in desktop table containers. Use standard rounded-lg/rounded-md:\n${JSON.stringify(violations, null, 2)}`,
+    ).toEqual([]);
+  });
+
+  it("enforces listTokens to consume semantic design tokens", () => {
+    const listTokensPath = path.join(
+      srcDir,
+      "features/theoretical-shifts/components/listTokens.ts",
+    );
+    const content = readFileSync(listTokensPath, "utf8");
+
+    expect(content).toContain("token-border-subtle");
+    expect(content).toContain("token-surface-hover");
+    expect(content).toContain("token-text-primary");
+    expect(content).toContain("token-text-secondary");
+    expect(content).not.toContain("text-gray-900 dark:text-gray-100");
   });
 
   it("verifies index.css exports official semantic tokens", () => {

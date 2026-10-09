@@ -66,10 +66,10 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
   const gridTemplateColumns = "160px minmax(200px, 1fr) 140px 100px";
 
   return (
-    <div className="flex flex-col h-full bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-token-surface-card border border-token-border-technical rounded-lg shadow-sm overflow-hidden">
       {/* Header */}
       <div
-        className="grid items-center px-4 py-3 bg-gray-50/90 dark:bg-gray-800/90 border-b border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider sticky top-0 z-10"
+        className="grid items-center px-4 py-3 bg-token-surface-header border-b border-token-border-technical text-xs font-bold text-token-text-tertiary uppercase tracking-wider sticky top-0 z-10"
         style={{ gridTemplateColumns }}
       >
         <div className="pl-4">Fecha</div>
@@ -86,7 +86,7 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
       >
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
           </div>
         ) : (
           <div
@@ -125,7 +125,7 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
 
                   {/* Type */}
                   <div className="flex justify-center">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30">
                       {h.type}
                     </span>
                   </div>

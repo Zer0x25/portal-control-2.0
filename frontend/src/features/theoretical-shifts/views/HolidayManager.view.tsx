@@ -64,10 +64,8 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
     <div id="holiday-manager-section" className="space-y-6 h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-            Gestión de Feriados
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <h2 className="typo-ui-title text-token-text-primary">Gestión de Feriados</h2>
+          <p className="text-xs text-token-text-secondary mt-1">
             Administra el calendario de feriados nacionales e institucionales.
           </p>
         </div>
@@ -91,7 +89,7 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
                 <Button
                   onClick={() => setIsFormVisible(true)}
                   variant="primary"
-                  className="shadow-lg shadow-sap-blue/20 flex items-center gap-2"
+                  className="flex items-center gap-2"
                 >
                   <PlusCircleIcon className="w-5 h-5" />
                   Nuevo Feriado
@@ -108,7 +106,7 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/50 p-6 overflow-hidden shadow-xl"
+            className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 overflow-hidden shadow-sm"
           >
             <HolidayForm
               initialData={editingHoliday}
@@ -120,8 +118,8 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-3 px-6 h-[50px] bg-white/30 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/50 rounded-2xl whitespace-nowrap w-full md:w-auto md:self-end">
-        <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-3 px-4 h-[44px] bg-token-surface-card border border-token-border-technical rounded-md whitespace-nowrap w-full md:w-auto md:self-end">
+        <CalendarDaysIcon className="w-4 h-4 text-token-text-tertiary" />
         <label className="flex items-center cursor-pointer select-none">
           <input
             type="checkbox"
@@ -130,13 +128,13 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
             className="hidden"
           />
           <div
-            className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${showArchived ? "bg-sap-blue" : "bg-gray-300 dark:bg-gray-600"}`}
+            className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${showArchived ? "bg-token-accent-brand" : "bg-token-surface-technical"}`}
           >
             <div
               className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showArchived ? "translate-x-5" : ""}`}
             ></div>
           </div>
-          <span className="ml-3 text-sm font-bold text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
+          <span className="ml-3 text-xs font-bold text-token-text-secondary uppercase tracking-wider">
             Ver Archivados
           </span>
         </label>

@@ -81,10 +81,10 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
   const gridTemplateColumns = "minmax(180px, 1fr) minmax(160px, 1fr) 130px 130px 110px 120px";
 
   return (
-    <div className="overflow-hidden border border-white/20 dark:border-white/5 rounded-3xl shadow-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl">
+    <div className="overflow-hidden border border-token-border-technical rounded-lg shadow-sm bg-token-surface-card">
       {/* Standard Grid Header */}
       <div
-        className="grid items-center px-4 py-3 bg-gray-50/90 dark:bg-gray-800/90 border-b border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+        className="grid items-center px-4 py-3 bg-token-surface-header border-b border-token-border-technical text-xs font-bold text-token-text-tertiary uppercase tracking-wider"
         style={{ gridTemplateColumns }}
       >
         <div className="pl-4">Empleado</div>
@@ -101,8 +101,8 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
       >
         {isError ? (
           <div className="flex flex-col justify-center items-center h-full text-center p-4">
-            <div className="text-red-500 mb-2">Error al cargar asignaciones</div>
-            <div className="text-gray-500 text-sm mb-4">
+            <div className="text-token-status-error mb-2">Error al cargar asignaciones</div>
+            <div className="text-token-text-secondary text-sm mb-4">
               {(error as Error)?.message || "Error desconocido"}
             </div>
             <Button onClick={() => refetch()} variant="secondary" size="sm">
@@ -111,7 +111,7 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
           </div>
         ) : (
           <div
@@ -150,13 +150,13 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
                     className={`px-4 py-2 pl-8 overflow-hidden flex items-center gap-2 ${TEXT_PRIMARY}`}
                   >
                     {hasConflict && (
-                      <ExclamationTriangleIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                      <ExclamationTriangleIcon className="w-4 h-4 text-token-status-warning shrink-0" />
                     )}
                     <span className="truncate">{assignment.employeeName}</span>
                   </div>
                   {/* Pattern */}
                   <div className={`px-4 py-2 pl-8 overflow-hidden ${TEXT_SECONDARY}`}>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sap-blue/10 text-sap-blue dark:bg-sap-light-blue/10 dark:text-sap-light-blue uppercase tracking-tighter truncate">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-token-accent-brand/10 text-token-accent-brand border border-token-accent-brand/20 uppercase tracking-tighter truncate">
                       {assignment.shiftPatternName}
                     </span>
                   </div>
@@ -169,13 +169,15 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
                   {/* End Date */}
                   <div className={`px-4 py-2 ${TEXT_SECONDARY}`}>
                     {assignment.endDate ? (
-                      <span className={isArchived ? "text-red-400" : ""}>
+                      <span className={isArchived ? "text-token-status-error" : ""}>
                         {new Date(assignment.endDate).toLocaleDateString("es-CL", {
                           timeZone: "UTC",
                         })}
                       </span>
                     ) : (
-                      <span className="text-gray-400 font-medium italic">Indefinido</span>
+                      <span className="text-token-text-tertiary font-medium italic">
+                        Indefinido
+                      </span>
                     )}
                   </div>
                   {/* Hrs/Week */}

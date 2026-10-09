@@ -129,10 +129,8 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
     <div id="assignment-manager-section" className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-            Asignaciones de Turnos
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <h2 className="typo-ui-title text-token-text-primary">Asignaciones de Turnos</h2>
+          <p className="text-xs text-token-text-secondary mt-1">
             {filteredAssignments.length} asignaciones cargadas (Infinite Scroll)
           </p>
         </div>
@@ -142,7 +140,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
               <Button
                 onClick={handleOpenNewForm}
                 variant="primary"
-                className="shadow-lg flex items-center gap-2"
+                className="flex items-center gap-2"
               >
                 <PlusCircleIcon className="w-5 h-5" />
                 Asignar Turno
@@ -160,9 +158,9 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-2xl border border-white/20 dark:border-gray-700/50 p-6 shadow-xl mb-6">
-              <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <div className="w-2 h-6 bg-sap-blue dark:bg-sap-light-blue rounded-full"></div>
+            <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm mb-6">
+              <h3 className="typo-ui-title mb-6 text-token-text-primary flex items-center gap-2">
+                <div className="w-1.5 h-5 bg-token-accent-brand rounded-full"></div>
                 {assignmentForm.editingAssignment ? "Modificar Asignación" : "Nueva Asignación"}
               </h3>
 
