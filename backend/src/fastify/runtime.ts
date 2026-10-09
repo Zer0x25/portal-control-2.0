@@ -11,6 +11,7 @@ import { meterFlows } from "../services/meterFlows";
 import { noteFlows } from "../services/noteFlows";
 import { configFlows } from "../services/configFlows";
 import { companyPolicyStorage } from "../services/companyPolicyStorage";
+import { brandLogoStorage } from "../services/brandLogoStorage";
 import { emailReportFlows } from "../services/emailReportFlows";
 import { kpiFlows } from "../services/kpiFlows";
 import { shiftReportFlows } from "../services/shiftReportFlows";
@@ -91,6 +92,8 @@ export function createFastifyRuntime(config?: FastifyConfig) {
         ...configFlows,
         storePolicy: (stream, name, mime) => companyPolicyStorage.store(stream, name, mime),
         removeUploaded: (filename) => companyPolicyStorage.remove(filename),
+        storeLogo: (stream, name, mime) => brandLogoStorage.store(stream, name, mime),
+        removeUploadedLogo: (filename) => brandLogoStorage.remove(filename),
       },
       shiftReports: {
         ...shiftReportFlows,

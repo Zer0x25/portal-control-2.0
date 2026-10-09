@@ -32,6 +32,13 @@ Fuera (explícito):
 - El logo textual `PORTAL ENTERPRISE` de los PDF en [exportToPdf.ts](file:///frontend/src/utils/export/exportToPdf.ts) no se toca en esta spec.
 - Multi-tenant real (tabla de tenants, selector de cliente, dominios por cliente): ver decisión abierta en plan.md.
 
+## Decisión T1 (cerrada 2026-10-09)
+
+- **Modelo: Opción A** — clave global `branding_logo` por instancia (single-tenant; sin cambios de esquema).
+- **Forma de la clave**: JSON `{ source: { kind: "upload" | "url", ref: string }, width: number, height: number }`.
+- **Tamaño como ancho/alto explícitos en px** (no escala): el login necesita dimensiones intrínsecas conocidas antes de cargar para anti-CLS; una escala exigiría el tamaño base del asset remoto (desconocido hasta la carga → CLS). Rangos: 16–512 px por dimensión; por defecto `512x188` (asset empaquetado actual).
+- **Subida de archivo incluida** (patrón `company-policy`): `POST /api/configs/brand-logo` multipart solo `Administrador`; SVG excluido en T1 (no se sirve JS embebido sin sanitizador) — PNG/JPG/WebP.
+
 ## Criterios de aceptación
 
 - [ ] AC1: La fuente del logo es configurable por un Administrador (URL o archivo subido) y persiste en backend; un valor inválido (MIME no imagen, URL malformada) es rechazado con 400 y mensaje en español.

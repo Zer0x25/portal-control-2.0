@@ -23,8 +23,10 @@ import {
   useWorkdayTypeListQuery,
   useEmailRecipientsListQuery,
   useControlInternoEnabledQuery,
+  useBrandLogoQuery,
 } from "../../../hooks/queries/useConfigQuery";
 import { useConfigMutations } from "../../../hooks/useConfigMutations";
+import type { BrandLogo as BrandLogoValue } from "../../../services/configService";
 
 export const GlobalVariablesManager: React.FC = () => {
   const { data: globalMaxWeeklyHours = 44, isLoading: isMaxHoursLoading } =
@@ -36,6 +38,7 @@ export const GlobalVariablesManager: React.FC = () => {
     useEmailRecipientsListQuery();
   const { data: isControlInternoEnabled = true, isLoading: isControlInternoLoading } =
     useControlInternoEnabledQuery();
+  const { data: brandLogo, refetch: refetchBrandLogo } = useBrandLogoQuery();
   const { updateConfig } = useConfigMutations();
   const { employees } = useEmployees();
   const { currentUser } = useAuth();
@@ -69,6 +72,12 @@ export const GlobalVariablesManager: React.FC = () => {
     uploadedBy: string;
   } | null>(null);
   const [isUploadingPolicy, setIsUploadingPolicy] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoUrlInput, setLogoUrlInput] = useState("");
+  const [logoWidthInput, setLogoWidthInput] = useState("512");
+  const [logoHeightInput, setLogoHeightInput] = useState("188");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isSavingLogo, setIsSavingLogo] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -106,6 +115,93 @@ export const GlobalVariablesManager: React.FC = () => {
       addToast(message, "error");
     } finally {
       setIsUploadingPolicy(false);
+    }
+  };
+
+  const parseLogoSize = (): { width: number; height: number } | null => {
+    const width = Number.parseInt(logoWidthInput, 10);
+    const height = Number.parseInt(logoHeightInput, 10);
+    if (
+      !Number.isInteger(width) ||
+      !Number.isInteger(height) ||
+      width < 16 ||
+      height < 16 ||
+      width > 512 ||
+      height > 512
+    ) {
+      addToast("El ancho y alto deben ser enteros entre 16 y 512 píxeles.", "error");
+      return null;
+    }
+    return { width, height };
+  };
+
+  const handleUploadLogo = async () => {
+    if (!logoFile) {
+      addToast("Selecciona una imagen antes de subirla.", "warning");
+      return;
+    }
+    if (!["image/png", "image/jpeg", "image/webp"].includes(logoFile.type)) {
+      addToast("Solo se permiten imágenes PNG, JPG o WebP.", "error");
+      return;
+    }
+    try {
+      setIsUploadingLogo(true);
+      await configService.uploadBrandLogo(logoFile);
+      setLogoFile(null);
+      await refetchBrandLogo();
+      addToast("Logo actualizado correctamente.", "success");
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : "No se pudo actualizar el logo", "error");
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleSaveLogoUrl = async () => {
+    const size = parseLogoSize();
+    if (!size) return;
+    const ref = logoUrlInput.trim();
+    if (!ref.startsWith("https://")) {
+      addToast("La URL del logo debe usar HTTPS.", "error");
+      return;
+    }
+    try {
+      setIsSavingLogo(true);
+      const value: BrandLogoValue = { source: { kind: "url", ref }, ...size };
+      await updateConfig({ key: "branding_logo", value });
+      setLogoUrlInput("");
+      await refetchBrandLogo();
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    } finally {
+      setIsSavingLogo(false);
+    }
+  };
+
+  const handleSaveLogoSize = async () => {
+    const size = parseLogoSize();
+    if (!size || !brandLogo) return;
+    try {
+      setIsSavingLogo(true);
+      const value: BrandLogoValue = { source: brandLogo.source, ...size };
+      await updateConfig({ key: "branding_logo", value });
+      await refetchBrandLogo();
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    } finally {
+      setIsSavingLogo(false);
+    }
+  };
+
+  const handleResetLogo = async () => {
+    try {
+      setIsSavingLogo(true);
+      await updateConfig({ key: "branding_logo", value: null });
+      await refetchBrandLogo();
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    } finally {
+      setIsSavingLogo(false);
     }
   };
 
@@ -218,6 +314,12 @@ export const GlobalVariablesManager: React.FC = () => {
     await updateConfig({ key: "email_recipients", value: newList });
     setEmailRecipientToDelete(null);
   };
+
+  const logoPreviewSrc = !brandLogo
+    ? null
+    : brandLogo.source.kind === "upload"
+      ? (brandLogo.url ?? null)
+      : brandLogo.source.ref;
 
   return (
     <div className="space-y-8 pb-20">
@@ -591,6 +693,130 @@ export const GlobalVariablesManager: React.FC = () => {
                     | Fecha: {new Date(policyMeta.uploadedAt).toLocaleString("es-CL")}
                   </div>
                 )}
+              </div>
+            </section>
+          )}
+
+          {currentUser?.role === "Administrador" && (
+            <section className="space-y-6 lg:col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 bg-sap-blue rounded-sm"></div>
+                <div>
+                  <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
+                    Marca / Logo
+                  </h4>
+                  <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                    LOGO POR CLIENTE · LOGIN
+                  </p>
+                </div>
+              </div>
+              <div className="bg-token-surface-card p-6 rounded-md border border-token-border-technical shadow-sm space-y-6">
+                <div className="flex items-center gap-6">
+                  <div className="w-40 h-20 flex items-center justify-center rounded-sm border border-token-border-subtle bg-token-surface-stripe overflow-hidden shrink-0">
+                    {logoPreviewSrc ? (
+                      <img
+                        src={logoPreviewSrc}
+                        alt="Vista previa del logo"
+                        width={brandLogo?.width ?? 512}
+                        height={brandLogo?.height ?? 188}
+                        className="max-h-20 w-auto"
+                        decoding="async"
+                      />
+                    ) : (
+                      <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest px-2 text-center">
+                        Logo por defecto
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] font-bold text-token-text-secondary uppercase tracking-wide">
+                    {brandLogo
+                      ? `${brandLogo.source.kind === "upload" ? "Archivo subido" : "URL remota"} · ${brandLogo.width}×${brandLogo.height} px`
+                      : "Sin configuración: el login usa el logo empaquetado (512×188)."}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary block">
+                    Subir imagen (PNG, JPG o WebP, máx. 5 MB)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
+                    className="block w-full text-xs font-bold text-token-text-secondary file:mr-3 file:px-3 file:py-2 file:rounded-sm file:border file:border-token-border-technical file:bg-token-surface-stripe file:text-token-text-primary"
+                  />
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      onClick={handleUploadLogo}
+                      disabled={!logoFile || isUploadingLogo}
+                      className="h-10 px-4 bg-sap-blue text-white font-black uppercase tracking-widest text-[10px] rounded-sm"
+                    >
+                      {isUploadingLogo ? "Subiendo..." : "Publicar logo"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary block">
+                    O usar URL remota (HTTPS)
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Input
+                      value={logoUrlInput}
+                      onChange={(event) => setLogoUrlInput(event.target.value)}
+                      placeholder="https://cliente.cl/logo.png"
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleSaveLogoUrl}
+                      disabled={!logoUrlInput.trim() || isSavingLogo}
+                      className="h-10 px-4 font-black uppercase tracking-widest text-[10px] rounded-sm"
+                    >
+                      Guardar URL
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary block">
+                    Tamaño (16–512 px)
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Input
+                      type="number"
+                      min={16}
+                      max={512}
+                      value={logoWidthInput}
+                      onChange={(event) => setLogoWidthInput(event.target.value)}
+                      placeholder="Ancho"
+                      className="sm:w-36"
+                    />
+                    <Input
+                      type="number"
+                      min={16}
+                      max={512}
+                      value={logoHeightInput}
+                      onChange={(event) => setLogoHeightInput(event.target.value)}
+                      placeholder="Alto"
+                      className="sm:w-36"
+                    />
+                    <Button
+                      onClick={handleSaveLogoSize}
+                      disabled={!brandLogo || isSavingLogo}
+                      className="h-10 px-4 font-black uppercase tracking-widest text-[10px] rounded-sm"
+                    >
+                      Guardar tamaño
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleResetLogo}
+                      disabled={!brandLogo || isSavingLogo}
+                      className="h-10 px-4 font-black uppercase tracking-widest text-[10px] rounded-sm"
+                    >
+                      Restablecer
+                    </Button>
+                  </div>
+                </div>
               </div>
             </section>
           )}
