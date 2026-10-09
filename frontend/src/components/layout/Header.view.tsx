@@ -158,7 +158,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                       <button
                         data-testid="dropdown-logout-button"
                         onClick={onLogout}
-                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-status-error uppercase tracking-widest hover:bg-token-status-error/10 rounded-sm transition-all"
+                        className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-status-error-text uppercase tracking-widest hover:bg-token-status-error/10 rounded-sm transition-all"
                       >
                         Finalizar Sesión
                       </button>
@@ -173,7 +173,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                 <button
                   data-testid="header-logout-button"
                   onClick={onLogout}
-                  className="px-4 py-2.5 h-11 rounded-md border border-token-status-error/20 bg-token-status-error/10 hover:bg-token-status-error/20 text-token-status-error text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
+                  className="px-4 py-2.5 h-11 rounded-md border border-token-status-error/20 bg-token-status-error/10 hover:bg-token-status-error/20 text-token-status-error-text text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                 >
                   Salir
                 </button>

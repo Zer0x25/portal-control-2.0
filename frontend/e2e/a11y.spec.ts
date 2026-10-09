@@ -21,6 +21,24 @@ async function expectNoBlockingA11y(page: import("@playwright/test").Page, label
     for (const v of backlog)
       console.log(`  - ${v.id} (${v.impact}): ${v.help} (${v.nodes.length} nodos)`);
   }
+  if (blocking.length > 0) {
+    console.log(
+      `[A11Y-${label}] blocking:`,
+      JSON.stringify(
+        blocking.map((b) => ({
+          id: b.id,
+          impact: b.impact,
+          nodes: b.nodes.map((n) => ({
+            html: n.html,
+            target: n.target,
+            failureSummary: n.failureSummary,
+          })),
+        })),
+        null,
+        2,
+      ),
+    );
+  }
   expect(blocking.map((v) => `${v.id} [${v.impact}]: ${v.nodes.length} nodos\n${v.help}`)).toEqual(
     [],
   );
