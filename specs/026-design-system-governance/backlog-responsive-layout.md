@@ -43,12 +43,12 @@ Listas y formularios con soporte de búsqueda y roles:
 - [x] `src/features/user-management/views/UserManagement.view.tsx` (`variant="wide"`)
 - [x] `src/features/personnel-management/views/PersonnelManagement.view.tsx` (`variant="wide"`)
 
-### Tanda 4: Gobernanza, Auditoría y Mantenimiento (4 vistas)
+### Tanda 4: Gobernanza, Auditoría y Mantenimiento (4 vistas) [Completada]
 Consolas técnicas, métricas de seguridad y respaldos:
-- [ ] `src/features/governance/views/GovernanceHub.view.tsx` (`variant="wide"`)
-- [ ] `src/features/governance/views/SecurityInsights.view.tsx` (`variant="standard"`)
-- [ ] `src/features/governance/views/SystemMaintenance.view.tsx` (`variant="standard"`)
-- [ ] `src/features/governance/views/BackupListModal.view.tsx` (`variant="standard"`)
+- [x] `src/features/governance/views/GovernanceHub.view.tsx` (`variant="wide"`)
+- [x] `src/features/governance/views/SecurityInsights.view.tsx` (`variant="standard"`)
+- [x] `src/features/governance/views/SystemMaintenance.view.tsx` (`variant="standard"`)
+- [x] `src/features/governance/views/BackupListModal.view.tsx` (`variant="standard"`)
 
 ### Tanda 5: Registro, Medidores, Configuración y Quiosco (7 vistas)
 Herramientas secundarias y vistas de pantalla completa:

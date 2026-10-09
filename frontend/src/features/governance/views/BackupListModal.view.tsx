@@ -1,6 +1,11 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for BackupListModal.
+*/
+
 import React from "react";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import { ArrowPathIcon, CircleStackIcon, ClockIcon } from "../../../components/ui/icons/index";
 import { formatDateTime } from "../../../utils/dateUtils";
 import type { BackupFile } from "../../../types";
@@ -45,7 +50,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
       }
       maxWidth="max-w-2xl"
     >
-      <div className="space-y-6">
+      <Container variant="standard" noPadding data-ui-protected className="space-y-6">
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
@@ -114,7 +119,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
             ))}
           </div>
         )}
-      </div>
+      </Container>
     </CinematicModal>
   );
 };
