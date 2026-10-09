@@ -9,7 +9,7 @@ const MetricCard: React.FC<{
   icon: React.ReactNode;
   status?: "good" | "warning" | "error";
 }> = ({ title, value, unit, icon, status = "good" }) => (
-  <div className="bg-[#fdfbf7] dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md p-4 shadow-sm">
+  <div className="bg-token-surface-card border border-token-border-technical rounded-md p-4 shadow-sm">
     <div className="flex items-center justify-between mb-2">
       <span className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.15em]">
         {title}
@@ -138,7 +138,7 @@ const HealthDashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#fdfbf7] dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md overflow-hidden shadow-sm">
+        <div className="bg-token-surface-card border border-token-border-technical rounded-md overflow-hidden shadow-sm">
           <div className="px-4 py-3 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-800 font-black text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
             Detalle del Entorno
           </div>
@@ -164,7 +164,7 @@ const HealthDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#fdfbf7] dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-md overflow-hidden shadow-sm">
+        <div className="bg-token-surface-card border border-token-border-technical rounded-md overflow-hidden shadow-sm">
           <div className="px-4 py-3 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-800 font-black text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
             Riesgo Operativo (SLO)
           </div>

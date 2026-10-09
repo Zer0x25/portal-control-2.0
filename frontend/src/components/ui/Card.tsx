@@ -32,7 +32,7 @@ const Card = React.memo(
           {title && (
             <div className="px-5 py-3 border-b border-token-border-technical bg-token-surface-header flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-1.5 h-3 bg-sap-blue rounded-sm" />
+                <div className="w-1.5 h-3 bg-token-accent-brand rounded-sm" />
                 <h3 className="text-[11px] font-black uppercase tracking-widest text-token-text-primary leading-none">
                   {title}
                 </h3>

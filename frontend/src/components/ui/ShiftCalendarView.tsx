@@ -31,9 +31,9 @@ const ShiftCalendarView: React.FC<ShiftCalendarViewProps> = ({
   const cellHeightClass = cellHeight || defaultHeight;
 
   return (
-    <div className="overflow-hidden rounded-md border border-gray-300 dark:border-gray-800 shadow-sm bg-[#fdfbf7] dark:bg-gray-950">
+    <div className="overflow-hidden rounded-md border border-token-border-technical shadow-sm bg-token-surface-card">
       {/* Headers row */}
-      <div className="grid grid-cols-7 border-b border-gray-300 dark:border-gray-800">
+      <div className="grid grid-cols-7 border-b border-token-border-technical">
         {weekDayNames.map((dayName) => (
           <div key={dayName} className="py-4 text-center">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">

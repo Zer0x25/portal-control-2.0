@@ -54,8 +54,8 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
       maxWidth="max-w-md"
     >
       <div className="space-y-6">
-        <div className="p-5 rounded-md bg-[#fdfbf7] dark:bg-gray-950 border border-gray-300 dark:border-gray-800 flex items-center gap-4 shadow-sm relative overflow-hidden">
-          <IndustrialIndicator height="h-full" color="bg-sap-blue/20" className="mr-1" />
+        <div className="p-5 rounded-md bg-token-surface-card border border-token-border-technical flex items-center gap-4 shadow-sm relative overflow-hidden">
+          <IndustrialIndicator height="h-full" color="bg-token-accent-brand/20" className="mr-1" />
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">
               Colaborador

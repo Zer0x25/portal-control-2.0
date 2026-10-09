@@ -138,8 +138,8 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
       onClick={() => onDayClick(day)}
       className={`
                 group relative p-2 ${cellHeightClass} overflow-hidden cursor-pointer transition-all duration-150
-                ${isToday ? "bg-sap-blue/5 dark:bg-sap-blue/20" : "bg-[#fdfbf7] dark:bg-gray-900"}
-                border-r border-b border-gray-200 dark:border-gray-800
+                ${isToday ? "bg-token-accent-brand/5 dark:bg-token-accent-brand/20" : "bg-token-surface-card"}
+                border-r border-b border-token-border-subtle
                 hover:z-10 hover:shadow-sm
             `}
     >
