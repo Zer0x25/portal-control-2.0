@@ -23,6 +23,17 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
   // We use a Portal to ensure the modal is always at the top of the DOM hierarchy
   if (typeof document === "undefined") return null;
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -45,14 +56,14 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
           >
             {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 border-b border-token-border-subtle bg-token-surface-header">
-              <div className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-3 uppercase tracking-tight">
+              <div className="text-lg font-black text-token-text-primary flex items-center gap-3 uppercase tracking-tight">
                 {title}
               </div>
               {showCloseButton && (
                 <button
                   onClick={onClose}
                   aria-label="Cerrar"
-                  className="p-1.5 rounded-md text-slate-400 hover:bg-white dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-white border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all active:scale-95"
+                  className="p-1.5 rounded-md text-token-text-tertiary hover:bg-token-surface-hover hover:text-token-text-primary border border-transparent hover:border-token-border-subtle transition-all active:scale-95"
                 >
                   <CloseIcon className="w-5 h-5" />
                 </button>
