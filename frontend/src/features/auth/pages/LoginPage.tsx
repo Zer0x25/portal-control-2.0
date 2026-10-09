@@ -11,7 +11,7 @@ import { APP_TITLE, ROUTES } from "../../../constants";
 import { Link, useNavigate } from "react-router";
 import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
-import logoImg from "../../../assets/images/Mini_Zer0x.jpg";
+import BrandLogo from "../../../components/ui/BrandLogo";
 import MFALoginModal from "../components/MFALoginModal";
 
 const LoginPage: React.FC = () => {
@@ -94,15 +94,7 @@ const LoginPage: React.FC = () => {
             <div className="text-center mb-10 sm:mb-8">
               <div className="mb-8 sm:mb-6 relative inline-block group-hover:scale-105 transition-transform duration-500 animate-in fade-in slide-in-from-top-4 [animation-duration:600ms] [animation-delay:200ms]">
                 <div className="absolute inset-0 bg-sap-blue rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
-                <img
-                  src={logoImg}
-                  alt="Logo"
-                  width="512"
-                  height="188"
-                  fetchPriority="high"
-                  decoding="async"
-                  className="h-20 sm:h-16 w-auto relative z-10 rounded-2xl shadow-2xl"
-                />
+                <BrandLogo className="h-20 sm:h-16 w-auto relative z-10 rounded-2xl shadow-2xl" />
               </div>
 
               <div className="animate-in fade-in slide-in-from-bottom-2 [animation-duration:600ms] [animation-delay:300ms]">

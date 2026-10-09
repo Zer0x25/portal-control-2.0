@@ -3787,6 +3787,56 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
         ],
       },
     },
+    "/api/configs/brand-logo": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Logo de marca actualizado",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Subir el logo de marca (PNG, JPG o WebP)",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
     "/api/configs/company-policy": {
       "post": {
         "requestBody": {
@@ -3832,6 +3882,56 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
         ],
         "summary": "Subcribir la politica corporativa en PDF",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/public/brand-logo": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "additionalProperties": true,
+                      "type": "object",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Logo de marca vigente con fuente y tamaño",
+          },
+        },
+        "summary": "Obtener el logo de marca configurado",
+        "tags": [
+          "Configs",
+        ],
+      },
+    },
+    "/api/configs/public/brand-logo/file": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string",
+                },
+              },
+            },
+            "description": "Archivo de imagen del logo (PNG, JPG o WebP)",
+          },
+        },
+        "summary": "Descargar el archivo del logo de marca",
         "tags": [
           "Configs",
         ],
