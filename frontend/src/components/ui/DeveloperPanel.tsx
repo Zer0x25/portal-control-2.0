@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useToasts } from "../../hooks/useToasts";
 import { getDBInstance } from "../../utils/indexedDB";
 import Button from "./Button";
@@ -11,6 +11,7 @@ import {
 import ConfirmationModal from "./ConfirmationModal";
 import SeedingOptionsModal, { SeedingOptions } from "./SeedingOptionsModal";
 import SeedingProgressModal from "./SeedingProgressModal";
+import DesignSystemShowcaseModal from "./DesignSystemShowcaseModal";
 import {
   seedPhase1,
   startSeedPhase2,
@@ -29,6 +30,7 @@ export const DeveloperPanel: React.FC = () => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const [isDevPanelOpen, setIsDevPanelOpen] = useState(false);
+  const [isDesignShowcaseOpen, setIsDesignShowcaseOpen] = useState(false);
   const [isSeedingModalOpen, setIsSeedingModalOpen] = useState(false);
   const [isSeedingOptionsOpen, setIsSeedingOptionsOpen] = useState(false);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
@@ -309,6 +311,16 @@ export const DeveloperPanel: React.FC = () => {
                 </Button>
               )}
               <Button
+                onClick={() => {
+                  setIsDesignShowcaseOpen(true);
+                  setIsDevPanelOpen(false);
+                }}
+                size="sm"
+                className="w-full h-11 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20 text-white"
+              >
+                <SparklesIcon className="w-4 h-4 mr-2" /> Design System Gallery
+              </Button>
+              <Button
                 onClick={() => setIsSeedingOptionsOpen(true)}
                 size="sm"
                 className="w-full h-11 rounded-2xl bg-linear-to-r from-purple-500 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-purple-500/20"
@@ -370,6 +382,11 @@ export const DeveloperPanel: React.FC = () => {
           phase2Job &&
           void stopSeedPhase2(phase2Job.id).then(() => refreshPhase2Status(phase2Job.id))
         }
+      />
+
+      <DesignSystemShowcaseModal
+        isOpen={isDesignShowcaseOpen}
+        onClose={() => setIsDesignShowcaseOpen(false)}
       />
 
       {isClearServerConfirmOpen && (
