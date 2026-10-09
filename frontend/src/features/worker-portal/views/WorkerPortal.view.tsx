@@ -18,6 +18,7 @@ import PageHeader from "../../../components/ui/PageHeader";
 import LiveStatus from "../../../components/ui/LiveStatus";
 import ServerClock from "../../../components/ui/ServerClock";
 import IconBox from "../../../components/ui/IconBox";
+import Container from "../../../components/ui/Container";
 import {
   DocumentArrowDownIcon,
   CalendarDaysIcon,
@@ -176,7 +177,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
   }
 
   return (
-    <div data-ui-protected className="space-y-8 pb-10">
+    <Container variant="standard" noPadding data-ui-protected className="space-y-8 pb-10">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -492,7 +493,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           field={modalState.field}
         />
       )}
-    </div>
+    </Container>
   );
 };
 

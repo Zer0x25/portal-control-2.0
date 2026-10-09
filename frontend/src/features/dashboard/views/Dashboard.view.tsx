@@ -13,6 +13,7 @@ import { EditTimestampModal, QuickActionModal } from "../../time-control";
 import EmptyState from "../../../components/ui/EmptyState";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import WelcomePanel from "../components/WelcomePanel";
+import Container from "../../../components/ui/Container";
 import AmbientReminderManager from "../../../notifications/components/AmbientReminderManager";
 import {
   DailyTimeRecord,
@@ -94,7 +95,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   return (
-    <div data-ui-protected className="dashboard-ui-protected space-y-6">
+    <Container
+      variant="standard"
+      noPadding
+      data-ui-protected
+      className="dashboard-ui-protected space-y-6"
+    >
       <WelcomePanel />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -184,7 +190,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       </CinematicModal>
 
       <AmbientReminderManager />
-    </div>
+    </Container>
   );
 };
 
