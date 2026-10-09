@@ -137,9 +137,25 @@ export class CorrectionService {
           const exitDate = new Date(proposedSalida);
           if (!isNaN(entryDate.getTime()) && !isNaN(exitDate.getTime())) {
             const shiftHours = (exitDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60);
-            if (shiftHours > 12) {
+            const proposedInicioColacion =
+              data.recordField === "inicioColacion" ? data.requestedValue : record?.inicioColacion;
+            const proposedFinColacion =
+              data.recordField === "finColacion" ? data.requestedValue : record?.finColacion;
+            const breakHours =
+              proposedInicioColacion && proposedFinColacion
+                ? Math.max(
+                    0,
+                    (new Date(proposedFinColacion).getTime() -
+                      new Date(proposedInicioColacion).getTime()) /
+                      (1000 * 60 * 60),
+                  )
+                : shiftHours > 6
+                  ? 1
+                  : 0;
+            const netShiftHours = Math.max(0, shiftHours - breakHours);
+            if (shiftHours > 13.25 || netShiftHours > 12.25) {
               throw new AppError(
-                "La salida no puede superar 12 horas desde la entrada.",
+                "La salida no puede superar 12 horas de jornada efectiva desde la entrada.",
                 400,
                 "SHIFT_LENGTH_LIMIT_EXCEEDED",
               );

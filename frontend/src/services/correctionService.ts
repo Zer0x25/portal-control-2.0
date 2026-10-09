@@ -82,7 +82,10 @@ export const correctionService = {
       },
       body: JSON.stringify({ status, resolvedBy, rejectionReason }),
     });
-    if (!response.ok) throw new Error("Error al actualizar estado");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Error al actualizar estado");
+    }
     const item = await response.json();
     return {
       ...item,

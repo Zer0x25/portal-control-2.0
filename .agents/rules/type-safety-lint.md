@@ -25,6 +25,7 @@ description: TypeScript strictness standards, removing 'any', handling errors wi
 - **JSON Fields**: Use `Prisma.InputJsonValue` for writes and `Prisma.JsonValue` for reads.
 - **Query Parameters**: Use `queryString()` from `backend/src/utils/stringUtils.ts` rather than `as string` casts on `req.query`.
 - **Date Handling & Chile Timezone**: Avoid `new Date(x + "T00:00:00Z")` due to off-by-one bugs in `America/Santiago`. Use `parseBusinessDateCL` or `differenceInCalendarDaysCL` from `src/utils/timePolicy.ts`.
+- **Chile Shift Duration & Break Deductions**: Para turnos de 12 horas (ej. sistema 4x4), la validación de duración máxima (`SHIFT_LENGTH_LIMIT_EXCEEDED`) debe calcular las horas netas trabajadas descontando el tiempo de descanso/colación (`netShiftHours = shiftHours - breakHours`) y permitir tolerancia operativa de marcado temprano/relevo (presencia hasta 13.25h, neto hasta 12.25h). Nunca validar el intervalo bruto (`salida - entrada > 12`) directamente contra 12.0 horas sin deducir colación.
 
 ## 3. Logging & Console Output
 

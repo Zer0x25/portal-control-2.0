@@ -94,4 +94,52 @@ describe("Correction approve race", () => {
     });
     expect(edits).toBe(1);
   });
+
+  it("permite aprobar corrección en turno de 12 horas con marcaje previo (07:55 a 20:00) y colación", async () => {
+    const shiftRecId = `it-12h-rec-${ulid()}`;
+    const shiftReqId = `it-12h-req-${ulid()}`;
+
+    await prisma.timeRecord.create({
+      data: {
+        id: shiftRecId,
+        employeeId: testEmployeeId,
+        employeeName: "Race",
+        date: "2026-03-11",
+        entrada: "2026-03-11T07:55:00.000Z",
+        inicioColacion: "2026-03-11T13:30:00.000Z",
+        finColacion: "2026-03-11T14:25:00.000Z",
+        salida: "2026-03-11T20:00:00.000Z",
+        status: "Completado",
+      },
+    });
+
+    await prisma.correctionRequest.create({
+      data: {
+        id: shiftReqId,
+        employeeId: testEmployeeId,
+        timeRecordId: shiftRecId,
+        recordField: "inicioColacion",
+        originalValue: "2026-03-11T13:30:00.000Z",
+        requestedValue: "2026-03-11T13:20:00.000Z",
+        reason: "Ajuste por validacion de reloj en terreno.",
+        status: "pending",
+      },
+    });
+
+    try {
+      const res = await CorrectionService.updateStatus(shiftReqId, {
+        status: "approved",
+        resolvedBy: "admin",
+        actorUsername: "admin",
+        actorRole: "Administrador",
+      });
+      expect(res.status).toBe("approved");
+
+      const updated = await prisma.timeRecord.findUnique({ where: { id: shiftRecId } });
+      expect(updated?.inicioColacion).toBe("2026-03-11T13:20:00.000Z");
+    } finally {
+      await prisma.correctionRequest.deleteMany({ where: { id: shiftReqId } });
+      await prisma.timeRecord.deleteMany({ where: { id: shiftRecId } });
+    }
+  });
 });

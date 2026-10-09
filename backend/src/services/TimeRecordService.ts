@@ -337,9 +337,20 @@ export class TimeRecordService {
       const exitDate = timestamps.salida;
       if (entryDate && exitDate) {
         const shiftHours = (exitDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60);
-        if (shiftHours > 12) {
+        const breakHours =
+          timestamps.inicioColacion && timestamps.finColacion
+            ? Math.max(
+                0,
+                (timestamps.finColacion.getTime() - timestamps.inicioColacion.getTime()) /
+                  (1000 * 60 * 60),
+              )
+            : shiftHours > 6
+              ? 1
+              : 0;
+        const netShiftHours = Math.max(0, shiftHours - breakHours);
+        if (shiftHours > 13.25 || netShiftHours > 12.25) {
           throw new AppError(
-            "La salida no puede superar 12 horas desde la entrada.",
+            "La salida no puede superar 12 horas de jornada efectiva desde la entrada.",
             400,
             "SHIFT_LENGTH_LIMIT_EXCEEDED",
           );

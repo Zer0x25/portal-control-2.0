@@ -151,4 +151,30 @@ test.describe.serial("TD-004: cierre de huecos e2e", () => {
       await disposeWorker(request, await getAdminToken(request), worker);
     }
   });
+
+  test("dashboard-supervisor: tab de solicitudes aprueba sin errores de consola ni condición de carrera", async ({
+    page,
+    request,
+  }) => {
+    const pageErrors: Error[] = [];
+    page.on("pageerror", (err) => pageErrors.push(err));
+
+    await loginFast(page, request, "admin");
+    await page.goto("/#/dashboard-supervisor?tab=employees");
+
+    await expect(page.getByText(/auditando bandeja de entrada/i)).toBeHidden({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: /pendiente/i }).first()).toBeVisible({ timeout: 15000 });
+
+    const validateButtons = page.getByRole("button", { name: /validar en sistema/i });
+    const count = await validateButtons.count();
+    if (count > 0) {
+      const firstBtn = validateButtons.first();
+      await expect(firstBtn).toBeVisible();
+
+      // Click de usuario sin errores no capturados
+      await firstBtn.click();
+      await page.waitForTimeout(1500);
+    }
+    expect(pageErrors).toEqual([]);
+  });
 });

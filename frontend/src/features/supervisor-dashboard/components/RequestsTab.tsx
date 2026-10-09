@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, FC, useRef, useEffect } from "react";
+import React, { useState, useMemo, FC, useRef, useEffect } from "react";
 import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
 import { useCorrectionRequestsStatsQuery } from "../../../hooks/queries/useCorrectionRequestsStatsQuery";
 import { useEmployees } from "../../../hooks/useEmployees";
@@ -113,6 +113,7 @@ const PendingRequestCard: FC<{
           className="flex-1 py-3.5 text-[11px] font-bold uppercase tracking-widest rounded-sm bg-sap-blue hover:brightness-110 shadow-lg shadow-sap-blue/20 border-none text-white transition-all duration-300"
           onClick={() => onApprove(req.id)}
           loading={isProcessing}
+          disabled={isProcessing}
         >
           Validar en Sistema
         </Button>
@@ -355,6 +356,7 @@ const RequestsTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<RequestStatusFilter>("pending");
   const [requestToReject, setRequestToReject] = useState<CorrectionRequest | null>(null);
   const [attachmentToView, setAttachmentToView] = useState<CorrectionRequest["attachment"]>();
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const processingIdsRef = useRef<Set<string>>(new Set());
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -378,23 +380,31 @@ const RequestsTab: React.FC = () => {
   } = useCorrectionRequests(statusFilter, since);
 
   const filteredRequests = useMemo(() => {
-    return [...requests].sort(
-      (a: CorrectionRequest, b: CorrectionRequest) => b.createdAt - a.createdAt,
-    );
-  }, [requests]);
+    return requests
+      .filter((r: CorrectionRequest) => r.status === statusFilter)
+      .sort((a: CorrectionRequest, b: CorrectionRequest) => b.createdAt - a.createdAt);
+  }, [requests, statusFilter]);
 
   const handleApprove = async (requestId: string) => {
     if (!currentUser || processingIdsRef.current.has(requestId)) return;
 
     processingIdsRef.current.add(requestId);
+    setProcessingIds((prev) => new Set(prev).add(requestId));
     try {
       await updateRequestStatus({
         id: requestId,
         status: "approved",
         resolvedBy: currentUser.username,
       });
+    } catch {
+      // Handled by mutation onError toast
     } finally {
       processingIdsRef.current.delete(requestId);
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(requestId);
+        return next;
+      });
     }
   };
 
@@ -405,13 +415,14 @@ const RequestsTab: React.FC = () => {
   const handleConfirmReject = async (reason: string) => {
     if (!requestToReject || !currentUser) return;
 
-    if (processingIdsRef.current.has(requestToReject.id)) {
+    const requestId = requestToReject.id;
+    if (processingIdsRef.current.has(requestId)) {
       setRequestToReject(null);
       return;
     }
 
-    const requestId = requestToReject.id;
     processingIdsRef.current.add(requestId);
+    setProcessingIds((prev) => new Set(prev).add(requestId));
     setRequestToReject(null);
 
     try {
@@ -421,8 +432,15 @@ const RequestsTab: React.FC = () => {
         resolvedBy: currentUser.username,
         rejectionReason: reason,
       });
+    } catch {
+      // Handled by mutation onError toast
     } finally {
       processingIdsRef.current.delete(requestId);
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(requestId);
+        return next;
+      });
     }
   };
 
@@ -515,7 +533,7 @@ const RequestsTab: React.FC = () => {
                         onApprove={handleApprove}
                         onReject={handleReject}
                         onViewAttachment={setAttachmentToView}
-                        isProcessing={isUpdatingRequestStatus}
+                        isProcessing={processingIds.has(req.id) || isUpdatingRequestStatus}
                       />
                     ))
                   ) : (

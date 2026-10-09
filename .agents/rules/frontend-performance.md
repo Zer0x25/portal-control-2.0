@@ -24,3 +24,9 @@ description: Invariants for frontend performance, bundle optimization, CSS cachi
    - Toda colección de datos remotos proveniente de APIs (asistencia, paginaciones, registros de tiempo, catálogos) debe ser gestionada exclusivamente por TanStack Query hooks.
    - Prohibido duplicar colecciones de entidades remotas o paginaciones en slices de Zustand (como el deprecado `timeRecordSlice`).
    - Zustand se reserva estrictamente para estado de UI del cliente efímero y global (autenticación local, modales, toasts, tema).
+
+5. **Mutation Guarding, Optimistic State & Rapid-Click Invariants**:
+   - **Protección contra Clics Rápidos**: Todo botón o disparador de mutación (`ActionButton`, botones de aprobación/rechazo) debe enlazar sincrónicamente `disabled={isProcessing}` y reflejar un estado visual de carga (`loading`/spinner).
+   - **Manejo de Errores Asíncronos**: Todo handler de evento en la UI que ejecute `mutateAsync` debe estar envuelto en un bloque `try/catch` para evitar `Uncaught (in promise) Error` en la consola del cliente.
+   - **Propagación de Errores de API**: Las funciones del SDK/servicios cliente (`src/services/*`) deben extraer y propagar `errorData.message` o `errorData.error` en lugar de lanzar mensajes genéricos sustitutos que oculten la causa real del servidor.
+   - **Actualización Optimista y Filtrado**: Las acciones de cambio de estado en colecciones de tarjetas/listas deben aplicar actualizaciones optimistas (`onMutate` con rollback en `onError` e invalidación en `onSettled`) o filtros estrictos por estado para remover visualmente el ítem inmediatamente.
