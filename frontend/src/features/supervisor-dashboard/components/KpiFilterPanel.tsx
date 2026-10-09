@@ -273,9 +273,9 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
         <button
           onClick={handleApplyFilters}
           disabled={isLoading}
-          className={`group relative flex items-center gap-3 px-8 py-3.5 rounded-sm font-black text-[12px] uppercase tracking-[0.15em] shadow-lg transition-all duration-300 ${
+          className={`group relative flex items-center gap-3 px-8 py-3.5 rounded-sm font-black text-[12px] uppercase tracking-[0.15em] shadow-lg transition duration-300 ${
             isLoading
-              ? "bg-sap-blue/50 text-white/50 cursor-not-allowed shadow-none"
+              ? "bg-sap-blue text-white cursor-not-allowed shadow-none opacity-60"
               : "bg-sap-blue text-white shadow-sap-blue/20 hover:bg-sap-blue/90 hover:-translate-y-0.5 active:translate-y-0"
           }`}
         >

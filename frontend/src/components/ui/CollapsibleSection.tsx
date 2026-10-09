@@ -32,14 +32,10 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
   return (
     <div>
-      <div
+      <button
+        type="button"
         className={`${headerBaseClasses} ${isOpen ? headerOpenClasses : headerClosedClasses}`}
         onClick={handleToggle}
-        role="button"
-        tabIndex={0}
-        onKeyPress={(e) => {
-          if (e.key === "Enter" || e.key === " ") handleToggle();
-        }}
         aria-expanded={isOpen}
         aria-controls={`collapsible-content-${title}`}
       >
@@ -47,7 +43,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         <ChevronDownIcon
           className={`w-5 h-5 transform transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
-      </div>
+      </button>
       {isOpen && (
         <div id={`collapsible-content-${title}`} className={contentClasses}>
           {children}

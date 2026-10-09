@@ -48,7 +48,7 @@ const TabNav: React.FC<TabNavProps> = ({
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`
-                                    relative whitespace-nowrap shrink-0 min-h-11 px-5 py-2 typo-ui-tab transition-all duration-150 rounded-md flex items-center justify-center gap-2 shadow-none
+                                    relative whitespace-nowrap shrink-0 min-h-11 px-5 py-2 typo-ui-tab transition-colors duration-150 rounded-md flex items-center justify-center gap-2 shadow-none
                                     ${
                                       isActive
                                         ? "text-token-text-primary"

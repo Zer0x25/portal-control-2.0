@@ -21,7 +21,7 @@ const SidebarNavItem = React.memo(
           data-nav-to={to}
           data-nav-label={label}
           className={({ isActive }) => `
-          group flex items-center px-4 py-2.5 mb-1 mx-2 rounded-md transition-all duration-150
+          group flex items-center px-4 py-2.5 mb-1 mx-2 rounded-md transition-colors duration-150
           ${
             isActive
               ? "bg-token-sidebar-text-active text-token-text-onAccent shadow-sm"
@@ -41,7 +41,7 @@ const SidebarNavItem = React.memo(
               </div>
               <span
                 className={`
-                ml-4 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden transition-all duration-200 ease-out
+                ml-4 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-200 ease-out
                 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}
               `}
               >
