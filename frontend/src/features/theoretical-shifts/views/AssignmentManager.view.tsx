@@ -1,7 +1,12 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for AssignmentManager.
+*/
+
 import React from "react";
 import { AssignedShift } from "../../../types";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Container from "../../../components/ui/Container";
 import { PlusCircleIcon, EyeIcon, CalendarDaysIcon, UserIcon } from "../../../components/ui/icons";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
@@ -126,7 +131,13 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
   formatBusinessDate,
 }) => {
   return (
-    <div id="assignment-manager-section" className="space-y-6">
+    <Container
+      id="assignment-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Asignaciones de Turnos</h2>
@@ -167,11 +178,11 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div className="space-y-6">
                   <div ref={employeeSearchRef} className="relative">
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 pl-1">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
                       Empleado
                     </label>
                     <div className="relative group">
-                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-sap-blue transition-colors" />
+                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
                       <input
                         type="text"
                         value={employeeSearchTerm}
@@ -182,7 +193,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                         }}
                         onFocus={() => setIsEmployeeDropdownOpen(true)}
                         placeholder="Buscar colaborador..."
-                        className="w-full pl-12 pr-4 py-3 bg-white/50 border border-gray-200 dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all placeholder:text-gray-400/60"
+                        className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical text-token-text-primary rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all placeholder:text-token-text-tertiary"
                       />
                       <AnimatePresence>
                         {isEmployeeDropdownOpen && filteredEmployeesForSearch.length > 0 && (
@@ -190,7 +201,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="absolute z-60 left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm"
+                            className="absolute z-60 left-0 right-0 mt-2 bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm"
                           >
                             {filteredEmployeesForSearch.map((e) => (
                               <button
@@ -201,12 +212,12 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                                   setEmployeeSearchTerm(e.name);
                                   setIsEmployeeDropdownOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-3 hover:bg-sap-blue/5 dark:hover:bg-sap-blue/20 transition-colors flex items-center justify-between group/item"
+                                className="w-full text-left px-4 py-3 hover:bg-token-surface-hover transition-colors flex items-center justify-between group/item"
                               >
-                                <span className="font-medium text-gray-700 dark:text-gray-200 group-hover/item:text-sap-blue transition-colors">
+                                <span className="font-medium text-token-text-primary group-hover/item:text-token-accent-brand transition-colors">
                                   {e.name}
                                 </span>
-                                <span className="text-[10px] bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-500">
+                                <span className="text-[10px] bg-token-surface-hover px-2 py-0.5 rounded-full text-token-text-secondary">
                                   {e.rut}
                                 </span>
                               </button>
@@ -217,13 +228,13 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
                       Patrón
                     </label>
                     <select
                       value={assignmentForm.selectedPatternId}
                       onChange={(e) => assignmentForm.setSelectedPatternId(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-100"
+                      className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
                     >
                       <option value="">-- Seleccionar --</option>
                       {shiftPatterns.map((p) => (
@@ -237,13 +248,13 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
                       Inicio
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsStartDatePickerOpen(true)}
-                      className="w-full px-4 py-3 rounded-xl bg-white/50 border text-left dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-100"
+                      className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
                     >
                       {assignmentForm.assignmentStartDate || "Seleccionar"}
                     </button>
@@ -255,13 +266,13 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
                       Fin
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsEndDatePickerOpen(true)}
-                      className="w-full px-4 py-3 rounded-xl bg-white/50 border text-left dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-100"
+                      className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
                     >
                       {assignmentForm.assignmentEndDate || "Indefinido"}
                     </button>
@@ -288,17 +299,17 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
 
       <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
         <div className="relative flex-1 group w-full">
-          <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-sap-blue transition-colors" />
+          <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar por empleado o patrón..."
-            className="pl-12! py-3! bg-white/30! dark:bg-gray-800/20! border-white/20! dark:border-gray-700/50! rounded-2xl! w-full"
+            className="pl-12! py-3! bg-token-surface-card! border-token-border-subtle! rounded-xl! w-full"
           />
         </div>
 
-        <div className="flex items-center gap-3 px-6 h-[50px] bg-white/30 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/50 rounded-2xl whitespace-nowrap w-full md:w-auto">
-          <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
+        <div className="flex items-center gap-3 px-6 h-[50px] bg-token-surface-card border border-token-border-subtle rounded-xl whitespace-nowrap w-full md:w-auto">
+          <CalendarDaysIcon className="w-4 h-4 text-token-text-tertiary" />
           <label className="flex items-center cursor-pointer select-none">
             <input
               type="checkbox"
@@ -307,13 +318,13 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
               className="hidden"
             />
             <div
-              className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${showArchived ? "bg-sap-blue" : "bg-gray-300 dark:bg-gray-600"}`}
+              className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${showArchived ? "bg-token-accent-brand" : "bg-token-surface-technical"}`}
             >
               <div
                 className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showArchived ? "translate-x-5" : ""}`}
               ></div>
             </div>
-            <span className="ml-3 text-sm font-bold text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
+            <span className="ml-3 text-sm font-bold text-token-text-secondary uppercase tracking-tighter">
               Ver Archivados
             </span>
           </label>
@@ -369,11 +380,9 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                     <p>
                       El empleado tiene una asignación indefinida vigente que entra en conflicto.
                     </p>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800 text-xs">
-                      <p className="font-bold text-blue-800 dark:text-blue-300 mb-1">
-                        Acción Propuesta:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-400">
+                    <div className="bg-token-accent-brand/5 p-3 rounded-lg border border-token-border-subtle text-xs">
+                      <p className="font-bold text-token-accent-brand mb-1">Acción Propuesta:</p>
+                      <ul className="list-disc list-inside space-y-1 text-token-text-secondary">
                         <li>
                           Cerrar asignación actual:{" "}
                           <strong>
@@ -441,6 +450,6 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
         confirmText={terminationMode === "DELETE" ? "Eliminar" : "Finalizar"}
         confirmDelay={5}
       />
-    </div>
+    </Container>
   );
 };

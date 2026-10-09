@@ -113,27 +113,28 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="relative w-full max-w-[320px] bg-white dark:bg-gray-950 border border-black/5 dark:border-white/10 rounded-3xl shadow-4xl overflow-hidden"
+            className="relative w-full max-w-[320px] bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="p-4 pb-2 bg-gray-50/50 dark:bg-white/5 border-b border-black/5 dark:border-white/5">
+            <div className="p-4 pb-2 bg-token-surface-stripe border-b border-token-border-subtle">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className="bg-sap-blue/10 p-1.5 rounded-lg">
-                    <CalendarDaysIcon className="w-3.5 h-3.5 text-sap-blue" />
+                  <div className="bg-token-accent-brand/10 p-1.5 rounded-md">
+                    <CalendarDaysIcon className="w-3.5 h-3.5 text-token-accent-brand" />
                   </div>
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-token-text-tertiary">
                     Seleccionar Fecha
                   </span>
                 </div>
-                <button
+                <Button
+                  variant="none"
                   type="button"
                   onClick={onClose}
-                  className="p-1 px-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                  className="p-1 px-2 text-token-text-tertiary hover:text-token-text-primary transition-colors shadow-none"
                 >
                   <CloseIcon className="w-3.5 h-3.5" />
-                </button>
+                </Button>
               </div>
 
               <div className="flex items-center justify-between">
@@ -142,29 +143,31 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                     key={format(currentMonth, "MMMM")}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="text-base font-black text-gray-900 dark:text-white capitalize leading-tight"
+                    className="text-base font-black text-token-text-primary capitalize leading-tight"
                   >
                     {format(currentMonth, "MMMM", { locale: es })}
                   </motion.span>
-                  <span className="text-[10px] font-black text-sap-blue tracking-widest">
+                  <span className="text-[10px] font-black text-token-accent-brand tracking-widest">
                     {format(currentMonth, "yyyy")}
                   </span>
                 </div>
                 <div className="flex gap-1">
-                  <button
+                  <Button
+                    variant="none"
                     type="button"
                     onClick={prevMonth}
-                    className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 hover:text-sap-blue transition-all active:scale-95 border border-transparent"
+                    className="p-2 rounded-md hover:bg-token-surface-hover text-token-text-secondary hover:text-token-accent-brand transition-all active:scale-95 border border-transparent shadow-none"
                   >
                     <ChevronLeftIcon className="w-3.5 h-3.5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="none"
                     type="button"
                     onClick={nextMonth}
-                    className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 text-gray-500 hover:text-sap-blue transition-all active:scale-95 border border-transparent"
+                    className="p-2 rounded-md hover:bg-token-surface-hover text-token-text-secondary hover:text-token-accent-brand transition-all active:scale-95 border border-transparent shadow-none"
                   >
                     <ChevronRightIcon className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -173,7 +176,10 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
             <div className="p-3">
               <div className="grid grid-cols-7 mb-1">
                 {["LU", "MA", "MI", "JU", "VI", "SÁ", "DO"].map((d) => (
-                  <span key={d} className="text-center text-[8px] font-black text-gray-400 py-1">
+                  <span
+                    key={d}
+                    className="text-center text-[8px] font-black text-token-text-tertiary py-1"
+                  >
                     {d}
                   </span>
                 ))}
@@ -196,30 +202,31 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                   const isDisabled = isDayDisabled(day);
 
                   return (
-                    <button
+                    <Button
+                      variant="none"
                       type="button"
                       key={i}
                       onClick={() => handleSelectDay(day)}
                       disabled={isDisabled}
                       className={`
-                                                relative h-9 w-full flex items-center justify-center rounded-xl text-[10px] font-black transition-all
-                                                ${!isCurrentMonth ? "text-gray-300 dark:text-gray-800 opacity-30" : "text-gray-700 dark:text-gray-400"}
-                                                ${isDayToday && !isSelected ? "text-sap-blue ring-1 ring-sap-blue/20 bg-sap-blue/5" : ""}
-                                                ${isDisabled ? "opacity-20 cursor-not-allowed grayscale" : ""}
-                                                ${
-                                                  isSelected
-                                                    ? "bg-sap-blue text-white shadow-lg shadow-sap-blue/30 scale-105 z-10"
-                                                    : isDisabled
-                                                      ? ""
-                                                      : "hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
-                                                }
-                                            `}
+                        relative h-9 w-full flex items-center justify-center rounded-md text-[10px] font-black transition-all shadow-none
+                        ${!isCurrentMonth ? "text-token-text-tertiary/40 opacity-30" : "text-token-text-primary"}
+                        ${isDayToday && !isSelected ? "text-token-accent-brand ring-1 ring-token-accent-brand/20 bg-token-accent-brand/5" : ""}
+                        ${isDisabled ? "opacity-20 cursor-not-allowed grayscale" : ""}
+                        ${
+                          isSelected
+                            ? "bg-token-accent-brand text-token-text-onAccent shadow-md scale-105 z-10"
+                            : isDisabled
+                              ? ""
+                              : "hover:bg-token-surface-hover hover:text-token-text-primary"
+                        }
+                      `}
                     >
                       {format(day, "d")}
                       {isDayToday && !isSelected && (
-                        <div className="absolute top-1 right-1 w-1 h-1 bg-sap-blue rounded-full" />
+                        <div className="absolute top-1 right-1 w-1 h-1 bg-token-accent-brand rounded-full" />
                       )}
-                    </button>
+                    </Button>
                   );
                 })}
               </motion.div>
@@ -230,14 +237,14 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
               <Button
                 variant="secondary"
                 onClick={handleToday}
-                className="rounded-xl h-9 text-[9px] font-black uppercase tracking-widest border-black/5 dark:border-white/5"
+                className="rounded-md h-9 text-[9px] font-black uppercase tracking-widest"
               >
                 Hoy
               </Button>
               <Button
                 variant="secondary"
                 onClick={handleClear}
-                className="rounded-xl h-9 text-[9px] font-black uppercase tracking-widest border-black/5 dark:border-white/5 text-gray-400"
+                className="rounded-md h-9 text-[9px] font-black uppercase tracking-widest text-token-text-tertiary"
               >
                 Limpiar
               </Button>
@@ -245,7 +252,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                 variant="primary"
                 onClick={handleConfirm}
                 disabled={!selectedDate}
-                className="col-span-2 bg-sap-blue text-white rounded-xl h-10 font-black uppercase text-[10px] tracking-[0.2em] shadow-lg disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-2"
+                className="col-span-2 rounded-md h-10 font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2"
               >
                 <CheckCircleIcon className="w-3.5 h-3.5" />
                 Aplicar

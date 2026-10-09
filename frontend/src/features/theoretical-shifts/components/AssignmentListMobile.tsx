@@ -69,7 +69,7 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
   ]);
 
   return (
-    <div className="border border-white/20 dark:border-white/5 rounded-3xl shadow-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl overflow-hidden">
+    <div className="border border-token-border-subtle rounded-xl shadow-lg bg-token-surface-card overflow-hidden">
       <div
         ref={parentRef}
         className="overflow-y-auto custom-scrollbar"
@@ -77,8 +77,8 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
       >
         {isError ? (
           <div className="flex flex-col justify-center items-center h-full text-center p-4">
-            <div className="text-red-500 mb-2">Error al cargar asignaciones</div>
-            <div className="text-gray-500 text-sm mb-4">
+            <div className="text-token-status-error mb-2">Error al cargar asignaciones</div>
+            <div className="text-token-text-secondary text-sm mb-4">
               {(error as Error)?.message || "Error desconocido"}
             </div>
             <Button onClick={() => refetch()} variant="secondary" size="sm">
@@ -87,7 +87,7 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
           </div>
         ) : (
           <div
@@ -119,18 +119,18 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
                   className="p-2"
                 >
                   <div
-                    className={`p-4 rounded-xl border ${hasConflict ? "border-amber-500 bg-amber-50/50 dark:bg-amber-900/20" : "border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60"} shadow-sm ${isArchived ? "opacity-60" : ""}`}
+                    className={`p-4 rounded-xl border ${hasConflict ? "border-amber-500 bg-amber-500/10" : "border-token-border-subtle bg-token-surface-card"} shadow-sm ${isArchived ? "opacity-60" : ""}`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
                         {hasConflict && (
                           <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />
                         )}
-                        <h4 className="font-bold text-gray-900 dark:text-white truncate max-w-[180px]">
+                        <h4 className="font-bold text-token-text-primary truncate max-w-[180px]">
                           {assignment.employeeName}
                         </h4>
                       </div>
-                      <span className="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300">
+                      <span className="text-xs font-mono bg-token-surface-hover px-2 py-1 rounded text-token-text-secondary">
                         {assignment.assignmentWeeklyHours > 0
                           ? `${assignment.assignmentWeeklyHours.toFixed(1)}h`
                           : "-"}
@@ -138,22 +138,26 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
                     </div>
 
                     <div className="mb-3">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-sap-blue/10 text-sap-blue dark:bg-sap-light-blue/10 dark:text-sap-light-blue uppercase tracking-tighter w-full justify-center">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-token-accent-brand/10 text-token-accent-brand uppercase tracking-tighter w-full justify-center">
                         {assignment.shiftPatternName}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    <div className="grid grid-cols-2 gap-2 text-sm text-token-text-secondary mb-3">
                       <div>
-                        <span className="block text-xs uppercase text-gray-400">Inicio</span>
+                        <span className="block text-xs uppercase text-token-text-tertiary">
+                          Inicio
+                        </span>
                         {new Date(assignment.startDate).toLocaleDateString("es-CL", {
                           timeZone: "UTC",
                         })}
                       </div>
                       <div>
-                        <span className="block text-xs uppercase text-gray-400">Fin</span>
+                        <span className="block text-xs uppercase text-token-text-tertiary">
+                          Fin
+                        </span>
                         {assignment.endDate ? (
-                          <span className={isArchived ? "text-red-400" : ""}>
+                          <span className={isArchived ? "text-token-status-error" : ""}>
                             {new Date(assignment.endDate).toLocaleDateString("es-CL", {
                               timeZone: "UTC",
                             })}
@@ -191,7 +195,9 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
           </div>
         )}
         {isFetchingNextPage && !isLoading && (
-          <div className="p-4 text-center text-sm text-gray-500">Cargando más asignaciones...</div>
+          <div className="p-4 text-center text-sm text-token-text-secondary">
+            Cargando más asignaciones...
+          </div>
         )}
       </div>
     </div>

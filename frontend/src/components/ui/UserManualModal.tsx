@@ -36,7 +36,7 @@ const parseMarkdown = (text: string): string => {
         // Inline code
         line = line.replace(
           /`(.*?)`/g,
-          '<code class="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm">$1</code>',
+          '<code class="bg-token-surface-technical text-token-text-primary px-1 py-0.5 rounded text-sm">$1</code>',
         );
 
         // Paragraphs
@@ -99,38 +99,40 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-            className="relative w-full max-w-4xl max-h-[90vh] h-full bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-black/10 dark:border-white/5 overflow-hidden flex flex-col"
+            className="relative w-full max-w-4xl max-h-[90vh] h-full bg-token-surface-card rounded-lg shadow-2xl border border-token-border-subtle overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header Cinematic */}
-            <div className="p-8 pb-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between shrink-0">
+            <div className="p-8 pb-6 border-b border-token-border-subtle flex items-center justify-between shrink-0">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
                   <BookOpenIcon className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight italic">
+                  <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight italic">
                     Manual de Usuario
                   </h2>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-0.5">
+                  <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mt-0.5">
                     Guía de Operación y Procedimientos
                   </p>
                 </div>
               </div>
 
-              <button
+              <Button
+                type="button"
+                variant="none"
                 onClick={onClose}
-                className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-gray-400 hover:text-red-500 rounded-xl transition-all"
+                className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-token-text-tertiary hover:text-red-500 rounded-xl transition-all shadow-none"
               >
                 <CloseIcon className="w-6 h-6" />
-              </button>
+              </Button>
             </div>
 
             <div className="grow overflow-y-auto p-8 scrollbar-premium">
               {isLoading ? (
                 <div className="h-full flex flex-col items-center justify-center gap-4 py-20">
                   <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest animate-pulse">
+                  <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest animate-pulse">
                     Consultando base de conocimientos...
                   </p>
                 </div>
@@ -148,10 +150,11 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
               )}
             </div>
 
-            <div className="p-6 bg-gray-50/50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 flex justify-end shrink-0">
+            <div className="p-6 bg-token-surface-stripe border-t border-token-border-subtle flex justify-end shrink-0">
               <Button
+                variant="primary"
                 onClick={onClose}
-                className="px-8 rounded-lg bg-gray-900 dark:bg-white dark:text-gray-900 text-white font-black uppercase text-xs tracking-widest shadow-md h-10"
+                className="px-8 rounded-lg font-black uppercase text-xs tracking-widest shadow-md h-10"
               >
                 Cerrar Manual
               </Button>

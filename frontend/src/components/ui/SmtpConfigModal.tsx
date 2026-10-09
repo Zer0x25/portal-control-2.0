@@ -3,6 +3,7 @@ import { useToasts } from "../../hooks/useToasts";
 import { emailService } from "../../services/emailService";
 import { SmtpConfig, MultiSmtpConfig } from "../../types";
 import Input from "./Input";
+import Button from "./Button";
 import {
   CloseIcon,
   ArrowPathIcon,
@@ -150,36 +151,37 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="relative bg-white dark:bg-gray-900 rounded-lg shadow-2xl border border-black/10 dark:border-white/10 w-full max-w-2xl overflow-hidden"
+            className="relative bg-token-surface-card rounded-lg shadow-2xl border border-token-border-technical w-full max-w-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-8 py-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+            <div className="px-8 py-6 border-b border-token-border-subtle flex justify-between items-center bg-token-surface-stripe">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-sap-blue/10 dark:bg-sap-blue/20 text-sap-blue">
+                <div className="p-2.5 rounded-md bg-token-accent-brand/10 text-token-accent-brand">
                   <CogIcon className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-gray-800 dark:text-white leading-none">
+                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-token-text-primary leading-none">
                     Gestión de Perfiles SMTP
                   </h3>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">
+                  <p className="text-[10px] text-token-text-tertiary font-bold uppercase tracking-widest mt-1.5">
                     Estrategia de Comunicación
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                variant="none"
                 onClick={onClose}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-600 dark:hover:text-white transition-all"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-token-text-tertiary hover:bg-token-surface-hover hover:text-token-text-primary transition-all shadow-none"
               >
                 <CloseIcon className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
 
             {isLoading ? (
               <div className="p-20 flex flex-col items-center justify-center gap-4">
-                <ArrowPathIcon className="w-10 h-10 animate-spin text-sap-blue/40" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <ArrowPathIcon className="w-10 h-10 animate-spin text-token-accent-brand/40" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-token-text-tertiary">
                   Accediendo al Bóveda de Configuración
                 </p>
               </div>
@@ -188,14 +190,15 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                 {/* Profile Selector Tabs */}
                 <div className="px-8 pt-6 flex gap-2">
                   {[0, 1, 2].map((idx) => (
-                    <button
+                    <Button
                       key={idx}
+                      variant="none"
                       type="button"
                       onClick={() => setCurrentSlot(idx)}
-                      className={`flex-1 flex flex-col items-center justify-center py-3 rounded-2xl border transition-all duration-300 ${
+                      className={`flex-1 flex flex-col items-center justify-center py-3 rounded-md border transition-all duration-300 relative shadow-none ${
                         currentSlot === idx
-                          ? "bg-sap-blue text-white border-sap-blue shadow-lg shadow-sap-blue/20"
-                          : "bg-white dark:bg-white/5 text-gray-400 border-gray-100 dark:border-white/5 hover:border-sap-blue/30"
+                          ? "bg-token-accent-brand text-token-text-onAccent border-token-accent-brand shadow-sm"
+                          : "bg-token-surface-card text-token-text-tertiary border-token-border-subtle hover:border-token-border-focus/30"
                       }`}
                     >
                       <span className="text-[8px] font-black uppercase tracking-widest opacity-60">
@@ -204,49 +207,51 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       <span className="text-lg font-black">{idx + 1}</span>
                       {multiConfig.activeProfileIndex === idx && (
                         <div className="absolute top-2 right-4">
-                          <CheckCircleIcon className="w-4 h-4 text-white" />
+                          <CheckCircleIcon className="w-4 h-4 text-token-text-onAccent" />
                         </div>
                       )}
-                    </button>
+                    </Button>
                   ))}
                 </div>
 
                 <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto no-scrollbar">
                   {/* Quick Presets Section */}
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-token-text-tertiary ml-1">
                       Configuración Rápida
                     </p>
                     <div className="grid grid-cols-2 gap-4">
-                      <button
+                      <Button
+                        variant="none"
                         type="button"
                         onClick={() => applyPreset("google")}
-                        className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-sap-blue/40 transition-all group"
+                        className="flex items-center gap-3 p-3 rounded-md bg-token-surface-card border border-token-border-subtle hover:border-token-border-focus/40 transition-all group shadow-none"
                       >
-                        <div className="w-8 h-8 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 rounded-md bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <span className="text-red-500 font-bold text-xs">G</span>
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary">
                           Google Workspace
                         </span>
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="none"
                         type="button"
                         onClick={() => applyPreset("outlook")}
-                        className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-sap-blue/40 transition-all group"
+                        className="flex items-center gap-3 p-3 rounded-md bg-token-surface-card border border-token-border-subtle hover:border-token-border-focus/40 transition-all group shadow-none"
                       >
-                        <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <span className="text-blue-500 font-bold text-xs">O</span>
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary">
                           Outlook / O365
                         </span>
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
                   {/* Host and Port */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-4 border-t border-gray-100 dark:border-white/5">
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pt-4 border-t border-token-border-subtle">
                     <div className="md:col-span-8">
                       <Input
                         label="Host de Salida"
@@ -255,7 +260,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                         onChange={handleInputChange}
                         required
                         placeholder="smtp.office365.com"
-                        className="rounded-2xl"
+                        className="rounded-md"
                       />
                     </div>
                     <div className="md:col-span-4 lowercase">
@@ -266,18 +271,18 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                         value={currentProfile.port}
                         onChange={handleInputChange}
                         required
-                        className="rounded-2xl"
+                        className="rounded-md"
                       />
                     </div>
                   </div>
 
                   {/* Encryption Toggle */}
-                  <div className="p-4 rounded-3xl bg-sap-blue/5 dark:bg-white/5 border border-sap-blue/10 dark:border-white/5 flex items-center justify-between">
+                  <div className="p-4 rounded-md bg-token-surface-stripe border border-token-border-subtle flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-sap-blue/60 mb-0.5">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-token-accent-brand/60 mb-0.5">
                         Seguridad
                       </p>
-                      <p className="text-xs font-bold text-gray-700 dark:text-gray-200">
+                      <p className="text-xs font-bold text-token-text-primary">
                         Usar Protocolo SSL/TLS Seguro
                       </p>
                     </div>
@@ -289,15 +294,15 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                         checked={currentProfile.secure}
                         onChange={handleInputChange}
                       />
-                      <div className="w-11 h-6 bg-gray-200 dark:bg-black/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sap-blue"></div>
+                      <div className="w-11 h-6 bg-token-surface-technical peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-token-border-technical after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-token-accent-brand"></div>
                     </label>
                   </div>
 
                   {/* Auth Fields */}
-                  <div className="space-y-6 pt-4 border-t border-gray-100 dark:border-white/5">
+                  <div className="space-y-6 pt-4 border-t border-token-border-subtle">
                     <div className="flex items-center gap-2 mb-2">
-                      <ShieldIcon className="w-4 h-4 text-sap-blue" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <ShieldIcon className="w-4 h-4 text-token-accent-brand" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-token-text-tertiary">
                         Autenticación Perfil {currentSlot + 1}
                       </span>
                     </div>
@@ -309,7 +314,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       onChange={handleInputChange}
                       required
                       placeholder="user@organization.com"
-                      className="rounded-2xl"
+                      className="rounded-md"
                     />
                     <Input
                       label="Contraseña o App Key"
@@ -319,15 +324,15 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       onChange={handleInputChange}
                       required
                       placeholder="Contraseña nueva si cambias servidor o usuario"
-                      className="rounded-2xl"
+                      className="rounded-md"
                     />
                   </div>
 
                   {/* Identity Fields */}
-                  <div className="space-y-6 pt-4 border-t border-gray-100 dark:border-white/5">
+                  <div className="space-y-6 pt-4 border-t border-token-border-subtle">
                     <div className="flex items-center gap-2 mb-2">
-                      <EnvelopeIcon className="w-4 h-4 text-sap-blue" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <EnvelopeIcon className="w-4 h-4 text-token-accent-brand" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-token-text-tertiary">
                         Identidad Digital
                       </span>
                     </div>
@@ -338,7 +343,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                         value={currentProfile.fromName}
                         onChange={handleInputChange}
                         required
-                        className="rounded-2xl"
+                        className="rounded-md"
                       />
                       <Input
                         label="Email de Respuesta"
@@ -347,21 +352,22 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                         value={currentProfile.fromEmail}
                         onChange={handleInputChange}
                         required
-                        className="rounded-2xl"
+                        className="rounded-md"
                       />
                     </div>
                   </div>
 
                   {/* Set Active Button */}
                   <div className="pt-4">
-                    <button
+                    <Button
+                      variant="none"
                       type="button"
                       onClick={handleSetActive}
                       disabled={multiConfig.activeProfileIndex === currentSlot}
-                      className={`w-full flex items-center justify-center gap-3 p-4 rounded-3xl border transition-all ${
+                      className={`w-full flex items-center justify-center gap-3 p-4 rounded-md border transition-all shadow-none ${
                         multiConfig.activeProfileIndex === currentSlot
-                          ? "bg-green-500/10 border-green-500/30 text-green-600 cursor-default"
-                          : "bg-white dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-sap-blue text-gray-600 dark:text-gray-300"
+                          ? "bg-token-status-success/10 border-token-status-success/30 text-token-status-success cursor-default"
+                          : "bg-token-surface-card border-token-border-subtle hover:border-token-accent-brand text-token-text-secondary"
                       }`}
                     >
                       {multiConfig.activeProfileIndex === currentSlot ? (
@@ -374,45 +380,48 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       ) : (
                         <>
                           <ArrowPathIcon className="w-5 h-5" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-sap-blue">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-token-accent-brand">
                             Establecer como Perfil de Salida Predeterminado
                           </span>
                         </>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div className="p-8 bg-gray-50/50 dark:bg-black/20 border-t border-gray-100 dark:border-white/5 flex items-center justify-between gap-4">
-                  <button
+                <div className="p-8 bg-token-surface-stripe border-t border-token-border-subtle flex items-center justify-between gap-4">
+                  <Button
+                    variant="secondary"
                     type="button"
                     onClick={handleTestConnection}
                     disabled={isVerifying}
-                    className="flex items-center gap-2 px-6 h-12 rounded-2xl bg-white dark:bg-white/5 border border-white/20 text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-all shadow-sm"
+                    className="flex items-center gap-2 px-6 h-12 rounded-md border-token-border-technical text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:bg-token-surface-hover shadow-sm"
                   >
                     {isVerifying ? (
                       <ArrowPathIcon className="w-4 h-4 animate-spin" />
                     ) : (
-                      <ShieldIcon className="w-4 h-4 text-sap-blue" />
+                      <ShieldIcon className="w-4 h-4 text-token-accent-brand" />
                     )}
                     {isVerifying ? "Validando..." : "Probar Correo"}
-                  </button>
+                  </Button>
 
                   <div className="flex gap-3">
-                    <button
+                    <Button
+                      variant="ghost"
                       type="button"
                       onClick={onClose}
-                      className="px-6 h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-white transition-all"
+                      className="px-6 h-12 rounded-md text-[10px] font-black uppercase tracking-widest text-token-text-tertiary hover:text-token-text-primary"
                     >
                       Cerrar
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="primary"
                       type="submit"
-                      className="px-8 h-12 rounded-2xl bg-linear-to-r from-sap-blue to-indigo-600 text-white shadow-lg shadow-sap-blue/20 text-[10px] font-black uppercase tracking-widest hover:shadow-sap-blue/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                      className="px-8 h-12 rounded-md text-[10px] font-black uppercase tracking-widest"
                     >
                       Guardar Todo
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </form>

@@ -55,12 +55,12 @@ export const AttendanceAnalyticsWidget: React.FC<AttendanceAnalyticsWidgetProps>
   const trendIconColorClass: Record<string, string> = {
     emerald: "text-emerald-500",
     red: "text-red-500",
-    slate: "text-slate-500",
+    slate: "text-token-text-tertiary",
   };
   const trendTextColorClass: Record<string, string> = {
     emerald: "text-emerald-600",
     red: "text-red-600",
-    slate: "text-slate-600",
+    slate: "text-token-text-secondary",
   };
 
   return (

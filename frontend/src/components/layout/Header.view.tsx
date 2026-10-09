@@ -47,10 +47,16 @@ const HeaderView: React.FC<HeaderViewProps> = ({
 }) => {
   return (
     <>
-      <header className="sticky top-0 left-0 right-0 z-60 bg-token-surface-header border-b border-token-border-technical transition-all shadow-sm">
-        <div className="mx-auto px-6 h-16 flex items-center justify-between">
+      <header
+        role="banner"
+        data-testid="app-header"
+        className="sticky top-0 left-0 right-0 z-60 bg-token-surface-header border-b border-token-border-technical transition-all shadow-sm"
+      >
+        <div className="mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
+              data-testid="sidebar-toggle-button"
+              aria-controls="app-sidebar"
               onClick={toggleSidebar}
               className="group flex items-center justify-center transition-all active:scale-95"
               aria-label="Abrir Menú"
@@ -79,6 +85,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
             </div>
 
             <button
+              data-testid="sound-toggle-button"
               onClick={onToggleSound}
               className="p-2.5 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-all group"
               title={soundEnabled ? "Silenciar sonidos" : "Activar sonidos"}
@@ -96,6 +103,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
             {currentUser && (
               <div className="relative" ref={dropdownRef}>
                 <button
+                  data-testid="user-menu-button"
                   onClick={onToggleDropdown}
                   className="group flex items-center gap-3 p-1.5 h-13 rounded-md border border-token-border-subtle hover:bg-token-surface-active transition-all"
                   aria-haspopup="true"
@@ -116,7 +124,10 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden">
+                  <div
+                    data-testid="user-menu-dropdown"
+                    className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden"
+                  >
                     <div className="px-4 py-3 border-b border-token-border-subtle bg-token-surface-stripe">
                       <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest mb-1">
                         Usuario Activo
@@ -128,12 +139,14 @@ const HeaderView: React.FC<HeaderViewProps> = ({
 
                     <div className="p-1">
                       <button
+                        data-testid="security-modal-button"
                         onClick={onOpenChangePassword}
                         className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
                       >
                         Seguridad
                       </button>
                       <button
+                        data-testid="help-modal-button"
                         onClick={onOpenManual}
                         className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-all"
                       >
@@ -143,6 +156,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
 
                     <div className="p-1 border-t border-token-border-subtle">
                       <button
+                        data-testid="dropdown-logout-button"
                         onClick={onLogout}
                         className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-status-error uppercase tracking-widest hover:bg-token-status-error/10 rounded-sm transition-all"
                       >
@@ -157,6 +171,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
             <div className="hidden sm:block">
               {currentUser && (
                 <button
+                  data-testid="header-logout-button"
                   onClick={onLogout}
                   className="px-4 py-2.5 h-11 rounded-md border border-token-status-error/20 bg-token-status-error/10 hover:bg-token-status-error/20 text-token-status-error text-xs font-bold uppercase tracking-widest transition-all active:scale-95"
                 >

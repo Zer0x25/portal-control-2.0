@@ -36,7 +36,7 @@ const ShiftCalendarView: React.FC<ShiftCalendarViewProps> = ({
       <div className="grid grid-cols-7 border-b border-token-border-technical">
         {weekDayNames.map((dayName) => (
           <div key={dayName} className="py-4 text-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary">
               {dayName}
             </span>
           </div>
@@ -44,13 +44,13 @@ const ShiftCalendarView: React.FC<ShiftCalendarViewProps> = ({
       </div>
 
       {/* Grid of days */}
-      <div className="grid grid-cols-7 gap-px bg-gray-300 dark:bg-gray-800">
+      <div className="grid grid-cols-7 gap-px bg-token-border-technical">
         {calendarGridCells.map((day, index) => {
           if (!day) {
             return (
               <div
                 key={`empty-${index}`}
-                className={`bg-gray-50/30 dark:bg-gray-900/20 ${cellHeightClass}`}
+                className={`bg-token-surface-stripe ${cellHeightClass}`}
               ></div>
             );
           }

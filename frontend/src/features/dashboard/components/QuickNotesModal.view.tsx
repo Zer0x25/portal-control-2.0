@@ -55,10 +55,10 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
         <div className="flex items-center gap-4">
           <IconBox icon={<BookOpenIcon />} variant="primary" size="md" />
           <div>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase leading-none">
+            <h3 className="text-sm font-black text-token-text-primary uppercase leading-none">
               Tablero de Notas
             </h3>
-            <p className="text-[9px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-[0.2em] mt-1.5 leading-none">
+            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 leading-none">
               Serendipia de Productividad
             </p>
           </div>
@@ -70,16 +70,20 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
         <form onSubmit={onAddNote} className="space-y-4">
           <div className="flex gap-2">
             {colorOptions.map((color) => (
-              <button
+              <Button
                 key={color}
                 type="button"
+                variant="none"
                 onClick={() => onSetSelectedColor(color)}
-                className={`w-5 h-5 rounded-full border-2 transition-all ${
+                className={`w-5 h-5 rounded-full border-2 transition-all cursor-pointer ${
                   selectedColor === color
                     ? "scale-110 border-indigo-500 shadow-sm"
                     : "border-transparent opacity-60 hover:opacity-100"
                 } ${INDICATOR_COLOR_MAP[color]}`}
-              />
+                aria-label={`Seleccionar color ${color}`}
+              >
+                <span className="sr-only">{color}</span>
+              </Button>
             ))}
           </div>
 
@@ -107,7 +111,7 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
         <div className="space-y-3 max-h-[45vh] overflow-y-auto custom-scrollbar pr-2">
           {isLoadingNotes ? (
             <div className="py-10 text-center animate-pulse">
-              <p className="text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
                 Sincronizando notas...
               </p>
             </div>
@@ -124,14 +128,14 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
                 />
                 <div className="flex justify-between gap-4 w-full">
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-slate-700 dark:text-gray-200 leading-relaxed">
+                    <p className="text-sm font-bold text-token-text-primary leading-relaxed">
                       {note.content}
                     </p>
                     <div className="flex items-center gap-3 mt-3 opacity-60">
-                      <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                      <span className="text-[9px] font-black text-token-text-secondary uppercase tracking-widest">
                         {note.authorUsername}
                       </span>
-                      <span className="text-[8px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">
+                      <span className="text-[8px] font-bold text-token-text-tertiary uppercase tracking-widest">
                         {new Date(note.createdAt).toLocaleString("es-CL", {
                           day: "2-digit",
                           month: "short",
@@ -146,13 +150,15 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
                   </div>
                   <div className="flex gap-1 shrink-0">
                     {canDelete(note.authorUsername) && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => onDeleteNote(note.id)}
-                        className="p-2 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                        className="p-1.5 text-token-text-tertiary hover:text-token-status-error"
                         title="Eliminar de forma permanente"
                       >
                         <DeleteIcon className="w-4 h-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

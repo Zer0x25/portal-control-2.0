@@ -39,16 +39,18 @@ const ChangePasswordModalView: React.FC<ChangePasswordModalViewProps> = ({
     >
       <Card
         title={modalTitle}
-        className="w-full max-w-md bg-white dark:bg-sap-dark-gray shadow-xl relative"
+        className="w-full max-w-md bg-token-surface-card shadow-xl relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
+        <Button
+          variant="ghost"
+          size="xs"
           onClick={onClose}
-          className="absolute top-3 right-3 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="absolute top-3 right-3 p-1 rounded-full text-token-text-secondary hover:text-token-text-primary"
           aria-label="Cerrar modal"
         >
           <CloseIcon className="w-5 h-5" />
-        </button>
+        </Button>
 
         <form onSubmit={onSave} className="space-y-4">
           <PasswordChangeForm

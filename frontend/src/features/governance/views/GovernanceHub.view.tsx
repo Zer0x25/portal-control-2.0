@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
+import Container from "../../../components/ui/Container";
 import {
   ShieldIcon,
   ShieldCheckIcon,
@@ -44,7 +45,12 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
   handleTabChange,
 }) => {
   return (
-    <div className="space-y-6 animate-in fade-in duration-500" data-ui-protected>
+    <Container
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 animate-in fade-in duration-500"
+    >
       <PageHeader
         title="Centro de Gobernanza & Seguridad"
         subtitle="Consola centralizada de integridad criptográfica, auditoría y control maestro"
@@ -99,6 +105,6 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
           </motion.div>
         </AnimatePresence>
       </div>
-    </div>
+    </Container>
   );
 };

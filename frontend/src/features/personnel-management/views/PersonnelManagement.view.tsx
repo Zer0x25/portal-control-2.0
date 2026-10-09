@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
+import Container from "../../../components/ui/Container";
 import TabNav from "../../../components/ui/TabNav";
 import { UsersIcon } from "../../../components/ui/icons";
 import { ActivePersonnelTab } from "../hooks/usePersonnelManagementData";
@@ -22,43 +23,44 @@ export const PersonnelManagementView: React.FC<PersonnelManagementViewProps> = (
   usersContent,
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.99 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="space-y-6 animate-in fade-in duration-500"
-      data-ui-protected
-    >
-      <PageHeader
-        eyebrow="Recursos Humanos"
-        eyebrowIcon={<UsersIcon className="w-3.5 h-3.5" />}
-        icon={<UsersIcon className="w-4 h-4" />}
-        title="Gestión de Personal"
-        subtitle="Administración centralizada de trabajadores y cuentas"
-      />
+    <Container variant="wide" noPadding data-ui-protected className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.99 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-6 animate-in fade-in duration-500"
+      >
+        <PageHeader
+          eyebrow="Recursos Humanos"
+          eyebrowIcon={<UsersIcon className="w-3.5 h-3.5" />}
+          icon={<UsersIcon className="w-4 h-4" />}
+          title="Gestión de Personal"
+          subtitle="Administración centralizada de trabajadores y cuentas"
+        />
 
-      <TabNav
-        tabs={[
-          { id: "employees", label: "Empleados" },
-          { id: "users", label: "Accesos" },
-        ]}
-        activeTab={activeTab}
-        onTabChange={(id) => setActiveTab(id as "employees" | "users")}
-      />
+        <TabNav
+          tabs={[
+            { id: "employees", label: "Empleados" },
+            { id: "users", label: "Accesos" },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as "employees" | "users")}
+        />
 
-      <div className="relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          >
-            {activeTab === "employees" && employeesContent}
-            {activeTab === "users" && usersContent}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-    </motion.div>
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            >
+              {activeTab === "employees" && employeesContent}
+              {activeTab === "users" && usersContent}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </Container>
   );
 };

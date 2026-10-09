@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { CLOCKING_STATUS_CONFIG } from "../../../utils/mappings";
 import { ClockingStatus, Employee } from "../../../types";
 import Input from "../../../components/ui/Input";
@@ -132,7 +132,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                     <div className="flex items-center gap-4 min-w-0">
                       <div className="relative">
                         <div
-                          className={`w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-gray-900 ${config.dot} shadow-[0_0_8px_currentcolor]`}
+                          className={`w-2.5 h-2.5 rounded-full ring-2 ring-token-surface-card ${config.dot} shadow-[0_0_8px_currentcolor]`}
                         />
                       </div>
 

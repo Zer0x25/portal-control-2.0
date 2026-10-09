@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { TheoreticalShiftPattern } from "../../types/index";
+import Button from "./Button";
 
 interface ShiftPatternLegendProps {
   patterns: TheoreticalShiftPattern[];
@@ -22,32 +23,34 @@ const ShiftPatternLegend: React.FC<ShiftPatternLegendProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
-      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+    <div className="bg-token-surface-card rounded-lg shadow p-4 mb-4 border border-token-border-subtle">
+      <h4 className="text-sm font-semibold text-token-text-primary mb-3">
         Leyenda de Patrones de Turno
       </h4>
       <div className="flex flex-wrap gap-2">
         {onPatternSelect && (
-          <button
+          <Button
+            variant="none"
             onClick={() => onPatternSelect(null)}
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors shadow-none
                             ${
                               !selectedPatternId
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                ? "bg-sap-blue text-white"
+                                : "bg-token-surface-stripe text-token-text-secondary hover:bg-token-surface-card"
                             }`}
           >
             Todos
-          </button>
+          </Button>
         )}
         {sortedPatterns.map((pattern) => (
-          <button
+          <Button
+            variant="none"
             key={pattern.id}
             onClick={() => onPatternSelect?.(pattern.id)}
-            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors shadow-none
                             ${
                               selectedPatternId === pattern.id
-                                ? "ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-gray-800"
+                                ? "ring-2 ring-offset-2 ring-sap-blue ring-offset-token-surface-card"
                                 : "hover:opacity-80"
                             }`}
             style={{
@@ -61,12 +64,12 @@ const ShiftPatternLegend: React.FC<ShiftPatternLegendProps> = ({
               style={{ backgroundColor: pattern.color || "#A0AEC0" }}
             />
             {pattern.name}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Statistics row */}
-      <div className="mt-3 pt-3 border-t dark:border-gray-700 flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+      <div className="mt-3 pt-3 border-t border-token-border-subtle flex gap-4 text-xs text-token-text-secondary">
         <span>
           <strong>{patterns.length}</strong> patrón{patterns.length !== 1 ? "es" : ""}
         </span>

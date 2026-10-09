@@ -38,11 +38,11 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = t
         <motion.p
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-gray-900 dark:text-white font-black text-sm uppercase tracking-widest leading-tight"
+          className="text-token-text-primary font-black text-sm uppercase tracking-widest leading-tight"
         >
           {message}
         </motion.p>
-        <p className="mt-2 text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tighter">
+        <p className="mt-2 text-[10px] text-token-text-secondary font-bold uppercase tracking-tighter">
           Un momento por favor
         </p>
       </div>

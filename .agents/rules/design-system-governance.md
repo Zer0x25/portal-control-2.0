@@ -29,6 +29,7 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
   - No usar `<input>` nativo con clases ad-hoc: usar `Input` de `src/components/ui/Input.tsx`.
   - No usar contenedores con bordes manuales para paneles principales: usar `Card` de `src/components/ui/Card.tsx`.
   - No armar píldoras de estado desde cero: usar `Badge` de `src/components/ui/Badge.tsx`.
+  - Para envolver vistas y secciones principales: usar `Container` de `src/components/ui/Container.tsx` (`standard`: máx 1280px / 7xl, `wide`: máx 1440px, `narrow`: máx 896px / 4xl, `fluid`: ancho completo), garantizando centrado automático (`mx-auto`) y paddings elásticos.
   - Para ventanas flotantes y modales: usar `CinematicModal` de `src/components/ui/CinematicModal.tsx` o dialogs oficiales.
   - Para listas vacías o estados de error: usar `EmptyState` de `src/components/ui/EmptyState.tsx`.
 
@@ -60,3 +61,73 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 - **A11y de Formularios**: Todo `Input` o control interactivo debe proveer `id` explícito vinculado a su `label` (`htmlFor`). Si hay error, vincular con `aria-invalid` y `aria-describedby`.
 - **Contraste & Dark Mode**: El soporte para Dark Mode es automático mediante las variables semánticas de `index.css`. No agregar overrides condicionales redundantes como `dark:bg-slate-900` cuando `bg-token-surface-card` resuelve ambos temas sin fricción.
 - **Áreas táctiles mínimas**: En elementos interactivos móviles, asegurar altura mínima táctil de 40px–44px.
+
+---
+
+## 6. Layout Responsivo, PWA y Navegación Headless para Agentes
+
+- **Tolerancia 320px (WCAG 1.4.10 Reflow)**:
+  - Prohibidos anchos rígidos incondicionales en píxeles mayores a 320px (ej. `w-[400px]`, `min-w-[500px]`) que provoquen scroll horizontal en pantallas móviles. Todo ancho debe estar acotado por `max-w-*` o condicionado por breakpoints (`sm:`, `md:`, `lg:`).
+  - Escala de padding lateral seguro: `px-4` móvil (16px), `sm:px-6` tablet (24px), `lg:px-8` desktop (32px).
+- **Viewport Dinámico y Safe Areas en PWA**:
+  - Para alturas completas de pantalla en layouts o shells, usar siempre `min-h-dvh` o `h-dvh` en vez de `100vh` / `h-screen` para evitar saltos de interfaz por barras dinámicas del navegador móvil.
+  - Para notch y barra inferior en PWA, consumir utilidades semánticas `pb-safe`, `pt-safe`, `p-safe` de `frontend/src/index.css`.
+- **Navegación Determinista para Agentes (Headless Automation)**:
+  - Landmarks semánticos obligatorios en el shell:
+    - `<header role="banner" data-testid="app-header">`
+    - `<aside role="complementary" data-testid="app-sidebar">`
+    - `<nav role="navigation" aria-label="Menú principal" data-testid="main-navigation">`
+    - `<main id="main-content" role="main" data-testid="main-content">`
+    - `<a href="#main-content" data-testid="skip-to-content">` (Skip link accesible)
+  - Enlaces de navegación con atributos de introspección:
+    - `data-testid={`nav-item-${slug}`}`
+    - `data-nav-to={to}`
+    - `data-nav-active="true|false"`
+  - El shell raíz debe publicar metadatos de ruta: `data-testid="app-shell"` y `data-current-path={path}`.
+
+---
+
+## 7. Auditoría, Certificación de Primitivas y Paridad de Guardrails
+
+- **Paridad Estricta de Archivos Certificados (`CERTIFIED_FILES`)**:
+  - Toda primitiva atómica o de layout en `src/components/ui/` (ej. `Button.tsx`, `Container.tsx`, `Card.tsx`, `Input.tsx`, `Badge.tsx`) y shells de layout (`src/components/layout/`) debe estar registrada obligatoriamente en la lista de archivos certificados de **ambos** mecanismos de control:
+    1. El script auditor CLI: `frontend/scripts/audit-design-system.cjs`.
+    2. La suite de pruebas de guardrails: `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`.
+  - Prohibido agregar o remover componentes de una lista sin replicarlo exactamente en la otra.
+- **Presupuesto Monótono en Cero (`design-system-budget.json`)**:
+  - El presupuesto de desvíos (`totalIssuesBudget`) se encuentra fijado en `0`. Ningún cambio puede elevar este valor.
+  - Al certificar nuevos componentes o migrar vistas, actualizar el recuento ejecutando `node scripts/audit-design-system.cjs --update` y validar con `npm run test:guardrails`.
+
+---
+
+## 8. Estandarización de Vistas (.view.tsx), Guardrails y Mocking en Tests
+
+- **Envoltorio Canónico Obligatorio en Vistas**:
+  - Todo archivo de vista (`*.view.tsx`) debe envolver su JSX principal en el componente `Container`:
+    ```tsx
+    <Container
+      variant="wide" // o "standard" / "fluid" según el tipo de pantalla
+      noPadding
+      data-ui-protected
+      className="[clases-existentes-de-la-vista]"
+    >
+      {/* contenido de la vista */}
+    </Container>
+    ```
+  - Debe conservarse siempre el comentario superior: `/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL */`.
+  - La vista debe registrarse en el listado `migratedViews` de `frontend/src/tests/guardrails/responsiveViewportGuardrails.test.ts`.
+
+- **Aserciones en Pruebas Unitarias de Vistas**:
+  - Los tests de componentes de vista deben asertar explícitamente:
+    `expect(screen.getByTestId("page-container")).toBeInTheDocument();`.
+
+- **Higiene en Mocking de `framer-motion`**:
+  - Al mockear `motion` en Vitest, filtrar propiedades no estándar del DOM (`layout`, `layoutId`, `whileHover`, etc.) para evitar advertencias en consola de React:
+    ```tsx
+    vi.mock("framer-motion", () => ({
+      motion: {
+        div: ({ children, layout: _layout, layoutId: _layoutId, ...props }: React.HTMLAttributes<HTMLDivElement> & { layout?: unknown; layoutId?: unknown }) => <div {...props}>{children}</div>,
+      },
+      AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    }));
+    ```

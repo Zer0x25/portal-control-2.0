@@ -1,7 +1,12 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for LeaveManager.
+*/
+
 import React from "react";
 import { Employee, LeaveRecord } from "../../../types";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Container from "../../../components/ui/Container";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
   PlusCircleIcon,
@@ -16,6 +21,7 @@ import {
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { LEAVE_TYPES } from "../../../utils/mappings";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
+import EmptyState from "../../../components/ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import LeaveListDesktop from "../components/LeaveListDesktop";
 import LeaveListMobile from "../components/LeaveListMobile";
@@ -115,7 +121,13 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
   handleConfirmDeleteLeave,
 }) => {
   return (
-    <div id="leave-manager-section" className="space-y-6">
+    <Container
+      id="leave-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Gestión de Ausencias</h2>
@@ -158,18 +170,18 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div ref={searchContainerRef} className="relative">
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
                       Colaborador
                     </label>
                     <div className="relative group">
-                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-sap-blue transition-colors" />
+                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
                       <input
                         type="text"
                         value={searchTerm}
                         onChange={handleSearchChange}
                         onFocus={() => setIsDropdownOpen(true)}
                         placeholder="Nombre..."
-                        className="w-full pl-12 pr-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         autoComplete="off"
                         required
                         disabled={!!editingLeave}
@@ -184,20 +196,20 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className="absolute z-50 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl mt-2 max-h-60 overflow-y-auto shadow-2xl"
+                          className="absolute z-50 w-full bg-token-surface-card border border-token-border-technical rounded-xl mt-2 max-h-60 overflow-y-auto shadow-2xl"
                         >
                           {filteredEmployeesForSearch.length > 0 ? (
                             filteredEmployeesForSearch.map((employee: Employee) => (
                               <li
                                 key={employee.id}
                                 onClick={() => handleSelectEmployee(employee)}
-                                className="px-5 py-3 cursor-pointer text-gray-900 dark:text-gray-200 hover:bg-sap-blue/10 hover:text-sap-blue dark:hover:bg-sap-light-blue/10 dark:hover:text-sap-light-blue transition-colors font-medium border-b border-gray-100 dark:border-gray-800 last:border-0 text-sm"
+                                className="px-5 py-3 cursor-pointer text-token-text-primary hover:bg-token-surface-hover hover:text-token-accent-brand transition-colors font-medium border-b border-token-border-subtle last:border-0 text-sm"
                               >
                                 {employee.name}
                               </li>
                             ))
                           ) : (
-                            <li className="px-5 py-3 text-gray-500 italic text-sm">
+                            <li className="px-5 py-3 text-token-text-secondary italic text-sm">
                               Sin resultados
                             </li>
                           )}
@@ -207,20 +219,28 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
                       Tipo
                     </label>
                     <select
                       value={type}
                       onChange={(e) => setType(e.target.value as LeaveRecord["type"])}
                       disabled={!!editingLeave}
-                      className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 appearance-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary appearance-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <option value="" disabled className="dark:bg-gray-900 dark:text-gray-400">
+                      <option
+                        value=""
+                        disabled
+                        className="bg-token-surface-card text-token-text-tertiary"
+                      >
                         Seleccione una opción
                       </option>
                       {LEAVE_TYPES.map((t) => (
-                        <option key={t} value={t} className="dark:bg-gray-950 dark:text-gray-100">
+                        <option
+                          key={t}
+                          value={t}
+                          className="bg-token-surface-card text-token-text-primary"
+                        >
                           {t}
                         </option>
                       ))}
@@ -230,17 +250,17 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
                       Inicio
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsStartDatePickerOpen(true)}
                       disabled={!!editingLeave}
-                      className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       <span>{startDate ? formatBusinessDate(startDate) : "Seleccionar"}</span>
-                      <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
+                      <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-60" />
                     </button>
                     <DatePickerDialog
                       isOpen={isStartDatePickerOpen}
@@ -250,16 +270,16 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
                       Fin
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsEndDatePickerOpen(true)}
-                      className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center text-sm"
+                      className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer"
                     >
                       <span>{endDate ? formatBusinessDate(endDate) : "Seleccionar"}</span>
-                      <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
+                      <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-60" />
                     </button>
                     <DatePickerDialog
                       isOpen={isEndDatePickerOpen}
@@ -269,15 +289,15 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
+                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
                       Notas
                     </label>
                     <div className="relative group">
-                      <DocumentTextIcon className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-sap-blue transition-colors" />
+                      <DocumentTextIcon className="absolute left-4 top-4 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
                       <textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 min-h-[80px] text-sm"
+                        className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary min-h-[80px] text-sm"
                         placeholder="Observaciones..."
                       />
                     </div>
@@ -313,7 +333,7 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
 
       <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
         <div className="relative flex-1 group w-full">
-          <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-sap-blue transition-colors" />
+          <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
           <Input
             type="text"
             value={filterEmployeeName}
@@ -321,12 +341,12 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
               setFilterEmployeeName(e.target.value);
             }}
             placeholder="Buscar por colaborador..."
-            className="pl-12! py-3! bg-white/30! dark:bg-gray-800/20! border-white/20! dark:border-gray-700/50! rounded-2xl! w-full"
+            className="pl-12! py-3! bg-token-surface-card! border-token-border-subtle! rounded-xl! w-full"
           />
           {filterEmployeeName && (
             <button
               onClick={handleClearFilter}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-token-text-secondary hover:text-token-text-primary transition-colors cursor-pointer"
             >
               ×
             </button>
@@ -334,11 +354,11 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
         </div>
 
         <div className="relative w-full md:w-64">
-          <FunnelIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <FunnelIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary" />
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white/30 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/50 rounded-2xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 appearance-none text-sm font-medium"
+            className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-subtle rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary appearance-none text-sm font-medium"
           >
             <option value="">Tipo: Todos</option>
             {LEAVE_TYPES.map((t) => (
@@ -349,8 +369,8 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
           </select>
         </div>
 
-        <div className="flex items-center gap-3 px-6 h-[50px] bg-white/30 dark:bg-gray-800/20 border border-white/20 dark:border-gray-700/50 rounded-2xl whitespace-nowrap w-full md:w-auto">
-          <CalendarDaysIcon className="w-4 h-4 text-slate-400" />
+        <div className="flex items-center gap-3 px-6 h-[50px] bg-token-surface-card border border-token-border-subtle rounded-xl whitespace-nowrap w-full md:w-auto">
+          <CalendarDaysIcon className="w-4 h-4 text-token-text-tertiary" />
           <label className="flex items-center cursor-pointer select-none">
             <input
               type="checkbox"
@@ -359,13 +379,13 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
               className="hidden"
             />
             <div
-              className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${showArchived ? "bg-sap-blue" : "bg-gray-300 dark:bg-gray-600"}`}
+              className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${showArchived ? "bg-token-accent-brand" : "bg-token-surface-technical"}`}
             >
               <div
                 className={`absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-transform duration-200 ${showArchived ? "translate-x-5" : ""}`}
               ></div>
             </div>
-            <span className="ml-3 text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
+            <span className="ml-3 text-sm font-bold text-token-text-secondary uppercase tracking-tighter">
               Ver Archivados
             </span>
           </label>
@@ -374,13 +394,12 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
 
       <div className="min-h-[400px]">
         {processedLeaves.length === 0 && !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-            <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-full mb-4 opacity-50 grayscale">
-              🏖️
-            </div>
-            <p className="text-xl font-bold">Sin ausencias registradas.</p>
-            <p className="text-sm">Usa los filtros o registra una nueva para ver resultados.</p>
-          </div>
+          <EmptyState
+            title="Sin ausencias registradas"
+            description="Usa los filtros o registra una nueva para ver resultados."
+            icon={<span className="text-2xl">🏖️</span>}
+            className="my-12"
+          />
         ) : (
           <ResponsiveView
             mobile={
@@ -428,6 +447,6 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
           />
         )}
       </AnimatePresence>
-    </div>
+    </Container>
   );
 };

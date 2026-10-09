@@ -69,6 +69,7 @@ describe("LogbookView", () => {
     render(<LogbookView {...baseProps} />);
 
     expect(screen.getByText("Libro de Novedades")).toBeInTheDocument();
+    expect(screen.getByTestId("page-container")).toBeInTheDocument();
     expect(screen.getByText("Turno Mañana")).toBeInTheDocument();
     expect(screen.getByText("LOG-ENTRIES-CARD")).toBeInTheDocument();
     expect(screen.getByText("SUPPLIER-ENTRIES-CARD")).toBeInTheDocument();

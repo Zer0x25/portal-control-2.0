@@ -10,6 +10,7 @@ import { ClockIcon } from "../../../components/ui/icons";
 import PageHeader from "../../../components/ui/PageHeader";
 import ServerClock from "../../../components/ui/ServerClock";
 import Card from "../../../components/ui/Card";
+import Container from "../../../components/ui/Container";
 import ClockingPanel from "../components/ClockingPanel";
 import TimeRecordFilters from "../components/TimeRecordFilters";
 import TimeRecordTable from "../components/TimeRecordTable";
@@ -109,7 +110,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
   }
 
   return (
-    <div data-ui-protected className="space-y-6">
+    <Container variant="wide" noPadding data-ui-protected className="space-y-6">
       <div className="w-full">
         <PageHeader
           className="w-full"
@@ -267,7 +268,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
       <React.Suspense fallback={null}>
         <EditTimestampModal />
       </React.Suspense>
-    </div>
+    </Container>
   );
 };
 

@@ -75,19 +75,17 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
               }}
             >
               <div
-                className="relative bg-white dark:bg-gray-800 rounded-xl shadow-sm border-l-4 p-4 mb-3 transition-all active:scale-[0.98]"
-                style={{ borderLeftColor: p.color || "#3b82f6" }}
+                className="relative bg-token-surface-card rounded-xl shadow-sm border-l-4 p-4 mb-3 transition-all active:scale-[0.98]"
+                style={{ borderLeftColor: p.color || "var(--accent-professional)" }}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
-                      {p.name}
-                    </h3>
+                    <h3 className="text-sm font-bold text-token-text-primary truncate">{p.name}</h3>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-token-accent-brand/10 text-token-accent-brand border border-token-border-subtle">
                         {p.cycleLengthDays} días
                       </span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border border-purple-100 dark:border-purple-800">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                         Top {p.maxHoursPattern?.toFixed(1) || globalMaxWeeklyHours}h
                       </span>
                     </div>
@@ -97,7 +95,7 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
                     <Button
                       size="xs"
                       variant="ghost"
-                      className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      className="p-1.5 text-token-text-secondary hover:text-token-accent-brand hover:bg-token-surface-hover rounded-lg transition-colors"
                       onClick={() => onEdit(p)}
                     >
                       <EditIcon className="w-5 h-5" />
@@ -105,7 +103,7 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
                     <Button
                       size="xs"
                       variant="ghost"
-                      className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      className="p-1.5 text-token-text-secondary hover:text-token-status-error hover:bg-red-500/10 rounded-lg transition-colors"
                       onClick={() => onDelete(p.id)}
                     >
                       <DeleteIcon className="w-5 h-5" />
@@ -118,7 +116,9 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
         })}
       </div>
       {isFetchingNextPage && (
-        <div className="py-3 text-center text-xs text-gray-500">Cargando más patrones...</div>
+        <div className="py-3 text-center text-xs text-token-text-secondary">
+          Cargando más patrones...
+        </div>
       )}
     </div>
   );

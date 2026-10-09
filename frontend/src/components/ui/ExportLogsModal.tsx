@@ -87,7 +87,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg overflow-visible rounded-[2.5rem] border border-white/20 bg-white/80 p-8 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-gray-900/40"
+            className="relative w-full max-w-lg overflow-visible rounded-2xl border border-token-border-technical bg-token-surface-card p-8 shadow-2xl backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -96,22 +96,23 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sap-blue/60">
                   Seguridad de Datos
                 </p>
-                <h3 className="text-2xl font-black bg-linear-to-r from-gray-900 to-gray-500 bg-clip-text text-transparent dark:from-white dark:to-gray-400 uppercase tracking-tight">
+                <h3 className="text-2xl font-black text-token-text-primary uppercase tracking-tight">
                   Exportar Auditoría
                 </h3>
               </div>
-              <button
+              <Button
+                variant="none"
                 onClick={onClose}
-                className="group flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 transition-all hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10"
+                className="group flex h-10 w-10 items-center justify-center rounded-2xl bg-token-surface-stripe transition-all hover:bg-token-surface-hover"
               >
                 <CloseIcon className="h-5 w-5 opacity-40 group-hover:opacity-100" />
-              </button>
+              </Button>
             </div>
 
             {/* Content */}
             <div className="space-y-8">
-              <div className="rounded-3xl bg-blue-500/5 p-6 border border-blue-500/10">
-                <p className="text-sm font-medium leading-relaxed text-gray-600 dark:text-gray-400">
+              <div className="rounded-2xl bg-blue-500/5 p-6 border border-blue-500/10">
+                <p className="text-sm font-medium leading-relaxed text-token-text-secondary">
                   Defina el periodo temporal para la extracción de registros. El archivo generado
                   incluirá todos los metadatos técnicos y de seguridad.
                 </p>

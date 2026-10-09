@@ -3,6 +3,8 @@ import { Employee } from "../../../types/index";
 import { useToasts } from "../../../hooks/useToasts";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Select from "../../../components/ui/Select";
+import Switch from "../../../components/ui/Switch";
 import { isValidChileanRut } from "../../../utils/validation";
 
 type EditableEmployeeData = Partial<
@@ -161,7 +163,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               <div className="w-1.5 h-1.5 rounded-full bg-sap-blue" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sap-blue">
                 ID ASIGNADO:{" "}
-                <span className="text-gray-900 dark:text-white ml-1 font-mono">
+                <span className="text-token-text-primary ml-1 font-mono">
                   #{nextEmployeeId || "..."}
                 </span>
               </span>
@@ -170,8 +172,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative group/field">
-            <label className="block text-[10px] font-black text-slate-700 dark:text-gray-300 uppercase tracking-[0.2em] mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] ml-1">
               NOMBRE COMPLETO
             </label>
             <Input
@@ -181,11 +183,11 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               onChange={(e) => setEmployeeData((prev) => ({ ...prev, name: e.target.value }))}
               required
               placeholder="Ej: Juan Pérez"
-              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! font-bold uppercase text-xs tracking-wide"
             />
           </div>
-          <div className="relative group/field">
-            <label className="block text-[10px] font-black text-slate-700 dark:text-gray-300 uppercase tracking-[0.2em] mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] ml-1">
               RUT
             </label>
             <Input
@@ -197,14 +199,14 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               placeholder="Ej: 12345678-9"
               maxLength={10}
               error={rutError}
-              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-mono font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! font-mono font-bold uppercase text-xs tracking-wide"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative group/field">
-            <label className="block text-[10px] font-black text-slate-700 dark:text-gray-300 uppercase tracking-[0.2em] mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] ml-1">
               CARGO OPERATIVO
             </label>
             <Input
@@ -219,35 +221,25 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               }
               required
               placeholder="Ej: Desarrollador Frontend"
-              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! font-bold uppercase text-xs tracking-wide"
             />
           </div>
-          <div className="relative group/field">
-            <label className="block text-[10px] font-black text-slate-700 dark:text-gray-300 uppercase tracking-[0.2em] mb-1.5">
-              ÁREA / DEPARTAMENTO
-            </label>
-            <select
-              id="employeeArea"
-              value={employeeData.area || ""}
-              onChange={(e) => setEmployeeData((prev) => ({ ...prev, area: e.target.value }))}
-              required
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md appearance-none focus:ring-2 focus:ring-sap-blue/20 focus:border-sap-blue outline-none transition-all font-bold uppercase text-xs tracking-wide text-gray-900 dark:text-gray-200 shadow-sm cursor-pointer"
-            >
-              <option value="" disabled>
-                -- Seleccione un Área --
-              </option>
-              {dropdownAreaOptions.map((area) => (
-                <option key={area} value={area}>
-                  {area}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="ÁREA / DEPARTAMENTO"
+            id="employeeArea"
+            value={employeeData.area || ""}
+            onChange={(e) => setEmployeeData((prev) => ({ ...prev, area: e.target.value }))}
+            required
+            options={[
+              { value: "", label: "-- Seleccione un Área --", disabled: true },
+              ...dropdownAreaOptions.map((area) => ({ value: area, label: area })),
+            ]}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative group/field">
-            <label className="block text-[10px] font-black text-slate-700 dark:text-gray-300 uppercase tracking-[0.2em] mb-1.5">
+          <div className="space-y-1.5">
+            <label className="block text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] ml-1">
               CORREO ELECTRÓNICO
             </label>
             <Input
@@ -257,65 +249,46 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               onChange={handleEmailChange}
               placeholder="ejemplo@dominio.com"
               error={emailError}
-              className="mb-0! bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-md py-3 font-bold uppercase text-xs tracking-wide focus:border-sap-blue transition-colors"
+              className="mb-0! font-bold uppercase text-xs tracking-wide"
             />
           </div>
-          <div className="relative group/field">
-            <label className="block text-[10px] font-black text-slate-700 dark:text-gray-300 uppercase tracking-[0.2em] mb-1.5">
-              TIPO DE JORNADA
-            </label>
-            <select
-              id="employeeWorkdayType"
-              value={employeeData.workdayType || ""}
-              onChange={(e) =>
-                setEmployeeData((prev) => ({
-                  ...prev,
-                  workdayType: e.target.value,
-                }))
-              }
-              required
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md appearance-none focus:ring-2 focus:ring-sap-blue/20 focus:border-sap-blue outline-none transition-all font-bold uppercase text-xs tracking-wide text-gray-900 dark:text-gray-200 shadow-sm cursor-pointer"
-            >
-              <option value="" disabled>
-                -- Seleccione Tipo Jornada --
-              </option>
-              {dropdownWorkdayTypeOptions.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="TIPO DE JORNADA"
+            id="employeeWorkdayType"
+            value={employeeData.workdayType || ""}
+            onChange={(e) =>
+              setEmployeeData((prev) => ({
+                ...prev,
+                workdayType: e.target.value,
+              }))
+            }
+            required
+            options={[
+              { value: "", label: "-- Seleccione Tipo Jornada --", disabled: true },
+              ...dropdownWorkdayTypeOptions.map((type) => ({ value: type, label: type })),
+            ]}
+          />
         </div>
 
         {(!isEditing || (isEditing && !hasLinkedUser)) && (
-          <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 group/toggle">
+          <div className="flex items-center p-4 bg-token-surface-stripe rounded-md border border-token-border-technical group/toggle">
             <label className="relative flex items-center cursor-pointer group w-full">
-              <input
-                type="checkbox"
-                checked={employeeData.createUserAccount}
-                onChange={(e) =>
+              <Switch
+                checked={!!employeeData.createUserAccount}
+                onChange={(checked) =>
                   setEmployeeData((prev) => ({
                     ...prev,
-                    createUserAccount: e.target.checked,
+                    createUserAccount: checked,
                   }))
                 }
-                className="sr-only"
               />
-              <div
-                className={`w-10 h-6 rounded-full p-1 transition-all duration-300 ${employeeData.createUserAccount ? "bg-sap-blue" : "bg-gray-300 dark:bg-gray-700"}`}
-              >
-                <div
-                  className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 transform ${employeeData.createUserAccount ? "translate-x-4" : ""}`}
-                ></div>
-              </div>
               <div className="ml-4 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300 transition-colors group-hover:text-sap-blue">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-primary transition-colors group-hover:text-sap-blue">
                   {isEditing
                     ? "Generar Cuenta de Acceso Asociada"
                     : "Crear Cuenta Electrónica para este Empleado"}
                 </p>
-                <p className="text-[9px] text-gray-500 font-medium tracking-wide mt-0.5">
+                <p className="text-[9px] text-token-text-tertiary font-medium tracking-wide mt-0.5">
                   Habilita el acceso al portal de autoservicio y marcación digital
                 </p>
               </div>
@@ -323,19 +296,19 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-black/5 dark:border-white/5 mt-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-token-border-subtle mt-4">
           <Button
             type="button"
             variant="secondary"
             onClick={onCancel}
-            className="px-6 py-2.5 rounded-md font-black text-[10px] uppercase tracking-widest bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-black/5 dark:border-white/5 shadow-sm transition-all"
+            className="px-6 py-2.5 text-[10px] uppercase tracking-widest"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             variant="primary"
-            className="px-8 py-2.5 rounded-md font-black text-[10px] uppercase tracking-widest bg-sap-blue hover:bg-sap-blue/90 border-none shadow-md transition-all"
+            className="px-8 py-2.5 text-[10px] uppercase tracking-widest"
           >
             {isEditing ? "Actualizar Perfil" : "Registrar Alta"}
           </Button>

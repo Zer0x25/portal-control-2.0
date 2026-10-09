@@ -97,7 +97,7 @@ const AmbientReminderManager: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: -100, rotate: 5 }}
             transition={{ type: "spring", damping: 15, stiffness: 200 }}
-            className={`pointer-events-auto max-w-sm w-full p-6 shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] border-b-4 ${NOTE_COLORS[currentColor]} rounded-4xl overflow-hidden relative`}
+            className={`pointer-events-auto max-w-sm w-full p-6 shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] border-b-4 ${NOTE_COLORS[currentColor]} rounded-2xl overflow-hidden relative`}
           >
             {/* Sticky Note Pin/Visual */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-1 bg-black/10 dark:bg-white/10 rounded-full" />

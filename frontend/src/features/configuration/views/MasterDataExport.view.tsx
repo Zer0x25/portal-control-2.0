@@ -1,5 +1,10 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for Master Data Export feature.
+*/
+
 import React from "react";
 import Card from "../../../components/ui/Card";
+import Container from "../../../components/ui/Container";
 import {
   DocumentArrowDownIcon,
   CodeBracketSquareIcon,
@@ -41,7 +46,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
   handleExport,
 }) => {
   return (
-    <div className="space-y-6">
+    <Container variant="standard" noPadding data-ui-protected className="space-y-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[11px] font-bold text-token-text-primary uppercase tracking-[0.2em] flex items-center gap-2">
           <DocumentArrowDownIcon className="w-4 h-4 text-(--sidebar-text-active)" />
@@ -75,16 +80,17 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                     Fecha de Inicio
                   </label>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="none"
                   onClick={() => setIsStartDatePickerOpen(true)}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center text-sm"
+                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
                 >
                   <span className="font-medium text-token-text-primary">
                     {startDate ? formatBusinessDate(startDate) : "Seleccionar"}
                   </span>
                   <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
-                </button>
+                </Button>
                 <DatePickerDialog
                   isOpen={isStartDatePickerOpen}
                   onClose={() => setIsStartDatePickerOpen(false)}
@@ -106,16 +112,17 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                     Fecha de Término
                   </label>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="none"
                   onClick={() => setIsEndDatePickerOpen(true)}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center text-sm"
+                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
                 >
                   <span className="font-medium text-token-text-primary">
                     {endDate ? formatBusinessDate(endDate) : "Seleccionar"}
                   </span>
                   <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
-                </button>
+                </Button>
                 <DatePickerDialog
                   isOpen={isEndDatePickerOpen}
                   onClose={() => setIsEndDatePickerOpen(false)}
@@ -191,6 +198,6 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
           </Card>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };

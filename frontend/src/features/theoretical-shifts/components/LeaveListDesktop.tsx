@@ -175,10 +175,10 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
                         size="xs"
                         variant="secondary"
                         onClick={() => onEdit(leave)}
-                        className="p-1.5 rounded-lg border-white/20"
+                        className="p-1.5 rounded-lg border-token-border-subtle"
                         title="Editar"
                       >
-                        <EditIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <EditIcon className="w-4 h-4 text-token-accent-brand" />
                       </Button>
                     )}
                     {isDeletable && (
@@ -200,7 +200,7 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
         )}
       </div>
       {isFetchingNextPage && !isLoading && (
-        <div className="p-4 text-center text-sm text-gray-500 bg-white/50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
+        <div className="p-4 text-center text-sm text-token-text-secondary bg-token-surface-card/50 border-t border-token-border-subtle">
           Cargando más registros...
         </div>
       )}

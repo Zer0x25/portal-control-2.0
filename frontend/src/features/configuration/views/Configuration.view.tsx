@@ -9,6 +9,7 @@ import {
   ActivityIcon,
 } from "../../../components/ui/icons/index";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
+import Container from "../../../components/ui/Container";
 
 const GlobalVariablesView = React.lazy(() => import("../components/GlobalVariablesView"));
 const EmailCenterView = React.lazy(() => import("../components/EmailCenterView"));
@@ -39,7 +40,12 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
   handleTabChange,
 }) => {
   return (
-    <div className="space-y-6 animate-in fade-in duration-500" data-ui-protected>
+    <Container
+      variant="standard"
+      noPadding
+      data-ui-protected
+      className="space-y-6 animate-in fade-in duration-500"
+    >
       <PageHeader
         eyebrow="Sistema de Operaciones"
         eyebrowIcon={<ActivityIcon className="w-3.5 h-3.5" />}
@@ -96,6 +102,6 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
           </AnimatePresence>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };

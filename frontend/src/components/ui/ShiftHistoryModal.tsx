@@ -103,7 +103,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
       case "SHIFT_ASSIGNMENT_DELETE":
         return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+        return "bg-token-surface-stripe text-token-text-secondary border-token-border-subtle";
     }
   };
 
@@ -130,10 +130,10 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
         <div className="flex items-center gap-4">
           <IconBox icon={<ClockIcon />} variant="primary" size="md" />
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-black text-gray-950 dark:text-white uppercase italic leading-none truncate">
+            <h3 className="text-sm font-black text-token-text-primary uppercase italic leading-none truncate">
               {employeeName}
             </h3>
-            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1.5 italic leading-none">
+            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
               Historial de Cambios de Turno
             </p>
           </div>
@@ -145,7 +145,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="w-10 h-10 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin"></div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-token-text-tertiary">
               Recuperando secuencia histórica...
             </p>
           </div>
@@ -176,7 +176,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
             {historyEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="group p-5 rounded-2xl bg-white dark:bg-white/3 border border-gray-100 dark:border-white/5 hover:border-sap-blue/20 transition-all flex items-start gap-4 shadow-sm"
+                className="group p-5 rounded-2xl bg-token-surface-card border border-token-border-subtle hover:border-sap-blue/20 transition-all flex items-start gap-4 shadow-sm"
               >
                 <IndustrialIndicator height="h-full" color="bg-sap-blue/20" className="mt-1" />
                 <div className="flex-1 min-w-0">
@@ -186,7 +186,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                     >
                       {getActionLabel(entry.action)}
                     </span>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter font-mono">
+                    <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-tighter font-mono">
                       {formatTimestamp(entry.timestamp)}
                     </span>
                   </div>
@@ -195,29 +195,27 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                     <div className="w-5 h-5 rounded-full bg-sap-blue/10 flex items-center justify-center">
                       <UserIcon className="w-3 h-3 text-sap-blue" />
                     </div>
-                    <p className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                    <p className="text-[11px] font-black text-token-text-secondary uppercase tracking-widest">
                       Actor:{" "}
-                      <span className="text-gray-900 dark:text-white italic">
-                        {entry.actorUsername}
-                      </span>
+                      <span className="text-token-text-primary italic">{entry.actorUsername}</span>
                     </p>
                   </div>
 
                   {entry.action === "SHIFT_ASSIGNMENT_UPDATE" && entry.details && (
-                    <div className="flex items-center gap-3 bg-white/40 dark:bg-black/20 p-3 rounded-2xl border border-white/10">
+                    <div className="flex items-center gap-3 bg-token-surface-stripe p-3 rounded-2xl border border-token-border-subtle">
                       <div className="flex-1 text-center">
                         <p className="text-[9px] font-black text-rose-500/60 uppercase mb-1 tracking-widest">
                           Anterior
                         </p>
-                        <p className="text-xs font-black text-gray-800 dark:text-gray-200 truncate">
+                        <p className="text-xs font-black text-token-text-primary truncate">
                           {entry.details.previousPatternName || "N/A"}
                         </p>
-                        <p className="text-[9px] font-bold text-gray-400 font-mono">
+                        <p className="text-[9px] font-bold text-token-text-tertiary font-mono">
                           {formatDate(entry.details.previousStartDate)} -{" "}
                           {formatDate(entry.details.previousEndDate)}
                         </p>
                       </div>
-                      <ChevronRightIcon className="w-5 h-5 text-gray-400 shrink-0" />
+                      <ChevronRightIcon className="w-5 h-5 text-token-text-tertiary shrink-0" />
                       <div className="flex-1 text-center">
                         <p className="text-[9px] font-black text-emerald-500/60 uppercase mb-1 tracking-widest">
                           Nuevo
@@ -225,7 +223,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                         <p className="text-xs font-black text-sap-blue truncate uppercase italic">
                           {entry.details.newPatternName || "N/A"}
                         </p>
-                        <p className="text-[9px] font-bold text-gray-400 font-mono">
+                        <p className="text-[9px] font-bold text-token-text-tertiary font-mono">
                           {formatDate(entry.details.newStartDate)} -{" "}
                           {formatDate(entry.details.newEndDate)}
                         </p>
@@ -246,7 +244,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                             ? entry.details.newPatternName
                             : entry.details.previousPatternName}
                         </p>
-                        <p className="text-[10px] font-bold text-gray-500 font-mono mt-1">
+                        <p className="text-[10px] font-bold text-token-text-secondary font-mono mt-1">
                           Periodo:{" "}
                           {entry.action === "SHIFT_ASSIGNMENT_CREATE"
                             ? `${formatDate(entry.details.newStartDate)} - ${formatDate(entry.details.newEndDate)}`
@@ -261,7 +259,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
         )}
       </div>
 
-      <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-white/5">
+      <div className="flex justify-end pt-4 border-t border-token-border-subtle">
         <Button
           onClick={onClose}
           variant="secondary"

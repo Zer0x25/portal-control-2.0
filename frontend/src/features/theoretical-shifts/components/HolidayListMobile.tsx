@@ -80,16 +80,14 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
               }}
             >
               <div
-                className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-sm border-l-4 p-4 mb-3 transition-all active:scale-[0.98] 
-                  ${isArchived ? "opacity-60 grayscale border-l-gray-300 dark:border-l-gray-600" : "border-l-orange-500"}`}
+                className={`relative bg-token-surface-card rounded-xl shadow-sm border-l-4 p-4 mb-3 transition-all active:scale-[0.98] 
+                  ${isArchived ? "opacity-60 grayscale border-l-token-border-subtle" : "border-l-orange-500"}`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
-                      {h.name}
-                    </h3>
+                    <h3 className="text-sm font-bold text-token-text-primary truncate">{h.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
                         {h.type}
                       </span>
                     </div>
@@ -100,7 +98,7 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
                       size="xs"
                       variant="ghost"
                       onClick={() => onEdit(h)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      className="p-1.5 text-token-text-secondary hover:text-token-accent-brand hover:bg-token-surface-hover rounded-lg transition-colors"
                       disabled={isArchived && !showArchived}
                     >
                       <EditIcon className="w-5 h-5" />
@@ -109,7 +107,7 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
                       size="xs"
                       variant="ghost"
                       onClick={() => onDelete(h)}
-                      className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      className="p-1.5 text-token-text-secondary hover:text-token-status-error hover:bg-red-500/10 rounded-lg transition-colors"
                       disabled={isArchived && !showArchived}
                     >
                       <DeleteIcon className="w-5 h-5" />
@@ -117,11 +115,11 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-2 pl-1 border-t border-gray-100 dark:border-gray-700/50 pt-2 flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                <div className="mt-2 pl-1 border-t border-token-border-subtle pt-2 flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest">
                     Fecha
                   </span>
-                  <span className="text-xs font-mono font-medium text-gray-600 dark:text-gray-300">
+                  <span className="text-xs font-mono font-medium text-token-text-secondary">
                     {new Date(h.date).toLocaleDateString("es-CL", { timeZone: "UTC" })}
                   </span>
                 </div>
@@ -131,7 +129,9 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
         })}
       </div>
       {isFetchingNextPage && (
-        <div className="py-3 text-center text-xs text-gray-500">Cargando más feriados...</div>
+        <div className="py-3 text-center text-xs text-token-text-secondary">
+          Cargando más feriados...
+        </div>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import React from "react";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
 const ShiftHistoryModal = React.lazy(() => import("../../../components/ui/ShiftHistoryModal"));
 import CinematicModal from "../../../components/ui/CinematicModal";
@@ -173,7 +174,12 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500" data-ui-protected>
+    <Container
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 animate-in fade-in duration-500"
+    >
       {!isEmbedded && (
         <PageHeader
           eyebrow="Personal"
@@ -418,6 +424,6 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
           />
         </React.Suspense>
       )}
-    </div>
+    </Container>
   );
 };

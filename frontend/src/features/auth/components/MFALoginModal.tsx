@@ -52,7 +52,7 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-3xl p-8 shadow-2xl relative z-10"
+            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative z-10"
           >
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
@@ -71,10 +71,10 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
+              <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
                 Verificación de Identidad
               </h2>
-              <p className="text-gray-400 text-sm mt-2">
+              <p className="text-token-text-secondary text-sm mt-2">
                 Ingrese el código de 6 dígitos generado por su aplicación de autenticación.
               </p>
             </div>
@@ -96,7 +96,7 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
                   type="button"
                   onClick={onCancel}
                   variant="secondary"
-                  className="h-12 rounded-xl border-white/5 hover:bg-white/5 text-gray-400 font-bold uppercase tracking-widest text-[10px]"
+                  className="h-12 rounded-xl text-token-text-secondary font-bold uppercase tracking-widest text-[10px]"
                 >
                   Cancelar
                 </Button>

@@ -4,6 +4,7 @@ import { CloseIcon, UserIcon, InformationCircleIcon, ShieldIcon, ActivityIcon } 
 import { useRecordHistory } from "../../hooks/queries/useRecordHistory";
 import { formatLogTimestamp } from "../../utils/formatters";
 import LoadingSpinner from "./LoadingSpinner";
+import Button from "./Button";
 
 interface RecordHistoryModalProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         />
 
         <motion.div
@@ -50,21 +51,22 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
           className="relative w-full max-w-2xl bg-token-surface-card rounded-xl shadow-2xl overflow-hidden border border-token-border-technical flex flex-col max-h-[80vh]"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-gray-950">
+          <div className="px-6 py-4 border-b border-token-border-subtle flex items-center justify-between bg-token-surface-card">
             <div>
-              <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+              <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tighter">
                 Historial de Cambios
               </h3>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <p className="text-[10px] font-bold text-token-text-secondary uppercase tracking-widest">
                 {employeeName} • {date}
               </p>
             </div>
-            <button
+            <Button
+              variant="none"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              className="p-2 hover:bg-token-surface-hover rounded-full transition-colors shadow-none"
             >
-              <CloseIcon className="w-5 h-5 text-gray-500" />
-            </button>
+              <CloseIcon className="w-5 h-5 text-token-text-tertiary" />
+            </Button>
           </div>
 
           {/* Content */}
@@ -72,14 +74,14 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
             {isLoading ? (
               <div className="py-20 flex flex-col items-center justify-center">
                 <LoadingSpinner />
-                <p className="mt-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
+                <p className="mt-4 text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.3em]">
                   Consultando registros...
                 </p>
               </div>
             ) : !logs || logs.length === 0 ? (
               <div className="py-20 text-center">
-                <InformationCircleIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-sm text-gray-500 font-medium">
+                <InformationCircleIcon className="w-12 h-12 text-token-text-tertiary/40 mx-auto mb-4" />
+                <p className="text-sm text-token-text-secondary font-medium">
                   No hay registros de auditoría para este marcaje.
                 </p>
               </div>
@@ -89,31 +91,31 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
                   <div key={log.id} className="relative flex gap-4">
                     {/* Timeline Connector */}
                     {index !== logs.length - 1 && (
-                      <div className="absolute left-[19px] top-10 bottom-[-32px] w-px bg-gray-200 dark:bg-gray-800" />
+                      <div className="absolute left-[19px] top-10 bottom-[-32px] w-px bg-token-border-subtle" />
                     )}
 
                     <div className="shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center">
-                        <ActivityIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-10 h-10 rounded-full bg-token-accent-brand/10 border border-token-accent-brand/20 flex items-center justify-center">
+                        <ActivityIcon className="w-5 h-5 text-token-accent-brand" />
                       </div>
                     </div>
 
                     <div className="flex-1 pt-1">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase">
+                          <span className="text-[10px] font-black text-token-text-primary uppercase">
                             {getActionLabel(log.action)}
                           </span>
-                          <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-500 border border-gray-200 dark:border-gray-700">
+                          <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-token-surface-technical text-token-text-secondary border border-token-border-subtle">
                             {log.category}
                           </span>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-400 font-mono">
+                        <span className="text-[10px] font-bold text-token-text-tertiary font-mono">
                           {formatLogTimestamp(log.timestamp)}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 mb-3 text-[10px] text-gray-500">
+                      <div className="flex items-center gap-4 mb-3 text-[10px] text-token-text-secondary">
                         <div className="flex items-center gap-1">
                           <UserIcon className="w-3 h-3" />
                           <span className="font-bold uppercase tracking-tight">
@@ -159,8 +161,8 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
 
                       {/* Simple Detail View */}
                       {(!log.details?.oldValue || !log.details?.newValue) && log.details && (
-                        <div className="mt-2 p-3 rounded bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                          <pre className="text-[10px] text-gray-600 dark:text-gray-400 font-mono whitespace-pre-wrap">
+                        <div className="mt-2 p-3 rounded bg-token-surface-stripe border border-token-border-subtle">
+                          <pre className="text-[10px] text-token-text-secondary font-mono whitespace-pre-wrap">
                             {typeof log.details === "string"
                               ? log.details
                               : JSON.stringify(log.details, null, 2)}
@@ -175,13 +177,14 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 flex justify-end">
-            <button
+          <div className="px-6 py-4 bg-token-surface-stripe border-t border-token-border-subtle flex justify-end">
+            <Button
+              variant="primary"
               onClick={onClose}
-              className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-md text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
+              className="px-6 py-2 text-[10px] font-black uppercase tracking-widest"
             >
               Cerrar
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

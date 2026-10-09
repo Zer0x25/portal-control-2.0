@@ -112,4 +112,12 @@ describe("UserManagementView", () => {
     render(<UserManagementView {...baseProps} isEmbedded={true} />);
     expect(screen.queryByText("Gestión de Accesos")).not.toBeInTheDocument();
   });
+
+  it("renders within canonical wide Container with data-ui-protected", () => {
+    render(<UserManagementView {...baseProps} />);
+    const container = screen.getByTestId("page-container");
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveAttribute("data-ui-protected");
+  });
 });

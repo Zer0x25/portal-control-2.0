@@ -75,18 +75,20 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-3xl p-8 shadow-2xl relative z-10"
+            className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative z-10"
           >
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
+              <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
                 Configurar MFA
               </h2>
-              <p className="text-gray-400 text-sm mt-2">Seguridad de Dos Pasos (TOTP)</p>
+              <p className="text-token-text-secondary text-sm mt-2">
+                Seguridad de Dos Pasos (TOTP)
+              </p>
             </div>
 
             {step === "initial" && (
               <div className="space-y-6 text-center">
-                <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 text-gray-300 text-sm leading-relaxed">
+                <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 text-token-text-secondary text-sm leading-relaxed">
                   MFA añade una capa adicional de seguridad. Necesitará una aplicación como Google
                   Authenticator o Authy.
                 </div>
@@ -106,7 +108,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
                   <img src={mfaData.qrCode} alt="QR Code" className="w-48 h-48" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+                  <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest">
                     O use el código manual:
                   </p>
                   <code className="block p-3 bg-white/5 rounded-xl text-indigo-400 font-mono text-lg tracking-widest">
@@ -125,7 +127,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
             {step === "verifying" && (
               <form onSubmit={handleVerify} className="space-y-6">
                 <div className="text-center">
-                  <p className="text-gray-400 text-sm mb-6">
+                  <p className="text-token-text-secondary text-sm mb-6">
                     Ingrese el código de 6 dígitos para confirmar la vinculación.
                   </p>
                   <Input
@@ -142,7 +144,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
                     type="button"
                     onClick={() => setStep("scanning")}
                     variant="secondary"
-                    className="h-12 rounded-xl border-white/5 text-gray-400 font-bold uppercase tracking-widest text-[10px]"
+                    className="h-12 rounded-xl text-token-text-secondary font-bold uppercase tracking-widest text-[10px]"
                   >
                     Volver al QR
                   </Button>

@@ -57,16 +57,16 @@ export const useQuickActionModalController = ({
     if (!record) {
       return {
         label: "Desconocido",
-        bg: "bg-gray-100 dark:bg-gray-700",
-        text: "text-gray-800 dark:text-gray-300",
+        bg: "bg-token-surface-stripe border border-token-border-subtle",
+        text: "text-token-text-secondary",
       };
     }
 
     return (
       TIME_RECORD_STATUS_CONFIG[record.status] || {
         label: record.status || "Desconocido",
-        bg: "bg-gray-100 dark:bg-gray-700",
-        text: "text-gray-800 dark:text-gray-300",
+        bg: "bg-token-surface-stripe border border-token-border-subtle",
+        text: "text-token-text-secondary",
       }
     );
   }, [record]);

@@ -43,10 +43,14 @@ const SidebarView: React.FC<SidebarViewProps> = ({
       )}
 
       <aside
+        id="app-sidebar"
+        role="complementary"
+        aria-label="Barra de navegación lateral"
+        data-testid="app-sidebar"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         className={`
-          fixed top-16 left-0 h-[calc(100vh-4rem)] z-58 flex flex-col
+          fixed top-16 left-0 h-[calc(100dvh-4rem)] z-58 flex flex-col
           bg-token-surface-sidebar
           border-r border-token-border-technical
           transition-all duration-200 ease-out
@@ -55,7 +59,12 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           ${isExpanded ? "lg:w-72" : "lg:w-20"}
         `}
       >
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pt-6">
+        <nav
+          role="navigation"
+          aria-label="Menú principal"
+          data-testid="main-navigation"
+          className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pt-6"
+        >
           <ul className="flex flex-col gap-1">
             {menuItems.map((item) => (
               <SidebarNavItem
@@ -70,6 +79,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
 
         <div className="p-3 pb-6 space-y-2 border-t border-token-border-technical">
           <button
+            data-testid="theme-toggle-button"
             onClick={onToggleTheme}
             className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-all"
           >
@@ -90,6 +100,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           </button>
 
           <button
+            data-testid="about-modal-button"
             onClick={onOpenAbout}
             className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-all"
           >

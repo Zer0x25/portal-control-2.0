@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
   PlusCircleIcon,
@@ -238,7 +239,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500" data-ui-protected>
+    <Container
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 animate-in fade-in duration-500"
+    >
       {!isEmbedded && (
         <PageHeader
           eyebrow="Seguridad"
@@ -338,6 +344,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
         message="¿Restablecer PIN a valores por defecto?"
         confirmVariant="danger"
       />
-    </div>
+    </Container>
   );
 };

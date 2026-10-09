@@ -1,4 +1,9 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for SecurityInsights.
+*/
+
 import React from "react";
+import Container from "../../../components/ui/Container";
 import {
   ShieldIcon,
   ExclamationTriangleIcon,
@@ -34,7 +39,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
 }) => {
   if (loading && !stats) {
     return (
-      <div className="p-8 text-center text-gray-500 font-bold uppercase text-[11px] tracking-widest animate-pulse">
+      <div className="p-8 text-center text-token-text-tertiary font-bold uppercase text-[11px] tracking-widest animate-pulse">
         Cargando inteligencia de seguridad...
       </div>
     );
@@ -43,7 +48,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
   if (!stats) return null;
 
   return (
-    <div className="space-y-6">
+    <Container variant="standard" noPadding data-ui-protected className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
@@ -229,6 +234,6 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
           </table>
         </div>
       </Card>
-    </div>
+    </Container>
   );
 };

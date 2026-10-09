@@ -25,10 +25,10 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   };
 
   const headerBaseClasses =
-    "flex justify-between items-center w-full p-4 text-lg font-semibold text-left text-sap-blue dark:text-sap-light-blue bg-white dark:bg-gray-800 shadow-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sap-blue dark:focus-visible:ring-sap-light-blue";
-  const headerOpenClasses = "rounded-t-lg border-b border-sap-border dark:border-gray-600";
+    "flex justify-between items-center w-full p-4 text-lg font-semibold text-left text-sap-blue dark:text-sap-light-blue bg-token-surface-card shadow-md cursor-pointer hover:bg-token-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-sap-blue";
+  const headerOpenClasses = "rounded-t-lg border-b border-token-border-technical";
   const headerClosedClasses = "rounded-lg";
-  const contentClasses = "bg-white dark:bg-gray-800 shadow-md rounded-b-lg overflow-hidden";
+  const contentClasses = "bg-token-surface-card shadow-md rounded-b-lg overflow-hidden";
 
   return (
     <div>

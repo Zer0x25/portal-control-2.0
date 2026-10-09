@@ -6,6 +6,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
+import Container from "../../../components/ui/Container";
 import { ShieldIcon, ActivityIcon } from "../../../components/ui/icons";
 
 export interface SupervisorDashboardViewProps {
@@ -27,7 +28,12 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
   renderContent,
 }) => {
   return (
-    <div data-ui-protected className="supervisor-dashboard-ui-protected space-y-6">
+    <Container
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="supervisor-dashboard-ui-protected space-y-6"
+    >
       <AnimatePresence mode="wait">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -90,7 +96,7 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
           {renderContent()}
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 

@@ -269,9 +269,9 @@ export const DeveloperPanel: React.FC = () => {
               className={`animate-spin rounded-full h-16 w-16 border-b-4 ${resetError ? "border-red-500" : "border-purple-500"} mx-auto mb-6`}
             />
             <h2 className="text-white text-2xl font-bold mb-2">Reseteando Sistema</h2>
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 text-left max-h-60 overflow-y-auto font-mono text-xs space-y-2 mb-6">
+            <div className="bg-token-surface-stripe rounded-lg border border-token-border-technical p-4 text-left max-h-60 overflow-y-auto font-mono text-xs space-y-2 mb-6">
               {resetProgress.map((step, i) => (
-                <div key={i} className="text-gray-300">
+                <div key={i} className="text-token-text-secondary">
                   {step}
                 </div>
               ))}
@@ -291,7 +291,7 @@ export const DeveloperPanel: React.FC = () => {
       )}
       <div className="relative z-50">
         {isDevPanelOpen && (
-          <div className="absolute bottom-full right-0 mb-4 w-80 bg-gray-900/80 backdrop-blur-2xl text-white rounded-4xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/10 overflow-hidden">
+          <div className="absolute bottom-full right-0 mb-4 w-80 bg-token-surface-card/90 backdrop-blur-2xl text-token-text-primary rounded-2xl shadow-2xl border border-token-border-technical overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 bg-white/5">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center">
                 <CodeBracketSquareIcon className="w-4 h-4 mr-2 text-purple-400" /> Dev Panel
@@ -346,13 +346,14 @@ export const DeveloperPanel: React.FC = () => {
             </div>
           </div>
         )}
-        <button
+        <Button
+          variant="none"
           onClick={() => setIsDevPanelOpen((prev) => !prev)}
-          className="bg-gray-900/80 backdrop-blur-xl text-purple-400 p-4 rounded-full shadow-2xl border border-white/10 transition-all hover:bg-gray-800"
+          className="bg-token-surface-card/90 backdrop-blur-xl text-purple-400 p-4 rounded-full shadow-2xl border border-token-border-technical transition-all hover:bg-token-surface-hover"
           title="Panel de Desarrollador"
         >
           <CodeBracketSquareIcon className="w-7 h-7" />
-        </button>
+        </Button>
       </div>
 
       <SeedingOptionsModal

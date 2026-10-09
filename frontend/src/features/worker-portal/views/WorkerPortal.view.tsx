@@ -18,6 +18,7 @@ import PageHeader from "../../../components/ui/PageHeader";
 import LiveStatus from "../../../components/ui/LiveStatus";
 import ServerClock from "../../../components/ui/ServerClock";
 import IconBox from "../../../components/ui/IconBox";
+import Container from "../../../components/ui/Container";
 import {
   DocumentArrowDownIcon,
   CalendarDaysIcon,
@@ -176,7 +177,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
   }
 
   return (
-    <div data-ui-protected className="space-y-8 pb-10">
+    <Container variant="standard" noPadding data-ui-protected className="space-y-8 pb-10">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -205,12 +206,12 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <div className="absolute inset-0 bg-sap-blue/20 rounded-4xl blur-2xl group-hover:bg-sap-blue/40 transition-all scale-125" />
+              <div className="absolute inset-0 bg-sap-blue/20 rounded-2xl blur-2xl group-hover:bg-sap-blue/40 transition-all scale-125" />
               <IconBox
                 icon={<UserIcon />}
                 variant="primary"
                 size="lg"
-                className="relative rounded-4xl border-2 border-white/10 w-20 h-20"
+                className="relative rounded-2xl border-2 border-white/10 w-20 h-20"
               />
             </div>
             <div>
@@ -263,7 +264,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   key={item.id}
                   onClick={item.action}
                   disabled={isDisabled}
-                  className={`h-24 rounded-4xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
+                  className={`h-24 rounded-2xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
                 >
                   <div className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10">
                     {item.label}
@@ -315,7 +316,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </select>
             <button
               onClick={() => handleExportPDF && handleExportPDF()}
-              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
+              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               Descargar PDF
@@ -330,7 +331,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 enrichedRecords.map((record) => (
                   <div
                     key={record.id}
-                    className={`p-6 rounded-4xl border backdrop-blur-xl bg-token-surface-card border-token-border-subtle shadow-sm group`}
+                    className={`p-6 rounded-2xl border backdrop-blur-xl bg-token-surface-card border-token-border-subtle shadow-sm group`}
                   >
                     <div className="flex justify-between items-start mb-6">
                       <div>
@@ -492,7 +493,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           field={modalState.field}
         />
       )}
-    </div>
+    </Container>
   );
 };
 

@@ -1,5 +1,10 @@
+/* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
+   Presentational layer for HolidayManager.
+*/
+
 import React from "react";
 import Button from "../../../components/ui/Button";
+import Container from "../../../components/ui/Container";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
   PlusCircleIcon,
@@ -7,6 +12,7 @@ import {
   CalendarDaysIcon,
 } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
+import EmptyState from "../../../components/ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import HolidayListDesktop from "../components/HolidayListDesktop";
 import HolidayListMobile from "../components/HolidayListMobile";
@@ -61,7 +67,13 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
   handleConfirmDeleteHoliday,
 }) => {
   return (
-    <div id="holiday-manager-section" className="space-y-6 h-full flex flex-col">
+    <Container
+      id="holiday-manager-section"
+      variant="wide"
+      noPadding
+      data-ui-protected
+      className="space-y-6 h-full flex flex-col"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Gestión de Feriados</h2>
@@ -142,15 +154,12 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
 
       <div className="flex-1 min-h-[400px]">
         {holidays.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-            <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-full mb-4 opacity-50 grayscale">
-              🚩
-            </div>
-            <p className="text-xl font-bold">Sin feriados configurados.</p>
-            <p className="text-sm">
-              Carga los feriados nacionales del año para automatizar cálculos.
-            </p>
-          </div>
+          <EmptyState
+            title="Sin feriados configurados"
+            description="Carga los feriados nacionales del año para automatizar cálculos."
+            icon={<span className="text-2xl">🚩</span>}
+            className="my-12"
+          />
         ) : (
           <ResponsiveView
             mobile={
@@ -193,6 +202,6 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
           />
         )}
       </AnimatePresence>
-    </div>
+    </Container>
   );
 };

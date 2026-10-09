@@ -47,19 +47,19 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-          <div className="text-center max-w-lg p-8 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-red-200 dark:border-red-800">
-            <ExclamationTriangleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              Oops! Algo salió mal.
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-center min-h-screen bg-token-surface-app p-4">
+          <div className="text-center max-w-lg p-8 bg-token-surface-card rounded-lg shadow-2xl border border-token-status-error/30">
+            <ExclamationTriangleIcon className="w-16 h-16 text-token-status-error mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-token-text-primary">Oops! Algo salió mal.</h1>
+            <p className="mt-2 text-token-text-secondary">
               La aplicación encontró un error inesperado. Nuestro equipo técnico ha sido notificado.
             </p>
-            <div className="mt-4 text-xs text-gray-500 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 p-2 rounded">
+            <div className="mt-4 text-xs text-token-text-secondary bg-token-surface-technical/50 border border-token-border-subtle p-2 rounded">
               <details>
-                <summary>Detalles del error (para soporte técnico)</summary>
-                <pre className="mt-2 text-left whitespace-pre-wrap">
+                <summary className="cursor-pointer font-semibold">
+                  Detalles del error (para soporte técnico)
+                </summary>
+                <pre className="mt-2 text-left whitespace-pre-wrap font-mono">
                   {this.state.error?.toString()}
                 </pre>
               </details>

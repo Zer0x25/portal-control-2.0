@@ -30,9 +30,9 @@ export const SupervisorCard: React.FC<SupervisorCardProps> = ({
   size = "md",
 }) => {
   const variantClasses = {
-    default: "bg-white border border-gray-200 shadow-sm",
-    elevated: "bg-white border border-gray-200 shadow-lg",
-    outlined: "bg-transparent border-2 border-gray-300",
+    default: "bg-token-surface-card border border-token-border-technical shadow-sm",
+    elevated: "bg-token-surface-card border border-token-border-technical shadow-lg",
+    outlined: "bg-transparent border-2 border-token-border-technical",
   };
 
   const sizeClasses = {
@@ -45,8 +45,8 @@ export const SupervisorCard: React.FC<SupervisorCardProps> = ({
     <div className={`rounded-lg ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}>
       {(title || Icon) && (
         <div className="flex items-center gap-3 mb-4">
-          {Icon && <Icon className="w-5 h-5 text-gray-600" />}
-          {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
+          {Icon && <Icon className="w-5 h-5 text-token-text-secondary" />}
+          {title && <h3 className="text-lg font-semibold text-token-text-primary">{title}</h3>}
         </div>
       )}
       {children}
@@ -86,7 +86,8 @@ export const SupervisorActionButton: React.FC<SupervisorActionButtonProps> = ({
 
   const variantClasses = {
     primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-    secondary: "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
+    secondary:
+      "bg-token-surface-stripe text-token-text-primary hover:bg-token-surface-hover focus:ring-sap-blue border border-token-border-technical",
     danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
     success: "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500",
   };
@@ -188,21 +189,21 @@ const SupervisorMetricCard: React.FC<SupervisorMetricCardProps> = ({ metric }) =
     red: "text-red-600 bg-red-50 border-red-200",
     yellow: "text-yellow-600 bg-yellow-50 border-yellow-200",
     purple: "text-purple-600 bg-purple-50 border-purple-200",
-    gray: "text-gray-600 bg-gray-50 border-gray-200",
+    gray: "text-token-text-secondary bg-token-surface-stripe border-token-border-subtle",
   };
 
   const changeColorClasses = {
     increase: "text-green-600",
     decrease: "text-red-600",
-    neutral: "text-gray-600",
+    neutral: "text-token-text-secondary",
   };
 
   return (
     <div className={`p-4 rounded-lg border ${colorClasses[color]}`}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-token-text-secondary">{label}</p>
+          <p className="text-2xl font-bold text-token-text-primary">{value}</p>
           {change && (
             <p className={`text-sm font-medium ${changeColorClasses[change.type]}`}>
               {change.type === "increase" && "+"}
@@ -267,15 +268,15 @@ export const SupervisorDataTable = <T extends Record<string, unknown>>({
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-5/6 mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        <div className="h-4 bg-token-surface-hover rounded w-full mb-2"></div>
+        <div className="h-4 bg-token-surface-hover rounded w-5/6 mb-2"></div>
+        <div className="h-4 bg-token-surface-hover rounded w-4/6"></div>
       </div>
     );
   }
 
   if (data.length === 0) {
-    return <div className="text-center py-8 text-gray-500">{emptyMessage}</div>;
+    return <div className="text-center py-8 text-token-text-tertiary">{emptyMessage}</div>;
   }
 
   const handleSort = (key: keyof T) => {
@@ -287,16 +288,16 @@ export const SupervisorDataTable = <T extends Record<string, unknown>>({
 
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-token-border-subtle">
+        <thead className="bg-token-surface-stripe">
           <tr>
             {columns.map((column) => (
               <th
                 key={String(column.key)}
-                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${column.className || ""}`}
+                className={`px-6 py-3 text-left text-xs font-medium text-token-text-tertiary uppercase tracking-wider ${column.className || ""}`}
               >
                 <div
-                  className={`flex items-center ${column.sortable ? "cursor-pointer hover:text-gray-700" : ""}`}
+                  className={`flex items-center ${column.sortable ? "cursor-pointer hover:text-token-text-primary" : ""}`}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
                   {column.label}
@@ -307,19 +308,19 @@ export const SupervisorDataTable = <T extends Record<string, unknown>>({
               </th>
             ))}
             {actions.length > 0 && (
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-token-text-tertiary uppercase tracking-wider">
                 Acciones
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-token-surface-card divide-y divide-token-border-subtle">
           {data.map((row, index) => (
-            <tr key={index} className="hover:bg-gray-50">
+            <tr key={index} className="hover:bg-token-surface-hover">
               {columns.map((column) => (
                 <td
                   key={String(column.key)}
-                  className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${column.className || ""}`}
+                  className={`px-6 py-4 whitespace-nowrap text-sm text-token-text-primary ${column.className || ""}`}
                 >
                   {column.render
                     ? column.render(row[column.key], row)
@@ -376,7 +377,7 @@ export const SupervisorStatusBadge: React.FC<SupervisorStatusBadgeProps> = ({
     warning: "bg-yellow-100 text-yellow-800 border-yellow-200",
     error: "bg-red-100 text-red-800 border-red-200",
     info: "bg-blue-100 text-blue-800 border-blue-200",
-    neutral: "bg-gray-100 text-gray-800 border-gray-200",
+    neutral: "bg-token-surface-stripe text-token-text-primary border-token-border-subtle",
   };
 
   const sizeClasses = {
@@ -485,9 +486,9 @@ export const SupervisorLoadingSkeleton: React.FC<SupervisorLoadingSkeletonProps>
       case "card":
         return (
           <div className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-4 bg-token-surface-hover rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-token-surface-hover rounded w-1/2 mb-2"></div>
+            <div className="h-4 bg-token-surface-hover rounded w-5/6"></div>
           </div>
         );
 
@@ -496,9 +497,9 @@ export const SupervisorLoadingSkeleton: React.FC<SupervisorLoadingSkeletonProps>
           <div className="animate-pulse">
             {Array.from({ length: lines }).map((_, i) => (
               <div key={i} className="flex space-x-4 mb-2">
-                <div className="h-4 bg-gray-200 rounded flex-1"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/6"></div>
+                <div className="h-4 bg-token-surface-hover rounded flex-1"></div>
+                <div className="h-4 bg-token-surface-hover rounded w-1/4"></div>
+                <div className="h-4 bg-token-surface-hover rounded w-1/6"></div>
               </div>
             ))}
           </div>
@@ -508,9 +509,9 @@ export const SupervisorLoadingSkeleton: React.FC<SupervisorLoadingSkeletonProps>
         return (
           <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-gray-200 rounded-lg p-4">
-                <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-300 rounded w-1/2"></div>
+              <div key={i} className="bg-token-surface-stripe rounded-lg p-4">
+                <div className="h-4 bg-token-surface-hover rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-token-surface-hover rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -522,7 +523,7 @@ export const SupervisorLoadingSkeleton: React.FC<SupervisorLoadingSkeletonProps>
             {Array.from({ length: lines }).map((_, i) => (
               <div
                 key={i}
-                className={`h-4 bg-gray-200 rounded ${i === lines - 1 ? "w-3/4" : "w-full"}`}
+                className={`h-4 bg-token-surface-hover rounded ${i === lines - 1 ? "w-3/4" : "w-full"}`}
               ></div>
             ))}
           </div>
@@ -562,12 +563,12 @@ export const SupervisorEmptyState: React.FC<SupervisorEmptyStateProps> = ({
   return (
     <div className={`text-center py-12 ${className}`}>
       {Icon && (
-        <div className="mx-auto h-12 w-12 text-gray-400">
+        <div className="mx-auto h-12 w-12 text-token-text-tertiary">
           <Icon className="h-full w-full" />
         </div>
       )}
-      <h3 className="mt-2 text-sm font-medium text-gray-900">{title}</h3>
-      {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
+      <h3 className="mt-2 text-sm font-medium text-token-text-primary">{title}</h3>
+      {description && <p className="mt-1 text-sm text-token-text-secondary">{description}</p>}
       {action && (
         <div className="mt-6">
           <SupervisorActionButton

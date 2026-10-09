@@ -67,8 +67,8 @@ export const TIME_RECORD_STATUS_CONFIG: Record<
   },
   DiaLibre: {
     label: "Día Libre",
-    bg: "bg-slate-200 dark:bg-slate-700/60",
-    text: "text-slate-700 dark:text-slate-200",
+    bg: "bg-token-surface-stripe border border-token-border-subtle",
+    text: "text-token-text-secondary",
   },
   Feriado: {
     label: "Feriado",
@@ -137,9 +137,9 @@ export const PLANNING_STATUS_CONFIG: Record<
   },
   DiaLibre: {
     label: "Día Libre",
-    dot: "bg-gray-400",
-    bg: "bg-gray-100",
-    text: "text-gray-800",
+    dot: "bg-token-text-tertiary",
+    bg: "bg-token-surface-stripe",
+    text: "text-token-text-secondary",
   },
   Vacaciones: {
     label: "Vacaciones",
@@ -167,9 +167,9 @@ export const PLANNING_STATUS_CONFIG: Record<
   },
   SinTurnoAsignado: {
     label: "Sin Turno Asignado",
-    dot: "bg-gray-300",
-    bg: "bg-gray-100",
-    text: "text-gray-800",
+    dot: "bg-token-text-tertiary",
+    bg: "bg-token-surface-stripe",
+    text: "text-token-text-secondary",
   },
 };
 
@@ -200,9 +200,9 @@ export const CLOCKING_STATUS_CONFIG: Record<
   },
   fuera: {
     label: "Fuera de Turno",
-    dot: "bg-gray-400",
-    bg: "bg-gray-100 dark:bg-gray-900/50",
-    text: "text-gray-800 dark:text-gray-300",
+    dot: "bg-token-text-tertiary",
+    bg: "bg-token-surface-stripe",
+    text: "text-token-text-secondary",
     description: "Estado genérico para personal que no ha iniciado jornada.",
   },
   por_iniciar: {

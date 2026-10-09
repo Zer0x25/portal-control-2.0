@@ -64,4 +64,13 @@ describe("GovernanceHubView", () => {
     rerender(<GovernanceHubView activeTab="health" handleTabChange={noop} />);
     expect(await screen.findByText("HEALTH-CONTENT")).toBeInTheDocument();
   });
+
+  it("renders within canonical wide Container with data-ui-protected", () => {
+    render(<GovernanceHubView activeTab="integrity" handleTabChange={vi.fn()} />);
+
+    const container = screen.getByTestId("page-container");
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveAttribute("data-ui-protected");
+  });
 });
