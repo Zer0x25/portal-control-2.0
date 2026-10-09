@@ -10,7 +10,6 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
 } from "../../../components/ui/icons/index";
-import { motion, AnimatePresence } from "framer-motion";
 import type { DayInCycleSchedule, TheoreticalShiftPattern } from "../../../types";
 
 const daysOfWeekOptions = [
@@ -92,12 +91,9 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
             </span>
             <div className="flex items-center gap-2">
               {patternForm.calculatedPatternWeeklyHours > patternForm.globalMaxWeeklyHours && (
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                >
+                <div className="animate-pulse">
                   <ExclamationTriangleIcon className="w-4 h-4 text-token-status-error" />
-                </motion.div>
+                </div>
               )}
               <span
                 className={`text-sm font-mono font-bold ${patternForm.calculatedPatternWeeklyHours > patternForm.globalMaxWeeklyHours ? "text-token-status-error" : "text-token-accent-brand"}`}
@@ -208,10 +204,9 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
           {renderPlaceholders()}
           {patternForm.patternDailySchedules.map((s, i) => (
-            <motion.div
+            <div
               key={i}
-              layout
-              className={`flex flex-col p-4 rounded-2xl border transition-all duration-300 ${s.isOffDay ? "bg-token-surface-technical/20 border-token-border-subtle opacity-60" : "bg-token-surface-card border-token-border-subtle shadow-md hover:scale-[1.02] hover:shadow-lg"}`}
+              className={`flex flex-col p-4 rounded-2xl border transition duration-300 ${s.isOffDay ? "bg-token-surface-technical/20 border-token-border-subtle opacity-60" : "bg-token-surface-card border-token-border-subtle shadow-md hover:scale-[1.02] hover:shadow-lg"}`}
             >
               <div className="flex justify-between items-center mb-4">
                 <div>
@@ -266,77 +261,70 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                   </span>
                 </label>
 
-                <AnimatePresence mode="wait">
-                  {!s.isOffDay && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="space-y-3"
-                    >
-                      <div className="grid grid-cols-1 gap-2">
-                        <div className="relative">
-                          <ClockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-token-text-tertiary" />
-                          <input
-                            type="time"
-                            value={s.startTime || ""}
-                            onChange={(e) =>
-                              patternForm.handleDailyScheduleChange(i, "startTime", e.target.value)
-                            }
-                            className="w-full pl-9 pr-2 py-2 bg-token-surface-card border border-token-border-technical rounded-xl text-xs text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
-                          />
-                        </div>
-                        <div className="relative">
-                          <ClockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-token-text-tertiary" />
-                          <input
-                            type="time"
-                            value={s.endTime || ""}
-                            onChange={(e) =>
-                              patternForm.handleDailyScheduleChange(i, "endTime", e.target.value)
-                            }
-                            className="w-full pl-9 pr-2 py-2 bg-token-surface-card border border-token-border-technical rounded-xl text-xs text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
-                          />
-                        </div>
+                {!s.isOffDay && (
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="relative">
+                        <ClockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-token-text-tertiary" />
+                        <input
+                          type="time"
+                          value={s.startTime || ""}
+                          onChange={(e) =>
+                            patternForm.handleDailyScheduleChange(i, "startTime", e.target.value)
+                          }
+                          className="w-full pl-9 pr-2 py-2 bg-token-surface-card border border-token-border-technical rounded-xl text-xs text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
+                        />
                       </div>
+                      <div className="relative">
+                        <ClockIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-token-text-tertiary" />
+                        <input
+                          type="time"
+                          value={s.endTime || ""}
+                          onChange={(e) =>
+                            patternForm.handleDailyScheduleChange(i, "endTime", e.target.value)
+                          }
+                          className="w-full pl-9 pr-2 py-2 bg-token-surface-card border border-token-border-technical rounded-xl text-xs text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
+                        />
+                      </div>
+                    </div>
 
-                      <div className="pt-3 border-t border-token-border-subtle">
-                        <label className="flex items-center gap-2 mb-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={s.hasColacion}
-                            onChange={(e) =>
-                              patternForm.handleDailyScheduleChange(
-                                i,
-                                "hasColacion",
-                                e.target.checked,
-                              )
-                            }
-                            className="w-3.5 h-3.5 rounded border-token-border-technical text-token-accent-brand focus:ring-token-border-focus"
-                          />
-                          <span className="text-[10px] font-bold text-token-text-secondary uppercase">
-                            Colación
-                          </span>
-                        </label>
-                        {s.hasColacion && (
-                          <input
-                            type="number"
-                            min="0"
-                            value={String(s.colacionMinutes)}
-                            onChange={(e) =>
-                              patternForm.handleDailyScheduleChange(
-                                i,
-                                "colacionMinutes",
-                                parseInt(e.target.value, 10) || 0,
-                              )
-                            }
-                            className="w-full px-3 py-1.5 bg-token-surface-card border border-token-border-technical rounded-lg text-[10px] text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus"
-                            placeholder="Minutos"
-                          />
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    <div className="pt-3 border-t border-token-border-subtle">
+                      <label className="flex items-center gap-2 mb-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={s.hasColacion}
+                          onChange={(e) =>
+                            patternForm.handleDailyScheduleChange(
+                              i,
+                              "hasColacion",
+                              e.target.checked,
+                            )
+                          }
+                          className="w-3.5 h-3.5 rounded border-token-border-technical text-token-accent-brand focus:ring-token-border-focus"
+                        />
+                        <span className="text-[10px] font-bold text-token-text-secondary uppercase">
+                          Colación
+                        </span>
+                      </label>
+                      {s.hasColacion && (
+                        <input
+                          type="number"
+                          min="0"
+                          value={String(s.colacionMinutes)}
+                          onChange={(e) =>
+                            patternForm.handleDailyScheduleChange(
+                              i,
+                              "colacionMinutes",
+                              parseInt(e.target.value, 10) || 0,
+                            )
+                          }
+                          className="w-full px-3 py-1.5 bg-token-surface-card border border-token-border-technical rounded-lg text-[10px] text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus"
+                          placeholder="Minutos"
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 pt-3 border-t border-token-border-subtle flex justify-between items-center">
@@ -349,7 +337,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                   {s.hours?.toFixed(2) || "0.00"}
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

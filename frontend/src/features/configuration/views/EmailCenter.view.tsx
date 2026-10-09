@@ -16,7 +16,6 @@ import {
   DocumentTextIcon,
 } from "../../../components/ui/icons/index";
 import SmtpConfigModal from "../../../components/ui/SmtpConfigModal";
-import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/ui/Button";
 import type { EmailNotificationRules } from "../../../types";
 
@@ -48,10 +47,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
   emailRecipientsList,
 }) => {
   return (
-    <motion.div
-      layout
-      className="group relative p-6 rounded-sm bg-token-surface-card border border-token-border-technical hover:border-(--sidebar-text-active)/30 transition-all duration-300 shadow-sm"
-    >
+    <div className="group relative p-6 rounded-sm bg-token-surface-card border border-token-border-technical hover:border-(--sidebar-text-active)/30 transition duration-300 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <h4 className="text-[11px] font-bold text-token-text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -74,14 +70,11 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
         </label>
       </div>
 
-      <AnimatePresence>
-        {rule.enabled && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-6 pt-6 border-t border-token-border-technical"
-          >
+      <div
+        className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ${rule.enabled ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-6 pt-6 border-t border-token-border-technical">
             <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary mb-2">
               Destinatario del Reporte
             </label>
@@ -89,7 +82,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
               <select
                 value={rule.recipient}
                 onChange={(e) => onFieldChange("recipient", e.target.value)}
-                className="w-full h-11 pl-4 pr-10 rounded-sm bg-token-surface-card border border-token-border-technical text-[12px] font-bold uppercase tracking-tight text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none appearance-none transition-all"
+                className="w-full h-11 pl-4 pr-10 rounded-sm bg-token-surface-card border border-token-border-technical text-[12px] font-bold uppercase tracking-tight text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none appearance-none transition-colors"
               >
                 <option value="" className="bg-token-surface-card">
                   SELECCIONAR CORREO...
@@ -104,10 +97,10 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
                 <EnvelopeIcon className="w-4 h-4" />
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
 import Container from "../../../components/ui/Container";
 import {
@@ -43,11 +42,7 @@ export const TheoreticalShiftsView: React.FC<TheoreticalShiftsViewProps> = ({
 
   return (
     <Container variant="wide" noPadding data-ui-protected className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.99 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="space-y-6 animate-in fade-in duration-500"
-      >
+      <div className="space-y-6 animate-in fade-in duration-500">
         <PageHeader
           eyebrow="Configuración"
           eyebrowIcon={<CalendarDaysIcon className="w-3.5 h-3.5" />}
@@ -65,7 +60,7 @@ export const TheoreticalShiftsView: React.FC<TheoreticalShiftsViewProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`pb-4 px-1 flex items-center gap-2.5 transition-all relative ${
+                  className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
                     isActive
                       ? "text-(--sidebar-text-active)"
                       : "text-token-text-tertiary hover:text-token-text-primary"
@@ -76,10 +71,7 @@ export const TheoreticalShiftsView: React.FC<TheoreticalShiftsViewProps> = ({
                     {tab.label}
                   </span>
                   {isActive && (
-                    <motion.div
-                      layoutId="activeTabTheoretical"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)]"
-                    />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)] animate-in fade-in" />
                   )}
                 </button>
               );
@@ -95,7 +87,7 @@ export const TheoreticalShiftsView: React.FC<TheoreticalShiftsViewProps> = ({
             {activeTab === "holidays" && <HolidayManager />}
           </React.Suspense>
         </div>
-      </motion.div>
+      </div>
     </Container>
   );
 };

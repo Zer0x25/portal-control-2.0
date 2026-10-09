@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useClockingPanel } from "../hooks/useClockingPanel";
 import Button from "../../../components/ui/Button";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
@@ -44,52 +43,43 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
               className="w-full"
             />
 
-            <AnimatePresence>
-              {searchTerm && !selectedEmployeeId && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-token-surface-card border border-token-border-subtle rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto"
-                >
-                  {filteredEmployees.length > 0 ? (
-                    <div className="p-2 space-y-1">
-                      {filteredEmployees.map((e) => (
-                        <motion.div
-                          key={e.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className={`p-3 rounded-md cursor-pointer transition-all group ${
-                            selectedEmployeeId === e.id
-                              ? "bg-sap-blue/10 border border-sap-blue/30"
-                              : "hover:bg-token-surface-active"
-                          }`}
-                          onClick={() => setSelectedEmployeeId(e.id)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="text-sm font-bold text-token-text-primary block">
-                                {e.name}
-                              </span>
-                              <span className="text-[9px] text-token-text-tertiary uppercase tracking-widest leading-none mt-0.5">
-                                {e.area}
-                              </span>
-                            </div>
-                            <div className="w-1.5 h-1.5 rounded-full bg-sap-blue opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_rgba(0,87,146,0.5)]" />
+            {searchTerm && !selectedEmployeeId && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-token-surface-card border border-token-border-subtle rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                {filteredEmployees.length > 0 ? (
+                  <div className="p-2 space-y-1">
+                    {filteredEmployees.map((e) => (
+                      <div
+                        key={e.id}
+                        className={`p-3 rounded-md cursor-pointer transition-colors group animate-in fade-in ${
+                          selectedEmployeeId === e.id
+                            ? "bg-sap-blue/10 border border-sap-blue/30"
+                            : "hover:bg-token-surface-active"
+                        }`}
+                        onClick={() => setSelectedEmployeeId(e.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-sm font-bold text-token-text-primary block">
+                              {e.name}
+                            </span>
+                            <span className="text-[9px] text-token-text-tertiary uppercase tracking-widest leading-none mt-0.5">
+                              {e.area}
+                            </span>
                           </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center">
-                      <p className="text-[10px] font-black uppercase text-token-text-tertiary tracking-[0.2em]">
-                        No se encontraron resultados
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+                          <div className="w-1.5 h-1.5 rounded-full bg-sap-blue opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_rgba(0,87,146,0.5)]" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <p className="text-[10px] font-black uppercase text-token-text-tertiary tracking-[0.2em]">
+                      No se encontraron resultados
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-6 bg-token-surface-stripe p-4 rounded-md border border-token-border-technical">

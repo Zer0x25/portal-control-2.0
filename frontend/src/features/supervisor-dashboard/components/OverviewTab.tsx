@@ -3,7 +3,6 @@ import KpiCard, { KpiStat, KpiStatProps } from "../../../components/ui/KpiCard";
 import { CalendarDaysIcon } from "../../../components/ui/icons/index";
 import LiveStatusPanel from "./LiveStatusPanel";
 import EmployeeCalendarModal from "./EmployeeCalendarModal";
-import { motion, AnimatePresence } from "framer-motion";
 import { Employee, EmployeeWithClockingStatus } from "../../../types/index";
 import { useDashboardOverviewQuery } from "../../../hooks/queries/useDashboardQueries";
 
@@ -116,7 +115,7 @@ const OverviewTab: React.FC = () => {
   ];
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-10 pt-4">
+    <div className="space-y-10 pt-4 animate-in fade-in">
       {/* 📊 Matrix Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-4">
@@ -139,16 +138,14 @@ const OverviewTab: React.FC = () => {
         </div>
       </div>
 
-      <AnimatePresence>
-        {selectedEmployeeForCalendar && (
-          <EmployeeCalendarModal
-            employee={selectedEmployeeForCalendar}
-            isOpen={!!selectedEmployeeForCalendar}
-            onClose={() => setSelectedEmployeeForCalendar(null)}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {selectedEmployeeForCalendar && (
+        <EmployeeCalendarModal
+          employee={selectedEmployeeForCalendar}
+          isOpen={!!selectedEmployeeForCalendar}
+          onClose={() => setSelectedEmployeeForCalendar(null)}
+        />
+      )}
+    </div>
   );
 };
 

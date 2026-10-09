@@ -10,7 +10,6 @@ import Container from "../../../components/ui/Container";
 import { PlusCircleIcon, EyeIcon, CalendarDaysIcon, UserIcon } from "../../../components/ui/icons";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
-import { motion, AnimatePresence } from "framer-motion";
 import AssignmentListDesktop from "../components/AssignmentListDesktop";
 import AssignmentListMobile from "../components/AssignmentListMobile";
 import type { Employee, TheoreticalShiftPattern } from "../../../types";
@@ -145,157 +144,143 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
             {filteredAssignments.length} asignaciones cargadas (Infinite Scroll)
           </p>
         </div>
-        <AnimatePresence>
-          {!isFormVisible && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <Button
-                onClick={handleOpenNewForm}
-                variant="primary"
-                className="flex items-center gap-2"
-              >
-                <PlusCircleIcon className="w-5 h-5" />
-                Asignar Turno
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {!isFormVisible && (
+          <div className="animate-in fade-in">
+            <Button
+              onClick={handleOpenNewForm}
+              variant="primary"
+              className="flex items-center gap-2"
+            >
+              <PlusCircleIcon className="w-5 h-5" />
+              Asignar Turno
+            </Button>
+          </div>
+        )}
       </div>
 
-      <AnimatePresence>
-        {isFormVisible && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm mb-6">
-              <h3 className="typo-ui-title mb-6 text-token-text-primary flex items-center gap-2">
-                <div className="w-1.5 h-5 bg-token-accent-brand rounded-full"></div>
-                {assignmentForm.editingAssignment ? "Modificar Asignación" : "Nueva Asignación"}
-              </h3>
+      <div
+        className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ${isFormVisible ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm mb-6">
+            <h3 className="typo-ui-title mb-6 text-token-text-primary flex items-center gap-2">
+              <div className="w-1.5 h-5 bg-token-accent-brand rounded-full"></div>
+              {assignmentForm.editingAssignment ? "Modificar Asignación" : "Nueva Asignación"}
+            </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div className="space-y-6">
-                  <div ref={employeeSearchRef} className="relative">
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
-                      Empleado
-                    </label>
-                    <div className="relative group">
-                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
-                      <input
-                        type="text"
-                        value={employeeSearchTerm}
-                        onChange={(e) => {
-                          setEmployeeSearchTerm(e.target.value);
-                          assignmentForm.setSelectedEmployeeId("");
-                          setIsEmployeeDropdownOpen(true);
-                        }}
-                        onFocus={() => setIsEmployeeDropdownOpen(true)}
-                        placeholder="Buscar colaborador..."
-                        className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical text-token-text-primary rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all placeholder:text-token-text-tertiary"
-                      />
-                      <AnimatePresence>
-                        {isEmployeeDropdownOpen && filteredEmployeesForSearch.length > 0 && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="absolute z-60 left-0 right-0 mt-2 bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-6">
+                <div ref={employeeSearchRef} className="relative">
+                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                    Empleado
+                  </label>
+                  <div className="relative group">
+                    <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
+                    <input
+                      type="text"
+                      value={employeeSearchTerm}
+                      onChange={(e) => {
+                        setEmployeeSearchTerm(e.target.value);
+                        assignmentForm.setSelectedEmployeeId("");
+                        setIsEmployeeDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsEmployeeDropdownOpen(true)}
+                      placeholder="Buscar colaborador..."
+                      className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical text-token-text-primary rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all placeholder:text-token-text-tertiary"
+                    />
+                    {isEmployeeDropdownOpen && filteredEmployeesForSearch.length > 0 && (
+                      <div className="absolute z-60 left-0 right-0 mt-2 bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
+                        {filteredEmployeesForSearch.map((e) => (
+                          <button
+                            key={e.id}
+                            type="button"
+                            onClick={() => {
+                              assignmentForm.setSelectedEmployeeId(e.id);
+                              setEmployeeSearchTerm(e.name);
+                              setIsEmployeeDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-token-surface-hover transition-colors flex items-center justify-between group/item"
                           >
-                            {filteredEmployeesForSearch.map((e) => (
-                              <button
-                                key={e.id}
-                                type="button"
-                                onClick={() => {
-                                  assignmentForm.setSelectedEmployeeId(e.id);
-                                  setEmployeeSearchTerm(e.name);
-                                  setIsEmployeeDropdownOpen(false);
-                                }}
-                                className="w-full text-left px-4 py-3 hover:bg-token-surface-hover transition-colors flex items-center justify-between group/item"
-                              >
-                                <span className="font-medium text-token-text-primary group-hover/item:text-token-accent-brand transition-colors">
-                                  {e.name}
-                                </span>
-                                <span className="text-[10px] bg-token-surface-hover px-2 py-0.5 rounded-full text-token-text-secondary">
-                                  {e.rut}
-                                </span>
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
-                      Patrón
-                    </label>
-                    <select
-                      value={assignmentForm.selectedPatternId}
-                      onChange={(e) => assignmentForm.setSelectedPatternId(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
-                    >
-                      <option value="">-- Seleccionar --</option>
-                      {shiftPatterns.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
+                            <span className="font-medium text-token-text-primary group-hover/item:text-token-accent-brand transition-colors">
+                              {e.name}
+                            </span>
+                            <span className="text-[10px] bg-token-surface-hover px-2 py-0.5 rounded-full text-token-text-secondary">
+                              {e.rut}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
-                      Inicio
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsStartDatePickerOpen(true)}
-                      className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
-                    >
-                      {assignmentForm.assignmentStartDate || "Seleccionar"}
-                    </button>
-                    <DatePickerDialog
-                      isOpen={isStartDatePickerOpen}
-                      onClose={() => setIsStartDatePickerOpen(false)}
-                      onSelect={assignmentForm.setAssignmentStartDate}
-                      initialDate={assignmentForm.assignmentStartDate}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
-                      Fin
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsEndDatePickerOpen(true)}
-                      className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
-                    >
-                      {assignmentForm.assignmentEndDate || "Indefinido"}
-                    </button>
-                    <DatePickerDialog
-                      isOpen={isEndDatePickerOpen}
-                      onClose={() => setIsEndDatePickerOpen(false)}
-                      onSelect={assignmentForm.setAssignmentEndDate}
-                      initialDate={assignmentForm.assignmentEndDate}
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
+                    Patrón
+                  </label>
+                  <select
+                    value={assignmentForm.selectedPatternId}
+                    onChange={(e) => assignmentForm.setSelectedPatternId(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
+                  >
+                    <option value="">-- Seleccionar --</option>
+                    {shiftPatterns.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <Button onClick={handleSaveForm}>Confirmar</Button>
-                <Button variant="secondary" onClick={handleCancelForm}>
-                  Cancelar
-                </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
+                    Inicio
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsStartDatePickerOpen(true)}
+                    className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
+                  >
+                    {assignmentForm.assignmentStartDate || "Seleccionar"}
+                  </button>
+                  <DatePickerDialog
+                    isOpen={isStartDatePickerOpen}
+                    onClose={() => setIsStartDatePickerOpen(false)}
+                    onSelect={assignmentForm.setAssignmentStartDate}
+                    initialDate={assignmentForm.assignmentStartDate}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
+                    Fin
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsEndDatePickerOpen(true)}
+                    className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
+                  >
+                    {assignmentForm.assignmentEndDate || "Indefinido"}
+                  </button>
+                  <DatePickerDialog
+                    isOpen={isEndDatePickerOpen}
+                    onClose={() => setIsEndDatePickerOpen(false)}
+                    onSelect={assignmentForm.setAssignmentEndDate}
+                    initialDate={assignmentForm.assignmentEndDate}
+                  />
+                </div>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <div className="flex gap-3">
+              <Button onClick={handleSaveForm}>Confirmar</Button>
+              <Button variant="secondary" onClick={handleCancelForm}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
         <div className="relative flex-1 group w-full">

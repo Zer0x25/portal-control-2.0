@@ -4,7 +4,6 @@
 */
 
 import React from "react";
-import { motion } from "framer-motion";
 import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import { QuickNotesModal } from "..";
 import ShiftReportModal from "../../../components/ui/ShiftReportModal";
@@ -112,14 +111,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             const props = widgetProps[widget.id] || {};
 
             return (
-              <motion.div
+              <div
                 key={widget.id}
-                layoutId={widget.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                className="animate-in fade-in zoom-in-95 [animation-duration:200ms]"
               >
                 <WidgetComponent {...props} />
-              </motion.div>
+              </div>
             );
           })
         ) : (

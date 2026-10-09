@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { ChevronDownIcon } from "../../../components/ui/icons/index";
 
 import { CATEGORY_GROUPS, SEVERITIES } from "../../../constants/audit";
@@ -63,22 +62,18 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
             </span>
           )}
 
-          <div className="w-8 h-8 rounded-md bg-token-surface-card border border-token-border-technical flex items-center justify-center group-hover:border-indigo-700 transition-all">
-            <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.15 }}>
+          <div className="w-8 h-8 rounded-md bg-token-surface-card border border-token-border-technical flex items-center justify-center group-hover:border-indigo-700 transition-colors">
+            <div className={`transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>
               <ChevronDownIcon className="w-5 h-5 text-token-text-secondary group-hover:text-indigo-700 transition-colors" />
-            </motion.div>
+            </div>
           </div>
         </div>
       </button>
 
-      {isOpen && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="overflow-hidden"
-        >
+      <div
+        className={`grid transition-[grid-template-rows,opacity,visibility] duration-150 ${isOpen ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
+      >
+        <div className="overflow-hidden">
           <div className="p-8 space-y-6 border-t border-token-border-technical bg-token-surface-card">
             {/* Filter Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -417,8 +412,8 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
               </div>
             )}
           </div>
-        </motion.div>
-      )}
+        </div>
+      </div>
     </div>
   );
 };

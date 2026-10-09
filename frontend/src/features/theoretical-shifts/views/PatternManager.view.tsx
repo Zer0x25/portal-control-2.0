@@ -10,7 +10,6 @@ import PatternForm from "../components/PatternForm";
 import { PlusCircleIcon, EyeIcon } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
 import EmptyState from "../../../components/ui/EmptyState";
-import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import PatternListDesktop from "../components/PatternListDesktop";
 import PatternListMobile from "../components/PatternListMobile";
@@ -107,42 +106,33 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
             Define los ciclos horarios base para los empleados.
           </p>
         </div>
-        <AnimatePresence>
-          {!isFormVisible && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+        {!isFormVisible && (
+          <div className="animate-in fade-in zoom-in-90">
+            <Button
+              onClick={handleOpenNewForm}
+              variant="primary"
+              className="flex items-center gap-2"
             >
-              <Button
-                onClick={handleOpenNewForm}
-                variant="primary"
-                className="flex items-center gap-2"
-              >
-                <PlusCircleIcon className="w-5 h-5" />
-                Nuevo Patrón
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <PlusCircleIcon className="w-5 h-5" />
+              Nuevo Patrón
+            </Button>
+          </div>
+        )}
       </div>
 
-      <AnimatePresence mode="wait">
-        {isFormVisible && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 overflow-hidden shadow-sm"
-          >
+      <div
+        className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ${isFormVisible ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm">
             <PatternForm
               onCancel={handleCancelForm}
               onSave={handleSaveForm}
               patternForm={patternForm}
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
 
       <div className="relative flex-1 group w-full">
         <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors z-10" />

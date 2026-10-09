@@ -1,5 +1,4 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
@@ -108,98 +107,92 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           </tr>
         </thead>
         <tbody className="bg-token-surface-card divide-y divide-token-border-subtle">
-          <AnimatePresence>
-            {paginatedUsers.map((user) => (
-              <motion.tr
-                key={user.id}
-                layout
-                className="group hover:bg-token-surface-active transition-all"
-              >
-                <td className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
-                      {user.username}
-                    </span>
-                    {user.mfaEnabled && (
-                      <div className="flex items-center gap-1.5 w-fit mt-1 px-1.5 py-0.5 bg-(--status-success)/10 border border-(--status-success)/20 rounded-sm">
-                        <ShieldIcon className="w-2.5 h-2.5 text-(--status-success)" />
-                        <span className="text-[8px] font-bold text-(--status-success) uppercase tracking-widest">
-                          MFA PROTECTED
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <RoleBadge role={user.role} size="md" />
-                </td>
-                <td className="px-6 py-4">
-                  {user.employeeId ? (
-                    <span className="text-[11px] font-semibold text-token-text-secondary uppercase">
-                      {activeEmployees.find((e) => e.id === user.employeeId)?.name || "—"}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] font-bold text-token-text-tertiary uppercase opacity-40">
-                      Sin Vinculación
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  {canManageUser(user) ? (
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => handleEditUser(user)}
-                        className="bg-token-surface-card border-token-border-technical"
-                      >
-                        <EditIcon className="w-4 h-4 text-(--sidebar-text-active)" />
-                      </Button>
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => setUserToResetPassword(user)}
-                        className="bg-token-surface-card border-token-border-technical"
-                      >
-                        <KeyIcon className="w-4 h-4 text-(--status-warning)" />
-                      </Button>
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => setUserToResetPin(user)}
-                        disabled={!user.employeeId}
-                        className="bg-token-surface-card border-token-border-technical disabled:opacity-30"
-                      >
-                        <ShieldIcon className="w-4 h-4 text-token-text-tertiary" />
-                      </Button>
-                      {currentUser?.id === user.id && !user.mfaEnabled && (
-                        <Button
-                          size="xs"
-                          variant="secondary"
-                          onClick={() => setIsMFASetupOpen(true)}
-                          className="bg-indigo-600/10 border border-indigo-500/20"
-                        >
-                          <ShieldIcon className="w-4 h-4 text-indigo-600" />
-                        </Button>
-                      )}
-                      <Button
-                        size="xs"
-                        variant="danger"
-                        onClick={() => setUserToDelete(user)}
-                        className="bg-(--status-error)/10 text-(--status-error) border border-(--status-error)/20"
-                      >
-                        <DeleteIcon className="w-4 h-4" />
-                      </Button>
+          {paginatedUsers.map((user) => (
+            <tr key={user.id} className="group hover:bg-token-surface-active transition-colors">
+              <td className="px-6 py-4">
+                <div className="flex flex-col">
+                  <span className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
+                    {user.username}
+                  </span>
+                  {user.mfaEnabled && (
+                    <div className="flex items-center gap-1.5 w-fit mt-1 px-1.5 py-0.5 bg-(--status-success)/10 border border-(--status-success)/20 rounded-sm">
+                      <ShieldIcon className="w-2.5 h-2.5 text-(--status-success)" />
+                      <span className="text-[8px] font-bold text-(--status-success) uppercase tracking-widest">
+                        MFA PROTECTED
+                      </span>
                     </div>
-                  ) : (
-                    <span className="text-[10px] uppercase font-bold text-token-text-tertiary">
-                      Solo Lectura
-                    </span>
                   )}
-                </td>
-              </motion.tr>
-            ))}
-          </AnimatePresence>
+                </div>
+              </td>
+              <td className="px-6 py-4">
+                <RoleBadge role={user.role} size="md" />
+              </td>
+              <td className="px-6 py-4">
+                {user.employeeId ? (
+                  <span className="text-[11px] font-semibold text-token-text-secondary uppercase">
+                    {activeEmployees.find((e) => e.id === user.employeeId)?.name || "—"}
+                  </span>
+                ) : (
+                  <span className="text-[11px] font-bold text-token-text-tertiary uppercase opacity-40">
+                    Sin Vinculación
+                  </span>
+                )}
+              </td>
+              <td className="px-6 py-4 text-right">
+                {canManageUser(user) ? (
+                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => handleEditUser(user)}
+                      className="bg-token-surface-card border-token-border-technical"
+                    >
+                      <EditIcon className="w-4 h-4 text-(--sidebar-text-active)" />
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => setUserToResetPassword(user)}
+                      className="bg-token-surface-card border-token-border-technical"
+                    >
+                      <KeyIcon className="w-4 h-4 text-(--status-warning)" />
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => setUserToResetPin(user)}
+                      disabled={!user.employeeId}
+                      className="bg-token-surface-card border-token-border-technical disabled:opacity-30"
+                    >
+                      <ShieldIcon className="w-4 h-4 text-token-text-tertiary" />
+                    </Button>
+                    {currentUser?.id === user.id && !user.mfaEnabled && (
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={() => setIsMFASetupOpen(true)}
+                        className="bg-indigo-600/10 border border-indigo-500/20"
+                      >
+                        <ShieldIcon className="w-4 h-4 text-indigo-600" />
+                      </Button>
+                    )}
+                    <Button
+                      size="xs"
+                      variant="danger"
+                      onClick={() => setUserToDelete(user)}
+                      className="bg-(--status-error)/10 text-(--status-error) border border-(--status-error)/20"
+                    >
+                      <DeleteIcon className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <span className="text-[10px] uppercase font-bold text-token-text-tertiary">
+                    Solo Lectura
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

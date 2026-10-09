@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
 import { format, addDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { TrendingUpIcon, TrendingDownIcon } from "../../../dashboard/components/ui/trend-icons";
@@ -104,11 +103,8 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
     return (
       <div className={`space-y-6 ${className}`}>
         {/* Header con tendencia principal */}
-        <motion.div
-          className="flex items-center justify-between"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: showAnimation ? 0.1 : 0 }}
+        <div
+          className={`flex items-center justify-between ${showAnimation ? "animate-in fade-in slide-in-from-top-2 [animation-delay:100ms]" : ""}`}
         >
           <h3 className="text-lg font-semibold text-token-text-primary">{title}</h3>
           <div className="flex items-center gap-2">
@@ -136,14 +132,11 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
               {analysis.trendPercent.toFixed(1)}%
             </span>
           </div>
-        </motion.div>
+        </div>
 
         {/* Métricas principales */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: showAnimation ? 0.2 : 0 }}
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${showAnimation ? "animate-in fade-in slide-in-from-bottom-4 [animation-delay:200ms]" : ""}`}
         >
           <div className="bg-token-surface-card p-4 rounded-lg border border-token-border-subtle">
             <p className="text-sm text-token-text-secondary mb-1">Semana Actual</p>
@@ -173,15 +166,12 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
               {analysis.confidence.toFixed(0)}%
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Insights automáticos */}
         {analysis.insights.length > 0 && (
-          <motion.div
-            className="bg-blue-50 border border-blue-200 rounded-lg p-4"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: showAnimation ? 0.3 : 0 }}
+          <div
+            className={`bg-blue-50 border border-blue-200 rounded-lg p-4 ${showAnimation ? "animate-in fade-in zoom-in-95 [animation-delay:300ms]" : ""}`}
           >
             <h4 className="font-medium text-blue-900 mb-2">💡 Insights Automáticos</h4>
             <ul className="space-y-1">
@@ -192,15 +182,12 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
         )}
 
         {/* Predicciones futuras */}
-        <motion.div
-          className="bg-token-surface-card p-4 rounded-lg border border-token-border-subtle"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: showAnimation ? 0.4 : 0 }}
+        <div
+          className={`bg-token-surface-card p-4 rounded-lg border border-token-border-subtle ${showAnimation ? "animate-in fade-in slide-in-from-bottom-4 [animation-delay:400ms]" : ""}`}
         >
           <h4 className="font-medium text-token-text-primary mb-3">Predicciones Próximas</h4>
           <div className="space-y-2">
@@ -231,7 +218,7 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   },

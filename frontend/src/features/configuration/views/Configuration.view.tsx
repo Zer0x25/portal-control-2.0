@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
 import {
   ShieldIcon,
@@ -63,7 +62,7 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`pb-4 px-1 flex items-center gap-2.5 transition-all relative ${
+                className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
                   isActive
                     ? "text-(--sidebar-text-active)"
                     : "text-token-text-tertiary hover:text-token-text-primary"
@@ -72,10 +71,7 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
                 <Icon className={`w-4 h-4 ${isActive ? "opacity-100" : "opacity-60"}`} />
                 <span className="text-[11px] font-bold uppercase tracking-widest">{tab.label}</span>
                 {isActive && (
-                  <motion.div
-                    layoutId="activeTabConfig"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)]"
-                  />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)] animate-in fade-in" />
                 )}
               </button>
             );
@@ -85,21 +81,13 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
 
       <div className="relative">
         <div className="bg-token-surface-card border border-token-border-technical rounded-sm p-6 md:p-8 min-h-[65vh] shadow-sm">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Suspense fallback={<LazySectionFallback rows={5} className="py-6" />}>
-                {activeTab === "variables" && <GlobalVariablesView />}
-                {activeTab === "email" && <EmailCenterView />}
-                {activeTab === "master-data" && <MasterDataExportView />}
-              </Suspense>
-            </motion.div>
-          </AnimatePresence>
+          <div key={activeTab} className="animate-in fade-in slide-in-from-top-2">
+            <Suspense fallback={<LazySectionFallback rows={5} className="py-6" />}>
+              {activeTab === "variables" && <GlobalVariablesView />}
+              {activeTab === "email" && <EmailCenterView />}
+              {activeTab === "master-data" && <MasterDataExportView />}
+            </Suspense>
+          </div>
         </div>
       </div>
     </Container>

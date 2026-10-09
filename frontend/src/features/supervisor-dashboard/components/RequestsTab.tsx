@@ -19,7 +19,6 @@ import {
   InboxArrowDownIcon,
 } from "../../../components/ui/icons/index";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { motion, AnimatePresence } from "framer-motion";
 
 type RequestStatusFilter = "pending" | "approved" | "rejected";
 
@@ -43,7 +42,7 @@ const PendingRequestCard: FC<{
   const employee = getEmployeeById(req.employeeId);
 
   return (
-    <motion.div className="p-6 rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm group hover:border-sap-blue transition-all duration-300">
+    <div className="p-6 rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm group hover:border-sap-blue transition duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start gap-5">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-sm bg-sap-blue border border-sap-blue shadow-lg shadow-sap-blue/20 flex items-center justify-center shrink-0">
@@ -118,7 +117,7 @@ const PendingRequestCard: FC<{
           Validar en Sistema
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -133,7 +132,7 @@ const ApprovedRequestCard: FC<{
   const employee = getEmployeeById(req.employeeId);
 
   return (
-    <motion.div className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-emerald-500 shadow-sm transition-all group flex flex-col justify-between">
+    <div className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-emerald-500 shadow-sm transition group flex flex-col justify-between">
       <div className="flex justify-between items-start mb-2">
         <div>
           <p className="text-[12px] font-bold text-token-text-primary uppercase tracking-tight">
@@ -177,7 +176,7 @@ const ApprovedRequestCard: FC<{
           </button>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
@@ -192,7 +191,7 @@ const RejectedRequestCard: FC<{
   const employee = getEmployeeById(req.employeeId);
 
   return (
-    <motion.div className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-rose-500 shadow-sm transition-all group flex flex-col justify-between">
+    <div className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-rose-500 shadow-sm transition group flex flex-col justify-between">
       <div className="flex justify-between items-start mb-2">
         <div>
           <p className="text-[12px] font-bold text-token-text-primary uppercase tracking-tight">
@@ -232,7 +231,7 @@ const RejectedRequestCard: FC<{
           </button>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
@@ -448,11 +447,7 @@ const RequestsTab: React.FC = () => {
     return (
       <div className="min-h-[500px] flex flex-col items-center justify-center gap-5">
         <div className="relative">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-            className="w-12 h-12 border-4 border-sap-blue/20 border-t-sap-blue rounded-full"
-          />
+          <div className="w-12 h-12 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
             <InboxArrowDownIcon className="w-5 h-5 text-sap-blue animate-pulse" />
           </div>
@@ -484,16 +479,14 @@ const RequestsTab: React.FC = () => {
                 `}
               >
                 {statusFilter === status && (
-                  <motion.div
-                    layoutId="activeFilterPill"
-                    className={`absolute inset-0 shadow-md rounded-sm -z-10 ${
+                  <div
+                    className={`absolute inset-0 shadow-md rounded-sm -z-10 animate-in fade-in ${
                       status === "pending"
                         ? "bg-amber-500 shadow-amber-500/20"
                         : status === "approved"
                           ? "bg-emerald-500 shadow-emerald-500/20"
                           : "bg-rose-600 shadow-rose-600/20"
                     }`}
-                    transition={{ duration: 0.2 }}
                   />
                 )}
                 <span className="relative z-10">{CORRECTION_REQUEST_STATUS_TEXT[status]}</span>
@@ -514,73 +507,65 @@ const RequestsTab: React.FC = () => {
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={statusFilter}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {statusFilter === "pending" ? (
-              <div className="max-h-[65vh] overflow-y-auto custom-scrollbar pr-6 -mr-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pb-10">
-                  {filteredRequests.length > 0 ? (
-                    filteredRequests.map((req: CorrectionRequest) => (
-                      <PendingRequestCard
-                        key={req.id}
-                        req={req}
-                        onApprove={handleApprove}
-                        onReject={handleReject}
-                        onViewAttachment={setAttachmentToView}
-                        isProcessing={processingIds.has(req.id) || isUpdatingRequestStatus}
-                      />
-                    ))
-                  ) : (
-                    <div className="sm:col-span-2 flex flex-col items-center justify-center py-40 opacity-30">
-                      <div className="w-24 h-24 rounded-sm bg-token-surface-stripe flex items-center justify-center mb-8 border border-token-border-technical shadow-inner">
-                        <CheckCircleIcon className="w-12 h-12 text-sap-blue" />
-                      </div>
-                      <p className="text-[11px] font-black text-token-text-tertiary uppercase tracking-[0.4em]">
-                        AUDITADO. SIN PENDIENTES.
-                      </p>
+        <div key={statusFilter} className="animate-in fade-in slide-in-from-top-2">
+          {statusFilter === "pending" ? (
+            <div className="max-h-[65vh] overflow-y-auto custom-scrollbar pr-6 -mr-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pb-10">
+                {filteredRequests.length > 0 ? (
+                  filteredRequests.map((req: CorrectionRequest) => (
+                    <PendingRequestCard
+                      key={req.id}
+                      req={req}
+                      onApprove={handleApprove}
+                      onReject={handleReject}
+                      onViewAttachment={setAttachmentToView}
+                      isProcessing={processingIds.has(req.id) || isUpdatingRequestStatus}
+                    />
+                  ))
+                ) : (
+                  <div className="sm:col-span-2 flex flex-col items-center justify-center py-40 opacity-30">
+                    <div className="w-24 h-24 rounded-sm bg-token-surface-stripe flex items-center justify-center mb-8 border border-token-border-technical shadow-inner">
+                      <CheckCircleIcon className="w-12 h-12 text-sap-blue" />
                     </div>
-                  )}
-                </div>
-                <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
-                  {isFetchingNextPage && (
-                    <div className="flex items-center gap-3 text-[10px] font-black text-sap-blue uppercase tracking-widest animate-pulse">
-                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      SINCRONIZANDO MÁS ENTREGAS...
-                    </div>
-                  )}
-                </div>
+                    <p className="text-[11px] font-black text-token-text-tertiary uppercase tracking-[0.4em]">
+                      AUDITADO. SIN PENDIENTES.
+                    </p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="pb-10">
-                <VirtualizedRequestList
-                  requests={filteredRequests}
-                  itemHeight={ITEM_HEIGHTS[statusFilter]}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onViewAttachment={setAttachmentToView}
-                  isProcessing={isUpdatingRequestStatus}
-                  hasNextPage={hasNextPage}
-                  isFetchingNextPage={isFetchingNextPage}
-                  fetchNextPage={fetchNextPage}
-                />
-                <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-6">
-                  {isFetchingNextPage && (
-                    <div className="flex items-center gap-3 text-[10px] font-black text-sap-blue uppercase tracking-widest animate-pulse">
-                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      RECUPERANDO HISTORIAL...
-                    </div>
-                  )}
-                </div>
+              <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+                {isFetchingNextPage && (
+                  <div className="flex items-center gap-3 text-[10px] font-black text-sap-blue uppercase tracking-widest animate-pulse">
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    SINCRONIZANDO MÁS ENTREGAS...
+                  </div>
+                )}
               </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+            </div>
+          ) : (
+            <div className="pb-10">
+              <VirtualizedRequestList
+                requests={filteredRequests}
+                itemHeight={ITEM_HEIGHTS[statusFilter]}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                onViewAttachment={setAttachmentToView}
+                isProcessing={isUpdatingRequestStatus}
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                fetchNextPage={fetchNextPage}
+              />
+              <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-6">
+                {isFetchingNextPage && (
+                  <div className="flex items-center gap-3 text-[10px] font-black text-sap-blue uppercase tracking-widest animate-pulse">
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    RECUPERANDO HISTORIAL...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {requestToReject && (

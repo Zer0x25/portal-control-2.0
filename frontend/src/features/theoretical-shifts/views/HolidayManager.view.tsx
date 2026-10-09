@@ -13,7 +13,6 @@ import {
 } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
 import EmptyState from "../../../components/ui/EmptyState";
-import { motion, AnimatePresence } from "framer-motion";
 import HolidayListDesktop from "../components/HolidayListDesktop";
 import HolidayListMobile from "../components/HolidayListMobile";
 import HolidayForm from "../components/HolidayForm";
@@ -91,44 +90,35 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
             <CloudArrowDownIcon className={`w-5 h-5 ${isPending ? "animate-bounce" : ""}`} />
             <span className="hidden md:inline">{isPending ? "Cargando..." : "Cargar del Año"}</span>
           </Button>
-          <AnimatePresence>
-            {!isFormVisible && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+          {!isFormVisible && (
+            <div className="animate-in fade-in zoom-in-90">
+              <Button
+                onClick={() => setIsFormVisible(true)}
+                variant="primary"
+                className="flex items-center gap-2"
               >
-                <Button
-                  onClick={() => setIsFormVisible(true)}
-                  variant="primary"
-                  className="flex items-center gap-2"
-                >
-                  <PlusCircleIcon className="w-5 h-5" />
-                  Nuevo Feriado
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <PlusCircleIcon className="w-5 h-5" />
+                Nuevo Feriado
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {isFormVisible && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 overflow-hidden shadow-sm"
-          >
+      <div
+        className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ${isFormVisible ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm">
             <HolidayForm
               initialData={editingHoliday}
               onSave={handleSaveWrapper}
               onCancel={handleCancelForm}
               existingDates={existingDates}
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      </div>
 
       <div className="flex items-center gap-3 px-4 h-[44px] bg-token-surface-card border border-token-border-technical rounded-md whitespace-nowrap w-full md:w-auto md:self-end">
         <CalendarDaysIcon className="w-4 h-4 text-token-text-tertiary" />
@@ -190,18 +180,16 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
         )}
       </div>
 
-      <AnimatePresence>
-        {holidayToDelete && (
-          <ConfirmationModal
-            isOpen
-            onClose={() => setHolidayToDelete(null)}
-            onConfirm={handleConfirmDeleteHoliday}
-            title="Eliminar Feriado"
-            message={`¿Está seguro de eliminar el feriado "${holidayToDelete.name}"? Esta acción afectará los cálculos de recargo.`}
-            confirmVariant="danger"
-          />
-        )}
-      </AnimatePresence>
+      {holidayToDelete && (
+        <ConfirmationModal
+          isOpen
+          onClose={() => setHolidayToDelete(null)}
+          onConfirm={handleConfirmDeleteHoliday}
+          title="Eliminar Feriado"
+          message={`¿Está seguro de eliminar el feriado "${holidayToDelete.name}"? Esta acción afectará los cálculos de recargo.`}
+          confirmVariant="danger"
+        />
+      )}
     </Container>
   );
 };

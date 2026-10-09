@@ -3,7 +3,6 @@
 */
 
 import React from "react";
-import { motion } from "framer-motion";
 import PageHeader from "../../../components/ui/PageHeader";
 import Button from "../../../components/ui/Button";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
@@ -91,11 +90,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
 
   return (
     <Container variant="wide" noPadding data-ui-protected className="space-y-6 pb-20 sm:pb-6">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-      >
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-in fade-in">
         <PageHeader
           eyebrow="Operaciones"
           eyebrowIcon={<BookOpenIcon className="h-3.5 w-3.5" />}
@@ -104,39 +99,31 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
           subtitle="Gestión centralizada de eventos y proveedores del turno"
         />
         <div className="flex items-center justify-between w-full sm:w-auto gap-2">
-          <motion.div whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={() => setShowShiftHistoryModal(true)}
-              variant="secondary"
-              size="sm"
-              className="py-2.5 px-6 text-[11px] font-bold uppercase tracking-widest bg-token-surface-card border-token-border-technical rounded-sm shadow-sm"
-            >
-              Historial de Turnos
-            </Button>
-          </motion.div>
+          <Button
+            onClick={() => setShowShiftHistoryModal(true)}
+            variant="secondary"
+            size="sm"
+            className="py-2.5 px-6 text-[11px] font-bold uppercase tracking-widest bg-token-surface-card border-token-border-technical rounded-sm shadow-sm"
+          >
+            Historial de Turnos
+          </Button>
           {isMobile && (
-            <motion.div whileTap={{ scale: 0.95 }} className="ml-auto">
-              <Button
-                onClick={handleNavigateDashboard}
-                variant="primary"
-                size="sm"
-                className="shadow-sm flex items-center gap-1.5 px-3"
-              >
-                <HomeIcon className="w-4 h-4" />
-                Volver
-              </Button>
-            </motion.div>
+            <Button
+              onClick={handleNavigateDashboard}
+              variant="primary"
+              size="sm"
+              className="shadow-sm flex items-center gap-1.5 px-3"
+            >
+              <HomeIcon className="w-4 h-4" />
+              Volver
+            </Button>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {activeShift ? (
         <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 bg-token-surface-card p-6 rounded-sm border border-token-border-technical shadow-sm relative overflow-hidden group"
-          >
+          <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 bg-token-surface-card p-6 rounded-sm border border-token-border-technical shadow-sm relative overflow-hidden group animate-in fade-in">
             <div className="relative z-10 transition-transform duration-500 group-hover:translate-x-1">
               <h1 className="text-3xl font-bold text-token-text-primary tracking-tight">
                 {activeShift.shiftName}
@@ -166,11 +153,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
               </div>
 
               <div className="flex items-center gap-3 w-full sm:w-auto">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto"
-                >
+                <div className="w-full sm:w-auto transition-transform hover:scale-[1.02] active:scale-[0.98]">
                   <Button
                     onClick={() => setShowCloseShiftConfirmation(true)}
                     variant="danger"
@@ -181,36 +164,28 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                     <CloseIcon className="w-4 h-4" />
                     Cerrar Guardía
                   </Button>
-                </motion.div>
+                </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
+            <div className="animate-in fade-in [animation-delay:100ms]">
               <LogEntriesCard
                 activeShift={activeShift}
                 onUpdateShift={handleUpdateShift}
                 showLogEntryModal={showLogEntryModal}
                 setShowLogEntryModal={setShowLogEntryModal}
               />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            </div>
+            <div className="animate-in fade-in [animation-delay:200ms]">
               <SupplierEntriesCard
                 activeShift={activeShift}
                 onUpdateShift={handleUpdateShift}
                 showSupplierEntryModal={showSupplierEntryModal}
                 setShowSupplierEntryModal={setShowSupplierEntryModal}
               />
-            </motion.div>
+            </div>
           </div>
         </>
       ) : (
@@ -225,7 +200,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
             No se ha identificado un turno habilitado. Por favor, inicie la guardia para registrar
             eventos operativos.
           </p>
-          <motion.div whileTap={{ scale: 0.95 }} className="w-fit mx-auto">
+          <div className="w-fit mx-auto transition-transform active:scale-95">
             <Button
               onClick={handleStartShift}
               size="lg"
@@ -234,7 +209,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
             >
               {isStartingShift ? "Habilitando..." : "Iniciar Registro de Guardia"}
             </Button>
-          </motion.div>
+          </div>
         </div>
       )}
 
@@ -278,79 +253,54 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
       {/* Floating Action Button for Mobile */}
       {isMobile && activeShift && (
         <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-3">
-          <motion.div
-            initial={false}
-            animate={showFabMenu ? "open" : "closed"}
-            className="flex flex-col items-end gap-3 mb-2"
-          >
-            {/* Option: Add Supplier */}
-            <motion.div
-              variants={{
-                open: { opacity: 1, y: 0, scale: 1, display: "flex" },
-                closed: {
-                  opacity: 0,
-                  y: 20,
-                  scale: 0.8,
-                  transitionEnd: { display: "none" },
-                },
-              }}
-              className="flex items-center gap-3 drop-shadow-xl"
-            >
-              <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
-                Proveedor
-              </span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  setShowSupplierEntryModal(true);
-                  setShowFabMenu(false);
-                }}
-                className="w-12 h-12 rounded-sm bg-(--status-success) text-white flex items-center justify-center shadow-lg shadow-(--status-success)/20 border border-(--status-success)/20"
-              >
-                <PlusCircleIcon className="w-6 h-6" />
-              </motion.button>
-            </motion.div>
+          {showFabMenu && (
+            <div className="flex flex-col items-end gap-3 mb-2">
+              {/* Option: Add Supplier */}
+              <div className="flex items-center gap-3 drop-shadow-xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 [animation-delay:50ms]">
+                <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
+                  Proveedor
+                </span>
+                <button
+                  onClick={() => {
+                    setShowSupplierEntryModal(true);
+                    setShowFabMenu(false);
+                  }}
+                  className="w-12 h-12 rounded-sm bg-(--status-success) text-white flex items-center justify-center shadow-lg shadow-(--status-success)/20 border border-(--status-success)/20 transition-transform active:scale-90"
+                >
+                  <PlusCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
 
-            {/* Option: Add Novelty */}
-            <motion.div
-              variants={{
-                open: { opacity: 1, y: 0, scale: 1, display: "flex" },
-                closed: {
-                  opacity: 0,
-                  y: 20,
-                  scale: 0.8,
-                  transitionEnd: { display: "none" },
-                },
-              }}
-              className="flex items-center gap-3 drop-shadow-xl"
-            >
-              <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
-                Novedad
-              </span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  setShowLogEntryModal(true);
-                  setShowFabMenu(false);
-                }}
-                className="w-12 h-12 rounded-sm bg-(--sidebar-text-active) text-white flex items-center justify-center shadow-lg shadow-(--sidebar-text-active)/20 border border-(--sidebar-text-active)/20"
-              >
-                <PlusCircleIcon className="w-6 h-6" />
-              </motion.button>
-            </motion.div>
-          </motion.div>
+              {/* Option: Add Novelty */}
+              <div className="flex items-center gap-3 drop-shadow-xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 [animation-delay:100ms]">
+                <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
+                  Novedad
+                </span>
+                <button
+                  onClick={() => {
+                    setShowLogEntryModal(true);
+                    setShowFabMenu(false);
+                  }}
+                  className="w-12 h-12 rounded-sm bg-(--sidebar-text-active) text-white flex items-center justify-center shadow-lg shadow-(--sidebar-text-active)/20 border border-(--sidebar-text-active)/20 transition-transform active:scale-90"
+                >
+                  <PlusCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Main FAB Toggle */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
+          <button
             onClick={() => setShowFabMenu(!showFabMenu)}
+            aria-expanded={showFabMenu}
+            aria-label={showFabMenu ? "Cerrar acciones" : "Abrir acciones"}
             className={`
-              w-14 h-14 rounded-sm flex items-center justify-center shadow-2xl transition-all duration-300 border
+              w-14 h-14 rounded-sm flex items-center justify-center shadow-2xl transition duration-300 border active:scale-90
               ${showFabMenu ? "bg-token-text-primary border-token-border-technical text-white rotate-45" : "bg-(--sidebar-text-active) border-(--sidebar-text-active)/20 text-white"}
             `}
           >
             <PlusCircleIcon className="w-7 h-7" />
-          </motion.button>
+          </button>
         </div>
       )}
 

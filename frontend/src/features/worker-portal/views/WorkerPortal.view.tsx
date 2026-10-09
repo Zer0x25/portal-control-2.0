@@ -4,7 +4,6 @@
 */
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
 import {
   DailyTimeRecord,
   AugmentedTimeRecord,
@@ -178,11 +177,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
 
   return (
     <Container variant="standard" noPadding data-ui-protected className="space-y-8 pb-10">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6"
-      >
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-in fade-in">
         <PageHeader
           eyebrow="Portal"
           eyebrowIcon={<UserIcon className="w-3 h-3" />}
@@ -200,7 +195,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </div>
           }
         />
-      </motion.div>
+      </div>
 
       <div className="relative overflow-hidden p-8 rounded-[3rem] bg-token-surface-card border border-token-border-technical backdrop-blur-xl profile-card-glass">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
@@ -420,11 +415,9 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               <tbody className="divide-y divide-token-border-subtle bg-token-surface-card">
                 {enrichedRecords.length > 0 ? (
                   enrichedRecords.map((record) => (
-                    <motion.tr
+                    <tr
                       key={record.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className={`group hover:bg-token-surface-active transition-colors ${record.scheduleInfo?.justificationType || record.justification?.type ? "bg-sap-blue/5" : ""}`}
+                      className={`group hover:bg-token-surface-active transition-colors animate-in fade-in ${record.scheduleInfo?.justificationType || record.justification?.type ? "bg-sap-blue/5" : ""}`}
                     >
                       <td className="px-6 py-4 align-top">
                         <div className="text-sm font-black text-token-text-primary uppercase italic tracking-tighter">
@@ -467,7 +460,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                             formatDecimalHoursToHHMM(record.overtimeHours)}
                         </div>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))
                 ) : (
                   <tr>

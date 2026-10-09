@@ -1,5 +1,4 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   XMarkIcon,
   ClockIcon,
@@ -97,131 +96,125 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
 
 const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClose }) => {
   return (
-    <AnimatePresence>
-      {log && (
-        <>
-          {/* Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90"
-          />
+    log && (
+      <>
+        {/* Overlay */}
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90 animate-in fade-in"
+        />
 
-          {/* Drawer */}
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl z-100 border-l border-token-border-technical flex flex-col"
-          >
-            {/* Header */}
-            <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">
-              <div className="flex items-center gap-4">
-                <IconBox
-                  icon={<ShieldIcon />}
-                  variant={log.severity === "CRITICAL" ? "danger" : "neutral"}
-                  size="md"
-                  className="rounded-sm shadow-sm"
-                />
-                <div>
-                  <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
-                    Detalle de Evento
-                  </h3>
-                  <p className="text-[10px] font-bold text-token-text-tertiary font-mono uppercase tracking-widest">
-                    ID: {log.id.split("-")[0]}...
+        {/* Drawer */}
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Detalle de evento de auditoría"
+          className="fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl z-100 border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms]"
+        >
+          {/* Header */}
+          <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">
+            <div className="flex items-center gap-4">
+              <IconBox
+                icon={<ShieldIcon />}
+                variant={log.severity === "CRITICAL" ? "danger" : "neutral"}
+                size="md"
+                className="rounded-sm shadow-sm"
+              />
+              <div>
+                <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
+                  Detalle de Evento
+                </h3>
+                <p className="text-[10px] font-bold text-token-text-tertiary font-mono uppercase tracking-widest">
+                  ID: {log.id.split("-")[0]}...
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-token-surface-active rounded-full transition-colors text-token-text-tertiary"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+            {/* Summary Section */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
+                    <UserIcon className="w-3 h-3" />
+                    Actor
+                  </div>
+                  <p className="text-xs font-bold text-token-text-primary truncate">
+                    {log.actorUsername}
                   </p>
                 </div>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-token-surface-active rounded-full transition-colors text-token-text-tertiary"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-              {/* Summary Section */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
-                      <UserIcon className="w-3 h-3" />
-                      Actor
-                    </div>
-                    <p className="text-xs font-bold text-token-text-primary truncate">
-                      {log.actorUsername}
-                    </p>
+                <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
+                    <ClockIcon className="w-3 h-3" />
+                    Fecha/Hora
                   </div>
-                  <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
-                      <ClockIcon className="w-3 h-3" />
-                      Fecha/Hora
-                    </div>
-                    <p className="text-xs font-bold text-token-text-primary">
-                      {formatLogTimestamp(log.timestamp)}
-                    </p>
-                  </div>
-                  <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
-                      <ServerIcon className="w-3 h-3" />
-                      Categoría
-                    </div>
-                    <p className="text-xs font-bold text-token-text-primary uppercase">
-                      {log.category || "N/A"}
-                    </p>
-                  </div>
-                  <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
-                      <ShieldIcon className="w-3 h-3" />
-                      IP Origen
-                    </div>
-                    <p className="text-xs font-bold text-token-text-primary">
-                      {log.ipAddress || "Interna/Worker"}
-                    </p>
-                  </div>
+                  <p className="text-xs font-bold text-token-text-primary">
+                    {formatLogTimestamp(log.timestamp)}
+                  </p>
                 </div>
-
-                <div className="bg-token-surface-stripe border border-token-border-technical p-4 rounded-sm">
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider mb-2">
-                    <ActivityIcon className="w-3 h-3" />
-                    Acción Realizada
+                <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
+                    <ServerIcon className="w-3 h-3" />
+                    Categoría
                   </div>
-                  <p className="text-sm font-bold text-token-text-primary leading-tight">
-                    {log.action}
+                  <p className="text-xs font-bold text-token-text-primary uppercase">
+                    {log.category || "N/A"}
+                  </p>
+                </div>
+                <div className="bg-token-surface-stripe border border-token-border-technical p-3 rounded-sm space-y-1">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
+                    <ShieldIcon className="w-3 h-3" />
+                    IP Origen
+                  </div>
+                  <p className="text-xs font-bold text-token-text-primary">
+                    {log.ipAddress || "Interna/Worker"}
                   </p>
                 </div>
               </div>
 
-              {/* Details / Diff Section */}
-              {log.details ? (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <DiffViewer details={log.details} />
+              <div className="bg-token-surface-stripe border border-token-border-technical p-4 rounded-sm">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider mb-2">
+                  <ActivityIcon className="w-3 h-3" />
+                  Acción Realizada
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center p-12 opacity-30 grayscale saturate-0">
-                  <ActivityIcon className="w-12 h-12 mb-4" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-center">
-                    Sin datos adicionales registrados
-                  </p>
-                </div>
-              )}
+                <p className="text-sm font-bold text-token-text-primary leading-tight">
+                  {log.action}
+                </p>
+              </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t border-token-border-technical bg-token-surface-stripe flex justify-end">
-              <span className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.2em] opacity-40">
-                Seguridad Enterprise &bull; Trazabilidad v3.5
-              </span>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+            {/* Details / Diff Section */}
+            {log.details ? (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <DiffViewer details={log.details} />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-12 opacity-30 grayscale saturate-0">
+                <ActivityIcon className="w-12 h-12 mb-4" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-center">
+                  Sin datos adicionales registrados
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-token-border-technical bg-token-surface-stripe flex justify-end">
+            <span className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.2em] opacity-40">
+              Seguridad Enterprise &bull; Trazabilidad v3.5
+            </span>
+          </div>
+        </div>
+      </>
+    )
   );
 };
 

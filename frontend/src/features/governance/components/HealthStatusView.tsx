@@ -1,6 +1,5 @@
 import React from "react";
 import { format } from "date-fns";
-import { motion } from "framer-motion";
 import Card from "../../../components/ui/Card";
 import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
 import Badge from "../../../components/ui/Badge";
@@ -153,12 +152,11 @@ const HealthStatusView: React.FC = () => {
                     </span>
                   </div>
                   <div className="h-1 bg-token-border-subtle overflow-hidden rounded-full">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{
+                    <div
+                      style={{
                         width: `${100 - ((health?.system?.os?.freeMem || 0) / (health?.system?.os?.totalMem || 1)) * 100}%`,
                       }}
-                      className="h-full bg-sap-blue shadow-[0_0_8px_rgba(4,105,255,0.4)]"
+                      className="h-full bg-sap-blue shadow-[0_0_8px_rgba(4,105,255,0.4)] transition-[width] duration-500"
                     />
                   </div>
                 </div>
