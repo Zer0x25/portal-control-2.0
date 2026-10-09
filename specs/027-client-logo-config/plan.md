@@ -22,22 +22,22 @@ La spec asume **Opción A** salvo que durante T1 se demuestre un requisito multi
 
 ## Archivos a tocar
 
-| Archivo | Cambio |
-| ------- | ------ |
-| `backend/src/modules/configs/application/contracts.ts` (o nuevo `brandLogo.ts`) | Esquema Zod de `branding_logo` (source + width/height o scale, rangos) |
-| `backend/src/modules/configs/application/flows.ts` | Flujos `brandLogo()` / subida con validación, reutilizando `createConfigFlows` |
-| `backend/src/modules/configs/http/routes.ts` | Endpoints `GET /api/configs/public/brand-logo(+/file)` y `POST /api/configs/brand-logo` (o solo validación en `/:key` si es URL) |
-| `backend/src/platform/fastify/routeContracts.ts` | Alta de las rutas en el manifiesto de `configs` |
-| `backend/src/platform/openapi/operations.ts` + `backend/docs/swagger.json` | Documentación OpenAPI de los nuevos endpoints |
-| `backend/src/services/companyPolicyStorage.ts` (o nuevo `brandLogoStorage.ts`) | Almacenamiento de imagen con `basename`, límites y limpieza ante fallo |
-| `backend/src/services/seeder/Phase1Service.ts` | Seed del valor por defecto de `branding_logo` (solo si falta, sin sobrescribir) |
-| `frontend/src/services/configService.ts` | Métodos `getPublicBrandLogo()` / `uploadBrandLogo()` (lectura sin token) |
-| `frontend/src/hooks/queries/useConfigQuery.ts` | Hook público `useBrandLogoQuery` (sin gate de token, fallback local) |
-| `frontend/src/components/ui/BrandLogo.tsx` (nuevo) | Componente de logo con tamaño configurable + anti-CLS |
-| `frontend/src/features/auth/pages/LoginPage.tsx` | Consumir `BrandLogo` en lugar del `<img>` hardcodeado |
-| `frontend/src/features/configuration/components/GlobalVariablesManager.tsx` | Sección de marca: vista previa, edición, restablecer |
-| `frontend/src/types/api-schema.ts` | Regenerado vía SDK (`npm run check:sdk`) |
-| `frontend/src/hooks/useConfigMutations.ts` | Invalidación de la query de logo tras `set` (si aplica) |
+| Archivo                                                                         | Cambio                                                                                                                           |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `backend/src/modules/configs/application/contracts.ts` (o nuevo `brandLogo.ts`) | Esquema Zod de `branding_logo` (source + width/height o scale, rangos)                                                           |
+| `backend/src/modules/configs/application/flows.ts`                              | Flujos `brandLogo()` / subida con validación, reutilizando `createConfigFlows`                                                   |
+| `backend/src/modules/configs/http/routes.ts`                                    | Endpoints `GET /api/configs/public/brand-logo(+/file)` y `POST /api/configs/brand-logo` (o solo validación en `/:key` si es URL) |
+| `backend/src/platform/fastify/routeContracts.ts`                                | Alta de las rutas en el manifiesto de `configs`                                                                                  |
+| `backend/src/platform/openapi/operations.ts` + `backend/docs/swagger.json`      | Documentación OpenAPI de los nuevos endpoints                                                                                    |
+| `backend/src/services/companyPolicyStorage.ts` (o nuevo `brandLogoStorage.ts`)  | Almacenamiento de imagen con `basename`, límites y limpieza ante fallo                                                           |
+| `backend/src/services/seeder/Phase1Service.ts`                                  | Seed del valor por defecto de `branding_logo` (solo si falta, sin sobrescribir)                                                  |
+| `frontend/src/services/configService.ts`                                        | Métodos `getPublicBrandLogo()` / `uploadBrandLogo()` (lectura sin token)                                                         |
+| `frontend/src/hooks/queries/useConfigQuery.ts`                                  | Hook público `useBrandLogoQuery` (sin gate de token, fallback local)                                                             |
+| `frontend/src/components/ui/BrandLogo.tsx` (nuevo)                              | Componente de logo con tamaño configurable + anti-CLS                                                                            |
+| `frontend/src/features/auth/pages/LoginPage.tsx`                                | Consumir `BrandLogo` en lugar del `<img>` hardcodeado                                                                            |
+| `frontend/src/features/configuration/components/GlobalVariablesManager.tsx`     | Sección de marca: vista previa, edición, restablecer                                                                             |
+| `frontend/src/types/api-schema.ts`                                              | Regenerado vía SDK (`npm run check:sdk`)                                                                                         |
+| `frontend/src/hooks/useConfigMutations.ts`                                      | Invalidación de la query de logo tras `set` (si aplica)                                                                          |
 
 ## Contratos afectados
 
