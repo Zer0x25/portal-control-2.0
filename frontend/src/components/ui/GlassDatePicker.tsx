@@ -16,6 +16,7 @@ import {
 import { es } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, XCircleIcon } from "./icons/index";
+import Button from "./Button";
 
 interface GlassDatePickerProps {
   label?: string;
@@ -58,27 +59,31 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
   const renderHeader = () => {
     return (
       <div className="flex items-center justify-between px-4 py-3 border-b border-token-border-technical bg-token-surface-header">
-        <button
+        <Button
+          variant="none"
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             setCurrentMonth(subMonths(currentMonth, 1));
           }}
-          className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-gray-300 dark:hover:border-gray-700"
+          className="p-1.5 rounded-md hover:bg-token-surface-hover transition-colors border border-transparent hover:border-token-border-subtle shadow-none"
         >
-          <ChevronLeftIcon className="w-4 h-4 text-gray-400" />
-        </button>
-        <span className="text-[11px] font-black uppercase tracking-widest text-gray-700 dark:text-gray-200">
+          <ChevronLeftIcon className="w-4 h-4 text-token-text-tertiary" />
+        </Button>
+        <span className="text-[11px] font-black uppercase tracking-widest text-token-text-primary">
           {format(currentMonth, "MMMM yyyy", { locale: es })}
         </span>
-        <button
+        <Button
+          variant="none"
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             setCurrentMonth(addMonths(currentMonth, 1));
           }}
-          className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors border border-transparent hover:border-gray-300 dark:hover:border-gray-700"
+          className="p-1.5 rounded-md hover:bg-token-surface-hover transition-colors border border-transparent hover:border-token-border-subtle shadow-none"
         >
-          <ChevronRightIcon className="w-4 h-4 text-gray-400" />
-        </button>
+          <ChevronRightIcon className="w-4 h-4 text-token-text-tertiary" />
+        </Button>
       </div>
     );
   };
@@ -88,7 +93,10 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
     const dateNames = ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sá"];
     for (let i = 0; i < 7; i++) {
       days.push(
-        <div key={i} className="text-[9px] font-black uppercase text-sap-blue/40 text-center py-2">
+        <div
+          key={i}
+          className="text-[9px] font-black uppercase text-token-accent-brand/40 text-center py-2"
+        >
           {dateNames[i]}
         </div>,
       );
@@ -116,7 +124,9 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
       const isDisabled = isTooLate || isTooEarly;
 
       rows.push(
-        <button
+        <Button
+          variant="none"
+          type="button"
           key={day.toString()}
           onClick={(e) => {
             e.stopPropagation();
@@ -126,14 +136,14 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
             }
           }}
           disabled={isDisabled}
-          className={`relative h-10 w-10 flex items-center justify-center rounded-md text-[11px] font-black transition-all
+          className={`relative h-10 w-10 flex items-center justify-center rounded-md text-[11px] font-black transition-all shadow-none
                 ${isDisabled ? "text-token-text-tertiary opacity-30 cursor-not-allowed" : !isCurrentMonth ? "text-token-text-tertiary" : "text-token-text-primary"}
-                ${isSelected && !isDisabled ? "bg-sap-blue text-white shadow-lg shadow-sap-blue/30 scale-105 z-10" : !isDisabled ? "hover:bg-sap-blue/10 hover:text-sap-blue" : ""}
-                ${isToday && !isSelected && !isDisabled ? "bg-sap-blue/5 text-sap-blue ring-1 ring-sap-blue/30" : ""}
+                ${isSelected && !isDisabled ? "bg-token-accent-brand text-token-text-onAccent shadow-md scale-105 z-10" : !isDisabled ? "hover:bg-token-accent-brand/10 hover:text-token-accent-brand" : ""}
+                ${isToday && !isSelected && !isDisabled ? "bg-token-accent-brand/5 text-token-accent-brand ring-1 ring-token-accent-brand/30" : ""}
               `}
         >
           {format(day, "d")}
-        </button>,
+        </Button>,
       );
     });
 
@@ -155,12 +165,12 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
 
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center h-11 px-4 rounded-md bg-token-surface-card border border-token-border-technical shadow-sm cursor-pointer transition-all hover:border-sap-blue hover:shadow-md
-          ${isOpen ? "ring-1 ring-sap-blue border-sap-blue bg-token-surface-active" : ""}
+        className={`group flex items-center h-11 px-4 rounded-md bg-token-surface-card border border-token-border-technical shadow-sm cursor-pointer transition-all hover:border-token-accent-brand hover:shadow-md
+          ${isOpen ? "ring-1 ring-token-accent-brand border-token-accent-brand bg-token-surface-active" : ""}
         `}
       >
         <CalendarDaysIcon
-          className={`w-4 h-4 mr-3 transition-colors ${value ? "text-sap-blue" : "text-token-text-tertiary group-hover:text-token-text-secondary transition-transform group-hover:scale-110"}`}
+          className={`w-4 h-4 mr-3 transition-colors ${value ? "text-token-accent-brand" : "text-token-text-tertiary group-hover:text-token-text-secondary transition-transform group-hover:scale-110"}`}
         />
         <span
           className={`flex-1 text-[11px] font-black uppercase tracking-tight truncate ${!value ? "text-token-text-tertiary" : "text-token-text-primary"}`}
@@ -168,15 +178,17 @@ const GlassDatePicker: React.FC<GlassDatePickerProps> = ({
           {displayValue || placeholder}
         </span>
         {value && (
-          <button
+          <Button
+            variant="none"
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onChange("");
             }}
-            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+            className="p-1 rounded-full hover:bg-token-surface-hover transition-colors shadow-none"
           >
-            <XCircleIcon className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100" />
-          </button>
+            <XCircleIcon className="w-4 h-4 text-token-text-tertiary opacity-0 group-hover:opacity-100" />
+          </Button>
         )}
       </div>
 

@@ -41,7 +41,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
     } else if (scheduleInfo && scheduleInfo.isWorkDay) {
       cellContent = (
         <div
-          className="flex flex-col items-center justify-center h-full p-1.5 rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-800 shadow-sm group-hover:shadow-md transition-all"
+          className="flex flex-col items-center justify-center h-full p-1.5 rounded-md border border-token-border-subtle bg-token-surface-card shadow-sm group-hover:shadow-md transition-all"
           title={scheduleInfo.scheduleText}
         >
           {scheduleInfo.isHoliday && (
@@ -50,15 +50,15 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
             </div>
           )}
           <div className="flex flex-col items-center text-center">
-            <span className="text-[10px] font-black leading-none text-gray-800 dark:text-white truncate w-full mb-0.5">
+            <span className="text-[10px] font-black leading-none text-token-text-primary truncate w-full mb-0.5">
               {scheduleInfo.shiftPatternName || "Turno"}
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="text-[13px] font-black text-gray-800 dark:text-gray-200 tabular-nums">
+              <span className="text-[13px] font-black text-token-text-primary tabular-nums">
                 {scheduleInfo.startTime}
               </span>
-              <span className="text-[10px] font-black text-gray-400">—</span>
-              <span className="text-[13px] font-black text-gray-800 dark:text-gray-200 tabular-nums">
+              <span className="text-[10px] font-black text-token-text-tertiary">—</span>
+              <span className="text-[13px] font-black text-token-text-primary tabular-nums">
                 {scheduleInfo.endTime}
               </span>
             </div>
@@ -73,7 +73,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
     } else {
       cellContent = (
         <div className="flex flex-col items-center opacity-30 group-hover:opacity-100 transition-opacity">
-          <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+          <span className="text-[9px] font-black uppercase tracking-widest text-token-text-tertiary">
             Libre
           </span>
         </div>
@@ -146,7 +146,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
       {/* Header: Date number & Today tag */}
       <div className="flex justify-between items-start mb-1">
         <span
-          className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-sap-blue dark:text-blue-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"}`}
+          className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-sap-blue dark:text-blue-400" : "text-token-text-secondary group-hover:text-token-text-primary"}`}
         >
           {day.getDate()}
         </span>

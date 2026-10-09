@@ -50,33 +50,35 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="relative w-full max-w-[320px] bg-white/90 dark:bg-gray-950/90 backdrop-blur-2xl border border-white/20 dark:border-white/10 rounded-[2.5rem] shadow-4xl pointer-events-auto overflow-hidden"
+            className="relative w-full max-w-[320px] bg-token-surface-card border border-token-border-technical rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
           >
             {/* Display Section */}
-            <div className="p-8 pb-6 flex flex-col items-center border-b border-black/5 dark:border-white/5 bg-gray-50/50 dark:bg-white/5">
+            <div className="p-8 pb-6 flex flex-col items-center border-b border-token-border-subtle bg-token-surface-stripe">
               <div className="flex items-center gap-3">
-                <button
+                <Button
+                  variant="none"
                   onClick={() => setView("hours")}
-                  className={`text-5xl font-mono font-black transition-all ${view === "hours" ? colorClass + " scale-110 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)]" : "text-gray-400 opacity-50"}`}
+                  className={`text-5xl font-mono font-black transition-all shadow-none ${view === "hours" ? colorClass + " scale-110 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)]" : "text-token-text-tertiary opacity-50"}`}
                 >
                   {selectedHour}
-                </button>
-                <span className="text-4xl font-mono font-black text-gray-300">:</span>
-                <button
+                </Button>
+                <span className="text-4xl font-mono font-black text-token-border-technical">:</span>
+                <Button
+                  variant="none"
                   onClick={() => setView("minutes")}
-                  className={`text-5xl font-mono font-black transition-all ${view === "minutes" ? colorClass + " scale-110 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)]" : "text-gray-400 opacity-50"}`}
+                  className={`text-5xl font-mono font-black transition-all shadow-none ${view === "minutes" ? colorClass + " scale-110 drop-shadow-[0_0_15px_rgba(0,0,0,0.1)]" : "text-token-text-tertiary opacity-50"}`}
                 >
                   {selectedMinute}
-                </button>
+                </Button>
               </div>
               <div className="mt-4 flex gap-6">
                 <span
-                  className={`text-[10px] font-black uppercase tracking-[0.3em] ${view === "hours" ? colorClass : "text-gray-400"}`}
+                  className={`text-[10px] font-black uppercase tracking-[0.3em] ${view === "hours" ? colorClass : "text-token-text-tertiary"}`}
                 >
                   Horas
                 </span>
                 <span
-                  className={`text-[10px] font-black uppercase tracking-[0.3em] ${view === "minutes" ? colorClass : "text-gray-400"}`}
+                  className={`text-[10px] font-black uppercase tracking-[0.3em] ${view === "minutes" ? colorClass : "text-token-text-tertiary"}`}
                 >
                   Minutos
                 </span>
@@ -104,7 +106,7 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
                       ${
                         (view === "hours" ? selectedHour : selectedMinute) === val
                           ? `${bgAccentClass} text-white shadow-lg`
-                          : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10"
+                          : "bg-token-surface-technical text-token-text-secondary hover:bg-token-surface-hover"
                       }
                     `}
                   >
@@ -119,7 +121,7 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
                       max="59"
                       value={parseInt(selectedMinute)}
                       onChange={(e) => setSelectedMinute(e.target.value.padStart(2, "0"))}
-                      className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-white/10 overflow-hidden [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_0_0_8px_inset] [&::-webkit-slider-thumb]:shadow-current ${colorClass}`}
+                      className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer bg-token-surface-technical overflow-hidden [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_0_0_8px_inset] [&::-webkit-slider-thumb]:shadow-current ${colorClass}`}
                     />
                   </div>
                 )}

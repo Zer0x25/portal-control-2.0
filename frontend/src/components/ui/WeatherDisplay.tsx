@@ -48,7 +48,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
   if (isLoading || !weather) {
     return (
       <div className="flex items-center justify-center h-[60px] min-w-[100px] sm:w-[150px]">
-        <div className="text-[10px] sm:text-xs text-gray-300 dark:text-gray-400">Cargando...</div>
+        <div className="text-[10px] sm:text-xs text-token-text-tertiary">Cargando...</div>
       </div>
     );
   }
@@ -77,7 +77,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
           className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-300 dark:text-yellow-200"
         />
       </div>
-      <div className="text-slate-900 dark:text-white text-left">
+      <div className="text-token-text-primary text-left">
         <div className="font-black text-lg sm:text-2xl leading-none h-6 sm:h-8 flex items-center tracking-tighter">
           <AnimatePresence mode="wait" initial={false}>
             {displayMode === "temp" ? (
@@ -86,7 +86,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
               </motion.div>
             ) : (
               <motion.div key="uv" {...motionProps}>
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mr-1 text-slate-400 dark:text-gray-500">
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest mr-1 text-token-text-tertiary">
                   UV
                 </span>
                 {weather.uvIndex}
@@ -94,12 +94,12 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
             )}
           </AnimatePresence>
         </div>
-        <p className="text-[9px] sm:text-[10px] font-black text-slate-500 dark:text-gray-400 uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
+        <p className="text-[9px] sm:text-[10px] font-black text-token-text-secondary uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
           {weather.location}
         </p>
         <div className="flex items-center gap-1 mt-0.5 sm:mt-1" title={`Índice UV: ${uvInfo.text}`}>
-          <UvIndexIcon className="w-3 h-3 text-slate-300 dark:text-gray-600" />
-          <div className="w-8 sm:w-10 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+          <UvIndexIcon className="w-3 h-3 text-token-text-tertiary" />
+          <div className="w-8 sm:w-10 h-1 bg-token-surface-stripe rounded-full overflow-hidden">
             <div
               className={`${uvInfo.colorClass} h-full rounded-full`}
               style={{ width: `${(Math.min(weather.uvIndex, 11) / 11) * 100}%` }}

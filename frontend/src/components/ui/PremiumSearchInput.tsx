@@ -44,7 +44,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
               scale: isFocused ? 1.1 : 1,
               rotate: isFocused ? 5 : 0,
             }}
-            className={`${isFocused ? "text-sap-blue" : "text-gray-400 dark:text-gray-500"} transition-colors duration-300`}
+            className={`${isFocused ? "text-sap-blue" : "text-token-text-tertiary"} transition-colors duration-300`}
           >
             <SearchIcon className="w-4 h-4" />
           </motion.div>
@@ -69,9 +69,9 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
             bg-token-surface-card border border-token-border-technical
             rounded-md outline-none
             text-[10px] font-black uppercase tracking-wider text-token-text-primary
-            placeholder:text-gray-400 dark:placeholder:text-gray-600
+            placeholder:text-token-text-tertiary
             transition-all duration-300
-            ${disabled ? "opacity-50 cursor-not-allowed bg-token-surface-stripe" : isFocused ? "border-sap-blue shadow-lg shadow-sap-blue/10 bg-white dark:bg-slate-900" : "hover:border-gray-400 dark:hover:border-gray-600"}
+            ${disabled ? "opacity-50 cursor-not-allowed bg-token-surface-stripe" : isFocused ? "border-sap-blue shadow-lg shadow-sap-blue/10 bg-token-surface-card" : "hover:border-token-border-subtle"}
           `}
         />
 
@@ -85,7 +85,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 onClick={handleClear}
-                className="p-1 hover:text-sap-error text-gray-400 dark:text-gray-600 transition-colors"
+                className="p-1 hover:text-sap-error text-token-text-tertiary transition-colors"
                 title="Limpiar búsqueda"
               >
                 <XCircleIcon className="w-5 h-5" />
@@ -96,7 +96,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded border border-token-border-subtle bg-token-surface-stripe text-[8px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-tighter"
+                className="hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded border border-token-border-subtle bg-token-surface-stripe text-[8px] font-black text-token-text-tertiary uppercase tracking-tighter"
               >
                 {shortcut}
               </motion.div>

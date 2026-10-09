@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 
 const SessionExpiredOverlay: React.FC = () => {
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-gray-900/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-2xl max-w-md w-full text-center border border-gray-100 dark:border-gray-700 relative overflow-hidden"
+        className="bg-token-surface-card rounded-2xl p-8 shadow-2xl max-w-md w-full text-center border border-token-border-subtle relative overflow-hidden"
       >
         {/* Decorative background pulse */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-3xl animate-pulse" />
@@ -23,11 +23,9 @@ const SessionExpiredOverlay: React.FC = () => {
             <ShieldIcon className="w-10 h-10 text-red-600 dark:text-red-400" />
           </motion.div>
 
-          <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
-            Sesión Expirada
-          </h2>
+          <h2 className="text-2xl font-black text-token-text-primary mb-2">Sesión Expirada</h2>
 
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-8 px-4">
+          <p className="text-token-text-secondary text-sm mb-8 px-4">
             Por tu seguridad, hemos cerrado tu sesión debido a inactividad o expiración de
             credenciales.
           </p>

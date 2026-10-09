@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Button from "./Button";
 
 export interface TabItem {
   id: string;
@@ -34,7 +35,7 @@ const TabNav: React.FC<TabNavProps> = ({
       <div
         className={`p-1.5 rounded-sm border border-token-border-subtle overflow-x-auto scrollbar-hide ${
           !isMinimal
-            ? "bg-white dark:bg-gray-900 shadow-sm mx-1"
+            ? "bg-token-surface-card shadow-sm mx-1"
             : "bg-token-surface-stripe shadow-none"
         }`}
       >
@@ -42,22 +43,23 @@ const TabNav: React.FC<TabNavProps> = ({
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
-              <button
+              <Button
+                variant="none"
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`
-                                    relative whitespace-nowrap shrink-0 min-h-11 px-5 py-2 typo-ui-tab transition-all duration-150 rounded-md flex items-center justify-center gap-2
+                                    relative whitespace-nowrap shrink-0 min-h-11 px-5 py-2 typo-ui-tab transition-all duration-150 rounded-md flex items-center justify-center gap-2 shadow-none
                                     ${
                                       isActive
-                                        ? "text-slate-900 dark:text-white"
-                                        : "text-slate-600 hover:text-slate-900 dark:text-gray-400 dark:hover:text-gray-100"
+                                        ? "text-token-text-primary"
+                                        : "text-token-text-secondary hover:text-token-text-primary"
                                     }
                                 `}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeTabPill"
-                    className="absolute inset-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-md -z-10"
+                    className="absolute inset-0 bg-token-surface-stripe border border-token-border-subtle shadow-sm rounded-md -z-10"
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   />
                 )}
@@ -66,13 +68,13 @@ const TabNav: React.FC<TabNavProps> = ({
                   <span
                     className={`
                                         px-1.5 py-0.5 rounded-full text-[9px] font-black transition-colors relative z-10
-                                        ${isActive ? "bg-indigo-600 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-600"}
+                                        ${isActive ? "bg-indigo-600 text-white" : "bg-token-surface-technical text-token-text-secondary"}
                                     `}
                   >
                     {tab.badge}
                   </span>
                 )}
-              </button>
+              </Button>
             );
           })}
         </nav>

@@ -129,30 +129,32 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
       aria-labelledby="seeding-options-title"
     >
       <div
-        className="bg-gray-800 text-white rounded-lg shadow-2xl border border-gray-600 w-full max-w-lg"
+        className="bg-token-surface-card text-token-text-primary rounded-lg shadow-2xl border border-token-border-subtle w-full max-w-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+        <div className="p-4 border-b border-token-border-subtle flex justify-between items-center">
           <h3 id="seeding-options-title" className="font-semibold text-lg flex items-center">
             <SparklesIcon className="w-5 h-5 mr-2 text-yellow-400" />
             Panel de Simulacion de Datos
           </h3>
-          <button
+          <Button
+            type="button"
+            variant="none"
             onClick={onClose}
-            className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-gray-700"
+            className="p-1 rounded-full text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-stripe shadow-none"
             aria-label="Cerrar modal"
           >
             <CloseIcon className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-md border border-gray-700 bg-gray-900/40">
+            <div className="flex items-center justify-between p-3 rounded-md border border-token-border-subtle bg-token-surface-stripe">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-gray-200">
+                <p className="text-xs font-black uppercase tracking-widest text-token-text-primary">
                   Quick Seed
                 </p>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[11px] text-token-text-secondary">
                   15 empleados, 3 dias, sin carga pesada para validacion manual.
                 </p>
               </div>
@@ -161,12 +163,12 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
               </Button>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-md border border-gray-700 bg-gray-900/40">
+            <div className="flex items-center justify-between p-3 rounded-md border border-token-border-subtle bg-token-surface-stripe">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-gray-200">
+                <p className="text-xs font-black uppercase tracking-widest text-token-text-primary">
                   Incremental
                 </p>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[11px] text-token-text-secondary">
                   Sube carga por niveles para stress testing controlado.
                 </p>
               </div>
@@ -245,7 +247,7 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
               />
             </div>
 
-            <div className="pt-4 text-xs text-gray-400 border-t border-gray-700 mt-2">
+            <div className="pt-4 text-xs text-token-text-secondary border-t border-token-border-subtle mt-2">
               <p>
                 * Patrones Base define cuantas plantillas de turno se crean y se distribuyen en
                 forma pareja.
@@ -255,7 +257,7 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
               <p>* Reportes de turno se generan sobre una ventana maxima de 365 dias.</p>
             </div>
           </div>
-          <div className="p-4 border-t border-gray-600 flex justify-end gap-2">
+          <div className="p-4 border-t border-token-border-subtle flex justify-end gap-2">
             <Button type="button" onClick={onClose} variant="secondary">
               Cancelar
             </Button>

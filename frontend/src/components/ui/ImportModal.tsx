@@ -129,24 +129,25 @@ const ImportModal = <T extends ImportPreviewRow>({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-2xl bg-token-surface-card rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-token-border-technical"
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50/50 dark:bg-black/20">
+        <div className="p-6 border-b border-token-border-subtle flex justify-between items-center bg-token-surface-stripe">
           <div>
-            <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+            <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
               {title}
             </h2>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">
+            <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest mt-1">
               Asistente de Importación
             </p>
           </div>
-          <button
+          <Button
+            variant="none"
             onClick={handleClose}
-            className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-token-surface-hover rounded-full transition-colors shadow-none"
           >
-            <CloseIcon className="w-6 h-6 text-gray-400" />
-          </button>
+            <CloseIcon className="w-6 h-6 text-token-text-tertiary" />
+          </Button>
         </div>
 
         {/* Content */}
@@ -155,13 +156,13 @@ const ImportModal = <T extends ImportPreviewRow>({
             <div className="flex flex-col items-center justify-center space-y-6 py-8">
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full max-w-md bg-sap-blue/5 border-2 border-dashed border-sap-blue/30 rounded-3xl p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-sap-blue/10 transition-all group"
+                className="w-full max-w-md bg-token-accent-brand/5 border-2 border-dashed border-token-accent-brand/30 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-token-accent-brand/10 transition-all group"
               >
-                <DocumentArrowUpIcon className="w-16 h-16 text-sap-blue mb-4 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-black text-sap-blue uppercase tracking-widest text-center">
+                <DocumentArrowUpIcon className="w-16 h-16 text-token-accent-brand mb-4 group-hover:scale-110 transition-transform" />
+                <p className="text-sm font-black text-token-accent-brand uppercase tracking-widest text-center">
                   Click para seleccionar archivo
                 </p>
-                <p className="text-xs text-gray-400 mt-2 text-center">Soporta .xlsx</p>
+                <p className="text-xs text-token-text-tertiary mt-2 text-center">Soporta .xlsx</p>
               </div>
               <input
                 type="file"
@@ -174,18 +175,18 @@ const ImportModal = <T extends ImportPreviewRow>({
               {templateUrl && (
                 <a
                   href={templateUrl}
-                  className="flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-sap-blue underline uppercase tracking-widest"
+                  className="flex items-center gap-2 text-xs font-bold text-token-text-secondary hover:text-token-accent-brand underline uppercase tracking-widest"
                 >
                   <DocumentArrowDownIcon className="w-4 h-4" /> Bajar Plantilla de Ejemplo
                 </a>
               )}
 
               {errors.length > 0 && (
-                <div className="w-full bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-500/20 rounded-xl p-4">
-                  <h4 className="text-xs font-black text-red-600 dark:text-red-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <div className="w-full bg-token-status-error/10 border border-token-status-error/20 rounded-lg p-4">
+                  <h4 className="text-xs font-black text-token-status-error uppercase tracking-widest mb-2 flex items-center gap-2">
                     <ExclamationTriangleIcon className="w-4 h-4" /> Errores detectados
                   </h4>
-                  <ul className="list-disc list-inside text-xs text-red-500 space-y-1">
+                  <ul className="list-disc list-inside text-xs text-token-status-error space-y-1">
                     {errors.slice(0, 5).map((err, i) => (
                       <li key={i}>{err}</li>
                     ))}
@@ -199,7 +200,7 @@ const ImportModal = <T extends ImportPreviewRow>({
           {step === "preview" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">
+                <h3 className="text-sm font-black text-token-text-primary uppercase tracking-widest">
                   Vista Previa ({previewData.length} registros)
                 </h3>
                 <Button
@@ -214,9 +215,9 @@ const ImportModal = <T extends ImportPreviewRow>({
                 </Button>
               </div>
 
-              <div className="bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden max-h-60 overflow-y-auto">
+              <div className="bg-token-surface-card rounded-lg border border-token-border-subtle overflow-hidden max-h-60 overflow-y-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                  <thead className="bg-token-surface-stripe text-token-text-secondary font-bold uppercase tracking-wider">
                     <tr>
                       {previewData.length > 0 &&
                         Object.keys(previewData[0]).map((key) => (
@@ -226,14 +227,11 @@ const ImportModal = <T extends ImportPreviewRow>({
                         ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                  <tbody className="divide-y divide-token-border-subtle">
                     {previewData.slice(0, 10).map((row, i) => (
                       <tr key={i}>
                         {Object.values(row).map((val, j) => (
-                          <td
-                            key={j}
-                            className="px-4 py-2 text-gray-600 dark:text-gray-300 font-mono"
-                          >
+                          <td key={j} className="px-4 py-2 text-token-text-secondary font-mono">
                             {String(val)}
                           </td>
                         ))}
@@ -242,7 +240,7 @@ const ImportModal = <T extends ImportPreviewRow>({
                   </tbody>
                 </table>
                 {previewData.length > 10 && (
-                  <div className="p-2 text-center text-xs text-gray-400 italic">
+                  <div className="p-2 text-center text-xs text-token-text-tertiary italic">
                     ... {previewData.length - 10} registros más
                   </div>
                 )}
@@ -252,8 +250,8 @@ const ImportModal = <T extends ImportPreviewRow>({
 
           {step === "importing" && (
             <div className="flex flex-col items-center justify-center py-12">
-              <LoadingSpinner className="w-12 h-12 text-sap-blue mb-4" />
-              <p className="text-sm font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest animate-pulse">
+              <LoadingSpinner className="w-12 h-12 text-token-accent-brand mb-4" />
+              <p className="text-sm font-black text-token-text-secondary uppercase tracking-widest animate-pulse">
                 Procesando Importación...
               </p>
             </div>
@@ -261,19 +259,16 @@ const ImportModal = <T extends ImportPreviewRow>({
 
           {step === "success" && (
             <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-500/10 rounded-full flex items-center justify-center mb-6">
-                <CheckCircleIcon className="w-10 h-10 text-green-500" />
+              <div className="w-20 h-20 bg-token-status-success/10 rounded-full flex items-center justify-center mb-6">
+                <CheckCircleIcon className="w-10 h-10 text-token-status-success" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase italic tracking-tight mb-2">
+              <h3 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
                 ¡Importación Exitosa!
               </h3>
-              <p className="text-sm text-gray-500 mb-8">
+              <p className="text-sm text-token-text-secondary mb-8">
                 Se han procesado correctamente los registros.
               </p>
-              <Button
-                onClick={handleClose}
-                className="bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30"
-              >
+              <Button variant="success" onClick={handleClose}>
                 Finalizar
               </Button>
             </div>
@@ -282,15 +277,11 @@ const ImportModal = <T extends ImportPreviewRow>({
 
         {/* Footer Actions */}
         {step === "preview" && (
-          <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-black/20 flex justify-end gap-3">
+          <div className="p-6 border-t border-token-border-subtle bg-token-surface-stripe flex justify-end gap-3">
             <Button variant="secondary" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button
-              onClick={handleImport}
-              disabled={isLoading}
-              className="bg-sap-blue hover:bg-sap-blue/90 text-white shadow-lg"
-            >
+            <Button variant="primary" onClick={handleImport} disabled={isLoading}>
               Confirmar Importación
             </Button>
           </div>

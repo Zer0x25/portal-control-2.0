@@ -43,15 +43,17 @@ const SyncErrorsModal: React.FC<SyncErrorsModalProps> = ({ isOpen, onClose, erro
         className="w-full max-w-2xl bg-white dark:bg-sap-dark-gray shadow-xl relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
+        <Button
+          type="button"
+          variant="none"
           onClick={onClose}
-          className="absolute top-3 right-3 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="absolute top-3 right-3 p-1 rounded-full text-token-text-secondary hover:text-token-text-primary hover:bg-token-surface-stripe shadow-none"
           aria-label="Cerrar modal"
         >
           <CloseIcon className="w-5 h-5" />
-        </button>
+        </Button>
         <div className="max-h-[60vh] overflow-y-auto space-y-3 p-1">
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+          <p className="text-sm text-token-text-secondary mb-2">
             Los siguientes registros no pudieron sincronizarse. Por favor, revise los datos y vuelva
             a intentarlo.
           </p>
@@ -70,7 +72,7 @@ const SyncErrorsModal: React.FC<SyncErrorsModalProps> = ({ isOpen, onClose, erro
               </div>
             ))
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+            <p className="text-token-text-tertiary text-center py-4">
               No se encontraron errores de sincronización.
             </p>
           )}

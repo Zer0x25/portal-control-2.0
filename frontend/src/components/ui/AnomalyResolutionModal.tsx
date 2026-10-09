@@ -46,25 +46,23 @@ const AnomalyResolutionModal: React.FC<AnomalyResolutionModalProps> = ({
       title={
         <div className="flex items-center gap-3">
           <IconBox icon={<ExclamationTriangleIcon />} variant="warning" size="md" />
-          <span className="text-slate-900 dark:text-white">Resolución de Anomalía</span>
+          <span className="text-token-text-primary">Resolución de Anomalía</span>
         </div>
       }
       maxWidth="max-w-xl"
     >
       <div className="space-y-6">
-        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-sm border border-slate-200 dark:border-slate-800">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+        <div className="bg-token-surface-stripe p-4 rounded-md border border-token-border-subtle">
+          <p className="text-[10px] font-black uppercase tracking-widest text-token-text-tertiary mb-2">
             Detalle del Registro
           </p>
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
-              {record.employeeName}
-            </span>
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-sm font-bold text-token-text-primary">{record.employeeName}</span>
+            <span className="text-xs text-token-text-secondary font-mono">
               Fecha: {record.date} | Estado: {record.status}
             </span>
             {record.justification?.comment && (
-              <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border-l-2 border-yellow-400 text-yellow-800 dark:text-yellow-200 text-xs font-medium italic">
+              <div className="mt-3 p-2 bg-amber-500/10 border-l-2 border-amber-500 text-amber-600 dark:text-amber-400 text-xs font-medium italic">
                 "{record.justification.comment}"
               </div>
             )}
@@ -72,118 +70,120 @@ const AnomalyResolutionModal: React.FC<AnomalyResolutionModalProps> = ({
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <p className="text-[10px] font-black uppercase tracking-widest text-token-text-tertiary">
             Seleccione una acción para reparar
           </p>
 
-          <button
+          <Button
+            variant="none"
             onClick={() => {
               onEdit(record);
               onClose();
             }}
-            className="w-full flex items-center gap-4 p-4 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-sap-blue hover:bg-sap-blue/5 transition-all group text-left"
+            className="w-full flex items-center gap-4 p-4 rounded-md border border-token-border-subtle hover:border-token-accent-brand hover:bg-token-accent-brand/5 transition-all group text-left shadow-none"
           >
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-sm group-hover:bg-sap-blue group-hover:text-white transition-colors">
-              <EditIcon className="w-5 h-5" />
+            <div className="p-2 bg-token-surface-technical rounded-md group-hover:bg-token-accent-brand group-hover:text-white transition-colors">
+              <EditIcon className="w-5 h-5 text-token-text-secondary group-hover:text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+              <p className="text-sm font-bold text-token-text-primary">
                 Editar Registro Manualmente
               </p>
-              <p className="text-xs text-slate-500">Corrige los marcajes de entrada o salida.</p>
+              <p className="text-xs text-token-text-secondary">
+                Corrige los marcajes de entrada o salida.
+              </p>
             </div>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="none"
             onClick={() => onResolve(record.id, "ABSENCE_MARK")}
             disabled={isProcessing}
-            className="w-full flex items-center gap-4 p-4 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-red-500 hover:bg-red-500/5 transition-all group text-left disabled:opacity-50"
+            className="w-full flex items-center gap-4 p-4 rounded-md border border-token-border-subtle hover:border-token-status-error hover:bg-token-status-error/5 transition-all group text-left disabled:opacity-50 shadow-none"
           >
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-sm group-hover:bg-red-500 group-hover:text-white transition-colors">
-              <UserMinusIcon className="w-5 h-5" />
+            <div className="p-2 bg-token-surface-technical rounded-md group-hover:bg-token-status-error group-hover:text-white transition-colors">
+              <UserMinusIcon className="w-5 h-5 text-token-text-secondary group-hover:text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Marcar como Ausente
-              </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm font-bold text-token-text-primary">Marcar como Ausente</p>
+              <p className="text-xs text-token-text-secondary">
                 Transforma este registro en una inasistencia formal.
               </p>
             </div>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="none"
             onClick={() => onResolve(record.id, "PERMIT_MARK")}
             disabled={isProcessing}
-            className="w-full flex items-center gap-4 p-4 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-amber-500 hover:bg-amber-500/5 transition-all group text-left disabled:opacity-50"
+            className="w-full flex items-center gap-4 p-4 rounded-md border border-token-border-subtle hover:border-token-status-warning hover:bg-token-status-warning/5 transition-all group text-left disabled:opacity-50 shadow-none"
           >
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-sm group-hover:bg-amber-500 group-hover:text-white transition-colors">
-              <ClipboardCheckIcon className="w-5 h-5" />
+            <div className="p-2 bg-token-surface-technical rounded-md group-hover:bg-token-status-warning group-hover:text-white transition-colors">
+              <ClipboardCheckIcon className="w-5 h-5 text-token-text-secondary group-hover:text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+              <p className="text-sm font-bold text-token-text-primary">
                 Marcar como Permiso Especial
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-token-text-secondary">
                 Resuelve la anomalía como permiso administrativo autorizado.
               </p>
             </div>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="none"
             onClick={() => onResolve(record.id, "VACATION_MARK")}
             disabled={isProcessing}
-            className="w-full flex items-center gap-4 p-4 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-cyan-500 hover:bg-cyan-500/5 transition-all group text-left disabled:opacity-50"
+            className="w-full flex items-center gap-4 p-4 rounded-md border border-token-border-subtle hover:border-token-status-info hover:bg-token-status-info/5 transition-all group text-left disabled:opacity-50 shadow-none"
           >
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-sm group-hover:bg-cyan-500 group-hover:text-white transition-colors">
-              <CalendarDaysIcon className="w-5 h-5" />
+            <div className="p-2 bg-token-surface-technical rounded-md group-hover:bg-token-status-info group-hover:text-white transition-colors">
+              <CalendarDaysIcon className="w-5 h-5 text-token-text-secondary group-hover:text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Marcar como Vacaciones
-              </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm font-bold text-token-text-primary">Marcar como Vacaciones</p>
+              <p className="text-xs text-token-text-secondary">
                 Resuelve la anomalía dejando el día registrado como vacaciones.
               </p>
             </div>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="none"
             onClick={() => onResolve(record.id, "DAY_OFF_MARK")}
             disabled={isProcessing}
-            className="w-full flex items-center gap-4 p-4 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-slate-500 hover:bg-slate-500/5 transition-all group text-left disabled:opacity-50"
+            className="w-full flex items-center gap-4 p-4 rounded-md border border-token-border-subtle hover:border-token-text-tertiary hover:bg-token-surface-hover transition-all group text-left disabled:opacity-50 shadow-none"
           >
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-sm group-hover:bg-slate-600 group-hover:text-white transition-colors">
-              <MinusCircleIcon className="w-5 h-5" />
+            <div className="p-2 bg-token-surface-technical rounded-md group-hover:bg-token-surface-hover group-hover:text-white transition-colors">
+              <MinusCircleIcon className="w-5 h-5 text-token-text-secondary group-hover:text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Marcar como Día Libre
-              </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-sm font-bold text-token-text-primary">Marcar como Día Libre</p>
+              <p className="text-xs text-token-text-secondary">
                 Registra el día como descanso/no laborable por decisión supervisora.
               </p>
             </div>
-          </button>
+          </Button>
 
           {isAutoClose && (
-            <button
+            <Button
+              variant="none"
               onClick={() => onResolve(record.id, "SHIFT_HOURS_ACK")}
               disabled={isProcessing}
-              className="w-full flex items-center gap-4 p-4 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-green-500 hover:bg-green-500/5 transition-all group text-left disabled:opacity-50"
+              className="w-full flex items-center gap-4 p-4 rounded-md border border-token-border-subtle hover:border-token-status-success hover:bg-token-status-success/5 transition-all group text-left disabled:opacity-50 shadow-none"
             >
-              <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-sm group-hover:bg-green-500 group-hover:text-white transition-colors">
-                <CheckBadgeIcon className="w-5 h-5" />
+              <div className="p-2 bg-token-surface-technical rounded-md group-hover:bg-token-status-success group-hover:text-white transition-colors">
+                <CheckBadgeIcon className="w-5 h-5 text-token-text-secondary group-hover:text-white" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                <p className="text-sm font-bold text-token-text-primary">
                   Omitir Salida (Validar Horas Turno)
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-token-text-secondary">
                   Acepta la falta de marcaje y cuadra con el horario programado.
                 </p>
               </div>
-            </button>
+            </Button>
           )}
         </div>
       </div>
