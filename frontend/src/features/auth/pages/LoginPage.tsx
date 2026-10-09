@@ -90,7 +90,7 @@ const LoginPage: React.FC = () => {
       >
         <Card
           noPadding
-          className="overflow-hidden bg-token-surface-card md:backdrop-blur-2xl border border-token-border-subtle shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative group rounded-3xl"
+          className="overflow-hidden bg-token-surface-card md:backdrop-blur-2xl border border-token-border-subtle shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative group rounded-2xl"
         >
           {/* Top colored line */}
           <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-sap-blue to-transparent opacity-50"></div>
@@ -179,7 +179,7 @@ const LoginPage: React.FC = () => {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full h-12 rounded-xl bg-sap-blue text-white dark:text-slate-950 hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all duration-300"
+                  className="w-full h-12 rounded-xl bg-sap-blue text-token-text-onAccent hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition-all duration-300"
                   disabled={loading}
                 >
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>

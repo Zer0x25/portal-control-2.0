@@ -37,8 +37,8 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
     const isJustified = !!record.justification;
     const statusConfig = TIME_RECORD_STATUS_CONFIG[record.status] || {
       label: record.status || "Desconocido",
-      bg: "bg-gray-100",
-      text: "text-gray-800",
+      bg: "bg-token-surface-stripe",
+      text: "text-token-text-primary",
     };
     const finalDisabledState = isActionDisabledForRole || isJustified || isLocked;
     const pendingRequest = externalPendingRequest;
@@ -69,13 +69,13 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
             </p>
           </div>
           <span
-            className={`px-3 py-1 text-[10px] font-black rounded-md uppercase tracking-widest border border-gray-200 dark:border-gray-800 ${statusConfig.bg} ${statusConfig.text}`}
+            className={`px-3 py-1 text-[10px] font-black rounded-md uppercase tracking-widest border border-token-border-subtle ${statusConfig.bg} ${statusConfig.text}`}
           >
             {statusConfig.label}
           </span>
         </div>
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800">
-          <div className="grid grid-cols-2 gap-x-4 text-xs text-gray-600 dark:text-gray-400">
+        <div className="mt-3 pt-3 border-t border-token-border-subtle">
+          <div className="grid grid-cols-2 gap-x-4 text-xs text-token-text-secondary">
             <p>
               <strong>Entrada:</strong> {formatDisplayDateTime(record.entrada)}
             </p>
@@ -90,7 +90,7 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
             </p>
           </div>
         </div>
-        <div className="flex justify-end items-center mt-3 pt-3 border-t border-gray-100 dark:border-white/5 space-x-3">
+        <div className="flex justify-end items-center mt-3 pt-3 border-t border-token-border-subtle space-x-3">
           {isControlInternoEnabled && (
             <Button
               size="sm"

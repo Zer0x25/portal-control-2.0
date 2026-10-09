@@ -33,7 +33,7 @@ const ForceChangePasswordModalView: React.FC<ForceChangePasswordModalViewProps> 
       aria-labelledby="force-change-password-modal-title"
     >
       <Card
-        className="w-full max-w-md bg-white dark:bg-sap-dark-gray shadow-xl relative"
+        className="w-full max-w-md bg-token-surface-card shadow-xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
@@ -43,11 +43,11 @@ const ForceChangePasswordModalView: React.FC<ForceChangePasswordModalViewProps> 
             </div>
             <h3
               id="force-change-password-modal-title"
-              className="mt-3 text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"
+              className="mt-3 text-lg font-medium leading-6 text-token-text-primary"
             >
               Cambio de Contraseña Requerido
             </h3>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            <p className="mt-2 text-sm text-token-text-secondary">
               Por su seguridad, debe establecer una nueva contraseña personal para continuar.
             </p>
           </div>

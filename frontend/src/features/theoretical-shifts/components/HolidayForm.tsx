@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Holiday } from "../../../types/index";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Select from "../../../components/ui/Select";
 import { PlusCircleIcon, EditIcon, ChevronRightIcon } from "../../../components/ui/icons/index";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { HOLIDAY_TYPES } from "../../../utils/mappings";
@@ -65,27 +66,28 @@ const HolidayForm: React.FC<HolidayFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <div className="w-2 h-6 bg-sap-blue dark:bg-sap-light-blue rounded-full"></div>
+      <h3 className="text-lg font-bold text-token-text-primary flex items-center gap-2">
+        <div className="w-2 h-6 bg-token-accent-brand rounded-full"></div>
         {initialData ? "Actualizar Feriado" : "Nuevo Feriado"}
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
         {/* Date Picker */}
         <div className="relative group">
-          <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
+          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 pl-1">
             Fecha
           </label>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => setIsDatePickerOpen(true)}
-            className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center hover:border-sap-blue/30"
+            className="w-full px-4 py-3 justify-between text-token-text-primary text-left font-normal"
           >
             <span>
               {date ? new Date(date + "T12:00:00").toLocaleDateString("es-CL") : "Seleccionar"}
             </span>
-            <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
-          </button>
+            <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-60" />
+          </Button>
           <DatePickerDialog
             isOpen={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}
@@ -101,34 +103,23 @@ const HolidayForm: React.FC<HolidayFormProps> = ({
           onChange={(e) => setName(e.target.value)}
           required
           placeholder="Ej: Año Nuevo"
-          className="rounded-xl!"
         />
 
         {/* Type Select */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 pl-1">
-            Tipo
-          </label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as Holiday["type"])}
-            className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 appearance-none"
-          >
-            {HOLIDAY_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select
+          label="Tipo"
+          value={type}
+          onChange={(e) => setType(e.target.value as Holiday["type"])}
+          options={HOLIDAY_TYPES.map((t) => ({ value: t, label: t }))}
+        />
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" className="px-8 flex items-center gap-2 rounded-xl">
+        <Button type="submit" className="px-8 flex items-center gap-2">
           {initialData ? <EditIcon className="w-5 h-5" /> : <PlusCircleIcon className="w-5 h-5" />}
           {initialData ? "Actualizar" : "Guardar"}
         </Button>
-        <Button type="button" variant="secondary" onClick={onCancel} className="px-8 rounded-xl">
+        <Button type="button" variant="secondary" onClick={onCancel} className="px-8">
           Cancelar
         </Button>
       </div>

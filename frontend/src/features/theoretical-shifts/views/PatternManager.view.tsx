@@ -4,6 +4,7 @@ import Input from "../../../components/ui/Input";
 import PatternForm from "../components/PatternForm";
 import { PlusCircleIcon, EyeIcon } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
+import EmptyState from "../../../components/ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import PatternListDesktop from "../components/PatternListDesktop";
@@ -145,13 +146,12 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
 
       <div className="flex-1 min-h-[400px]">
         {processedPatterns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-            <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-full mb-4 opacity-50 grayscale">
-              🎨
-            </div>
-            <p className="text-xl font-bold">Sin patrones configurados.</p>
-            <p className="text-sm">Crea un patrón para empezar a asignar turnos a tus empleados.</p>
-          </div>
+          <EmptyState
+            title="Sin patrones configurados"
+            description="Crea un patrón para empezar a asignar turnos a tus empleados."
+            icon={<span className="text-2xl">🎨</span>}
+            className="my-12"
+          />
         ) : (
           <ResponsiveView
             mobile={
@@ -206,7 +206,9 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
                 </p>
               </div>
             )}
-            <p className="text-xs text-gray-500 italic">Esta acción no se puede deshacer.</p>
+            <p className="text-xs text-token-text-secondary italic">
+              Esta acción no se puede deshacer.
+            </p>
           </div>
         }
         confirmText="Eliminar permanentemente"

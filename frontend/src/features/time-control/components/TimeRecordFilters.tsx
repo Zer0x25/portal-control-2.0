@@ -136,7 +136,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                     <div className="w-full md:w-auto min-w-[180px]">
                       <label
                         htmlFor="filtroWorkdayType"
-                        className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block"
+                        className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary mb-2 block"
                       >
                         Tipo Jornada
                       </label>
@@ -160,7 +160,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                     <div className="w-full md:w-auto min-w-[180px]">
                       <label
                         htmlFor="filtroAreaTC"
-                        className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block"
+                        className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary mb-2 block"
                       >
                         Área Operativa
                       </label>
@@ -184,7 +184,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                     <div className="w-full md:w-auto min-w-[180px]">
                       <label
                         htmlFor="filtroEstadoTC"
-                        className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block"
+                        className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary mb-2 block"
                       >
                         Estado
                       </label>
@@ -206,7 +206,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
 
                     {/* 4. Quick Filters (24h, 7d, 31d) */}
                     <div className="w-full md:w-auto">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary mb-2 block">
                         Rango Rápido
                       </span>
                       <div className="flex p-1 bg-token-surface-stripe border border-token-border-technical rounded-md w-full md:w-auto h-10 items-center">
@@ -218,7 +218,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                               ${
                                 activeQuickFilter === p
                                   ? "bg-sap-blue text-white shadow-sm"
-                                  : "text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-900"
+                                  : "text-token-text-secondary hover:text-token-text-primary hover:bg-token-surface-hover"
                               }
                             `}
                           >
@@ -229,7 +229,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                     </div>
 
                     {/* Divider */}
-                    <div className="hidden xl:block w-px h-10 bg-gray-300 dark:bg-gray-800 mx-2" />
+                    <div className="hidden xl:block w-px h-10 bg-token-border-technical mx-2" />
 
                     {/* 5. Custom Range Picker */}
                     <div className="grid grid-cols-2 md:flex md:items-end gap-2 w-full xl:w-auto">

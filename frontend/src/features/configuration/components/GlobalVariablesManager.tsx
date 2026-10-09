@@ -315,7 +315,7 @@ export const GlobalVariablesManager: React.FC = () => {
               </div>
               <div className="mt-4 bg-token-surface-stripe rounded-md border border-token-border-subtle max-h-64 overflow-y-auto no-scrollbar shadow-inner">
                 {areaList.length > 0 ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+                  <ul className="divide-y divide-token-border-subtle">
                     {areaList.map((area: string) => (
                       <li
                         key={area}
@@ -340,7 +340,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   </ul>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 dark:text-gray-600">
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-token-text-tertiary">
                       SIN DEPARTAMENTOS REGISTRADOS
                     </p>
                   </div>
@@ -384,7 +384,7 @@ export const GlobalVariablesManager: React.FC = () => {
               </div>
               <div className="mt-4 bg-token-surface-stripe rounded-md border border-token-border-subtle max-h-64 overflow-y-auto no-scrollbar shadow-inner">
                 {workdayTypeList.length > 0 ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+                  <ul className="divide-y divide-token-border-subtle">
                     {workdayTypeList.map((type: string) => (
                       <li
                         key={type}
@@ -409,7 +409,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   </ul>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 dark:text-gray-600">
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-token-text-tertiary">
                       SIN PROTOCOLOS REGISTRADOS
                     </p>
                   </div>
@@ -454,7 +454,7 @@ export const GlobalVariablesManager: React.FC = () => {
               </div>
               <div className="mt-4 bg-token-surface-stripe rounded-md border border-token-border-subtle max-h-64 overflow-y-auto no-scrollbar shadow-inner">
                 {emailRecipientsList.length > 0 ? (
-                  <ul className="divide-y divide-gray-200 dark:divide-gray-800">
+                  <ul className="divide-y divide-token-border-subtle">
                     {emailRecipientsList.map((email: string) => (
                       <li
                         key={email}
@@ -479,7 +479,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   </ul>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 dark:text-gray-600">
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-token-text-tertiary">
                       LISTA DE DIFUSIÓN VACÍA
                     </p>
                   </div>

@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback } from "react";
 import { ActionConfig, ToolConfig, ColorTheme } from "../../types";
+import Button from "../../../../components/ui/Button";
 
 interface BaseActionButtonProps {
   color: ColorTheme;
@@ -35,7 +36,7 @@ export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
     () => ({
       emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
       indigo: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
-      slate: "text-slate-600 dark:text-gray-400 bg-gray-500/10",
+      slate: "text-token-text-secondary bg-token-surface-hover",
       orange: "text-orange-600 dark:text-orange-400 bg-orange-500/10",
       violet: "text-violet-600 dark:text-violet-400 bg-violet-500/10",
     }),
@@ -96,9 +97,9 @@ export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
 
   const { onClick } = props;
   return (
-    <button onClick={onClick} disabled={disabled} className={baseClasses}>
+    <Button variant="none" onClick={onClick} disabled={disabled} className={baseClasses}>
       {content}
-    </button>
+    </Button>
   );
 });
 

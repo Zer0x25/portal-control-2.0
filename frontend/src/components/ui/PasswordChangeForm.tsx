@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import Input from "./Input";
+import Button from "./Button";
 import { EyeIcon, EyeSlashIcon } from "./icons/index";
 
 type PasswordStrength = "none" | "weak" | "medium" | "strong";
@@ -65,14 +66,15 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
           required
           autoComplete="new-password"
         />
-        <button
+        <Button
+          variant="none"
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-gray-500"
+          className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-token-text-tertiary hover:text-token-text-secondary"
           aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
         >
           {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-        </button>
+        </Button>
       </div>
       <PasswordStrengthIndicator strength={strength} />
       <Input

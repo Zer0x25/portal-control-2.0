@@ -78,7 +78,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
   const renderEditButtons = () => (
     <div className="space-y-4">
       {!isShiftOpen && (
-        <h4 className="text-[10px] font-black text-center text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+        <h4 className="text-[10px] font-black text-center text-token-text-secondary uppercase tracking-widest mb-2">
           Control de Marcajes
         </h4>
       )}
@@ -152,7 +152,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
 
       {(record.status === "AnomaliaManual" || record.status === "SinMarcajeTurnoAsignado") &&
         onResolveAnomaly && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="mt-4 pt-4 border-t border-token-border-subtle">
             <Button
               variant="none"
               onClick={() => onResolveAnomaly(record)}
@@ -226,10 +226,10 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
         <div className="flex items-center gap-4">
           <IconBox icon={<ArrowPathIcon />} variant="primary" size="md" />
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-black text-gray-950 dark:text-white uppercase italic leading-none truncate">
+            <h3 className="text-sm font-black text-token-text-primary uppercase italic leading-none truncate">
               {record.employeeName}
             </h3>
-            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1.5 italic leading-none">
+            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
               Gestión Rápida de Jornada
             </p>
           </div>
@@ -244,7 +244,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
             color={statusConfig.bg.replace("bg-", "bg-").split(" ")[0]}
             className="mr-3"
           />
-          <span className="flex-1 text-[10px] font-black text-slate-400 dark:text-gray-500 uppercase tracking-widest">
+          <span className="flex-1 text-[10px] font-black text-token-text-secondary uppercase tracking-widest">
             Estado de Jornada
           </span>
           <span
@@ -276,7 +276,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
           <div className="space-y-6">
             <div className="flex p-1 bg-token-surface-stripe rounded-2xl border border-token-border-technical">
               {isControlInternoEnabled && (
-                <button
+                <Button
+                  variant="none"
                   onClick={() => setActiveTab("live")}
                   className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
                     activeTab === "live"
@@ -285,10 +286,11 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
                   }`}
                 >
                   Acciones en Vivo
-                </button>
+                </Button>
               )}
               {allowEdit && (
-                <button
+                <Button
+                  variant="none"
                   onClick={() => setActiveTab("edit")}
                   className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
                     activeTab === "edit"
@@ -297,7 +299,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
                   }`}
                 >
                   Edición Manual
-                </button>
+                </Button>
               )}
             </div>
 
@@ -314,7 +316,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
               renderEditButtons()
             ) : (
               <div className="py-10 text-center opacity-40">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">
+                <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest italic">
                   Edición restringida a nivel Administrativo
                 </p>
               </div>
@@ -324,9 +326,9 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
 
         <div className="flex items-center justify-center gap-2 pt-4 opacity-30">
           <div
-            className={`w-1.5 h-1.5 rounded-full ${isArmed ? "bg-emerald-500" : "bg-gray-400 animate-pulse"}`}
+            className={`w-1.5 h-1.5 rounded-full ${isArmed ? "bg-emerald-500" : "bg-token-text-tertiary animate-pulse"}`}
           />
-          <span className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] italic">
+          <span className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] italic">
             {!isArmed ? "Inicializando Vínculo..." : "Conexión Segura"}
           </span>
         </div>

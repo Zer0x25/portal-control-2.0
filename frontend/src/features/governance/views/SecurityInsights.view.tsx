@@ -34,7 +34,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
 }) => {
   if (loading && !stats) {
     return (
-      <div className="p-8 text-center text-gray-500 font-bold uppercase text-[11px] tracking-widest animate-pulse">
+      <div className="p-8 text-center text-token-text-tertiary font-bold uppercase text-[11px] tracking-widest animate-pulse">
         Cargando inteligencia de seguridad...
       </div>
     );

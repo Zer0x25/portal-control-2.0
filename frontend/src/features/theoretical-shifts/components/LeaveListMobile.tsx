@@ -8,7 +8,6 @@ import {
   CalendarDaysIcon,
   UserIcon,
 } from "../../../components/ui/icons/index";
-import { motion } from "framer-motion";
 import { LIST_MOBILE_HEIGHT_STYLE } from "./listTokens";
 import {
   addBusinessDaysChile,
@@ -72,7 +71,7 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
   ]);
 
   return (
-    <div className="border border-white/20 dark:border-white/5 rounded-3xl shadow-2xl bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl overflow-hidden">
+    <div className="border border-token-border-subtle rounded-xl shadow-lg bg-token-surface-card overflow-hidden">
       <div
         ref={parentRef}
         className="overflow-y-auto custom-scrollbar"
@@ -80,8 +79,10 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
       >
         {isError ? (
           <div className="flex flex-col justify-center items-center h-full text-center p-4">
-            <div className="text-red-500 mb-2 text-sm font-bold">Error al cargar permisos</div>
-            <div className="text-gray-500 text-xs mb-4">
+            <div className="text-token-status-error mb-2 text-sm font-bold">
+              Error al cargar permisos
+            </div>
+            <div className="text-token-text-secondary text-xs mb-4">
               {(error as Error)?.message || "Error desconocido"}
             </div>
             <Button onClick={() => refetch()} variant="secondary" size="sm">
@@ -90,7 +91,7 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
           </div>
         ) : (
           <div
@@ -128,11 +129,8 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                   }}
                   className="p-3"
                 >
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`relative flex flex-col h-full bg-white/60 dark:bg-gray-800/60 rounded-2xl border border-white/20 dark:border-gray-700/50 shadow-sm overflow-hidden ${
+                  <div
+                    className={`relative flex flex-col h-full bg-token-surface-card rounded-xl border border-token-border-subtle shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 ${
                       isArchived ? "opacity-60 grayscale-[0.3]" : ""
                     }`}
                   >
@@ -141,13 +139,13 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                     <div className="flex justify-between items-start p-4 pb-2">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <UserIcon className="w-3 h-3 text-gray-400" />
-                          <h4 className="font-bold text-gray-900 dark:text-white text-sm">
+                          <UserIcon className="w-3 h-3 text-token-text-tertiary" />
+                          <h4 className="font-bold text-token-text-primary text-sm">
                             {leave.employeeName}
                           </h4>
                         </div>
                         <div className="mt-1">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-600 dark:text-purple-400">
                             {leave.type}
                           </span>
                         </div>
@@ -158,9 +156,9 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                             size="xs"
                             variant="secondary"
                             onClick={() => onEdit(leave)}
-                            className="p-1.5 rounded-lg"
+                            className="p-1.5 rounded-lg border-token-border-subtle"
                           >
-                            <EditIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <EditIcon className="w-4 h-4 text-token-accent-brand" />
                           </Button>
                         )}
                         {isDeletable && (
@@ -176,11 +174,11 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                       </div>
                     </div>
 
-                    <div className="mt-auto p-4 pt-2 border-t border-gray-100/50 dark:border-gray-700/30">
-                      <div className="flex items-center gap-2 text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                    <div className="mt-auto p-4 pt-2 border-t border-token-border-subtle">
+                      <div className="flex items-center gap-2 text-[11px] text-token-text-secondary font-bold uppercase tracking-widest">
                         <CalendarDaysIcon className="w-3 h-3" />
                         <span className="flex-1">Período</span>
-                        <span className="text-gray-900 dark:text-gray-200 font-mono">
+                        <span className="text-token-text-primary font-mono">
                           {new Date(leave.startDate).toLocaleDateString("es-CL", {
                             timeZone: "UTC",
                           })}
@@ -189,19 +187,21 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                         </span>
                       </div>
                       {leave.notes && (
-                        <p className="mt-2 text-[11px] text-gray-400 italic truncate pl-5">
+                        <p className="mt-2 text-[11px] text-token-text-tertiary italic truncate pl-5">
                           "{leave.notes}"
                         </p>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
         {isFetchingNextPage && !isLoading && (
-          <div className="p-4 text-center text-xs text-gray-500">Cargando más registros...</div>
+          <div className="p-4 text-center text-xs text-token-text-secondary">
+            Cargando más registros...
+          </div>
         )}
       </div>
     </div>

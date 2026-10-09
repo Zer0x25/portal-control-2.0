@@ -56,7 +56,7 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
   const renderSentinel = () => (
     <div
       ref={sentinelRef}
-      className="w-full py-6 flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 h-20"
+      className="w-full py-6 flex flex-col items-center justify-center text-token-text-tertiary h-20"
     >
       {isFetchingNextPage ? (
         <div className="flex items-center gap-2">
@@ -163,14 +163,14 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
       </div>
       {records.length === 0 && !isLoading && (
         <div className="p-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-token-text-tertiary">
             No hay registros que coincidan con su filtro.
           </p>
         </div>
       )}
       {isLoading && records.length === 0 && (
         <div className="p-12 flex justify-center">
-          <ArrowPathIcon className="w-8 h-8 animate-spin text-gray-300" />
+          <ArrowPathIcon className="w-8 h-8 animate-spin text-token-text-tertiary" />
         </div>
       )}
     </div>

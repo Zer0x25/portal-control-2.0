@@ -119,7 +119,7 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
                     ? "text-emerald-500"
                     : analysis.trendDirection === "down"
                       ? "text-red-500"
-                      : "text-slate-500"
+                      : "text-token-text-tertiary"
                 }`}
               />
             )}
@@ -129,7 +129,7 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = React.memo(
                   ? "text-emerald-600"
                   : analysis.trendDirection === "down"
                     ? "text-red-600"
-                    : "text-slate-600"
+                    : "text-token-text-secondary"
               }`}
             >
               {analysis.trendPercent > 0 ? "+" : ""}

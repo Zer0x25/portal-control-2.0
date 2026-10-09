@@ -43,7 +43,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
   });
 
   const renderSentinel = () => (
-    <div className="w-full py-6 flex flex-col items-center justify-center text-gray-400 dark:text-gray-600">
+    <div className="w-full py-6 flex flex-col items-center justify-center text-token-text-tertiary">
       {isFetchingNextPage ? (
         <div className="flex items-center gap-2">
           <ArrowPathIcon className="w-5 h-5 animate-spin text-sap-blue" />
@@ -103,7 +103,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
         })}
       </div>
       {virtualizer.getVirtualItems().length === 0 && !isLoading && (
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 py-4">
+        <p className="text-center text-sm text-token-text-tertiary py-4">
           No hay registros que coincidan con su filtro.
         </p>
       )}

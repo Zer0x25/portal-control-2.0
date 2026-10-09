@@ -94,7 +94,7 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
 
           <div className="flex flex-col sm:flex-row items-center gap-6 bg-token-surface-stripe p-4 rounded-md border border-token-border-technical">
             <div className="flex-1 text-center sm:text-left">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 block mb-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary block mb-2">
                 Estado Actual
               </span>
               {selectedEmployee ? (

@@ -39,8 +39,8 @@ const Tooltip: React.FC<TooltipProps> = ({
             transition={{ duration: 0.15 }}
             className={`
               absolute z-100 px-4 py-2.5 
-              bg-gray-950 text-white text-[11px] font-mono tracking-tight 
-              rounded-md border border-white/20 shadow-2xl 
+              bg-token-surface-card text-token-text-primary text-[11px] font-mono tracking-tight 
+              rounded-md border border-token-border-technical shadow-2xl 
               max-w-[400px] w-max whitespace-normal wrap-break-word pointer-events-none
               ${positionStyles[position]}
             `}

@@ -165,7 +165,7 @@ const SyncStatus: React.FC = () => {
       default:
         return {
           Icon: CloudIcon,
-          color: "text-gray-400 dark:text-gray-500",
+          color: "text-token-text-tertiary",
           tooltip: "En Espera",
           spin: false,
         };

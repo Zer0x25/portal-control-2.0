@@ -133,7 +133,7 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
                       size="xs"
                       variant="secondary"
                       onClick={() => onEdit(p)}
-                      className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-token-surface-hover text-token-text-secondary hover:text-token-accent-brand transition-colors"
                       title="Editar"
                     >
                       <EditIcon className="w-4 h-4" />
@@ -142,7 +142,7 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
                       size="xs"
                       variant="secondary"
                       onClick={() => onCopy(p)}
-                      className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-token-surface-hover text-token-text-secondary hover:text-token-status-success transition-colors"
                       title="Duplicar"
                     >
                       <DocumentDuplicateIcon className="w-4 h-4" />
@@ -151,7 +151,7 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
                       size="xs"
                       variant="danger"
                       onClick={() => onDelete(p.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-token-text-secondary hover:text-token-status-error transition-colors"
                       title="Eliminar"
                     >
                       <DeleteIcon className="w-4 h-4" />
@@ -163,14 +163,20 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
           </div>
         )}
         {isFetchingNextPage && !isLoading && (
-          <div className="p-4 text-center text-sm text-gray-500">Cargando más patrones...</div>
+          <div className="p-4 text-center text-sm text-token-text-secondary">
+            Cargando más patrones...
+          </div>
         )}
         {!isLoading && patterns.length === 0 && (
-          <div className="p-4 text-center text-sm text-gray-500">
+          <div className="p-4 text-center text-sm text-token-text-secondary">
             Sin resultados.{" "}
-            <button className="underline" onClick={refetch}>
+            <Button
+              variant="none"
+              className="underline inline text-token-accent-brand cursor-pointer shadow-none"
+              onClick={refetch}
+            >
               Reintentar
-            </button>
+            </Button>
           </div>
         )}
       </div>

@@ -11,25 +11,25 @@ const MetricCard: React.FC<{
 }> = ({ title, value, unit, icon, status = "good" }) => (
   <div className="bg-token-surface-card border border-token-border-technical rounded-md p-4 shadow-sm">
     <div className="flex items-center justify-between mb-2">
-      <span className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.15em]">
+      <span className="text-token-text-secondary text-[10px] font-black uppercase tracking-[0.15em]">
         {title}
       </span>
       <div
         className={`p-1.5 rounded-md ${
           status === "good"
-            ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            ? "bg-token-status-success/10 text-token-status-success"
             : status === "warning"
-              ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
-              : "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400"
+              ? "bg-token-status-warning/10 text-token-status-warning"
+              : "bg-token-status-error/10 text-token-status-error"
         }`}
       >
         {icon}
       </div>
     </div>
     <div className="flex items-baseline gap-1">
-      <span className="text-2xl font-black text-slate-900 dark:text-white">{value}</span>
+      <span className="text-2xl font-black text-token-text-primary">{value}</span>
       {unit && (
-        <span className="text-gray-400 dark:text-gray-500 text-xs font-black uppercase tracking-widest">
+        <span className="text-token-text-secondary text-xs font-black uppercase tracking-widest">
           {unit}
         </span>
       )}
@@ -50,7 +50,7 @@ const HealthDashboard: React.FC = () => {
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 dark:border-white"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
       </div>
     );
   }
@@ -78,32 +78,32 @@ const HealthDashboard: React.FC = () => {
         ? "ERROR"
         : "OK";
   const backupStatusTone = !backup?.enabled
-    ? "bg-gray-500 text-white"
+    ? "bg-token-surface-technical text-token-text-secondary border border-token-border-subtle"
     : backup.stale || backup.lastError
-      ? "bg-rose-500 text-white"
-      : "bg-emerald-500 text-white";
+      ? "bg-token-status-error text-token-text-onAccent"
+      : "bg-token-status-success text-token-text-onAccent";
 
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">
+          <h2 className="text-lg font-black text-token-text-primary uppercase tracking-tight">
             Estado del Sistema
           </h2>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            Metricas en tiempo real de infraestructura y base de datos
+          <p className="text-sm font-medium text-token-text-secondary">
+            Métricas en tiempo real de infraestructura y base de datos
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-md shadow-sm text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-300">
+        <div className="flex items-center gap-2 px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md shadow-sm text-[10px] font-black uppercase tracking-widest text-token-text-primary">
           <div
-            className={`w-2 h-2 rounded-full animate-pulse ${data?.status === "healthy" ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"}`}
+            className={`w-2 h-2 rounded-full animate-pulse ${data?.status === "healthy" ? "bg-token-status-success shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-token-status-error shadow-[0_0_8px_rgba(239,68,68,0.5)]"}`}
           ></div>
           {data?.status === "healthy" ? "SISTEMA OPERATIVO" : "SISTEMA DEGRADADO"}
         </div>
       </header>
 
       {error && (
-        <div className="p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-md text-rose-700 dark:text-rose-400 text-sm font-bold">
+        <div className="p-4 bg-token-status-error/10 border border-token-status-error/20 rounded-md text-token-status-error text-sm font-bold">
           {error}
         </div>
       )}
@@ -139,7 +139,7 @@ const HealthDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-token-surface-card border border-token-border-technical rounded-md overflow-hidden shadow-sm">
-          <div className="px-4 py-3 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-800 font-black text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+          <div className="px-4 py-3 bg-token-surface-technical border-b border-token-border-subtle font-black text-[10px] uppercase tracking-[0.2em] text-token-text-secondary">
             Detalle del Entorno
           </div>
           <div className="p-4 space-y-3">
@@ -165,12 +165,12 @@ const HealthDashboard: React.FC = () => {
         </div>
 
         <div className="bg-token-surface-card border border-token-border-technical rounded-md overflow-hidden shadow-sm">
-          <div className="px-4 py-3 bg-gray-100 dark:bg-gray-900 border-b border-gray-300 dark:border-gray-800 font-black text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+          <div className="px-4 py-3 bg-token-surface-technical border-b border-token-border-subtle font-black text-[10px] uppercase tracking-[0.2em] text-token-text-secondary">
             Riesgo Operativo (SLO)
           </div>
           <div className="p-4 space-y-4">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-700 dark:text-gray-300 font-black uppercase text-[10px] tracking-tight">
+              <span className="text-token-text-secondary font-black uppercase text-[10px] tracking-tight">
                 Estado de Backup
               </span>
               <span
@@ -204,7 +204,7 @@ const HealthDashboard: React.FC = () => {
                 <span className="flex items-center gap-1 justify-end">
                   {backup?.backupCount ?? 0}
                   {backup?.backupCount && backup.backupCount > 0 && (
-                    <CircleStackIcon className="w-3 h-3 text-indigo-500" />
+                    <CircleStackIcon className="w-3 h-3 text-token-accent-brand" />
                   )}
                 </span>
               }
@@ -221,13 +221,11 @@ const HealthDashboard: React.FC = () => {
 };
 
 const DetailRow: React.FC<{ label: string; value: DetailRowValue }> = ({ label, value }) => (
-  <div className="flex justify-between items-center text-sm py-2 border-b border-gray-100 dark:border-gray-800 last:border-0">
-    <span className="text-gray-500 dark:text-gray-400 font-medium uppercase text-[10px] tracking-widest">
+  <div className="flex justify-between items-center text-sm py-2 border-b border-token-border-subtle last:border-0">
+    <span className="text-token-text-secondary font-medium uppercase text-[10px] tracking-widest">
       {label}
     </span>
-    <span className="font-mono text-slate-900 dark:text-white text-right font-black italic">
-      {value}
-    </span>
+    <span className="font-mono text-token-text-primary text-right font-black italic">{value}</span>
   </div>
 );
 

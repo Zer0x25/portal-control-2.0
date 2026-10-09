@@ -75,16 +75,17 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                     Fecha de Inicio
                   </label>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="none"
                   onClick={() => setIsStartDatePickerOpen(true)}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center text-sm"
+                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
                 >
                   <span className="font-medium text-token-text-primary">
                     {startDate ? formatBusinessDate(startDate) : "Seleccionar"}
                   </span>
                   <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
-                </button>
+                </Button>
                 <DatePickerDialog
                   isOpen={isStartDatePickerOpen}
                   onClose={() => setIsStartDatePickerOpen(false)}
@@ -106,16 +107,17 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                     Fecha de Término
                   </label>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="none"
                   onClick={() => setIsEndDatePickerOpen(true)}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-sap-blue outline-none transition-all dark:text-gray-100 text-left flex justify-between items-center text-sm"
+                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
                 >
                   <span className="font-medium text-token-text-primary">
                     {endDate ? formatBusinessDate(endDate) : "Seleccionar"}
                   </span>
                   <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
-                </button>
+                </Button>
                 <DatePickerDialog
                   isOpen={isEndDatePickerOpen}
                   onClose={() => setIsEndDatePickerOpen(false)}

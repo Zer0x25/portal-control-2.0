@@ -139,8 +139,8 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   const renderRutInput = () => (
     <div key="rut" className="flex flex-col items-center">
       <div className="relative mb-5 sm:hidden">
-        <div className="absolute inset-0 bg-sap-blue/40 rounded-4xl blur-2xl animate-pulse" />
-        <div className="w-16 h-16 rounded-4xl bg-linear-to-br from-sap-blue via-indigo-600 to-sap-blue flex items-center justify-center text-white relative z-10 border border-white/20 shadow-2xl">
+        <div className="absolute inset-0 bg-sap-blue/40 rounded-2xl blur-2xl animate-pulse" />
+        <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-sap-blue via-indigo-600 to-sap-blue flex items-center justify-center text-white relative z-10 border border-white/20 shadow-2xl">
           <FingerPrintIcon className="w-8 h-8" />
         </div>
       </div>
@@ -293,7 +293,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
   const renderChangePin = () => (
     <div key="change_pin" className="flex flex-col items-center">
-      <div className="w-16 h-16 rounded-3xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6 border border-orange-500/20">
+      <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6 border border-orange-500/20">
         <KeyIcon className="w-8 h-8" />
       </div>
       <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
@@ -399,7 +399,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
           {step === "pin_input" && (
             <div className="flex flex-col items-center">
               <div className="relative mb-4">
-                <div className="w-24 h-24 rounded-3xl bg-sap-blue/10 flex items-center justify-center text-sap-blue font-black text-2xl">
+                <div className="w-24 h-24 rounded-2xl bg-sap-blue/10 flex items-center justify-center text-sap-blue font-black text-2xl">
                   {selectedEmployee?.name?.charAt(0)}
                 </div>
               </div>

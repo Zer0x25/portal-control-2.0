@@ -32,7 +32,7 @@ const LiveStatus: React.FC<LiveStatusProps> = ({
         />
         <span className={`relative inline-flex rounded-full h-2 w-2 ${color}`} />
       </div>
-      <span className="text-[10px] font-black tracking-[0.2em] text-gray-800 dark:text-gray-200 uppercase italic">
+      <span className="text-[10px] font-black tracking-[0.2em] text-token-text-primary uppercase italic">
         {label}
       </span>
     </div>

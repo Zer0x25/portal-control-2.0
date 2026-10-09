@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { User, UserRole, Employee } from "../../../types/index";
 import { useToasts } from "../../../hooks/useToasts";
 import { normalizeString } from "../../../utils/stringUtils";
 import { USER_ROLES, ROLE_HIERARCHY } from "../../../utils/mappings";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import Select from "../../../components/ui/Select";
 
 interface UserFormProps {
   isFormVisible: boolean;
@@ -71,6 +72,27 @@ const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
+  const roleOptions = useMemo(
+    () =>
+      USER_ROLES.filter((r) => ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[r]).map((r) => ({
+        value: r,
+        label: r,
+      })),
+    [currentUserRole],
+  );
+
+  const employeeOptions = useMemo(
+    () => [
+      { value: "", label: "-- SIN ASIGNAR --" },
+      ...activeEmployees
+        .filter(
+          (emp) => !existingUsers.some((u) => u.employeeId === emp.id && u.id !== editingUser?.id),
+        )
+        .map((e) => ({ value: e.id, label: e.name })),
+    ],
+    [activeEmployees, existingUsers, editingUser],
+  );
+
   if (!isFormVisible) return null;
 
   return (
@@ -109,74 +131,18 @@ const UserForm: React.FC<UserFormProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1.5">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-secondary ml-1">
-              Nivel de Autorización
-            </label>
-            <div className="relative group">
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-4 focus:ring-sap-blue/5 focus:border-sap-blue outline-none transition-all text-token-text-primary font-black uppercase tracking-tight text-sm cursor-pointer shadow-sm appearance-none hover:bg-token-surface-hover"
-              >
-                {USER_ROLES.filter((r) => ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[r]).map(
-                  (r) => (
-                    <option key={r} value={r} className="bg-white dark:bg-gray-900">
-                      {r}
-                    </option>
-                  ),
-                )}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-token-text-tertiary group-hover:text-sap-blue transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-secondary ml-1">
-              Empleado Vinculado (Opcional)
-            </label>
-            <div className="relative group">
-              <select
-                value={employeeId || ""}
-                onChange={(e) => setEmployeeId(e.target.value || undefined)}
-                className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-4 focus:ring-sap-blue/5 focus:border-sap-blue outline-none transition-all text-token-text-primary font-black uppercase tracking-tight text-sm cursor-pointer shadow-sm appearance-none hover:bg-token-surface-hover"
-              >
-                <option value="" className="bg-white dark:bg-gray-900">
-                  -- SIN ASIGNAR --
-                </option>
-                {activeEmployees
-                  .filter(
-                    (emp) =>
-                      !existingUsers.some(
-                        (u) => u.employeeId === emp.id && u.id !== editingUser?.id,
-                      ),
-                  )
-                  .map((e) => (
-                    <option key={e.id} value={e.id} className="bg-white dark:bg-gray-900">
-                      {e.name}
-                    </option>
-                  ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-token-text-tertiary group-hover:text-sap-blue transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
+          <Select
+            label="Nivel de Autorización"
+            value={role}
+            onChange={(e) => setRole(e.target.value as UserRole)}
+            options={roleOptions}
+          />
+          <Select
+            label="Empleado Vinculado (Opcional)"
+            value={employeeId || ""}
+            onChange={(e) => setEmployeeId(e.target.value || undefined)}
+            options={employeeOptions}
+          />
         </div>
 
         <div className="flex justify-end gap-3 pt-6 border-t border-token-border-subtle mt-4">
@@ -184,14 +150,14 @@ const UserForm: React.FC<UserFormProps> = ({
             type="button"
             variant="secondary"
             onClick={onCancel}
-            className="px-8 py-2.5 rounded-md font-black text-[10px] uppercase tracking-widest bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-black/5 dark:border-white/5 shadow-sm transition-all"
+            className="px-8 py-2.5 text-[10px] uppercase tracking-widest"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             variant="primary"
-            className="px-10 py-2.5 rounded-md bg-sap-blue hover:bg-sap-blue/90 border-none shadow-md transition-all font-black text-[10px] uppercase tracking-widest"
+            className="px-10 py-2.5 text-[10px] uppercase tracking-widest"
           >
             {editingUser ? "Sincronizar" : "Registrar Acceso"}
           </Button>

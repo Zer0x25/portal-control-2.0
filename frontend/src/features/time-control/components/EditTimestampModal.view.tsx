@@ -42,10 +42,10 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
         <div className="flex items-center gap-4">
           <IconBox icon={<ClockIcon />} variant="primary" size="md" />
           <div>
-            <h3 className="text-sm font-black text-gray-950 dark:text-white uppercase italic leading-none truncate">
+            <h3 className="text-sm font-black text-token-text-primary uppercase italic leading-none truncate">
               Ajustar Registro
             </h3>
-            <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mt-1.5 italic leading-none">
+            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
               {fieldLabel} Operativo
             </p>
           </div>
@@ -57,18 +57,18 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
         <div className="p-5 rounded-md bg-token-surface-card border border-token-border-technical flex items-center gap-4 shadow-sm relative overflow-hidden">
           <IndustrialIndicator height="h-full" color="bg-token-accent-brand/20" className="mr-1" />
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">
+            <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest leading-none mb-1.5">
               Colaborador
             </p>
-            <p className="text-sm font-black text-slate-800 dark:text-white uppercase italic truncate">
+            <p className="text-sm font-black text-token-text-primary uppercase italic truncate">
               {record.employeeName}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1.5">
+            <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest leading-none mb-1.5">
               Fecha
             </p>
-            <p className="text-sm font-black text-slate-800 dark:text-white uppercase italic font-mono">
+            <p className="text-sm font-black text-token-text-primary uppercase italic font-mono">
               {record.date}
             </p>
           </div>
@@ -82,10 +82,10 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
             type="time"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            className="h-12 text-sm font-black uppercase tracking-tight rounded-md bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-800"
+            className="h-12 text-sm font-black uppercase tracking-tight rounded-md bg-token-surface-card border-token-border-technical text-token-text-primary"
           />
           {field === "salida" && maxTimeForExit && (
-            <p className="text-[10px] font-black text-amber-600 uppercase tracking-wide px-1">
+            <p className="text-[10px] font-black text-token-status-warning uppercase tracking-wide px-1">
               Máximo permitido: {maxTimeForExit} (12h desde entrada). Si la hora es menor que la
               entrada, se asume día siguiente.
             </p>
@@ -104,7 +104,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
           <Button
             variant="secondary"
             onClick={onClose}
-            className="w-full sm:w-auto h-11 px-8 rounded-md font-black uppercase tracking-widest text-[10px] border border-gray-300 dark:border-gray-800"
+            className="w-full sm:w-auto h-11 px-8 rounded-md font-black uppercase tracking-widest text-[10px]"
           >
             cancelar
           </Button>

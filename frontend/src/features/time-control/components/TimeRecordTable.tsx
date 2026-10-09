@@ -81,10 +81,10 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
                 <TableCellsIcon className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                <h3 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
                   Registros de Horario
                 </h3>
-                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">
+                <p className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest mt-1">
                   VISUALIZACIÓN Y GESTIÓN TÉCNICA DE MARCAJES
                 </p>
               </div>
@@ -122,24 +122,27 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
                       <div className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
                         Seleccionar Formato de Salida
                       </div>
-                      <button
+                      <Button
+                        variant="none"
                         onClick={() => handleExport("csv")}
                         className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-sap-blue hover:text-white rounded transition-colors"
                       >
                         <DocumentTextIcon className="w-4 h-4 mr-3" /> Standard CSV
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="none"
                         onClick={() => handleExport("excel")}
-                        className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-gray-300 hover:bg-sap-blue hover:text-white rounded transition-colors"
+                        className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-sap-blue hover:text-white rounded transition-colors"
                       >
                         <TableCellsIcon className="w-4 h-4 mr-3" /> Microsoft Excel
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="none"
                         onClick={() => handleExport("pdf")}
-                        className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-gray-300 hover:bg-sap-blue hover:text-white rounded transition-colors"
+                        className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-sap-blue hover:text-white rounded transition-colors"
                       >
                         <PrinterIcon className="w-4 h-4 mr-3" /> Imprimir Documento
-                      </button>
+                      </Button>
                     </motion.div>
                   )}
                 </AnimatePresence>

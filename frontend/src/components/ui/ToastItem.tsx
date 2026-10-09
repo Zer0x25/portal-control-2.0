@@ -13,6 +13,7 @@ interface ToastItemProps {
   onDismiss: (id: string) => void;
 }
 
+import Button from "./Button";
 import { motion } from "framer-motion";
 
 const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
@@ -102,13 +103,14 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
       </div>
 
       <div className="flex items-center pr-2">
-        <button
+        <Button
+          variant="none"
           onClick={() => onDismiss(id)}
-          className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
+          className="p-2 rounded-lg text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-hover transition-colors group"
           aria-label="Cerrar notificación"
         >
           <CloseIcon className="w-4 h-4 transition-transform group-active:scale-90" />
-        </button>
+        </Button>
       </div>
     </motion.div>
   );

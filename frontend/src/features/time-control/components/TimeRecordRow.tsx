@@ -147,7 +147,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
           </div>
           {/* Fecha - 10% */}
           <div className="w-[10%] px-4 py-4">
-            <span className="text-xs font-black font-mono text-gray-700 dark:text-gray-300 tracking-tighter uppercase tabular-nums truncate">
+            <span className="text-xs font-black font-mono text-token-text-primary tracking-tighter uppercase tabular-nums truncate">
               {formatDisplayDate(record.date)}
             </span>
           </div>
@@ -223,7 +223,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
             </span>
             {["Laborando", "Colacion"].includes(record.status) && progressPercent > 0 && (
               <div
-                className="w-16 h-1 bg-gray-200/50 dark:bg-gray-700/30 rounded-full overflow-hidden border border-white/10"
+                className="w-16 h-1 bg-token-surface-hover rounded-full overflow-hidden border border-white/10"
                 title={`${progressPercent}% de jornada completada`}
               >
                 <div
@@ -253,7 +253,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
           </div>
         </td>
         <td className="px-4 py-4 whitespace-nowrap">
-          <span className="text-xs font-black font-mono text-gray-700 dark:text-gray-300 tracking-tighter uppercase tabular-nums">
+          <span className="text-xs font-black font-mono text-token-text-primary tracking-tighter uppercase tabular-nums">
             {formatDisplayDate(record.date)}
           </span>
         </td>

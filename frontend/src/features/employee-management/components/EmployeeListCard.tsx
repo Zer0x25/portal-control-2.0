@@ -59,7 +59,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
           >
             <div
               className={`absolute top-0 left-0 w-1 h-full ${
-                emp.status === "Activo" ? "bg-emerald-500" : "bg-gray-400"
+                emp.status === "Activo" ? "bg-emerald-500" : "bg-token-text-tertiary"
               }`}
             />
 
@@ -116,7 +116,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                       size="sm"
                       variant="secondary"
                       onClick={() => onEdit(emp)}
-                      className="flex-1 justify-center bg-white dark:bg-gray-800 hover:bg-sap-blue/10 hover:text-sap-blue border-black/10 dark:border-white/10"
+                      className="flex-1 justify-center hover:bg-sap-blue/10 hover:text-sap-blue"
                     >
                       <EditIcon className="w-4 h-4 mr-2" />
                       Editar
@@ -127,7 +127,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                       size="sm"
                       variant="danger"
                       onClick={() => onArchive(emp)}
-                      className="w-10 px-0 flex items-center justify-center bg-white dark:bg-gray-800 text-red-500 border-black/10 dark:border-white/10 hover:bg-red-50"
+                      className="w-10 px-0 flex items-center justify-center text-token-status-error hover:bg-token-status-error/10"
                     >
                       <ArchiveBoxIcon className="w-4 h-4" />
                     </Button>
@@ -151,7 +151,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
         ))
       ) : (
         <div className="col-span-full py-16 text-center bg-token-surface-stripe rounded-lg border-2 border-dashed border-token-border-technical">
-          <p className="text-sm font-bold text-gray-500 dark:text-gray-400 italic">
+          <p className="text-sm font-bold text-token-text-tertiary italic">
             No se encontraron empleados.
           </p>
         </div>
@@ -252,7 +252,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="secondary"
                           onClick={() => onEdit(emp)}
-                          className="p-2! shadow-sm rounded-md border-gray-200 dark:border-gray-700 hover:bg-sap-blue hover:text-white"
+                          className="p-2! shadow-sm rounded-md border-token-border-technical hover:bg-sap-blue hover:text-white"
                           title="Editar"
                         >
                           <EditIcon className="w-4 h-4" />
@@ -261,7 +261,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="secondary"
                           onClick={() => {}}
-                          className="p-2! shadow-sm rounded-md border-gray-200 dark:border-gray-700 hover:bg-purple-500 hover:text-white"
+                          className="p-2! shadow-sm rounded-md border-token-border-technical hover:bg-purple-500 hover:text-white"
                           title="Cambiar PIN (Simulado)"
                         >
                           <KeyIcon className="w-4 h-4" />
@@ -299,7 +299,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
             <tr>
               <td
                 colSpan={6}
-                className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400 italic"
+                className="px-6 py-12 text-center text-sm text-token-text-tertiary italic"
               >
                 No hay empleados para mostrar.
               </td>

@@ -7,6 +7,7 @@ import {
   CalendarDaysIcon,
 } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
+import EmptyState from "../../../components/ui/EmptyState";
 import { motion, AnimatePresence } from "framer-motion";
 import HolidayListDesktop from "../components/HolidayListDesktop";
 import HolidayListMobile from "../components/HolidayListMobile";
@@ -142,15 +143,12 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
 
       <div className="flex-1 min-h-[400px]">
         {holidays.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-gray-400">
-            <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-full mb-4 opacity-50 grayscale">
-              🚩
-            </div>
-            <p className="text-xl font-bold">Sin feriados configurados.</p>
-            <p className="text-sm">
-              Carga los feriados nacionales del año para automatizar cálculos.
-            </p>
-          </div>
+          <EmptyState
+            title="Sin feriados configurados"
+            description="Carga los feriados nacionales del año para automatizar cálculos."
+            icon={<span className="text-2xl">🚩</span>}
+            className="my-12"
+          />
         ) : (
           <ResponsiveView
             mobile={

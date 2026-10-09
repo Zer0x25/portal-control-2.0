@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "../../../components/ui/Button";
 import {
   useSupervisorPermissions,
   useSupervisorAction,
@@ -46,7 +47,7 @@ export const SupervisorDashboardExample: React.FC = () => {
     return (
       <div className="p-6 text-center">
         <h2 className="text-xl font-semibold text-red-600">Acceso Denegado</h2>
-        <p className="text-gray-600 mt-2">
+        <p className="text-token-text-secondary mt-2">
           Solo usuarios con rol de supervisor pueden acceder a esta funcionalidad.
         </p>
       </div>
@@ -55,8 +56,8 @@ export const SupervisorDashboardExample: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+      <div className="bg-token-surface-card rounded-lg shadow p-6 border border-token-border-technical">
+        <h1 className="text-2xl font-bold text-token-text-primary mb-4">
           Sistema de Types Consistente - Supervisor Dashboard
         </h1>
 
@@ -80,27 +81,34 @@ export const SupervisorDashboardExample: React.FC = () => {
             <h3 className="font-semibold text-green-900 mb-2">Acciones Disponibles</h3>
             <div className="space-y-2">
               <SupervisorPermissionGate permission="canViewAnalytics">
-                <button className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                <Button
+                  variant="none"
+                  className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
                   Ver Analytics
-                </button>
+                </Button>
               </SupervisorPermissionGate>
 
               <SupervisorPermissionGate permission="canEditTimeRecords">
-                <button
+                <Button
+                  variant="none"
                   onClick={() => handleEditRecord("example-record")}
                   className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
                   Editar Registro de Tiempo
-                </button>
+                </Button>
               </SupervisorPermissionGate>
 
               <SupervisorPermissionGate
                 permission="canManageUsers"
                 fallback={<div className="text-red-600 text-sm">Requiere permisos elevados</div>}
               >
-                <button className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                <Button
+                  variant="none"
+                  className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
+                >
                   Gestionar Usuarios
-                </button>
+                </Button>
               </SupervisorPermissionGate>
             </div>
           </div>
@@ -108,7 +116,7 @@ export const SupervisorDashboardExample: React.FC = () => {
 
         {/* Lista de Tabs Disponibles */}
         <div className="mt-6">
-          <h3 className="font-semibold text-gray-900 mb-3">Tabs Disponibles</h3>
+          <h3 className="font-semibold text-token-text-primary mb-3">Tabs Disponibles</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {(
               Object.values(
@@ -127,12 +135,12 @@ export const SupervisorDashboardExample: React.FC = () => {
                         : "canViewAnalytics" // fallback
                 }
                 fallback={
-                  <div className="bg-gray-100 p-3 rounded text-center text-gray-500">
+                  <div className="bg-token-surface-stripe p-3 rounded text-center text-token-text-tertiary">
                     {tab} (Sin permisos)
                   </div>
                 }
               >
-                <div className="bg-white border border-gray-200 p-3 rounded text-center hover:bg-gray-50 cursor-pointer">
+                <div className="bg-token-surface-card border border-token-border-subtle p-3 rounded text-center hover:bg-token-surface-hover text-token-text-primary cursor-pointer">
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </div>
               </SupervisorPermissionGate>

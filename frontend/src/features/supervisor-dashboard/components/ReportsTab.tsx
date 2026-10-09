@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 📊 ReportsTab Component
  * Refactored to use the unified Industrial-Elegant AuditMonthSelector.
  * Simplifies period selection to a monthly focus as requested.
@@ -63,7 +63,7 @@ const ReportsTab: FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-950 px-10 py-6 rounded-sm border border-token-border-technical shadow-lg flex items-center gap-6"
+            className="bg-token-surface-card px-10 py-6 rounded-sm border border-token-border-technical shadow-lg flex items-center gap-6"
           >
             <div className="w-10 h-10 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
             <span className="text-[11px] font-black uppercase tracking-widest text-token-text-primary">
@@ -83,7 +83,7 @@ const ReportsTab: FC = () => {
           <div className="bg-token-surface-card px-8 py-6 rounded-sm border border-token-border-technical shadow-sm flex flex-col xl:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-6">
               <div
-                className={`p-5 rounded-sm shadow-sm ${isSingleEmployeeReport ? "bg-slate-900 text-white" : "bg-sap-blue text-white"}`}
+                className={`p-5 rounded-sm shadow-sm ${isSingleEmployeeReport ? "bg-token-surface-stripe text-token-text-primary border border-token-border-technical" : "bg-sap-blue text-white"}`}
               >
                 {isSingleEmployeeReport ? (
                   <UsersIcon className="w-8 h-8" />

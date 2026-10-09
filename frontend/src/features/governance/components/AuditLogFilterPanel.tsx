@@ -40,15 +40,15 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
     <div className="bg-token-surface-card border border-token-border-technical rounded-md shadow-sm">
       <button
         onClick={onToggle}
-        className="w-full px-8 py-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group"
+        className="w-full px-8 py-6 flex items-center justify-between hover:bg-token-surface-hover transition-colors group"
       >
         <div className="flex items-center gap-6">
           <div className="w-1 h-6 bg-indigo-700" />
           <div>
-            <h2 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">
+            <h2 className="text-sm font-black uppercase tracking-widest text-token-text-primary">
               SISTEMA DE FILTRADO AVANZADO
             </h2>
-            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">
+            <p className="text-[9px] font-bold text-token-text-secondary uppercase tracking-widest mt-1">
               Refinar búsqueda por metadatos de auditoría
             </p>
           </div>
@@ -63,9 +63,9 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
             </span>
           )}
 
-          <div className="w-8 h-8 rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 flex items-center justify-center group-hover:border-indigo-700 transition-all">
+          <div className="w-8 h-8 rounded-md bg-token-surface-card border border-token-border-technical flex items-center justify-center group-hover:border-indigo-700 transition-all">
             <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.15 }}>
-              <ChevronDownIcon className="w-5 h-5 text-gray-500 group-hover:text-indigo-700 transition-colors" />
+              <ChevronDownIcon className="w-5 h-5 text-token-text-secondary group-hover:text-indigo-700 transition-colors" />
             </motion.div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Category/Domain Filter */}
               <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   📂 Dominio
                 </label>
                 <div className="relative group/select">
@@ -110,7 +110,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                         }
                       }
                     }}
-                    className="w-full h-12 pl-4 pr-10 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-sm font-semibold text-slate-900 dark:text-white appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 group-hover/select:border-indigo-700 transition-all"
+                    className="w-full h-12 pl-4 pr-10 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-semibold text-token-text-primary appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 group-hover/select:border-indigo-700 transition-all"
                   >
                     <option value="ALL">Todos</option>
                     {CATEGORY_GROUPS.map((group) => (
@@ -119,7 +119,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-token-text-tertiary">
                     <ChevronDownIcon className="w-5 h-5" />
                   </div>
                 </div>
@@ -127,14 +127,14 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
 
               {/* Severity Filter */}
               <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   ⚠️ Severidad
                 </label>
                 <div className="space-y-2">
                   {SEVERITIES.map((sev) => (
                     <label
                       key={sev.id}
-                      className="flex items-center gap-3 cursor-pointer group/checkbox hover:bg-gray-50 dark:hover:bg-gray-900/50 p-2 rounded-md transition-colors"
+                      className="flex items-center gap-3 cursor-pointer group/checkbox hover:bg-token-surface-hover p-2 rounded-md transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -152,10 +152,10 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                             }));
                           }
                         }}
-                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-indigo-700 focus:ring-indigo-700/20 cursor-pointer"
+                        className="w-4 h-4 rounded border-token-border-technical text-indigo-700 focus:ring-indigo-700/20 cursor-pointer"
                       />
                       <div className={`w-2 h-2 rounded-full ${sev.color}`} />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-token-text-secondary">
                         {sev.label}
                       </span>
                     </label>
@@ -165,14 +165,14 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
 
               {/* Outcome Filter */}
               <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   ✓ Resultado
                 </label>
                 <div className="space-y-2">
                   {["SUCCESS", "FAILURE", "ERROR"].map((outcome) => (
                     <label
                       key={outcome}
-                      className="flex items-center gap-3 cursor-pointer group/checkbox hover:bg-gray-50 dark:hover:bg-gray-900/50 p-2 rounded-md transition-colors"
+                      className="flex items-center gap-3 cursor-pointer group/checkbox hover:bg-token-surface-hover p-2 rounded-md transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -190,9 +190,9 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                             }));
                           }
                         }}
-                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-700 text-indigo-700 focus:ring-indigo-700/20 cursor-pointer"
+                        className="w-4 h-4 rounded border-token-border-technical text-indigo-700 focus:ring-indigo-700/20 cursor-pointer"
                       />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-token-text-secondary">
                         {outcome}
                       </span>
                     </label>
@@ -202,7 +202,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
 
               {/* Actor Search */}
               <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   👤 Usuario
                 </label>
                 <div className="relative">
@@ -213,9 +213,9 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                       setFilters((prev) => ({ ...prev, actorUsername: e.target.value }))
                     }
                     placeholder="Buscar por usuario..."
-                    className="w-full h-12 pl-10 pr-4 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-sm font-medium text-slate-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                    className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-token-text-tertiary pointer-events-none">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
@@ -228,7 +228,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   {filters.actorUsername && (
                     <button
                       onClick={() => setFilters((prev) => ({ ...prev, actorUsername: "" }))}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-token-text-tertiary hover:text-token-text-primary"
                     >
                       <svg
                         className="w-4 h-4"
@@ -250,7 +250,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
 
               {/* Action Search */}
               <div className="lg:col-span-1">
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   🔍 Acción
                 </label>
                 <div className="relative">
@@ -259,9 +259,9 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                     value={filters.action}
                     onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value }))}
                     placeholder="Filtrar por acción..."
-                    className="w-full h-12 pl-10 pr-4 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-sm font-medium text-slate-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                    className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-token-text-tertiary pointer-events-none">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
@@ -274,7 +274,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   {filters.action && (
                     <button
                       onClick={() => setFilters((prev) => ({ ...prev, action: "" }))}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-token-text-tertiary hover:text-token-text-primary"
                     >
                       <svg
                         className="w-4 h-4"
@@ -296,36 +296,36 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
             </div>
 
             {/* Date Range Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-token-border-subtle">
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   📅 Fecha Inicio
                 </label>
                 <input
                   type="date"
                   value={filters.startDate}
                   onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value }))}
-                  className="w-full h-12 px-4 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                  className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-indigo-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-token-text-primary mb-3">
                   📅 Fecha Fin
                 </label>
                 <input
                   type="date"
                   value={filters.endDate}
                   onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value }))}
-                  className="w-full h-12 px-4 rounded-md bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-800 text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                  className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                 />
               </div>
             </div>
 
             {/* Active Filters Pills */}
             {totalActive > 0 && (
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="pt-4 border-t border-token-border-subtle">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary">
                     Filtros Activos
                   </span>
                   <button

@@ -136,8 +136,8 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
                       size="xs"
                       variant="secondary"
                       onClick={() => onEdit(h)}
-                      className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                      disabled={isArchived && !showArchived} // Allow edit if specifically showing archived? Or strictly follow rule? Assuming restrictive for now as per original code.
+                      className="p-1.5 rounded-lg hover:bg-token-surface-hover text-token-text-secondary hover:text-token-accent-brand transition-colors"
+                      disabled={isArchived && !showArchived}
                       title="Editar"
                     >
                       <EditIcon className="w-4 h-4" />
@@ -146,7 +146,7 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
                       size="xs"
                       variant="danger"
                       onClick={() => onDelete(h)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-token-text-secondary hover:text-token-status-error transition-colors"
                       disabled={isArchived && !showArchived}
                       title="Eliminar"
                     >
@@ -159,14 +159,20 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
           </div>
         )}
         {isFetchingNextPage && !isLoading && (
-          <div className="p-4 text-center text-sm text-gray-500">Cargando más feriados...</div>
+          <div className="p-4 text-center text-sm text-token-text-secondary">
+            Cargando más feriados...
+          </div>
         )}
         {!isLoading && holidays.length === 0 && (
-          <div className="p-4 text-center text-sm text-gray-500">
+          <div className="p-4 text-center text-sm text-token-text-secondary">
             Sin resultados.{" "}
-            <button className="underline" onClick={refetch}>
+            <Button
+              variant="none"
+              className="underline inline text-token-accent-brand cursor-pointer shadow-none"
+              onClick={refetch}
+            >
               Reintentar
-            </button>
+            </Button>
           </div>
         )}
       </div>
