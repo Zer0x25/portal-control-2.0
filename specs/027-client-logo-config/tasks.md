@@ -12,5 +12,5 @@ Reglas: una tarea = un commit o PR revisable. Cada tarea cita su AC. Convenciona
 - [x] T6: `feat(frontend): consumir BrandLogo en LoginPage sin regresión visual` — reemplazo del `<img>` hardcodeado en `LoginPage.tsx` preservando estilos y animaciones (AC3)
 - [x] T7: `feat(frontend): agregar sección de marca en Configuración con vista previa y restablecer` — edición de fuente + tamaño solo Administrador con toasts en español (AC4)
 - [x] T8: `test(logo-config): cubrir contrato, roles, validación y render con fallback` — integración Fastify (manifiesto, 400, 403, público sin token) + Vitest del hook/componente y subida inválida (AC1, AC2, AC3, AC5, AC6)
-- [ ] T9: `chore(logo-config): correr validate:ci backend + frontend y spec/docs/lint checks` — `npm run check`, `validate:ci` (ambos), `spec:check`, `docs:check`, `lint:budget` en verde (AC7)
-- [ ] T10: `docs(logo-config): registrar ADR solo si la decisión de modelo es permanente` — ADR numerado e indexado en `docs/adr/README.md` únicamente si el modelo elegido es estructural permanente (AC7)
+- [x] T9: `chore(logo-config): correr validate:ci backend + frontend y spec/docs/lint checks` — `npm run check`, `validate:ci` (ambos), `spec:check`, `docs:check`, `lint:budget` en verde (AC7)
+- [x] T10: `docs(logo-config): registrar ADR solo si la decisión de modelo es permanente` — ADR numerado e indexado en `docs/adr/README.md` únicamente si el modelo elegido es estructural permanente (AC7)
