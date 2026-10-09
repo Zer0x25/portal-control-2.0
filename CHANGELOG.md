@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.26.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.26.1...v8.26.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* **corrections:** resolve multi-click race condition and 12h shift break validation ([b8fa3cd](https://github.com/Zer0x25/portal-control-2.0/commit/b8fa3cd2c2f815ea994f279585882e75832b7de0))
+
+
+### Performance Improvements
+
+* **frontend:** css-first rendering, hardened client and serving optimizations ([#34](https://github.com/Zer0x25/portal-control-2.0/issues/34)) ([ced79e3](https://github.com/Zer0x25/portal-control-2.0/commit/ced79e31db20e77660a5609ce347fbf134e37a21))
+
 ## [8.26.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.26.0...v8.26.1) (2026-10-09)
 
 
