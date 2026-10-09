@@ -97,6 +97,7 @@ El repositorio mantiene ratchets fijados en cero. No subirlos salvo decisión ex
 
 Para mantener este archivo conciso y de alta atención, las guías de implementación profunda se cargan bajo demanda desde `.agents/rules/`:
 
+- [sdd-governance.md](file:///.agents/rules/sdd-governance.md): Ciclo SDD obligatorio (spec, plan, tasks), criterios de aceptación y ADRs.
 - [agentic-governance.md](file:///.agents/rules/agentic-governance.md): Higiene de reglas, separación de documentación y presupuesto de tamaño para agentes.
 - [database-architecture.md](file:///.agents/rules/database-architecture.md): Detalles de PgBouncer, locking `FOR UPDATE`, transacciones directas y consultas concurrentes.
 - [api-contracts.md](file:///.agents/rules/api-contracts.md): Fastify routing, manifest, validadores `isRequestValidator` y sincronización OpenAPI/SDK.
@@ -104,7 +105,7 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 - [ci-performance.md](file:///.agents/rules/ci-performance.md): Memoización de AST, aislamiento de dependencias y optimización tmpfs en bases de datos efímeras.
 - [dependency-maintenance.md](file:///.agents/rules/dependency-maintenance.md): Cadencia mensual de actualización, aislamiento de jobs y dependencias retenidas (holds).
 - [frontend-performance.md](file:///.agents/rules/frontend-performance.md): Rendimiento web, CSS caching, higiene de animaciones y separación de estado.
-- **Skills (.agents/skills/)**: Runbooks ejecutables de sincronización API (`api-contracts-sync`), preflight CI (`ci-preflight`) y migraciones Prisma (`prisma-migration-safeguard`).
+- **Skills (.agents/skills/)**: Runbooks ejecutables de ciclo SDD (`sdd-cycle`), sincronización API (`api-contracts-sync`), preflight CI (`ci-preflight`) y migraciones Prisma (`prisma-migration-safeguard`).
 
 ### Política de Higiene de Reglas (Anti-Rule Creep)
 

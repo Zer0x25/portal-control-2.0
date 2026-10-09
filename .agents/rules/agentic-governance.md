@@ -17,3 +17,8 @@ description: Invariants for agentic workflow, rule hygiene, AGENTS.md budget, an
 - **No incluir bitácoras históricas**: No registrar resultados de campañas pasadas (ej. "389 -> 0 warnings").
 - **No incluir playbooks paso a paso de refactorización**: Pertenecen a `.agents/rules/` o a la spec correspondiente.
 - **No duplicar información**: Si algo ya está en un ADR o en una spec, solo se enlaza; nunca se copia el párrafo completo.
+
+## 3. Ciclo SDD + ADR Obligatorio
+
+- Todo cambio funcional nuevo (`feat:`) o refactorización de arquitectura (`refactor:`) debe nacer con un spec en `specs/NNNN-slug/` (`npm run spec:new <slug>`) antes de escribir código.
+- Decisiones arquitectónicas permanentes se promueven a `docs/adr/`. Ver [sdd-governance.md](file:///.agents/rules/sdd-governance.md) y la skill `sdd-cycle`.

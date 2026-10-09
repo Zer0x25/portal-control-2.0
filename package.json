@@ -11,6 +11,7 @@
     "db:precheck": "node .agents/skills/prisma-migration-safeguard/scripts/precheck.cjs",
     "hooks:pre-commit": "node scripts/check-hook-deps.cjs && lint-staged && npm run lint:budget",
     "hooks:pre-push": "node scripts/pre-push.cjs",
+    "spec:new": "node scripts/spec-new.cjs",
     "spec:check": "node scripts/spec-check.cjs",
     "docs:check": "node scripts/docs-check.cjs",
     "secrets:scan": "node scripts/secret-scan.cjs",
