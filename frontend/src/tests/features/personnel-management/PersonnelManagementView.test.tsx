@@ -52,4 +52,20 @@ describe("PersonnelManagementView", () => {
 
     expect(setActiveTab).toHaveBeenCalledWith("users");
   });
+
+  it("renders within canonical wide Container with data-ui-protected", () => {
+    render(
+      <PersonnelManagementView
+        activeTab="employees"
+        setActiveTab={vi.fn()}
+        employeesContent={<div />}
+        usersContent={<div />}
+      />,
+    );
+
+    const container = screen.getByTestId("page-container");
+    expect(container).toBeInTheDocument();
+    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveAttribute("data-ui-protected");
+  });
 });

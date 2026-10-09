@@ -37,11 +37,11 @@ Adecuación para matrices densas de programación mensual y gestión de turnos:
 - [x] `src/features/theoretical-shifts/views/LeaveManager.view.tsx` (`variant="wide"`)
 - [x] `src/features/planning/views/MonthlyPlanning.view.tsx` (`variant="wide"`)
 
-### Tanda 3: Gestión de Personal, Empleados y Usuarios (3 vistas)
+### Tanda 3: Gestión de Personal, Empleados y Usuarios (3 vistas) [Completada]
 Listas y formularios con soporte de búsqueda y roles:
-- [ ] `src/features/employee-management/views/EmployeeManagement.view.tsx` (`variant="wide"`)
-- [ ] `src/features/user-management/views/UserManagement.view.tsx` (`variant="wide"`)
-- [ ] `src/features/personnel-management/views/PersonnelManagement.view.tsx` (`variant="wide"`)
+- [x] `src/features/employee-management/views/EmployeeManagement.view.tsx` (`variant="wide"`)
+- [x] `src/features/user-management/views/UserManagement.view.tsx` (`variant="wide"`)
+- [x] `src/features/personnel-management/views/PersonnelManagement.view.tsx` (`variant="wide"`)
 
 ### Tanda 4: Gobernanza, Auditoría y Mantenimiento (4 vistas)
 Consolas técnicas, métricas de seguridad y respaldos:
