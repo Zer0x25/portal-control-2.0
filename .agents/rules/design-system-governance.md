@@ -64,6 +64,10 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
   - **Ratios WCAG AA Obligatorios (≥ 4.5:1)**:
     - Para textos sobre fondos de estado de error/alerta en modo claro, usar obligatoriamente `text-token-status-error-text` (`#b91c1c`).
     - Para textos o iconos sobre fondos de acento celeste (`sky-400` / SAP blue) en modo oscuro, usar obligatoriamente `text-token-text-onAccent` (`#020617`).
+    - **Contraste sobre Superficies Activas/Neutras**: En insignias, badges o etiquetas de estado montadas sobre `bg-token-surface-active`, está prohibido utilizar `text-token-text-tertiary` debido a que genera un ratio inferior a 4.5:1 en ambos temas. Debe emplearse `text-token-text-secondary` (o superior) para garantizar cumplimiento estricto de WCAG AA (> 5.6:1 en modo claro y > 4.8:1 en modo oscuro).
+- **Regiones Scrollables Accesibles (`scrollable-region-focusable`)**:
+  - Todo contenedor que utilice scroll (`overflow-y-auto`, `overflow-x-auto` o `overflow-auto` acotado por `max-h-*` / `max-w-*`) y pueda contener múltiples elementos debe ser accesible por teclado conforme a WCAG SC 2.1.1.
+  - Debe declarar obligatoriamente: `tabIndex={0}`, `role="region"`, un nombre accesible `aria-label="[descripción concisa]"` y `focus:outline-hidden` (o anillo de foco visible si no alberga controles interactivos internos).
 - **Cierre Accesible de Modales (WAI-ARIA)**:
   - Todo componente modal o diálogo interactivo (`role="dialog"`, `aria-modal="true"`) debe implementar un manejador de teclado para la tecla `Escape` que ejecute `onClose()` y libere las capas de bloqueo de puntero (`z-50`, `z-100`).
 - **Áreas táctiles mínimas**: En elementos interactivos móviles, asegurar altura mínima táctil de 40px–44px.

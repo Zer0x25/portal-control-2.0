@@ -41,3 +41,11 @@ description: Best practices and performance constraints for CI workflows, monore
      - Prohibido falsear `localStorage.setItem("lastSyncTime", ...)` en helpers como `loginFast` para saltarse pantallas de carga; esto engaña al motor de delta sync (`since = lastSyncTime`) y causa que la base de datos local quede vacía sin empleados ni turnos.
      - En tests headless, esperar deterministamente la disolución del overlay con `await expect(page.getByText(/sincronizando entorno/i)).not.toBeVisible({ timeout: 15000 })` antes de interactuar con la interfaz.
    - **Localizadores Unívocos Anti-Colisión**: En aserciones de modales, evitar `getByText` con selectores genéricos (ej. nombres de la aplicación) que colisionen con los encabezados persistentes del `Header`, usando roles y encabezados semánticos (`getByRole("heading", { name: ... })`).
+   - **Aserciones Resilientes a Configuración Regional (i18n / `toLocaleString`)**:
+     - Al validar cadenas numéricas formateadas por la UI en pruebas E2E, nunca asumir que el locale del runner de Node.js coincide con el locale del navegador headless (ej. Node en `es-CL` produce separador de miles con punto `20.000`, mientras Chromium headless en su configuración predeterminada `en-US` produce coma `20,000`).
+     - Utilizar expresiones regulares tolerantes a la configuración regional que contemplen ambas alternativas o separadores opcionales:
+       `const pattern = new RegExp(`\b(${count.toLocaleString("es-CL")}|${count.toLocaleString("en-US")}|${count})\b`);`
+   - **Entorno de Red en Ejecución Directa contra Staging**:
+     - Al invocar Playwright directamente para reproducir o depurar un test aislado contra staging (en lugar de `npm run e2e:staging`), es mandatorio exportar explícitamente las variables de red:
+       `E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api npx playwright test <spec>`
+     - Omitir estas variables causará que `loginFast` recurra al puerto por defecto `127.0.0.1:4000`, el cual es estrictamente interno dentro de la red Docker en staging y no está expuesto en el host (solo el gateway `8080` se publica).
