@@ -815,19 +815,21 @@ describe("Spec027 brand logo (branding_logo)", () => {
     expect((await uploadLogo(Buffer.from("x"))).status).toBe(403);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
 
-    // MIME y contenido rechazados, sin dejar archivo.
+    // MIME y contenido rechazados, sin dejar archivo nuevo.
+    const before = await fs.readdir(brandDirectory).catch(() => [] as string[]);
     expect((await uploadLogo(Buffer.from("text"), "logo.png", "text/plain")).status).toBe(400);
     expect((await uploadLogo(Buffer.from("x"), "logo.png", "application/pdf")).status).toBe(400);
     expect((await uploadLogo(Buffer.from("falso png"), "logo.png", "image/png")).status).toBe(400);
     expect(await prismaDirect.systemConfig.count({ where: { key: "branding_logo" } })).toBe(0);
     const dir = await fs.readdir(brandDirectory).catch(() => [] as string[]);
-    expect(dir).toEqual([]);
+    expect(dir).toEqual(before);
   });
 
   it("stores the uploaded logo, audits CONFIG_SET and serves it inline", async () => {
     const bytes = Buffer.from(PNG_BASE64, "base64");
     const res = await uploadLogo(bytes);
     expect(res.status).toBe(201);
+    ownedLogo.add(res.body.source.ref);
     expect(res.body.source).toEqual({ kind: "upload", ref: expect.any(String) });
     expect(res.body.width).toBe(512);
     expect(res.body.height).toBe(188);
