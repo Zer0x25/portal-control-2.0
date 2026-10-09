@@ -84,3 +84,16 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
     - `data-nav-to={to}`
     - `data-nav-active="true|false"`
   - El shell raíz debe publicar metadatos de ruta: `data-testid="app-shell"` y `data-current-path={path}`.
+
+---
+
+## 7. Auditoría, Certificación de Primitivas y Paridad de Guardrails
+
+- **Paridad Estricta de Archivos Certificados (`CERTIFIED_FILES`)**:
+  - Toda primitiva atómica o de layout en `src/components/ui/` (ej. `Button.tsx`, `Container.tsx`, `Card.tsx`, `Input.tsx`, `Badge.tsx`) y shells de layout (`src/components/layout/`) debe estar registrada obligatoriamente en la lista de archivos certificados de **ambos** mecanismos de control:
+    1. El script auditor CLI: `frontend/scripts/audit-design-system.cjs`.
+    2. La suite de pruebas de guardrails: `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`.
+  - Prohibido agregar o remover componentes de una lista sin replicarlo exactamente en la otra.
+- **Presupuesto Monótono en Cero (`design-system-budget.json`)**:
+  - El presupuesto de desvíos (`totalIssuesBudget`) se encuentra fijado en `0`. Ningún cambio puede elevar este valor.
+  - Al certificar nuevos componentes o migrar vistas, actualizar el recuento ejecutando `node scripts/audit-design-system.cjs --update` y validar con `npm run test:guardrails`.
