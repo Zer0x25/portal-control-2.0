@@ -97,6 +97,7 @@ describe("useKioskData (spec 029)", () => {
         forcedType: "entrada",
         latitude: -33.4,
         longitude: -70.6,
+        suppressErrorToast: true,
       }),
     );
   });

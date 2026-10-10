@@ -58,6 +58,7 @@ export const useWorkerPortalData = () => {
     typeof getEmployeeById
   > | null>(null);
   const hasTriedResolvingEmployeeLink = useRef(false);
+  const isSubmittingClockingRef = useRef(false);
 
   const storeEmployee = useMemo(() => {
     if (currentUser?.employeeId) {
@@ -277,12 +278,13 @@ export const useWorkerPortalData = () => {
         addToast("Empleado no encontrado.", "error");
         return;
       }
+      // Anti doble-click (spec 030): sin esto, dos toques rápidos disparan dos
+      // punches y el usuario ve el error duplicado.
+      if (isSubmittingClockingRef.current) return;
+      isSubmittingClockingRef.current = true;
 
       // Contrato canónico API: PunchSchema exige camelCase
-      // (entrada|salida|inicioColacion|finColacion). timeRecordService normaliza
-      // aliases snake, pero se envía canónico para no depender de la normalización.
-      // Deuda transversal backend: attendanceRules.determineNextPunchAction compara
-      // contra snake (inicio_colacion/fin_colacion) y deja caer forzados a flujo auto.
+      // (entrada|salida|inicioColacion|finColacion).
       let backendAction: "entrada" | "inicioColacion" | "finColacion" | "salida" | undefined;
 
       switch (type) {
@@ -305,6 +307,7 @@ export const useWorkerPortalData = () => {
           employeeId: employee.id,
           source: "WEB",
           forcedType: backendAction,
+          suppressErrorToast: true,
         });
 
         if (result.success) {
@@ -314,7 +317,22 @@ export const useWorkerPortalData = () => {
         }
       } catch (error: unknown) {
         logger.error("Clocking error:", error);
-        addToast("Error de conexión al registrar marcaje.", "error");
+        // El onError de la mutación está suprimido aquí: este es el único toast.
+        // Ante denegación de negocio (licencia, jornada cerrada...) se muestra
+        // el mensaje del backend en vez del genérico (spec 030).
+        const backendMessage = error instanceof Error ? error.message : "";
+        const isBusinessDenial =
+          /licencia|vacaci|permiso|entrada activa|jornada.*cerrada|colaci|registrada|bloqueada|segundos/i.test(
+            backendMessage,
+          );
+        addToast(
+          isBusinessDenial && backendMessage
+            ? backendMessage
+            : "Error de conexión al registrar marcaje.",
+          "error",
+        );
+      } finally {
+        isSubmittingClockingRef.current = false;
       }
     },
     [employee, currentUser, punchMutation, addToast],

@@ -177,6 +177,19 @@ export const useUserClockingStatus = (employeeId?: string) => {
   return { status, time, lastRecord, isLoading: query.isLoading };
 };
 
+export interface PunchMutationInput {
+  employeeId: string;
+  source?: string;
+  forcedType?: string;
+  latitude?: number;
+  longitude?: number;
+  /**
+   * El llamante muestra su propio toast en el catch: evita el toast genérico
+   * del onError para no duplicar el error (spec 030).
+   */
+  suppressErrorToast?: boolean;
+}
+
 // --- Mutations ---
 export const useTimeRecordMutations = () => {
   const queryClient = useQueryClient();
@@ -184,13 +197,7 @@ export const useTimeRecordMutations = () => {
   type CreateLeavePayload = Omit<LeaveRecord, "id" | "lastModified" | "syncStatus" | "isDeleted">;
 
   const punchMutation = useMutation({
-    mutationFn: async (data: {
-      employeeId: string;
-      source?: string;
-      forcedType?: string;
-      latitude?: number;
-      longitude?: number;
-    }) => {
+    mutationFn: async (data: PunchMutationInput) => {
       const geolocation =
         typeof data.latitude === "number" && typeof data.longitude === "number"
           ? { latitude: data.latitude, longitude: data.longitude }
@@ -212,7 +219,9 @@ export const useTimeRecordMutations = () => {
         addToast("Error al marcar", "error");
       }
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, variables?: PunchMutationInput) => {
+      // El llamante con catch propio ya avisa: no duplicar el toast.
+      if (variables?.suppressErrorToast) return;
       const message = error instanceof Error ? error.message : "Error de conexión";
       addToast(message, "error");
     },

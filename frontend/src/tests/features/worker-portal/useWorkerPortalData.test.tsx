@@ -215,6 +215,58 @@ describe("useWorkerPortalData (spec 028)", () => {
     expect(addToastMock).toHaveBeenCalledWith("Error de conexión al registrar marcaje.", "error");
   });
 
+  it("spec030: denegación por licencia muestra el mensaje backend una sola vez", async () => {
+    punchMutateAsyncMock.mockRejectedValueOnce(
+      new Error(
+        "El empleado tiene licencia, vacaciones o permiso aprobado para hoy. Elimine la licencia con un supervisor para poder marcar.",
+      ),
+    );
+    const { result } = renderHook(() => useWorkerPortalData());
+    await waitFor(() => {
+      expect(result.current.employee?.id).toBe("e1");
+    });
+
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+
+    // Un único toast con el mensaje de negocio (el onError de la mutación va
+    // suprimido con suppressErrorToast).
+    expect(addToastMock).toHaveBeenCalledTimes(1);
+    expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/licencia/i), "error");
+    expect(punchMutateAsyncMock).toHaveBeenCalledWith(
+      expect.objectContaining({ suppressErrorToast: true }),
+    );
+  });
+
+  it("spec030: doble invocación concurrente dispara un solo punch", async () => {
+    let release: (value: unknown) => void = () => {};
+    punchMutateAsyncMock.mockImplementationOnce(
+      () => new Promise((resolve) => void (release = resolve)),
+    );
+    const { result } = renderHook(() => useWorkerPortalData());
+    await waitFor(() => {
+      expect(result.current.employee?.id).toBe("e1");
+    });
+
+    let first: Promise<void> | undefined;
+    act(() => {
+      first = result.current.handleClockingAction("jornada_inicio");
+    });
+    // Segunda invocación mientras la primera sigue en vuelo: debe ignorarse.
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+    act(() => {
+      release({ success: true, action: "ENTRADA" });
+    });
+    await act(async () => {
+      await first;
+    });
+
+    expect(punchMutateAsyncMock).toHaveBeenCalledTimes(1);
+  });
+
   it("AC6b: fallo de export PDF muestra toast de error", async () => {
     downloadReportPDFMock.mockRejectedValueOnce(new Error("pdf down"));
     const { result } = renderHook(() => useWorkerPortalData());

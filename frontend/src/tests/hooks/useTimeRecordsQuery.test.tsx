@@ -1,19 +1,29 @@
 import React from "react";
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { useTimeRecordsQuery } from "../../hooks/queries/useTimeRecordsQuery";
+import {
+  useTimeRecordsQuery,
+  useTimeRecordMutations,
+} from "../../hooks/queries/useTimeRecordsQuery";
 
-const { getAllMock, idbGetAllMock, idbPutBulkMock } = vi.hoisted(() => ({
+const { getAllMock, idbGetAllMock, idbPutBulkMock, punchMock, addToastMock } = vi.hoisted(() => ({
   getAllMock: vi.fn(),
   idbGetAllMock: vi.fn(),
   idbPutBulkMock: vi.fn(),
+  punchMock: vi.fn(),
+  addToastMock: vi.fn(),
 }));
 
 vi.mock("../../services/timeRecordService", () => ({
   timeRecordService: {
     getAll: getAllMock,
+    punch: punchMock,
   },
+}));
+
+vi.mock("../../hooks/useToasts", () => ({
+  useToasts: () => ({ addToast: addToastMock }),
 }));
 
 vi.mock("../../utils/indexedDB", () => ({
@@ -122,5 +132,47 @@ describe("useTimeRecordsQuery anomaly filtering", () => {
 
     const data = result.current.data?.pages[0].data || [];
     expect(data).toHaveLength(0);
+  });
+});
+
+describe("useTimeRecordMutations punch error toast (spec 030)", () => {
+  const wrapper = ({ children }: { children: React.ReactNode }) => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    punchMock.mockRejectedValue(new Error("backend dice no"));
+  });
+
+  it("toasts on punch failure by default (time-control path)", async () => {
+    const { result } = renderHook(() => useTimeRecordMutations(), { wrapper });
+
+    await act(async () => {
+      await expect(
+        result.current.punchMutation.mutateAsync({ employeeId: "e1" }),
+      ).rejects.toThrow();
+    });
+
+    expect(addToastMock).toHaveBeenCalledWith("backend dice no", "error");
+  });
+
+  it("skips the toast when the caller handles the error itself", async () => {
+    const { result } = renderHook(() => useTimeRecordMutations(), { wrapper });
+
+    await act(async () => {
+      await expect(
+        result.current.punchMutation.mutateAsync({
+          employeeId: "e1",
+          suppressErrorToast: true,
+        }),
+      ).rejects.toThrow();
+    });
+
+    expect(addToastMock).not.toHaveBeenCalled();
+    expect(punchMock).toHaveBeenCalledWith("e1", undefined, undefined, undefined);
   });
 });

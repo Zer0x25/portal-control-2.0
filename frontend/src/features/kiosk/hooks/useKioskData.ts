@@ -42,6 +42,7 @@ export const useKioskData = () => {
       employeeId: id,
       source,
       forcedType: type,
+      suppressErrorToast: true,
       ...(location ? { latitude: location.latitude, longitude: location.longitude } : {}),
     });
   };
