@@ -69,6 +69,20 @@ describe("domain/attendanceRules (pure, no DB)", () => {
         "ALREADY_PUNCHED_OUT",
       );
     });
+
+    it("accepts canonical camelCase forcedType (PunchSchema contract)", () => {
+      expect(determineNextPunchAction(empty, "inicioColacion").action).toBe("INICIO_COLACION");
+      expect(
+        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "finColacion").action,
+      ).toBe("FIN_COLACION");
+    });
+
+    it("keeps legacy snake_case forcedType for older kiosk clients", () => {
+      expect(determineNextPunchAction(empty, "inicio_colacion").action).toBe("INICIO_COLACION");
+      expect(
+        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "fin_colacion").action,
+      ).toBe("FIN_COLACION");
+    });
   });
 
   describe("shouldAutoClose", () => {
