@@ -147,7 +147,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         <button
           onClick={() => openCorrectionModal(record, field)}
           disabled={isPendingCorrection}
-          className="text-[8px] font-black text-sap-blue uppercase tracking-widest opacity-0 group-hover/cell:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
+          className="text-[8px] font-black text-sap-blue uppercase tracking-widest opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 focus-visible:opacity-100 focus:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
         >
           {isPendingCorrection ? `[ ${requestStatus} ]` : "[ Corregir ]"}
         </button>
@@ -155,7 +155,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
     );
   };
 
-  if (!currentUser || (isLoadingEmployees && !!employee)) {
+  if (!currentUser || (isLoadingEmployees && !employee)) {
     return (
       <div className="p-6 text-center text-token-text-primary">
         Cargando portal del trabajador...

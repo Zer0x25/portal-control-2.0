@@ -20,6 +20,7 @@ import {
 } from "../../../types/index";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
+import { logger } from "../../../utils/logger";
 
 const getCurrentMonthYYYYMM = (now: Date) => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -84,7 +85,6 @@ export const useWorkerPortalData = () => {
       return;
     }
 
-    if (currentUser?.role !== "Usuario") return;
     if (storeEmployee) {
       hasTriedResolvingEmployeeLink.current = false;
       setResolvedEmployee(null);
@@ -149,19 +149,36 @@ export const useWorkerPortalData = () => {
   const [latestOpenRecord, setLatestOpenRecord] = useState<DailyTimeRecord | null>(null);
 
   useEffect(() => {
-    if (!employee || !recentRecordData) {
-      if (recentRecordData?.length === 0) setStatus("fuera");
+    if (!employee) {
+      return;
+    }
+    if (!recentRecordData || recentRecordData.length === 0) {
+      setStatus("fuera");
+      setLatestOpenRecord(null);
       return;
     }
 
-    const latest = recentRecordData[0];
+    // Antiregresión: el estado debe derivarse del último registro DEL empleado,
+    // no del primero global (evita contaminación cruzada entre empleados).
+    const ownRecords = (recentRecordData as AttendanceRecord[]).filter(
+      (r) => r.employeeId === employee.id,
+    );
+    if (ownRecords.length === 0) {
+      setStatus("fuera");
+      setLatestOpenRecord(null);
+      return;
+    }
+    const latest = [...ownRecords].sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      return (b.entradaTimestamp || 0) - (a.entradaTimestamp || 0);
+    })[0];
     if (latest) {
-      const nextStatus = getContractClockingStatus(latest as AttendanceRecord, () => "fuera");
+      const nextStatus = getContractClockingStatus(latest, () => "fuera");
       setStatus(nextStatus);
       if (["fuera", "terminada", "jornada_terminada_anomalia"].includes(nextStatus)) {
         setLatestOpenRecord(null);
       } else {
-        setLatestOpenRecord(latest);
+        setLatestOpenRecord(latest as DailyTimeRecord);
       }
     } else {
       setStatus("fuera");
@@ -175,7 +192,20 @@ export const useWorkerPortalData = () => {
       requests
         .filter((r: CorrectionRequest) => r.employeeId === employee.id)
         .forEach((req: CorrectionRequest) => {
-          map.set(`${req.timeRecordId}-${req.recordField}`, req);
+          const key = `${req.timeRecordId}-${req.recordField}`;
+          const prev = map.get(key);
+          if (!prev) {
+            map.set(key, req);
+            return;
+          }
+          // Antiregresión transversal: si hay múltiples solicitudes para el mismo
+          // campo, priorizar pending sobre terminal, y ante igual prioridad la más nueva.
+          const rank = (s: CorrectionRequest["status"]) => (s === "pending" ? 1 : 0);
+          if (rank(req.status) !== rank(prev.status)) {
+            if (rank(req.status) > rank(prev.status)) map.set(key, req);
+            return;
+          }
+          if ((req.createdAt || 0) >= (prev.createdAt || 0)) map.set(key, req);
         });
     }
     return map;
@@ -185,7 +215,7 @@ export const useWorkerPortalData = () => {
     if (!employee) return [];
 
     return (dateRangeRecords as AugmentedTimeRecord[])
-      .filter((r) => r.employeeId === employee.id)
+      .filter((r) => r.employeeId === employee.id && r.date.startsWith(selectedMonth))
       .map((record) => {
         const scheduleInfo = getEmployeeDailyScheduleInfo(
           employee.id,
@@ -203,8 +233,11 @@ export const useWorkerPortalData = () => {
           scheduleInfo,
         };
       })
-      .sort((a, b) => (b.entradaTimestamp || 0) - (a.entradaTimestamp || 0));
-  }, [dateRangeRecords, employee, getEmployeeDailyScheduleInfo]);
+      .sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return (b.entradaTimestamp || 0) - (a.entradaTimestamp || 0);
+      });
+  }, [dateRangeRecords, employee, getEmployeeDailyScheduleInfo, selectedMonth]);
 
   const getPeriodDates = useCallback(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -233,7 +266,7 @@ export const useWorkerPortalData = () => {
       });
       addToast("PDF descargado correctamente", "success");
     } catch (error) {
-      console.error("Error al descargar PDF:", error);
+      logger.error("Error al descargar PDF:", error);
       addToast("Error al descargar el PDF", "error");
     }
   }, [employee, getPeriodDates, addToast]);
@@ -245,17 +278,22 @@ export const useWorkerPortalData = () => {
         return;
       }
 
-      let backendAction: "entrada" | "inicio_colacion" | "fin_colacion" | "salida" | undefined;
+      // Contrato canónico API: PunchSchema exige camelCase
+      // (entrada|salida|inicioColacion|finColacion). timeRecordService normaliza
+      // aliases snake, pero se envía canónico para no depender de la normalización.
+      // Deuda transversal backend: attendanceRules.determineNextPunchAction compara
+      // contra snake (inicio_colacion/fin_colacion) y deja caer forzados a flujo auto.
+      let backendAction: "entrada" | "inicioColacion" | "finColacion" | "salida" | undefined;
 
       switch (type) {
         case "jornada_inicio":
           backendAction = "entrada";
           break;
         case "colacion_inicio":
-          backendAction = "inicio_colacion";
+          backendAction = "inicioColacion";
           break;
         case "colacion_fin":
-          backendAction = "fin_colacion";
+          backendAction = "finColacion";
           break;
         case "jornada_fin":
           backendAction = "salida";
@@ -275,7 +313,8 @@ export const useWorkerPortalData = () => {
           addToast(`Error: ${result.action}`, "error");
         }
       } catch (error: unknown) {
-        console.error("Clocking error:", error);
+        logger.error("Clocking error:", error);
+        addToast("Error de conexión al registrar marcaje.", "error");
       }
     },
     [employee, currentUser, punchMutation, addToast],
