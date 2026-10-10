@@ -364,7 +364,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
     </div>
   );
 
-  if (isLoadingEmployees || false) {
+  if (isLoadingEmployees) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-token-surface-stripe overflow-hidden relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -13,6 +13,7 @@ import { CLOCKING_STATUS_CONFIG, getContractClockingStatus } from "../../../util
 import { idbGetAllBy, STORES } from "../../../utils/indexedDB";
 import { normalizeString } from "../../../utils/stringUtils";
 import { getCurrentGeolocation } from "../../../utils/geolocation";
+import { logger } from "../../../utils/logger";
 
 export type KioskStep =
   | "rut_input"
@@ -31,8 +32,18 @@ export const useKioskData = () => {
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
 
-  const punch = async (id: string, source: string, type?: string, _location?: unknown) => {
-    return punchMutation.mutateAsync({ employeeId: id, source, forcedType: type });
+  const punch = async (
+    id: string,
+    source: string,
+    type?: string,
+    location?: { latitude: number; longitude: number } | null,
+  ) => {
+    return punchMutation.mutateAsync({
+      employeeId: id,
+      source,
+      forcedType: type,
+      ...(location ? { latitude: location.latitude, longitude: location.longitude } : {}),
+    });
   };
 
   const [step, setStep] = useState<KioskStep>("rut_input");
@@ -140,7 +151,7 @@ export const useKioskData = () => {
             setLatestOpenRecord(null);
           }
         } catch (fetchError) {
-          console.error("Error fetching fresh kiosk status:", fetchError);
+          logger.error("Error fetching fresh kiosk status:", fetchError);
         }
 
         setStep("actions");
@@ -155,7 +166,7 @@ export const useKioskData = () => {
         setTimeout(() => setPinError(""), 2500);
       }
     } catch (error) {
-      console.error("Error verifying PIN:", error);
+      logger.error("Error verifying PIN:", error);
       addToast("Error al conectar con el servidor.", "error");
     }
   }, [selectedEmployee, pinInput, addToast, resetState]);
@@ -266,7 +277,8 @@ export const useKioskData = () => {
       setStep("success");
       setTimeout(() => resetState(), 2500);
     } catch (error) {
-      console.error("Error in clocking action:", error);
+      logger.error("Error in clocking action:", error);
+      addToast("Error al registrar marcaje. Intente nuevamente.", "error");
     } finally {
       isSubmittingRef.current = false;
     }

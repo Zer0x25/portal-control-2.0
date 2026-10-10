@@ -184,8 +184,23 @@ export const useTimeRecordMutations = () => {
   type CreateLeavePayload = Omit<LeaveRecord, "id" | "lastModified" | "syncStatus" | "isDeleted">;
 
   const punchMutation = useMutation({
-    mutationFn: async (data: { employeeId: string; source?: string; forcedType?: string }) => {
-      return await timeRecordService.punch(data.employeeId, data.source, data.forcedType);
+    mutationFn: async (data: {
+      employeeId: string;
+      source?: string;
+      forcedType?: string;
+      latitude?: number;
+      longitude?: number;
+    }) => {
+      const geolocation =
+        typeof data.latitude === "number" && typeof data.longitude === "number"
+          ? { latitude: data.latitude, longitude: data.longitude }
+          : undefined;
+      return await timeRecordService.punch(
+        data.employeeId,
+        data.source,
+        data.forcedType,
+        geolocation,
+      );
     },
     onSuccess: (result) => {
       if (result.success) {
