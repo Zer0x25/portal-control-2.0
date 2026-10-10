@@ -146,4 +146,26 @@ describe("useKioskData (spec 029)", () => {
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
   });
+
+  it("AC7: denegación por licencia muestra el mensaje del backend", async () => {
+    punchMutateAsyncMock.mockRejectedValueOnce(
+      new Error(
+        "El empleado tiene licencia, vacaciones o permiso aprobado para hoy. Elimine la licencia con un supervisor para poder marcar.",
+      ),
+    );
+    const { result } = renderHook(() => useKioskData());
+
+    act(() => {
+      result.current.handleEmployeeSelect(employeeK1 as never);
+    });
+    await waitFor(() => {
+      expect(result.current.selectedEmployee?.id).toBe("k1");
+    });
+
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+
+    expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/licencia/i), "error");
+  });
 });

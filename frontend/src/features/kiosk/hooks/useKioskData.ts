@@ -278,7 +278,16 @@ export const useKioskData = () => {
       setTimeout(() => resetState(), 2500);
     } catch (error) {
       logger.error("Error in clocking action:", error);
-      addToast("Error al registrar marcaje. Intente nuevamente.", "error");
+      // Ante denegación por licencia se muestra el mensaje del backend para
+      // que el empleado sepa por qué no puede marcar (spec 030).
+      const backendMessage = error instanceof Error ? error.message : "";
+      const isLeaveDenial = /licencia|vacaci|permiso/i.test(backendMessage);
+      addToast(
+        isLeaveDenial && backendMessage
+          ? backendMessage
+          : "Error al registrar marcaje. Intente nuevamente.",
+        "error",
+      );
     } finally {
       isSubmittingRef.current = false;
     }

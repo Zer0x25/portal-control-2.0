@@ -17,6 +17,7 @@ interface CorrectionRequestModalViewProps {
   record: DailyTimeRecord;
   field: TimeRecordField;
   requestedValue: string;
+  maxRequestedValue: string;
   reason: string;
   attachment: File | null;
   attachmentLabel: string;
@@ -40,6 +41,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
   onClose,
   field,
   requestedValue,
+  maxRequestedValue,
   reason,
   attachment,
   attachmentLabel,
@@ -115,6 +117,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
               label="Nuevo Valor Solicitado"
               type="datetime-local"
               value={requestedValue}
+              max={maxRequestedValue}
               onChange={(e) => onSetRequestedValue(e.target.value)}
               required
               className="rounded-md border-token-border-technical focus:ring-sap-blue"

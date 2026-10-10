@@ -30,6 +30,7 @@ const CorrectionRequestModalContainer: React.FC<CorrectionRequestModalProps> = (
       record={record}
       field={field}
       requestedValue={controller.requestedValue}
+      maxRequestedValue={controller.maxRequestedValue}
       reason={controller.reason}
       attachment={controller.attachment}
       attachmentLabel={controller.attachmentLabel}

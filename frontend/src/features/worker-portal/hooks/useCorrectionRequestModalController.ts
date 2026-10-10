@@ -49,6 +49,9 @@ export const useCorrectionRequestModalController = ({
     return attachment ? attachment.name : "Subir archivo (PDF, PNG, JPG)";
   }, [attachment]);
 
+  // Tope del input datetime-local: no se solicitan correcciones futuras (spec 030).
+  const maxRequestedValue = useMemo(() => formatDateToDateTimeLocal(getBusinessNow()), [isOpen]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -82,6 +85,11 @@ export const useCorrectionRequestModalController = ({
       requestedValueIso = parseBusinessDateTimeCL(datePart, `${timePart}:00`).toISOString();
     } catch {
       addToast("La fecha y hora solicitadas no tienen un formato válido.", "warning");
+      return;
+    }
+
+    if (new Date(requestedValueIso).getTime() > getBusinessNow().getTime()) {
+      addToast("No se puede solicitar una corrección con fecha futura.", "warning");
       return;
     }
 
@@ -126,6 +134,7 @@ export const useCorrectionRequestModalController = ({
     handleFileChange,
     handleSubmit,
     isSubmitting,
+    maxRequestedValue,
     originalValue,
     reason,
     requestedValue,

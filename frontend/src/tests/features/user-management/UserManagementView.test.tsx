@@ -113,6 +113,11 @@ describe("UserManagementView", () => {
     expect(screen.queryByText("Gestión de Accesos")).not.toBeInTheDocument();
   });
 
+  it("shows an informative empty state instead of a blank page", () => {
+    render(<UserManagementView {...baseProps} paginatedUsers={[]} />);
+    expect(screen.getByText(/Sin usuarios para mostrar/i)).toBeInTheDocument();
+  });
+
   it("renders within canonical wide Container with data-ui-protected", () => {
     render(<UserManagementView {...baseProps} />);
     const container = screen.getByTestId("page-container");

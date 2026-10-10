@@ -124,4 +124,44 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
     expect(addCorrectionRequestMock).not.toHaveBeenCalled();
     expect(onCloseMock).not.toHaveBeenCalled();
   });
+
+  it("rechaza valor futuro sin llamar al backend (spec 030)", async () => {
+    const { result } = renderHook(() =>
+      useCorrectionRequestModalController({
+        isOpen: true,
+        onClose: onCloseMock,
+        record: makeRecord(),
+        field: "entrada",
+      }),
+    );
+
+    // businessNow mockeado: 2026-03-06T15:45Z → pedir 2026-03-07 es futuro.
+    act(() => {
+      result.current.setReason("Motivo válido");
+      result.current.setRequestedValue("2026-03-07T09:00");
+    });
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+    });
+
+    expect(addToastMock).toHaveBeenCalledWith(
+      "No se puede solicitar una corrección con fecha futura.",
+      "warning",
+    );
+    expect(addCorrectionRequestMock).not.toHaveBeenCalled();
+  });
+
+  it("expone maxRequestedValue acotado a hoy para el input", async () => {
+    const { result } = renderHook(() =>
+      useCorrectionRequestModalController({
+        isOpen: true,
+        onClose: onCloseMock,
+        record: makeRecord(),
+        field: "entrada",
+      }),
+    );
+
+    expect(result.current.maxRequestedValue).toMatch(/^2026-03-06T/);
+  });
 });

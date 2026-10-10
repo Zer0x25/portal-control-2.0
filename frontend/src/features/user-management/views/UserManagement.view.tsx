@@ -140,7 +140,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
               </td>
               <td className="px-6 py-4 text-right">
                 {canManageUser(user) ? (
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                     <Button
                       size="xs"
                       variant="secondary"
@@ -272,6 +272,11 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
             className="h-[500px] overflow-y-auto bg-token-surface-stripe custom-scrollbar rounded-sm border border-token-border-technical"
           >
             {isMobile ? renderMobileView() : renderDesktopView()}
+            {!isLoadingUsers && paginatedUsers.length === 0 && (
+              <p className="py-10 text-center text-[11px] font-bold uppercase tracking-widest text-token-text-tertiary">
+                Sin usuarios para mostrar. Verifique su conexión o sus permisos.
+              </p>
+            )}
             <div ref={sentinelRef} className="py-10 text-center">
               {isLoadingUsers && (
                 <span className="text-[10px] font-bold uppercase text-(--sidebar-text-active) animate-pulse">
