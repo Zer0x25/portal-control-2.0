@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.27.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.27.0...v8.27.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **a11y:** add aria-label to icon-only close buttons in modals ([0580608](https://github.com/Zer0x25/portal-control-2.0/commit/0580608122896eb98cd2efd4640aae32876b5bf5))
+* **a11y:** add aria-label to icon-only close buttons in modals ([8b42a82](https://github.com/Zer0x25/portal-control-2.0/commit/8b42a8259306a0b0baff05bad49740ac0d8d76d7))
+
 ## [8.27.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.26.2...v8.27.0) (2026-10-09)
 
 
