@@ -138,6 +138,10 @@ export const CorrectionRequestSchema = z
     reason: z.string(),
     attachment: z.any().optional(),
   })
+  .refine((data) => new Date(data.requestedValue).getTime() <= Date.now(), {
+    message: "No se puede solicitar una corrección con fecha futura.",
+    path: ["requestedValue"],
+  })
   .openapi("CorrectionRequest");
 
 export const UpdateCorrectionStatusSchema = z

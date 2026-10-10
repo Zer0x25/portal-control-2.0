@@ -28,7 +28,11 @@ const punchErrors: Record<string, string> = {
   ACTION_ALREADY_TAKEN: "Esta accion ya fue registrada en la jornada actual.",
   BREAK_INCOMPLETE_TOO_EARLY:
     "No se puede marcar salida aun: la colacion incompleta debe superar 60 minutos.",
+  ON_LEAVE:
+    "El empleado tiene licencia, vacaciones o permiso aprobado para hoy. Elimine la licencia con un supervisor para poder marcar.",
 };
+const futureDateMessage =
+  "No se puede registrar una marcación futura. La fecha debe ser hoy o pasada.";
 export function createRecordFlows<
   Row,
   View,
@@ -87,6 +91,8 @@ export function createRecordFlows<
     async save(input: RecordInput, actor: string) {
       if (input.date && (await deps.service.isLocked(input.date)))
         throw new ForbiddenError("Periodo contable cerrado.");
+      if (input.date && input.date > deps.businessDate(deps.now()))
+        throw new ValidationError(futureDateMessage);
       const row = await deps.withoutTriggers(() => deps.service.save(input, actor));
       const result = await deps.service.enrich(row);
       deps.emit("timeRecord:updated", result);
@@ -103,6 +109,8 @@ export function createRecordFlows<
       ];
       const locked = await Promise.all(dates.map((date) => deps.service.isLocked(date)));
       if (locked.some(Boolean)) throw new ForbiddenError("El lote contiene periodos cerrados.");
+      const today = deps.businessDate(deps.now());
+      if (dates.some((date) => date > today)) throw new ValidationError(futureDateMessage);
       const count = await deps.withoutTriggers(() => deps.service.bulk(input, actor));
       deps.emit("timeRecord:batch_created", { count });
       return { success: true, count };
@@ -172,9 +180,14 @@ export function createRecordFlows<
       };
     },
     async resolve(id: string, resolution: AnomalyResolution, actor: string) {
-      const row = await deps.service.resolve(id, resolution, actor);
-      deps.emit("timeRecord:updated", row);
-      return row;
+      try {
+        const row = await deps.service.resolve(id, resolution, actor);
+        deps.emit("timeRecord:updated", row);
+        return row;
+      } catch (error) {
+        if (message(error) === "FUTURE_DATE") throw new ValidationError(futureDateMessage);
+        throw error;
+      }
     },
   };
 }

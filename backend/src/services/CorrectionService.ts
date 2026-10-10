@@ -112,6 +112,14 @@ export class CorrectionService {
     if (!record) {
       throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
     }
+    // Las correcciones no pueden apuntar al futuro (spec 030).
+    if (new Date(data.requestedValue).getTime() > Date.now()) {
+      throw new AppError(
+        "No se puede solicitar una corrección con fecha futura.",
+        400,
+        "FUTURE_CORRECTION",
+      );
+    }
     if (record.employeeId !== data.employeeId) {
       throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
     }
@@ -274,6 +282,15 @@ export class CorrectionService {
         "El motivo de rechazo es obligatorio cuando la solicitud es rechazada.",
         400,
         "REJECTION_REASON_REQUIRED",
+      );
+    }
+
+    // No aprobar valores futuros creados antes del guard (spec 030).
+    if (status === "approved" && new Date(currentRequest.requestedValue).getTime() > Date.now()) {
+      throw new AppError(
+        "No se puede aprobar una corrección con fecha futura.",
+        400,
+        "FUTURE_CORRECTION",
       );
     }
 

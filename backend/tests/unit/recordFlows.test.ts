@@ -59,6 +59,39 @@ describe("Record application TDD", () => {
     expect(f.service.bulk).not.toHaveBeenCalled();
     expect(f.emit).not.toHaveBeenCalled();
   });
+  it("maps ON_LEAVE punch failure to a clear Spanish message", async () => {
+    const f = fixture();
+    f.service.punch.mockRejectedValueOnce(new Error("ON_LEAVE"));
+    await expect(
+      f.flows.punch({ employeeId: "e" }, { ...user, role: "Supervisor" }),
+    ).rejects.toThrow("licencia");
+  });
+  it("rejects single save with a future business date", async () => {
+    const f = fixture();
+    await expect(
+      f.flows.save({ employeeId: "e", employeeName: "E", date: "2026-10-07" }, "actor"),
+    ).rejects.toThrow("futura");
+    expect(f.service.save).not.toHaveBeenCalled();
+    await f.flows.save({ employeeId: "e", employeeName: "E", date: "2026-10-06" }, "actor");
+    expect(f.service.save).toHaveBeenCalledTimes(1);
+  });
+  it("rejects bulk containing a future business date", async () => {
+    const f = fixture();
+    const rows = [
+      { employeeId: "e", employeeName: "E", date: "2026-10-06" },
+      { employeeId: "e", employeeName: "E", date: "2026-10-07" },
+    ];
+    await expect(f.flows.bulk(rows, "actor")).rejects.toThrow("futura");
+    expect(f.service.bulk).not.toHaveBeenCalled();
+  });
+  it("maps FUTURE_DATE resolve failure to a future-date message", async () => {
+    const f = fixture();
+    f.service.resolve.mockRejectedValueOnce(new Error("FUTURE_DATE"));
+    await expect(f.flows.resolve("MISSING-e-2026-10-07", "ABSENCE_MARK", "actor")).rejects.toThrow(
+      "futura",
+    );
+    expect(f.emit).not.toHaveBeenCalled();
+  });
   it("maps known punch failure and preserves forced-punch cooldown before service", async () => {
     const f = fixture();
     f.service.punch.mockRejectedValueOnce(new Error("EMPLOYEE_NOT_FOUND"));

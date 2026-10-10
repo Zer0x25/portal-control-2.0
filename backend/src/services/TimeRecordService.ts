@@ -499,6 +499,10 @@ export class TimeRecordService {
       const date = parts.slice(-3).join("-");
       const employeeId = parts.slice(1, -3).join("-");
 
+      // Las anomalías virtuales futuras no pueden resolverse creando filas
+      // a futuro (spec 030): el supervisor resuelve una vez llegado el día.
+      if (date > getChileDateISO(new Date())) throw new Error("FUTURE_DATE");
+
       const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
       if (!employee) throw new Error("EMPLOYEE_NOT_FOUND");
 

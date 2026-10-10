@@ -45,6 +45,16 @@ const parseJustification = (value: string | null | undefined): Record<string, un
 
 const emailService = new EmailService();
 
+/** Estados de día no laborable materializados por licencias (LeaveService.materializeDays). */
+const LEAVE_DAY_STATUSES = ["Vacaciones", "Permiso Especial", "Licencia Médica", "DiaLibre"];
+
+const hasAnyPunch = (record: {
+  entrada?: string | null;
+  inicioColacion?: string | null;
+  finColacion?: string | null;
+  salida?: string | null;
+}) => Boolean(record.entrada || record.inicioColacion || record.finColacion || record.salida);
+
 /** Schedule snapshot persisted alongside a punch so KPIs do not need a live lookup. */
 type ScheduleSnapshot = Partial<
   Pick<
@@ -94,6 +104,21 @@ export class PunchService {
           const employee = await tx.employee.findUnique({ where: { id: employeeId } });
           if (!employee) throw new Error("EMPLOYEE_NOT_FOUND");
 
+          // Bloqueo por licencia de día completo (spec 030): una licencia,
+          // vacación o permiso vigente hoy impide marcar. El marcaje no debe
+          // sobrescribir la fila materializada por la licencia; el supervisor
+          // debe eliminar la licencia primero.
+          const activeLeave = await tx.leaveRecord.findFirst({
+            where: {
+              employeeId,
+              isDeleted: false,
+              startDate: { lte: serverDate },
+              endDate: { gte: serverDate },
+            },
+            select: { id: true },
+          });
+          if (activeLeave) throw new Error("ON_LEAVE");
+
           let record = await tx.timeRecord.findFirst({
             where: {
               employeeId,
@@ -109,6 +134,18 @@ export class PunchService {
             },
             orderBy: { updatedAt: "desc" },
           });
+
+          // Las filas de otros días no son la jornada de hoy (spec 030): una
+          // fila futura nunca debe secuestrar el punch actual, y una fila de
+          // licencia pasada sin marcajes no es una jornada abierta. Las
+          // huérfanas con marcajes conservan el flujo actual (autocierre).
+          if (record && record.date !== serverDate) {
+            if (record.date > serverDate) {
+              record = null;
+            } else if (LEAVE_DAY_STATUSES.includes(record.status) && !hasAnyPunch(record)) {
+              record = null;
+            }
+          }
 
           // Handle orphaned sessions
           if (record && record.status !== "Ausente" && shouldAutoClose(record)) {
@@ -164,7 +201,7 @@ export class PunchService {
                 const schedule = await kpiService.getEmployeeScheduleForDate(employee.id, now);
                 hasFallbackSchedule = Boolean(schedule?.isWorkDay);
               } catch (error) {
-                console.error("Schedule fallback check error:", error);
+                logger.error("Schedule fallback check error:", error);
               }
             }
 
@@ -228,7 +265,7 @@ export class PunchService {
                 };
               }
             } catch (err) {
-              console.error("Snapshot error:", err);
+              logger.error("Snapshot error:", err);
             }
 
             finalRecord = await tx.timeRecord.create({

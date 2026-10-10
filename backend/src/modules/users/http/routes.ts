@@ -21,10 +21,20 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
     if (request.user?.role !== "Administrador")
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
   };
+  // La página de gestión es legible por Supervisor_Elevado (solo lectura en
+  // frontend vía canManageUser); las escrituras siguen siendo admin-only.
+  const reader: onRequestHookHandler = async (request) => {
+    if (!request.user?.role || !["Administrador", "Supervisor_Elevado"].includes(request.user.role))
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+  };
   const access = { config: { requiresAuth: true }, onRequest: [options.authenticate, admin] };
+  const readAccess = {
+    config: { requiresAuth: true },
+    onRequest: [options.authenticate, reader],
+  };
   app.get<{ Querystring: z.input<typeof UserQuerySchema> }>(
     "/api/users",
-    { ...access, preHandler: validateRequest("query", UserQuerySchema) },
+    { ...readAccess, preHandler: validateRequest("query", UserQuerySchema) },
     async (request) => {
       const query = request.query;
       const result = await options.service.getAllUsers({
