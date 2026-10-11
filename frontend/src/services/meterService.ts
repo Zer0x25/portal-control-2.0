@@ -35,14 +35,21 @@ export const meterService = {
     data: MeterReadingItem[];
     pagination: { total: number; page: number; totalPages: number };
   }> {
+    // Los filtros vacíos ("") deben omitirse del query: el backend valida
+    // `min(1)` y responde 400 ante `?meterId=&startDate=&endDate=`.
+    // `buildQuery` ya excluye `undefined`/`null`.
+    const clean = (v: string | undefined): string | undefined => {
+      const t = v?.trim();
+      return t ? t : undefined;
+    };
     const response = await apiClient.get("/api/meters", {
       params: {
         page: page,
         pageSize: pageSize,
-        month: filters?.month,
-        meterId: filters?.meterId,
-        startDate: filters?.startDate,
-        endDate: filters?.endDate,
+        month: clean(filters?.month),
+        meterId: clean(filters?.meterId),
+        startDate: clean(filters?.startDate),
+        endDate: clean(filters?.endDate),
         since: filters?.since !== undefined ? String(filters.since) : undefined,
       },
     });
