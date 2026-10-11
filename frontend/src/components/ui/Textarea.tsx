@@ -22,6 +22,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           aria-invalid={error ? "true" : undefined}
           aria-describedby={error && id ? `${id}-error` : undefined}
+          // Sin <label> visible, el placeholder/label prop actúa como nombre accesible.
+          aria-label={props["aria-label"] ?? label ?? props.placeholder}
           className={`
           w-full px-5 py-4 bg-token-surface-card
           border ${error ? "border-token-status-error" : "border-token-border-technical"} 

@@ -661,6 +661,7 @@ export const GlobalVariablesManager: React.FC = () => {
                     type="file"
                     accept="application/pdf"
                     onChange={(event) => setPolicyFile(event.target.files?.[0] ?? null)}
+                    aria-label="Seleccionar PDF de reglamento"
                     className="block w-full text-xs font-bold text-token-text-secondary file:mr-3 file:px-3 file:py-2 file:rounded-sm file:border file:border-token-border-technical file:bg-token-surface-stripe file:text-token-text-primary"
                   />
                 </div>
@@ -743,6 +744,7 @@ export const GlobalVariablesManager: React.FC = () => {
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
                     onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)}
+                    aria-label="Subir imagen de logo"
                     className="block w-full text-xs font-bold text-token-text-secondary file:mr-3 file:px-3 file:py-2 file:rounded-sm file:border file:border-token-border-technical file:bg-token-surface-stripe file:text-token-text-primary"
                   />
                   <div className="flex flex-wrap gap-3">

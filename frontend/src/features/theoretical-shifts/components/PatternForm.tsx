@@ -169,6 +169,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
               type="color"
               value={patternForm.patternColor}
               onChange={(e) => patternForm.setPatternColor(e.target.value)}
+              aria-label="Color del patrón"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
             <div
@@ -222,6 +223,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                     onClick={() => patternForm.handleCopyDailySchedule(i)}
                     className="p-1.5 rounded-lg hover:bg-token-surface-hover transition-colors text-token-text-secondary hover:text-token-accent-brand cursor-pointer"
                     title="Copiar horario"
+                    aria-label={`Copiar horario del día ${s.dayIndex + 1}`}
                   >
                     <ClipboardIcon className="w-3.5 h-3.5" />
                   </button>
@@ -229,6 +231,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                     onClick={() => patternForm.handlePasteDailySchedule(i)}
                     className={`p-1.5 rounded-lg transition-colors ${!patternForm.copiedDailySchedule ? "opacity-30 cursor-not-allowed" : "hover:bg-token-surface-hover text-token-text-secondary hover:text-token-status-success cursor-pointer"}`}
                     title="Pegar horario"
+                    aria-label={`Pegar horario en el día ${s.dayIndex + 1}`}
                     disabled={!patternForm.copiedDailySchedule}
                   >
                     <ClipboardCheckIcon className="w-3.5 h-3.5" />
@@ -272,6 +275,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                           onChange={(e) =>
                             patternForm.handleDailyScheduleChange(i, "startTime", e.target.value)
                           }
+                          aria-label={`Hora de inicio, día ${s.dayIndex + 1}`}
                           className="w-full pl-9 pr-2 py-2 bg-token-surface-card border border-token-border-technical rounded-xl text-xs text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
                         />
                       </div>
@@ -283,6 +287,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                           onChange={(e) =>
                             patternForm.handleDailyScheduleChange(i, "endTime", e.target.value)
                           }
+                          aria-label={`Hora de fin, día ${s.dayIndex + 1}`}
                           className="w-full pl-9 pr-2 py-2 bg-token-surface-card border border-token-border-technical rounded-xl text-xs text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
                         />
                       </div>
@@ -320,6 +325,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
                           }
                           className="w-full px-3 py-1.5 bg-token-surface-card border border-token-border-technical rounded-lg text-[10px] text-token-text-primary outline-none focus:ring-2 focus:ring-token-border-focus"
                           placeholder="Minutos"
+                          aria-label={`Minutos de colación, día ${s.dayIndex + 1}`}
                         />
                       )}
                     </div>

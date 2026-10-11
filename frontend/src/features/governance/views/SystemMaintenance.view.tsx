@@ -225,6 +225,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     value={resetUsername}
                     onChange={(e) => setResetUsername(e.target.value)}
                     placeholder="USERNAME"
+                    aria-label="Usuario para reset de contraseña"
                     className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
                   />
                   <input
@@ -234,6 +235,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="NUEVA PASSWORD"
+                    aria-label="Nueva contraseña"
                     className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
                   />
                   <Button
@@ -274,6 +276,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     value={purgeUsername}
                     onChange={(e) => setPurgeUsername(e.target.value)}
                     placeholder="USERNAME (VACÍO = GLOBAL)"
+                    aria-label="Usuario para purgar sesiones, vacío global"
                     className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
                   />
                   <Button

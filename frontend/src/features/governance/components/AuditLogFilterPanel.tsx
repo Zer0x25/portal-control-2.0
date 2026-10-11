@@ -91,6 +91,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                             g.categories.every((c) => filters.categories.includes(c.id)),
                           )?.name || "CUSTOM"
                     }
+                    aria-label="Dominio de auditoría"
                     onChange={(e) => {
                       const val = e.target.value;
                       if (val === "ALL") {
@@ -208,6 +209,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                       setFilters((prev) => ({ ...prev, actorUsername: e.target.value }))
                     }
                     placeholder="Buscar por usuario..."
+                    aria-label="Buscar por usuario"
                     className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                   />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-token-text-tertiary pointer-events-none">
@@ -223,6 +225,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   {filters.actorUsername && (
                     <button
                       onClick={() => setFilters((prev) => ({ ...prev, actorUsername: "" }))}
+                      aria-label="Limpiar búsqueda de usuario"
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-token-text-tertiary hover:text-token-text-primary"
                     >
                       <svg
@@ -254,6 +257,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                     value={filters.action}
                     onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value }))}
                     placeholder="Filtrar por acción..."
+                    aria-label="Filtrar por acción"
                     className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                   />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-token-text-tertiary pointer-events-none">
@@ -269,6 +273,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   {filters.action && (
                     <button
                       onClick={() => setFilters((prev) => ({ ...prev, action: "" }))}
+                      aria-label="Limpiar filtro de acción"
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-token-text-tertiary hover:text-token-text-primary"
                     >
                       <svg
@@ -300,6 +305,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   type="date"
                   value={filters.startDate}
                   onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value }))}
+                  aria-label="Fecha inicio de auditoría"
                   className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                 />
               </div>
@@ -311,6 +317,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   type="date"
                   value={filters.endDate}
                   onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value }))}
+                  aria-label="Fecha fin de auditoría"
                   className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
                 />
               </div>
@@ -442,7 +449,9 @@ const FilterPill: React.FC<FilterPillProps> = ({ label, onRemove, color }) => {
       className={`inline-flex items-center gap-2 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded-full border ${colorClasses[color]}`}
     >
       {label}
-      <button onClick={onRemove}>×</button>
+      <button onClick={onRemove} aria-label={`Quitar filtro ${label}`}>
+        ×
+      </button>
     </span>
   );
 };

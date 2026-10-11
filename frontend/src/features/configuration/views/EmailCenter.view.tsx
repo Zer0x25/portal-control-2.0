@@ -82,6 +82,7 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
               <select
                 value={rule.recipient}
                 onChange={(e) => onFieldChange("recipient", e.target.value)}
+                aria-label={`Destinatario del reporte: ${title}`}
                 className="w-full h-11 pl-4 pr-10 rounded-sm bg-token-surface-card border border-token-border-technical text-[12px] font-bold uppercase tracking-tight text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none appearance-none transition-colors"
               >
                 <option value="" className="bg-token-surface-card">
@@ -248,6 +249,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 onChange={(e) => setManualEmail((p) => ({ ...p, to: e.target.value }))}
                 required
                 placeholder="DESTINATARIO@DOMINIO.COM"
+                aria-label="Para, destinatario del correo"
                 className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
               />
               <EnvelopeIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-(--sidebar-text-active) transition-colors" />
@@ -263,6 +265,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 onChange={(e) => setManualEmail((p) => ({ ...p, subject: e.target.value }))}
                 required
                 placeholder="TÍTULO DE LA COMUNICACIÓN"
+                aria-label="Asunto de la comunicación"
                 className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
               />
               <DocumentTextIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-(--sidebar-text-active) transition-colors" />
@@ -274,6 +277,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 onChange={(e) => setManualEmail((p) => ({ ...p, message: e.target.value }))}
                 required
                 placeholder="ESCRIBA SU MENSAJE AQUÍ..."
+                aria-label="Mensaje de la comunicación"
                 className="w-full h-full bg-transparent border-none outline-none text-[13px] font-bold uppercase tracking-tight leading-relaxed text-token-text-secondary placeholder:text-token-text-tertiary/40 focus:ring-0 resize-none"
               />
             </div>

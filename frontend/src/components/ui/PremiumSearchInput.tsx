@@ -57,6 +57,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
           }}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
+          aria-label={placeholder}
           disabled={disabled}
           data-testid="premium-search-input"
           className={`
@@ -78,6 +79,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
               onClick={handleClear}
               className="p-1 hover:text-sap-error text-token-text-tertiary transition-colors animate-in fade-in zoom-in-90"
               title="Limpiar búsqueda"
+              aria-label="Limpiar búsqueda"
             >
               <XCircleIcon className="w-5 h-5" />
             </button>
