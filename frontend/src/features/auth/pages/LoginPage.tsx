@@ -65,7 +65,10 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-token-surface-stripe p-6 overflow-hidden relative selection:bg-sap-blue/30 selection:text-sap-blue">
+    <div
+      data-testid="login-page"
+      className="min-h-screen flex items-center justify-center bg-token-surface-stripe p-6 overflow-hidden relative selection:bg-sap-blue/30 selection:text-sap-blue"
+    >
       {/* Crystal Clear Spotlight Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none bg-token-surface-stripe">
         {/* Main Spotlight */}
@@ -110,7 +113,11 @@ const LoginPage: React.FC = () => {
             </div>
 
             {/* Form Section */}
-            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-5">
+            <form
+              onSubmit={handleSubmit}
+              data-testid="login-form"
+              className="space-y-6 sm:space-y-5"
+            >
               <div className="space-y-4 animate-in fade-in [animation-duration:800ms] [animation-delay:500ms]">
                 <div className="group/input relative">
                   <label htmlFor="username" className="sr-only">
@@ -151,6 +158,7 @@ const LoginPage: React.FC = () => {
                 <Button
                   type="submit"
                   variant="primary"
+                  data-testid="login-submit"
                   className="w-full h-12 rounded-xl bg-sap-blue text-token-text-onAccent hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition duration-300"
                   disabled={loading}
                 >
@@ -187,6 +195,7 @@ const LoginPage: React.FC = () => {
             <div className="text-center mt-6 relative animate-in fade-in [animation-duration:800ms] [animation-delay:800ms]">
               <Link
                 to={ROUTES.KIOSK}
+                data-testid="login-kiosk-link"
                 className="group inline-flex flex-col items-center gap-2 py-2 px-4 rounded-lg hover:bg-token-surface-active transition-colors"
               >
                 <span className="text-[10px] font-black bg-clip-text text-transparent bg-linear-to-r from-sap-blue via-sap-light-blue to-token-text-primary uppercase tracking-[0.25em]">

@@ -53,7 +53,13 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
         subtitle="Configuración centralizada de variables, comunicaciones y exportación estratégica"
       />
 
-      <div className="flex border-b border-token-border-technical gap-8 overflow-x-auto scrollbar-hide">
+      <div
+        role="tablist"
+        aria-label="Secciones de configuración"
+        data-testid="config-tabs"
+        data-active-tab={activeTab}
+        className="flex border-b border-token-border-technical gap-8 overflow-x-auto scrollbar-hide"
+      >
         <div className="flex min-w-max gap-8">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -61,6 +67,9 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
             return (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={isActive}
+                data-testid={`config-tab-${tab.id}`}
                 onClick={() => handleTabChange(tab.id)}
                 className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
                   isActive

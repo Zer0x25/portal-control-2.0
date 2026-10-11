@@ -58,13 +58,22 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
         eyebrowIcon={<ActivityIcon className="w-3.5 h-3.5" />}
       />
 
-      <div className="flex border-b border-token-border-technical gap-8 overflow-x-auto no-scrollbar">
+      <div
+        role="tablist"
+        aria-label="Secciones de gobernanza"
+        data-testid="governance-tabs"
+        data-active-tab={activeTab}
+        className="flex border-b border-token-border-technical gap-8 overflow-x-auto no-scrollbar"
+      >
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              data-testid={`governance-tab-${tab.id}`}
               onClick={() => handleTabChange(tab.id)}
               className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
                 isActive

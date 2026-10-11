@@ -5,10 +5,13 @@ import {
   BookOpenIcon,
   CogIcon,
   UsersIcon,
+  UserPlusIcon,
   CalendarDaysIcon,
   DocumentChartBarIcon,
   UserCircleIcon,
   ShieldIcon,
+  CalculatorIcon,
+  ChatBubbleLeftRightIcon,
 } from "../../components/ui/icons/index";
 import { ROUTES } from "../../constants";
 import type { UserRole } from "../../types";
@@ -43,6 +46,7 @@ export const buildSidebarMenuByRole = ({
     return [
       { to: ROUTES.TIME_CONTROL, icon: ClockIcon, label: "Control" },
       { to: ROUTES.SUPERVISOR_DASHBOARD, icon: DocumentChartBarIcon, label: "Supervisión" },
+      { to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" },
       { to: ROUTES.AUDIT_LOGS, icon: ShieldIcon, label: "Auditoría" },
     ];
   }
@@ -76,6 +80,14 @@ export const buildSidebarMenuByRole = ({
     isControlInternoEnabled
   ) {
     items.push({ to: ROUTES.LOGBOOK, icon: BookOpenIcon, label: "Libro" });
+    items.push({ to: ROUTES.METER_READINGS, icon: CalculatorIcon, label: "Medidores" });
+  }
+
+  if (
+    ["Reloj_Control", "Administrador", "Supervisor_Elevado", "Supervisor"].includes(role || "") &&
+    isControlInternoEnabled
+  ) {
+    items.push({ to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" });
   }
 
   items.push({ to: ROUTES.SHIFT_CALENDAR, icon: CalendarDaysIcon, label: "Calendario" });
@@ -96,6 +108,7 @@ export const buildSidebarMenuByRole = ({
 
   if (isAdminOrElevated) {
     items.push({ to: ROUTES.USER_MANAGEMENT, icon: UsersIcon, label: "Usuarios" });
+    items.push({ to: ROUTES.PERSONNEL_MANAGEMENT, icon: UserPlusIcon, label: "Dotación" });
     if (role === "Administrador" || role === "Supervisor_Elevado") {
       items.push({ to: ROUTES.GOVERNANCE_HUB, icon: ShieldIcon, label: "Gobernanza" });
     }
