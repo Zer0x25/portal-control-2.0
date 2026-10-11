@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useKpiCalculations } from "../../../hooks/useKpiCalculations";
 import { Employee, DailyTimeRecord } from "../../../types";
 import { isDateRangeValid } from "../../../utils/validation";
@@ -84,17 +84,31 @@ export const useKpisLogic = () => {
     setIsDetailsModalOpen(false);
   }, []);
 
-  const kpiMetrics = [
-    { value: `${kpis.totalAbsenteeismRate.toFixed(2)}%`, label: "Tasa Ausentismo Total" },
-    { value: `${kpis.unjustifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Injustificadas" },
-    { value: `${kpis.justifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Justificadas" },
-    { value: `${kpis.vacationRate.toFixed(2)}%`, label: "├─ Vacaciones" },
-    { value: `${kpis.medicalLeaveRate.toFixed(2)}%`, label: "├─ Licencias Médicas" },
-    { value: `${kpis.specialPermitRate.toFixed(2)}%`, label: "└─ Permisos Especiales" },
-    { value: `${kpis.tardinessRate.toFixed(2)}%`, label: "Tasa de Atrasos" },
-    { value: `${kpis.overtimePercentage.toFixed(2)}%`, label: "Incidencia Horas Extra" },
-    { value: kpis.avgWeeklyHours.toFixed(2), label: "Promedio Horas Semanales" },
-  ];
+  // ⚡ Bolt: Memoize kpiMetrics to prevent unnecessary re-renders of KpisTab and KpiStat components
+  const kpiMetrics = useMemo(
+    () => [
+      { value: `${kpis.totalAbsenteeismRate.toFixed(2)}%`, label: "Tasa Ausentismo Total" },
+      { value: `${kpis.unjustifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Injustificadas" },
+      { value: `${kpis.justifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Justificadas" },
+      { value: `${kpis.vacationRate.toFixed(2)}%`, label: "├─ Vacaciones" },
+      { value: `${kpis.medicalLeaveRate.toFixed(2)}%`, label: "├─ Licencias Médicas" },
+      { value: `${kpis.specialPermitRate.toFixed(2)}%`, label: "└─ Permisos Especiales" },
+      { value: `${kpis.tardinessRate.toFixed(2)}%`, label: "Tasa de Atrasos" },
+      { value: `${kpis.overtimePercentage.toFixed(2)}%`, label: "Incidencia Horas Extra" },
+      { value: kpis.avgWeeklyHours.toFixed(2), label: "Promedio Horas Semanales" },
+    ],
+    [
+      kpis.totalAbsenteeismRate,
+      kpis.unjustifiedAbsenceRate,
+      kpis.justifiedAbsenceRate,
+      kpis.vacationRate,
+      kpis.medicalLeaveRate,
+      kpis.specialPermitRate,
+      kpis.tardinessRate,
+      kpis.overtimePercentage,
+      kpis.avgWeeklyHours,
+    ],
+  );
 
   return {
     // Estado
