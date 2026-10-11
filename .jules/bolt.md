@@ -35,3 +35,6 @@
 **Action:** Guard critical mutation handlers with a synchronous `isSubmittingRef` (early return while in flight, release in `finally`) and give the error toast a single owner (`suppressErrorToast: true` in `mutateAsync` variables + early-return in `onError`); the caller `catch` prefers the backend business-denial message and reserves the generic text for network failures.
 
 
+## 2026-10-11 - Optimize duplicate useMemo filtering
+**Learning:** Found instances where large arrays were being filtered identically multiple times across different `useMemo` hooks (e.g. `processedEmployees` and `hasNextPage`), causing O(N) operations to run twice on every search term change.
+**Action:** Extract the expensive, redundant filter operations into a separate `useMemo` hook first (e.g. `filteredBaseList`), and then let dependent values use the pre-filtered result, effectively cutting the calculation time in half.

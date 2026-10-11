@@ -67,11 +67,11 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   const pageSize = isMobile ? 20 : 50;
   const [visibleCount, setVisibleCount] = useState(pageSize);
 
-  const processedEmployees = useMemo(() => {
+  const filteredBaseList = useMemo(() => {
     const baseList = view === "active" ? activeListStore : archivedListStore;
-    const filtered = baseList.filter((e) => {
-      if (!debouncedSearchTerm) return true;
-      const search = debouncedSearchTerm.toLowerCase();
+    if (!debouncedSearchTerm) return baseList;
+    const search = debouncedSearchTerm.toLowerCase();
+    return baseList.filter((e) => {
       return (
         e.name.toLowerCase().includes(search) ||
         (e.rut && e.rut.toLowerCase().includes(search)) ||
@@ -79,23 +79,15 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
         e.area.toLowerCase().includes(search)
       );
     });
-    return filtered.slice(0, visibleCount);
-  }, [view, activeListStore, archivedListStore, debouncedSearchTerm, visibleCount]);
+  }, [view, activeListStore, archivedListStore, debouncedSearchTerm]);
+
+  const processedEmployees = useMemo(() => {
+    return filteredBaseList.slice(0, visibleCount);
+  }, [filteredBaseList, visibleCount]);
 
   const hasNextPage = useMemo(() => {
-    const baseList = view === "active" ? activeListStore : archivedListStore;
-    const search = debouncedSearchTerm.toLowerCase();
-    const totalFiltered = baseList.filter((e) => {
-      if (!search) return true;
-      return (
-        e.name.toLowerCase().includes(search) ||
-        (e.rut && e.rut.toLowerCase().includes(search)) ||
-        e.position.toLowerCase().includes(search) ||
-        e.area.toLowerCase().includes(search)
-      );
-    }).length;
-    return visibleCount < totalFiltered;
-  }, [view, activeListStore, archivedListStore, debouncedSearchTerm, visibleCount]);
+    return visibleCount < filteredBaseList.length;
+  }, [filteredBaseList, visibleCount]);
 
   const [scrollRoot, setScrollRoot] = useState<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
