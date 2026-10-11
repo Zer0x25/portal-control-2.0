@@ -27,25 +27,25 @@ test.describe("Governance Hub Verification", () => {
     await expect(page).toHaveURL(/#\/admin\/governance/);
 
     // Switch to Security tab
-    await page.getByRole("button", { name: "Seguridad", exact: true }).click();
+    await page.getByRole("tab", { name: "Seguridad", exact: true }).click();
     await expect(page).toHaveURL(/tab=security/);
 
     // Switch to Audit tab (exact: "Ejecutar Auditoría Profunda" also matches /auditoría/)
-    await page.getByRole("button", { name: "Auditoría", exact: true }).click();
+    await page.getByRole("tab", { name: "Auditoría", exact: true }).click();
     await expect(page).toHaveURL(/tab=audit/);
 
     // Switch to System Maintenance tab
-    await page.getByRole("button", { name: "Mantenimiento", exact: true }).click();
+    await page.getByRole("tab", { name: "Mantenimiento", exact: true }).click();
     await expect(page).toHaveURL(/tab=system/);
 
     // Switch back to Integrity tab
-    await page.getByRole("button", { name: "Integridad", exact: true }).click();
+    await page.getByRole("tab", { name: "Integridad", exact: true }).click();
     await expect(page).toHaveURL(/tab=integrity/);
   });
 
   test("Integrity Audit trigger provides feedback", async ({ page }) => {
     // Navigate to Integrity tab explicitly (should be default but ensure it)
-    await page.getByRole("button", { name: "Integridad", exact: true }).click();
+    await page.getByRole("tab", { name: "Integridad", exact: true }).click();
 
     // Wait for the audit button to be visible
     const auditBtn = page.getByRole("button", { name: /ejecutar auditoría profunda/i });
@@ -64,7 +64,7 @@ test.describe("Governance Hub Verification", () => {
 
   test("System Maintenance stats are visible", async ({ page }) => {
     // Navigate to System Maintenance tab
-    await page.getByRole("button", { name: "Mantenimiento", exact: true }).click();
+    await page.getByRole("tab", { name: "Mantenimiento", exact: true }).click();
     await expect(page).toHaveURL(/tab=system/);
 
     // Check for specific stats text: anchor on a proven-visible KpiStat

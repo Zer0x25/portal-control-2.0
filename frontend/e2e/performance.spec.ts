@@ -95,7 +95,7 @@ test.describe.serial("Render Performance", () => {
     // Measure time to switch to the Security tab (lazy-loaded view)
     await page.evaluate(() => performance.mark("tab-switch-start"));
 
-    await page.getByRole("button", { name: "Seguridad", exact: true }).click();
+    await page.getByRole("tab", { name: "Seguridad", exact: true }).click();
     await expect(page.getByText(/Vigilancia & Riesgos/i)).toBeVisible({ timeout: 30000 });
 
     await page.evaluate(() => performance.mark("tab-switch-end"));
