@@ -67,12 +67,13 @@ const HeaderView: React.FC<HeaderViewProps> = ({
             </button>
 
             <div className="hidden lg:flex items-center gap-2">
-              <h1 className="text-xs font-bold text-token-text-secondary uppercase tracking-tighter">
+              {/* Marca del header: <p> y no <h1> para mantener un único h1 por página (título de la vista). */}
+              <p className="text-xs font-bold text-token-text-secondary uppercase tracking-tighter">
                 {APP_TITLE} <span className="text-token-border-technical mx-1">|</span>{" "}
                 <span className="text-token-accent-brand font-bold tracking-widest opacity-80">
                   CONTROL SYSTEM
                 </span>
-              </h1>
+              </p>
             </div>
           </div>
 
