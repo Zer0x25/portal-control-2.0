@@ -1,5 +1,26 @@
 # Changelog
 
+## [8.29.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.28.0...v8.29.0) (2026-10-11)
+
+
+### Features
+
+* **frontend:** agent navigation contract with tab roles, login testids and orphan sidebar routes ([147fe0e](https://github.com/Zer0x25/portal-control-2.0/commit/147fe0e7a4981d54a2b22791531c4a79fa75a316))
+* **frontend:** agent testids for pagination, modal dialog and MFA flows ([c360f86](https://github.com/Zer0x25/portal-control-2.0/commit/c360f860852d451264be5a8809376cbb83a82870))
+* **frontend:** Beta badge on sidebar items for modules under construction ([7c825c5](https://github.com/Zer0x25/portal-control-2.0/commit/7c825c579125d840cef9e99d750e90899e7246d9))
+* **frontend:** content and kiosk testid contract for pages, tables and keypad ([07e68f7](https://github.com/Zer0x25/portal-control-2.0/commit/07e68f78197be537e338b95ae778d428dc967135))
+
+
+### Bug Fixes
+
+* **frontend:** 404 page with shell context and access-denied toast on role redirect ([804c849](https://github.com/Zer0x25/portal-control-2.0/commit/804c849a5c6bc2c9b1d37782ff2f9fb34015484b))
+* **frontend:** accessible names for all form fields via label fallback and aria-labels ([704f6d9](https://github.com/Zer0x25/portal-control-2.0/commit/704f6d95897d3d4566240f8afe0bf6f634441308))
+* **frontend:** accessible names for icon-only buttons via title fallback and aria-labels ([b1f8b21](https://github.com/Zer0x25/portal-control-2.0/commit/b1f8b21e78fb2ffaa441bbcb43b9ccd25fd2f9f0))
+* **frontend:** bound expected-empty public config fetches to once per session ([aec2b60](https://github.com/Zer0x25/portal-control-2.0/commit/aec2b6015f4b2abdba75055320617fb2efad1806))
+* **frontend:** header brand uses p instead of h1 for single-h1 pages ([f78271a](https://github.com/Zer0x25/portal-control-2.0/commit/f78271a1609f19b9fa05a5d0d5cb6ae0ccbc67a9))
+* **frontend:** omit empty meter filters to avoid 400 on GET /api/meters ([85917b1](https://github.com/Zer0x25/portal-control-2.0/commit/85917b1c6d072f8f950009b6f7f2f6687732c179))
+* **security:** migrate cryptoUtils to authenticated AES-256-GCM ([#48](https://github.com/Zer0x25/portal-control-2.0/issues/48)) ([9570c1c](https://github.com/Zer0x25/portal-control-2.0/commit/9570c1cadecac12eb197b6bb4fbd702c15c16297))
+
 ## [8.28.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.27.1...v8.28.0) (2026-10-11)
 
 
