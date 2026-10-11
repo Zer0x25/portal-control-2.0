@@ -26,7 +26,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   const showEyebrow = Boolean(eyebrow);
 
   return (
-    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 ${className}`}>
+    <div
+      data-testid="page-heading"
+      className={`flex flex-col md:flex-row md:items-end justify-between gap-6 ${className}`}
+    >
       <div className="flex flex-col gap-1">
         {showEyebrow && (
           <div className="flex items-center gap-2 mb-1.5">

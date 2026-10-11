@@ -126,6 +126,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
         {(step === "rut_input" || step === "employee_list") && (
           <button
+            data-testid="kiosk-exit-button"
             onClick={() => onLogout && onLogout()}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sap-error/10 hover:bg-sap-error/20 border border-sap-error/10 hover:border-sap-error/30 text-[10px] font-black text-sap-error uppercase tracking-widest transition-all shadow-xl shadow-black/40"
           >
@@ -152,13 +153,19 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         Ingrese su RUT para comenzar
       </p>
 
-      <div className="w-full h-14 bg-token-surface-card border border-token-border-technical rounded-2xl mb-2 flex items-center justify-center text-2xl font-black font-mono tracking-widest text-sap-blue shadow-inner">
+      <div
+        data-testid="kiosk-display"
+        className="w-full h-14 bg-token-surface-card border border-token-border-technical rounded-2xl mb-2 flex items-center justify-center text-2xl font-black font-mono tracking-widest text-sap-blue shadow-inner"
+      >
         {formattedRutDisplay || <span className="opacity-20">00.000.000-0</span>}
       </div>
 
       <div className="h-6 mb-4">
         {props.rutError && (
-          <p className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center">
+          <p
+            data-testid="kiosk-rut-error"
+            className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center"
+          >
             {props.rutError}
           </p>
         )}
@@ -193,6 +200,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         <input
           type="search"
           placeholder="BUSCAR POR NOMBRE..."
+          aria-label="Buscar por nombre en kiosco"
           value={searchTerm as string}
           onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
           className="w-full h-12 bg-token-surface-card border border-token-border-technical rounded-xl px-4 text-xs font-black text-token-text-primary placeholder:text-token-text-tertiary focus:bg-token-surface-active focus:border-sap-blue/50 outline-none transition-all"
@@ -398,7 +406,11 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
       {props.renderHeader ? props.renderHeader() : internalRenderHeader()}
 
-      <div className="relative z-10 w-full max-w-sm sm:max-w-[340px] bg-token-surface-card backdrop-blur-2xl rounded-[2.5rem] border border-token-border-technical shadow-4xl p-5 sm:p-6 overflow-hidden">
+      <div
+        data-testid="kiosk-step"
+        data-step={step}
+        className="relative z-10 w-full max-w-sm sm:max-w-[340px] bg-token-surface-card backdrop-blur-2xl rounded-[2.5rem] border border-token-border-technical shadow-4xl p-5 sm:p-6 overflow-hidden"
+      >
         <div className="contents">
           {step === "rut_input" && renderRutInput()}
           {step === "employee_list" && renderEmployeeList()}
@@ -428,7 +440,10 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               </div>
 
               {pinError && (
-                <p className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center mb-4">
+                <p
+                  data-testid="kiosk-pin-error"
+                  className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center mb-4"
+                >
                   {pinError}
                 </p>
               )}

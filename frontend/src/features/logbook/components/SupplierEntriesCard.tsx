@@ -199,7 +199,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
   const renderDesktopView = () => (
     <div className="overflow-hidden rounded-sm border border-token-border-technical bg-token-surface-card">
       {activeShift.supplierEntries.length > 0 ? (
-        <table className="min-w-full border-separate border-spacing-0">
+        <table data-testid="data-table" className="min-w-full border-separate border-spacing-0">
           <thead>
             <tr className="bg-token-surface-stripe">
               <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">

@@ -288,7 +288,7 @@ export const SupervisorDataTable = <T extends Record<string, unknown>>({
 
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full divide-y divide-token-border-subtle">
+      <table data-testid="data-table" className="min-w-full divide-y divide-token-border-subtle">
         <thead className="bg-token-surface-stripe">
           <tr>
             {columns.map((column) => (

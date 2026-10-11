@@ -161,7 +161,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
 
   const renderDesktopView = () => (
     <div className="border border-token-border-technical bg-token-surface-stripe rounded-lg">
-      <table className="min-w-full border-separate border-spacing-0">
+      <table data-testid="data-table" className="min-w-full border-separate border-spacing-0">
         <thead className="sticky top-0 z-20 bg-token-surface-header backdrop-blur-sm">
           <tr>
             <SortableHeader

@@ -97,7 +97,10 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
 
   const renderDesktopView = () => (
     <div className="border border-token-border-technical rounded-sm shadow-sm w-full overflow-hidden">
-      <table className="min-w-full divide-y divide-token-border-technical border-separate border-spacing-0">
+      <table
+        data-testid="data-table"
+        className="min-w-full divide-y divide-token-border-technical border-separate border-spacing-0"
+      >
         <thead className="bg-token-surface-header sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-token-border-technical">
           <tr className="text-token-text-secondary text-[11px] font-bold uppercase tracking-wider">
             <th className="px-6 py-4 text-left border-b border-token-border-subtle">Acceso</th>

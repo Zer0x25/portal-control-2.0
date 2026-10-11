@@ -76,7 +76,10 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
   return (
     <div className="flex flex-col h-full">
       <div className="overflow-x-auto min-w-full">
-        <table className="min-w-full divide-y divide-token-border-technical relative table-fixed">
+        <table
+          data-testid="data-table"
+          className="min-w-full divide-y divide-token-border-technical relative table-fixed"
+        >
           <thead className="bg-token-surface-header sticky top-0 z-20 shadow-sm">
             <tr>
               <th className="w-[12%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical hidden sm:table-cell">

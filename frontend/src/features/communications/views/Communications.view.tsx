@@ -108,7 +108,10 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
                   dangerouslySetInnerHTML={{ __html: safeContent }}
                 />
               ) : (
-                <div className="py-20 text-center text-token-text-tertiary uppercase text-[11px] font-bold tracking-widest border border-dashed border-token-border-technical rounded-sm">
+                <div
+                  data-testid="empty-state"
+                  className="py-20 text-center text-token-text-tertiary uppercase text-[11px] font-bold tracking-widest border border-dashed border-token-border-technical rounded-sm"
+                >
                   No hay comunicados activos en este momento
                 </div>
               )}
