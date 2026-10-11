@@ -75,7 +75,7 @@ npm run docs:check     # Verifica enlaces relativos y consistencia de ADRs
 `release-please` parsea los commits bajo el estándar **Conventional Commits**:
 
 - Formato estricto: `tipo(scope opcional): mensaje`. El tipo debe estar en la posición 0.
-- **Prohibidos emojis** en el asunto (`🔒 fix: ...`, `⚡ perf: ...`), ya que rompen el parser de releases.
+- **Prohibidos emojis** en el asunto de cada commit y en el título del PR (`🔒 fix: ...`, `⚡ perf: ...`), ya que rompen el parser de releases.
 - El hook `commit-msg` (`scripts/commit-conventional.cjs`) valida esto localmente.
 
 ---

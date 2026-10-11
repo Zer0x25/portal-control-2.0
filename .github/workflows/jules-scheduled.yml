@@ -77,15 +77,15 @@ jobs:
           echo "Selected task type: $TASK_TYPE"
 
           if [ "$TASK_TYPE" = "sentinel" ]; then
-            PROMPT="Audita exhaustivamente el backend y frontend en busca de riesgos de seguridad. Verifica: (1) no usar concatenación de comandos de shell (usar execFile/spawn con arreglos), (2) parametrizar todas las consultas SQL con \$executeRaw o Prisma tipado, (3) validar que secrets críticos (JWT_SECRET, credenciales) fallen de inmediato si faltan, (4) validar completamente entradas en endpoints y lotes masivos. Revisa y actualiza .jules/sentinel.md con los aprendizajes críticos y correcciones realizadas. Asegúrate de que 'npm run validate:ci' pase. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos (rompen release-please y el hook commit-msg los rechaza)."
+            PROMPT="Audita exhaustivamente el backend y frontend en busca de riesgos de seguridad. Verifica: (1) no usar concatenación de comandos de shell (usar execFile/spawn con arreglos), (2) parametrizar todas las consultas SQL con \$executeRaw o Prisma tipado, (3) validar que secrets críticos (JWT_SECRET, credenciales) fallen de inmediato si faltan, (4) validar completamente entradas en endpoints y lotes masivos. Revisa y actualiza .jules/sentinel.md con los aprendizajes críticos y correcciones realizadas. Asegúrate de que 'npm run validate:ci' pase. Usa commits Conventional puros tipo(scope): mensaje."
           elif [ "$TASK_TYPE" = "testing" ]; then
-            PROMPT="Aumenta la cobertura de tests sin bajar thresholds. Busca controladores/servicios sin unit tests en backend/tests/unit y frontend, agrega casos happy + error + bordes con Vitest. No toques snapshots salvo que el contrato cambie de verdad, verifica 'npm run test:coverage' y 'npm run validate:ci' en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos."
+            PROMPT="Aumenta la cobertura de tests sin bajar thresholds. Busca controladores/servicios sin unit tests en backend/tests/unit y frontend, agrega casos happy + error + bordes con Vitest. No toques snapshots salvo que el contrato cambie de verdad, verifica 'npm run test:coverage' y 'npm run validate:ci' en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje."
           elif [ "$TASK_TYPE" = "bolt" ]; then
-            PROMPT="Revisa los servicios en backend/src/services/ (especialmente TimeRecordService, LeaveService, MonthlyShiftService, shiftService y kpiService) buscando patrones de consultas o mutaciones N+1 sobre Prisma dentro de bucles. Refactoriza para batch-fetching o batch-mutations donde sea posible. Consulta y actualiza .jules/bolt.md con los hallazgos y verifica que 'npm run validate:ci' pase. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos (rompen release-please y el hook commit-msg los rechaza)."
+            PROMPT="Revisa los servicios en backend/src/services/ (especialmente TimeRecordService, LeaveService, MonthlyShiftService, shiftService y kpiService) buscando patrones de consultas o mutaciones N+1 sobre Prisma dentro de bucles. Refactoriza para batch-fetching o batch-mutations donde sea posible. Consulta y actualiza .jules/bolt.md con los hallazgos y verifica que 'npm run validate:ci' pase. Usa commits Conventional puros tipo(scope): mensaje."
           elif [ "$TASK_TYPE" = "refactor" ]; then
-            PROMPT="Mejora de codigo sin cambiar comportamiento: elimina dead code, estrecha tipos (evita any, usa Prisma.XWhereInput, AuthRequest, JsonValue), simplifica duplicaciones y respeta lint-budget 0 y arquitectura (PgBouncer transaction mode, no exec con interpolacion). Mantiene contrato API/SDK sincronizado con 'npm run check:sdk'. Verifica 'npm run validate:ci' en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos."
+            PROMPT="Mejora de codigo sin cambiar comportamiento: elimina dead code, estrecha tipos (evita any, usa Prisma.XWhereInput, AuthRequest, JsonValue), simplifica duplicaciones y respeta lint-budget 0 y arquitectura (PgBouncer transaction mode, no exec con interpolacion). Mantiene contrato API/SDK sincronizado con 'npm run check:sdk'. Verifica 'npm run validate:ci' en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje."
           elif [ "$TASK_TYPE" = "code_health" ]; then
-            PROMPT="Revisa el código en backend/src/ y frontend/src/ en busca de problemas de higiene: elimina console.log de depuración residuales no permitidos en producción y sustituye usos explícitos de 'any' en TypeScript por tipos concretos o genéricos seguros <T>. Asegúrate de que 'npm run validate:ci' pase en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje, sin emoji ni prefijos (rompen release-please y el hook commit-msg los rechaza)."
+            PROMPT="Revisa el código en backend/src/ y frontend/src/ en busca de problemas de higiene: elimina console.log de depuración residuales no permitidos en producción y sustituye usos explícitos de 'any' en TypeScript por tipos concretos o genéricos seguros <T>. Asegúrate de que 'npm run validate:ci' pase en ambos paquetes. Usa commits Conventional puros tipo(scope): mensaje."
           elif [ "$TASK_TYPE" = "custom" ]; then
             PROMPT="${{ github.event.inputs.custom_prompt }}"
           fi
@@ -93,6 +93,11 @@ jobs:
           if [ -z "$PROMPT" ]; then
             PROMPT="Auditoría de mantenimiento rutinario para el repositorio."
           fi
+
+          # Trailer obligatorio para TODOS los modos (incluido custom): cubre cada
+          # commit Y el título del PR. Sin esto Jules titula PRs con emojis y el
+          # job gates de CI los rechaza.
+          PROMPT="$PROMPT Regla de commits y PR (obligatoria): cada commit y el título del PR usan formato Conventional puro tipo(scope): mensaje, sin emojis ni prefijos. Los emojis rompen release-please y el hook commit-msg y el CI los rechazan."
 
           export PROMPT
           export TASK_TYPE

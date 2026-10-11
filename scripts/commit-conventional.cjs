@@ -17,6 +17,14 @@ if (/^Merge (branch|remote|pull request)/.test(subject)) {
   process.exit(0);
 }
 
+// Emojis pictográficos prohibidos en posición o cuerpo: rompen release-please.
+// (Solo pictogramas: las tildes y eñes pasan, \p{Extended_Pictographic} no las toca).
+if (/\p{Extended_Pictographic}/u.test(subject)) {
+  console.error(`commit-conventional: emojis prohibidos en el subject: "${subject}"`);
+  console.error("Reemite como tipo(scope opcional): mensaje sin emojis. Ej: fix(auth): harden login");
+  process.exit(1);
+}
+
 const pattern =
   /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!)?: .+/;
 
