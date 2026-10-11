@@ -38,20 +38,22 @@ const res = await fetch(`${API}/auth/login`, {
   body: JSON.stringify({ username: "admin", password: "999.666" }),
 });
 const b = await res.json();
-const user = { id: b.userId, username: b.username, role: b.role,
-  employeeId: b.employeeId ?? null, isDeleted: false,
-  lastModified: Date.now(), syncStatus: "synced" };
+const user = { id: b.userId, username: b.username, role: b.role, employeeId: b.employeeId ?? null, isDeleted: false, lastModified: Date.now(), syncStatus: "synced" };
 // 2. Contexto con sesión sembrada (NO login UI salvo que se pruebe el login)
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-await ctx.addInitScript(({ token, storedUser }) => {
-  sessionStorage.setItem("authToken", token);
-  sessionStorage.setItem("currentUser", JSON.stringify(storedUser));
-}, { token: b.token, storedUser: user });
+await ctx.addInitScript(
+  ({ token, storedUser }) => {
+    sessionStorage.setItem("authToken", token);
+    sessionStorage.setItem("currentUser", JSON.stringify(storedUser));
+  },
+  { token: b.token, storedUser: user },
+);
 const page = await ctx.newPage();
 // 3. SIEMPRE con hash (HashRouter): BASE + "/#" + route
-page.on("response", (r) => { if (r.status() >= 400)
-  console.log("FAIL", r.status(), r.url().replace(BASE, "")); });
+page.on("response", (r) => {
+  if (r.status() >= 400) console.log("FAIL", r.status(), r.url().replace(BASE, ""));
+});
 await page.goto(BASE + "/#/dashboard", { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(3000);
 ```
