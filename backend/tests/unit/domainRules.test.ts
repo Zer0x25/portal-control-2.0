@@ -62,13 +62,15 @@ describe("domain/attendanceRules (pure, no DB)", () => {
 
       // INICIO_COLACION
       expect(determineNextPunchAction(empty, "inicio_colacion").action).toBe("INICIO_COLACION");
-      expect(() => determineNextPunchAction({ ...empty, inicioColacion: "x" }, "inicio_colacion")).toThrow(
-        "ALREADY_BREAK_STARTED"
-      );
+      expect(() =>
+        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "inicio_colacion"),
+      ).toThrow("ALREADY_BREAK_STARTED");
 
       // FIN_COLACION
       expect(() => determineNextPunchAction(empty, "fin_colacion")).toThrow("NO_BREAK_STARTED");
-      expect(determineNextPunchAction({ ...empty, inicioColacion: "x" }, "fin_colacion").action).toBe("FIN_COLACION");
+      expect(
+        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "fin_colacion").action,
+      ).toBe("FIN_COLACION");
       expect(() =>
         determineNextPunchAction(
           { ...empty, inicioColacion: "x", finColacion: "y" },
