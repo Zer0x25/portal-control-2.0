@@ -54,17 +54,32 @@ describe("domain/attendanceRules (pure, no DB)", () => {
     });
 
     it("honors forced overrides with guard errors", () => {
+      // ENTRADA
       expect(determineNextPunchAction(empty, "entrada").action).toBe("ENTRADA");
       expect(() => determineNextPunchAction({ ...empty, entrada: "x" }, "entrada")).toThrow(
         "ALREADY_PUNCHED_IN",
       );
+
+      // INICIO_COLACION
+      expect(determineNextPunchAction(empty, "inicio_colacion").action).toBe("INICIO_COLACION");
+      expect(() =>
+        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "inicio_colacion"),
+      ).toThrow("ALREADY_BREAK_STARTED");
+
+      // FIN_COLACION
       expect(() => determineNextPunchAction(empty, "fin_colacion")).toThrow("NO_BREAK_STARTED");
+      expect(
+        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "fin_colacion").action,
+      ).toBe("FIN_COLACION");
       expect(() =>
         determineNextPunchAction(
           { ...empty, inicioColacion: "x", finColacion: "y" },
           "fin_colacion",
         ),
       ).toThrow("ALREADY_BREAK_FINISHED");
+
+      // SALIDA
+      expect(determineNextPunchAction(empty, "salida").action).toBe("SALIDA");
       expect(() => determineNextPunchAction({ ...empty, salida: "x" }, "salida")).toThrow(
         "ALREADY_PUNCHED_OUT",
       );
