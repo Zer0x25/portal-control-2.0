@@ -1,5 +1,29 @@
 # Changelog
 
+## [8.28.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.27.1...v8.28.0) (2026-10-11)
+
+
+### Features
+
+* Palette: [UX improvement] Add ARIA labels and titles to DatePicker icon buttons ([#43](https://github.com/Zer0x25/portal-control-2.0/issues/43)) ([ead0162](https://github.com/Zer0x25/portal-control-2.0/commit/ead0162a86b3701246e7727fcfb42093a2611341))
+
+
+### Bug Fixes
+
+* **ci:** enforce no-emoji rule on PR titles and all Jules prompts ([cd04031](https://github.com/Zer0x25/portal-control-2.0/commit/cd0403130ecc8f46090740ba10325c9087a0d1c2))
+* **kiosk:** forward geolocation to punch, toast on failure with regression tests ([3bf19c9](https://github.com/Zer0x25/portal-control-2.0/commit/3bf19c9699388c9d39aab6353d8b4aef1794cb22))
+* **kiosk:** surface leave denial, future-proof corrections, empty users state ([d147043](https://github.com/Zer0x25/portal-control-2.0/commit/d1470430ab4f6ca504e8bed90140058ecfe8104c))
+* **records:** accept camelCase punch forcedType with snake legacy fallback ([cd5bb05](https://github.com/Zer0x25/portal-control-2.0/commit/cd5bb053830c59d20ff1f6e693967877e8ad52fb))
+* **records:** block punch on active leave, reject future dates, open users read to supervisors ([8ec8717](https://github.com/Zer0x25/portal-control-2.0/commit/8ec8717d5894f30873c89cf867b4003e27785482))
+* **worker-portal:** harden loading, month filter, status and punch contract with regression tests ([ffe9c50](https://github.com/Zer0x25/portal-control-2.0/commit/ffe9c5087c0b7d69eafdbddac5fb70b4758e665a))
+* **worker-portal:** single punch error toast and double-submit guard ([f43b0c3](https://github.com/Zer0x25/portal-control-2.0/commit/f43b0c37d33c2df2e3df30160fcc4f353b3d437e))
+
+
+### Performance Improvements
+
+* Bolt: memoize kpiMetrics array in useKpisLogic ([#42](https://github.com/Zer0x25/portal-control-2.0/issues/42)) ([cd48c29](https://github.com/Zer0x25/portal-control-2.0/commit/cd48c2979911d328f002e4e1e6c58656e7db0a1a))
+* Bolt: optimize employee list filtering ([#50](https://github.com/Zer0x25/portal-control-2.0/issues/50)) ([f8e2c12](https://github.com/Zer0x25/portal-control-2.0/commit/f8e2c1201f901cbe5f02c0f5ec8fea982d0f3c3d))
+
 ## [8.27.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.27.0...v8.27.1) (2026-10-10)
 
 
