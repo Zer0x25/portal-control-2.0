@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../../../store/useStore";
-import { ROUTES } from "../../../constants";
+import { ROUTES, STORAGE_KEYS } from "../../../constants";
 import {
   ClipboardIcon,
   ChatBubbleLeftRightIcon,
@@ -16,18 +16,33 @@ export const useToolsLogic = () => {
   const handleOpenQuickNotes = useStore((state) => state.handleOpenQuickNotes);
   const hasUnreadNotes = useStore((state) => state.hasUnreadNotes);
   const [policyUrl, setPolicyUrl] = useState(
-    import.meta.env.VITE_COMPANY_POLICY_URL || "/api/configs/public/company-policy/file",
+    import.meta.env.VITE_COMPANY_POLICY_URL ||
+      sessionStorage.getItem(STORAGE_KEYS.POLICY_URL_CHECKED) ||
+      "/api/configs/public/company-policy/file",
   );
 
   useEffect(() => {
+    // El href por defecto ya resuelve el archivo; la metadata solo refina la URL.
+    // Memo por sesión: un solo fetch aunque el dashboard se monte N veces
+    // (el 404 "sin reglamento" es estado esperado, no debe repetirse en consola).
+    if (sessionStorage.getItem(STORAGE_KEYS.POLICY_URL_CHECKED) !== null) return;
     let mounted = true;
     configService
       .getPublicCompanyPolicy()
       .then((policy) => {
-        if (!mounted || !policy?.url) return;
-        setPolicyUrl(policy.url);
+        if (!mounted) return;
+        const url = policy?.url || "/api/configs/public/company-policy/file";
+        sessionStorage.setItem(STORAGE_KEYS.POLICY_URL_CHECKED, url);
+        if (policy?.url) setPolicyUrl(policy.url);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (mounted) {
+          sessionStorage.setItem(
+            STORAGE_KEYS.POLICY_URL_CHECKED,
+            "/api/configs/public/company-policy/file",
+          );
+        }
+      });
 
     return () => {
       mounted = false;

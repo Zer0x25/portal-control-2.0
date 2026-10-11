@@ -24,6 +24,9 @@ vi.mock("../../../constants", () => ({
     COMMUNICATIONS: "/communications",
     METER_READINGS: "/meters",
   },
+  STORAGE_KEYS: {
+    POLICY_URL_CHECKED: "companyPolicyUrlChecked",
+  },
 }));
 
 // Mock de iconos
@@ -169,5 +172,21 @@ describe("useToolsLogic", () => {
 
     const notesTool = result.current.tools.find((t) => t.id === "notes");
     expect(notesTool?.hasNotification).toBe(true);
+  });
+
+  it("fetches company policy at most once per session (memo en sessionStorage)", async () => {
+    const { configService } = await import("../../../services/configService");
+    sessionStorage.clear();
+
+    const first = renderHook(() => useToolsLogic());
+    await first.waitForNextUpdate?.().catch(() => undefined);
+    await Promise.resolve();
+    expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
+
+    renderHook(() => useToolsLogic());
+    await Promise.resolve();
+    // Segundo montaje reutiliza el memo: sin segundo fetch.
+    expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
+    sessionStorage.clear();
   });
 });

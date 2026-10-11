@@ -46,6 +46,7 @@ export const STORAGE_KEYS = {
 
   // SessionStorage
   CURRENT_USER: "currentUser",
+  POLICY_URL_CHECKED: "companyPolicyUrlChecked",
   AUTO_LOGIN_ACTIONS_DONE: "autoLoginActionsDone",
   TRIGGER_AUTO_CLOSE_SHIFT: "triggerAutoCloseShift",
   SHIFT_HANDOVER_VIEWED: "shiftHandoverViewed",
