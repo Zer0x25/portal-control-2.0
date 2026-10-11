@@ -20,6 +20,14 @@ const employee = {
 };
 const today = () => getChileDateISO(new Date());
 const date = (offset: number) => addBusinessDaysChile(today(), offset);
+// Corrections cannot point to the future (spec 030). A fixed same-day UTC hour is future
+// for part of the day, so clamp it to the past while keeping entrada < salida.
+const pastToday = (hourUtc: string, minusMs: number) =>
+  new Date(
+    Math.min(Date.parse(`${today()}T${hourUtc}:00:00.000Z`), Date.now() - 60_000 - minusMs),
+  ).toISOString();
+const correctionEntrada = () => pastToday("12", 3_600_000);
+const correctionSalida = () => pastToday("20", 0);
 const leave = (patch = {}) => ({
   employeeId: employee.id,
   type: "Vacaciones",
@@ -32,7 +40,7 @@ const correction = (patch = {}) => ({
   timeRecordId: "correction-record",
   recordField: "salida",
   currentValue: "",
-  requestedValue: `${today()}T20:00:00.000Z`,
+  requestedValue: correctionSalida(),
   reason: "Missing exit",
   ...patch,
 });
@@ -44,7 +52,7 @@ async function seedRecord(patch = {}) {
       employeeName: employee.name,
       employeeWorkdayType: "Normal",
       date: today(),
-      entrada: `${today()}T12:00:00.000Z`,
+      entrada: correctionEntrada(),
       status: "AnomaliaManual",
       ...patch,
     },
@@ -59,7 +67,7 @@ async function seedRequest(patch = {}) {
       timeRecordId: "correction-record",
       recordField: "salida",
       originalValue: "",
-      requestedValue: `${today()}T20:00:00.000Z`,
+      requestedValue: correctionSalida(),
       reason: "Missing exit",
       ...patch,
     },
