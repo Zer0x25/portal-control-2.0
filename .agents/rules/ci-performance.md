@@ -17,6 +17,7 @@ description: Best practices and performance constraints for CI workflows, monore
 3. **Disposable Database Containers**:
    - Always use `--tmpfs /var/lib/postgresql:rw` for ephemeral integration test PostgreSQL containers.
    - Configure `-c shared_buffers=256MB -c checkpoint_timeout=30min` to run the database entirely in RAM and avoid disk I/O bottlenecks in CI.
+   - **Fixtures únicos en DB local compartida**: Los tests de integración contra la DB local compartida (`compose.db.dev.yaml`, puerto 5433) deben usar RUTs/usernames únicos por run (sufijo `ulid()` o de spec), nunca valores fijos que colisionan con fixtures residuales de otros runs. Limpieza obligatoria en `afterAll` (timeRecords → leaves → employee → user).
 
 4. **Docker Image Pre-fetching**:
    - In CI jobs requiring heavy images, trigger `docker pull <image> &` in the background immediately after repo checkout to overlap network I/O with Node/dependency setup.

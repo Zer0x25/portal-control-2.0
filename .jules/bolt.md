@@ -30,4 +30,8 @@
 3. Replace `framer-motion` in the shell and atomic dashboard cards with native Tailwind v4 GPU transitions and native touch handlers (`onTouchStart`/`onTouchEnd`), cutting vitest execution time from 62.8s to 49.7s (-20.8%).
 4. Remove orphaned Zustand `timeRecordSlice` and redundant state stores.
 
+## 2026-10-11 - Duplicate Punch POSTs from Rapid Clicks + Double Error Toasts
+**Learning:** Two fast taps fired two POSTs to `/api/records/punch` before React re-rendered `disabled`, and each failure toasted twice (mutation `onError` + caller `catch`), so one business denial (e.g. ON_LEAVE) appeared as two identical errors.
+**Action:** Guard critical mutation handlers with a synchronous `isSubmittingRef` (early return while in flight, release in `finally`) and give the error toast a single owner (`suppressErrorToast: true` in `mutateAsync` variables + early-return in `onError`); the caller `catch` prefers the backend business-denial message and reserves the generic text for network failures.
+
 

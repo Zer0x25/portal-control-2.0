@@ -27,3 +27,9 @@ description: Fastify HTTP routing invariants, route manifest, OpenAPI sync, vali
 
 - `/api/health` bypasses maintenance mode and the global rate limiter. Native HTTP tests must preserve these exceptions.
 - Administrative routes (`/api/admin`, `/api/maintenance`) enforce strict role guards (Administrator only) and specific body limits.
+
+## 5. Punch & Users-Read Contracts
+
+- **Punch canónico**: `PunchSchema.forcedType` es camelCase (`entrada | salida | inicioColacion | finColacion`). Detalle de dominio en [attendance-punch.md](file:///.agents/rules/attendance-punch.md).
+- **Denegación de negocio sin cambio de schema**: `ON_LEAVE` → 400 con mensaje ES accionable; fechas futuras en `save` / `bulk` / `resolve` / correcciones → 400 `ValidationError`.
+- **Lectura de usuarios**: `GET /api/users` admite `Administrador` + `Supervisor_Elevado` (solo lectura); `POST` / `PUT` / `DELETE` siguen admin-only. Toda vista que consuma el endpoint debe reflejar exactamente ese conjunto de roles.

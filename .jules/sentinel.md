@@ -17,3 +17,8 @@
 **Vulnerability:** In `timeRecordController.createBulkRecords`, only the first 10 records (`slice(0, 10)`) were checked against `isRecordLocked`.
 **Learning:** Partial slice validations permit bypasses if locked dates exist beyond the inspected window.
 **Action:** Always extract all unique dates from the entire batch (`new Set(records.map(r => r.date))`) and validate 100% of the target dates before processing.
+
+## 2026-10-11 - Punch Overwriting Full-Day Leave Rows + Future-Date Write Vectors
+**Vulnerability:** `PunchService` treated a leave-materialized `TimeRecord` (Vacaciones/Permiso, no punches) as an open shift: first punch overwrote it to `Laborando`, second collided with `ACTION_ALREADY_TAKEN`. Separately, `save`/`bulk` accepted arbitrary future `date`, correction `datetime-local` had no max, and virtual `MISSING-<emp>-<date>` resolve could create future rows (punch itself always uses server date, so future rows never come from punch).
+**Learning:** LeaveRecord (date range) is the source of truth for leave, not TimeRecord status; any writer accepting a business date must compare it against the Chile business date.
+**Action:** Guard `ON_LEAVE` in punch (400, no row mutation), ignore other-day rows in the open-shift lookup, reject `date > businessDate(now)` in `save`/`bulk`/`resolve` + `CorrectionRequestSchema.refine` + service-level future guard, frontend `max` + controller block. See `.agents/rules/attendance-punch.md` and specs 030.
