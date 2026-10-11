@@ -1,5 +1,12 @@
-import { expect, it, describe } from "vitest";
+import { expect, it, describe, vi } from "vitest";
 import crypto from "crypto";
+
+vi.hoisted(() => {
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = "test-secret-at-least-32-chars-long-placeholder";
+  }
+});
+
 import { encrypt, decrypt, isEncrypted } from "../../src/utils/cryptoUtils";
 
 function legacyEncrypt(text: string): string {
