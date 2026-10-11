@@ -125,6 +125,8 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                 type="button"
                 onClick={onClose}
                 className="p-1 px-2 text-token-text-tertiary hover:text-token-text-primary transition-colors shadow-none"
+                aria-label="Cerrar"
+                title="Cerrar"
               >
                 <CloseIcon className="w-3.5 h-3.5" />
               </Button>
@@ -148,6 +150,8 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                   type="button"
                   onClick={prevMonth}
                   className="p-2 rounded-md hover:bg-token-surface-hover text-token-text-secondary hover:text-token-accent-brand transition-all active:scale-95 border border-transparent shadow-none"
+                  aria-label="Mes anterior"
+                  title="Mes anterior"
                 >
                   <ChevronLeftIcon className="w-3.5 h-3.5" />
                 </Button>
@@ -156,6 +160,8 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
                   type="button"
                   onClick={nextMonth}
                   className="p-2 rounded-md hover:bg-token-surface-hover text-token-text-secondary hover:text-token-accent-brand transition-all active:scale-95 border border-transparent shadow-none"
+                  aria-label="Mes siguiente"
+                  title="Mes siguiente"
                 >
                   <ChevronRightIcon className="w-3.5 h-3.5" />
                 </Button>
