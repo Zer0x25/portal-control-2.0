@@ -82,6 +82,9 @@ const Button = React.memo(
           type={type}
           className={`${baseStyles} ${variantStyles} ${sizeStyles} ${className} ${loading ? "relative text-transparent! pointer-events-none" : ""}`}
           disabled={disabled || loading}
+          // Los botones icon-only usan `title` como tooltip visual; reflejarlo
+          // como `aria-label` cuando no hay etiqueta explícita (a11y + agentes).
+          aria-label={props["aria-label"] ?? props.title}
           {...props}
         >
           {loading && (

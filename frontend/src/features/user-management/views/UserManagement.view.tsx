@@ -145,6 +145,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                       size="xs"
                       variant="secondary"
                       onClick={() => handleEditUser(user)}
+                      aria-label={`Editar usuario ${user.username}`}
                       className="bg-token-surface-card border-token-border-technical"
                     >
                       <EditIcon className="w-4 h-4 text-(--sidebar-text-active)" />
@@ -153,6 +154,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                       size="xs"
                       variant="secondary"
                       onClick={() => setUserToResetPassword(user)}
+                      aria-label={`Resetear contraseña de ${user.username}`}
                       className="bg-token-surface-card border-token-border-technical"
                     >
                       <KeyIcon className="w-4 h-4 text-(--status-warning)" />
@@ -162,6 +164,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                       variant="secondary"
                       onClick={() => setUserToResetPin(user)}
                       disabled={!user.employeeId}
+                      aria-label={`Resetear PIN de ${user.username}`}
                       className="bg-token-surface-card border-token-border-technical disabled:opacity-30"
                     >
                       <ShieldIcon className="w-4 h-4 text-token-text-tertiary" />
@@ -171,6 +174,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                         size="xs"
                         variant="secondary"
                         onClick={() => setIsMFASetupOpen(true)}
+                        aria-label="Configurar autenticación MFA"
                         className="bg-indigo-600/10 border border-indigo-500/20"
                       >
                         <ShieldIcon className="w-4 h-4 text-indigo-600" />
@@ -180,6 +184,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                       size="xs"
                       variant="danger"
                       onClick={() => setUserToDelete(user)}
+                      aria-label={`Eliminar usuario ${user.username}`}
                       className="bg-(--status-error)/10 text-(--status-error) border border-(--status-error)/20"
                     >
                       <DeleteIcon className="w-4 h-4" />
@@ -217,10 +222,20 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
             </div>
             {canManageUser(user) && (
               <div className="flex gap-2">
-                <Button size="xs" variant="secondary" onClick={() => handleEditUser(user)}>
+                <Button
+                  size="xs"
+                  variant="secondary"
+                  onClick={() => handleEditUser(user)}
+                  aria-label={`Editar usuario ${user.username}`}
+                >
                   <EditIcon className="w-4 h-4" />
                 </Button>
-                <Button size="xs" variant="danger" onClick={() => setUserToDelete(user)}>
+                <Button
+                  size="xs"
+                  variant="danger"
+                  onClick={() => setUserToDelete(user)}
+                  aria-label={`Eliminar usuario ${user.username}`}
+                >
                   <DeleteIcon className="w-4 h-4" />
                 </Button>
               </div>

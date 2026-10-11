@@ -55,6 +55,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
           }
         `}
         title="Notificaciones"
+        aria-label="Notificaciones"
         aria-haspopup="true"
         aria-expanded={isOpen}
       >

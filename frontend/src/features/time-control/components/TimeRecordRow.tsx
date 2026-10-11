@@ -180,6 +180,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                     onAddComment(record);
                   }}
                   disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
+                  title="Agregar novedad"
                   className="p-1.5!"
                 >
                   <ChatBubbleLeftRightIcon className="w-4 h-4" />
@@ -192,6 +193,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                   e.stopPropagation();
                   onViewHistory(record);
                 }}
+                title="Ver historial de cambios"
                 className="p-1.5!"
               >
                 <ArrowPathIcon className="w-4 h-4" />
@@ -204,6 +206,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                   onDelete(record);
                 }}
                 disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
+                title="Eliminar registro"
                 className="p-1.5!"
               >
                 <DeleteIcon className="w-4 h-4" />
