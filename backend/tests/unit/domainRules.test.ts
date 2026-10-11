@@ -146,11 +146,38 @@ describe("domain/schedulingRules (pure, no DB)", () => {
     expect(work.isWorkDay).toBe(true);
     expect(work.planningStatus).toBe("Programado");
     expect(work.startTime).toBe("08:00");
+    expect(work.endTime).toBe("16:00");
+    expect(work.hours).toBe(8);
+    expect(work.shiftPatternId).toBe("p1");
+    expect(work.shiftPatternName).toBe("Standard 6x1");
+    expect(work.patternColor).toBe("#FFFF00");
+    expect(work.hasColacion).toBe(true);
+    expect(work.colacionMinutes).toBe(60);
+
     const off = determineDailySchedule(input({ targetDate: "2026-03-07" }));
     expect(off.planningStatus).toBe("DiaLibre");
     // 2026-03-09 is 8 days after start -> wraps to dayIndex 1 (workday)
     const wrap = determineDailySchedule(input({ targetDate: "2026-03-09" }));
     expect(wrap.isWorkDay).toBe(true);
+  });
+
+  it("handles missing daySchedule gracefully", () => {
+    // Missing daySchedule index 1
+    const p1Incomplete = pattern7x1();
+    p1Incomplete.dailySchedules = p1Incomplete.dailySchedules.filter((d) => d.dayIndex !== 1);
+
+    const missingDay = determineDailySchedule(input({
+      targetDate: "2026-03-02", // Maps to dayIndex 1
+      activeAssignment: {
+        startDate: "2026-03-01",
+        shiftPattern: p1Incomplete,
+      }
+    }));
+
+    expect(missingDay.isWorkDay).toBe(false);
+    expect(missingDay.scheduleText).toBe("Día Libre");
+    expect(missingDay.planningStatus).toBe("DiaLibre");
+    expect(missingDay.patternColor).toBe("#FFFF00");
   });
 
   it("lets holiday win unless the pattern works holidays", () => {
