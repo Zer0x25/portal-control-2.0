@@ -8,7 +8,7 @@ interface SidebarNavItemProps extends SidebarMenuItem {
 }
 
 const SidebarNavItem = React.memo(
-  ({ to, icon: Icon, label, end = false, isExpanded, onClick }: SidebarNavItemProps) => {
+  ({ to, icon: Icon, label, end = false, badge, isExpanded, onClick }: SidebarNavItemProps) => {
     const itemSlug = to.replace(/^\//, "").replace(/\//g, "-") || "home";
 
     return (
@@ -47,6 +47,14 @@ const SidebarNavItem = React.memo(
               >
                 {label}
               </span>
+              {badge && isExpanded && (
+                <span
+                  data-testid={`nav-badge-${itemSlug}`}
+                  className="ml-2 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-sm bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30"
+                >
+                  {badge}
+                </span>
+              )}
             </>
           )}
         </NavLink>

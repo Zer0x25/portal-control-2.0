@@ -18,6 +18,8 @@ export interface SidebarMenuItem {
   icon: ComponentType<{ className?: string }>;
   label: string;
   end?: boolean;
+  /** Marca opcional (ej. "Beta") para módulos en construcción. */
+  badge?: string;
 }
 
 interface SidebarMenuParams {
@@ -80,7 +82,12 @@ export const buildSidebarMenuByRole = ({
 
   if (isElevatedRole) {
     items.push({ to: ROUTES.THEORETICAL_SHIFTS, icon: CalendarDaysIcon, label: "Turnos" });
-    items.push({ to: ROUTES.MONTHLY_PLANNING, icon: CalendarDaysIcon, label: "Planif. Mensual" });
+    items.push({
+      to: ROUTES.MONTHLY_PLANNING,
+      icon: CalendarDaysIcon,
+      label: "Planif. Mensual",
+      badge: "Beta",
+    });
   }
 
   if (canManageEmployees) {

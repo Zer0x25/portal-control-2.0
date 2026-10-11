@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { useToolsLogic } from "../../../features/dashboard/hooks/useToolsLogic";
 
 // Mock de react-router
@@ -178,9 +178,8 @@ describe("useToolsLogic", () => {
     const { configService } = await import("../../../services/configService");
     sessionStorage.clear();
 
-    const first = renderHook(() => useToolsLogic());
-    await first.waitForNextUpdate?.().catch(() => undefined);
-    await Promise.resolve();
+    renderHook(() => useToolsLogic());
+    await act(async () => {});
     expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
 
     renderHook(() => useToolsLogic());
