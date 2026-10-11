@@ -22,3 +22,8 @@
 **Vulnerability:** `PunchService` treated a leave-materialized `TimeRecord` (Vacaciones/Permiso, no punches) as an open shift: first punch overwrote it to `Laborando`, second collided with `ACTION_ALREADY_TAKEN`. Separately, `save`/`bulk` accepted arbitrary future `date`, correction `datetime-local` had no max, and virtual `MISSING-<emp>-<date>` resolve could create future rows (punch itself always uses server date, so future rows never come from punch).
 **Learning:** LeaveRecord (date range) is the source of truth for leave, not TimeRecord status; any writer accepting a business date must compare it against the Chile business date.
 **Action:** Guard `ON_LEAVE` in punch (400, no row mutation), ignore other-day rows in the open-shift lookup, reject `date > businessDate(now)` in `save`/`bulk`/`resolve` + `CorrectionRequestSchema.refine` + service-level future guard, frontend `max` + controller block. See `.agents/rules/attendance-punch.md` and specs 030.
+
+## 2026-10-11 - Content Security Policy
+**Vulnerability:** Application ran without CSP.
+**Learning:** The default `helmet` package blocks inline scripts, breaking parts of the application. It's best not to weaken it.
+**Prevention:** Let `helmet` be instantiated using the default configurations.
