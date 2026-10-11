@@ -42,6 +42,10 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
   `nav-item-personnel-management`) según rol.
 - Contenido: `page-heading` (vía `PageHeader`), `data-table` (grillas),
   `empty-state` (vacío compartido e inline).
+- Paginación: `pagination[data-page][data-total-pages]`,
+  `pagination-first|prev|next|last` (solo cuando hay >1 página).
+- Modales: `modal-dialog` genérico (con `role="dialog"` + `aria-labelledby`);
+  MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`.
 - Kiosco (`/#/kiosk`): fuera del shell (sin `app-shell`/`main-content`);
   `page-container`, `kiosk-step[data-step]`
   (`rut_input|employee_list|pin_input|actions|success|change_pin`), `kiosk-display`,

@@ -109,6 +109,7 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
       <div
         ref={panelRef}
         tabIndex={-1}
+        data-testid="modal-dialog"
         className={`bg-token-surface-card rounded-lg border border-token-border-technical shadow-2xl w-full ${maxWidth} overflow-hidden ${panelAnimation}`}
         role="dialog"
         aria-modal="true"

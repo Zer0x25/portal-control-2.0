@@ -37,7 +37,10 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
 
   return (
     isOpen && (
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
+      <div
+        data-testid="mfa-login-modal"
+        className="fixed inset-0 z-100 flex items-center justify-center p-6"
+      >
         <div
           className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in"
           onClick={onCancel}
@@ -69,7 +72,7 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} data-testid="mfa-login-form" className="space-y-6">
             <div className="flex justify-center">
               <Input
                 type="text"

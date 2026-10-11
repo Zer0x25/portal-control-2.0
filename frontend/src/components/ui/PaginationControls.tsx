@@ -25,13 +25,19 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
   }
 
   return (
-    <div className={`flex justify-between items-center py-2 ${className}`}>
+    <div
+      data-testid="pagination"
+      data-page={currentPage}
+      data-total-pages={totalPages}
+      className={`flex justify-between items-center py-2 ${className}`}
+    >
       <div className="flex items-center gap-2">
         <Button
           onClick={() => setCurrentPage(1)}
           disabled={currentPage === 1}
           variant="secondary"
           size="sm"
+          data-testid="pagination-first"
           className="p-2 hidden sm:inline-flex rounded-md shadow-sm"
           title="Primera página"
         >
@@ -42,6 +48,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           disabled={currentPage === 1}
           variant="secondary"
           size="sm"
+          data-testid="pagination-prev"
           className="flex items-center px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
           title="Página anterior"
         >
@@ -65,6 +72,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           disabled={currentPage === totalPages}
           variant="secondary"
           size="sm"
+          data-testid="pagination-next"
           className="flex items-center px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
           title="Página siguiente"
         >
@@ -76,6 +84,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           disabled={currentPage === totalPages}
           variant="secondary"
           size="sm"
+          data-testid="pagination-last"
           className="p-2 hidden sm:inline-flex rounded-md shadow-sm"
           title="Última página"
         >

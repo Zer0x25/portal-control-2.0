@@ -60,7 +60,10 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
 
   return (
     isOpen && (
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
+      <div
+        data-testid="mfa-setup-modal"
+        className="fixed inset-0 z-100 flex items-center justify-center p-6"
+      >
         <div
           className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in"
           onClick={onClose}
@@ -113,7 +116,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
           )}
 
           {step === "verifying" && (
-            <form onSubmit={handleVerify} className="space-y-6">
+            <form onSubmit={handleVerify} data-testid="mfa-setup-form" className="space-y-6">
               <div className="text-center">
                 <p className="text-token-text-secondary text-sm mb-6">
                   Ingrese el código de 6 dígitos para confirmar la vinculación.
