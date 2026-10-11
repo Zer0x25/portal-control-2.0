@@ -166,13 +166,15 @@ describe("domain/schedulingRules (pure, no DB)", () => {
     const p1Incomplete = pattern7x1();
     p1Incomplete.dailySchedules = p1Incomplete.dailySchedules.filter((d) => d.dayIndex !== 1);
 
-    const missingDay = determineDailySchedule(input({
-      targetDate: "2026-03-02", // Maps to dayIndex 1
-      activeAssignment: {
-        startDate: "2026-03-01",
-        shiftPattern: p1Incomplete,
-      }
-    }));
+    const missingDay = determineDailySchedule(
+      input({
+        targetDate: "2026-03-02", // Maps to dayIndex 1
+        activeAssignment: {
+          startDate: "2026-03-01",
+          shiftPattern: p1Incomplete,
+        },
+      }),
+    );
 
     expect(missingDay.isWorkDay).toBe(false);
     expect(missingDay.scheduleText).toBe("Día Libre");
