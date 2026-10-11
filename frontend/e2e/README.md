@@ -40,5 +40,10 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
   `/personnel-management` ya tienen item de sidebar
   (`nav-item-meter-readings`, `nav-item-communications`,
   `nav-item-personnel-management`) según rol.
+- Contenido: `page-heading` (vía `PageHeader`), `data-table` (grillas),
+  `empty-state` (vacío compartido e inline).
 - Kiosco (`/#/kiosk`): fuera del shell (sin `app-shell`/`main-content`);
-  solo `page-container` + keypad (tecla borrar con `aria-label="Borrar"`).
+  `page-container`, `kiosk-step[data-step]`
+  (`rut_input|employee_list|pin_input|actions|success|change_pin`), `kiosk-display`,
+  `kiosk-keypad`, `kiosk-key-<1..9,K,0>`, `kiosk-key-delete`, `kiosk-key-confirm`,
+  `kiosk-exit-button`, `kiosk-rut-error`, `kiosk-pin-error`.
