@@ -37,7 +37,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles
     // Smart redirect based on role to prevent loops
     if (currentUser) {
       const defaultRoute = getDefaultRouteForRole(currentUser.role);
-      return <Navigate to={defaultRoute} />;
+      return <Navigate to={defaultRoute} state={{ accessDenied: true }} />;
     }
     // Si currentUser es null, redirige al login por seguridad
     return <Navigate to={ROUTES.LOGIN} />;

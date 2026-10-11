@@ -94,6 +94,8 @@ const GovernanceHubPage = React.lazy(() =>
     default: m.GovernanceHubContainer,
   })),
 );
+const NotFoundPage = React.lazy(() => import("./features/not-found/pages/NotFoundPage"));
+const AccessDeniedNotifier = React.lazy(() => import("./router/AccessDeniedNotifier"));
 
 const App: React.FC = () => {
   const { isForcePasswordChangeModalOpen, closeForcePasswordChangeModal } = useAuth();
@@ -143,6 +145,9 @@ const App: React.FC = () => {
       </Suspense>
       <Suspense fallback={null}>
         <ToastContainer />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AccessDeniedNotifier />
       </Suspense>
       <Routes>
         <Route
@@ -361,6 +366,16 @@ const App: React.FC = () => {
           <Route
             path={ROUTES.INTEGRITY_DASHBOARD}
             element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
+          />
+          <Route
+            path="*"
+            element={
+              <ProtectedRoute requiredRoles={[]}>
+                <Suspense fallback={<LoadingSpinner fullScreen />}>
+                  <NotFoundPage />
+                </Suspense>
+              </ProtectedRoute>
+            }
           />
         </Route>
 
