@@ -8,16 +8,18 @@ export const useTeamStatusLogic = () => {
   const teamStatus: TeamStatusData = overviewData?.teamStatus || {
     present: 0,
     total: 0,
-    anomalies: [],
-    presentRecords: [],
+    anomaliesCount: 0,
   };
 
   const unscheduledPresent = useMemo(() => {
     return overviewData?.unscheduledPresent || [];
   }, [overviewData]);
 
+  // El backend esbelto envía anomaliesCount; el fallback cubre la ventana de
+  // despliegue contra el backend previo (array completo).
+  const anomaliesCount = teamStatus.anomaliesCount ?? teamStatus.anomalies?.length ?? 0;
   const hasUnscheduledPresent = unscheduledPresent.length > 0;
-  const hasAnomalies = teamStatus.anomalies.length > 0;
+  const hasAnomalies = anomaliesCount > 0;
   const hasPresent = teamStatus.present > 0;
 
   return {
@@ -26,5 +28,6 @@ export const useTeamStatusLogic = () => {
     hasUnscheduledPresent,
     hasAnomalies,
     hasPresent,
+    anomaliesCount,
   };
 };

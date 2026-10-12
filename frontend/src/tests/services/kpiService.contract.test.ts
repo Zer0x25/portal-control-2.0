@@ -27,8 +27,7 @@ describe("kpiService contracts", () => {
           teamStatus: {
             present: 3,
             total: 10,
-            anomalies: [{ id: "r1" }],
-            presentRecords: [{ id: "r2" }],
+            anomaliesCount: 1,
           },
         }),
       }),
