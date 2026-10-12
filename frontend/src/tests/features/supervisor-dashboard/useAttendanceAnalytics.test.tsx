@@ -191,4 +191,33 @@ describe("useAttendanceAnalytics", () => {
       },
     });
   });
+
+  it("fetches remaining pages concurrently after page 1 (no sequential cascade)", async () => {
+    const day = "2026-03-05";
+    const mk = (id: string) => ({
+      id,
+      employeeId: "e1",
+      date: day,
+      entrada: `${day}T08:00:00`,
+      scheduledStartTime: "08:00",
+      status: "Presente",
+    });
+    getAllMock.mockImplementation(async ({ page }: { page: number }) => {
+      if (page === 1) return { data: [mk("p1")], totalPages: 3 };
+      if (page === 2) return { data: [mk("p2")], totalPages: 3 };
+      return { data: [mk("p3")], totalPages: 3 };
+    });
+
+    const { result } = renderHook(() => useAttendanceAnalytics(2), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const pages = getAllMock.mock.calls.map(([params]: [{ page: number }]) => params.page);
+    expect(pages).toEqual([1, 2, 3]);
+    const row = result.current.data?.find((d) => d.date === day);
+    expect(row?.present).toBe(1);
+    expect(row?.total).toBe(1);
+  });
 });

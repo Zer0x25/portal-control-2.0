@@ -155,24 +155,24 @@ export function useAttendanceAnalytics(days: number = 30) {
     queryKey: ["attendance-analytics", startDate, endDate],
     queryFn: async (): Promise<AttendanceData[]> => {
       const pageSize = 500;
-      let page = 1;
-      let totalPages: number;
-      const records: AttendanceRecord[] = [];
+      const filters = {
+        desde: startDate,
+        hasta: endDate,
+      };
+      // Página 1 primero (revela totalPages); el resto en paralelo en vez
+      // de secuencial: 9 páginas x ~80ms pasaban a ~750ms de cascada.
+      const first = await timeRecordService.getAll({ page: 1, pageSize, filters });
+      const totalPages = first.totalPages || 1;
+      const records: AttendanceRecord[] = [...first.data];
 
-      do {
-        const response = await timeRecordService.getAll({
-          page,
-          pageSize,
-          filters: {
-            desde: startDate,
-            hasta: endDate,
-          },
-        });
-
-        records.push(...response.data);
-        totalPages = response.totalPages || 1;
-        page += 1;
-      } while (page <= totalPages);
+      if (totalPages > 1) {
+        const rest = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, index) =>
+            timeRecordService.getAll({ page: index + 2, pageSize, filters }),
+          ),
+        );
+        for (const page of rest) records.push(...page.data);
+      }
 
       return buildAttendanceSeries(records, startDate, endDate);
     },
