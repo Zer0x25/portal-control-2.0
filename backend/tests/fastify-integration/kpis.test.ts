@@ -85,7 +85,7 @@ describe("Spec 018 KPI on Fastify", () => {
     const overview = await http("GET", "/api/kpis/overview");
     expect(overview.status).toBe(200);
     expect(overview.body).toEqual({
-      teamStatus: { present: 0, total: 0, anomalies: [], presentRecords: [] },
+      teamStatus: { present: 0, total: 0, anomaliesCount: 0 },
       employeeStatuses: [],
       timestamp: expect.any(String),
     });
@@ -393,6 +393,13 @@ describe("Spec 018 KPI on Fastify", () => {
     expect(overview.status).toBe(200);
     expect(overview.body.employeeStatuses[0].employee.id).toBe(employee.id);
     expect(overview.body.employeeStatuses[0].employee).not.toHaveProperty("pin");
+    // Contrato esbelto: solo id/name/position, sin lastRecord.
+    expect(Object.keys(overview.body.employeeStatuses[0]).sort()).toEqual(["employee", "status"]);
+    expect(Object.keys(overview.body.employeeStatuses[0].employee).sort()).toEqual([
+      "id",
+      "name",
+      "position",
+    ]);
     const summary = await http("POST", "/api/kpis/summary", range());
     expect(summary.status).toBe(200);
     // Legacy explicit Ausente normalizes to 'Ausencia no justificada', so the aggregator omits it.
@@ -465,12 +472,9 @@ describe("Spec 018 KPI on Fastify", () => {
       });
       const overview = await http("GET", "/api/kpis/overview");
       expect(overview.status).toBe(200);
-      expect(overview.body.employeeStatuses[0].lastRecord.date).toBe(day);
-      const missing = overview.body.teamStatus.anomalies.filter((record: { id: string }) =>
-        record.id.startsWith("MISSING-"),
-      );
-      expect(missing).toHaveLength(scenario === "missing" ? 1 : 0);
-      if (scenario === "missing") expect(missing[0].date).toBe(yesterday);
+      expect(overview.body.employeeStatuses[0].status).toBe("en_jornada");
+      // Solo conteo de anomalías (sin el array de filas sintéticas).
+      expect(overview.body.teamStatus.anomaliesCount).toBe(scenario === "missing" ? 1 : 0);
       // Today's one-day leave must be loaded despite the UTC date being tomorrow.
       await prismaDirect.leaveRecord.create({
         data: { employeeId: employee.id, type: "Vacaciones", startDate: day, endDate: day },
