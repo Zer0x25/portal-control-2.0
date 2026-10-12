@@ -109,63 +109,65 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (!id.includes("node_modules")) return undefined;
-
-            if (
-              id.includes("node_modules/react/") ||
-              id.includes("node_modules/react-dom/") ||
-              id.includes("node_modules/scheduler/")
-            ) {
-              return "react-core";
-            }
-            if (
-              id.includes("node_modules/react-router") ||
-              id.includes("node_modules/react-router-dom")
-            ) {
-              return "router";
-            }
-            // Animaciones
-            if (id.includes("node_modules/framer-motion")) {
-              return "framer-motion";
-            }
-            // Devtools (cargadas bajo demanda)
-            if (id.includes("node_modules/@tanstack/react-query-devtools")) {
-              return "devtools";
-            }
-            // Estado y data fetching
-            if (id.includes("node_modules/@tanstack") || id.includes("node_modules/zustand")) {
-              return "state";
-            }
-            // Charting
-            if (
-              id.includes("node_modules/chart.js") ||
-              id.includes("node_modules/react-chartjs-2")
-            ) {
-              return "charts";
-            }
-            // Networking / realtime
-            if (id.includes("node_modules/axios")) {
-              return "network";
-            }
-            if (id.includes("node_modules/socket.io-client")) {
-              return "realtime";
-            }
-            // Date utilities
-            if (id.includes("node_modules/date-fns") || id.includes("node_modules/date-fns-tz")) {
-              return "date-utils";
-            }
-            // Validation / ids / local db
-            if (id.includes("node_modules/zod")) {
-              return "validation";
-            }
-            if (id.includes("node_modules/idb")) {
-              return "storage";
-            }
-            if (id.includes("node_modules/nanoid") || id.includes("node_modules/ulid")) {
-              return "ids";
-            }
-            return "vendor";
+          // Rolldown nativo (Vite 8): `advancedChunks` separa cada grupo
+          // vendor en su propio chunk SIN absorber runtime compartido.
+          // Con el legacy `manualChunks(id)` el runtime JSX compartido
+          // caía dentro del chunk "charts" y el entry lo preloadeaba,
+          // arrastrando chart.js (~100KB treeshaken) a la carga inicial
+          // aunque solo se usa tras React.lazy (AttendanceChart).
+          advancedChunks: {
+            groups: [
+              {
+                name: "react-core",
+                test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              },
+              {
+                name: "router",
+                test: /[\\/]node_modules[\\/]react-router/,
+              },
+              {
+                name: "devtools",
+                test: /[\\/]node_modules[\\/]@tanstack[\\/]react-query-devtools/,
+              },
+              {
+                name: "state",
+                test: /[\\/]node_modules[\\/](@tanstack[\\/]react-query|zustand)[\\/]/,
+              },
+              // Solo la lib de charting: la usa AttendanceChart tras
+              // React.lazy, nunca debe ir en el preload del entry.
+              {
+                name: "charts",
+                test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
+              },
+              {
+                name: "network",
+                test: /[\\/]node_modules[\\/]axios[\\/]/,
+              },
+              {
+                name: "realtime",
+                test: /[\\/]node_modules[\\/]socket\.io-client[\\/]/,
+              },
+              {
+                name: "date-utils",
+                test: /[\\/]node_modules[\\/](date-fns|date-fns-tz)[\\/]/,
+              },
+              {
+                name: "validation",
+                test: /[\\/]node_modules[\\/]zod[\\/]/,
+              },
+              {
+                name: "storage",
+                test: /[\\/]node_modules[\\/]idb[\\/]/,
+              },
+              {
+                name: "ids",
+                test: /[\\/]node_modules[\\/](nanoid|ulid)[\\/]/,
+              },
+              {
+                name: "vendor",
+                test: /[\\/]node_modules[\\/]/,
+              },
+            ],
           },
         },
         // Tree shaking agresivo
