@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock de matchMedia (requerido por algunos componentes de UI/Framermotion)
+// Mock de matchMedia (requerido por algunos componentes de UI)
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
