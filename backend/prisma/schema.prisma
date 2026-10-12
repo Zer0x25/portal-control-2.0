@@ -142,6 +142,7 @@ model AuditLog {
 
   @@index([timestamp])
   @@index([category])
+  @@index([severity, action])
   @@index([actorUsername])
   @@map("audit_logs")
 }
