@@ -121,6 +121,7 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
   const expectedRecords = [
     "POST /api/records/punch",
     "GET /api/records",
+    "GET /api/records/daily-attendance",
     "GET /api/records/export",
     "POST /api/records",
     "POST /api/records/bulk",

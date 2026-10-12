@@ -589,6 +589,49 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "DailyAttendanceQuery": {
+        "properties": {
+          "desde": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "hasta": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+      "DailyAttendanceResponse": {
+        "items": {
+          "$ref": "#/components/schemas/DailyAttendanceRow",
+        },
+        "type": "array",
+      },
+      "DailyAttendanceRow": {
+        "properties": {
+          "date": {
+            "type": "string",
+          },
+          "late": {
+            "type": "number",
+          },
+          "present": {
+            "type": "number",
+          },
+          "total": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "date",
+          "present",
+          "total",
+          "late",
+        ],
+        "type": "object",
+      },
       "DashboardOverview": {
         "properties": {
           "activeShifts": {
@@ -6035,6 +6078,54 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         ],
         "summary": "Crea múltiples registros manualmente",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/daily-attendance": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "desde",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "hasta",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyAttendanceResponse",
+                },
+              },
+            },
+            "description": "Serie diaria agregada en servidor",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Serie diaria de asistencia agregada (presentes/totales/atrasados por día)",
         "tags": [
           "Records",
         ],

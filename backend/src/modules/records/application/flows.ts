@@ -7,6 +7,8 @@ import {
 } from "../../../utils/AppError";
 import type {
   AnomalyResolution,
+  DailyAttendanceQuery,
+  DailyAttendanceRow,
   RecordFlowDependencies,
   RecordPrincipal,
   PunchInput,
@@ -82,6 +84,18 @@ export function createRecordFlows<
     async list(query: RecordQuery, user?: RecordPrincipal) {
       try {
         return await deps.service.list(query, user);
+      } catch (error) {
+        if (message(error) === "UNAUTHORIZED_NO_EMPLOYEE")
+          throw new ForbiddenError("Usuario no tiene empleado asociado");
+        throw error;
+      }
+    },
+    async dailyAttendance(
+      query: DailyAttendanceQuery,
+      user?: RecordPrincipal,
+    ): Promise<DailyAttendanceRow[]> {
+      try {
+        return await deps.service.dailyAttendance(query, user);
       } catch (error) {
         if (message(error) === "UNAUTHORIZED_NO_EMPLOYEE")
           throw new ForbiddenError("Usuario no tiene empleado asociado");

@@ -236,6 +236,33 @@
 
 /**
  * @openapi
+ * /api/records/daily-attendance:
+ *   get:
+ *     summary: Serie diaria de asistencia agregada (presentes/totales/atrasados por día)
+ *     tags: [Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: desde
+ *         schema: { type: string }
+ *       - in: query
+ *         name: hasta
+ *         schema: { type: string }
+ *       - in: query
+ *         name: employeeId
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Serie diaria agregada en servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DailyAttendanceResponse'
+ */
+
+/**
+ * @openapi
  * /api/records:
  *   post:
  *     summary: Crea o actualiza un registro individual

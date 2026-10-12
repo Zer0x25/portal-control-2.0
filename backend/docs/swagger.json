@@ -344,6 +344,28 @@
         },
         "required": ["employeeId", "timeRecordId", "recordField", "requestedValue", "reason"]
       },
+      "DailyAttendanceQuery": {
+        "type": "object",
+        "properties": {
+          "desde": { "type": "string" },
+          "hasta": { "type": "string" },
+          "employeeId": { "type": "string" }
+        }
+      },
+      "DailyAttendanceResponse": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/DailyAttendanceRow" }
+      },
+      "DailyAttendanceRow": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string" },
+          "present": { "type": "number" },
+          "total": { "type": "number" },
+          "late": { "type": "number" }
+        },
+        "required": ["date", "present", "total", "late"]
+      },
       "ExportQuery": {
         "type": "object",
         "properties": {
@@ -1570,6 +1592,28 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/AttendanceRecordResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/records/daily-attendance": {
+      "get": {
+        "summary": "Serie diaria de asistencia agregada (presentes/totales/atrasados por día)",
+        "tags": ["Records"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "in": "query", "name": "desde", "schema": { "type": "string" } },
+          { "in": "query", "name": "hasta", "schema": { "type": "string" } },
+          { "in": "query", "name": "employeeId", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie diaria agregada en servidor",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DailyAttendanceResponse" }
               }
             }
           }
