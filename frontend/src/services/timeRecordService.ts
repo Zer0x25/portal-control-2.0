@@ -34,6 +34,24 @@ interface PunchResponse {
 
 const isRecordArray = (value: unknown): value is AttendanceRecord[] => Array.isArray(value);
 
+export interface DailyAttendancePoint {
+  date: string;
+  present: number;
+  total: number;
+  late: number;
+}
+
+const isDailyAttendancePoint = (value: unknown): value is DailyAttendancePoint => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.date === "string" &&
+    typeof candidate.present === "number" &&
+    typeof candidate.total === "number" &&
+    typeof candidate.late === "number"
+  );
+};
+
 const isTimeRecordsResult = (value: unknown): value is TimeRecordsResult => {
   if (!value || typeof value !== "object") return false;
   const candidate = value as {
@@ -130,6 +148,26 @@ export const timeRecordService = {
       total: Number(normalized.total) || 0,
       totalPages: Number(normalized.totalPages) || 1,
     };
+  },
+
+  async getDailyAttendance(params: {
+    desde: string;
+    hasta: string;
+  }): Promise<DailyAttendancePoint[]> {
+    const response = await apiClient.get(`${RECORDS_ENDPOINT}/daily-attendance`, {
+      params: { desde: params.desde, hasta: params.hasta },
+    });
+
+    // El backend responde el array directo (sin envelope).
+    const payload: unknown = response;
+    const series = Array.isArray(payload)
+      ? payload
+      : payload && typeof payload === "object" && "data" in payload
+        ? (payload as { data?: unknown }).data
+        : null;
+    if (Array.isArray(series) && series.every(isDailyAttendancePoint)) return series;
+    console.error("[timeRecordService.getDailyAttendance] Unexpected response shape:", payload);
+    throw new Error("Respuesta invalida de /api/records/daily-attendance");
   },
 
   async getExportData(startDate: string, endDate: string): Promise<AttendanceRecord[]> {
