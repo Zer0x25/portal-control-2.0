@@ -58,6 +58,11 @@ export default defineConfig(({ mode }) => {
             "**/assets/ReportsTab-*.js",
             "**/assets/RequestsTab-*.js",
             "**/assets/AccountingClosureTab-*.js",
+            // Solo rutas post-login (store global ya no los importa en boot):
+            // runtimeCaching StaleWhileRevalidate los trae bajo demanda.
+            "**/assets/date-utils-*.js",
+            "**/assets/dateUtils-*.js",
+            "**/assets/formatters-*.js",
           ],
           runtimeCaching: [
             {

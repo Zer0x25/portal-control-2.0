@@ -7,7 +7,7 @@ import {
   TimeRecordField,
   UpcomingEmployeeStatus,
 } from "../../types/index";
-import { formatDateToTimeLocal } from "../../utils/formatters";
+import { formatChileTimeHHmm } from "../../utils/chileClock";
 import { toCaughtError } from "../../utils/caughtError";
 import { timeRecordService } from "../../services/timeRecordService";
 
@@ -115,8 +115,8 @@ export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice
     const currentValue = record[field];
     const initialValue =
       currentValue && currentValue !== "SIN REGISTRO"
-        ? formatDateToTimeLocal(new Date(currentValue))
-        : formatDateToTimeLocal(new Date());
+        ? formatChileTimeHHmm(new Date(currentValue))
+        : formatChileTimeHHmm(new Date());
 
     set({
       isEditTimestampModalOpen: true,

@@ -382,10 +382,15 @@ const App: React.FC = () => {
         <Route path="*" element={<Navigate to={ROUTES.LOGIN} />} />
       </Routes>
       <Suspense fallback={null}>
-        <ForceChangePasswordModal
-          isOpen={isForcePasswordChangeModalOpen}
-          onClose={closeForcePasswordChangeModal}
-        />
+        {/* Montaje diferido: el barrel de auth arrastra useUsers/useEmployees/dateUtils
+            (~50KB) al grafo de boot; este modal solo abre en el edge case de
+            password expirado. */}
+        {isForcePasswordChangeModalOpen && (
+          <ForceChangePasswordModal
+            isOpen={isForcePasswordChangeModalOpen}
+            onClose={closeForcePasswordChangeModal}
+          />
+        )}
       </Suspense>
     </>
   );
