@@ -3162,7 +3162,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Politica corporativa vigente */
+        /** @description Politica corporativa vigente, o null si no hay reglamento cargado */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3173,7 +3173,7 @@ export interface paths {
               data?: {
                 [key: string]: unknown;
               };
-            };
+            } | null;
           };
         };
       };

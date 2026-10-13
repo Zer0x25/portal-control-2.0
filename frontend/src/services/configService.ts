@@ -32,7 +32,9 @@ export const configService = {
     try {
       const response = await fetch(`${API_BASE_URL}/configs/public/company-policy`);
       if (!response.ok) return null;
-      const policy = (await response.json()) as CompanyPolicy;
+      const policy = (await response.json()) as CompanyPolicy | null;
+      // 200 + null cuando no hay reglamento cargado (estado esperado, no error).
+      if (!policy) return null;
       return {
         ...policy,
         url: normalizeApiUrl(policy.url),
