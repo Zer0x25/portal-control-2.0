@@ -228,21 +228,23 @@ export class KpiReportService {
     // ⚡ Bolt Optimization: Parallelize schedule lookups for missing marks
     // Why: The previous sequential `for...of` loop awaited each promise individually, blocking the event loop (N+1 delay).
     // Impact: Reduces total latency of missing marks check from O(N) to O(1) concurrent requests.
-    const missingYesterdayCandidates = employeeStatuses.filter(s => !yesterdayEmployees.has(s.employee.id));
+    const missingYesterdayCandidates = employeeStatuses.filter(
+      (s) => !yesterdayEmployees.has(s.employee.id),
+    );
 
     const yesterdaySchedules = await Promise.all(
-      missingYesterdayCandidates.map(s =>
+      missingYesterdayCandidates.map((s) =>
         schedulingService.getEmployeeDailyScheduleInfo(
           s.employee.id,
           new Date(parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000),
           schedulingContext,
           s.employee,
-        )
-      )
+        ),
+      ),
     );
 
     const missingYesterdaySchedulesMap = new Map(
-      missingYesterdayCandidates.map((s, idx) => [s.employee.id, yesterdaySchedules[idx]])
+      missingYesterdayCandidates.map((s, idx) => [s.employee.id, yesterdaySchedules[idx]]),
     );
 
     for (const s of employeeStatuses) {
