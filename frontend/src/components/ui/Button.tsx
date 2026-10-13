@@ -84,7 +84,7 @@ const Button = React.memo(
           disabled={disabled || loading}
           // Los botones icon-only usan `title` como tooltip visual; reflejarlo
           // como `aria-label` cuando no hay etiqueta explícita (a11y + agentes).
-          aria-label={props["aria-label"] ?? props.title}
+          aria-label={props["aria-label"] ?? (children ? undefined : props.title)}
           {...props}
         >
           {loading && (
