@@ -3216,11 +3216,12 @@
         "tags": ["Configs"],
         "responses": {
           "200": {
-            "description": "Logo de marca vigente con fuente y tamaño",
+            "description": "Logo de marca vigente con fuente y tamaño, o null si no hay logo configurado",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "nullable": true,
                   "properties": {
                     "success": { "type": "boolean" },
                     "data": { "type": "object", "additionalProperties": true }

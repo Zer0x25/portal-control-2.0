@@ -54,9 +54,11 @@ export const configsPlugin: FastifyPluginAsync<{
   app.get("/api/configs/server-time", { ...auth, preHandler: noQuery }, () =>
     options.service.time(),
   );
-  app.get("/api/configs/public/brand-logo", { preHandler: noQuery }, async (_req, reply) => {
-    const value = await options.service.brandLogo();
-    return value || reply.code(404).send({ message: "No hay logo configurado" });
+  app.get("/api/configs/public/brand-logo", { preHandler: noQuery }, async () => {
+    // 200 + null cuando no hay logo: es estado esperado (config opcional),
+    // no un error — evita un 404 cosmético en la consola en cada sesión
+    // (el hook dispara sin gate de token, incluso en el login anónimo).
+    return (await options.service.brandLogo()) ?? null;
   });
   app.get("/api/configs/public/brand-logo/file", { preHandler: noQuery }, async (_req, reply) => {
     const file = await options.service.downloadLogo();

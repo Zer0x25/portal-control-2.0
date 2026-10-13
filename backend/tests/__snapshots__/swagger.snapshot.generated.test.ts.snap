@@ -3937,6 +3937,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "content": {
               "application/json": {
                 "schema": {
+                  "nullable": true,
                   "properties": {
                     "data": {
                       "additionalProperties": true,
@@ -3950,7 +3951,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                 },
               },
             },
-            "description": "Logo de marca vigente con fuente y tamaño",
+            "description": "Logo de marca vigente con fuente y tamaño, o null si no hay logo configurado",
           },
         },
         "summary": "Obtener el logo de marca configurado",

@@ -801,8 +801,11 @@ describe("Spec027 brand logo (branding_logo)", () => {
   }
 
   it("exposes the logo anonymously and rejects every non-image upload", async () => {
-    // Lectura pública sin token: 404 cuando no hay configuración.
-    expect((await http("GET", "/api/configs/public/brand-logo", undefined, null)).status).toBe(404);
+    // Lectura pública sin token: 200 + null cuando no hay configuración
+    // (estado esperado, no error).
+    const empty = await http("GET", "/api/configs/public/brand-logo", undefined, null);
+    expect(empty.status).toBe(200);
+    expect(empty.body).toBeNull();
     expect(
       (await http("GET", "/api/configs/public/brand-logo/file", undefined, null)).body,
     ).toEqual({ message: "No hay logo configurado" });
@@ -885,6 +888,9 @@ describe("Spec027 brand logo (branding_logo)", () => {
 
     const nulled = await http("POST", "/api/configs/branding_logo", { value: null });
     expect(nulled.status).toBe(200);
-    expect((await http("GET", "/api/configs/public/brand-logo", undefined, null)).status).toBe(404);
+    // Tras restablecer: 200 + null (sin logo configurado).
+    const reset = await http("GET", "/api/configs/public/brand-logo", undefined, null);
+    expect(reset.status).toBe(200);
+    expect(reset.body).toBeNull();
   });
 });
