@@ -3287,7 +3287,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Logo de marca vigente con fuente y tamaño */
+        /** @description Logo de marca vigente con fuente y tamaño, o null si no hay logo configurado */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3298,7 +3298,7 @@ export interface paths {
               data?: {
                 [key: string]: unknown;
               };
-            };
+            } | null;
           };
         };
       };
