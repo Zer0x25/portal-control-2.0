@@ -38,3 +38,9 @@
 ## 2026-10-11 - Optimize duplicate useMemo filtering
 **Learning:** Found instances where large arrays were being filtered identically multiple times across different `useMemo` hooks (e.g. `processedEmployees` and `hasNextPage`), causing O(N) operations to run twice on every search term change.
 **Action:** Extract the expensive, redundant filter operations into a separate `useMemo` hook first (e.g. `filteredBaseList`), and then let dependent values use the pre-filtered result, effectively cutting the calculation time in half.
+## 2026-10-13 - Missing Marks Lookup Contention
+**Learning:** The  method in  used a sequential `for...of` loop that awaited schedule lookups one-by-one to check for missing marks from the previous day, creating a severe N+1 latency delay on the event loop for large employee subsets.
+**Action:** Always extract and parallelize independent queries inside list iterations by collecting candidate IDs, pre-fetching results concurrently with `Promise.all`, mapping them to a `Map`, and then performing synchronous lookups inside the iteration.
+## 2026-10-13 - Missing Marks Lookup Contention
+**Learning:** The getDashboardOverview method in KpiReportService.ts used a sequential for...of loop that awaited schedule lookups one-by-one to check for missing marks from the previous day, creating a severe N+1 latency delay on the event loop for large employee subsets.
+**Action:** Always extract and parallelize independent queries inside list iterations by collecting candidate IDs, pre-fetching results concurrently with Promise.all, mapping them to a Map, and then performing synchronous lookups inside the iteration.
