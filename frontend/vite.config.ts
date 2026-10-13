@@ -1,7 +1,35 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+
+// Preload de la fuente del cuerpo (Inter-Regular, pesos 400/500) con su URL
+// hasheada del bundle: sin esto el navegador la descubre tarde vía CSS y el
+// primer paint de texto espera ~110KB. Solo Regular: SemiBold/Bold llegan
+// por CSS para encabezados sin competir con el JS crítico en el preload.
+const fontPreloadPlugin = (): Plugin => ({
+  name: "font-preload-inter-regular",
+  apply: "build",
+  transformIndexHtml(html, ctx) {
+    const files = Object.keys(ctx.bundle ?? {});
+    const regular = files.find(
+      (f) => f.startsWith("assets/Inter-Regular-") && f.endsWith(".woff2"),
+    );
+    if (!regular) return html;
+    const tag = {
+      tag: "link",
+      attrs: {
+        rel: "preload",
+        href: `/${regular}`,
+        as: "font",
+        type: "font/woff2",
+        crossorigin: "",
+      },
+      injectTo: "head-prepend" as const,
+    };
+    return { html, tags: [tag] };
+  },
+});
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -40,6 +68,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       tailwindcss(),
       react(),
+      fontPreloadPlugin(),
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.svg"],
