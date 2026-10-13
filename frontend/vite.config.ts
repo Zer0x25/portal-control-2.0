@@ -63,6 +63,9 @@ export default defineConfig(({ mode }) => {
             "**/assets/date-utils-*.js",
             "**/assets/dateUtils-*.js",
             "**/assets/formatters-*.js",
+            // Validación zod de IndexedDB: solo se importa en writes de caché.
+            "**/assets/validation-*.js",
+            "**/assets/idbValidation-*.js",
           ],
           runtimeCaching: [
             {
