@@ -3987,6 +3987,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "content": {
               "application/json": {
                 "schema": {
+                  "nullable": true,
                   "properties": {
                     "data": {
                       "additionalProperties": true,
@@ -4000,7 +4001,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                 },
               },
             },
-            "description": "Politica corporativa vigente",
+            "description": "Politica corporativa vigente, o null si no hay reglamento cargado",
           },
         },
         "summary": "Obtener la politica corporativa publica",

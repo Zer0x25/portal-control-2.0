@@ -31,9 +31,10 @@ export const configsPlugin: FastifyPluginAsync<{
   const auth = { config: { requiresAuth: true }, onRequest: [options.authenticate] };
   const elevated = { config: { requiresAuth: true }, onRequest: [options.authenticate, admin] };
   const noQuery = validateRequest("query", z.unknown());
-  app.get("/api/configs/public/company-policy", { preHandler: noQuery }, async (_req, reply) => {
-    const value = await options.service.policy();
-    return value || reply.code(404).send({ message: "No hay reglamento cargado" });
+  app.get("/api/configs/public/company-policy", { preHandler: noQuery }, async () => {
+    // 200 + null cuando no hay reglamento: es estado esperado (config opcional),
+    // no un error — evita un 404 cosmético en la consola en cada sesión.
+    return (await options.service.policy()) ?? null;
   });
   app.get(
     "/api/configs/public/company-policy/file",

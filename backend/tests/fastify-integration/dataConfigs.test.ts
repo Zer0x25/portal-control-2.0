@@ -639,9 +639,10 @@ describe("Spec020 data/configs on Fastify", () => {
   });
 
   it("public policy is anonymous, uploads PDF bytes, replaces file and preserves inline headers", async () => {
-    expect((await http("GET", "/api/configs/public/company-policy", undefined, null)).status).toBe(
-      404,
-    );
+    // Sin reglamento: 200 + null (estado esperado, no error).
+    const empty = await http("GET", "/api/configs/public/company-policy", undefined, null);
+    expect(empty.status).toBe(200);
+    expect(empty.body).toBeNull();
     expect(
       (await http("GET", "/api/configs/public/company-policy/file", undefined, null)).body,
     ).toEqual({ message: "No hay reglamento cargado" });

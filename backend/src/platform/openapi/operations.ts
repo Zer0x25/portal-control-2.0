@@ -2173,11 +2173,12 @@
  *     tags: [Configs]
  *     responses:
  *       200:
- *         description: Politica corporativa vigente
+ *         description: Politica corporativa vigente, o null si no hay reglamento cargado
  *         content:
  *           application/json:
  *             schema:
  *               type: object
+ *               nullable: true
  *               properties:
  *                 success:
  *                   type: boolean
