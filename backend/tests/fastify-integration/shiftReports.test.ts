@@ -86,6 +86,8 @@ afterAll(async () => {
 const routes = [
   ["GET", "/api/shift-reports"],
   ["POST", "/api/shift-reports"],
+  ["PATCH", "/api/shift-reports/seed-report"],
+  ["DELETE", "/api/shift-reports/seed-report"],
   ["GET", "/api/shift-reports/export/missing"],
 ] as const;
 describe("Spec 017 shift reports on Fastify", () => {
@@ -348,8 +350,58 @@ describe("Spec 017 shift reports on Fastify", () => {
     expect((await http("GET", "/api/shift-reports")).status).toBe(200);
     expect((await http("GET", "/api/shift-reports/export/missing")).status).toBe(404);
   });
+  it("partially updates a shift report with PATCH and rejects missing report with 404", async () => {
+    await seedReport({ id: "to-patch", folio: "050", shiftName: "OldShift" });
+    const patchRes = await http("PATCH", "/api/shift-reports/to-patch", { shiftName: "NewShift" });
+    expect(patchRes.status).toBe(200);
+    expect(patchRes.body.shiftName).toBe("NewShift");
+    expect(patchRes.body.folio).toBe("050");
+
+    const fetched = await prismaDirect.shiftReport.findUniqueOrThrow({ where: { id: "to-patch" } });
+    expect(fetched.shiftName).toBe("NewShift");
+
+    const notFound = await http("PATCH", "/api/shift-reports/missing-id", { shiftName: "X" });
+    expect(notFound.status).toBe(404);
+  });
+
+  it("soft-deletes a shift report with DELETE 204, emits audit and socket events, and ignores deleted", async () => {
+    await seedReport({ id: "to-delete", folio: "060" });
+    vi.mocked(SocketService.emit).mockClear();
+
+    const deleteRes = await http("DELETE", "/api/shift-reports/to-delete");
+    expect(deleteRes.status).toBe(204);
+
+    const deletedRecord = await prismaDirect.shiftReport.findUniqueOrThrow({
+      where: { id: "to-delete" },
+    });
+    expect(deletedRecord.isDeleted).toBe(true);
+
+    expect(SocketService.emit).toHaveBeenCalledWith("shiftReport:deleted", {
+      id: "to-delete",
+      isDeleted: true,
+    });
+
+    expect(
+      await prismaDirect.auditLog.findFirst({
+        where: {
+          action: "SHIFT_REPORT_DELETED",
+          details: { path: ["shiftId"], equals: "to-delete" },
+        },
+      }),
+    ).toMatchObject({ actorUsername: "reports-admin" });
+
+    // Subsequent list ignores deleted
+    const listRes = await http("GET", "/api/shift-reports");
+    expect(listRes.body.data.some((r: { id: string }) => r.id === "to-delete")).toBe(false);
+
+    // Subsequent delete returns 404
+    const secondDelete = await http("DELETE", "/api/shift-reports/to-delete");
+    expect(secondDelete.status).toBe(404);
+  });
+
   it.each(routes)("enforces sessions/persisted roles on Fastify %s", async (method, url) => {
-    const payload = method === "POST" ? body() : undefined;
+    const payload =
+      method === "POST" ? body() : method === "PATCH" ? { shiftName: "Patched" } : undefined;
     expect((await http(method, url, payload, null)).status).toBe(401);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     expect((await http(method, url, payload)).status).toBe(403);

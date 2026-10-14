@@ -178,10 +178,14 @@ export const configService = {
     instanceId: string | null;
   } | null> {
     try {
-      // /health is outside /api
       const response = await fetch(`${API_ORIGIN_URL}/api/health`);
       if (!response.ok) return null;
-      return response.json();
+      const body = await response.json();
+      const payload = body?.data ?? body;
+      return {
+        status: payload?.status ?? "unknown",
+        instanceId: payload?.instanceId ?? null,
+      };
     } catch (error) {
       console.error("Error fetching health:", error);
       return null;

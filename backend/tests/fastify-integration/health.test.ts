@@ -38,3 +38,16 @@ it("preserves degraded/200 health when backups are enabled and stale", async () 
     data: { status: "degraded", backup: { enabled: true, stale: true } },
   });
 });
+
+it("exposes persistent instanceId and system details in health response", async () => {
+  const first = await app.inject({ url: "/api/health" });
+  expect(first.statusCode).toBe(200);
+  const data1 = first.json().data;
+  expect(data1.instanceId).toBeDefined();
+  expect(typeof data1.instanceId).toBe("string");
+  expect(data1.instanceId.length).toBeGreaterThan(0);
+
+  const second = await app.inject({ url: "/api/health" });
+  const data2 = second.json().data;
+  expect(data2.instanceId).toBe(data1.instanceId);
+});
