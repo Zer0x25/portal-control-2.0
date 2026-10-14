@@ -1,0 +1,3 @@
+## 2023-10-14 - Fix ARIA label fallback logic for buttons
+**Learning:** `React.Children.count(children) === 0` or `!children` is not sufficient to determine if a component is icon-only in React, because React components like `<Icon />` are objects and thus truthy. Setting an `aria-label` automatically as a fallback on a button with text children overrides its accessible name in the accessibility tree, which breaks screen readers and testing library queries by role and name.
+**Action:** When implementing automated `aria-label` fallbacks (e.g., from `title`) for reusable components like buttons, always verify if it's strictly icon-only by iterating over `children` and ensuring no text/number nodes are present using `React.Children.toArray(children).every(...)`.

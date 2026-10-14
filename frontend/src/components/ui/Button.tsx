@@ -76,6 +76,11 @@ const Button = React.memo(
           break;
       }
 
+      // Check if the button contains any text nodes to avoid overriding the accessible name
+      const isIconOnly = React.Children.toArray(children).every(
+        (child) => typeof child !== "string" && typeof child !== "number",
+      );
+
       return (
         <button
           ref={ref}
@@ -84,7 +89,8 @@ const Button = React.memo(
           disabled={disabled || loading}
           // Los botones icon-only usan `title` como tooltip visual; reflejarlo
           // como `aria-label` cuando no hay etiqueta explícita (a11y + agentes).
-          aria-label={props["aria-label"] ?? props.title}
+          // Solo aplicar si es estrictamente icon-only para no sobreescribir el rol de accesibilidad.
+          aria-label={props["aria-label"] ?? (isIconOnly ? props.title : undefined)}
           {...props}
         >
           {loading && (
