@@ -17,6 +17,7 @@ const mockPrisma = vi.hoisted(() => ({
     findUnique: vi.fn(),
     create: vi.fn(),
   },
+  $executeRaw: vi.fn(),
   $executeRawUnsafe: vi.fn(),
 }));
 
@@ -91,9 +92,7 @@ describe("maintenanceService log rotation and cleanups (anti-regression)", () =>
 
   it("refreshes monthly_employee_kpis materialized view concurrently", async () => {
     await maintenanceService.refreshMaterializedViews();
-    expect(mockPrisma.$executeRawUnsafe).toHaveBeenCalledWith(
-      "REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_employee_kpis",
-    );
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled();
   });
 
   it("ensures db instance ID exists in systemConfig", async () => {

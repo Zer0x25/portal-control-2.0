@@ -22,3 +22,8 @@
 **Vulnerability:** `PunchService` treated a leave-materialized `TimeRecord` (Vacaciones/Permiso, no punches) as an open shift: first punch overwrote it to `Laborando`, second collided with `ACTION_ALREADY_TAKEN`. Separately, `save`/`bulk` accepted arbitrary future `date`, correction `datetime-local` had no max, and virtual `MISSING-<emp>-<date>` resolve could create future rows (punch itself always uses server date, so future rows never come from punch).
 **Learning:** LeaveRecord (date range) is the source of truth for leave, not TimeRecord status; any writer accepting a business date must compare it against the Chile business date.
 **Action:** Guard `ON_LEAVE` in punch (400, no row mutation), ignore other-day rows in the open-shift lookup, reject `date > businessDate(now)` in `save`/`bulk`/`resolve` + `CorrectionRequestSchema.refine` + service-level future guard, frontend `max` + controller block. See `.agents/rules/attendance-punch.md` and specs 030.
+
+## 2026-10-13 - Prevent SQL injection vulnerability by replacing $executeRawUnsafe with $executeRaw
+**Vulnerability:** Use of $executeRawUnsafe allows string interpolation, which could potentially lead to a SQL injection if user input were ever interpolated into the string. It violates project agentic guardrails.
+**Learning:** Prisma's $executeRaw automatically parameterizes values, defending against injection attacks.
+**Prevention:** Replace instances of $executeRawUnsafe with the safe parameterizable tag $executeRaw in Prisma.
