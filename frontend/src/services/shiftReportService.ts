@@ -3,6 +3,13 @@ import { authService } from "./authService";
 import { API_BASE_URL } from "./apiBase";
 
 const API_URL = `${API_BASE_URL}/shift-reports`;
+const REQUEST_TIMEOUT_MS = 15000;
+
+function timeoutSignal(ms = REQUEST_TIMEOUT_MS): AbortSignal {
+  return typeof AbortSignal.timeout === "function"
+    ? AbortSignal.timeout(ms)
+    : new AbortController().signal;
+}
 
 export const shiftReportService = {
   async getAll(
@@ -29,6 +36,7 @@ export const shiftReportService = {
       headers: {
         ...(authService.getAuthHeader() as Record<string, string>),
       },
+      signal: timeoutSignal(),
     });
     if (response.status === 401) {
       window.dispatchEvent(new CustomEvent("unauthorized"));
@@ -45,6 +53,7 @@ export const shiftReportService = {
         ...(authService.getAuthHeader() as Record<string, string>),
       },
       body: JSON.stringify(report),
+      signal: timeoutSignal(),
     });
     if (response.status === 401) {
       window.dispatchEvent(new CustomEvent("unauthorized"));
@@ -64,6 +73,7 @@ export const shiftReportService = {
         ...(authService.getAuthHeader() as Record<string, string>),
       },
       body: JSON.stringify(report),
+      signal: timeoutSignal(),
     });
     if (response.status === 401) {
       window.dispatchEvent(new CustomEvent("unauthorized"));
@@ -81,6 +91,7 @@ export const shiftReportService = {
       headers: {
         ...(authService.getAuthHeader() as Record<string, string>),
       },
+      signal: timeoutSignal(),
     });
     if (response.status === 401) {
       window.dispatchEvent(new CustomEvent("unauthorized"));
