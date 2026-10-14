@@ -27,3 +27,8 @@
 **Vulnerability:** The `AuthService` class defined the `SECRET` using `process.env.JWT_SECRET || ""`, which allows an empty string as a valid fallback. This weakens cryptographic security and undermines production deployment safety by silently failing to enforce a strong secret.
 **Learning:** Silent fallbacks to weak defaults (especially for environment variables like `JWT_SECRET`) undermine production security without developer awareness, making it easier to accidentally run vulnerable instances or forge tokens.
 **Prevention:** Always implement a "fail-fast" pattern at application startup for critical environment variables. Throw an explicit Error (e.g., `throw new Error("CRITICAL: JWT_SECRET environment variable is not set.");`) rather than defaulting to an empty string.
+
+## 2026-10-14 - Commit Formatting Restrictions
+**Vulnerability:** The PR commit format validation hook failed due to the inclusion of emojis in the PR title (`🛡️ Sentinel: [CRITICAL] Fix hardcoded JWT_SECRET fallback`), causing a strict `release-please` integration check to abort.
+**Learning:** This repository actively uses a strict subset of Conventional Commits to parse releases automatically, which specifically forbids the use of emojis in PR titles (even if the task dictates using an emoji symbol like "🛡️").
+**Prevention:** Remove all emojis from commit and PR titles to comply with the standard parser format.
