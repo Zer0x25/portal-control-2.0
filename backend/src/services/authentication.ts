@@ -19,7 +19,13 @@ export const authenticateAccessToken = createAuthenticate({
     find: (id) =>
       prisma.user.findUnique({
         where: { id },
-        select: { id: true, username: true, role: true, employeeId: true },
+        select: {
+          id: true,
+          username: true,
+          role: true,
+          employeeId: true,
+          isForcePasswordChange: true,
+        },
       }),
   },
 });

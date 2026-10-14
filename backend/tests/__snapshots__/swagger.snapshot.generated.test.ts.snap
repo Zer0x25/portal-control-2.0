@@ -911,6 +911,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "isDeleted": {
             "type": "boolean",
           },
+          "isPinBlocked": {
+            "type": "boolean",
+          },
           "lastModified": {
             "type": "number",
           },
@@ -920,6 +923,15 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           "phone": {
             "type": "string",
+          },
+          "pin": {
+            "nullable": true,
+            "pattern": "^\\d{4}$",
+            "type": "string",
+          },
+          "pinFailedAttempts": {
+            "minimum": 0,
+            "type": "integer",
           },
           "position": {
             "type": "string",

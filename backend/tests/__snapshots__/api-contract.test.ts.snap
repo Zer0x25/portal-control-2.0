@@ -911,6 +911,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "isDeleted": {
             "type": "boolean",
           },
+          "isPinBlocked": {
+            "type": "boolean",
+          },
           "lastModified": {
             "type": "number",
           },
@@ -920,6 +923,15 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
           "phone": {
             "type": "string",
+          },
+          "pin": {
+            "nullable": true,
+            "pattern": "^\\d{4}$",
+            "type": "string",
+          },
+          "pinFailedAttempts": {
+            "minimum": 0,
+            "type": "integer",
           },
           "position": {
             "type": "string",

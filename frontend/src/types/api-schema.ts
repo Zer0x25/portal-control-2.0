@@ -4743,6 +4743,9 @@ export interface components {
       bankName?: string;
       accountType?: string;
       accountNumber?: string;
+      pin?: string | null;
+      isPinBlocked?: boolean;
+      pinFailedAttempts?: number;
       createUserAccount?: boolean;
       isDeleted?: boolean;
       syncStatus?: string;

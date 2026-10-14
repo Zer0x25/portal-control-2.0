@@ -80,4 +80,67 @@ describe("Shared authentication with real JWT verification", () => {
     vi.mocked(f.deps.sessions.touch).mockRejectedValue(new Error("touch failed"));
     expect(await f.authenticate(f.token)).toEqual(f.user);
   });
+  describe("Anti-regression: Kiosk path lockdown & force password change", () => {
+    it.each([
+      "/api/records/punch",
+      "/api/records",
+      "/api/records?since=1000",
+      "/api/employees/EMP-100",
+      "/api/auth/logout",
+      "/api/corrections",
+      "/api/shifts",
+      "/api/holidays",
+      "/api/export/calendar-pdf",
+    ])("allows kiosk token on permitted path %s and sets employeeId", async (path) => {
+      const f = fixture();
+      const token = jwt.sign(
+        { id: "k-1", username: "kiosk", role: "Kiosk_Employee", employeeId: "k-1" },
+        secret,
+        { expiresIn: "2m" },
+      );
+      const user = await f.authenticate(token, path);
+      expect(user).toMatchObject({ role: "Kiosk_Employee", employeeId: "k-1" });
+    });
+
+    it.each(["/api/users", "/api/admin/status", "/api/configs", "/api/export/report-pdf"])(
+      "rejects kiosk token on unpermitted path %s",
+      async (path) => {
+        const f = fixture();
+        const token = jwt.sign({ id: "k-1", username: "kiosk", role: "Kiosk_Employee" }, secret, {
+          expiresIn: "2m",
+        });
+        await expect(f.authenticate(token, path)).rejects.toMatchObject({
+          statusCode: 403,
+          message: "Token de kiosco no autorizado para este recurso",
+        });
+      },
+    );
+
+    it("restricts user with isForcePasswordChange to auth routes and self user route", async () => {
+      const f = fixture();
+      vi.mocked(f.deps.users.find).mockResolvedValue({
+        id: "u1",
+        username: "persisted",
+        role: "Usuario",
+        isForcePasswordChange: true,
+      });
+
+      await expect(f.authenticate(f.token, "/api/auth/change-password")).resolves.toMatchObject({
+        id: "u1",
+      });
+      await expect(f.authenticate(f.token, "/api/users/u1")).resolves.toMatchObject({ id: "u1" });
+      await expect(f.authenticate(f.token, "/api/users/u1?refresh=true")).resolves.toMatchObject({
+        id: "u1",
+      });
+
+      await expect(f.authenticate(f.token, "/api/records")).rejects.toMatchObject({
+        statusCode: 403,
+        message: "Debe actualizar su contraseña temporal antes de continuar",
+      });
+      await expect(f.authenticate(f.token, "/api/users/other-user")).rejects.toMatchObject({
+        statusCode: 403,
+        message: "Debe actualizar su contraseña temporal antes de continuar",
+      });
+    });
+  });
 });
