@@ -25,6 +25,11 @@ const resolveLeaveType = (type: string | undefined): LeaveRecord["type"] =>
 
 interface UseTimeRecordsParams extends Partial<TimeRecordsFilterParams> {
   page?: number;
+  /**
+   * Puerta de carga (ver TimeRecordsFilterParams.enabled): si es `false`
+   * no se dispara ningún fetch hasta que el llamante tenga los filtros.
+   */
+  enabled?: boolean;
 }
 
 export const useTimeRecords = (
@@ -34,6 +39,7 @@ export const useTimeRecords = (
   const queryParams: TimeRecordsFilterParams = {
     pageSize: params.pageSize || 50,
     filters: params.filters || {},
+    enabled: params.enabled ?? true,
   };
 
   // TanStack Query for data fetching

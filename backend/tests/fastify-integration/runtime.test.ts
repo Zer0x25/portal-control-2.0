@@ -83,6 +83,7 @@ it("serves the exact SDK contract and local UI assets without a session", async 
   const paths = (swaggerSpec as { paths: Record<string, Record<string, unknown>> }).paths;
   for (const route of routes) {
     const documented = route.url.replace(/:([^/]+)/g, "{$1}");
+    expect(paths[documented], `${route.method} ${route.url}`).toBeDefined();
     expect(paths[documented], `${route.method} ${route.url}`).toHaveProperty(
       route.method.toLowerCase(),
     );

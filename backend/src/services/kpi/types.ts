@@ -84,15 +84,13 @@ export type AnomalyRecord = EnrichedRecord | VirtualTimeRecord;
 export interface DashboardStatus {
   employee: { id: string; name: string; position: string };
   status: string;
-  lastRecord: EnrichedRecord | null;
 }
 
 export interface DashboardOverview {
   teamStatus: {
     present: number;
     total: number;
-    anomalies: AnomalyRecord[];
-    presentRecords: EnrichedRecord[];
+    anomaliesCount: number;
   };
   employeeStatuses: DashboardStatus[];
   timestamp: string;

@@ -10,22 +10,7 @@ const { mockUseDashboardOverviewQuery } = vi.hoisted(() => ({
       teamStatus: {
         present: 5,
         total: 10,
-        anomalies: [
-          {
-            id: "record1",
-            employeeName: "Juan Pérez",
-            employeePosition: "Operador",
-            date: "2024-01-01",
-          } as DailyTimeRecord,
-        ],
-        presentRecords: [
-          {
-            id: "record2",
-            employeeName: "María García",
-            employeePosition: "Supervisor",
-            date: "2024-01-01",
-          } as DailyTimeRecord,
-        ],
+        anomaliesCount: 1,
       },
       unscheduledPresent: [
         {
@@ -54,9 +39,9 @@ describe("useTeamStatusLogic", () => {
     expect(result.current.teamStatus).toEqual({
       present: 5,
       total: 10,
-      anomalies: expect.any(Array),
-      presentRecords: expect.any(Array),
+      anomaliesCount: 1,
     });
+    expect(result.current.anomaliesCount).toBe(1);
   });
 
   it("should return unscheduled present records", () => {
@@ -82,6 +67,24 @@ describe("useTeamStatusLogic", () => {
     expect(result.current.hasAnomalies).toBe(true);
   });
 
+  it("should fall back to legacy anomalies array during deploy window", () => {
+    const legacyData = {
+      data: {
+        teamStatus: {
+          present: 5,
+          total: 10,
+          anomalies: [{ id: "record1" }, { id: "record2" }],
+        },
+      },
+    };
+    mockUseDashboardOverviewQuery.mockReturnValue(legacyData as never);
+
+    const { result } = renderHook(() => useTeamStatusLogic());
+
+    expect(result.current.anomaliesCount).toBe(2);
+    expect(result.current.hasAnomalies).toBe(true);
+  });
+
   it("should detect present employees correctly", () => {
     const { result } = renderHook(() => useTeamStatusLogic());
 
@@ -94,8 +97,7 @@ describe("useTeamStatusLogic", () => {
         teamStatus: {
           present: 5,
           total: 10,
-          anomalies: [],
-          presentRecords: [],
+          anomaliesCount: 0,
         },
         unscheduledPresent: [],
       },
@@ -113,8 +115,7 @@ describe("useTeamStatusLogic", () => {
         teamStatus: {
           present: 5,
           total: 10,
-          anomalies: [],
-          presentRecords: [],
+          anomaliesCount: 0,
         },
         unscheduledPresent: [],
       },
@@ -123,7 +124,7 @@ describe("useTeamStatusLogic", () => {
     const { result } = renderHook(() => useTeamStatusLogic());
 
     expect(result.current.hasAnomalies).toBe(false);
-    expect(result.current.teamStatus.anomalies).toEqual([]);
+    expect(result.current.anomaliesCount).toBe(0);
   });
 
   it("should handle no present employees", () => {
@@ -132,8 +133,7 @@ describe("useTeamStatusLogic", () => {
         teamStatus: {
           present: 0,
           total: 10,
-          anomalies: [],
-          presentRecords: [],
+          anomaliesCount: 0,
         },
         unscheduledPresent: [],
       },
@@ -155,8 +155,7 @@ describe("useTeamStatusLogic", () => {
     expect(result.current.teamStatus).toEqual({
       present: 0,
       total: 0,
-      anomalies: [],
-      presentRecords: [],
+      anomaliesCount: 0,
     });
     expect(result.current.unscheduledPresent).toEqual([]);
     expect(result.current.hasUnscheduledPresent).toBe(false);

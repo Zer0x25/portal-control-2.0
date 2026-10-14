@@ -16,12 +16,13 @@ export const TeamStatusPanel: React.FC<TeamStatusPanelProps> = ({
   openAnomaliesModal,
   openPresentModal,
 }) => {
-  const { teamStatus, unscheduledPresent, hasUnscheduledPresent } = useTeamStatusLogic();
+  const { teamStatus, anomaliesCount, unscheduledPresent, hasUnscheduledPresent } =
+    useTeamStatusLogic();
 
   const metrics = useTeamMetrics(
     teamStatus.present,
     teamStatus.total,
-    teamStatus.anomalies.length,
+    anomaliesCount,
     openPresentModal,
     openAnomaliesModal,
   );

@@ -8,14 +8,14 @@ import {
   useAttendanceTrends,
 } from "../../../features/supervisor-dashboard/hooks/useAttendanceAnalytics";
 
-const { getAllMock, businessNowMock } = vi.hoisted(() => ({
-  getAllMock: vi.fn(),
+const { getDailyAttendanceMock, businessNowMock } = vi.hoisted(() => ({
+  getDailyAttendanceMock: vi.fn(),
   businessNowMock: vi.fn(),
 }));
 
 vi.mock("../../../services/timeRecordService", () => ({
   timeRecordService: {
-    getAll: (...args: unknown[]) => getAllMock(...args),
+    getDailyAttendance: (...args: unknown[]) => getDailyAttendanceMock(...args),
   },
 }));
 
@@ -35,40 +35,23 @@ const createWrapper = () => {
   );
 };
 
+const point = (date: string, present: number, total: number, late: number) => ({
+  date,
+  present,
+  total,
+  late,
+});
+
 describe("useAttendanceAnalytics", () => {
   beforeEach(() => {
-    getAllMock.mockReset();
+    getDailyAttendanceMock.mockReset();
     businessNowMock.mockReset();
     businessNowMock.mockReturnValue(new Date("2026-03-06T12:00:00.000Z"));
   });
 
-  it("calculates late arrivals using 15-minute tolerance", async () => {
-    const now = new Date("2026-03-06T12:00:00.000Z");
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-    const day = yesterday.toISOString().slice(0, 10);
-
-    getAllMock.mockResolvedValue({
-      data: [
-        {
-          id: "r1",
-          employeeId: "e1",
-          date: day,
-          entrada: `${day}T08:14:00`,
-          scheduledStartTime: "08:00",
-          status: "Presente",
-        },
-        {
-          id: "r2",
-          employeeId: "e2",
-          date: day,
-          entrada: `${day}T08:16:00`,
-          scheduledStartTime: "08:00",
-          status: "Presente",
-        },
-      ],
-      totalPages: 1,
-    });
+  it("fetches the window with a single server-aggregated request", async () => {
+    const day = "2026-03-05";
+    getDailyAttendanceMock.mockResolvedValue([point("2026-03-04", 1, 2, 0), point(day, 2, 2, 1)]);
 
     const { result } = renderHook(() => useAttendanceAnalytics(2), {
       wrapper: createWrapper(),
@@ -76,87 +59,24 @@ describe("useAttendanceAnalytics", () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
+    // Una sola request agregada (adiós volcado paginado de ~6MB).
+    expect(getDailyAttendanceMock).toHaveBeenCalledTimes(1);
     const row = result.current.data?.find((d) => d.date === day);
     expect(row).toBeDefined();
     expect(row?.present).toBe(2);
     expect(row?.late).toBe(1);
   });
 
-  it("prefers backend contract fields for lateness and attendance status", async () => {
-    const day = "2026-03-05";
-
-    getAllMock.mockResolvedValue({
-      data: [
-        {
-          id: "r1",
-          employeeId: "e1",
-          date: day,
-          entrada: `${day}T08:01:00`,
-          scheduledStartTime: "08:00",
-          status: "Completado",
-          attendanceStatus: "Atraso",
-          isLate: true,
-        },
-        {
-          id: "r2",
-          employeeId: "e2",
-          date: day,
-          entrada: `${day}T08:00:00`,
-          scheduledStartTime: "08:00",
-          status: "Vacaciones",
-          attendanceStatus: "Vacaciones",
-          isLate: false,
-        },
-      ],
-      totalPages: 1,
-    });
-
-    const { result } = renderHook(() => useAttendanceAnalytics(2), {
-      wrapper: createWrapper(),
-    });
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    const row = result.current.data?.find((d) => d.date === day);
-    expect(row).toBeDefined();
-    expect(row?.present).toBe(1);
-    expect(row?.late).toBe(1);
-  });
-
   it("builds trend summary from recent vs previous week", async () => {
     const now = new Date("2026-03-06T12:00:00.000Z");
-    const records = Array.from({ length: 14 }, (_, i) => {
+    const series = Array.from({ length: 14 }, (_, i) => {
       const d = new Date(now);
       d.setDate(now.getDate() - (13 - i));
       const day = d.toISOString().slice(0, 10);
-      const isRecentWeek = i >= 7;
-      const dayRecords = [
-        {
-          id: `r-a-${i}`,
-          employeeId: "e1",
-          date: day,
-          entrada: `${day}T08:00:00`,
-          scheduledStartTime: "08:00",
-          status: "Presente",
-        },
-      ];
-      if (isRecentWeek) {
-        dayRecords.push({
-          id: `r-b-${i}`,
-          employeeId: "e2",
-          date: day,
-          entrada: `${day}T08:00:00`,
-          scheduledStartTime: "08:00",
-          status: "Presente",
-        });
-      }
-      return dayRecords;
-    }).flat();
-
-    getAllMock.mockResolvedValue({
-      data: records,
-      totalPages: 1,
+      // Semana reciente con más presentes que la anterior.
+      return i >= 7 ? point(day, 2, 2, 0) : point(day, 1, 2, 0);
     });
+    getDailyAttendanceMock.mockResolvedValue(series);
 
     const { result } = renderHook(() => useAttendanceTrends(14), {
       wrapper: createWrapper(),
@@ -170,10 +90,7 @@ describe("useAttendanceAnalytics", () => {
   it("queries the window using business time instead of client local time", async () => {
     const mockedBusinessNow = new Date("2026-03-06T12:00:00.000Z");
     businessNowMock.mockReturnValue(mockedBusinessNow);
-    getAllMock.mockResolvedValue({
-      data: [],
-      totalPages: 1,
-    });
+    getDailyAttendanceMock.mockResolvedValue([]);
 
     const { result } = renderHook(() => useAttendanceAnalytics(2), {
       wrapper: createWrapper(),
@@ -182,13 +99,9 @@ describe("useAttendanceAnalytics", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     const expectedEndDate = format(mockedBusinessNow, "yyyy-MM-dd");
     const expectedStartDate = format(subDays(mockedBusinessNow, 1), "yyyy-MM-dd");
-    expect(getAllMock).toHaveBeenCalledWith({
-      page: 1,
-      pageSize: 500,
-      filters: {
-        desde: expectedStartDate,
-        hasta: expectedEndDate,
-      },
+    expect(getDailyAttendanceMock).toHaveBeenCalledWith({
+      desde: expectedStartDate,
+      hasta: expectedEndDate,
     });
   });
 });

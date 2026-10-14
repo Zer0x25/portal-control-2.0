@@ -23,6 +23,13 @@ export const EmployeeSchema = z
     bankName: z.string().optional(),
     accountType: z.string().optional(),
     accountNumber: z.string().optional(),
+    pin: z
+      .string()
+      .regex(/^\d{4}$/, "El PIN debe contener exactamente 4 dígitos numéricos")
+      .nullable()
+      .optional(),
+    isPinBlocked: z.boolean().optional(),
+    pinFailedAttempts: z.number().int().min(0).optional(),
     createUserAccount: z.boolean().optional(),
     ...syncAuditFields,
   })

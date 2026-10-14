@@ -48,4 +48,45 @@ describe("Spec 017 application TDD", () => {
     });
     expect(f.service.save).toHaveBeenCalledWith(body, "SYSTEM");
   });
+  it("forwards update payload and actor to service.update", async () => {
+    const updateMock = vi.fn(async () => ({ id: "r", status: "closed" }));
+    const flows = createShiftReportFlows({
+      service: {
+        list: vi.fn(),
+        save: vi.fn(),
+        update: updateMock,
+      },
+    });
+    const patch = { status: "closed" as const };
+    expect(await flows.update("r", patch, "admin-user")).toEqual({ id: "r", status: "closed" });
+    expect(updateMock).toHaveBeenCalledWith("r", patch, "admin-user");
+  });
+  it("throws 501 NOT_IMPLEMENTED when service.update is missing", async () => {
+    const f = fixture();
+    await expect(f.flows.update("r", { status: "closed" })).rejects.toMatchObject({
+      statusCode: 501,
+      code: "NOT_IMPLEMENTED",
+      message: "Operación de actualización no soportada",
+    });
+  });
+  it("forwards delete id and actor to service.delete", async () => {
+    const deleteMock = vi.fn(async () => {});
+    const flows = createShiftReportFlows({
+      service: {
+        list: vi.fn(),
+        save: vi.fn(),
+        delete: deleteMock,
+      },
+    });
+    await flows.delete("r", "admin-user");
+    expect(deleteMock).toHaveBeenCalledWith("r", "admin-user");
+  });
+  it("throws 501 NOT_IMPLEMENTED when service.delete is missing", async () => {
+    const f = fixture();
+    await expect(f.flows.delete("r")).rejects.toMatchObject({
+      statusCode: 501,
+      code: "NOT_IMPLEMENTED",
+      message: "Operación de eliminación no soportada",
+    });
+  });
 });

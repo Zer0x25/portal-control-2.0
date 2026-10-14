@@ -299,6 +299,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/records/daily-attendance": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Serie diaria de asistencia agregada (presentes/totales/atrasados por día) */
+    get: {
+      parameters: {
+        query?: {
+          desde?: string;
+          hasta?: string;
+          employeeId?: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Serie diaria agregada en servidor */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["DailyAttendanceResponse"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/records/bulk": {
     parameters: {
       query?: never;
@@ -1255,6 +1295,68 @@ export interface paths {
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  "/api/shift-reports/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Eliminar una bitácora de turno */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Bitácora eliminada */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Actualizar una bitácora de turno existente */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      responses: {
+        /** @description Bitácora actualizada */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ShiftReport"];
+          };
+        };
+      };
+    };
     trace?: never;
   };
   "/api/shift-reports/export/{id}": {
@@ -3122,7 +3224,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Politica corporativa vigente */
+        /** @description Politica corporativa vigente, o null si no hay reglamento cargado */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3133,7 +3235,7 @@ export interface paths {
               data?: {
                 [key: string]: unknown;
               };
-            };
+            } | null;
           };
         };
       };
@@ -3247,7 +3349,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Logo de marca vigente con fuente y tamaño */
+        /** @description Logo de marca vigente con fuente y tamaño, o null si no hay logo configurado */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3258,7 +3360,7 @@ export interface paths {
               data?: {
                 [key: string]: unknown;
               };
-            };
+            } | null;
           };
         };
       };
@@ -4703,6 +4805,9 @@ export interface components {
       bankName?: string;
       accountType?: string;
       accountNumber?: string;
+      pin?: string | null;
+      isPinBlocked?: boolean;
+      pinFailedAttempts?: number;
       createUserAccount?: boolean;
       isDeleted?: boolean;
       syncStatus?: string;
@@ -4902,6 +5007,18 @@ export interface components {
       requestedValue: string;
       reason: string;
       attachment?: unknown;
+    };
+    DailyAttendanceQuery: {
+      desde?: string;
+      hasta?: string;
+      employeeId?: string;
+    };
+    DailyAttendanceResponse: components["schemas"]["DailyAttendanceRow"][];
+    DailyAttendanceRow: {
+      date: string;
+      present: number;
+      total: number;
+      late: number;
     };
     ExportQuery: {
       startDate: string;

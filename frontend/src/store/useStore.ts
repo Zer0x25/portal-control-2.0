@@ -66,12 +66,12 @@ window.addEventListener("rate_limited", () => {
 
   const state = useStore.getState();
   state.addToast(
-    "Sesion cerrada por seguridad: demasiadas peticiones detectadas. Intente nuevamente en unos segundos.",
+    "Demasiadas peticiones detectadas. Espere unos segundos antes de intentar nuevamente.",
     "error",
     6000,
   );
 
   setTimeout(() => {
-    useStore.getState().logout();
-  }, 600);
+    rateLimitHandling = false;
+  }, 3000);
 });

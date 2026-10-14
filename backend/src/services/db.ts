@@ -14,16 +14,35 @@ const prismaLogConfig: Prisma.PrismaClientOptions["log"] = ["error", "warn"];
 // Los pools son lazy (pg no conecta en el constructor), igual que el
 // cliente v6: sin DATABASE_URL el fallo aparece al primer query, no al
 // importar este modulo (los unit tests mockean servicios sin DB).
-function createPool(connectionString: string | undefined): Pool {
+export function sanitizePgConnectionString(rawUrl: string | undefined): string | undefined {
+  if (!rawUrl) return undefined;
+  try {
+    const parsed = new URL(rawUrl);
+    parsed.searchParams.delete("pgbouncer");
+    parsed.searchParams.delete("connection_limit");
+    return parsed.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+function createPool(connectionString: string | undefined, maxConnections = 10): Pool {
   return new Pool({
-    connectionString,
-    max: 10,
+    connectionString: sanitizePgConnectionString(connectionString),
+    max: maxConnections,
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 30000,
   });
 }
 
-const runtimePool = createPool(process.env.DATABASE_URL?.trim());
+export function resolvePoolMax(envValue: string | undefined, defaultValue = 10): number {
+  return Math.max(Number.parseInt(envValue ?? String(defaultValue), 10) || defaultValue, 1);
+}
+
+export const runtimePoolMax = resolvePoolMax(process.env.DB_POOL_MAX);
+export const directPoolMax = resolvePoolMax(process.env.DB_DIRECT_POOL_MAX);
+
+const runtimePool = createPool(process.env.DATABASE_URL?.trim(), runtimePoolMax);
 
 // Runtime client via PgBouncer
 const basePrisma = new PrismaClient({
@@ -33,7 +52,7 @@ const basePrisma = new PrismaClient({
 
 // Direct client for interactive transactions that are incompatible with PgBouncer transaction pooling
 const directDatabaseUrl = process.env.DIRECT_URL?.trim();
-const directPool = directDatabaseUrl ? createPool(directDatabaseUrl) : null;
+const directPool = directDatabaseUrl ? createPool(directDatabaseUrl, directPoolMax) : null;
 const directPrisma = directPool
   ? new PrismaClient({
       adapter: new PrismaPg(directPool),
@@ -55,7 +74,9 @@ export async function withDirectTransaction<T>(
   const username = context?.username || "SYSTEM";
 
   return directPrisma.$transaction(async (tx) => {
-    if (!context?.skipTrigger && username) {
+    if (context?.skipTrigger) {
+      await tx.$executeRaw`SELECT set_config('audit.skip_trigger', 'true', true)`;
+    } else if (username) {
       await tx.$executeRaw`SELECT set_config('audit.username', ${username}, true)`;
       await tx.$executeRaw`SELECT set_config('audit.skip_trigger', 'false', true)`;
     }

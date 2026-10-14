@@ -178,6 +178,25 @@ export const TimeRecordQuerySchema = z.object({
   employeeId: z.string().optional(),
 });
 
+export const DailyAttendanceQuerySchema = z.object({
+  desde: z.string().optional(),
+  hasta: z.string().optional(),
+  employeeId: z.string().optional(),
+});
+
+export const DailyAttendanceRowSchema = z
+  .object({
+    date: z.string(),
+    present: z.number(),
+    total: z.number(),
+    late: z.number(),
+  })
+  .openapi("DailyAttendanceRow");
+
+export const DailyAttendanceResponseSchema = z
+  .array(DailyAttendanceRowSchema)
+  .openapi("DailyAttendanceResponse");
+
 export const IntegrityVerifyQuerySchema = z.object({
   employeeId: z.string().min(1, "ID de empleado es requerido"),
   from: isoDateSchema("Formato de fecha inválido"),
