@@ -96,9 +96,7 @@ export class MaintenanceService {
   async refreshMaterializedViews(): Promise<void> {
     console.warn("--- Iniciando Actualización de Vistas Materializadas ---");
     try {
-      await prisma.$executeRawUnsafe(
-        "REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_employee_kpis",
-      );
+      await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_employee_kpis`;
       console.warn("✅ Vistas Materializadas actualizadas con éxito.");
     } catch (error) {
       console.error("❌ Error al actualizar Vistas Materializadas:", error);

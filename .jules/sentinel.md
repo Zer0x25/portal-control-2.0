@@ -33,3 +33,9 @@
 **Vulnerability:** The `AuthService` class defined the `SECRET` using `process.env.JWT_SECRET || ""`, which allows an empty string as a valid fallback. This weakens cryptographic security and undermines production deployment safety by silently failing to enforce a strong secret.
 **Learning:** Silent fallbacks to weak defaults (especially for environment variables like `JWT_SECRET`) undermine production security without developer awareness, making it easier to accidentally run vulnerable instances or forge tokens.
 **Prevention:** Always implement a "fail-fast" pattern at application startup for critical environment variables. Throw an explicit Error (e.g., `throw new Error("CRITICAL: JWT_SECRET environment variable is not set.");`) rather than defaulting to an empty string.
+
+## 2026-10-13 - Prevent SQL injection vulnerability by replacing $executeRawUnsafe with $executeRaw
+
+**Vulnerability:** Use of $executeRawUnsafe allows string interpolation, which could potentially lead to a SQL injection if user input were ever interpolated into the string. It violates project agentic guardrails.
+**Learning:** Prisma's $executeRaw automatically parameterizes values, defending against injection attacks.
+**Prevention:** Replace instances of $executeRawUnsafe with the safe parameterizable tag $executeRaw in Prisma.
