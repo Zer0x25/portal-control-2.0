@@ -6587,6 +6587,77 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
       },
     },
+    "/api/shift-reports/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "204": {
+            "description": "Bitácora eliminada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Eliminar una bitácora de turno",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShiftReport",
+                },
+              },
+            },
+            "description": "Bitácora actualizada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Actualizar una bitácora de turno existente",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+    },
     "/api/shifts/assignments": {
       "get": {
         "parameters": [

@@ -1297,6 +1297,68 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/shift-reports/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Eliminar una bitácora de turno */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Bitácora eliminada */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Actualizar una bitácora de turno existente */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      responses: {
+        /** @description Bitácora actualizada */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ShiftReport"];
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
   "/api/shift-reports/export/{id}": {
     parameters: {
       query?: never;
