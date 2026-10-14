@@ -9,7 +9,13 @@ import { SocketService } from "./socketService";
 import { AuthError, ForbiddenError, RateLimitError } from "../utils/AppError";
 
 export class AuthService {
-  private static readonly SECRET = process.env.JWT_SECRET || "";
+  private static get SECRET(): string {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("CRITICAL: JWT_SECRET environment variable is not set.");
+    }
+    return secret;
+  }
 
   private static credentialStamp(user: { id: string; passwordHash: string }): string {
     // Opaque proof of the password validated by this login; never exposes the hash.
