@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock de matchMedia (requerido por algunos componentes de UI/Framermotion)
+// Mock de matchMedia (requerido por algunos componentes de UI)
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
@@ -40,6 +40,25 @@ vi.stubGlobal("IDBCursor", class {});
 vi.mock("../utils/indexedDB.ts", () => ({
   initDB: vi.fn(),
   getDB: vi.fn(),
+  // Valores literales (sin importar el módulo real): idbValidation.ts lee
+  // STORES en top-level y el mock global no debe dejarlo en undefined.
+  STORES: {
+    EMPLOYEES: "employees",
+    DAILY_TIME_RECORDS: "dailyTimeRecords",
+    SHIFT_REPORTS: "shiftReports",
+    APP_SETTINGS: "appSettings",
+    AUDIT_LOGS: "auditLogs",
+    USERS: "users",
+    THEORETICAL_SHIFT_PATTERNS: "theoreticalShiftPatterns",
+    ASSIGNED_SHIFTS: "assignedShifts",
+    QUICK_NOTES: "quickNotes",
+    METER_READINGS: "meterReadings",
+    LEAVES: "leaves",
+    HOLIDAYS: "holidays",
+    CORRECTION_REQUESTS: "correctionRequests",
+    KPI_CACHE: "kpiCache",
+    CALENDAR_CACHE: "calendarCache",
+  },
   clockingStore: {
     getAll: vi.fn().mockResolvedValue([]),
     put: vi.fn().mockResolvedValue(undefined),

@@ -5,6 +5,7 @@ import {
   PunchSchema,
   TimeRecordWriteSchema,
   TimeRecordQuerySchema,
+  DailyAttendanceQuerySchema,
   BulkTimeRecordSchema,
   IntegrityVerifyQuerySchema,
   ResolveAnomalySchema,
@@ -16,6 +17,7 @@ import type { ExcelHttpStream } from "../../../utils/httpStream";
 import type { RecordFlows } from "../application/flows";
 import type {
   AnomalyResolution,
+  DailyAttendanceQuery,
   PunchInput,
   RecordInput,
   RecordQuery,
@@ -53,6 +55,11 @@ export const recordsPlugin: FastifyPluginAsync<{
     "/api/records",
     { ...read, preHandler: validateRequest("query", TimeRecordQuerySchema) },
     (req) => options.service.list(req.query, req.user),
+  );
+  app.get<{ Querystring: DailyAttendanceQuery }>(
+    "/api/records/daily-attendance",
+    { ...read, preHandler: validateRequest("query", DailyAttendanceQuerySchema) },
+    (req) => options.service.dailyAttendance(req.query, req.user),
   );
   app.post<{ Body: RecordInput }>(
     "/api/records",

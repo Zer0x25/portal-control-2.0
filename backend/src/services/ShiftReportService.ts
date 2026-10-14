@@ -5,7 +5,7 @@ import { Prisma, type AuditLog } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { formatDateUTCISO } from "../utils/timeUtils";
-import { AppError } from "../utils/AppError";
+import { AppError, NotFoundError } from "../utils/AppError";
 
 export interface LogEntry {
   id: string;
@@ -377,5 +377,64 @@ export class ShiftReportService {
     }
 
     return enriched;
+  }
+
+  /**
+   * Partially updates an existing shift report by ID.
+   */
+  static async update(id: string, data: Partial<ShiftReportInput>, actorUsername: string) {
+    const existing = await prisma.shiftReport.findFirst({
+      where: { id, isDeleted: false },
+    });
+    if (!existing) {
+      throw new NotFoundError("Reporte de turno no encontrado");
+    }
+    return this.createOrUpdate(
+      {
+        id: existing.id,
+        folio: data.folio ?? existing.folio,
+        shiftName: data.shiftName ?? existing.shiftName,
+        responsibleUser: data.responsibleUser ?? existing.responsibleUser,
+        startTime: data.startTime ?? existing.startTime.toISOString(),
+        endTime:
+          data.endTime !== undefined
+            ? data.endTime
+            : existing.endTime
+              ? existing.endTime.toISOString()
+              : null,
+        status: data.status ?? existing.status,
+        date: data.date ?? formatDateUTCISO(existing.date),
+        logEntries: data.logEntries ?? existing.logEntries,
+        supplierEntries: data.supplierEntries ?? existing.supplierEntries,
+      },
+      actorUsername,
+    );
+  }
+
+  /**
+   * Soft-deletes a shift report by ID and emits audit/socket events.
+   */
+  static async delete(id: string, actorUsername: string) {
+    const existing = await prisma.shiftReport.findFirst({
+      where: { id, isDeleted: false },
+    });
+    if (!existing) {
+      throw new NotFoundError("Reporte de turno no encontrado");
+    }
+    await withDirectTransaction(async (tx) => {
+      await tx.shiftReport.update({
+        where: { id },
+        data: { isDeleted: true },
+      });
+    });
+    await auditService.log({
+      actorUsername,
+      action: "SHIFT_REPORT_DELETED",
+      category: "OPERATIONS",
+      severity: "WARNING",
+      outcome: "SUCCESS",
+      details: { shiftId: id, folio: existing.folio },
+    });
+    SocketService.emit("shiftReport:deleted", { id, isDeleted: true });
   }
 }

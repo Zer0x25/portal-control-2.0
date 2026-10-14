@@ -50,6 +50,7 @@ routes.push(
     ["POST", "/api/records/punch"],
     ["GET", "/api/records"],
     ["GET", "/api/records/export"],
+    ["GET", "/api/records/daily-attendance"],
     ["POST", "/api/records"],
     ["POST", "/api/records/bulk"],
     ["POST", "/api/records/auto-close"],
@@ -177,6 +178,8 @@ routes.push(
   ...[
     ["GET", "/api/shift-reports"],
     ["POST", "/api/shift-reports"],
+    ["PATCH", "/api/shift-reports/:id"],
+    ["DELETE", "/api/shift-reports/:id"],
     ["GET", "/api/shift-reports/export/:id"],
   ].map(([method, url]) => ({
     method,

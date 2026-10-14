@@ -101,6 +101,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
             <button
               onClick={onNavigatePrev}
               disabled={!canNavigatePrev}
+              aria-label="Reporte anterior"
               className="rounded-sm h-8 w-8 flex items-center justify-center disabled:opacity-30 border border-token-border-subtle bg-token-surface-card hover:bg-token-surface-active transition-colors active:scale-95"
             >
               <ChevronLeftIcon className="w-4 h-4" />
@@ -108,6 +109,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
             <button
               onClick={onNavigateNext}
               disabled={!canNavigateNext}
+              aria-label="Reporte siguiente"
               className="rounded-sm h-8 w-8 flex items-center justify-center disabled:opacity-30 border border-token-border-subtle bg-token-surface-card hover:bg-token-surface-active transition-colors active:scale-95"
             >
               <ChevronRightIcon className="w-4 h-4" />

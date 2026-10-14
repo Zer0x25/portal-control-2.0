@@ -131,6 +131,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
             </div>
             <button
               onClick={onClose}
+              aria-label="Cerrar detalle"
               className="p-2 hover:bg-token-surface-active rounded-full transition-colors text-token-text-tertiary"
             >
               <XMarkIcon className="w-5 h-5" />

@@ -58,6 +58,9 @@
           "bankName": { "type": "string" },
           "accountType": { "type": "string" },
           "accountNumber": { "type": "string" },
+          "pin": { "type": "string", "nullable": true, "pattern": "^\\d{4}$" },
+          "isPinBlocked": { "type": "boolean" },
+          "pinFailedAttempts": { "type": "integer", "minimum": 0 },
           "createUserAccount": { "type": "boolean" },
           "isDeleted": { "type": "boolean" },
           "syncStatus": { "type": "string" },
@@ -343,6 +346,28 @@
           "attachment": { "nullable": true }
         },
         "required": ["employeeId", "timeRecordId", "recordField", "requestedValue", "reason"]
+      },
+      "DailyAttendanceQuery": {
+        "type": "object",
+        "properties": {
+          "desde": { "type": "string" },
+          "hasta": { "type": "string" },
+          "employeeId": { "type": "string" }
+        }
+      },
+      "DailyAttendanceResponse": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/DailyAttendanceRow" }
+      },
+      "DailyAttendanceRow": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string" },
+          "present": { "type": "number" },
+          "total": { "type": "number" },
+          "late": { "type": "number" }
+        },
+        "required": ["date", "present", "total", "late"]
       },
       "ExportQuery": {
         "type": "object",
@@ -1570,6 +1595,28 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/AttendanceRecordResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/records/daily-attendance": {
+      "get": {
+        "summary": "Serie diaria de asistencia agregada (presentes/totales/atrasados por día)",
+        "tags": ["Records"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "in": "query", "name": "desde", "schema": { "type": "string" } },
+          { "in": "query", "name": "hasta", "schema": { "type": "string" } },
+          { "in": "query", "name": "employeeId", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie diaria agregada en servidor",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DailyAttendanceResponse" }
               }
             }
           }
@@ -3103,11 +3150,12 @@
         "tags": ["Configs"],
         "responses": {
           "200": {
-            "description": "Politica corporativa vigente",
+            "description": "Politica corporativa vigente, o null si no hay reglamento cargado",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "nullable": true,
                   "properties": {
                     "success": { "type": "boolean" },
                     "data": { "type": "object", "additionalProperties": true }
@@ -3171,11 +3219,12 @@
         "tags": ["Configs"],
         "responses": {
           "200": {
-            "description": "Logo de marca vigente con fuente y tamaño",
+            "description": "Logo de marca vigente con fuente y tamaño, o null si no hay logo configurado",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "nullable": true,
                   "properties": {
                     "success": { "type": "boolean" },
                     "data": { "type": "object", "additionalProperties": true }

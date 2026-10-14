@@ -1,22 +1,6 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { ConfigurationView } from "../../../features/configuration/views/Configuration.view";
-
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({
-      children,
-      layoutId: _layoutId,
-      ...props
-    }: {
-      children: React.ReactNode;
-      layoutId?: string;
-      [key: string]: unknown;
-    }) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
 
 vi.mock("../../../features/configuration/components/GlobalVariablesView", () => ({
   default: () => <div>GLOBAL-VARS-CONTENT</div>,

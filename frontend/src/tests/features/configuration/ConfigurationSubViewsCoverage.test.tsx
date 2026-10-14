@@ -1,21 +1,7 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MasterDataExportView } from "../../../features/configuration/views/MasterDataExport.view";
 import { EmailCenterView } from "../../../features/configuration/views/EmailCenter.view";
-
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({
-      children,
-      layout: _layout,
-      ...props
-    }: React.HTMLAttributes<HTMLDivElement> & { layout?: unknown }) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
 
 vi.mock("../../../components/ui/DatePickerDialog", () => ({
   default: () => <div data-testid="date-picker-dialog">DATE-PICKER</div>,

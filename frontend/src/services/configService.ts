@@ -32,7 +32,9 @@ export const configService = {
     try {
       const response = await fetch(`${API_BASE_URL}/configs/public/company-policy`);
       if (!response.ok) return null;
-      const policy = (await response.json()) as CompanyPolicy;
+      const policy = (await response.json()) as CompanyPolicy | null;
+      // 200 + null cuando no hay reglamento cargado (estado esperado, no error).
+      if (!policy) return null;
       return {
         ...policy,
         url: normalizeApiUrl(policy.url),
@@ -176,10 +178,14 @@ export const configService = {
     instanceId: string | null;
   } | null> {
     try {
-      // /health is outside /api
       const response = await fetch(`${API_ORIGIN_URL}/api/health`);
       if (!response.ok) return null;
-      return response.json();
+      const body = await response.json();
+      const payload = body?.data ?? body;
+      return {
+        status: payload?.status ?? "unknown",
+        instanceId: payload?.instanceId ?? null,
+      };
     } catch (error) {
       console.error("Error fetching health:", error);
       return null;

@@ -1,4 +1,3 @@
-import { toPublicEmployee } from "../../modules/employees";
 import { Employee, TimeRecord, MonthlyEmployeeStats } from "../../generated/prisma/client";
 import prisma from "../db";
 import { schedulingService, SchedulingContext } from "../schedulingService";
@@ -291,12 +290,19 @@ export class KpiReportService {
       teamStatus: {
         present: presentRecords.length,
         total: activeEmployees.length,
-        anomalies,
-        presentRecords,
+        // Solo el conteo: ningún consumidor lee los 195 registros (los modales
+        // son placeholders). Ahorra ~61KB por respuesta (~37% del payload).
+        anomaliesCount: anomalies.length,
       },
+      // Proyección mínima: las vistas solo leen id/name/position y nadie lee
+      // lastRecord (el tipo frontend ni lo declara). Ahorra ~80KB (~48%).
       employeeStatuses: employeeStatuses.map((entry) => ({
-        ...entry,
-        employee: toPublicEmployee(entry.employee),
+        status: entry.status,
+        employee: {
+          id: entry.employee.id,
+          name: entry.employee.name,
+          position: entry.employee.position,
+        },
       })),
       timestamp: new Date().toISOString(),
     };

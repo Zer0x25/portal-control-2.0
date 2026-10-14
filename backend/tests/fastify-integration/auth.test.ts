@@ -23,6 +23,7 @@ async function user(
   username = "alice",
   role: Prisma.UserCreateInput["role"] = "Supervisor",
   mfaEnabled = false,
+  isForcePasswordChange = false,
 ) {
   await clearLoginFailures("127.0.0.1", username);
   return prismaDirect.user.create({
@@ -32,7 +33,7 @@ async function user(
       passwordHash: bcrypt.hashSync(password, 4),
       mfaEnabled,
       mfaSecret: mfaEnabled ? speakeasy.generateSecret().base32 : null,
-      isForcePasswordChange: true,
+      isForcePasswordChange,
     },
   });
 }
@@ -93,7 +94,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       username: "alice",
       role: "Supervisor",
       employeeId: null,
-      mustChangePassword: true,
+      mustChangePassword: false,
       message: "Login exitoso",
     });
     const claims = jwt.verify(token, secret());
@@ -277,7 +278,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     });
     expect(complete.statusCode).toBe(200);
     expect(complete.json()).toMatchObject({
-      mustChangePassword: true,
+      mustChangePassword: false,
       message: "Autenticación de dos pasos exitosa",
     });
     expect(await prismaDirect.activeSession.count()).toBe(1);
@@ -590,5 +591,35 @@ describe("Spec 010 MFA and PIN security", () => {
     });
     expect((await kiosk("1234")).statusCode).toBe(403);
     expect(responses.every((r) => !r.json().token)).toBe(true);
+  });
+  it("enforces isForcePasswordChange restricting access until self password change", async () => {
+    const forced = await user("forced", "Usuario", false, true);
+    const loginRes = await login("forced");
+    expect(loginRes.statusCode).toBe(200);
+    expect(loginRes.json().mustChangePassword).toBe(true);
+    const userToken = loginRes.json().token;
+
+    const blocked = await app.inject({
+      url: "/api/holidays",
+      headers: headers(userToken),
+    });
+    expect(blocked.statusCode).toBe(403);
+    expect(blocked.json().message).toContain(
+      "Debe actualizar su contraseña temporal antes de continuar",
+    );
+
+    const updateRes = await app.inject({
+      method: "PUT",
+      url: `/api/users/${forced.id}`,
+      headers: headers(userToken),
+      payload: { password: "NewStrongPassword123!" },
+    });
+    expect(updateRes.statusCode).toBe(200);
+
+    const unblocked = await app.inject({
+      url: "/api/holidays",
+      headers: headers(userToken),
+    });
+    expect(unblocked.statusCode).toBe(200);
   });
 });

@@ -81,16 +81,6 @@ vi.mock("../../../components/ui/PremiumSearchInput", () => ({
   ),
 }));
 
-// Mock framer-motion to avoid issues with animations in tests
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <div {...(props as any)}>{children}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
 describe("TimeRecordTable Component", () => {
   const mockAddToast = vi.fn();
   const mockFetchNextPage = vi.fn();

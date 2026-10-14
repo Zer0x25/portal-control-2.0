@@ -19,6 +19,12 @@ export interface TimeRecordsFilterParams {
     status?: string;
     showAnomalies?: boolean;
   };
+  /**
+   * Puerta de carga: cuando es `false` la query no dispara fetch.
+   * Permite esperar a que se resuelva el empleado/mes antes de pedir
+   * (evita el volcado completo sin filtros). No se envía al backend.
+   */
+  enabled?: boolean;
 }
 
 // --- Query --
@@ -89,6 +95,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
 
   return useInfiniteQuery({
     queryKey: ["timeRecords", params],
+    enabled: params.enabled ?? true,
     queryFn: async ({ pageParam = 1 }) => {
       try {
         const result = await timeRecordService.getAll({

@@ -36,5 +36,7 @@ export interface ShiftReportFlowDependencies<Row, List> {
   service: {
     list(query: ShiftReportQuery): Promise<List>;
     save(input: ShiftReportInput, actor: string): Promise<Row>;
+    update?(id: string, input: Partial<ShiftReportInput>, actor: string): Promise<Row>;
+    delete?(id: string, actor: string): Promise<void>;
   };
 }

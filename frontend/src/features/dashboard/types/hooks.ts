@@ -64,6 +64,7 @@ export interface StatusInfo {
 export interface TeamStatusData {
   present: number;
   total: number;
-  anomalies: DailyTimeRecord[];
-  presentRecords: DailyTimeRecord[];
+  anomaliesCount: number;
+  /** Respuesta legada (backend previo al slim): fallback solo durante el despliegue. */
+  anomalies?: DailyTimeRecord[];
 }

@@ -63,7 +63,7 @@ export class AuthService {
       where: { username: { equals: username, mode: "insensitive" } },
     });
 
-    if (!user || !bcryptjs.compareSync(password, user.passwordHash)) {
+    if (!user || !(await bcryptjs.compare(password, user.passwordHash))) {
       return { success: false, reason: "INVALID_CREDENTIALS" };
     }
 
@@ -203,7 +203,7 @@ export class AuthService {
 
       let isPinValid = false;
       if (storedPin.startsWith("$2") || storedPin.length > 10) {
-        isPinValid = bcryptjs.compareSync(pin, storedPin);
+        isPinValid = await bcryptjs.compare(pin, storedPin);
       } else {
         isPinValid = pin === storedPin;
       }
