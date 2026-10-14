@@ -228,156 +228,170 @@ export class KpiStatsService {
       recordsMap.get(r.date)!.push(r);
     });
     const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const results = [];
+    const results: DailyMetric[] = [];
 
     const d = new Date(startDate);
     // Ensure 'd' has no ms/seconds to prevent minor < <= issues
     d.setUTCHours(0, 0, 0, 0);
     const end = new Date(endDate);
 
+    const datesToProcess: Date[] = [];
     while (d <= end) {
-      const dStr = formatDateUTCISO(d);
-      const recordsForDay = recordsMap.get(dStr) || [];
-      const recordForDay = recordsForDay[0];
-
-      const chileDate = getChileMidnight(dStr);
-
-      let scheduleInfo = await schedulingService.getEmployeeDailyScheduleInfo(
-        emp.id,
-        chileDate,
-        context,
-        emp,
-      );
-
-      if (
-        recordForDay &&
-        recordForDay.scheduledHours !== undefined &&
-        recordForDay.scheduledHours !== null
-      ) {
-        scheduleInfo = {
-          scheduleText: recordForDay.scheduledStartTime
-            ? `${recordForDay.scheduledStartTime} - ${recordForDay.scheduledEndTime}`
-            : "Día Libre",
-          isWorkDay: recordForDay.scheduledHours > 0,
-          startTime: recordForDay.scheduledStartTime || undefined,
-          endTime: recordForDay.scheduledEndTime || undefined,
-          hours: recordForDay.scheduledHours,
-          colacionMinutes: recordForDay.scheduledColacionMinutes || 0,
-          justificationType: scheduleInfo?.justificationType,
-          isHoliday: false,
-        };
-      }
-
-      const hasWorkRecord = recordsForDay.some((r) => r.entrada && r.entrada !== "SIN REGISTRO");
-      const isHoliday = scheduleInfo?.isHoliday || false;
-      const stateFromRecord = KpiStatsService.normalizeStateFromTimeRecordStatus(
-        recordForDay?.status,
-      );
-      const isLeave =
-        !!stateFromRecord ||
-        !!scheduleInfo?.justificationType ||
-        (recordForDay &&
-          ["Vacaciones", "Licencia Médica", "Permiso", "Permiso Especial"].includes(
-            recordForDay.status,
-          ));
-      let scheduledShift = "Libre";
-      let actualClocks = "Sin Marcaje";
-      let justificationType: string | undefined = undefined;
-      let status = "Normal";
-      let dailyScheduled = 0;
-      let dailyWorked = 0;
-      let dailyOvertime = 0;
-      let colacionMinutes = 0;
-
-      if (isLeave && emp.workdayType !== "Artículo 22") {
-        justificationType = stateFromRecord || scheduleInfo?.justificationType || justificationType;
-        status = justificationType;
-        scheduledShift = justificationType;
-        actualClocks = "N/A";
-      } else {
-        const metrics = KpiEngine.calculateDailyMetrics(
-          recordForDay || {},
-          scheduleInfo,
-          emp.workdayType,
-        );
-        dailyScheduled = metrics.scheduledHours;
-        dailyWorked = metrics.workedHours;
-        dailyOvertime = metrics.overtimeHours;
-
-        if (hasWorkRecord) {
-          if (recordsForDay.length > 0) {
-            const validPunches = (recordsForDay as TimeRecord[]).filter(
-              (r) => r.entrada && r.salida,
-            );
-            if (validPunches.length > 0) {
-              const firstIn = validPunches.reduce(
-                (min: number, r: TimeRecord) => Math.min(min, new Date(r.entrada!).getTime()),
-                Infinity,
-              );
-              const lastOut = validPunches.reduce(
-                (max: number, r: TimeRecord) => Math.max(max, new Date(r.salida!).getTime()),
-                0,
-              );
-              if (isFinite(firstIn) && lastOut > 0)
-                actualClocks = `${new Date(firstIn).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })} - ${new Date(lastOut).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
-            } else if (recordForDay?.entrada)
-              actualClocks = `${new Date(recordForDay.entrada).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })} - ???`;
-          }
-          if (emp.workdayType !== "Artículo 22") {
-            if (scheduleInfo?.isWorkDay) {
-              scheduledShift = `${scheduleInfo.startTime} - ${scheduleInfo.endTime}`;
-              if (scheduleInfo.startTime && recordForDay?.entrada) {
-                const entMinutes = getMinutesFromMidnightChile(recordForDay.entrada);
-                const schMinutes = parseTimeToMinutes(scheduleInfo.startTime);
-                if (entMinutes > schMinutes + 15) status = "Atraso";
-              }
-            } else if (isHoliday) scheduledShift = scheduleInfo?.holidayName || "Feriado";
-          }
-        } else if (emp.workdayType !== "Artículo 22") {
-          if (stateFromRecord) {
-            justificationType = stateFromRecord;
-            status = stateFromRecord;
-            scheduledShift = stateFromRecord;
-            actualClocks = "N/A";
-          } else if (isHoliday) {
-            scheduledShift = scheduleInfo?.holidayName || "Feriado";
-            actualClocks = "N/A";
-          } else if (scheduleInfo?.isWorkDay) {
-            status = "Ausente";
-            scheduledShift = `${scheduleInfo.startTime} - ${scheduleInfo.endTime}`;
-            justificationType = "Ausencia no justificada";
-          }
-        }
-        if (recordForDay?.inicioColacion && recordForDay?.finColacion) {
-          const startCol = new Date(recordForDay.inicioColacion).getTime();
-          const endCol = new Date(recordForDay.finColacion).getTime();
-          colacionMinutes = Math.round((endCol - startCol) / (1000 * 60));
-        } else if (scheduleInfo?.hasColacion) colacionMinutes = scheduleInfo.colacionMinutes || 0;
-      }
-
-      results.push({
-        date: chileDate.toLocaleDateString("es-CL"),
-        isoDate: dStr,
-        dayOfWeek: dayNames[chileDate.getDay()],
-        scheduledShift,
-        actualClocks,
-        scheduledHours: dailyScheduled,
-        workedHours: dailyWorked,
-        overtime: dailyOvertime,
-        colacionMinutes,
-        differenceHours: emp.workdayType === "Artículo 22" ? 0 : dailyWorked - dailyScheduled,
-        justificationType: justificationType || (status === "Atraso" ? "Atraso" : undefined),
-        isHoliday,
-        status,
-      });
-
+      datesToProcess.push(new Date(d));
       d.setUTCDate(d.getUTCDate() + 1);
-
-      // Yield periodically during long range calculations (e.g. 5-year reports)
-      if (results.length % 50 === 0) {
-        await new Promise((resolve) => setImmediate(resolve));
-      }
     }
+
+    const CHUNK_SIZE = 10;
+    // ⚡ Bolt Optimization: Replace sequential await in a loop with concurrent Promise.all execution.
+    // Why: Awaiting each scheduleInfo separately for 30+ days was causing an N+1 blocking scenario.
+    // Impact: Substantially speeds up multi-day KPI queries and detailed exports.
+    for (let i = 0; i < datesToProcess.length; i += CHUNK_SIZE) {
+      const chunk = datesToProcess.slice(i, i + CHUNK_SIZE);
+
+      const chunkResults = await Promise.all(
+        chunk.map(async (currDate) => {
+          const dStr = formatDateUTCISO(currDate);
+          const recordsForDay = recordsMap.get(dStr) || [];
+          const recordForDay = recordsForDay[0];
+
+          const chileDate = getChileMidnight(dStr);
+
+          let scheduleInfo = await schedulingService.getEmployeeDailyScheduleInfo(
+            emp.id,
+            chileDate,
+            context,
+            emp,
+          );
+
+          if (
+            recordForDay &&
+            recordForDay.scheduledHours !== undefined &&
+            recordForDay.scheduledHours !== null
+          ) {
+            scheduleInfo = {
+              scheduleText: recordForDay.scheduledStartTime
+                ? `${recordForDay.scheduledStartTime} - ${recordForDay.scheduledEndTime}`
+                : "Día Libre",
+              isWorkDay: recordForDay.scheduledHours > 0,
+              startTime: recordForDay.scheduledStartTime || undefined,
+              endTime: recordForDay.scheduledEndTime || undefined,
+              hours: recordForDay.scheduledHours,
+              colacionMinutes: recordForDay.scheduledColacionMinutes || 0,
+              justificationType: scheduleInfo?.justificationType,
+              isHoliday: false,
+            };
+          }
+
+          const hasWorkRecord = recordsForDay.some((r) => r.entrada && r.entrada !== "SIN REGISTRO");
+          const isHoliday = scheduleInfo?.isHoliday || false;
+          const stateFromRecord = KpiStatsService.normalizeStateFromTimeRecordStatus(
+            recordForDay?.status,
+          );
+          const isLeave =
+            !!stateFromRecord ||
+            !!scheduleInfo?.justificationType ||
+            (recordForDay &&
+              ["Vacaciones", "Licencia Médica", "Permiso", "Permiso Especial"].includes(
+                recordForDay.status,
+              ));
+          let scheduledShift = "Libre";
+          let actualClocks = "Sin Marcaje";
+          let justificationType: string | undefined = undefined;
+          let status = "Normal";
+          let dailyScheduled = 0;
+          let dailyWorked = 0;
+          let dailyOvertime = 0;
+          let colacionMinutes = 0;
+
+          if (isLeave && emp.workdayType !== "Artículo 22") {
+            justificationType = stateFromRecord || scheduleInfo?.justificationType || justificationType;
+            status = justificationType;
+            scheduledShift = justificationType;
+            actualClocks = "N/A";
+          } else {
+            const metrics = KpiEngine.calculateDailyMetrics(
+              recordForDay || {},
+              scheduleInfo,
+              emp.workdayType,
+            );
+            dailyScheduled = metrics.scheduledHours;
+            dailyWorked = metrics.workedHours;
+            dailyOvertime = metrics.overtimeHours;
+
+            if (hasWorkRecord) {
+              if (recordsForDay.length > 0) {
+                const validPunches = (recordsForDay as TimeRecord[]).filter(
+                  (r) => r.entrada && r.salida,
+                );
+                if (validPunches.length > 0) {
+                  const firstIn = validPunches.reduce(
+                    (min: number, r: TimeRecord) => Math.min(min, new Date(r.entrada!).getTime()),
+                    Infinity,
+                  );
+                  const lastOut = validPunches.reduce(
+                    (max: number, r: TimeRecord) => Math.max(max, new Date(r.salida!).getTime()),
+                    0,
+                  );
+                  if (isFinite(firstIn) && lastOut > 0)
+                    actualClocks = `${new Date(firstIn).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })} - ${new Date(lastOut).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+                } else if (recordForDay?.entrada)
+                  actualClocks = `${new Date(recordForDay.entrada).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })} - ???`;
+              }
+              if (emp.workdayType !== "Artículo 22") {
+                if (scheduleInfo?.isWorkDay) {
+                  scheduledShift = `${scheduleInfo.startTime} - ${scheduleInfo.endTime}`;
+                  if (scheduleInfo.startTime && recordForDay?.entrada) {
+                    const entMinutes = getMinutesFromMidnightChile(recordForDay.entrada);
+                    const schMinutes = parseTimeToMinutes(scheduleInfo.startTime);
+                    if (entMinutes > schMinutes + 15) status = "Atraso";
+                  }
+                } else if (isHoliday) scheduledShift = scheduleInfo?.holidayName || "Feriado";
+              }
+            } else if (emp.workdayType !== "Artículo 22") {
+              if (stateFromRecord) {
+                justificationType = stateFromRecord;
+                status = stateFromRecord;
+                scheduledShift = stateFromRecord;
+                actualClocks = "N/A";
+              } else if (isHoliday) {
+                scheduledShift = scheduleInfo?.holidayName || "Feriado";
+                actualClocks = "N/A";
+              } else if (scheduleInfo?.isWorkDay) {
+                status = "Ausente";
+                scheduledShift = `${scheduleInfo.startTime} - ${scheduleInfo.endTime}`;
+                justificationType = "Ausencia no justificada";
+              }
+            }
+            if (recordForDay?.inicioColacion && recordForDay?.finColacion) {
+              const startCol = new Date(recordForDay.inicioColacion).getTime();
+              const endCol = new Date(recordForDay.finColacion).getTime();
+              colacionMinutes = Math.round((endCol - startCol) / (1000 * 60));
+            } else if (scheduleInfo?.hasColacion) colacionMinutes = scheduleInfo.colacionMinutes || 0;
+          }
+
+          return {
+            date: chileDate.toLocaleDateString("es-CL"),
+            isoDate: dStr,
+            dayOfWeek: dayNames[chileDate.getDay()],
+            scheduledShift,
+            actualClocks,
+            scheduledHours: dailyScheduled,
+            workedHours: dailyWorked,
+            overtime: dailyOvertime,
+            colacionMinutes,
+            differenceHours: emp.workdayType === "Artículo 22" ? 0 : dailyWorked - dailyScheduled,
+            justificationType: justificationType || (status === "Atraso" ? "Atraso" : undefined),
+            isHoliday,
+            status,
+          };
+        }),
+      );
+
+      results.push(...chunkResults);
+
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+
     return results;
   }
 }

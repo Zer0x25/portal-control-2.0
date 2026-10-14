@@ -38,3 +38,7 @@
 ## 2026-10-11 - Optimize duplicate useMemo filtering
 **Learning:** Found instances where large arrays were being filtered identically multiple times across different `useMemo` hooks (e.g. `processedEmployees` and `hasNextPage`), causing O(N) operations to run twice on every search term change.
 **Action:** Extract the expensive, redundant filter operations into a separate `useMemo` hook first (e.g. `filteredBaseList`), and then let dependent values use the pre-filtered result, effectively cutting the calculation time in half.
+
+## 2026-10-14 - Await in loops blocking Event Loop (KpiStatsService)
+**Learning:** `calculateRangeMetrics` in `backend/src/services/kpi/KpiStatsService.ts` was executing `await schedulingService.getEmployeeDailyScheduleInfo()` inside a sequential `while` loop over dates. This caused a severe N+1 latency bottleneck and event loop blocking when calculating stats across long date ranges.
+**Action:** Use chunked `Promise.all()` to execute asynchronous lookups concurrently inside loops. Be sure to chunk the inputs (e.g., 10 at a time) rather than firing thousands of promises simultaneously to prevent database pool exhaustion while still yielding an immense speedup.
