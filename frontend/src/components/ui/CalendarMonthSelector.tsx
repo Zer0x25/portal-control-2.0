@@ -151,6 +151,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
       <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
         <button
           onClick={handlePrev}
+          aria-label="Mes anterior"
           className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
           title="Anterior"
         >
@@ -174,6 +175,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
 
         <button
           onClick={handleNext}
+          aria-label="Mes siguiente"
           className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
           title="Siguiente"
         >
