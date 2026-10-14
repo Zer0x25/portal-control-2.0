@@ -885,13 +885,21 @@ export class TimeRecordService {
       where.employeeId = employeeId as string;
     }
 
-    // Name search optimization
+    // Name search optimization (push filter to DB first instead of scanning entire table in memory)
     if (name) {
-      const normalizedSearch = normalizeString(name as string).toLowerCase();
-      const allEmployees = await prisma.employee.findMany({ select: { id: true, name: true } });
-      const matchingIds = allEmployees
-        .filter((e) => normalizeString(e.name).toLowerCase().includes(normalizedSearch))
-        .map((e) => e.id);
+      const rawTerm = String(name).trim();
+      const normalizedSearch = normalizeString(rawTerm).toLowerCase();
+      const candidates = await prisma.employee.findMany({
+        where: { name: { contains: rawTerm, mode: "insensitive" } },
+        select: { id: true, name: true },
+      });
+      let matchingIds = candidates.map((e) => e.id);
+      if (matchingIds.length === 0) {
+        const allEmployees = await prisma.employee.findMany({ select: { id: true, name: true } });
+        matchingIds = allEmployees
+          .filter((e) => normalizeString(e.name).toLowerCase().includes(normalizedSearch))
+          .map((e) => e.id);
+      }
       where.employeeId = where.employeeId
         ? { in: [where.employeeId as string].filter((id) => matchingIds.includes(id)) }
         : { in: matchingIds };

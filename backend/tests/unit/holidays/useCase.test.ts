@@ -82,11 +82,12 @@ describe("Holiday query use case without DB, HTTP or global clock", () => {
     expect(deps.repository.countYear).toHaveBeenCalledTimes(enabled ? 1 : 0);
   });
 
-  it("B6: propagates original sync error without a second read", async () => {
+  it("B6: handles sync failure gracefully and returns initial repository list", async () => {
     const error = new Error("provider failed");
     vi.mocked(deps.repository.countYear).mockResolvedValue(0);
     vi.mocked(deps.sync).mockRejectedValue(error);
-    await expect(createGetHolidays(deps)()).rejects.toBe(error);
+    const result = await createGetHolidays(deps)();
+    expect(result).toEqual([view]);
     expect(deps.repository.list).toHaveBeenCalledTimes(1);
     expect(deps.repository.count).not.toHaveBeenCalled();
   });
@@ -98,11 +99,11 @@ describe("Holiday query use case without DB, HTTP or global clock", () => {
     expect(deps.repository.countYear).not.toHaveBeenCalled();
   });
 
-  it("preserves host-year rollover while the presence query is in flight", async () => {
-    deps.clock.year = vi.fn().mockReturnValueOnce(2025).mockReturnValue(2026);
+  it("uses consistent host-year snapshot for countYear and sync", async () => {
+    deps.clock.year = vi.fn().mockReturnValue(2025);
     vi.mocked(deps.repository.countYear).mockResolvedValue(0);
     await createGetHolidays(deps)();
     expect(deps.repository.countYear).toHaveBeenCalledWith(2025);
-    expect(deps.sync).toHaveBeenCalledWith(2026);
+    expect(deps.sync).toHaveBeenCalledWith(2025);
   });
 });

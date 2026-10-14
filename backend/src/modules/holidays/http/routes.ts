@@ -35,7 +35,7 @@ interface HolidayPluginOptions {
   authenticate: onRequestHookHandler;
 }
 const supervisorRoles = ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"];
-const yearSchema = z.object({ year: z.number().int().min(2000).max(2100) });
+const yearSchema = z.object({ year: z.number().int().min(2000).max(2100).optional() }).optional();
 const paramsSchema = z.object({ id: z.string().min(1) });
 const querySchema = HolidayQuerySchema.extend({
   page: z.string().optional(),
@@ -101,7 +101,7 @@ export const holidayPlugin: FastifyPluginAsync<HolidayPluginOptions> = async (ap
         count: await options.service.bulkUpsertHolidays(request.body, request.user!.username),
       }),
   );
-  app.post<{ Body: { year: number } }>(
+  app.post<{ Body?: { year?: number } }>(
     "/api/holidays/sync",
     {
       config: { requiresAuth: true, roles: supervisorRoles },
@@ -110,7 +110,10 @@ export const holidayPlugin: FastifyPluginAsync<HolidayPluginOptions> = async (ap
       schema: { response: { 200: holidaySyncResponse } },
     },
     async (request) =>
-      options.service.syncExternalHolidays(request.body.year, request.user!.username),
+      options.service.syncExternalHolidays(
+        request.body?.year ?? new Date().getFullYear(),
+        request.user!.username,
+      ),
   );
   app.delete<{ Params: { id: string } }>(
     "/api/holidays/:id",

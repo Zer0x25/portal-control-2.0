@@ -38,6 +38,25 @@ export const shiftReportsPlugin: FastifyPluginAsync<{
     { ...protectedRoute, preHandler: validateRequest("body", ShiftReportSchema) },
     (req) => options.service.save(req.body, req.user?.username || "SYSTEM"),
   );
+  app.patch<{ Params: { id: string }; Body: Partial<ShiftReportInput> }>(
+    "/api/shift-reports/:id",
+    {
+      ...protectedRoute,
+      preHandler: [
+        validateRequest("params", z.object({ id: z.string() })),
+        validateRequest("body", ShiftReportSchema.partial()),
+      ],
+    },
+    (req) => options.service.update(req.params.id, req.body, req.user?.username || "SYSTEM"),
+  );
+  app.delete<{ Params: { id: string } }>(
+    "/api/shift-reports/:id",
+    { ...protectedRoute, preHandler: validateRequest("params", z.object({ id: z.string() })) },
+    async (req, reply) => {
+      await options.service.delete(req.params.id, req.user?.username || "SYSTEM");
+      return reply.code(204).send();
+    },
+  );
   app.get<{ Params: { id: string } }>(
     "/api/shift-reports/export/:id",
     { ...protectedRoute, preHandler: validateRequest("params", z.object({ id: z.string() })) },

@@ -12,7 +12,7 @@ import { TimeRecordService } from "../../src/services/TimeRecordService";
 const row = (extra: Record<string, unknown> = {}) => ({
   date: "2026-03-05",
   employeeId: "e1",
-  entrada: "2026-03-05T08:00:00",
+  entrada: "2026-03-05T08:00:00-03:00",
   status: "Laborando",
   scheduledStartTime: "08:00",
   ...extra,
@@ -25,8 +25,8 @@ describe("TimeRecordService.dailyAttendance", () => {
 
   it("aggregates present/total/late per day with zero-filled gaps", async () => {
     db.timeRecord.findMany.mockResolvedValue([
-      row({ employeeId: "e1", entrada: "2026-03-05T08:20:00" }), // 20 min tarde
-      row({ employeeId: "e2", entrada: "2026-03-05T08:10:00" }), // dentro de tolerancia
+      row({ employeeId: "e1", entrada: "2026-03-05T08:20:00-03:00" }), // 20 min tarde
+      row({ employeeId: "e2", entrada: "2026-03-05T08:10:00-03:00" }), // dentro de tolerancia
       row({ employeeId: "e3", status: "Vacaciones" }), // ausencia: cuenta en total, no en presentes
     ]);
 

@@ -3,6 +3,8 @@
  * Emits JSON to stdout for better observability.
  */
 
+import { requestContext } from "./context";
+
 type LogLevel = "info" | "warn" | "error";
 
 /**
@@ -65,10 +67,13 @@ export const logger = {
   },
 
   log(level: LogLevel, message: string, context?: Record<string, unknown>) {
+    const store = requestContext.getStore();
     const payload: LogPayload = {
       timestamp: new Date().toISOString(),
       level,
       message,
+      ...(store?.requestId ? { requestId: store.requestId } : {}),
+      ...(store?.username ? { actorUsername: store.username } : {}),
       ...context,
     };
     process.stdout.write(JSON.stringify(payload) + "\n");

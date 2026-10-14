@@ -202,10 +202,23 @@ class SchedulingService {
       select: { id: true, name: true },
     });
 
+    if (activeEmployees.length === 0) return [];
+
+    const targetDateStr = getChileDateISO(targetDate);
+    const context = await this.getSchedulingContext(
+      activeEmployees.map((e) => e.id),
+      targetDateStr,
+      targetDateStr,
+    );
+
     const results: ScheduledEmployeeDetail[] = [];
 
     for (const employee of activeEmployees) {
-      const scheduleInfo = await this.getEmployeeDailyScheduleInfo(employee.id, targetDate);
+      const scheduleInfo = await this.getEmployeeDailyScheduleInfo(
+        employee.id,
+        targetDate,
+        context,
+      );
 
       if (scheduleInfo?.isWorkDay) {
         results.push({

@@ -43,6 +43,22 @@ describe("Record application TDD", () => {
       undefined,
     );
   });
+  it("uses kiosk user id as employeeId when role is Kiosk_Employee", async () => {
+    const f = fixture();
+    const kioskUser = { id: "kiosk-emp-99", username: "kiosk", role: "Kiosk_Employee" };
+    expect(await f.flows.punch({ employeeId: "forged" }, kioskUser)).toEqual({
+      success: true,
+      action: "ENTRADA",
+    });
+    expect(f.service.punch).toHaveBeenCalledWith(
+      kioskUser,
+      "kiosk-emp-99",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
+  });
   it("checks every distinct date including a locked record after index 50 before bulk writes", async () => {
     const f = fixture();
     f.service.isLocked.mockImplementation(async (date) => date === "2026-11-01");

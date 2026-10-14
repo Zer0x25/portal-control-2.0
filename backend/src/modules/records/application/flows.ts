@@ -47,7 +47,9 @@ export function createRecordFlows<
     async punch(input: PunchInput, user?: RecordPrincipal) {
       if (!user) throw new AuthError("No autorizado");
       let employeeId = input.employeeId;
-      if (user.role === "Usuario") {
+      if (user.role === "Kiosk_Employee") {
+        employeeId = user.employeeId || user.id;
+      } else if (user.role === "Usuario") {
         const found = await deps.service.linkedEmployee(user.id);
         if (!found?.employeeId) throw new ForbiddenError("Usuario no tiene empleado asociado");
         employeeId = found.employeeId;
