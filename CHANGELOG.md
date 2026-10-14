@@ -1,5 +1,24 @@
 # Changelog
 
+## [8.30.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.29.1...v8.30.0) (2026-10-14)
+
+
+### Features
+
+* Palette: [UX improvement] Add ARIA labels to icon-only buttons ([#54](https://github.com/Zer0x25/portal-control-2.0/issues/54)) ([cc88ad2](https://github.com/Zer0x25/portal-control-2.0/commit/cc88ad24591e6ba58ba6a1272b0c9b920fc7db55))
+
+
+### Bug Fixes
+
+* **auth:** enforce JWT_SECRET via getter without weak fallback ([367e578](https://github.com/Zer0x25/portal-control-2.0/commit/367e578e81c978c0fb9e0b2f7d1d2b9f25875ed0))
+* **db:** replace executeRawUnsafe with executeRaw in maintenanceService ([e4990c8](https://github.com/Zer0x25/portal-control-2.0/commit/e4990c885c7cffa9b78ca87b94ed6f66b5d33370))
+
+
+### Performance Improvements
+
+* **kpi:** parallelize missing marks schedule lookup ([a6b3ce0](https://github.com/Zer0x25/portal-control-2.0/commit/a6b3ce07a31c90d70c59f96ea23623b61e990979))
+* **kpi:** parallelize schedule lookups in kpi stats ([b0c1db5](https://github.com/Zer0x25/portal-control-2.0/commit/b0c1db5c5f50e01b65553773f426c0547ccb79c1))
+
 ## [8.29.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.29.0...v8.29.1) (2026-10-14)
 
 
