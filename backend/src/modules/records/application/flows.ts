@@ -48,7 +48,7 @@ export function createRecordFlows<
       if (!user) throw new AuthError("No autorizado");
       let employeeId = input.employeeId;
       if (user.role === "Kiosk_Employee") {
-        employeeId = user.id;
+        employeeId = user.employeeId || user.id;
       } else if (user.role === "Usuario") {
         const found = await deps.service.linkedEmployee(user.id);
         if (!found?.employeeId) throw new ForbiddenError("Usuario no tiene empleado asociado");

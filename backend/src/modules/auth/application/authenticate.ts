@@ -28,6 +28,10 @@ const KIOSK_ALLOWED_PATHS = [
   "/api/records",
   "/api/employees/",
   "/api/auth/logout",
+  "/api/corrections",
+  "/api/shifts",
+  "/api/holidays",
+  "/api/export/calendar-pdf",
 ];
 export function createAuthenticate(deps: AuthenticationDependencies) {
   return async (token: string | undefined, requestPath?: string): Promise<AuthUser> => {
@@ -50,7 +54,7 @@ export function createAuthenticate(deps: AuthenticationDependencies) {
           throw new ForbiddenError("Token de kiosco no autorizado para este recurso");
         }
       }
-      return { ...user, employeeId: user.id };
+      return user;
     }
     const session = await deps.sessions.find(deps.hash(token));
     if (!session) throw new AuthError("Sesión cerrada o invalidada desde otro dispositivo");

@@ -30,7 +30,7 @@ BEGIN
     IF (TG_OP = 'UPDATE') THEN
         v_old_data := to_jsonb(OLD) - 'pin' - 'password_hash';
         v_new_data := to_jsonb(NEW) - 'pin' - 'password_hash';
-        IF (TG_TABLE_NAME = 'system_configs' AND (OLD.key = 'SMTP_CONFIG' OR NEW.key = 'SMTP_CONFIG')) THEN
+        IF TG_TABLE_NAME = 'system_configs' AND (v_old_data->>'key' = 'SMTP_CONFIG' OR v_new_data->>'key' = 'SMTP_CONFIG') THEN
             v_old_data := jsonb_set(v_old_data, '{value}', '"[REDACTED]"'::jsonb, false);
             v_new_data := jsonb_set(v_new_data, '{value}', '"[REDACTED]"'::jsonb, false);
         END IF;
@@ -48,6 +48,9 @@ BEGIN
         RETURN NEW;
     ELSIF (TG_OP = 'DELETE') THEN
         v_old_data := to_jsonb(OLD) - 'pin' - 'password_hash';
+        IF TG_TABLE_NAME = 'system_configs' AND v_old_data->>'key' = 'SMTP_CONFIG' THEN
+            v_old_data := jsonb_set(v_old_data, '{value}', '"[REDACTED]"'::jsonb, false);
+        END IF;
         INSERT INTO audit_logs (id, timestamp, actor_username, action, category, severity, outcome, details)
         VALUES (
             gen_random_uuid(),
@@ -62,7 +65,7 @@ BEGIN
         RETURN OLD;
     ELSIF (TG_OP = 'INSERT') THEN
         v_new_data := to_jsonb(NEW) - 'pin' - 'password_hash';
-        IF (TG_TABLE_NAME = 'system_configs' AND NEW.key = 'SMTP_CONFIG') THEN
+        IF TG_TABLE_NAME = 'system_configs' AND v_new_data->>'key' = 'SMTP_CONFIG' THEN
             v_new_data := jsonb_set(v_new_data, '{value}', '"[REDACTED]"'::jsonb, false);
         END IF;
         INSERT INTO audit_logs (id, timestamp, actor_username, action, category, severity, outcome, details)

@@ -70,7 +70,9 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
       const isSupervisorOrAbove =
         role !== undefined &&
         ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(role);
-      const isKioskSelf = role === "Kiosk_Employee" && request.user?.id === request.params.id;
+      const isKioskSelf =
+        role === "Kiosk_Employee" &&
+        (request.user?.id === request.params.id || request.user?.employeeId === request.params.id);
       if (!isSupervisorOrAbove && !isKioskSelf) {
         throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
       }

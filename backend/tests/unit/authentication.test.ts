@@ -87,16 +87,22 @@ describe("Shared authentication with real JWT verification", () => {
       "/api/records?since=1000",
       "/api/employees/EMP-100",
       "/api/auth/logout",
+      "/api/corrections",
+      "/api/shifts",
+      "/api/holidays",
+      "/api/export/calendar-pdf",
     ])("allows kiosk token on permitted path %s and sets employeeId", async (path) => {
       const f = fixture();
-      const token = jwt.sign({ id: "k-1", username: "kiosk", role: "Kiosk_Employee" }, secret, {
-        expiresIn: "2m",
-      });
+      const token = jwt.sign(
+        { id: "k-1", username: "kiosk", role: "Kiosk_Employee", employeeId: "k-1" },
+        secret,
+        { expiresIn: "2m" },
+      );
       const user = await f.authenticate(token, path);
       expect(user).toMatchObject({ role: "Kiosk_Employee", employeeId: "k-1" });
     });
 
-    it.each(["/api/holidays", "/api/users", "/api/admin/status", "/api/configs"])(
+    it.each(["/api/users", "/api/admin/status", "/api/configs", "/api/export/report-pdf"])(
       "rejects kiosk token on unpermitted path %s",
       async (path) => {
         const f = fixture();
