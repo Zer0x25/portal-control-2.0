@@ -98,7 +98,10 @@ describe("maintenanceService log rotation and cleanups (anti-regression)", () =>
 
   it("ensures db instance ID exists in systemConfig", async () => {
     mockPrisma.systemConfig.findUnique.mockResolvedValueOnce(null);
-    mockPrisma.systemConfig.create.mockResolvedValueOnce({ key: "db_instance_id", value: '"id-123"' });
+    mockPrisma.systemConfig.create.mockResolvedValueOnce({
+      key: "db_instance_id",
+      value: '"id-123"',
+    });
 
     await maintenanceService.ensureInstanceId();
 
