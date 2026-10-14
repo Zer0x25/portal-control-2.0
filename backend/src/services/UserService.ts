@@ -196,7 +196,7 @@ export class UserService {
     if (existingLinkedUser) return toPublicUser(existingLinkedUser);
 
     const username = await this.generateUniqueEmployeeUsername(data.fullName, db);
-    const passwordHash = bcrypt.hashSync(data.defaultPassword || "123456", 10);
+    const passwordHash = await bcrypt.hash(data.defaultPassword || "123456", 10);
 
     const createdUser = await db.user.create({
       select: publicUserSelect,

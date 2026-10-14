@@ -30,20 +30,22 @@ export class MaintenanceService {
         },
       });
 
-      // 2. Administración (OPERATIONS, CONFIG, USER_MGMT, AUTH) -> 3 meses (Operativo)
+      // 2. Administración (OPERATIONS, CONFIG, USER_MGMT, AUTH, SEGURIDAD) -> 3 meses (Operativo)
       const dateAdmin = subMonths(now, 3);
       const p2 = prisma.auditLog.deleteMany({
         where: {
-          category: { in: ["OPERATIONS", "CONFIG", "USER_MGMT", "AUTH", "DATA", "SECURITY"] },
+          category: {
+            in: ["OPERATIONS", "CONFIG", "USER_MGMT", "AUTH", "DATA", "SECURITY", "SEGURIDAD"],
+          },
           timestamp: { lt: dateAdmin },
         },
       });
 
-      // 3. Infraestructura (SYSTEM, API) -> 2 meses (Debugging)
+      // 3. Infraestructura y Triggers DB (SYSTEM, API, CTRL_INTERNO_DB) -> 2 meses (Debugging)
       const dateInfra = subMonths(now, 2);
       const p3 = prisma.auditLog.deleteMany({
         where: {
-          category: { in: ["SYSTEM", "API"] },
+          category: { in: ["SYSTEM", "API", "CTRL_INTERNO_DB"] },
           timestamp: { lt: dateInfra },
         },
       });
@@ -63,8 +65,15 @@ export class MaintenanceService {
         },
       });
 
+      // 6. Sesiones expiradas (ActiveSession) -> Limpieza inmediata de tokens vencidos
+      const p6 = prisma.activeSession.deleteMany({
+        where: {
+          expiresAt: { lt: now },
+        },
+      });
+
       // Execute all cleanup tasks in parallel
-      const [r1, r2, r3, r4, r5] = await Promise.all([p1, p2, p3, p4, p5]);
+      const [r1, r2, r3, r4, r5, r6] = await Promise.all([p1, p2, p3, p4, p5, p6]);
 
       console.warn(
         `✅ Depuración Finalizada:
@@ -72,7 +81,8 @@ export class MaintenanceService {
          - Administración (>3 meses): ${r2.count}
          - Infraestructura (>2 meses): ${r3.count}
          - ShiftReport (>24 meses): ${r4.count}
-         - MeterReading (>24 meses): ${r5.count}`,
+         - MeterReading (>24 meses): ${r5.count}
+         - ActiveSessions expiradas: ${r6.count}`,
       );
     } catch (error) {
       console.error("❌ Error en rotación de logs:", error);

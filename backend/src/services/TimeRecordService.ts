@@ -885,13 +885,21 @@ export class TimeRecordService {
       where.employeeId = employeeId as string;
     }
 
-    // Name search optimization
+    // Name search optimization (push filter to DB first instead of scanning entire table in memory)
     if (name) {
-      const normalizedSearch = normalizeString(name as string).toLowerCase();
-      const allEmployees = await prisma.employee.findMany({ select: { id: true, name: true } });
-      const matchingIds = allEmployees
-        .filter((e) => normalizeString(e.name).toLowerCase().includes(normalizedSearch))
-        .map((e) => e.id);
+      const rawTerm = String(name).trim();
+      const normalizedSearch = normalizeString(rawTerm).toLowerCase();
+      const candidates = await prisma.employee.findMany({
+        where: { name: { contains: rawTerm, mode: "insensitive" } },
+        select: { id: true, name: true },
+      });
+      let matchingIds = candidates.map((e) => e.id);
+      if (matchingIds.length === 0) {
+        const allEmployees = await prisma.employee.findMany({ select: { id: true, name: true } });
+        matchingIds = allEmployees
+          .filter((e) => normalizeString(e.name).toLowerCase().includes(normalizedSearch))
+          .map((e) => e.id);
+      }
       where.employeeId = where.employeeId
         ? { in: [where.employeeId as string].filter((id) => matchingIds.includes(id)) }
         : { in: matchingIds };
@@ -1013,6 +1021,116 @@ export class TimeRecordService {
       page: pageNum,
       totalPages: pageSizeNum > 0 ? Math.ceil(total / pageSizeNum) : 1,
     };
+  }
+
+  /**
+   * Serie diaria de asistencia para analytics (presentes/totales/atrasados
+   * por día). Agrega en servidor para no transferir miles de filas: una sola
+   * query indexada (`date`, `employeeId`) + agregación en memoria, sin
+   * llamadas a scheduling (sin N+1).
+   *
+   * Semántica espejo del cómputo cliente (`buildAttendanceSeries`):
+   * - total: empleados distintos con fila ese día.
+   * - presente: con `entrada` y estado no-ausencia (mismos 5 estados).
+   * - atraso: presente con `scheduledStartTime` almacenado y
+   *   entrada > inicio + 15 min (misma tolerancia que `deriveLateInfo`,
+   *   usando el inicio almacenado en la fila en vez del schedule vivo;
+   *   divergen solo si el turno se editó después del marcaje).
+   * Días sin filas se emiten en cero para serie continua.
+   */
+  private static readonly ABSENT_LIKE_STATUSES = new Set([
+    "Ausente",
+    "DiaLibre",
+    "Vacaciones",
+    "Permiso Especial",
+    "Feriado",
+  ]);
+
+  private static readonly LATE_TOLERANCE_MINUTES = 15;
+
+  static async dailyAttendance(
+    query: { desde?: string; hasta?: string; employeeId?: string },
+    authUser?: RecordAuthUser,
+  ): Promise<Array<{ date: string; present: number; total: number; late: number }>> {
+    const today = getChileDateISO(new Date());
+    const defaultStart = (() => {
+      const d = new Date(`${today}T12:00:00Z`);
+      d.setUTCDate(d.getUTCDate() - 29);
+      return d.toISOString().slice(0, 10);
+    })();
+    const desde =
+      typeof query.desde === "string" && query.desde.length > 0 ? query.desde : defaultStart;
+    const hasta = typeof query.hasta === "string" && query.hasta.length > 0 ? query.hasta : today;
+
+    const where: Prisma.TimeRecordWhereInput = {
+      isDeleted: false,
+      date: { gte: desde, lte: hasta },
+    };
+
+    // Mismo scoping de seguridad que listRecords.
+    if (authUser?.role === "Usuario" || authUser?.role === "Kiosk_Employee") {
+      const effectiveId = authUser.employeeId;
+      if (!effectiveId) throw new Error("UNAUTHORIZED_NO_EMPLOYEE");
+      where.employeeId = effectiveId;
+    } else if (typeof query.employeeId === "string" && query.employeeId.length > 0) {
+      where.employeeId = query.employeeId;
+    }
+
+    const rows = await prisma.timeRecord.findMany({
+      where,
+      select: {
+        date: true,
+        employeeId: true,
+        entrada: true,
+        status: true,
+        scheduledStartTime: true,
+      },
+    });
+
+    const buckets = new Map<
+      string,
+      { total: Set<string>; present: Set<string>; late: Set<string> }
+    >();
+    for (const row of rows) {
+      let bucket = buckets.get(row.date);
+      if (!bucket) {
+        bucket = { total: new Set<string>(), present: new Set<string>(), late: new Set<string>() };
+        buckets.set(row.date, bucket);
+      }
+      bucket.total.add(row.employeeId);
+
+      const isAbsentLike = TimeRecordService.ABSENT_LIKE_STATUSES.has(row.status);
+      const isPresent = Boolean(row.entrada) && !isAbsentLike;
+      if (!isPresent) continue;
+      bucket.present.add(row.employeeId);
+
+      if (!row.scheduledStartTime) continue;
+      const enteredMinutes = getMinutesFromMidnightChile(row.entrada as string);
+      const scheduledMinutes = parseTimeToMinutes(row.scheduledStartTime);
+      if (
+        Number.isFinite(enteredMinutes) &&
+        Number.isFinite(scheduledMinutes) &&
+        enteredMinutes - scheduledMinutes > TimeRecordService.LATE_TOLERANCE_MINUTES
+      ) {
+        bucket.late.add(row.employeeId);
+      }
+    }
+
+    const series: Array<{ date: string; present: number; total: number; late: number }> = [];
+    const cursor = new Date(`${desde}T12:00:00Z`);
+    const end = new Date(`${hasta}T12:00:00Z`);
+    while (cursor <= end) {
+      const key = cursor.toISOString().slice(0, 10);
+      const bucket = buckets.get(key);
+      series.push({
+        date: key,
+        present: bucket ? bucket.present.size : 0,
+        total: bucket ? bucket.total.size : 0,
+        late: bucket ? bucket.late.size : 0,
+      });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+    return series;
   }
 
   /**

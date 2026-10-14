@@ -8,12 +8,20 @@ const {
   refreshEmployeesMock,
   downloadReportPDFMock,
   getEmployeeDailyScheduleInfoMock,
+  useTimeRecordsMock,
+  useUserClockingStatusMock,
+  useEmployeesMock,
+  getAllEmployeesMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   punchMutateAsyncMock: vi.fn(),
   refreshEmployeesMock: vi.fn(),
   downloadReportPDFMock: vi.fn(),
   getEmployeeDailyScheduleInfoMock: vi.fn(),
+  useTimeRecordsMock: vi.fn(),
+  useUserClockingStatusMock: vi.fn(),
+  useEmployeesMock: vi.fn(),
+  getAllEmployeesMock: vi.fn(),
 }));
 
 const employeeE1 = {
@@ -79,25 +87,18 @@ vi.mock("../../../hooks/useAuth", () => ({
 }));
 
 vi.mock("../../../hooks/useEmployees", () => ({
-  useEmployees: () => ({
-    getEmployeeById: (id: string) => (id === "e1" ? employeeE1 : null),
-    allEmployees: [employeeE1],
-    isLoadingEmployees: false,
-    refreshEmployees: refreshEmployeesMock,
-  }),
+  useEmployees: (...args: unknown[]) => useEmployeesMock(...args),
 }));
 
 vi.mock("../../../hooks/useTimeRecords", () => ({
-  useTimeRecords: () => ({
-    timeRecordsPage: [recordR3Other, recordR1, recordR2],
-    allRecordsInDateRange: [recordR3Other, recordR1, recordR2],
-  }),
+  useTimeRecords: (...args: unknown[]) => useTimeRecordsMock(...args),
 }));
 
 vi.mock("../../../hooks/queries/useTimeRecordsQuery", () => ({
   useTimeRecordMutations: () => ({
     punchMutation: { mutateAsync: punchMutateAsyncMock },
   }),
+  useUserClockingStatus: (...args: unknown[]) => useUserClockingStatusMock(...args),
 }));
 
 vi.mock("../../../hooks/useToasts", () => ({
@@ -113,7 +114,7 @@ vi.mock("../../../hooks/useScheduling", () => ({
 }));
 
 vi.mock("../../../services/employeeService", () => ({
-  employeeService: { getAll: vi.fn(async () => [employeeE1]) },
+  employeeService: { getAll: (...args: unknown[]) => getAllEmployeesMock(...args) },
 }));
 
 vi.mock("../../../services/kpiService", () => ({
@@ -143,6 +144,24 @@ describe("useWorkerPortalData (spec 028)", () => {
     });
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
     downloadReportPDFMock.mockResolvedValue(undefined);
+    useEmployeesMock.mockReturnValue({
+      getEmployeeById: (id: string) => (id === "e1" ? employeeE1 : null),
+      allEmployees: [employeeE1],
+      isLoadingEmployees: false,
+      refreshEmployees: refreshEmployeesMock,
+    });
+    // Simula la query ya acotada en servidor (empleado + mes).
+    useTimeRecordsMock.mockReturnValue({
+      allRecordsInDateRange: [recordR3Other, recordR1, recordR2],
+    });
+    // Último registro propio (acotado por employeeId en servidor).
+    useUserClockingStatusMock.mockReturnValue({
+      lastRecord: recordR1,
+      status: "in",
+      time: "",
+      isLoading: false,
+    });
+    getAllEmployeesMock.mockResolvedValue([employeeE1]);
   });
 
   it("AC2: enrichedRecords filtra por empleado y por selectedMonth", async () => {
@@ -167,11 +186,46 @@ describe("useWorkerPortalData (spec 028)", () => {
 
   it("AC3: status deriva del último registro propio, no del primero global", async () => {
     const { result } = renderHook(() => useWorkerPortalData());
-    // Bug original: tomaba recordR3Other (en_colacion) por ser [0] global.
+    // El status viene del último registro del empleado (query acotada por
+    // employeeId en servidor): r1 en_jornada, nunca r3 de otro empleado.
     await waitFor(() => {
       expect(result.current.status).toBe("en_jornada");
     });
     expect(result.current.status).not.toBe("en_colacion");
+  });
+
+  it("AC-perf: pide records acotados a empleado+mes (no volcado completo)", async () => {
+    const { result } = renderHook(() => useWorkerPortalData());
+    await waitFor(() => {
+      expect(result.current.employee?.id).toBe("e1");
+    });
+
+    // businessNow mockeado = 2026-03 -> rango del mes completo.
+    expect(useTimeRecordsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: { employeeId: "e1", desde: "2026-03-01", hasta: "2026-03-31" },
+        enabled: true,
+      }),
+    );
+  });
+
+  it("AC-perf: deshabilita la query si el empleado no se resuelve", async () => {
+    useEmployeesMock.mockReturnValue({
+      getEmployeeById: () => null,
+      allEmployees: [],
+      isLoadingEmployees: false,
+      refreshEmployees: refreshEmployeesMock,
+    });
+    getAllEmployeesMock.mockResolvedValue([]);
+
+    const { result } = renderHook(() => useWorkerPortalData());
+    await waitFor(() => {
+      expect(result.current.isLoadingEmployees).toBe(false);
+    });
+
+    expect(result.current.employee).toBeNull();
+    const lastCall = useTimeRecordsMock.mock.calls.at(-1)?.[0] as { enabled?: boolean } | undefined;
+    expect(lastCall).toMatchObject({ enabled: false });
   });
 
   it("AC4: colación envía forcedType canónico camel (contrato PunchSchema)", async () => {

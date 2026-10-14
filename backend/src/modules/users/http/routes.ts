@@ -72,17 +72,33 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
   app.put<{ Params: { id: string }; Body: UpdateUserDto }>(
     "/api/users/:id",
     {
-      ...access,
+      config: { requiresAuth: true },
+      onRequest: [options.authenticate],
       preHandler: [validateRequest("params", params), validateRequest("body", UpdateUserSchema)],
     },
-    async (request) =>
-      UserSchema.parse(
+    async (request) => {
+      const isAdmin = request.user?.role === "Administrador";
+      const isSelf = request.user?.id === request.params.id;
+      if (!isAdmin && !isSelf) {
+        throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+      }
+      if (!isAdmin) {
+        const bodyKeys = Object.keys(request.body || {});
+        const onlyPassword = bodyKeys.length > 0 && bodyKeys.every((k) => k === "password");
+        if (!onlyPassword) {
+          throw new ForbiddenError(
+            "Acceso denegado: Un usuario estándar solo puede actualizar su propia contraseña",
+          );
+        }
+      }
+      return UserSchema.parse(
         await options.service.updateUser(
           request.params.id,
           request.body,
           request.user?.username || "System",
         ),
-      ),
+      );
+    },
   );
   // DELETE is path-only; its JSON body is ignored by contract.
   app.delete<{ Params: { id: string } }>(

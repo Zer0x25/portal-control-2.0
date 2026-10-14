@@ -41,25 +41,6 @@ vi.mock("../../../features/supervisor-dashboard/components/KpiDetailsModal", () 
     isOpen ? <div data-testid="kpi-details-modal">{title}</div> : null,
 }));
 
-vi.mock("framer-motion", () => {
-  const actual = vi.importActual("framer-motion");
-  return {
-    ...actual,
-    motion: new Proxy(
-      {},
-      {
-        get: (_target, key) => {
-          return ({ children, ...props }: any) => {
-            const Tag = key as any;
-            return <Tag {...props}>{children}</Tag>;
-          };
-        },
-      },
-    ),
-    AnimatePresence: ({ children }: any) => <>{children}</>,
-  };
-});
-
 describe("KpisTab Component", () => {
   const buildKpiMock = (overrides: Partial<any> = {}) => ({
     totalAbsenteeismRate: 5.5,

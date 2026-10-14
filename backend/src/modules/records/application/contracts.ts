@@ -42,6 +42,19 @@ export interface RecordQuery {
   employeeId?: string;
   showAnomalies?: string | boolean;
 }
+/** Filtros del agregado diario de asistencia (serie para analytics). */
+export interface DailyAttendanceQuery {
+  desde?: string;
+  hasta?: string;
+  employeeId?: string;
+}
+/** Una fila agregada por día: conteos de empleados distintos. */
+export interface DailyAttendanceRow {
+  date: string;
+  present: number;
+  total: number;
+  late: number;
+}
 export interface ExportFilters {
   startDate: string;
   endDate: string;
@@ -82,6 +95,10 @@ export interface RecordFlowDependencies<
       longitude?: number,
     ): Promise<Punch>;
     list(query: RecordQuery, user?: RecordPrincipal): Promise<List>;
+    dailyAttendance(
+      query: DailyAttendanceQuery,
+      user?: RecordPrincipal,
+    ): Promise<DailyAttendanceRow[]>;
     save(input: RecordInput, actor: string): Promise<Row>;
     enrich(row: Row): Promise<View>;
     bulk(input: RecordInput[], actor: string): Promise<number>;

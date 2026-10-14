@@ -120,6 +120,7 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Cerrar detalles"
             className="p-2 text-token-text-tertiary hover:text-sap-blue hover:bg-sap-blue/10 rounded-sm transition-all"
           >
             <CloseIcon className="w-5 h-5" />

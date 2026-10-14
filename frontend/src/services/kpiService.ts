@@ -64,8 +64,7 @@ export const getDashboardOverview = async (): Promise<DashboardOverviewResponse>
       teamStatus: result.teamStatus ?? {
         present: 0,
         total: 0,
-        anomalies: [],
-        presentRecords: [],
+        anomaliesCount: 0,
       },
       unscheduledPresent: result.unscheduledPresent ?? [],
     };

@@ -236,6 +236,33 @@
 
 /**
  * @openapi
+ * /api/records/daily-attendance:
+ *   get:
+ *     summary: Serie diaria de asistencia agregada (presentes/totales/atrasados por día)
+ *     tags: [Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: desde
+ *         schema: { type: string }
+ *       - in: query
+ *         name: hasta
+ *         schema: { type: string }
+ *       - in: query
+ *         name: employeeId
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Serie diaria agregada en servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DailyAttendanceResponse'
+ */
+
+/**
+ * @openapi
  * /api/records:
  *   post:
  *     summary: Crea o actualiza un registro individual
@@ -965,6 +992,49 @@
  *     responses:
  *       200:
  *         description: Bitácora guardada
+ */
+
+/**
+ * @openapi
+ * /api/shift-reports/{id}:
+ *   patch:
+ *     summary: Actualizar una bitácora de turno existente
+ *     tags: [ShiftReports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Bitácora actualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ShiftReport'
+ *   delete:
+ *     summary: Eliminar una bitácora de turno
+ *     tags: [ShiftReports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Bitácora eliminada
  */
 
 /**
@@ -2146,11 +2216,12 @@
  *     tags: [Configs]
  *     responses:
  *       200:
- *         description: Politica corporativa vigente
+ *         description: Politica corporativa vigente, o null si no hay reglamento cargado
  *         content:
  *           application/json:
  *             schema:
  *               type: object
+ *               nullable: true
  *               properties:
  *                 success:
  *                   type: boolean
@@ -2216,11 +2287,12 @@
  *     tags: [Configs]
  *     responses:
  *       200:
- *         description: Logo de marca vigente con fuente y tamaño
+ *         description: Logo de marca vigente con fuente y tamaño, o null si no hay logo configurado
  *         content:
  *           application/json:
  *             schema:
  *               type: object
+ *               nullable: true
  *               properties:
  *                 success:
  *                   type: boolean

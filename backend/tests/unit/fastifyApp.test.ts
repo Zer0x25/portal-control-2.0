@@ -436,11 +436,11 @@ describe("Fastify foundation with real JWT/session rules", () => {
     const headers = {
       authorization: `Bearer ${jwt.sign({ id: "k", username: "kiosk", role: "Kiosk_Employee" }, secret, { expiresIn: "2m" })}`,
     };
-    vi.mocked(f.deps.holidays.getHolidays).mockImplementation(async () => {
+    vi.mocked(f.deps.records.list).mockImplementation(async () => {
       expect(requestContext.getStore()?.username).toBe("kiosk");
-      return [];
+      return { records: [], total: 0 } as never;
     });
-    expect((await f.app.inject({ url: "/api/holidays", headers })).statusCode).toBe(200);
+    expect((await f.app.inject({ url: "/api/records", headers })).statusCode).toBe(200);
     expect(
       (await f.app.inject({ method: "POST", url: "/api/holidays", payload: body, headers }))
         .statusCode,
@@ -893,4 +893,140 @@ it("drains authentication already admitted when close starts and rejects later r
   release();
   expect((await request).statusCode).toBe(200);
   await closing;
+});
+
+describe("Anti-regression: PUT /api/users/:id permission rules", () => {
+  it("rejects non-admin attempting to update another user", async () => {
+    const { app, token } = fixture();
+    const authorization = "Bearer " + token("regular", "Usuario");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/users/other-user",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { password: "newPassword123" },
+    });
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toMatchObject({
+      message: "Acceso denegado: Se requieren permisos de Administrador",
+    });
+  });
+
+  it("rejects non-admin attempting to update own fields other than password", async () => {
+    const { app, token } = fixture();
+    const authorization = "Bearer " + token("regular", "Usuario");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/users/regular",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { role: "Administrador" },
+    });
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toMatchObject({
+      message: "Acceso denegado: Un usuario estándar solo puede actualizar su propia contraseña",
+    });
+  });
+
+  it("allows non-admin updating own password", async () => {
+    const { app, token, deps } = fixture();
+    vi.mocked(deps.users.updateUser).mockResolvedValueOnce({
+      id: "regular",
+      username: "regular",
+      role: "Usuario",
+    });
+    const authorization = "Bearer " + token("regular", "Usuario");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/users/regular",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { password: "newSecurePassword123" },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(deps.users.updateUser).toHaveBeenCalledWith(
+      "regular",
+      { password: "newSecurePassword123" },
+      "regular",
+    );
+  });
+
+  it("allows admin updating user with arbitrary fields", async () => {
+    const { app, token, deps } = fixture();
+    vi.mocked(deps.users.updateUser).mockResolvedValueOnce({
+      id: "regular",
+      username: "regular",
+      role: "Supervisor",
+    });
+    const authorization = "Bearer " + token("admin", "Administrador");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/users/regular",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { role: "Supervisor" },
+    });
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe("Anti-regression: PUT /api/employees/:id permission rules", () => {
+  it("rejects unauthorized non-supervisor role", async () => {
+    const { app, token } = fixture();
+    const authorization = "Bearer " + token("regular", "Usuario");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/employees/EMP-1",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { pin: "1234" },
+    });
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toMatchObject({
+      message: "Acceso denegado: Se requieren permisos de Supervisor o superior",
+    });
+  });
+
+  it("rejects Kiosk_Employee updating another employee", async () => {
+    const { app, token } = fixture();
+    const authorization = "Bearer " + token("kiosk-1", "Kiosk_Employee");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/employees/kiosk-2",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { pin: "1234" },
+    });
+    expect(response.statusCode).toBe(403);
+  });
+
+  it("allows Kiosk_Employee updating self but forces payload to pin only", async () => {
+    const { app, token, deps } = fixture();
+    vi.mocked(deps.employees.update).mockResolvedValueOnce({
+      id: "kiosk-1",
+      name: "Original Name",
+      rut: "12345678-9",
+    } as never);
+    const authorization = "Bearer " + token("kiosk-1", "Kiosk_Employee");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/employees/kiosk-1",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { pin: "1234", name: "Tampered Name" },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(deps.employees.update).toHaveBeenCalledWith("kiosk-1", { pin: "1234" }, "kiosk-1");
+  });
+
+  it("allows supervisor updating employee with full payload", async () => {
+    const { app, token, deps } = fixture();
+    vi.mocked(deps.employees.update).mockResolvedValueOnce({
+      id: "EMP-1",
+      name: "Updated Name",
+      rut: "12345678-9",
+    } as never);
+    const authorization = "Bearer " + token("sup", "Supervisor");
+    const response = await app.inject({
+      method: "PUT",
+      url: "/api/employees/EMP-1",
+      headers: { authorization, "content-type": "application/json" },
+      payload: { name: "Updated Name" },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(deps.employees.update).toHaveBeenCalledWith("EMP-1", { name: "Updated Name" }, "sup");
+  });
 });

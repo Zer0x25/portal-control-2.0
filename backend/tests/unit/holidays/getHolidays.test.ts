@@ -139,7 +139,9 @@ describe("HolidayService.getHolidays: caracterización B1–B6", () => {
     expect(prisma.holiday.count).toHaveBeenNthCalledWith(1, {
       where: { date: { startsWith: "2026-" } },
     });
-    expect(fetch).toHaveBeenCalledExactlyOnceWith("https://api.boostr.cl/holidays/2026.json");
+    expect(fetch).toHaveBeenCalledExactlyOnceWith("https://api.boostr.cl/holidays/2026.json", {
+      signal: expect.any(AbortSignal),
+    });
     expect(prisma.holiday.findMany).toHaveBeenCalledTimes(2);
     expect(prisma.holiday.findMany).toHaveBeenNthCalledWith(1, query);
     expect(prisma.holiday.findMany).toHaveBeenNthCalledWith(2, query);
@@ -171,15 +173,18 @@ describe("HolidayService.getHolidays: caracterización B1–B6", () => {
     expect(SocketService.emit).not.toHaveBeenCalled();
   });
 
-  it("B6: fallo del proveedor propaga el error original sin segunda lectura ni efectos de éxito", async () => {
+  it("B6: fallo del proveedor no hace fallar la lectura y devuelve lista local", async () => {
     vi.stubEnv("DISABLE_HOLIDAY_AUTOSYNC", "false");
     const failure = new Error("Provider unavailable");
     vi.mocked(prisma.holiday.findMany).mockResolvedValue([]);
     vi.mocked(prisma.holiday.count).mockResolvedValue(0);
     vi.mocked(fetch).mockRejectedValue(failure);
 
-    await expect(service.getHolidays()).rejects.toBe(failure);
-    expect(fetch).toHaveBeenCalledExactlyOnceWith("https://api.boostr.cl/holidays/2026.json");
+    const result = await service.getHolidays();
+    expect(result).toEqual([]);
+    expect(fetch).toHaveBeenCalledExactlyOnceWith("https://api.boostr.cl/holidays/2026.json", {
+      signal: expect.any(AbortSignal),
+    });
     expect(prisma.holiday.findMany).toHaveBeenCalledTimes(1);
     expect(prisma.holiday.upsert).not.toHaveBeenCalled();
     expect(auditService.log).not.toHaveBeenCalled();
