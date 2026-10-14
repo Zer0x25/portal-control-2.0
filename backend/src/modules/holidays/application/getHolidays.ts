@@ -22,9 +22,13 @@ export function createGetHolidays(deps: HolidayDependencies): GetHolidays {
       if (deps.autosyncEnabled()) {
         const year = deps.clock.year();
         if ((await deps.repository.countYear(year)) === 0) {
-          deps.onAutosync?.(deps.clock.year());
-          await deps.sync(deps.clock.year());
-          rows = await deps.repository.list(query);
+          deps.onAutosync?.(year);
+          try {
+            await deps.sync(year);
+            rows = await deps.repository.list(query);
+          } catch {
+            // Do not fail read path if external Boostr API times out or is unavailable
+          }
         }
       } else {
         deps.onAutosyncDisabled?.();

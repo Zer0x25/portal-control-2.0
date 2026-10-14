@@ -35,6 +35,18 @@ export function createShiftReportFlows<Row, List>(deps: ShiftReportFlowDependenc
         );
       }
     },
+    async update(id: string, input: Partial<ShiftReportInput>, actor = "SYSTEM") {
+      if (!deps.service.update) {
+        throw new AppError("Operación de actualización no soportada", 501, "NOT_IMPLEMENTED");
+      }
+      return deps.service.update(id, input, actor);
+    },
+    async delete(id: string, actor = "SYSTEM") {
+      if (!deps.service.delete) {
+        throw new AppError("Operación de eliminación no soportada", 501, "NOT_IMPLEMENTED");
+      }
+      await deps.service.delete(id, actor);
+    },
   };
 }
 export type ShiftReportFlows = ReturnType<typeof createShiftReportFlows>;

@@ -8,6 +8,7 @@ import { logger } from "../utils/logger";
 import { closureValidationService } from "./closureValidationService";
 import { holidayService } from "./HolidayService";
 import { integrityMaintenanceService } from "./integrityMaintenanceService";
+import { maintenanceService } from "./maintenanceService";
 import { seedingJobService } from "./seedingJobService";
 import { toBusinessDateChile } from "../utils/timeUtils";
 import { nextReportRun, REPORT_TIMEZONE } from "../utils/reportCron";
@@ -50,7 +51,7 @@ function startMaintenanceJobs() {
   scheduleNext();
 }
 
-async function runMaintenance() {
+export async function runMaintenance() {
   try {
     if (systemOperationService.isMaintenanceModeActive()) return;
     const phase2Running = await seedingJobService.isPhase2Running();
@@ -60,6 +61,9 @@ async function runMaintenance() {
     }
 
     console.warn("🛠️ Ejecutando tareas de mantenimiento del sistema...");
+    await maintenanceService.ensureInstanceId();
+    await maintenanceService.rotateAuditLogs();
+    await maintenanceService.refreshMaterializedViews();
     await integrityMaintenanceService.runNightlyIntegrityMaintenance();
 
     // Auto-closure belongs to the shared runtime runner (5 minutes, distributed lock).

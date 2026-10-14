@@ -282,7 +282,9 @@ export class KpiStatsService {
             };
           }
 
-          const hasWorkRecord = recordsForDay.some((r) => r.entrada && r.entrada !== "SIN REGISTRO");
+          const hasWorkRecord = recordsForDay.some(
+            (r) => r.entrada && r.entrada !== "SIN REGISTRO",
+          );
           const isHoliday = scheduleInfo?.isHoliday || false;
           const stateFromRecord = KpiStatsService.normalizeStateFromTimeRecordStatus(
             recordForDay?.status,
@@ -304,7 +306,8 @@ export class KpiStatsService {
           let colacionMinutes = 0;
 
           if (isLeave && emp.workdayType !== "Artículo 22") {
-            justificationType = stateFromRecord || scheduleInfo?.justificationType || justificationType;
+            justificationType =
+              stateFromRecord || scheduleInfo?.justificationType || justificationType;
             status = justificationType;
             scheduledShift = justificationType;
             actualClocks = "N/A";
@@ -366,7 +369,8 @@ export class KpiStatsService {
               const startCol = new Date(recordForDay.inicioColacion).getTime();
               const endCol = new Date(recordForDay.finColacion).getTime();
               colacionMinutes = Math.round((endCol - startCol) / (1000 * 60));
-            } else if (scheduleInfo?.hasColacion) colacionMinutes = scheduleInfo.colacionMinutes || 0;
+            } else if (scheduleInfo?.hasColacion)
+              colacionMinutes = scheduleInfo.colacionMinutes || 0;
           }
 
           return {

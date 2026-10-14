@@ -56,7 +56,11 @@ export class HolidayService {
         delete: (args) => prisma.holiday.delete(args),
       }),
       provider: createBoostrProvider(
-        (input, init) => (init === undefined ? fetch(input) : fetch(input, init)),
+        (input, init) =>
+          fetch(input, {
+            ...init,
+            signal: init?.signal ?? AbortSignal.timeout(5000),
+          }),
         logger,
       ),
       id: () => ulid(),

@@ -14,6 +14,7 @@ export const recordFlows = createRecordFlows({
     punch: (user, id, source, type, latitude, longitude) =>
       PunchService.handlePunch({ user }, id, source, type, latitude, longitude),
     list: (query, user) => TimeRecordService.listRecords(query, user),
+    dailyAttendance: (query, user) => TimeRecordService.dailyAttendance(query, user),
     save: (data, actor) => TimeRecordService.saveRecord(data, actor),
     enrich: (row) => TimeRecordService.enrichRecord(row),
     bulk: (data, actor) => TimeRecordService.createBulkRecords(data, actor),

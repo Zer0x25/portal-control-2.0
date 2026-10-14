@@ -78,7 +78,7 @@ describe("Spec 013 employees on Fastify", () => {
     });
     withoutPin(response.body);
     const stored = await prismaDirect.employee.findUniqueOrThrow({ where: { id: input.id } });
-    expect(stored.pin).toBe(input.pin);
+    expect(bcrypt.compareSync(input.pin, stored.pin!)).toBe(true);
     const linked = await prismaDirect.user.findUniqueOrThrow({ where: { employeeId: input.id } });
     expect(linked.role).toBe("Usuario");
     expect(linked.isForcePasswordChange).toBe(true);

@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { useQuery } from "@tanstack/react-query";
-import { eachDayOfInterval, format, parseISO, subDays } from "date-fns";
+import { format, subDays } from "date-fns";
 import { SUPERVISOR_DASHBOARD_CONFIG } from "../config/performance";
 import { timeRecordService } from "../../../services/timeRecordService";
-import { AttendanceRecord } from "../../../types";
-import { parseBusinessDateCL, parseBusinessDateTimeCL } from "../../../utils/dateUtils";
 
 interface AttendanceData {
   date: string;
@@ -28,115 +26,6 @@ interface AttendanceStats {
   };
 }
 
-const ABSENCE_STATUSES = new Set([
-  "Ausente",
-  "DiaLibre",
-  "Vacaciones",
-  "Permiso Especial",
-  "Feriado",
-]);
-const ABSENCE_ATTENDANCE_STATUSES = new Set([
-  "Ausente",
-  "Vacaciones",
-  "Permiso Especial",
-  "Feriado",
-  "DiaLibre",
-]);
-const LATE_TOLERANCE_MINUTES = 15;
-const ISO_WITH_TIMEZONE_REGEX = /(Z|[+-]\d{2}:\d{2})$/;
-
-const parseBusinessRecordDateTime = (date: string, value: string): Date => {
-  if (ISO_WITH_TIMEZONE_REGEX.test(value)) {
-    return parseISO(value);
-  }
-
-  const timePart = value.includes("T") ? value.split("T")[1] : value;
-  if (!timePart) {
-    return new Date(Number.NaN);
-  }
-
-  return parseBusinessDateTimeCL(date, timePart);
-};
-
-const isLateRecord = (record: AttendanceRecord): boolean => {
-  if (typeof record.isLate === "boolean") return record.isLate;
-  if (record.attendanceStatus === "Atraso") return true;
-  if (!record.entrada || !record.scheduledStartTime) return false;
-
-  const [scheduledHour, scheduledMinute] = record.scheduledStartTime.split(":");
-  if (!scheduledHour || !scheduledMinute) return false;
-
-  const scheduledAt = parseBusinessDateTimeCL(
-    record.date,
-    `${scheduledHour}:${scheduledMinute}:00`,
-  );
-  const enteredAt = parseBusinessRecordDateTime(record.date, record.entrada);
-
-  if (Number.isNaN(scheduledAt.getTime()) || Number.isNaN(enteredAt.getTime())) return false;
-  const toleranceMs = LATE_TOLERANCE_MINUTES * 60 * 1000;
-  return enteredAt.getTime() > scheduledAt.getTime() + toleranceMs;
-};
-
-const buildAttendanceSeries = (
-  records: AttendanceRecord[],
-  startDate: string,
-  endDate: string,
-): AttendanceData[] => {
-  const days = eachDayOfInterval({
-    start: parseBusinessDateCL(startDate),
-    end: parseBusinessDateCL(endDate),
-  });
-
-  const byDate = new Map<
-    string,
-    { totalEmployees: Set<string>; presentEmployees: Set<string>; lateEmployees: Set<string> }
-  >();
-
-  records.forEach((record) => {
-    const key = record.date;
-    if (!byDate.has(key)) {
-      byDate.set(key, {
-        totalEmployees: new Set<string>(),
-        presentEmployees: new Set<string>(),
-        lateEmployees: new Set<string>(),
-      });
-    }
-
-    const bucket = byDate.get(key);
-    if (!bucket) return;
-
-    bucket.totalEmployees.add(record.employeeId);
-
-    const isAbsentLike = record.attendanceStatus
-      ? ABSENCE_ATTENDANCE_STATUSES.has(record.attendanceStatus)
-      : ABSENCE_STATUSES.has(record.status);
-    const isPresent = Boolean(record.entrada) && !isAbsentLike;
-
-    if (isPresent) {
-      bucket.presentEmployees.add(record.employeeId);
-      if (isLateRecord(record)) {
-        bucket.lateEmployees.add(record.employeeId);
-      }
-    }
-  });
-
-  return days.map((day) => {
-    const key = format(day, "yyyy-MM-dd");
-    const bucket = byDate.get(key);
-
-    if (!bucket) {
-      return { date: key, present: 0, total: 0, late: 0 };
-    }
-
-    return {
-      date: key,
-      present: bucket.presentEmployees.size,
-      total: bucket.totalEmployees.size,
-      late: bucket.lateEmployees.size,
-    };
-  });
-};
-
 /**
  * Hook para obtener datos de asistencia histórica
  * Incluye estadísticas calculadas y datos para gráficos
@@ -154,27 +43,9 @@ export function useAttendanceAnalytics(days: number = 30) {
   } = useQuery({
     queryKey: ["attendance-analytics", startDate, endDate],
     queryFn: async (): Promise<AttendanceData[]> => {
-      const pageSize = 500;
-      let page = 1;
-      let totalPages: number;
-      const records: AttendanceRecord[] = [];
-
-      do {
-        const response = await timeRecordService.getAll({
-          page,
-          pageSize,
-          filters: {
-            desde: startDate,
-            hasta: endDate,
-          },
-        });
-
-        records.push(...response.data);
-        totalPages = response.totalPages || 1;
-        page += 1;
-      } while (page <= totalPages);
-
-      return buildAttendanceSeries(records, startDate, endDate);
+      // Agregado en servidor (una sola request de ~30 filas) en vez del
+      // volcado paginado completo (~6MB) con agregación en cliente.
+      return timeRecordService.getDailyAttendance({ desde: startDate, hasta: endDate });
     },
     ...SUPERVISOR_DASHBOARD_CONFIG.analyticsCache,
   });

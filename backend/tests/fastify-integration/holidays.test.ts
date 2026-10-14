@@ -239,6 +239,33 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
     expect(errorLog.metadata).toMatchObject({ query: {} });
     expect(JSON.stringify(errorLog.metadata)).not.toContain(actor.token);
   });
+  it("syncs without payload or year and defaults to current host year", async () => {
+    const actor = await session("sync-defaults-supervisor");
+    const currentYear = new Date().getFullYear();
+    const fetcher = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            status: "success",
+            data: [{ date: `${currentYear}-01-01`, title: "Año Nuevo", inalienable: true }],
+          }),
+          { headers: { "content-type": "application/json" } },
+        ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/holidays/sync",
+      payload: {},
+      headers: actor.headers,
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ success: true, total: 1, year: currentYear });
+    expect(fetcher).toHaveBeenCalledWith(
+      `https://api.boostr.cl/holidays/${currentYear}.json`,
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
   it("probes readiness against actual PostgreSQL", async () => {
     const response = await app.inject({ url: "/api/health/ready" });
     expect(response.statusCode).toBe(200);

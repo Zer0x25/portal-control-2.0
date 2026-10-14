@@ -276,6 +276,10 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               onClick={() => handleClockingAction && handleClockingAction(action.actionType)}
               disabled={isDisabled}
               title={!isKioskArmed ? "Preparando..." : !action.enabled ? "No disponible" : ""}
+              // El fallback de Button (title -> aria-label) dejaría a las 4
+              // acciones anunciándose igual ("No disponible"). Etiqueta
+              // explícita: el tooltip visual se conserva, el lector oye la acción.
+              aria-label={action.label}
               className={`w-full h-16 text-[10px] ${colorClass}`}
             >
               {action.label}

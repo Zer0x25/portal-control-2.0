@@ -51,16 +51,6 @@ vi.mock("../../../components/ui/Input", () => ({
   ),
 }));
 
-// Mock framer-motion to avoid issues with animations in tests
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
 describe("TimeRecordFilters Component", () => {
   const mockOnClientFilterChange = vi.fn();
   const mockOnDateFilterChange = vi.fn();

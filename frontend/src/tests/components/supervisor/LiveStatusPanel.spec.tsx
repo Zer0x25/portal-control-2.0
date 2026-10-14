@@ -16,26 +16,6 @@ vi.mock("@tanstack/react-virtual", () => ({
   }),
 }));
 
-// Mock de Framer Motion
-vi.mock("framer-motion", () => {
-  const actual = vi.importActual("framer-motion");
-  return {
-    ...actual,
-    motion: new Proxy(
-      {},
-      {
-        get: (_target, key) => {
-          return ({ children, ...props }: any) => {
-            const Tag = key as any;
-            return <Tag {...props}>{children}</Tag>;
-          };
-        },
-      },
-    ),
-    AnimatePresence: ({ children }: any) => <>{children}</>,
-  };
-});
-
 describe("LiveStatusPanel Component", () => {
   const mockEmployees: { employee: Employee; status: ClockingStatus }[] = [
     {

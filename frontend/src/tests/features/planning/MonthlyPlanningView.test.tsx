@@ -1,15 +1,6 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MonthlyPlanningView } from "../../../features/planning/views/MonthlyPlanning.view";
-
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}));
 
 vi.mock("../../../features/planning/components/WizardContainer", () => ({
   default: () => <div>WIZARD-CONTAINER-MOCK</div>,

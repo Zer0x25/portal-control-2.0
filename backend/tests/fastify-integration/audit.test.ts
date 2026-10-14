@@ -123,7 +123,7 @@ describe("Spec022 audit on Fastify", () => {
     await logs();
     const result = await http(
       "GET",
-      "/api/audit-logs?actor=alice&category=A&category=B&severity=INFO&outcome=SUCCESS&recordId=r1&action=edit",
+      "/api/audit-logs?actor=alice&category=A&category=B&severity=INFO&outcome=SUCCESS&recordId=r1&action=EDIT",
     );
     expect(result.status).toBe(200);
     expect(result.body.data.items.map((x: any) => x.id)).toEqual(["audit-a"]);

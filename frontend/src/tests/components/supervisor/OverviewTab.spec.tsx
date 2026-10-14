@@ -5,13 +5,6 @@ import { useDashboardOverviewQuery } from "../../../hooks/queries/useDashboardQu
 
 vi.mock("../../../hooks/queries/useDashboardQueries");
 
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
-
 vi.mock("../../../features/supervisor-dashboard/components/LiveStatusPanel", () => ({
   default: ({ employeesWithStatus, selectedStatuses, onStatusesChange, onEmployeeClick }: any) => (
     <div data-testid="live-status-panel">
