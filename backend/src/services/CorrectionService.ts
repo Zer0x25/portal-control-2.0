@@ -6,6 +6,7 @@ import { parseBusinessDateChile } from "../utils/timeUtils";
 import { AppError } from "../utils/AppError";
 import { auditService } from "./auditService";
 import { TimeRecordService } from "./TimeRecordService";
+import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { Prisma, TimeRecord } from "../generated/prisma/client";
 
 export interface CorrectionListParams {
@@ -389,6 +390,12 @@ export class CorrectionService {
           where: { id: currentRequest.timeRecordId },
           data: patch,
         });
+
+        await timeRecordIntegrityService.sealAfterMutation(
+          tx,
+          currentRequest.employeeId,
+          currentRequest.timeRecordId,
+        );
 
         await auditService.log({
           actorUsername: actorUsername || resolvedBy || "SYSTEM",

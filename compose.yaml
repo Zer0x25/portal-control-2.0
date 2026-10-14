@@ -58,13 +58,13 @@ services:
   backend:
     image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend}:v8.28.0
     restart: always
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     environment:
       NODE_ENV: production
       PORT: ${PORT:-4000}
-      JWT_SECRET: ${JWT_SECRET}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
+      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET debe estar definido en produccion}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Error: ALLOWED_ORIGINS debe estar definido en produccion}
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@pgbouncer:5432/${DB_NAME:-pweb3}?schema=public&pgbouncer=true&connection_limit=1
       DIRECT_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-pweb3}?schema=public
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}

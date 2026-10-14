@@ -7,10 +7,39 @@ type Scope = { id: string; refs: number; done: Promise<void>; finish(): void };
 export type WorkLease = { id: string; release(): Promise<void> };
 
 /** Persistent, fail-closed ownership. No expiry can outrun an application motor. */
+const PERMIT_TTL_MS = 5 * 60 * 1000; // 5 minutos máximo para un permiso huérfano
+const LOCK_TTL_MS = 30 * 60 * 1000; // 30 minutos máximo para un lock de job
+
 export class WorkCoordinator {
   readonly owner = randomUUID();
   private closing = false;
+  private reconciled = false;
   private readonly scopes = new Map<string, Scope>();
+
+  private async pruneStaleCoordination(): Promise<void> {
+    const permitCutoff = new Date(Date.now() - PERMIT_TTL_MS);
+    const lockCutoff = new Date(Date.now() - LOCK_TTL_MS);
+    await prismaDirect.$executeRaw`DELETE FROM portal_runtime.locks WHERE created_at < ${lockCutoff}`;
+    await prismaDirect.$executeRaw`
+      UPDATE portal_runtime.gate
+      SET maintenance_permit = NULL, operation = NULL
+      WHERE id = 1
+        AND maintenance_permit IS NOT NULL
+        AND EXISTS (
+          SELECT 1 FROM portal_runtime.permits p
+          WHERE p.id = portal_runtime.gate.maintenance_permit
+            AND p.created_at < ${permitCutoff}
+        )
+    `;
+    await prismaDirect.$executeRaw`
+      DELETE FROM portal_runtime.permits
+      WHERE created_at < ${permitCutoff}
+        AND NOT EXISTS (
+          SELECT 1 FROM portal_runtime.gate g
+          WHERE g.maintenance_permit = portal_runtime.permits.id
+        )
+    `;
+  }
 
   openRuntime(): void {
     if (this.scopes.size) throw new ConflictError("Trabajo aún drenando");
@@ -25,6 +54,10 @@ export class WorkCoordinator {
   }
   async enter(label: string): Promise<WorkLease> {
     if (this.closing) throw new AppError("Runtime cerrando", 503, "RUNTIME_CLOSING");
+    if (!this.reconciled) {
+      this.reconciled = true;
+      await this.pruneStaleCoordination().catch(() => {});
+    }
     const id = randomUUID();
     let finish!: () => void;
     const scope: Scope = {
@@ -117,6 +150,7 @@ export class WorkCoordinator {
       await own?.release();
     };
     try {
+      await this.pruneStaleCoordination().catch(() => {});
       await withDirectTransaction(async (tx) => {
         const rows = await tx.$queryRaw<
           { maintenance_permit: string | null }[]
@@ -149,6 +183,7 @@ export class WorkCoordinator {
   ): Promise<{ ran: true; value: T } | { ran: false }> {
     const scope = this.current();
     if (!scope) throw new Error("Exclusive work requires admission");
+    await this.pruneStaleCoordination().catch(() => {});
     const claimed = await prismaDirect.$queryRaw<
       { key: string }[]
     >`INSERT INTO portal_runtime.locks (key, permit_id) VALUES (${key}, ${scope.id}::uuid) ON CONFLICT (key) DO NOTHING RETURNING key`;
