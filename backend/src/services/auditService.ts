@@ -210,7 +210,12 @@ export const auditService = {
     }
 
     if (action) {
-      where.action = { contains: action, mode: "insensitive" };
+      // Exact match (case-sensitive): action values are enum-like constants
+      // (e.g. DETECCION_BLOQUEO_PROACTIVA). `contains + insensitive` forced a
+      // seq scan over ~600k rows (~1.2s); exact equality uses the
+      // (severity, action) btree index. Free-text search was never used by any
+      // caller (AuditLogsView does not filter by action).
+      where.action = action;
     }
 
     if (category) {

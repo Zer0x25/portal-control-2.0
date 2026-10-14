@@ -2,7 +2,10 @@ import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
-import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
+import {
+  useTimeRecordMutations,
+  useUserClockingStatus,
+} from "../../../hooks/queries/useTimeRecordsQuery";
 import { useToasts } from "../../../hooks/useToasts";
 import { useScheduling } from "../../../hooks/useScheduling";
 import { employeeService } from "../../../services/employeeService";
@@ -11,7 +14,6 @@ import * as kpiService from "../../../services/kpiService";
 import { formatDateUTCISO, parseBusinessDateCL } from "../../../utils/dateUtils";
 import { formatDecimalHoursToHHMM, formatDisplayDateTime } from "../../../utils/formatters";
 import {
-  AttendanceRecord,
   DailyTimeRecord,
   TimeRecordField,
   CorrectionRequest,
@@ -30,11 +32,6 @@ export const useWorkerPortalData = () => {
   const businessNow = useBusinessNow({ tickMs: null });
   const { currentUser } = useAuth();
   const { getEmployeeById, allEmployees, isLoadingEmployees, refreshEmployees } = useEmployees();
-  const { timeRecordsPage: recentRecordData, allRecordsInDateRange: recordsData } = useTimeRecords({
-    page: 1,
-    pageSize: -1,
-    filters: {},
-  });
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
   const { requests, getEmployeeDailyScheduleInfo, isLoadingSchedulingData } = useScheduling();
@@ -75,6 +72,35 @@ export const useWorkerPortalData = () => {
 
   const employee = resolvedEmployee || storeEmployee;
 
+  // Acotar en servidor (empleado + mes seleccionado): antes se pedía el
+  // volcado completo (pageSize -1 sin filtros, ~1.7MB en staging) y se
+  // filtraba en cliente. Sin empleado resuelto la query queda
+  // deshabilitada: cero fetch hasta tener filtros válidos.
+  const monthBounds = useMemo(() => {
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const lastDay = new Date(Date.UTC(year, month, 0, 12)).getUTCDate();
+    const monthPad = String(month).padStart(2, "0");
+    return {
+      desde: `${year}-${monthPad}-01`,
+      hasta: `${year}-${monthPad}-${String(lastDay).padStart(2, "0")}`,
+    };
+  }, [selectedMonth]);
+
+  const { allRecordsInDateRange: recordsData } = useTimeRecords({
+    page: 1,
+    pageSize: -1,
+    filters: {
+      employeeId: employee?.id,
+      desde: monthBounds.desde,
+      hasta: monthBounds.hasta,
+    },
+    enabled: Boolean(employee?.id),
+  });
+
+  // Estado de marcaje desde el último registro del empleado (1 sola fila),
+  // válido incluso si el registro abierto es de un mes anterior al visible.
+  const { lastRecord: latestEmployeeRecord } = useUserClockingStatus(employee?.id);
+
   useEffect(() => {
     if (!currentUser) {
       setIsEmployeeResolutionFinished(true);
@@ -95,39 +121,33 @@ export const useWorkerPortalData = () => {
     if (isLoadingEmployees || isResolvingEmployeeLink || hasTriedResolvingEmployeeLink.current)
       return;
 
-    let cancelled = false;
-
+    // Nota: sin cleanup que cancele el vuelo. `setIsResolvingEmployeeLink(true)`
+    // re-renderiza y re-ejecuta este efecto (cambia un dep); si el cleanup
+    // cancelara, el `cancelled` quedaría en true antes de que los awaits
+    // resuelvan y la resolución colgaría en "cargando" para siempre.
+    // `hasTriedResolvingEmployeeLink` ya garantiza un único vuelo; en React 18
+    // un setState post-unmount es no-op seguro.
     const resolveEmployeeLink = async () => {
       hasTriedResolvingEmployeeLink.current = true;
       setIsResolvingEmployeeLink(true);
       try {
         await refreshEmployees();
         const directEmployees = await employeeService.getAll();
-        if (!cancelled) {
-          if (currentUser.employeeId) {
-            const linkedEmployee = directEmployees.find(
-              (item) => item.id === currentUser.employeeId,
-            );
-            setResolvedEmployee(linkedEmployee || null);
-          } else if (directEmployees.length === 1) {
-            setResolvedEmployee(directEmployees[0]);
-          } else {
-            setResolvedEmployee(null);
-          }
+        if (currentUser.employeeId) {
+          const linkedEmployee = directEmployees.find((item) => item.id === currentUser.employeeId);
+          setResolvedEmployee(linkedEmployee || null);
+        } else if (directEmployees.length === 1) {
+          setResolvedEmployee(directEmployees[0]);
+        } else {
+          setResolvedEmployee(null);
         }
       } finally {
-        if (!cancelled) {
-          setIsResolvingEmployeeLink(false);
-          setIsEmployeeResolutionFinished(true);
-        }
+        setIsResolvingEmployeeLink(false);
+        setIsEmployeeResolutionFinished(true);
       }
     };
 
     void resolveEmployeeLink();
-
-    return () => {
-      cancelled = true;
-    };
   }, [currentUser, storeEmployee, isLoadingEmployees, isResolvingEmployeeLink, refreshEmployees]);
 
   const monthOptions = useMemo(() => {
@@ -153,39 +173,23 @@ export const useWorkerPortalData = () => {
     if (!employee) {
       return;
     }
-    if (!recentRecordData || recentRecordData.length === 0) {
+    if (!latestEmployeeRecord) {
       setStatus("fuera");
       setLatestOpenRecord(null);
       return;
     }
 
-    // Antiregresión: el estado debe derivarse del último registro DEL empleado,
-    // no del primero global (evita contaminación cruzada entre empleados).
-    const ownRecords = (recentRecordData as AttendanceRecord[]).filter(
-      (r) => r.employeeId === employee.id,
-    );
-    if (ownRecords.length === 0) {
-      setStatus("fuera");
+    // Antiregresión: el estado debe derivarse del último registro DEL empleado
+    // (query acotada por employeeId en servidor), nunca de un global sin filtrar.
+    const latest = latestEmployeeRecord;
+    const nextStatus = getContractClockingStatus(latest, () => "fuera");
+    setStatus(nextStatus);
+    if (["fuera", "terminada", "jornada_terminada_anomalia"].includes(nextStatus)) {
       setLatestOpenRecord(null);
-      return;
-    }
-    const latest = [...ownRecords].sort((a, b) => {
-      if (a.date !== b.date) return b.date.localeCompare(a.date);
-      return (b.entradaTimestamp || 0) - (a.entradaTimestamp || 0);
-    })[0];
-    if (latest) {
-      const nextStatus = getContractClockingStatus(latest, () => "fuera");
-      setStatus(nextStatus);
-      if (["fuera", "terminada", "jornada_terminada_anomalia"].includes(nextStatus)) {
-        setLatestOpenRecord(null);
-      } else {
-        setLatestOpenRecord(latest as DailyTimeRecord);
-      }
     } else {
-      setStatus("fuera");
-      setLatestOpenRecord(null);
+      setLatestOpenRecord(latest as DailyTimeRecord);
     }
-  }, [employee, recentRecordData]);
+  }, [employee, latestEmployeeRecord]);
 
   const requestsMap = useMemo(() => {
     const map = new Map<string, CorrectionRequest>();

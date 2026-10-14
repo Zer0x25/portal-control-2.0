@@ -1,8 +1,9 @@
 import React from "react";
-import AboutModal from "../ui/AboutModal";
 import { InformationCircleIcon, MoonIcon, SunIcon } from "../ui/icons/index";
 import type { SidebarMenuItem } from "../../hooks/layout/sidebarMenu";
 import SidebarNavItem from "./SidebarNavItem";
+
+const AboutModal = React.lazy(() => import("../ui/AboutModal"));
 
 interface SidebarViewProps {
   isOpen: boolean;
@@ -116,7 +117,11 @@ const SidebarView: React.FC<SidebarViewProps> = ({
         </div>
       </aside>
 
-      <AboutModal isOpen={showAboutModal} onClose={onCloseAbout} />
+      {showAboutModal && (
+        <React.Suspense fallback={null}>
+          <AboutModal isOpen={showAboutModal} onClose={onCloseAbout} />
+        </React.Suspense>
+      )}
     </>
   );
 };

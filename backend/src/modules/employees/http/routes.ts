@@ -59,14 +59,26 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
   app.put<{ Params: { id: string }; Body: EmployeeUpdateInput }>(
     "/api/employees/:id",
     {
-      ...write,
+      ...read,
       preHandler: [
         validateRequest("params", z.object({ id: z.string() })),
         validateRequest("body", EmployeeSchema.partial()),
       ],
     },
-    async (request) =>
-      options.service.update(request.params.id, request.body, request.user?.username || "SYSTEM"),
+    async (request) => {
+      const role = request.user?.role;
+      const isSupervisorOrAbove =
+        role !== undefined &&
+        ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(role);
+      const isKioskSelf =
+        role === "Kiosk_Employee" &&
+        (request.user?.id === request.params.id || request.user?.employeeId === request.params.id);
+      if (!isSupervisorOrAbove && !isKioskSelf) {
+        throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
+      }
+      const payload: EmployeeUpdateInput = isKioskSelf ? { pin: request.body.pin } : request.body;
+      return options.service.update(request.params.id, payload, request.user?.username || "SYSTEM");
+    },
   );
   app.post<{ Body: EmployeeBulkInput[] }>(
     "/api/employees/bulk",

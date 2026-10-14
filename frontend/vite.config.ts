@@ -1,7 +1,35 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+
+// Preload de la fuente del cuerpo (Inter-Regular, pesos 400/500) con su URL
+// hasheada del bundle: sin esto el navegador la descubre tarde vía CSS y el
+// primer paint de texto espera ~110KB. Solo Regular: SemiBold/Bold llegan
+// por CSS para encabezados sin competir con el JS crítico en el preload.
+const fontPreloadPlugin = (): Plugin => ({
+  name: "font-preload-inter-regular",
+  apply: "build",
+  transformIndexHtml(html, ctx) {
+    const files = Object.keys(ctx.bundle ?? {});
+    const regular = files.find(
+      (f) => f.startsWith("assets/Inter-Regular-") && f.endsWith(".woff2"),
+    );
+    if (!regular) return html;
+    const tag = {
+      tag: "link",
+      attrs: {
+        rel: "preload",
+        href: `/${regular}`,
+        as: "font",
+        type: "font/woff2",
+        crossorigin: "",
+      },
+      injectTo: "head-prepend" as const,
+    };
+    return { html, tags: [tag] };
+  },
+});
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -40,6 +68,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       tailwindcss(),
       react(),
+      fontPreloadPlugin(),
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.svg"],
@@ -58,6 +87,14 @@ export default defineConfig(({ mode }) => {
             "**/assets/ReportsTab-*.js",
             "**/assets/RequestsTab-*.js",
             "**/assets/AccountingClosureTab-*.js",
+            // Solo rutas post-login (store global ya no los importa en boot):
+            // runtimeCaching StaleWhileRevalidate los trae bajo demanda.
+            "**/assets/date-utils-*.js",
+            "**/assets/dateUtils-*.js",
+            "**/assets/formatters-*.js",
+            // Validación zod de IndexedDB: solo se importa en writes de caché.
+            "**/assets/validation-*.js",
+            "**/assets/idbValidation-*.js",
           ],
           runtimeCaching: [
             {
@@ -109,63 +146,65 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (!id.includes("node_modules")) return undefined;
-
-            if (
-              id.includes("node_modules/react/") ||
-              id.includes("node_modules/react-dom/") ||
-              id.includes("node_modules/scheduler/")
-            ) {
-              return "react-core";
-            }
-            if (
-              id.includes("node_modules/react-router") ||
-              id.includes("node_modules/react-router-dom")
-            ) {
-              return "router";
-            }
-            // Animaciones
-            if (id.includes("node_modules/framer-motion")) {
-              return "framer-motion";
-            }
-            // Devtools (cargadas bajo demanda)
-            if (id.includes("node_modules/@tanstack/react-query-devtools")) {
-              return "devtools";
-            }
-            // Estado y data fetching
-            if (id.includes("node_modules/@tanstack") || id.includes("node_modules/zustand")) {
-              return "state";
-            }
-            // Charting
-            if (
-              id.includes("node_modules/chart.js") ||
-              id.includes("node_modules/react-chartjs-2")
-            ) {
-              return "charts";
-            }
-            // Networking / realtime
-            if (id.includes("node_modules/axios")) {
-              return "network";
-            }
-            if (id.includes("node_modules/socket.io-client")) {
-              return "realtime";
-            }
-            // Date utilities
-            if (id.includes("node_modules/date-fns") || id.includes("node_modules/date-fns-tz")) {
-              return "date-utils";
-            }
-            // Validation / ids / local db
-            if (id.includes("node_modules/zod")) {
-              return "validation";
-            }
-            if (id.includes("node_modules/idb")) {
-              return "storage";
-            }
-            if (id.includes("node_modules/nanoid") || id.includes("node_modules/ulid")) {
-              return "ids";
-            }
-            return "vendor";
+          // Rolldown nativo (Vite 8): `advancedChunks` separa cada grupo
+          // vendor en su propio chunk SIN absorber runtime compartido.
+          // Con el legacy `manualChunks(id)` el runtime JSX compartido
+          // caía dentro del chunk "charts" y el entry lo preloadeaba,
+          // arrastrando chart.js (~100KB treeshaken) a la carga inicial
+          // aunque solo se usa tras React.lazy (AttendanceChart).
+          advancedChunks: {
+            groups: [
+              {
+                name: "react-core",
+                test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
+              },
+              {
+                name: "router",
+                test: /[\\/]node_modules[\\/]react-router/,
+              },
+              {
+                name: "devtools",
+                test: /[\\/]node_modules[\\/]@tanstack[\\/]react-query-devtools/,
+              },
+              {
+                name: "state",
+                test: /[\\/]node_modules[\\/](@tanstack[\\/]react-query|zustand)[\\/]/,
+              },
+              // Solo la lib de charting: la usa AttendanceChart tras
+              // React.lazy, nunca debe ir en el preload del entry.
+              {
+                name: "charts",
+                test: /[\\/]node_modules[\\/](chart\.js|react-chartjs-2)[\\/]/,
+              },
+              {
+                name: "network",
+                test: /[\\/]node_modules[\\/]axios[\\/]/,
+              },
+              {
+                name: "realtime",
+                test: /[\\/]node_modules[\\/]socket\.io-client[\\/]/,
+              },
+              {
+                name: "date-utils",
+                test: /[\\/]node_modules[\\/](date-fns|date-fns-tz)[\\/]/,
+              },
+              {
+                name: "validation",
+                test: /[\\/]node_modules[\\/]zod[\\/]/,
+              },
+              {
+                name: "storage",
+                test: /[\\/]node_modules[\\/]idb[\\/]/,
+              },
+              {
+                name: "ids",
+                test: /[\\/]node_modules[\\/](nanoid|ulid)[\\/]/,
+              },
+              {
+                name: "vendor",
+                test: /[\\/]node_modules[\\/]/,
+              },
+            ],
           },
         },
         // Tree shaking agresivo

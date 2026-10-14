@@ -276,6 +276,10 @@ export class EmployeeService {
   }
 
   async createEmployee(data: EmployeeCreateData, db: EmployeeDbClient = prisma) {
+    const hashedPin =
+      typeof data.pin === "string" && /^\d{4}$/.test(data.pin)
+        ? await bcryptjs.hash(data.pin, 10)
+        : data.pin;
     return await db.employee.create({
       data: {
         id: data.id,
@@ -286,12 +290,16 @@ export class EmployeeService {
         area: data.area,
         workdayType: data.workdayType,
         status: (data.status || "Activo") as EmployeeStatus,
-        pin: data.pin,
+        pin: hashedPin,
       },
     });
   }
 
   async updateEmployee(id: string, data: EmployeeUpdateData) {
+    const hashedPin =
+      typeof data.pin === "string" && /^\d{4}$/.test(data.pin)
+        ? await bcryptjs.hash(data.pin, 10)
+        : data.pin;
     return await prisma.employee.update({
       where: { id },
       data: {
@@ -301,9 +309,9 @@ export class EmployeeService {
         area: data.area,
         workdayType: data.workdayType,
         status: data.status as EmployeeStatus,
-        pin: data.pin,
-        isPinBlocked: data.isPinBlocked,
-        pinFailedAttempts: data.pinFailedAttempts,
+        pin: hashedPin,
+        isPinBlocked: data.pin ? false : data.isPinBlocked,
+        pinFailedAttempts: data.pin ? 0 : data.pinFailedAttempts,
       },
     });
   }

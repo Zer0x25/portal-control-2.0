@@ -13,8 +13,7 @@ export const useDashboardData = () => {
       overviewData?.teamStatus || {
         present: 0,
         total: 0,
-        anomalies: [],
-        presentRecords: [],
+        anomaliesCount: 0,
       }
     );
   }, [overviewData]);
