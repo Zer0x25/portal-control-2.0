@@ -996,6 +996,49 @@
 
 /**
  * @openapi
+ * /api/shift-reports/{id}:
+ *   patch:
+ *     summary: Actualizar una bitácora de turno existente
+ *     tags: [ShiftReports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Bitácora actualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ShiftReport'
+ *   delete:
+ *     summary: Eliminar una bitácora de turno
+ *     tags: [ShiftReports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Bitácora eliminada
+ */
+
+/**
+ * @openapi
  * /api/shift-reports/export/{id}:
  *   get:
  *     summary: Exportar bitácora de turno a Excel
