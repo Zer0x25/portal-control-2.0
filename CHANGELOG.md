@@ -1,5 +1,14 @@
 # Changelog
 
+## [8.29.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.29.0...v8.29.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* **db:** sanitize pool connection urls and harden maintenance routines ([#63](https://github.com/Zer0x25/portal-control-2.0/issues/63)) ([7aaf0da](https://github.com/Zer0x25/portal-control-2.0/commit/7aaf0daccf2750039d14c562769a32e207ab8aba))
+* **operations:** harden holiday sync, shift report mutations, and scheduling batch fetch ([#64](https://github.com/Zer0x25/portal-control-2.0/issues/64)) ([1c6a408](https://github.com/Zer0x25/portal-control-2.0/commit/1c6a40826c9f0a3aae574923ca7cbd595b3c4378))
+* **security:** harden runtime coordination, kiosk auth and audit trigger ([#61](https://github.com/Zer0x25/portal-control-2.0/issues/61)) ([670a99b](https://github.com/Zer0x25/portal-control-2.0/commit/670a99b94b18684686bdbe730472bf91d1eb7b2f))
+
 ## [8.29.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.28.0...v8.29.0) (2026-10-11)
 
 
