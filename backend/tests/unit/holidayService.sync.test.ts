@@ -72,7 +72,9 @@ describe("HolidayService.syncExternalHolidays", () => {
 
     const result = await holidayService.syncExternalHolidays(2024, "test-user");
 
-    expect(global.fetch).toHaveBeenCalledWith("https://api.boostr.cl/holidays/2024.json");
+    expect(global.fetch).toHaveBeenCalledWith("https://api.boostr.cl/holidays/2024.json", {
+      signal: expect.any(AbortSignal),
+    });
 
     expect(prisma.holiday.upsert).toHaveBeenCalledTimes(2);
     expect(prisma.holiday.upsert).toHaveBeenNthCalledWith(1, {

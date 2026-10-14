@@ -115,14 +115,18 @@ export const holidayService = {
     }
   },
 
-  async syncExternalHolidays(): Promise<{
+  async syncExternalHolidays(year = new Date().getFullYear()): Promise<{
     total: number;
     added: number;
     skipped: number;
   }> {
     const response = await fetch(`${API_URL}/sync`, {
       method: "POST",
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+      headers: {
+        "Content-Type": "application/json",
+        ...(authService.getAuthHeader() as Record<string, string>),
+      },
+      body: JSON.stringify({ year }),
     });
     if (!response.ok) {
       throw new Error("Error al sincronizar feriados externos");

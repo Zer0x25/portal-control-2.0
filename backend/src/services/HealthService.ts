@@ -1,5 +1,8 @@
 import prisma from "./db";
 import os from "os";
+import { randomUUID } from "node:crypto";
+
+const BOOT_INSTANCE_ID = process.env.INSTANCE_ID || randomUUID();
 import { backupHealthService } from "./backupHealthService";
 import { integrityStatusService } from "./integrityStatusService";
 import { jobTelemetryService } from "./jobTelemetryService";
@@ -11,6 +14,7 @@ type JobStatus = ReturnType<typeof jobTelemetryService.getSnapshot>;
 
 export interface HealthDetails {
   status: "healthy" | "degraded";
+  instanceId: string;
   timestamp: string;
   uptime: number;
   system: {
@@ -87,6 +91,7 @@ export class HealthService {
 
     return {
       status: healthy ? "healthy" : "degraded",
+      instanceId: BOOT_INSTANCE_ID,
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       system: {
