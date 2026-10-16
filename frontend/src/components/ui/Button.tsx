@@ -85,7 +85,14 @@ const Button = React.memo(
           // Los botones icon-only usan `title` como tooltip visual; reflejarlo
           // como `aria-label` cuando no hay etiqueta explícita (a11y + agentes),
           // pero solo si no hay un children (es decir, es un icon-only).
-          aria-label={props["aria-label"] ?? (!children ? props.title : undefined)}
+          aria-label={
+            props["aria-label"] ??
+            (React.Children.toArray(children).every(
+              (child) => typeof child !== "string" && typeof child !== "number",
+            )
+              ? props.title
+              : undefined)
+          }
           {...props}
         >
           {loading && (
