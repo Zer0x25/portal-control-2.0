@@ -491,83 +491,105 @@ export class ExportService {
 
     let pageNum = 0;
 
+    // Pre-calculate array of dates
+    const datesToProcess: Date[] = [];
+    const tempDate = new Date(startDate);
+    while (tempDate <= endDate) {
+      datesToProcess.push(new Date(tempDate));
+      tempDate.setUTCDate(tempDate.getUTCDate() + 1);
+    }
+    const CHUNK_SIZE = 15;
+
     for (const employee of employees) {
       const rows = [];
       let weeklySum = 0;
       let hasWorkData = false;
 
-      for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
-        const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
-          employee.id,
-          new Date(d),
-          context,
-          employee,
+      // ⚡ Bolt Optimization: Replace sequential await in a loop with concurrent Promise.all execution in chunks.
+      // Why: Awaiting each scheduleInfo separately for each day blocks the event loop (N+1 delay).
+      // Impact: Reduces total latency of schedule lookup from O(N) to O(N/CHUNK_SIZE) concurrent requests.
+      for (let i = 0; i < datesToProcess.length; i += CHUNK_SIZE) {
+        const chunkDates = datesToProcess.slice(i, i + CHUNK_SIZE);
+        const chunkSchedules = await Promise.all(
+          chunkDates.map((d) =>
+            schedulingService.getEmployeeDailyScheduleInfo(
+              employee.id,
+              new Date(d),
+              context,
+              employee,
+            ),
+          ),
         );
 
-        const month = monthNames[d.getUTCMonth()];
-        const dayNum = String(d.getUTCDate()).padStart(2, "0");
-        const dayName = dayNames[d.getUTCDay()];
-        const isWeekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
-        const isSunday = d.getUTCDay() === 0;
+        for (let j = 0; j < chunkDates.length; j++) {
+          const d = chunkDates[j];
+          const schedule = chunkSchedules[j];
 
-        let startTime = "-";
-        let endTime = "-";
-        let projectedHours = 0;
-        let observation = "Descanso";
-        let isHoliday = false;
-        let isLeave = false;
+          const month = monthNames[d.getUTCMonth()];
+          const dayNum = String(d.getUTCDate()).padStart(2, "0");
+          const dayName = dayNames[d.getUTCDay()];
+          const isWeekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
+          const isSunday = d.getUTCDay() === 0;
 
-        if (schedule) {
-          if (schedule.isWorkDay) {
-            hasWorkData = true;
-            startTime = schedule.startTime || "-";
-            endTime = schedule.endTime || "-";
-            projectedHours = schedule.hours || 0;
-            observation = schedule.shiftPatternName || "Turno";
-          } else if (schedule.isHoliday) {
-            hasWorkData = true;
-            isHoliday = true;
-            observation = `Feriado: ${schedule.holidayName || ""}`;
-          } else if (schedule.justificationType) {
-            hasWorkData = true;
-            isLeave = true;
-            observation = schedule.justificationType;
+          let startTime = "-";
+          let endTime = "-";
+          let projectedHours = 0;
+          let observation = "Descanso";
+          let isHoliday = false;
+          let isLeave = false;
+
+          if (schedule) {
+            if (schedule.isWorkDay) {
+              hasWorkData = true;
+              startTime = schedule.startTime || "-";
+              endTime = schedule.endTime || "-";
+              projectedHours = schedule.hours || 0;
+              observation = schedule.shiftPatternName || "Turno";
+            } else if (schedule.isHoliday) {
+              hasWorkData = true;
+              isHoliday = true;
+              observation = `Feriado: ${schedule.holidayName || ""}`;
+            } else if (schedule.justificationType) {
+              hasWorkData = true;
+              isLeave = true;
+              observation = schedule.justificationType;
+            }
           }
-        }
 
-        rows.push({
-          month,
-          dayNum,
-          dayName,
-          startTime,
-          endTime,
-          projectedHours,
-          observation,
-          isWeekend,
-          isHoliday,
-          isLeave,
-          isSunday,
-        });
-        weeklySum += projectedHours;
+          rows.push({
+            month,
+            dayNum,
+            dayName,
+            startTime,
+            endTime,
+            projectedHours,
+            observation,
+            isWeekend,
+            isHoliday,
+            isLeave,
+            isSunday,
+          });
+          weeklySum += projectedHours;
 
-        const isLastDay = d.getTime() === endDate.getTime();
-        if (isSunday || isLastDay) {
-          if (weeklySum > 0 || isLastDay) {
-            rows.push({
-              month: "",
-              dayNum: "",
-              dayName: "TOTAL",
-              startTime: "",
-              endTime: "SEMANA:",
-              projectedHours: weeklySum,
-              observation: "",
-              isWeekend: false,
-              isHoliday: false,
-              isLeave: false,
-              isSunday: false,
-              isTotalRow: true,
-            });
-            weeklySum = 0;
+          const isLastDay = d.getTime() === endDate.getTime();
+          if (isSunday || isLastDay) {
+            if (weeklySum > 0 || isLastDay) {
+              rows.push({
+                month: "",
+                dayNum: "",
+                dayName: "TOTAL",
+                startTime: "",
+                endTime: "SEMANA:",
+                projectedHours: weeklySum,
+                observation: "",
+                isWeekend: false,
+                isHoliday: false,
+                isLeave: false,
+                isSunday: false,
+                isTotalRow: true,
+              });
+              weeklySum = 0;
+            }
           }
         }
       }
