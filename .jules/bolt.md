@@ -125,3 +125,8 @@
 
 **Learning:** Mismo patrón: `GET /api/configs/public/brand-logo` 404 cuando no hay logo — y este dispara incluso en el login anónimo (`useBrandLogoQuery` sin gate de token, `retry: false` ya documentaba que el 404 era esperado). Más simple que company-policy: el frontend ya tolera `null` (`if (!logo...) return null`), sin cambio de código frontend — solo SDK.
 **Action:** (commits backend + frontend-SDK lockstep, skill `api-contracts-sync`) Backend: `brandLogo() ?? null`, OpenAPI `nullable: true` + descripción, 2 tests actualizados (incluido el de reseteo a null en spec027 que fijaba el segundo 404), `docs:generate`, snaps `-u` (limpios esta vez, solo brand-logo). Frontend: solo `sdk:generate` (`| null` + descripción), `check:sdk` OK. Staging: JSON 200 `null`, `/file` sigue 404, login sin 4xx de brand-logo, 0 pageerrors. `dataConfigs` 67/67 en PG efímero (apagado después); `tsc`/`eslint` OK.
+
+## 2026-10-14 - FIX: Unbounded Promise.all in KpiReportService causing Event Loop Block and DB Overwhelm
+
+**Learning:** Unbounded `Promise.all` execution on large arrays (like `activeEmployees` which scales linearly with the number of company employees) within report services causes significant latency by overwhelming the database connection pool with concurrent queries (`schedulingService.getEmployeeDailyScheduleInfo`), while simultaneously blocking the Node.js Event Loop.
+**Action:** Always refactor unbounded `Promise.all` executions over external resources into manageable chunks (e.g., using `for` loops and `slice` with a `CHUNK_SIZE` like 50). This guarantees database stability, limits connection spikes, and keeps the Event Loop unblocked while processing large numbers of concurrent network/database operations.
