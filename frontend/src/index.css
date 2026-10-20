@@ -49,6 +49,46 @@
   --color-token-status-warning: var(--status-warning);
   --color-token-status-info: var(--status-info);
 
+  /*
+    Domain Status Tokens (spec 031 T5 / AC4):Utilities semánticas
+    `token-status-*` conmutan solas entre claro/oscuro porque las
+    variables cambian de valor bajo `.dark`.
+  */
+  --color-token-status-laborando: var(--status-laborando);
+  --color-token-status-laborando-surface: var(--status-laborando-surface);
+  --color-token-status-laborando-text: var(--status-laborando-text);
+  --color-token-status-colacion: var(--status-colacion);
+  --color-token-status-colacion-surface: var(--status-colacion-surface);
+  --color-token-status-colacion-text: var(--status-colacion-text);
+  --color-token-status-ausente: var(--status-ausente);
+  --color-token-status-ausente-surface: var(--status-ausente-surface);
+  --color-token-status-ausente-text: var(--status-ausente-text);
+  --color-token-status-vacaciones: var(--status-vacaciones);
+  --color-token-status-vacaciones-surface: var(--status-vacaciones-surface);
+  --color-token-status-vacaciones-text: var(--status-vacaciones-text);
+  --color-token-status-permiso-especial: var(--status-permiso-especial);
+  --color-token-status-permiso-especial-surface: var(--status-permiso-especial-surface);
+  --color-token-status-permiso-especial-text: var(--status-permiso-especial-text);
+  --color-token-status-anomalia: var(--status-anomalia);
+  --color-token-status-anomalia-surface: var(--status-anomalia-surface);
+  --color-token-status-anomalia-text: var(--status-anomalia-text);
+  --color-token-status-sin-marcaje: var(--status-sin-marcaje);
+  --color-token-status-sin-marcaje-surface: var(--status-sin-marcaje-surface);
+  --color-token-status-sin-marcaje-text: var(--status-sin-marcaje-text);
+  --color-token-status-completado: var(--status-completado);
+  --color-token-status-completado-surface: var(--status-completado-surface);
+  --color-token-status-completado-text: var(--status-completado-text);
+
+  /* Categorical data-viz palette (spec 031 T5 / AC4). */
+  --color-token-chart-1: var(--chart-1);
+  --color-token-chart-2: var(--chart-2);
+  --color-token-chart-3: var(--chart-3);
+  --color-token-chart-4: var(--chart-4);
+  --color-token-chart-5: var(--chart-5);
+  --color-token-chart-6: var(--chart-6);
+  --color-token-chart-7: var(--chart-7);
+  --color-token-chart-8: var(--chart-8);
+
   --color-token-accent-brand: var(--accent-professional);
   --color-token-sidebar-text-active: var(--sidebar-text-active);
   --color-token-sidebar-item-hover: var(--sidebar-item-hover);
@@ -345,6 +385,48 @@
     --status-warning: #f59e0b; /* amber-500 */
     --status-info: #0ea5e9; /* sky-500 */
 
+    /*
+      Domain Status Tokens (spec 031 T5 / AC4).
+      Semantics del turno: --status-<key> (dot/icon/border),
+      --status-<key>-surface (fondo de badge) y --status-<key>-text
+      (foreground AA sobre su surface). Contraste AA verificado por
+      src/tests/guardrails/statusTokensContrast.test.ts.
+    */
+    --status-laborando: #16a34a;
+    --status-laborando-surface: #dcfce7;
+    --status-laborando-text: #166534;
+    --status-colacion: #4f46e5;
+    --status-colacion-surface: #e0e7ff;
+    --status-colacion-text: #3730a3;
+    --status-ausente: #e11d48;
+    --status-ausente-surface: #ffe4e6;
+    --status-ausente-text: #9f1239;
+    --status-vacaciones: #0891b2;
+    --status-vacaciones-surface: #cffafe;
+    --status-vacaciones-text: #155e75;
+    --status-permiso-especial: #b45309;
+    --status-permiso-especial-surface: #fef3c7;
+    --status-permiso-especial-text: #92400e;
+    --status-anomalia: #dc2626;
+    --status-anomalia-surface: #fee2e2;
+    --status-anomalia-text: #991b1b;
+    --status-sin-marcaje: #ea580c;
+    --status-sin-marcaje-surface: #ffedd5;
+    --status-sin-marcaje-text: #9a3412;
+    --status-completado: #2563eb;
+    --status-completado-surface: #dbeafe;
+    --status-completado-text: #1e40af;
+
+    /* Categorical data-viz palette (spec 031 T5 / AC4). */
+    --chart-1: #005792;
+    --chart-2: #0284c7;
+    --chart-3: #047857;
+    --chart-4: #b45309;
+    --chart-5: #7c3aed;
+    --chart-6: #dc2626;
+    --chart-7: #0f766e;
+    --chart-8: #475569;
+
     --accent-professional: #005792;
   }
   .dark {
@@ -372,6 +454,45 @@
 
     --status-error: #ef4444;
     --status-error-text: #ef4444;
+
+    /*
+      Domain Status Tokens - Dark (spec 031 T5 / AC4).
+      Superficies 900 y foregrounds 300: contraste AA verificado.
+    */
+    --status-laborando: #22c55e;
+    --status-laborando-surface: #14532d;
+    --status-laborando-text: #86efac;
+    --status-colacion: #818cf8;
+    --status-colacion-surface: #312e81;
+    --status-colacion-text: #a5b4fc;
+    --status-ausente: #fb7185;
+    --status-ausente-surface: #881337;
+    --status-ausente-text: #fda4af;
+    --status-vacaciones: #22d3ee;
+    --status-vacaciones-surface: #164e63;
+    --status-vacaciones-text: #67e8f9;
+    --status-permiso-especial: #fbbf24;
+    --status-permiso-especial-surface: #78350f;
+    --status-permiso-especial-text: #fcd34d;
+    --status-anomalia: #f87171;
+    --status-anomalia-surface: #7f1d1d;
+    --status-anomalia-text: #fca5a5;
+    --status-sin-marcaje: #fb923c;
+    --status-sin-marcaje-surface: #7c2d12;
+    --status-sin-marcaje-text: #fdba74;
+    --status-completado: #60a5fa;
+    --status-completado-surface: #1e3a8a;
+    --status-completado-text: #93c5fd;
+
+    /* Categorical data-viz palette - Dark (spec 031 T5 / AC4). */
+    --chart-1: #38bdf8;
+    --chart-2: #7dd3fc;
+    --chart-3: #34d399;
+    --chart-4: #fbbf24;
+    --chart-5: #a78bfa;
+    --chart-6: #f87171;
+    --chart-7: #2dd4bf;
+    --chart-8: #94a3b8;
 
     --accent-professional: #38bdf8;
   }

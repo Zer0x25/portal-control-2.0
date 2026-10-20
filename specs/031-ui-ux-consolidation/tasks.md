@@ -26,7 +26,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase B — Tokens de dominio y ratchet completo
 
-- [ ] T5: Añadir en `frontend/src/index.css` los tokens `--status-*` del dominio
+- [x] T5: Añadir en `frontend/src/index.css` los tokens `--status-*` del dominio
       de jornada (laborando, colación, ausente, vacaciones, permiso especial,
       anomalía, sin marcaje, completado) y `--chart-1..8`, con variantes light/
       dark y contraste AA verificado en claro/oscuro (AC4).
