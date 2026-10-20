@@ -17,6 +17,7 @@ import {
 } from "../../../components/ui/icons/index";
 import { DailyTimeRecord, Employee, ClockingStatus } from "../../../types/index";
 import type { KioskStep } from "../hooks/useKioskData";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 export interface KioskViewProps {
   step: KioskStep;
@@ -385,7 +386,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         </div>
 
         <div className="z-10 text-center relative">
-          <div className="w-12 h-12 border-[3px] border-white/5 border-t-sap-blue rounded-full animate-spin mb-6 mx-auto" />
+          <LoadingSpinner size="lg" variant="onAccent" />
           <p className="font-black uppercase tracking-[0.4em] text-[10px] text-sap-blue animate-pulse">
             Sincronizando Biometría
           </p>

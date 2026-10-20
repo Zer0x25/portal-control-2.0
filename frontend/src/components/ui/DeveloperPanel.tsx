@@ -1,3 +1,4 @@
+import LoadingSpinner from "./LoadingSpinner";
 import React, { useEffect, useRef, useState } from "react";
 import { useToasts } from "../../hooks/useToasts";
 import { getDBInstance } from "../../utils/indexedDB";
@@ -265,8 +266,10 @@ export const DeveloperPanel: React.FC = () => {
       {isResetting && (
         <div className="fixed inset-0 bg-black/90 z-9999 flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center">
-            <div
-              className={`animate-spin rounded-full h-16 w-16 border-b-4 ${resetError ? "border-red-500" : "border-purple-500"} mx-auto mb-6`}
+            <LoadingSpinner
+              size="xl"
+              variant={resetError ? "subtle" : "default"}
+              className="mx-auto mb-6"
             />
             <h2 className="text-white text-2xl font-bold mb-2">Reseteando Sistema</h2>
             <div className="bg-token-surface-stripe rounded-lg border border-token-border-technical p-4 text-left max-h-60 overflow-y-auto font-mono text-xs space-y-2 mb-6">

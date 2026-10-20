@@ -7,8 +7,8 @@ const DeveloperPanel = React.lazy(() =>
 const ShiftHandoverModal = React.lazy(() => import("../ui/ShiftHandoverModal"));
 import ScreenSizeIndicator from "../ui/ScreenSizeIndicator";
 import { HomeIcon } from "../ui/icons/index";
-import LoadingSpinner from "../ui/LoadingSpinner";
 import type { ShiftHandoverData } from "../../types";
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 interface PersistentLayoutViewProps {
   children: React.ReactNode;

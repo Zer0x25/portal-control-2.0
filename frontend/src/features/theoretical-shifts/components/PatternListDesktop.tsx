@@ -4,6 +4,7 @@ import { TheoreticalShiftPattern } from "../../../types";
 import { EditIcon, DeleteIcon, DocumentDuplicateIcon } from "../../../components/ui/icons/index";
 import Button from "../../../components/ui/Button";
 import { LIST_ROW_HEIGHT, ROW_BASE_CLASS, ROW_HOVER_CLASS, TEXT_PRIMARY } from "./listTokens";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface PatternListDesktopProps {
   patterns: TheoreticalShiftPattern[];
@@ -79,7 +80,7 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
       >
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
+            <LoadingSpinner size="md" variant="default" />
           </div>
         ) : (
           <div

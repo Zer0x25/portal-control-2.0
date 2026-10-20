@@ -2,8 +2,8 @@ import React from "react";
 import { CloseIcon, UserIcon, InformationCircleIcon, ShieldIcon, ActivityIcon } from "./icons";
 import { useRecordHistory } from "../../hooks/queries/useRecordHistory";
 import { formatLogTimestamp } from "../../utils/formatters";
-import LoadingSpinner from "./LoadingSpinner";
 import Button from "./Button";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface RecordHistoryModalProps {
   isOpen: boolean;

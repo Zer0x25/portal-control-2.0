@@ -1,6 +1,6 @@
 import React from "react";
 import { useStore } from "../../store/useStore";
-import { ArrowPathIcon } from "./icons";
+import LoadingSpinner from "./LoadingSpinner";
 
 /**
  * InitialSyncOverlay: The definitive "Industrial-Elegant" transition screen.
@@ -30,11 +30,9 @@ const InitialSyncOverlay: React.FC = () => {
             {/* Technical Spinner */}
             <div className="relative w-20 h-20 mx-auto">
               <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full"></div>
-              <div className="absolute inset-0 border-2 border-transparent border-t-sap-blue rounded-full animate-spin [animation-duration:1s]" />
+              <LoadingSpinner size="md" variant="default" />
               <div className="absolute inset-4 border border-sap-blue/20 rounded-full flex items-center justify-center">
-                <div style={{ animationDuration: "3s" }} className="animate-spin">
-                  <ArrowPathIcon className="w-5 h-5 text-sap-blue/40" />
-                </div>
+                <LoadingSpinner size="xs" variant="subtle" />
               </div>
             </div>
           </div>

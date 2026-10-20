@@ -13,6 +13,7 @@ import {
   TEXT_MONO,
 } from "./listTokens";
 import { compareBusinessDate, toBusinessDateChile } from "../../../utils/dateUtils";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 // Define ProcessedAssignment type locally if not exported, or duplicate strictly necessary fields
 // Ideally it should be imported from AssignmentManager or shared types, but for now defining strict interface
@@ -111,7 +112,7 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
+            <LoadingSpinner size="md" variant="default" />
           </div>
         ) : (
           <div

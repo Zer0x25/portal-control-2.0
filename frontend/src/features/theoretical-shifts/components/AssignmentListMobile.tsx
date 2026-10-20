@@ -5,6 +5,7 @@ import Button from "../../../components/ui/Button";
 import { EditIcon, DeleteIcon, ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import { LIST_MOBILE_HEIGHT_STYLE } from "./listTokens";
 import { compareBusinessDate, toBusinessDateChile } from "../../../utils/dateUtils";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface ProcessedAssignment extends AssignedShift {
   assignmentWeeklyHours: number;
@@ -87,7 +88,7 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
+            <LoadingSpinner size="md" variant="default" />
           </div>
         ) : (
           <div

@@ -12,6 +12,7 @@ import {
   TEXT_SECONDARY,
 } from "./listTokens";
 import { compareBusinessDate, toBusinessDateChile } from "../../../utils/dateUtils";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface HolidayListDesktopProps {
   holidays: Holiday[];
@@ -86,7 +87,7 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
       >
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
+            <LoadingSpinner size="md" variant="default" />
           </div>
         ) : (
           <div

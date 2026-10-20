@@ -3,11 +3,11 @@ import { Routes, Route, Navigate } from "react-router";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROUTES } from "./constants";
 import { useAuth } from "./hooks/useAuth";
-import LoadingSpinner from "./components/ui/LoadingSpinner";
 import { useNavigationLoading } from "./hooks/useNavigationLoading";
 import { ROLES } from "./utils/mappings";
 import { useSocketEvents } from "./hooks/useSocketEvents";
 import { useControlInternoEnabledQuery } from "./hooks/queries/useConfigQuery";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 
 // Lazy loading components
 const LoginPage = React.lazy(() => import("./features/auth/pages/LoginPage"));

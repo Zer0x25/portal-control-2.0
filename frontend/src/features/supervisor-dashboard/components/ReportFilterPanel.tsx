@@ -9,6 +9,7 @@ import {
   DocumentTextIcon,
 } from "../../../components/ui/icons/index";
 import AuditMonthSelector from "../../../components/ui/AuditMonthSelector";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface ReportFilterPanelProps {
   onFiltersChange: (filters: {
@@ -273,7 +274,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
         >
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+            <LoadingSpinner size="xs" variant="onAccent" />
           ) : (
             <DocumentTextIcon className="w-4 h-4" />
           )}

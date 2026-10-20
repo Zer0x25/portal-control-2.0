@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import Button from "./Button";
-import LoadingSpinner from "./LoadingSpinner";
 import { importService } from "../../services/importService";
+import LoadingSpinner from "./LoadingSpinner";
 import {
   DocumentArrowDownIcon,
   CloseIcon,

@@ -13,6 +13,7 @@ import {
   ArrowPathIcon,
 } from "../../../components/ui/icons/index";
 import { useHealthQuery } from "../../../hooks/queries/useHealthQuery";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const HealthStatusView: React.FC = () => {
   const { data: health, isLoading, refetch } = useHealthQuery({ refetchInterval: 30000 });
@@ -20,7 +21,7 @@ const HealthStatusView: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-text-primary"></div>
+        <LoadingSpinner size="md" variant="default" />
       </div>
     );
   }

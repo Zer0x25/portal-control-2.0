@@ -25,6 +25,7 @@ interface ClosedReportsModalProps {
 }
 
 import CinematicModal from "./CinematicModal";
+import LoadingSpinner from "./LoadingSpinner";
 
 const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
   isOpen,
@@ -180,7 +181,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                   <tr>
                     <td colSpan={4} className="py-20">
                       <div className="flex flex-col items-center justify-center gap-4">
-                        <div className="w-10 h-10 border-4 border-token-accent-brand/20 border-t-token-accent-brand rounded-full animate-spin" />
+                        <LoadingSpinner size="md" variant="default" />
                         <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest animate-pulse">
                           Consultando Registros...
                         </p>
@@ -274,7 +275,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                   <td colSpan={4} className="h-4">
                     {isFetchingNextPage && (
                       <div className="flex justify-center p-4">
-                        <div className="w-6 h-6 border-2 border-token-accent-brand/20 border-t-token-accent-brand rounded-full animate-spin" />
+                        <LoadingSpinner size="sm" variant="default" />
                       </div>
                     )}
                   </td>

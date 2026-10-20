@@ -8,6 +8,7 @@ import IconBox from "./IconBox";
 import { IndustrialIndicator } from "./IndustrialIndicator";
 import EmptyState from "./EmptyState";
 import { ExclamationTriangleIcon } from "./icons/index";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface ShiftHistoryEntry {
   id: string;
@@ -144,7 +145,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
       <div className="space-y-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-1">
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-10 h-10 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin"></div>
+            <LoadingSpinner size="md" variant="default" />
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-token-text-tertiary">
               Recuperando secuencia histórica...
             </p>

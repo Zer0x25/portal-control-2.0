@@ -19,6 +19,7 @@ import {
   InboxArrowDownIcon,
 } from "../../../components/ui/icons/index";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 type RequestStatusFilter = "pending" | "approved" | "rejected";
 
@@ -447,7 +448,7 @@ const RequestsTab: React.FC = () => {
     return (
       <div className="min-h-[500px] flex flex-col items-center justify-center gap-5">
         <div className="relative">
-          <div className="w-12 h-12 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
+          <LoadingSpinner size="lg" variant="default" />
           <div className="absolute inset-0 flex items-center justify-center">
             <InboxArrowDownIcon className="w-5 h-5 text-sap-blue animate-pulse" />
           </div>

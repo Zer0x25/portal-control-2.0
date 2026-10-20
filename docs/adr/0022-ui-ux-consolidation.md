@@ -105,7 +105,16 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    calendario del sistema y evitan el desfase de zona horaria de
    `new Date("YYYY-MM-DD")`; el guardrail `datePickerGuardrails.test.ts` impide
    que aparezcan fuera de esa lista.
-6. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
+6. **Spinner único**: `components/ui/LoadingSpinner.tsx` es la única
+   implementación del arco giratorio (variantes `xs|sm|md|lg|xl` y tonos
+   `default|onAccent|subtle`, con `role="status"` y nombre accesible).
+   `LoadingOverlay`, `InitialSyncOverlay` y `BackgroundActivitySpinner` la
+   reutilizan; el único `animate-spin` inline propio es el del estado
+   `loading` de `Button`. La rotación de iconos de refresco heredada
+   (`ArrowPathIcon`, `SyncStatus`) queda grandfathered con un budget monotónico
+   (17 usos) que solo puede decrecer, y el guardrail
+   `spinnerGuardrails.test.ts` bloquea cualquier spinner circular nuevo.
+7. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
    una sola tarjeta de métrica con variantes tipadas. Los
    modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
    queda reservado a primitivas transversales y utilidades shell.

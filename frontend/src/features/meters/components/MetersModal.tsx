@@ -16,6 +16,7 @@ interface MetersModalProps {
 type ReadingState = { [key: string]: string };
 
 import CinematicModal from "../../../components/ui/CinematicModal";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
   const { readings, isLoadingReadings, addReading, meterConfigs } = useMeterReadings();
@@ -95,7 +96,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
           <form onSubmit={handleSave} className="space-y-6">
             {isLoading ? (
               <div className="py-12 flex flex-col items-center justify-center gap-4">
-                <div className="w-8 h-8 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
+                <LoadingSpinner size="md" variant="default" />
                 <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
                   Cargando config...
                 </p>

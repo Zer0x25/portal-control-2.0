@@ -1,4 +1,5 @@
 import React from "react";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface LoadingOverlayProps {
   message?: string;
@@ -15,7 +16,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = t
       <div className="relative z-10 flex flex-col items-center">
         <div className="relative w-10 h-10 mb-8">
           <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full opacity-20"></div>
-          <div className="absolute inset-0 border-2 border-transparent border-t-sap-blue rounded-full animate-spin [animation-duration:1s]" />
+          <LoadingSpinner size="md" variant="default" />
           <div className="absolute inset-2 rounded-full bg-sap-blue/5 flex items-center justify-center">
             <div className="w-8 h-8 rounded-full bg-sap-blue/20 animate-pulse" />
           </div>

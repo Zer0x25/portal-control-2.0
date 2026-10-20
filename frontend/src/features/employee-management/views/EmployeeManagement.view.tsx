@@ -18,6 +18,7 @@ import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import type { Employee } from "../../../types";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 type EditableEmployeeData = Partial<
   Pick<Employee, "name" | "rut" | "position" | "area" | "workdayType" | "email" | "pin">
@@ -312,7 +313,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
               <div ref={sentinelRef} className="h-4 w-full" />
               {isLoadingEmployees ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-(--sidebar-text-active) border-t-transparent animate-spin" />
+                  <LoadingSpinner size="lg" variant="default" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--sidebar-text-active)">
                     Sincronizando expedientes...
                   </span>

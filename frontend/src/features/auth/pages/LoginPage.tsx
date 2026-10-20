@@ -13,6 +13,7 @@ import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
 import BrandLogo from "../../../components/ui/BrandLogo";
 import MFALoginModal from "../components/MFALoginModal";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -166,7 +167,7 @@ const LoginPage: React.FC = () => {
 
                   {loading ? (
                     <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <LoadingSpinner size="xs" variant="onAccent" />
                       <span className="opacity-80 font-black uppercase tracking-widest text-[10px] text-token-text-onAccent">
                         Verificando...
                       </span>

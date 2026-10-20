@@ -5,6 +5,7 @@ import { useCalendarData } from "../../../hooks/useCalendarData";
 import ShiftCalendarView from "../../../components/ui/ShiftCalendarView";
 import Button from "../../../components/ui/Button";
 import { CloseIcon, UserIcon, ShieldCheckIcon } from "../../../components/ui/icons/index";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface EmployeeCalendarModalProps {
   employee: Employee;
@@ -101,7 +102,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
             {isLoadingCalendar ? (
               <div className="h-full flex flex-col items-center justify-center gap-8">
                 <div className="relative">
-                  <div className="w-16 h-16 border-4 border-sap-blue/10 border-t-sap-blue rounded-full animate-spin" />
+                  <LoadingSpinner size="xl" variant="default" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-2 h-2 bg-sap-blue rounded-full animate-ping" />
                   </div>

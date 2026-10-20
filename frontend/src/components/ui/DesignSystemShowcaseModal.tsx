@@ -9,11 +9,11 @@ import Textarea from "./Textarea";
 import Badge from "./Badge";
 import Card from "./Card";
 import { MetricCard, MetricStat } from "./MetricCard";
-import LoadingSpinner from "./LoadingSpinner";
 import Skeleton from "./Skeleton";
 import EmptyState from "./EmptyState";
 import ConfirmationModal from "./ConfirmationModal";
 import { useToasts } from "../../hooks/useToasts";
+import LoadingSpinner from "./LoadingSpinner";
 import {
   SparklesIcon,
   TableCellsIcon,

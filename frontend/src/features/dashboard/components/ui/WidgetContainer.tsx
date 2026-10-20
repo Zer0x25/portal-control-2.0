@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import Card from "../../../../components/ui/Card";
 import { WidgetContainerProps } from "../../types";
+import LoadingSpinner from "../../../../components/ui/LoadingSpinner";
 
 /**
  * Contenedor genérico para widgets del dashboard
@@ -30,7 +31,7 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
     return (
       <Card title={title} className={className}>
         <div className="flex items-center justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sap-blue"></div>
+          <LoadingSpinner size="md" variant="default" />
         </div>
       </Card>
     );

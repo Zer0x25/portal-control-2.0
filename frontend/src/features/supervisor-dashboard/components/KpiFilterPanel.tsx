@@ -11,6 +11,7 @@ import {
 } from "../../../components/ui/icons/index";
 import { Employee } from "../../../types/index";
 import CalendarMonthSelector from "../../../components/ui/CalendarMonthSelector";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface KpiFilterPanelProps {
   onFiltersChange: (filters: {
@@ -281,7 +282,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
         >
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <LoadingSpinner size="xs" variant="onAccent" />
           ) : (
             <CalendarDaysIcon className="w-4 h-4" />
           )}

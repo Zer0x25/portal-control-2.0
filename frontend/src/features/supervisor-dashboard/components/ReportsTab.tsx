@@ -16,6 +16,7 @@ import ReportTable from "../../../components/ui/ReportTable";
 import ReportFilterPanel from "./ReportFilterPanel";
 import PdfExportModeModal from "./PdfExportModeModal";
 import { useReportsTabController } from "../hooks/useReportsTabController";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const justificationStyles: Record<string, string> = {
   Vacaciones: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
@@ -61,7 +62,7 @@ const ReportsTab: FC = () => {
       {isLoading && (
         <div className="fixed inset-0 z-200 flex items-center justify-center pointer-events-none">
           <div className="bg-token-surface-card px-10 py-6 rounded-sm border border-token-border-technical shadow-lg flex items-center gap-6 animate-in fade-in zoom-in-95">
-            <div className="w-10 h-10 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
+            <LoadingSpinner size="md" variant="default" />
             <span className="text-[11px] font-black uppercase tracking-widest text-token-text-primary">
               Estructurando Reporte Analítico...
             </span>
