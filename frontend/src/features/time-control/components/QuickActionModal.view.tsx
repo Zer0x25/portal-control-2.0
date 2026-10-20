@@ -229,7 +229,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
             <h3 className="text-sm font-black text-token-text-primary uppercase italic leading-none truncate">
               {record.employeeName}
             </h3>
-            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
+            <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
               Gestión Rápida de Jornada
             </p>
           </div>
@@ -328,7 +328,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
           <div
             className={`w-1.5 h-1.5 rounded-full ${isArmed ? "bg-emerald-500" : "bg-token-text-tertiary animate-pulse"}`}
           />
-          <span className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] italic">
+          <span className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] italic">
             {!isArmed ? "Inicializando Vínculo..." : "Conexión Segura"}
           </span>
         </div>

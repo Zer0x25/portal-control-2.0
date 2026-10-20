@@ -62,8 +62,8 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({ role, className = "", size = "md"
   const { color, bg, border, dot } = getRoleStyles(role);
 
   const sizeClasses = {
-    xs: "px-1.5 py-0.5 text-[8px]",
-    sm: "px-2 py-0.5 text-[9px]",
+    xs: "px-1.5 py-0.5 text-xxs",
+    sm: "px-2 py-0.5 text-xxs",
     md: "px-3 py-1 text-[10px]",
   };
 

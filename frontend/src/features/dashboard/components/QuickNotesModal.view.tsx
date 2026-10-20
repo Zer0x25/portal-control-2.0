@@ -58,7 +58,7 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
             <h3 className="text-sm font-black text-token-text-primary uppercase leading-none">
               Tablero de Notas
             </h3>
-            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 leading-none">
+            <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 leading-none">
               Serendipia de Productividad
             </p>
           </div>
@@ -132,10 +132,10 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
                       {note.content}
                     </p>
                     <div className="flex items-center gap-3 mt-3 opacity-60">
-                      <span className="text-[9px] font-black text-token-text-secondary uppercase tracking-widest">
+                      <span className="text-xxs font-black text-token-text-secondary uppercase tracking-widest">
                         {note.authorUsername}
                       </span>
-                      <span className="text-[8px] font-bold text-token-text-tertiary uppercase tracking-widest">
+                      <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
                         {new Date(note.createdAt).toLocaleString("es-CL", {
                           day: "2-digit",
                           month: "short",

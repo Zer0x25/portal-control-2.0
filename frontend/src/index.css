@@ -146,6 +146,12 @@
   @apply text-xs leading-tight font-medium tracking-wide;
 }
 
+@utility text-xxs {
+  /* Tamano micro minimo del design system (10px). Reemplaza a
+     text-[7px|8px|9px] (spec 031 T16 / AC10). */
+  @apply text-[10px];
+}
+
 @utility typo-ui-badge {
   @apply text-[10px] leading-none font-semibold tracking-wide;
 }
@@ -603,14 +609,6 @@ textarea,
 /* Blinker class to apply the animation */
 .blinker {
   animation: blinker 1.5s linear infinite;
-}
-
-/* Custom extra-small text size for calendar */
-.text-xxs {
-  font-size: 0.65rem;
-  /* 10.4px */
-  line-height: 0.85rem;
-  /* 13.6px */
 }
 
 /* --- Global Minimalist Scrollbar --- */

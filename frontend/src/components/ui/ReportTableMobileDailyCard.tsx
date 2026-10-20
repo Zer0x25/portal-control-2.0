@@ -48,7 +48,7 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
                 Marcaje
               </span>
               <span className="text-xs font-black text-token-text-primary font-mono">
@@ -56,7 +56,7 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
                 Hrs. Prog
               </span>
               <span className="text-xs font-black text-token-text-primary font-mono">
@@ -64,7 +64,7 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
                 Colación
               </span>
               <span className="text-xs font-black text-token-text-primary font-mono">
@@ -72,7 +72,7 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
                 Trabajadas
               </span>
               <span className="text-xs font-black text-token-text-primary font-mono">

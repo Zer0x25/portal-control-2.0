@@ -300,7 +300,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 return (
                   <tr
                     key={`subtotal-${item.weekId}`}
-                    className="bg-token-surface-active font-black text-[9px] uppercase tracking-[0.3em]"
+                    className="bg-token-surface-active font-black text-xxs uppercase tracking-[0.3em]"
                   >
                     <td
                       colSpan={4}
@@ -389,7 +389,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 <td className="px-8 py-5 whitespace-nowrap text-center">
                   {dailyItem.justificationType ? (
                     <span
-                      className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-xl shadow-sm ${justificationStyles[dailyItem.justificationType] || ""}`}
+                      className={`px-3 py-1.5 text-xxs font-black uppercase tracking-tighter rounded-xl shadow-sm ${justificationStyles[dailyItem.justificationType] || ""}`}
                     >
                       {dailyItem.justificationType}
                     </span>
@@ -421,7 +421,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                     </span>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center bg-token-surface-active/50 p-3 rounded-2xl border border-token-border-subtle">
-                        <div className="text-[8px] font-black text-token-text-tertiary uppercase tracking-widest mb-1">
+                        <div className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mb-1">
                           Colación
                         </div>
                         <div className="text-sm font-black text-token-text-primary font-mono italic">
@@ -429,7 +429,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                         </div>
                       </div>
                       <div className="text-center bg-token-surface-active/50 p-3 rounded-2xl border border-token-border-subtle">
-                        <div className="text-[8px] font-black text-token-text-tertiary uppercase tracking-widest mb-1">
+                        <div className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mb-1">
                           Diferencia
                         </div>
                         <div

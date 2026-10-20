@@ -41,10 +41,10 @@ const YearPicker: React.FC<{
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center pr-1">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-sap-blue pl-1">Años</p>
+        <p className="text-xxs font-bold uppercase tracking-widest text-sap-blue pl-1">Años</p>
         <button
           onClick={onGoToToday}
-          className="text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary hover:text-sap-blue transition-colors flex items-center gap-1 group/today"
+          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-sap-blue transition-colors flex items-center gap-1 group/today"
         >
           <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
           Actual
@@ -90,7 +90,7 @@ const MonthPicker: React.FC<{
 
   return (
     <div className="flex flex-col gap-3 pt-4 border-t border-token-border-subtle">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 pl-1">
+      <p className="text-xxs font-bold uppercase tracking-widest text-emerald-600 pl-1">
         Seleccionar Mes
       </p>
       <div className="grid grid-cols-4 gap-1.5">
@@ -101,7 +101,7 @@ const MonthPicker: React.FC<{
             <button
               key={idx}
               onClick={() => onChange(idx)}
-              className={`px-2 py-2 rounded-sm text-[9px] font-bold capitalize tracking-wider transition-all border ${
+              className={`px-2 py-2 rounded-sm text-xxs font-bold capitalize tracking-wider transition-all border ${
                 isSelected
                   ? "bg-indigo-700 text-white border-indigo-700 shadow-sm"
                   : "bg-token-surface-card text-token-text-secondary border-token-border-subtle hover:border-sap-blue"

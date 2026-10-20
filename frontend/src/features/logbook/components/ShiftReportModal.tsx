@@ -86,7 +86,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
             <h3 className="text-sm font-bold text-token-text-primary tracking-tight uppercase leading-none">
               Reporte de Turno #{report.folio}
             </h3>
-            <p className="text-[8px] font-bold text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 leading-none">
+            <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 leading-none">
               Resumen de Bitácora Digital
             </p>
           </div>
@@ -117,7 +117,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
           </div>
           <button
             onClick={handleExport}
-            className="rounded-sm flex items-center gap-2 px-4 h-8 bg-sap-blue hover:bg-sap-blue/90 text-white text-[9px] font-bold uppercase tracking-widest shadow-sm active:scale-95 transition-all"
+            className="rounded-sm flex items-center gap-2 px-4 h-8 bg-sap-blue hover:bg-sap-blue/90 text-white text-xxs font-bold uppercase tracking-widest shadow-sm active:scale-95 transition-all"
           >
             <PrinterIcon className="w-3.5 h-3.5" />
             Imprimir Reporte
@@ -128,7 +128,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-token-surface-stripe border border-token-border-subtle p-4 rounded-md relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-sap-blue opacity-30" />
-            <h4 className="text-[8px] font-bold text-sap-blue uppercase tracking-[0.2em] mb-3">
+            <h4 className="text-xxs font-bold text-sap-blue uppercase tracking-[0.2em] mb-3">
               Datos Generales
             </h4>
             <div className="space-y-3">
@@ -164,12 +164,12 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
 
           <div className="bg-token-surface-card border border-token-border-subtle p-4 rounded-md relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-30" />
-            <h4 className="text-[8px] font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">
+            <h4 className="text-xxs font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">
               Tiempos de Turno
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
-                <span className="text-[8px] font-bold text-token-text-tertiary uppercase tracking-widest mb-0.5">
+                <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest mb-0.5">
                   Apertura
                 </span>
                 <span className="text-lg font-mono font-bold text-token-text-primary leading-none">
@@ -182,7 +182,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[8px] font-bold text-token-text-tertiary uppercase tracking-widest mb-0.5">
+                <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest mb-0.5">
                   Cierre
                 </span>
                 <span className="text-lg font-mono font-bold text-token-text-primary leading-none">
@@ -204,7 +204,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
         <div className="space-y-3">
           <div className="flex items-center gap-2 ml-1">
             <div className="w-1 h-3 bg-sap-blue opacity-50 rounded-full" />
-            <h4 className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
+            <h4 className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
               Bitácora de Novedades ({report.logEntries.length})
             </h4>
           </div>
@@ -216,7 +216,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                   className="bg-token-surface-stripe border border-token-border-subtle p-3.5 rounded-md hover:border-sap-blue/20 transition-all group"
                 >
                   <div className="flex gap-4">
-                    <span className="text-[9px] font-mono font-bold text-sap-blue bg-sap-blue/5 px-2 py-1 rounded-sm h-fit border border-sap-blue/10">
+                    <span className="text-xxs font-mono font-bold text-sap-blue bg-sap-blue/5 px-2 py-1 rounded-sm h-fit border border-sap-blue/10">
                       {le.time}
                     </span>
                     <p className="text-xs text-token-text-primary font-medium leading-relaxed">
@@ -227,7 +227,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
               ))
             ) : (
               <div className="text-center py-8 rounded-md bg-token-surface-stripe border border-dashed border-token-border-subtle opacity-50">
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.2em]">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.2em]">
                   Sin registros
                 </p>
               </div>
@@ -239,7 +239,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
         <div className="space-y-3">
           <div className="flex items-center gap-2 ml-1">
             <div className="w-1 h-3 bg-emerald-600 opacity-50 rounded-full" />
-            <h4 className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
+            <h4 className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
               Ingresos de Proveedores ({report.supplierEntries.length})
             </h4>
           </div>
@@ -252,7 +252,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div className="flex flex-col">
-                      <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                      <span className="text-xxs font-bold text-emerald-600 uppercase tracking-widest mb-1">
                         Hora
                       </span>
                       <span className="text-[10px] font-mono font-bold text-token-text-primary">
@@ -260,13 +260,13 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                       </span>
                     </div>
                     <div className="flex flex-col sm:col-span-2">
-                      <span className="text-[8px] font-bold text-token-text-tertiary uppercase tracking-widest mb-0.5">
+                      <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest mb-0.5">
                         {se.company}
                       </span>
                       <span className="text-xs font-bold text-token-text-primary uppercase truncate leading-none">
                         {se.driverName}
                       </span>
-                      <p className="text-[9px] font-medium text-token-text-tertiary mt-1.5 opacity-80">
+                      <p className="text-xxs font-medium text-token-text-tertiary mt-1.5 opacity-80">
                         PATENTE: {se.licensePlate} • PAX: {se.paxCount}
                       </p>
                     </div>
@@ -280,7 +280,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
               ))
             ) : (
               <div className="text-center py-8 rounded-md bg-token-surface-stripe border border-dashed border-token-border-subtle opacity-50">
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.2em]">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.2em]">
                   Sin ingresos
                 </p>
               </div>

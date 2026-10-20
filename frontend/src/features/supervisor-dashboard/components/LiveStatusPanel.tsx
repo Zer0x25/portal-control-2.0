@@ -149,7 +149,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
 
                     <div
                       className={`
-                          text-[9px] font-bold px-3 py-1.5 rounded-sm border border-black/5 dark:border-white/10 tracking-widest uppercase whitespace-nowrap transition-transform group-hover:scale-105
+                          text-xxs font-bold px-3 py-1.5 rounded-sm border border-black/5 dark:border-white/10 tracking-widest uppercase whitespace-nowrap transition-transform group-hover:scale-105
                           ${config.bg} ${config.text}
                       `}
                     >

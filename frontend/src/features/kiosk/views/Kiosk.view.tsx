@@ -118,7 +118,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         {step !== "rut_input" && (
           <button
             onClick={() => resetState && resetState()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-surface-stripe hover:bg-token-surface-active border border-token-border-subtle hover:border-token-border-technical text-[9px] font-black text-token-text-tertiary hover:text-token-text-primary uppercase tracking-[0.2em] transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-surface-stripe hover:bg-token-surface-active border border-token-border-subtle hover:border-token-border-technical text-xxs font-black text-token-text-tertiary hover:text-token-text-primary uppercase tracking-[0.2em] transition-all"
           >
             <ArrowUturnLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300 opacity-70 group-hover:opacity-100" />
             Atrás
@@ -150,7 +150,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-1">
         Identificación
       </h2>
-      <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
+      <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
         Ingrese su RUT para comenzar
       </p>
 
@@ -238,11 +238,11 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       {clockStatusConfig && (
         <div className="rounded-2xl border border-token-border-technical bg-token-surface-stripe px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.25em]">
+            <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.25em]">
               Estado actual
             </span>
             <span
-              className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${clockStatusConfig.bg} ${clockStatusConfig.text}`}
+              className={`rounded-full px-3 py-1 text-xxs font-black uppercase tracking-[0.2em] ${clockStatusConfig.bg} ${clockStatusConfig.text}`}
             >
               {clockStatusConfig.label}
             </span>
@@ -328,7 +328,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
             </div>
           ))}
         </div>
-        <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest text-center mb-4">
+        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest text-center mb-4">
           Ingrese Nuevo PIN (4 dígitos)
         </p>
 
@@ -342,7 +342,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
             </div>
           ))}
         </div>
-        <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest text-center">
+        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest text-center">
           Confirme Nuevo PIN
         </p>
       </div>
@@ -429,7 +429,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
                 Ingrese PIN
               </h2>
-              <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
+              <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
                 {selectedEmployee?.name}
               </p>
 

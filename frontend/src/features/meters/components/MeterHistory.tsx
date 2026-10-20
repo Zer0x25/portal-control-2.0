@@ -323,7 +323,7 @@ const MeterHistory: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="relative group">
-            <label className="absolute -top-2 left-3 px-1.5 bg-token-surface-card text-[9px] font-black text-sap-blue uppercase tracking-widest rounded z-10 transition-all group-focus-within:scale-110">
+            <label className="absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-sap-blue uppercase tracking-widest rounded z-10 transition-all group-focus-within:scale-110">
               Desde
             </label>
             <button
@@ -346,7 +346,7 @@ const MeterHistory: React.FC = () => {
           </div>
 
           <div className="relative group">
-            <label className="absolute -top-2 left-3 px-1.5 bg-token-surface-card text-[9px] font-black text-sap-blue uppercase tracking-widest rounded z-10 transition-all group-focus-within:scale-110">
+            <label className="absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-sap-blue uppercase tracking-widest rounded z-10 transition-all group-focus-within:scale-110">
               Hasta
             </label>
             <button

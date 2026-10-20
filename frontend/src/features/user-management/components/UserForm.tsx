@@ -122,7 +122,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <span className="text-2xl font-black text-token-text-primary tabular-nums tracking-tighter">
                   123456
                 </span>
-                <span className="text-[9px] font-black text-sap-blue uppercase tracking-tighter">
+                <span className="text-xxs font-black text-sap-blue uppercase tracking-tighter">
                   * Cambio Obligatorio
                 </span>
               </div>

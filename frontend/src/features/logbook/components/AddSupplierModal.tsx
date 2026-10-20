@@ -99,7 +99,7 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
             <h3 className="text-lg font-black text-token-text-primary tracking-tight uppercase italic leading-none">
               {isEditing ? "Editar Proveedor" : "Ingreso de Proveedor"}
             </h3>
-            <p className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
+            <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
               Control de Acceso Vehicular
             </p>
           </div>

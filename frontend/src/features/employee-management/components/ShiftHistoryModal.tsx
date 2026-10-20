@@ -134,7 +134,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
             <h3 className="text-sm font-black text-token-text-primary uppercase italic leading-none truncate">
               {employeeName}
             </h3>
-            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
+            <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
               Historial de Cambios de Turno
             </p>
           </div>
@@ -183,7 +183,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-4">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getActionColor(entry.action)}`}
+                      className={`inline-block px-3 py-1 rounded-full text-xxs font-black uppercase tracking-widest border ${getActionColor(entry.action)}`}
                     >
                       {getActionLabel(entry.action)}
                     </span>
@@ -205,26 +205,26 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                   {entry.action === "SHIFT_ASSIGNMENT_UPDATE" && entry.details && (
                     <div className="flex items-center gap-3 bg-token-surface-stripe p-3 rounded-2xl border border-token-border-subtle">
                       <div className="flex-1 text-center">
-                        <p className="text-[9px] font-black text-rose-500/60 uppercase mb-1 tracking-widest">
+                        <p className="text-xxs font-black text-rose-500/60 uppercase mb-1 tracking-widest">
                           Anterior
                         </p>
                         <p className="text-xs font-black text-token-text-primary truncate">
                           {entry.details.previousPatternName || "N/A"}
                         </p>
-                        <p className="text-[9px] font-bold text-token-text-tertiary font-mono">
+                        <p className="text-xxs font-bold text-token-text-tertiary font-mono">
                           {formatDate(entry.details.previousStartDate)} -{" "}
                           {formatDate(entry.details.previousEndDate)}
                         </p>
                       </div>
                       <ChevronRightIcon className="w-5 h-5 text-token-text-tertiary shrink-0" />
                       <div className="flex-1 text-center">
-                        <p className="text-[9px] font-black text-emerald-500/60 uppercase mb-1 tracking-widest">
+                        <p className="text-xxs font-black text-emerald-500/60 uppercase mb-1 tracking-widest">
                           Nuevo
                         </p>
                         <p className="text-xs font-black text-sap-blue truncate uppercase italic">
                           {entry.details.newPatternName || "N/A"}
                         </p>
-                        <p className="text-[9px] font-bold text-token-text-tertiary font-mono">
+                        <p className="text-xxs font-bold text-token-text-tertiary font-mono">
                           {formatDate(entry.details.newStartDate)} -{" "}
                           {formatDate(entry.details.newEndDate)}
                         </p>

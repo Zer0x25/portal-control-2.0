@@ -192,7 +192,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                         : "bg-token-surface-card text-token-text-tertiary border-token-border-subtle hover:border-token-border-focus/30"
                     }`}
                   >
-                    <span className="text-[8px] font-black uppercase tracking-widest opacity-60">
+                    <span className="text-xxs font-black uppercase tracking-widest opacity-60">
                       Perfil
                     </span>
                     <span className="text-lg font-black">{idx + 1}</span>

@@ -157,7 +157,7 @@ const TabNav: React.FC<TabNavProps> = ({
                 {tab.badge !== undefined && (
                   <span
                     className={`
-                                        px-1.5 py-0.5 rounded-full text-[9px] font-black transition-colors relative z-10
+                                        px-1.5 py-0.5 rounded-full text-xxs font-black transition-colors relative z-10
                                         ${isActive ? "bg-token-accent-brand text-token-text-onAccent" : "bg-token-surface-technical text-token-text-secondary"}
                                     `}
                   >

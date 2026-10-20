@@ -203,7 +203,7 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
               key={label}
               role="columnheader"
               aria-label={label}
-              className="text-center text-[8px] font-black text-token-text-tertiary py-1"
+              className="text-center text-xxs font-black text-token-text-tertiary py-1"
             >
               {label}
             </span>

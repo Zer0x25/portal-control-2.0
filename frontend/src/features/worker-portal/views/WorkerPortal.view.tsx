@@ -147,7 +147,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         <button
           onClick={() => openCorrectionModal(record, field)}
           disabled={isPendingCorrection}
-          className="text-[8px] font-black text-sap-blue uppercase tracking-widest opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 focus-visible:opacity-100 focus:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
+          className="text-xxs font-black text-sap-blue uppercase tracking-widest opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 focus-visible:opacity-100 focus:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
         >
           {isPendingCorrection ? `[ ${requestStatus} ]` : "[ Corregir ]"}
         </button>
@@ -189,7 +189,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               <LiveStatus label="PORTAL LIVE" status="online" className="hidden sm:flex" />
               <ServerClock
                 containerClassName="text-right"
-                dateClassName="font-black text-[9px] text-token-text-tertiary uppercase tracking-[0.2em] mb-1 italic"
+                dateClassName="font-black text-xxs text-token-text-tertiary uppercase tracking-[0.2em] mb-1 italic"
                 timeClassName="font-black text-2xl text-token-text-primary leading-none tabular-nums font-mono italic tracking-tighter"
               />
             </div>
@@ -217,13 +217,13 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 {employee?.name}
               </h2>
               <div className="flex items-center gap-3 mt-3">
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-token-surface-stripe border border-token-border-subtle text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-token-surface-stripe border border-token-border-subtle text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                   <div
                     className={`w-2 h-2 rounded-full ${status === "fuera" ? "bg-token-text-tertiary" : "bg-emerald-500 animate-pulse"}`}
                   />
                   {statusLabels[status]}
                 </div>
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest italic">
+                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest italic">
                   # {employee?.id.slice(-8).toUpperCase()}
                 </span>
               </div>
@@ -279,7 +279,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               <h3 className="text-sm font-black text-token-text-primary uppercase italic">
                 Historial de Marcajes
               </h3>
-              <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+              <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                 Control de registros y asistencias
               </p>
             </div>
@@ -344,7 +344,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                             month: "2-digit",
                           })}
                         </p>
-                        <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-0.5">
+                        <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-0.5">
                           {formatRecordDate(record.date, {
                             weekday: "long",
                           })}
@@ -355,7 +355,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-1">
-                          <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                          <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                             Turno
                           </p>
                           <p className="text-[10px] font-black text-token-text-secondary uppercase tracking-tight">
@@ -363,7 +363,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                          <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                             Trabajado
                           </p>
                           <p className="text-[10px] font-black text-sap-blue font-mono italic tracking-tighter">
@@ -375,7 +375,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                       </div>
 
                       <div className="pt-4 border-t border-token-border-subtle">
-                        <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mb-3">
+                        <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mb-3">
                           Marcajes y Correcciones
                         </p>
                         <div className="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -434,7 +434,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                             month: "2-digit",
                           })}
                         </div>
-                        <div className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                        <div className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                           {formatRecordDate(record.date, {
                             weekday: "short",
                           })}

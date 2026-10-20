@@ -69,7 +69,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
         {unreadCount > 0 && (
           <span className="absolute top-1.5 right-1.5 flex h-4 w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-token-status-error opacity-75"></span>
-            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-token-status-error text-token-text-onAccent text-[9px] font-black border border-token-surface-header">
+            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-token-status-error text-token-text-onAccent text-xxs font-black border border-token-surface-header">
               {unreadCount}
             </span>
           </span>

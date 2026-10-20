@@ -75,7 +75,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
             <h2 className="text-lg font-black text-token-text-primary uppercase tracking-tight italic leading-none">
               Registro de Medidores
             </h2>
-            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mt-1 italic leading-none">
+            <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mt-1 italic leading-none">
               Control de Consumos
             </p>
           </div>
@@ -150,7 +150,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
                 Últimos Registros
               </h3>
             </div>
-            <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest italic">
+            <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest italic">
               Muestra: 20
             </span>
           </div>

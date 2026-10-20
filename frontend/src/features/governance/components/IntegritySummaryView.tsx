@@ -191,7 +191,7 @@ const IntegritySummaryView: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div className="p-3 bg-token-surface-stripe rounded-sm border border-token-border-subtle">
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase mb-1">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase mb-1">
                   Hash Mismatch
                 </p>
                 <p className="text-lg font-bold text-token-text-primary leading-none">
@@ -199,7 +199,7 @@ const IntegritySummaryView: React.FC = () => {
                 </p>
               </div>
               <div className="p-3 bg-token-surface-stripe rounded-sm border border-token-border-subtle">
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase mb-1">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase mb-1">
                   Chain Broken
                 </p>
                 <p className="text-lg font-bold text-token-text-primary leading-none">

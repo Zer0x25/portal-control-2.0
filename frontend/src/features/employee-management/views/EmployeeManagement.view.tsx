@@ -249,7 +249,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                 </Button>
                 {isExportMenuOpen && (
                   <div className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 bg-token-surface-card rounded-sm shadow-2xl border border-token-border-technical z-50 p-1">
-                    <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
+                    <div className="px-3 py-2 text-xxs font-bold uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
                       Acciones Masivas
                     </div>
                     <button
@@ -261,7 +261,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                     >
                       <DocumentArrowUpIcon className="w-4 h-4 mr-3" /> Importar Excel
                     </button>
-                    <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-y border-token-border-subtle my-1">
+                    <div className="px-3 py-2 text-xxs font-bold uppercase tracking-widest text-token-text-tertiary border-y border-token-border-subtle my-1">
                       Exportar Lista
                     </div>
                     <button
@@ -323,7 +323,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
               ) : processedEmployees.length > 0 ? (
                 <div className="flex flex-col items-center gap-2 py-4">
                   <div className="w-24 h-0.5 bg-token-border-technical rounded-full opacity-20" />
-                  <span className="text-[9px] uppercase font-bold tracking-[0.3em] opacity-40">
+                  <span className="text-xxs uppercase font-bold tracking-[0.3em] opacity-40">
                     Fin del Catálogo de Personal
                   </span>
                 </div>

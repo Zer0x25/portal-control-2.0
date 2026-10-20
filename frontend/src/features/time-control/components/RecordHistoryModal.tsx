@@ -102,7 +102,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
                         <span className="text-[10px] font-black text-token-text-primary uppercase">
                           {getActionLabel(log.action)}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-token-surface-technical text-token-text-secondary border border-token-border-subtle">
+                        <span className="px-2 py-0.5 rounded text-xxs font-black uppercase tracking-widest bg-token-surface-technical text-token-text-secondary border border-token-border-subtle">
                           {log.category}
                         </span>
                       </div>
@@ -129,14 +129,14 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
                       <div className="mt-3">
                         {typeof log.details?.correctionRequestId === "string" && (
                           <div className="mb-2 p-2 rounded bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40">
-                            <span className="text-[9px] font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-widest">
+                            <span className="text-xxs font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-widest">
                               Aplicado desde solicitud: {String(log.details.correctionRequestId)}
                             </span>
                           </div>
                         )}
                         <div className="grid grid-cols-2 gap-2">
                           <div className="p-3 rounded bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20">
-                            <span className="text-[8px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest block mb-1">
+                            <span className="text-xxs font-black text-red-600 dark:text-red-400 uppercase tracking-widest block mb-1">
                               Anterior
                             </span>
                             <pre className="text-[10px] text-red-800 dark:text-red-300 font-mono whitespace-pre-wrap">
@@ -144,7 +144,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
                             </pre>
                           </div>
                           <div className="p-3 rounded bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20">
-                            <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-1">
+                            <span className="text-xxs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-1">
                               Nuevo
                             </span>
                             <pre className="text-[10px] text-emerald-800 dark:text-emerald-300 font-mono whitespace-pre-wrap">

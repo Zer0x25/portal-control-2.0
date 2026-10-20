@@ -118,7 +118,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                     <p className="text-xs font-bold text-token-text-primary uppercase tracking-tight leading-none">
                       {welcomeName}
                     </p>
-                    <p className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest mt-1.5">
+                    <p className="typo-ui-badge text-token-text-tertiary uppercase mt-1.5">
                       {currentUser.role}
                     </p>
                   </div>
@@ -130,7 +130,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                     className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-token-border-subtle bg-token-surface-stripe">
-                      <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest mb-1">
+                      <p className="typo-ui-badge text-token-text-tertiary uppercase mb-1">
                         Usuario Activo
                       </p>
                       <p className="text-xs font-bold text-token-text-primary truncate">

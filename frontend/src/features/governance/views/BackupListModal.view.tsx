@@ -43,7 +43,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
             <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tight italic leading-none">
               Respaldo de Sistema
             </h3>
-            <p className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
+            <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
               Listado de Snapshots y Backups
             </p>
           </div>

@@ -51,7 +51,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         {error && (
           <p
             id={`${inputId}-error`}
-            className="ml-8 text-[9px] font-black uppercase tracking-widest text-token-status-error animate-pulse"
+            className="ml-8 text-xxs font-black uppercase tracking-widest text-token-status-error animate-pulse"
           >
             {error}
           </p>

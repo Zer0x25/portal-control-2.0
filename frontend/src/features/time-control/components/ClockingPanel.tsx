@@ -62,7 +62,7 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
                             <span className="text-sm font-bold text-token-text-primary block">
                               {e.name}
                             </span>
-                            <span className="text-[9px] text-token-text-tertiary uppercase tracking-widest leading-none mt-0.5">
+                            <span className="text-xxs text-token-text-tertiary uppercase tracking-widest leading-none mt-0.5">
                               {e.area}
                             </span>
                           </div>

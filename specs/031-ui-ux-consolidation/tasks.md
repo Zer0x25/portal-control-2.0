@@ -67,7 +67,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase D — Tipografía, catálogo y z-scale
 
-- [ ] T16: Eliminar `text-[7px|8px|9px]` con `typo-ui-badge`/`typo-ui-caption`/
+- [x] T16: Eliminar `text-[7px|8px|9px]` con `typo-ui-badge`/`typo-ui-caption`/
       `text-xxs`; adoptar `typo-ui-*` en shell (Header, Sidebar, badges);
       añadir al guardrail el budget monotónico para `text-[10px]`/`text-[11px]`
       restantes (AC10).

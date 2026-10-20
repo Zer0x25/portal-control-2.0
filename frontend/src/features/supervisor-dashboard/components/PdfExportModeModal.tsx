@@ -46,7 +46,7 @@ const PdfExportModeModal: React.FC<PdfExportModeModalProps> = ({
           <div className="text-base font-black uppercase tracking-tight text-token-text-primary">
             Resumen Analítico
           </div>
-          <div className="mt-1 text-[9px] font-bold uppercase tracking-widest text-sap-blue">
+          <div className="mt-1 text-xxs font-bold uppercase tracking-widest text-sap-blue">
             MATRIZ TÉCNICA COMPARATIVA DE EQUIPO
           </div>
         </div>
@@ -65,7 +65,7 @@ const PdfExportModeModal: React.FC<PdfExportModeModalProps> = ({
           <div className="text-base font-black uppercase tracking-tight text-token-text-primary">
             Expedientes Totales
           </div>
-          <div className="mt-1 text-[9px] font-bold uppercase tracking-widest text-emerald-600">
+          <div className="mt-1 text-xxs font-bold uppercase tracking-widest text-emerald-600">
             FICHAS TÉCNICAS INDIVIDUALES COMPILADAS
           </div>
         </div>

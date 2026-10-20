@@ -120,7 +120,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                   {user.mfaEnabled && (
                     <div className="flex items-center gap-1.5 w-fit mt-1 px-1.5 py-0.5 bg-(--status-success)/10 border border-(--status-success)/20 rounded-sm">
                       <ShieldIcon className="w-2.5 h-2.5 text-(--status-success)" />
-                      <span className="text-[8px] font-bold text-(--status-success) uppercase tracking-widest">
+                      <span className="text-xxs font-bold text-(--status-success) uppercase tracking-widest">
                         MFA PROTECTED
                       </span>
                     </div>

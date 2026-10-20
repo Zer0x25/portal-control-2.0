@@ -82,7 +82,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="theme-toggle-button"
             onClick={onToggleTheme}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
+            className="group flex items-center w-full px-4 py-3 rounded-md typo-ui-caption uppercase text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div
               className={`w-6 h-6 flex items-center justify-center ${effectiveTheme === "dark" ? "text-token-status-warning" : "text-token-sidebar-text-active"}`}
@@ -103,7 +103,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="about-modal-button"
             onClick={onOpenAbout}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
+            className="group flex items-center w-full px-4 py-3 rounded-md typo-ui-caption uppercase text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <InformationCircleIcon className="w-5 h-5" />

@@ -82,7 +82,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
         {/* Header */}
         <div className="p-4 pb-2 bg-token-surface-stripe border-b border-token-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-token-text-tertiary">
+            <span className="text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary">
               Seleccionar Fecha
             </span>
             <Button
@@ -128,14 +128,14 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
           <Button
             variant="secondary"
             onClick={handleToday}
-            className="rounded-md h-9 text-[9px] font-black uppercase tracking-widest"
+            className="rounded-md h-9 text-xxs font-black uppercase tracking-widest"
           >
             Hoy
           </Button>
           <Button
             variant="secondary"
             onClick={handleClear}
-            className="rounded-md h-9 text-[9px] font-black uppercase tracking-widest text-token-text-tertiary"
+            className="rounded-md h-9 text-xxs font-black uppercase tracking-widest text-token-text-tertiary"
           >
             Limpiar
           </Button>

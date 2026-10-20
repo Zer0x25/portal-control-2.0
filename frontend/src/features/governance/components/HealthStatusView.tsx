@@ -215,7 +215,7 @@ const HealthStatusView: React.FC = () => {
               </div>
               {health?.backup?.lastError && (
                 <div className="p-3 bg-sap-error/5 border border-sap-error/20 rounded-sm">
-                  <p className="text-[9px] font-bold text-sap-error uppercase mb-1">
+                  <p className="text-xxs font-bold text-sap-error uppercase mb-1">
                     Error Detectado
                   </p>
                   <p className="text-[10px] text-sap-error leading-tight font-medium italic">

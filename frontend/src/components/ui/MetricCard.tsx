@@ -127,7 +127,7 @@ const MetricTile: React.FC<MetricTileProps> = ({
           )}
           {trend && (
             <span
-              className={`text-[9px] font-bold ${trend.isPositive ? "text-token-status-success" : "text-token-status-error"} whitespace-nowrap text-center`}
+              className={`text-xxs font-bold ${trend.isPositive ? "text-token-status-success" : "text-token-status-error"} whitespace-nowrap text-center`}
             >
               {trend.isPositive ? "↑" : "↓"} {trend.value}
             </span>

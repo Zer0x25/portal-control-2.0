@@ -41,7 +41,7 @@ const SidebarNavItem = React.memo(
               </div>
               <span
                 className={`
-                ml-4 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-200 ease-out
+                ml-4 typo-ui-caption uppercase whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-200 ease-out
                 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}
               `}
               >
@@ -50,7 +50,7 @@ const SidebarNavItem = React.memo(
               {badge && isExpanded && (
                 <span
                   data-testid={`nav-badge-${itemSlug}`}
-                  className="ml-2 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-sm bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30"
+                  className="ml-2 px-1.5 py-0.5 typo-ui-badge uppercase rounded-sm bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30"
                 >
                   {badge}
                 </span>

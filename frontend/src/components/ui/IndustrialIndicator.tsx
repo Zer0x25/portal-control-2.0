@@ -64,7 +64,7 @@ export const SystemStatusIndicator: React.FC<SystemStatusIndicatorProps> = ({
       `}
     >
       <LiveStatus color={color} size="w-1.5 h-1.5" />
-      <span className="text-[8px] font-bold tracking-[0.2em] text-token-text-tertiary uppercase leading-none">
+      <span className="text-xxs font-bold tracking-[0.2em] text-token-text-tertiary uppercase leading-none">
         {label}
       </span>
     </div>

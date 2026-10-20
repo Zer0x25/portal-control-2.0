@@ -215,7 +215,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   autoComplete="off"
                   className="space-y-3 p-4 bg-token-surface-stripe border border-token-border-subtle rounded-sm"
                 >
-                  <label className="block text-[9px] uppercase tracking-widest text-token-text-tertiary font-bold">
+                  <label className="block text-xxs uppercase tracking-widest text-token-text-tertiary font-bold">
                     Reset Password Manual
                   </label>
                   <input
@@ -242,7 +242,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     type="submit"
                     variant="secondary"
                     loading={isResettingPassword}
-                    className="w-full h-9 rounded-sm text-[9px] font-bold uppercase tracking-widest border border-token-border-technical"
+                    className="w-full h-9 rounded-sm text-xxs font-bold uppercase tracking-widest border border-token-border-technical"
                   >
                     Actualizar Credencial
                   </Button>
@@ -266,7 +266,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   autoComplete="off"
                   className="space-y-3 p-4 bg-token-surface-stripe border border-token-border-subtle rounded-sm"
                 >
-                  <label className="block text-[9px] uppercase tracking-widest text-token-text-tertiary font-bold">
+                  <label className="block text-xxs uppercase tracking-widest text-token-text-tertiary font-bold">
                     Purgar Sesiones Activas
                   </label>
                   <input
@@ -283,7 +283,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     type="submit"
                     variant="secondary"
                     loading={isPurgingSessions}
-                    className="w-full h-9 rounded-sm text-[9px] font-bold uppercase tracking-widest border border-token-border-technical"
+                    className="w-full h-9 rounded-sm text-xxs font-bold uppercase tracking-widest border border-token-border-technical"
                   >
                     Ejecutar Purga
                   </Button>
@@ -318,7 +318,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Capturar Snapshot Manual
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Genera un respaldo completo de la base de datos PostgreSQL.
                   </p>
                 </div>
@@ -335,7 +335,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     <ArrowPathIcon className="w-4 h-4 mr-2" />
                     Restaurar Desde Backup
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Recupera el sistema a un punto anterior. (Requiere reinicio)
                   </p>
                 </div>
@@ -352,7 +352,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Disparar Cierre Contable Auto
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Fuerza la regla de cierre automático contable al mes objetivo.
                   </p>
                 </div>
@@ -369,7 +369,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     <ArrowPathIcon className="w-4 h-4 mr-2" />
                     Reiniciar Backend
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Fuerza un reinicio del proceso del servidor backend.
                   </p>
                 </div>
@@ -386,7 +386,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Reseteo Maestro (Clear DB)
                   </Button>
-                  <p className="text-[9px] text-sap-error/70 font-bold uppercase">
+                  <p className="text-xxs text-sap-error/70 font-bold uppercase">
                     ¡ADVERTENCIA! Esta acción no se puede deshacer.
                   </p>
                 </div>

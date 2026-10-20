@@ -90,7 +90,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
             <h3 className="text-lg font-black text-token-text-primary tracking-tight uppercase leading-none">
               Historial de Reportes
             </h3>
-            <p className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 leading-none">
+            <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 leading-none">
               Registro Histórico de Turnos
             </p>
           </div>
@@ -286,7 +286,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
         </div>
 
         {/* Footer Summary */}
-        <div className="flex items-center justify-between px-2 text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em]">
+        <div className="flex items-center justify-between px-2 text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em]">
           <div className="flex items-center gap-4">
             <span>Resultados: {filteredReports.length}</span>
             <div className="w-1 h-1 rounded-full bg-token-border-technical" />

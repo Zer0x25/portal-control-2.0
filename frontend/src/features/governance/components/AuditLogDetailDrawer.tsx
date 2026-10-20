@@ -56,7 +56,7 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
                   {key}
                 </span>
                 {isDiff && (
-                  <span className="text-[9px] font-bold bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded-xs border border-blue-500/20">
+                  <span className="text-xxs font-bold bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded-xs border border-blue-500/20">
                     MODIFICADO
                   </span>
                 )}
@@ -258,7 +258,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
 
           {/* Footer */}
           <div className="p-6 border-t border-token-border-technical bg-token-surface-stripe flex justify-end">
-            <span className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.2em] opacity-40">
+            <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.2em] opacity-40">
               Seguridad Enterprise &bull; Trazabilidad v3.5
             </span>
           </div>

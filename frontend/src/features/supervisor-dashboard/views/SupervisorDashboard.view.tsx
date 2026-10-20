@@ -64,7 +64,7 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
                     {tab.label}
                   </span>
                   {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className="bg-(--sidebar-text-active) text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                    <span className="bg-(--sidebar-text-active) text-white text-xxs font-black px-1.5 py-0.5 rounded-full">
                       {tab.badge}
                     </span>
                   )}

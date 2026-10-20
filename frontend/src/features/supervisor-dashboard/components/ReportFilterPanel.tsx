@@ -130,7 +130,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
             <div className="w-1.5 h-1.5 rounded-full bg-sap-blue animate-pulse" />
             Extracción Documental Parametrizada
           </h2>
-          <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest ml-4.5 opacity-60">
+          <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest ml-4.5 opacity-60">
             Protocolos de segmentación corporativa
           </p>
         </div>

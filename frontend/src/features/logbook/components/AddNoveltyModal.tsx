@@ -58,7 +58,7 @@ const AddNoveltyModal: React.FC<AddNoveltyModalProps> = ({
             <h3 className="text-lg font-black text-token-text-primary tracking-tight uppercase">
               {isEditing ? "Editar Novedad" : "Ingreso de Novedad"}
             </h3>
-            <p className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] mt-0.5">
+            <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-0.5">
               Libro de Novedades Digital
             </p>
           </div>

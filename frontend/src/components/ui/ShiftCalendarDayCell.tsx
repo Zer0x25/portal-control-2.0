@@ -32,7 +32,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
           className="flex flex-col items-center justify-center h-full p-1 rounded-md border border-purple-500/20 bg-purple-500/10 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
           title={scheduleInfo.scheduleText}
         >
-          <span className="text-[9px] font-black uppercase tracking-tight text-center leading-none">
+          <span className="text-xxs font-black uppercase tracking-tight text-center leading-none">
             {scheduleInfo.scheduleText}
           </span>
         </div>
@@ -62,7 +62,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
               </span>
             </div>
             {scheduleInfo.hours !== undefined && (
-              <span className="text-[8px] font-black uppercase text-sap-blue/60 mt-0.5 tracking-tighter">
+              <span className="text-xxs font-black uppercase text-sap-blue/60 mt-0.5 tracking-tighter">
                 {scheduleInfo.hours.toFixed(1)}h Totales
               </span>
             )}
@@ -72,7 +72,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
     } else {
       cellContent = (
         <div className="flex flex-col items-center opacity-30 group-hover:opacity-100 transition-opacity">
-          <span className="text-[9px] font-black uppercase tracking-widest text-token-text-tertiary">
+          <span className="text-xxs font-black uppercase tracking-widest text-token-text-tertiary">
             Libre
           </span>
         </div>
@@ -85,8 +85,8 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
         className="flex flex-col items-center justify-center h-full p-1.5 rounded-md border border-orange-500/30 bg-orange-500/10 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
         title={holiday.name}
       >
-        <span className="text-[8px] font-black uppercase tracking-widest mb-1">Feriado</span>
-        <span className="text-[9px] font-bold text-center leading-tight truncate w-full">
+        <span className="text-xxs font-black uppercase tracking-widest mb-1">Feriado</span>
+        <span className="text-xxs font-bold text-center leading-tight truncate w-full">
           {holiday.name}
         </span>
       </div>
@@ -109,7 +109,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
               return (
                 <div
                   key={emp.employeeId}
-                  className="px-1.5 py-0.5 rounded-md text-[8px] font-bold text-white shadow-sm transition-transform hover:scale-110"
+                  className="px-1.5 py-0.5 rounded-md text-xxs font-bold text-white shadow-sm transition-transform hover:scale-110"
                   style={{ backgroundColor: emp.patternColor || "#4B5563" }}
                   title={`${emp.employeeName} | ${emp.shiftPatternName || "N/A"} (${emp.startTime || ""}-${emp.endTime || ""})`}
                 >
@@ -119,7 +119,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
             })}
           </div>
           {hiddenCount > 0 && (
-            <div className="text-center text-[9px] font-black text-sap-blue/60 uppercase tracking-tighter">
+            <div className="text-center text-xxs font-black text-sap-blue/60 uppercase tracking-tighter">
               + {hiddenCount} colab.
             </div>
           )}
@@ -150,7 +150,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
         </span>
 
         {isToday && (
-          <span className="text-[8px] font-black uppercase tracking-widest text-sap-blue dark:text-blue-300 bg-sap-blue/10 dark:bg-blue-400/20 px-1.5 py-0.5 rounded-md border border-sap-blue/20">
+          <span className="text-xxs font-black uppercase tracking-widest text-sap-blue dark:text-blue-300 bg-sap-blue/10 dark:bg-blue-400/20 px-1.5 py-0.5 rounded-md border border-sap-blue/20">
             Hoy
           </span>
         )}

@@ -175,7 +175,7 @@ const HealthDashboard: React.FC = () => {
                 Estado de Backup
               </span>
               <span
-                className={`px-3 py-1 rounded-md text-[9px] font-black tracking-widest ${backupStatusTone}`}
+                className={`px-3 py-1 rounded-md text-xxs font-black tracking-widest ${backupStatusTone}`}
               >
                 {backupStatusLabel}
               </span>

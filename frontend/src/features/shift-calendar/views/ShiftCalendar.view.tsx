@@ -207,7 +207,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     </span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[9px] font-black text-(--sidebar-text-active) uppercase tracking-[0.2em]">
+                    <span className="text-xxs font-black text-(--sidebar-text-active) uppercase tracking-[0.2em]">
                       Ver Mes →
                     </span>
                   </div>

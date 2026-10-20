@@ -75,7 +75,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
               <Badge
                 variant={emp.status === "Activo" ? "success" : "neutral"}
                 size="sm"
-                className="uppercase tracking-widest text-[9px]"
+                className="uppercase tracking-widest text-xxs"
               >
                 {emp.status}
               </Badge>
@@ -83,7 +83,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
 
             <div className="bg-token-surface-stripe rounded-md p-3 space-y-2 mb-4 border border-token-border-subtle">
               <div className="flex justify-between">
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                   RUT
                 </span>
                 <span className="text-xs font-mono font-bold text-token-text-secondary">
@@ -91,7 +91,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                   Área
                 </span>
                 <span className="text-xs font-bold text-token-text-secondary uppercase">
@@ -99,7 +99,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                   Jornada
                 </span>
                 <span className="text-xs font-bold text-token-text-secondary uppercase">
@@ -219,7 +219,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                     <span className="text-xs font-mono font-bold text-token-text-secondary">
                       {emp.rut}
                     </span>
-                    <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                    <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                       Identificador
                     </span>
                   </div>
@@ -229,7 +229,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                     <span className="text-xs font-bold text-token-text-secondary uppercase tracking-tight">
                       {emp.area}
                     </span>
-                    <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                    <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                       Departamento
                     </span>
                   </div>
@@ -239,7 +239,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                     <span className="text-xs font-bold text-token-text-secondary uppercase tracking-tight">
                       {emp.workdayType}
                     </span>
-                    <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest">
+                    <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                       Tipo Jornada
                     </span>
                   </div>

@@ -86,7 +86,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
           ) : (
             <div
               key="shortcut"
-              className="hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded border border-token-border-subtle bg-token-surface-stripe text-[8px] font-black text-token-text-tertiary uppercase tracking-tighter animate-in fade-in"
+              className="hidden sm:flex items-center justify-center px-1.5 py-0.5 rounded border border-token-border-subtle bg-token-surface-stripe text-xxs font-black text-token-text-tertiary uppercase tracking-tighter animate-in fade-in"
             >
               {shortcut}
             </div>

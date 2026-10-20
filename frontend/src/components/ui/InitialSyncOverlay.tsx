@@ -67,7 +67,7 @@ const InitialSyncOverlay: React.FC = () => {
               </div>
 
               {/* Discreet handshaking log */}
-              <p className="text-[9px] font-medium text-token-text-tertiary uppercase tracking-widest opacity-40">
+              <p className="text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40">
                 Establishing technical handshake • Validating integrity...
               </p>
             </div>

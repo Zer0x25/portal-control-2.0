@@ -57,7 +57,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
                   EXPEDIENTE: {employee.name}
                 </h2>
                 <div className="flex items-center gap-4">
-                  <span className="px-3 py-1 text-[9px] font-black bg-token-surface-active text-token-text-primary border border-token-border-subtle rounded-sm uppercase tracking-widest">
+                  <span className="px-3 py-1 text-xxs font-black bg-token-surface-active text-token-text-primary border border-token-border-subtle rounded-sm uppercase tracking-widest">
                     {employee.position}
                   </span>
                   <div className="w-1.5 h-1.5 rounded-full bg-sap-blue animate-pulse" />
@@ -81,7 +81,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
           <div className="px-12 py-5 flex items-center justify-between bg-token-surface-card border-b border-token-border-subtle ml-2">
             <div className="flex items-center gap-6">
               <div>
-                <span className="text-[9px] font-black text-sap-blue uppercase tracking-[0.2em] block mb-1">
+                <span className="text-xxs font-black text-sap-blue uppercase tracking-[0.2em] block mb-1">
                   PERIODO TÉCNICO ANALIZADO
                 </span>
                 <h3 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
@@ -90,7 +90,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="px-6 py-2.5 rounded-sm border border-sap-blue/20 bg-sap-blue/3 text-[9px] font-black text-sap-blue uppercase tracking-[0.3em] flex items-center gap-3">
+              <div className="px-6 py-2.5 rounded-sm border border-sap-blue/20 bg-sap-blue/3 text-xxs font-black text-sap-blue uppercase tracking-[0.3em] flex items-center gap-3">
                 <ShieldCheckIcon className="w-4 h-4" />
                 SISTEMA SINCRONIZADO
               </div>

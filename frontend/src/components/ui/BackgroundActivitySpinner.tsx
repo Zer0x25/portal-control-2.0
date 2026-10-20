@@ -15,10 +15,10 @@ const BackgroundActivitySpinner: React.FC = () => {
             <ArrowPathIcon className="absolute w-3 h-3 text-sap-blue opacity-50" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[9px] font-black text-token-text-primary uppercase tracking-[0.2em] leading-none">
+            <span className="text-xxs font-black text-token-text-primary uppercase tracking-[0.2em] leading-none">
               Procesando
             </span>
-            <span className="text-[7px] font-bold text-token-text-tertiary uppercase tracking-widest leading-none mt-1">
+            <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest leading-none mt-1">
               Actividad en Segundo Plano
             </span>
           </div>
