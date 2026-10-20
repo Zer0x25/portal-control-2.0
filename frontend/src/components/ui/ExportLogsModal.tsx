@@ -4,7 +4,7 @@ import { authService } from "../../services/authService";
 import { API_BASE_URL } from "../../services/apiBase";
 import Button from "./Button";
 import { CloseIcon, DocumentTextIcon, CodeBracketSquareIcon } from "./icons/index";
-import GlassDatePicker from "./GlassDatePicker";
+import DatePicker from "./DatePicker";
 import { compareBusinessDate, toBusinessDateChile } from "../../utils/dateUtils";
 import { useBusinessNow } from "../../hooks/useBusinessNow";
 
@@ -112,17 +112,17 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <GlassDatePicker
+              <DatePicker
+                id="export-logs-start-date"
                 label="Fecha de Inicio"
                 value={startDate}
                 onChange={setStartDate}
-                className="rounded-2xl"
               />
-              <GlassDatePicker
+              <DatePicker
+                id="export-logs-end-date"
                 label="Fecha de Término"
                 value={endDate}
                 onChange={setEndDate}
-                className="rounded-2xl"
               />
             </div>
 

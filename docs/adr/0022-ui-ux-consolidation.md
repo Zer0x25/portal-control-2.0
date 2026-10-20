@@ -94,8 +94,19 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    Las primitivas
    interactivas siguen WAI-ARIA APG (tablist/flechas/tooltips);
    `eslint-plugin-jsx-a11y` es parte del lint requerido.
-5. **Catálogo tipado y verificable**: un solo date picker componible, un solo
-   TabNav APG, un solo spinner, tarjeta de métrica con variantes tipadas. Los
+5. **Un único date picker componible**: la grilla de calendario vive solo en
+   `frontend/src/components/ui/DatePicker.tsx` (`DatePickerCalendar` con
+   `role="grid"`, navegación por flechas/Home/End/PageUp/PageDown, `weekStartsOn: 1`
+   y etiquetas `aria-label` por día) y `DatePickerDialog` la reutiliza en modo
+   modal. `GlassDatePicker` queda eliminado y su único consumidor
+   (`ExportLogsModal`) migra al control componible `value`/`onChange`. Los
+   `input[type="date"]` nativos se **mantienen** en los cuatro paneles de filtro
+   (AuditLog, TimeRecord, Kpi, Report): son accesibles por defecto, usan el
+   calendario del sistema y evitan el desfase de zona horaria de
+   `new Date("YYYY-MM-DD")`; el guardrail `datePickerGuardrails.test.ts` impide
+   que aparezcan fuera de esa lista.
+6. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
+   una sola tarjeta de métrica con variantes tipadas. Los
    modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
    queda reservado a primitivas transversales y utilidades shell.
 

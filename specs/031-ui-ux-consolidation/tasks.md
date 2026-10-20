@@ -50,7 +50,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       PR**; `npm run check` verde sin referencias (AC5).
 - [x] T10: Fusionar `CloseIcon`/`XMarkIcon` en un solo archivo y actualizar el
       barrel `icons/index.ts`; grep que no queden glifos duplicados (AC6).
-- [ ] T11: PR 2 — extender `DatePickerDialog` a modo componible (`value/onChange`,
+- [x] T11: PR 2 — extender `DatePickerDialog` a modo componible (`value/onChange`,
       `weekStartsOn: 1`, nav accesible por teclado), borrar `GlassDatePicker`,
       migrar `ExportLogsModal`, evaluar el reemplazo de inputs nativos date (AC7).
 - [ ] T12: PR 3 — TabNav APG (`role="tablist"/tab/aria-selected` + flechas) y

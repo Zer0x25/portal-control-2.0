@@ -37,22 +37,21 @@ cambio con mayor riesgo offline):
    Sin un mecanismo de decremento, la whitelist de excepciones del guardrail
    congelaría los ~28 modales hand-rolled restantes para siempre.
 3. **Duplicación y código muerto**: 2 date pickers + inputs nativos (3 mecanismos
-   de fecha, con [GlassDatePicker.tsx](file:///frontend/src/components/ui/GlassDatePicker.tsx):165-170
-   keyboard-inaccesible y solo 1 consumidor), 2 tab systems
+   de fecha, con `GlassDatePicker.tsx` (eliminado en T11) teclado-inaccesible y
+   con 1 solo consumidor), 2 tab systems
    ([TabNav.tsx](file:///frontend/src/components/ui/TabNav.tsx) sin semántica
    `role="tablist"` vs copias pegadas en
    [GovernanceHub.view.tsx](file:///frontend/src/features/governance/views/GovernanceHub.view.tsx):62-84
    y [Configuration.view.tsx](file:///frontend/src/features/configuration/views/Configuration.view.tsx):57-80),
    2 tarjetas de métrica (KpiCard/MetricCard), 54 spinners crudos, 83 iconos
-   manuales con un duplicado exacto (`CloseIcon` ≡ `XMarkIcon`), y ~1.160 líneas
-   de UI muerta ([SupervisorReusableComponents.tsx](file:///frontend/src/features/supervisor-dashboard/components/SupervisorReusableComponents.tsx)
-   + [SupervisorAdvancedComponents.tsx](file:///frontend/src/features/supervisor-dashboard/components/SupervisorAdvancedComponents.tsx)
-   solo consumidos por un barrel que nadie importa) más
-   [SessionTimeoutContext.tsx](file:///frontend/src/contexts/SessionTimeoutContext.tsx)
-   que nunca se monta y [CardHeader.tsx](file:///frontend/src/components/ui/CardHeader.tsx)
-   con 0 usos (referenciado además como archivo certificado en
-   [designSystemGuardrails.test.ts](file:///frontend/src/tests/guardrails/designSystemGuardrails.test.ts):172,
-   por lo que su borrado exige actualizar esa lista).
+   manuales con un duplicado exacto (`CloseIcon` ≡ `XMarkIcon`, fusionados en
+   T10), y ~1.160 líneas de UI muerta (`SupervisorReusableComponents.tsx` +
+   `SupervisorAdvancedComponents.tsx`, eliminados en T9, solo consumidos por un
+   barrel que nadie importa) más `SessionTimeoutContext.tsx` (eliminado en T9)
+   que nunca se monta y `CardHeader.tsx` (eliminado en T9) con 0 usos
+   (referenciado además como archivo certificado en
+   [designSystemGuardrails.test.ts](file:///frontend/src/tests/guardrails/designSystemGuardrails.test.ts),
+   hoy la lista vive en `design-system-certified.json` como fuente única).
 4. **Jerarquía tipográfica y catalogación ausente**: ~940 tamaños arbitrarios
    `text-[Npx]` (482× `text-[10px]`, 154× `text-[9px]`, 27× `text-[8px]`) contra
    solo 20 usos de las utilidades oficiales `typo-ui-*`; el catálogo

@@ -41,7 +41,6 @@
     "src/components/ui/ShiftHandoverModal.tsx",
     "src/components/ui/AddNoveltyModal.tsx",
     "src/components/ui/DatePickerDialog.tsx",
-    "src/components/ui/GlassDatePicker.tsx",
     "src/components/ui/TimePickerDialog.tsx",
     "src/components/ui/SeedingProgressModal.tsx",
     "src/components/ui/AboutModal.view.tsx",
