@@ -60,3 +60,4 @@ Reglas:
 - `OBSERVABILITY.md`: señales actuales. Detalle operativo de ADR-0009.
 - `backend/docs/swagger.json`: contrato generado. Ver ADR-0003.
   | [0020](0020-design-system-governance.md) | Propuesto | Design System Governance |
+  | [0022](0022-ui-ux-consolidation.md) | Propuesto | Ui Ux Consolidation |
