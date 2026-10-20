@@ -42,7 +42,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase C — Deduplicación y limpieza
 
-- [ ] T9: PR 1 — borrar `SupervisorReusableComponents.tsx`,
+- [x] T9: PR 1 — borrar `SupervisorReusableComponents.tsx`,
       `SupervisorAdvancedComponents.tsx`, barrel `supervisor-dashboard/components/index.ts`,
       `SupervisorDashboardExample.tsx`, `contexts/SessionTimeoutContext.tsx` y
       `components/ui/CardHeader.tsx`; **actualizar la lista de archivos

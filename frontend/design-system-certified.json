@@ -22,7 +22,6 @@
     "src/components/ui/SortableHeader.tsx",
     "src/components/ui/ReportTable.tsx",
     "src/components/ui/DesignSystemShowcaseModal.tsx",
-    "src/components/ui/CardHeader.tsx",
     "src/components/ui/LoadingOverlay.tsx",
     "src/components/ui/NumericKeypad.tsx",
     "src/components/ui/PasswordChangeForm.tsx",
