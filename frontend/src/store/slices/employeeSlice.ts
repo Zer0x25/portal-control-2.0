@@ -58,9 +58,7 @@ export const createEmployeeSlice: StateCreator<AppState, [], [], EmployeeSlice> 
 
         // Cleanup IndexedDB for deleted items
         const deletedIds = remoteChanges.filter((e) => e.isDeleted).map((e) => e.id);
-        for (const id of deletedIds) {
-          await idbDelete(STORES.EMPLOYEES, id).catch(() => {});
-        }
+        await Promise.all(deletedIds.map((id) => idbDelete(STORES.EMPLOYEES, id).catch(() => {})));
       }
 
       set({ employees: newList, isLoadingEmployees: false });

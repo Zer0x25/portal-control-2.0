@@ -128,8 +128,10 @@ export const createShiftSlice: StateCreator<AppState, [], [], ShiftSlice> = (set
         // --- Sync deletions to IDB ---
         const deletedPIds = enrichedP.filter((p) => p.isDeleted).map((p) => p.id);
         const deletedAIds = enrichedA.filter((a) => a.isDeleted).map((a) => a.id);
-        for (const pid of deletedPIds) await idbDelete(STORES.THEORETICAL_SHIFT_PATTERNS, pid);
-        for (const aid of deletedAIds) await idbDelete(STORES.ASSIGNED_SHIFTS, aid);
+        await Promise.all(
+          deletedPIds.map((pid) => idbDelete(STORES.THEORETICAL_SHIFT_PATTERNS, pid)),
+        );
+        await Promise.all(deletedAIds.map((aid) => idbDelete(STORES.ASSIGNED_SHIFTS, aid)));
       }
 
       set({

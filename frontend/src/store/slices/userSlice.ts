@@ -60,9 +60,7 @@ export const createUserSlice: StateCreator<AppState, [], [], UserSlice> = (set, 
 
         // Cleanup IndexedDB for deleted items
         const deletedIds = remoteChanges.filter((u) => u.isDeleted).map((u) => u.id);
-        for (const id of deletedIds) {
-          await idbDelete(STORES.USERS, id).catch(() => {});
-        }
+        await Promise.all(deletedIds.map((id) => idbDelete(STORES.USERS, id).catch(() => {})));
       }
 
       const dedupedByUsername = new Map<string, User>();

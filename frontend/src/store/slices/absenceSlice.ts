@@ -103,9 +103,8 @@ export const createAbsenceSlice: StateCreator<AppState, [], [], AbsenceSlice> = 
         const deletedLIds = enrichedL
           .filter((l: LeaveRecord) => l.isDeleted)
           .map((l: LeaveRecord) => l.id);
-        for (const lid of deletedLIds) {
-          await idbDelete(STORES.LEAVES, lid);
-        }
+
+        await Promise.all(deletedLIds.map((lid) => idbDelete(STORES.LEAVES, lid)));
       }
 
       set({ holidays: finalHolidays, leaves: finalLeaves });

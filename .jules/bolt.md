@@ -125,3 +125,7 @@
 
 **Learning:** Mismo patrón: `GET /api/configs/public/brand-logo` 404 cuando no hay logo — y este dispara incluso en el login anónimo (`useBrandLogoQuery` sin gate de token, `retry: false` ya documentaba que el 404 era esperado). Más simple que company-policy: el frontend ya tolera `null` (`if (!logo...) return null`), sin cambio de código frontend — solo SDK.
 **Action:** (commits backend + frontend-SDK lockstep, skill `api-contracts-sync`) Backend: `brandLogo() ?? null`, OpenAPI `nullable: true` + descripción, 2 tests actualizados (incluido el de reseteo a null en spec027 que fijaba el segundo 404), `docs:generate`, snaps `-u` (limpios esta vez, solo brand-logo). Frontend: solo `sdk:generate` (`| null` + descripción), `check:sdk` OK. Staging: JSON 200 `null`, `/file` sigue 404, login sin 4xx de brand-logo, 0 pageerrors. `dataConfigs` 67/67 en PG efímero (apagado después); `tsc`/`eslint` OK.
+
+## 2026-10-14 - Await in loops blocking IDB Sync (Frontend Slices)
+**Learning:** In frontend slices like `absenceSlice`, `shiftSlice`, `userSlice` and `employeeSlice`, `idbDelete` was executed inside a sequential `for` loop when handling server deletions. This caused an N+1 latency bottleneck during background syncs when large numbers of records were deleted.
+**Action:** Use `Promise.all()` with `Array.map()` to execute IDB delete operations concurrently inside sync handlers.
