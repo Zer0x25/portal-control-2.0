@@ -3,6 +3,7 @@ import typescript from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import prettier from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 import globals from "globals";
 
 export default [
@@ -26,6 +27,7 @@ export default [
     plugins: {
       "@typescript-eslint": typescript,
       prettier: prettier,
+      "jsx-a11y": jsxA11y,
     },
     rules: {
       ...typescript.configs.recommended.rules,
@@ -35,6 +37,11 @@ export default [
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Spec 031 Fase A / AC1: sandbox mínimo de accesibilidad. Subset core,
+      // extensión progresiva solo con budget 0/0 intacto.
+      "jsx-a11y/alt-text": "error",
+      "jsx-a11y/interactive-supports-focus": "error",
+      "jsx-a11y/no-noninteractive-tabindex": "error",
       "no-restricted-syntax": [
         "warn",
         {

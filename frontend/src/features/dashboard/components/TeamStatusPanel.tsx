@@ -41,6 +41,9 @@ export const TeamStatusPanel: React.FC<TeamStatusPanelProps> = ({
               </h4>
             </div>
             <div
+              // Región scrollable accesible por teclado (WCAG 2.1): patrón
+              // sancionado, no es un elemento interactivo.
+              // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
               tabIndex={0}
               role="region"
               aria-label="Personal presente sin horario asignado"

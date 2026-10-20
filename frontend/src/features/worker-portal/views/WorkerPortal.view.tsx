@@ -319,7 +319,15 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </div>
         </div>
 
-        <div className="overflow-x-auto scrollbar-premium" tabIndex={0}>
+        <div
+          className="overflow-x-auto scrollbar-premium"
+          role="region"
+          aria-label="Registros de trabajo"
+          // Región scrollable accesible por teclado (WCAG 2.1): patrón
+          // sancionado, no es un elemento interactivo.
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+        >
           {isMobile ? (
             <div className="space-y-6 p-6">
               {enrichedRecords.length > 0 ? (
