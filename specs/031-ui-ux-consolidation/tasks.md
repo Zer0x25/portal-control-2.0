@@ -33,10 +33,10 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [x] T6: Migrar `frontend/src/utils/mappings.ts` a clases `token-status-*`
       nuevas conservando la API `Record<K, { label, bg, text }>`; actualizar
       `RoleBadge.tsx`/`IconBox.tsx` a tokens (AC4).
-- [ ] T7: Extender `audit-design-system.cjs` a la detección del palette crudo en
+- [x] T7: Extender `audit-design-system.cjs` a la detección del palette crudo en
       todos los prefijos; correr `npm run audit:design-system -- --update` para
       fijar el budget inicial real y confirmar que el ratchet es monotónico (AC3).
-- [ ] T8: Extender `designSystemGuardrails.test.ts` para que el budget cobre
+- [x] T8: Extender `designSystemGuardrails.test.ts` para que el budget cobre
       palette crudo completo y documentar en el ADR la política de decremento
       (AC3, AC13).
 

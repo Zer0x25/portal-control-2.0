@@ -28,6 +28,20 @@ function getFilesRecursively(dir: string, extensions: string[]): string[] {
   return results;
 }
 
+/**
+ * Lista de archivos certificados (fuente unica compartida con el audit
+ * script: frontend/design-system-certified.json).
+ */
+function readCertifiedFiles(): string[] {
+  const certifiedPath = path.join(frontendRoot, "design-system-certified.json");
+  expect(
+    existsSync(certifiedPath),
+    "design-system-certified.json must exist (fuente unica de archivos certificados)",
+  ).toBe(true);
+  const parsed = JSON.parse(readFileSync(certifiedPath, "utf8"));
+  return parsed.files as string[];
+}
+
 describe("Design System & UI Governance Guardrails", () => {
   it("prevents arbitrary hex color utility classes in core UI components, layouts, and features", () => {
     const allScannedFiles = [
@@ -147,89 +161,21 @@ describe("Design System & UI Governance Guardrails", () => {
     const budgetPath = path.join(frontendRoot, "design-system-budget.json");
     expect(existsSync(budgetPath), "design-system-budget.json must exist").toBe(true);
 
-    const certifiedFiles = [
-      "src/components/ui/Button.tsx",
-      "src/components/ui/Input.tsx",
-      "src/components/ui/Card.tsx",
-      "src/components/ui/Container.tsx",
-      "src/components/ui/Badge.tsx",
-      "src/components/ui/Select.tsx",
-      "src/components/ui/Checkbox.tsx",
-      "src/components/ui/Switch.tsx",
-      "src/components/ui/Textarea.tsx",
-      "src/components/ui/EmptyState.tsx",
-      "src/components/ui/Skeleton.tsx",
-      "src/components/ui/LoadingSpinner.tsx",
-      "src/components/ui/PaginationControls.tsx",
-      "src/components/ui/PageHeader.tsx",
-      "src/components/ui/KpiCard.tsx",
-      "src/components/ui/MetricCard.tsx",
-      "src/components/ui/CinematicModal.tsx",
-      "src/components/ui/ConfirmationModal.tsx",
-      "src/components/ui/SortableHeader.tsx",
-      "src/components/ui/ReportTable.tsx",
-      "src/components/ui/DesignSystemShowcaseModal.tsx",
-      "src/components/ui/CardHeader.tsx",
-      "src/components/ui/LoadingOverlay.tsx",
-      "src/components/ui/NumericKeypad.tsx",
-      "src/components/ui/PasswordChangeForm.tsx",
-      "src/components/ui/ToastItem.tsx",
-      "src/components/ui/Tooltip.tsx",
-      "src/components/ui/LiveStatus.tsx",
-      "src/components/ui/ServerClock.tsx",
-      "src/components/ui/SyncStatus.tsx",
-      "src/components/ui/CollapsibleSection.tsx",
-      "src/components/ui/ExportLogsModal.tsx",
-      "src/components/ui/ClosedReportsModal.tsx",
-      "src/components/ui/AnomalyResolutionModal.tsx",
-      "src/components/ui/SmtpConfigModal.tsx",
-      "src/components/ui/RecordHistoryModal.tsx",
-      "src/components/ui/ImportModal.tsx",
-      "src/components/ui/AddSupplierModal.tsx",
-      "src/components/ui/ShiftHandoverModal.tsx",
-      "src/components/ui/AddNoveltyModal.tsx",
-      "src/components/ui/DatePickerDialog.tsx",
-      "src/components/ui/GlassDatePicker.tsx",
-      "src/components/ui/TimePickerDialog.tsx",
-      "src/components/ui/SeedingProgressModal.tsx",
-      "src/components/ui/AboutModal.view.tsx",
-      "src/components/ui/ShiftHistoryModal.tsx",
-      "src/components/ui/SeedingOptionsModal.tsx",
-      "src/components/ui/UserManualModal.tsx",
-      "src/components/ui/ShiftCalendarDayCell.tsx",
-      "src/components/ui/TabNav.tsx",
-      "src/components/ui/ShiftPatternLegend.tsx",
-      "src/components/ui/PremiumSearchInput.tsx",
-      "src/components/ui/RoleBadge.tsx",
-      "src/components/ui/IconBox.tsx",
-      "src/components/ui/WeatherDisplay.tsx",
-      "src/components/ui/SyncErrorsModal.tsx",
-      "src/components/ui/SessionExpiredOverlay.tsx",
-      "src/components/layout/Header.view.tsx",
-      "src/components/layout/Sidebar.view.tsx",
-      "src/components/layout/SidebarNavItem.tsx",
-      "src/components/layout/PersistentLayout.view.tsx",
-      "src/components/layout/NotificationCenter.view.tsx",
-      "src/components/ErrorBoundary.tsx",
-      "src/components/LiberalitasSignature.tsx",
-      "src/features/theoretical-shifts/components/listTokens.ts",
-      "src/features/theoretical-shifts/components/HolidayForm.tsx",
-      "src/features/theoretical-shifts/components/PatternForm.tsx",
-      "src/features/theoretical-shifts/views/AssignmentManager.view.tsx",
-      "src/features/theoretical-shifts/views/HolidayManager.view.tsx",
-      "src/features/theoretical-shifts/views/LeaveManager.view.tsx",
-      "src/features/theoretical-shifts/views/PatternManager.view.tsx",
-      "src/features/time-control/components/ClockingPanel.tsx",
-      "src/features/time-control/components/TimeRecordTable.tsx",
-    ];
+    // Fuente unica de la lista certificada (la misma que usa el audit script).
+    const certifiedFiles = readCertifiedFiles();
 
     const rawPaletteRegex =
       /\b(?:bg|text|border|ring|divide)-(?:slate|gray|zinc|neutral|stone)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:\/[0-9]+)?\b/g;
 
     const certifiedViolations: { file: string; match: string }[] = [];
+    const missingFiles: string[] = [];
 
     for (const relPath of certifiedFiles) {
       const fullPath = path.join(frontendRoot, relPath);
+      if (!existsSync(fullPath)) {
+        missingFiles.push(relPath);
+        continue;
+      }
       const content = readFileSync(fullPath, "utf8");
       const matches = content.match(rawPaletteRegex);
       if (matches) {
@@ -238,8 +184,73 @@ describe("Design System & UI Governance Guardrails", () => {
     }
 
     expect(
+      missingFiles,
+      `Certified files listed in design-system-certified.json do not exist:\n${missingFiles.join("\n")}`,
+    ).toEqual([]);
+
+    expect(
       certifiedViolations,
       `Found raw palette colors in certified primitives/layouts:\n${JSON.stringify(certifiedViolations, null, 2)}`,
     ).toEqual([]);
+  });
+
+  /**
+   * Spec 031 T8 (AC3): el ratchet del palette crudo completo.
+   *
+   * El budget vive en design-system-budget.json y es monotono decreciente:
+   * - El conteo real nunca puede superar el budget (crecer = CI rojo).
+   * - Reducir el drift no obliga a tocar el budget (solo a mejorarlo).
+   * - El budget del subconjunto certificado nunca supera al global.
+   */
+  it("mantiene el ratchet monotono del palette crudo completo", () => {
+    const budgetPath = path.join(frontendRoot, "design-system-budget.json");
+    const budget = JSON.parse(readFileSync(budgetPath, "utf8"));
+
+    expect(
+      typeof budget.paletteIssuesBudget,
+      "design-system-budget.json debe declarar paletteIssuesBudget",
+    ).toBe("number");
+    expect(
+      typeof budget.certifiedPaletteBudget,
+      "design-system-budget.json debe declarar certifiedPaletteBudget",
+    ).toBe("number");
+
+    const scannedFiles = getFilesRecursively(srcDir, [".tsx", ".ts"]).filter(
+      (file) => !file.includes(".test.") && !file.includes(".d.ts"),
+    );
+    const certifiedFiles = new Set(readCertifiedFiles());
+
+    const fullPaletteRegex = new RegExp(
+      "\\b(?:bg|text|border|ring|divide|from|via|to|fill|stroke|decoration|shadow)-" +
+        "(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-" +
+        "(?:50|100|200|300|400|500|600|700|800|900|950)(?:/[0-9]+)?\\b",
+      "g",
+    );
+
+    let paletteUsages = 0;
+    let certifiedPaletteUsages = 0;
+
+    for (const file of scannedFiles) {
+      const content = readFileSync(file, "utf8");
+      const matches = content.match(fullPaletteRegex);
+      if (!matches) continue;
+      paletteUsages += matches.length;
+      const relPath = path.relative(frontendRoot, file).split(path.sep).join("/");
+      if (certifiedFiles.has(relPath)) {
+        certifiedPaletteUsages += matches.length;
+      }
+    }
+
+    expect(
+      paletteUsages,
+      `Raw palette usages (${paletteUsages}) exceed the ratchet budget (${budget.paletteIssuesBudget}). Migrate to semantic tokens.`,
+    ).toBeLessThanOrEqual(budget.paletteIssuesBudget);
+
+    expect(
+      certifiedPaletteUsages,
+      `Raw palette usages in certified files (${certifiedPaletteUsages}) exceed the ratchet budget (${budget.certifiedPaletteBudget}).`,
+    ).toBeLessThanOrEqual(budget.certifiedPaletteBudget);
+
+    expect(budget.certifiedPaletteBudget).toBeLessThanOrEqual(budget.paletteIssuesBudget);
   });
 });

@@ -53,6 +53,24 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    decoration|shadow`). El budget inicial se fija al conteo real verificado y es
    monotónico decreciente: cada PR solo puede reducirlo. Perfección no instantánea,
    regresión prohibida (igual política que `lint-budget.json`).
+
+   **Política de decremento (aplicable a todos los ratchets de este ADR)**:
+   - Cada budget se inicializa al **conteo real medido** (nunca 0 si hay deuda),
+     de modo que el ratchet sea aplicable desde el primer día y el CI falle ante
+     cualquier incremento.
+   - `--update` de `audit-design-system.cjs` **solo puede bajar** el budget: si el
+     conteo actual supera el vigente, el script aborta con error en vez de
+     absorber la regresión.
+   - Reducir el drift **nunca exige editar el budget**: el conteo real por debajo
+     del budget es un estado válido (y deseado).
+   - La lista de archivos certificados vive en
+     `frontend/design-system-certified.json` (fuente única compartida por el
+     audit script y el guardrail `designSystemGuardrails.test.ts`); al migrar o
+     eliminar un archivo certificado se actualiza ese JSON, no una lista
+     duplicada.
+   - Budgets vigentes al cierre de la Fase B: `totalIssuesBudget` 0 (scope
+     estricto slate/gray, cero tolerancia), `paletteIssuesBudget` **977** (palette
+     crudo completo) y `certifiedPaletteBudget` **189** (subconjunto certificado).
 3. **Estado remoto único con caché seguro**: las colecciones remotas viven
    exclusivamente en TanStack Query con persistencia offline de lectura vía
    `@tanstack/react-query-persist-client` (`PersistQueryClientProvider`) +
@@ -134,6 +152,8 @@ Negativas / costos aceptados:
 - `frontend/src/utils/mappings.ts` — migración a tokens semánticos.
 - `frontend/scripts/audit-design-system.cjs` + `frontend/design-system-budget.json`
   — ratchet completo.
+- `frontend/design-system-certified.json` — fuente única de archivos certificados
+  (audit script + guardrail de tests).
 - `frontend/src/contexts/AppProviders.tsx` — `PersistQueryClientProvider` +
   persister seguro (purge, `shouldDehydrateQuery`, `buster`).
 - `frontend/src/components/ui/CinematicModal.tsx` + `modalGuardrails.test.ts` —

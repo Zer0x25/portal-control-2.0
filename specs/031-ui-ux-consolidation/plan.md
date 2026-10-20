@@ -38,6 +38,10 @@ dejar a medio camino.
      y documentar la política de decremento monotónico en el ADR.
    - El conteo inicial esperado es ~1.143; si el conteo real difiere, el budget
      se fija con `npm run audit:design-system -- --update`.
+   - **Verificado en T7**: el conteo real con el conjunto de prefijos del ratchet
+     es **977** usos de palette crudo (`paletteIssuesBudget`) y **189** dentro
+     de archivos certificados (`certifiedPaletteBudget`); el scope estricto
+     slate/gray permanece en 0.
 3. **Fase C — Deduplicación y limpieza (4 PR)**:
    - PR 1: borrar código muerto (SupervisorReusable/AdvancedComponents, barrel
      `supervisor-dashboard/components/index.ts`, `SessionTimeoutContext`,
