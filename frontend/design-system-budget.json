@@ -1,6 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "totalIssuesBudget": 0,
+  "paletteIssuesBudget": 977,
+  "certifiedPaletteBudget": 189,
   "certifiedFilesCount": 73,
-  "updatedAt": "2026-10-09T12:48:06.335Z"
+  "updatedAt": "2026-10-20T22:20:54.013Z"
 }
