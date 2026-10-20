@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
-import MetricCard from "../../../../components/ui/MetricCard";
+import MetricCard, { type MetricTone } from "../../../../components/ui/MetricCard";
 
 interface MetricItem {
   title: string;
   value: number | string;
-  indicatorColor: "emerald" | "slate" | "orange" | "gray" | "red" | "blue";
+  tone: MetricTone;
   className?: string;
   onClick?: () => void;
   clickable?: boolean;
@@ -62,7 +62,7 @@ export const MetricGrid: React.FC<MetricGridProps> = React.memo(
             key={`${metric.title}-${index}`}
             title={metric.title}
             value={metric.value}
-            indicatorColor={metric.indicatorColor}
+            tone={metric.tone}
             className={metric.className}
             onClick={metric.onClick}
           />
@@ -95,7 +95,7 @@ export const useTeamMetrics = (
   {
     title: "Presentes",
     value: present,
-    indicatorColor: "emerald",
+    tone: "success",
     className: present > 0 ? "cursor-pointer" : "",
     onClick: present > 0 ? onPresentClick : undefined,
     clickable: present > 0,
@@ -103,12 +103,12 @@ export const useTeamMetrics = (
   {
     title: "Plantilla",
     value: total,
-    indicatorColor: "slate",
+    tone: "neutral",
   },
   {
     title: "Anomalías",
     value: anomaliesCount,
-    indicatorColor: anomaliesCount > 0 ? "orange" : "gray",
+    tone: anomaliesCount > 0 ? "warning" : "neutral",
     className: anomaliesCount > 0 ? "cursor-pointer" : "",
     onClick: anomaliesCount > 0 ? onAnomaliesClick : undefined,
     clickable: anomaliesCount > 0,

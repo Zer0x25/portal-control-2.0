@@ -55,7 +55,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       migrar `ExportLogsModal`, evaluar el reemplazo de inputs nativos date (AC7).
 - [x] T12: PR 3 — TabNav APG (`role="tablist"/tab/aria-selected` + flechas) y
       migrar las copias de GovernanceHub/Configuration (AC7).
-- [ ] T13: Unificar KpiCard/MetricCard en una primitiva tipada (variantes de
+- [x] T13: Unificar KpiCard/MetricCard en una primitiva tipada (variantes de
       color en union type, sin parsing runtime), migrar ~11 usos (AC9).
 - [ ] T14: Unificar spinners sobre `LoadingSpinner` (variantes `sm|md|lg`);
       borrar overlays/spinners duplicados y migrar los 54 usos crudos

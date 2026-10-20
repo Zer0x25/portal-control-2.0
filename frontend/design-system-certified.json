@@ -15,7 +15,6 @@
     "src/components/ui/LoadingSpinner.tsx",
     "src/components/ui/PaginationControls.tsx",
     "src/components/ui/PageHeader.tsx",
-    "src/components/ui/KpiCard.tsx",
     "src/components/ui/MetricCard.tsx",
     "src/components/ui/CinematicModal.tsx",
     "src/components/ui/ConfirmationModal.tsx",

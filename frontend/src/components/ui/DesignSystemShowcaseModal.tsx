@@ -8,8 +8,7 @@ import Switch from "./Switch";
 import Textarea from "./Textarea";
 import Badge from "./Badge";
 import Card from "./Card";
-import KpiCard, { KpiStat } from "./KpiCard";
-import MetricCard from "./MetricCard";
+import { MetricCard, MetricStat } from "./MetricCard";
 import LoadingSpinner from "./LoadingSpinner";
 import Skeleton from "./Skeleton";
 import EmptyState from "./EmptyState";
@@ -392,11 +391,11 @@ export const DesignSystemShowcaseModal: React.FC<DesignSystemShowcaseModalProps>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <KpiCard title="Distribución Operacional" icon={<ClockIcon />}>
-                  <KpiStat label="Total Colaboradores" value="48" />
-                  <KpiStat label="En Turno Activo" value="36" isActive />
-                  <KpiStat label="En Colación" value="6" />
-                </KpiCard>
+                <MetricCard kind="panel" title="Distribución Operacional" icon={<ClockIcon />}>
+                  <MetricStat label="Total Colaboradores" value="48" />
+                  <MetricStat label="En Turno Activo" value="36" isActive />
+                  <MetricStat label="En Colación" value="6" />
+                </MetricCard>
 
                 <Card className="flex flex-col justify-between">
                   <div>

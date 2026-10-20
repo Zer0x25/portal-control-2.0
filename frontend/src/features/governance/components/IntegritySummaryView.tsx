@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import Card from "../../../components/ui/Card";
-import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
+import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
 import Button from "../../../components/ui/Button";
 import Badge from "../../../components/ui/Badge";
 import {
@@ -86,7 +86,8 @@ const IntegritySummaryView: React.FC = () => {
 
       {/* KPI Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
+        <MetricCard
+          kind="panel"
           title="Salud de Datos"
           icon={
             <ShieldCheckIcon
@@ -94,30 +95,35 @@ const IntegritySummaryView: React.FC = () => {
             />
           }
         >
-          <KpiStat
+          <MetricStat
             label="Estado Global"
             value={status?.status === "ok" ? "INTEGRA" : "DEGRADADA"}
             isActive={status?.status === "degraded"}
             onClick={handleRefresh}
           />
-          <KpiStat
+          <MetricStat
             label="Estado del Sello"
             value={status?.status === "ok" ? "Protección Activa" : "Vulnerable"}
           />
-        </KpiCard>
+        </MetricCard>
 
-        <KpiCard title="Carga Operativa" icon={<CircleStackIcon className="text-sap-blue" />}>
-          <KpiStat
+        <MetricCard
+          kind="panel"
+          title="Carga Operativa"
+          icon={<CircleStackIcon className="text-sap-blue" />}
+        >
+          <MetricStat
             label="Registros Verificados"
             value={status?.lastCheckedCount?.toLocaleString() || "0"}
           />
-          <KpiStat
+          <MetricStat
             label="Última Verificación"
             value={status?.lastRunAt ? format(new Date(status.lastRunAt), "HH:mm") : "--:--"}
           />
-        </KpiCard>
+        </MetricCard>
 
-        <KpiCard
+        <MetricCard
+          kind="panel"
           title="Amenazas Detectadas"
           icon={
             <FingerPrintIcon
@@ -129,31 +135,32 @@ const IntegritySummaryView: React.FC = () => {
             />
           }
         >
-          <KpiStat
+          <MetricStat
             label="Corrupciones"
             value={status?.lastBrokenCount?.toString() || "0"}
             isActive={!!status?.lastBrokenCount && status.lastBrokenCount > 0}
             onClick={scrollToTable}
           />
-          <KpiStat
+          <MetricStat
             label="Discrepancias Hash"
             value={status?.lastBrokenByReason?.hashMismatch || 0}
             onClick={scrollToTable}
           />
-        </KpiCard>
+        </MetricCard>
 
-        <KpiCard
+        <MetricCard
+          kind="panel"
           title="Mantenimiento Digital"
           icon={<ArrowPathIcon className="text-sap-warning" />}
         >
-          <KpiStat
+          <MetricStat
             label="Último Backfill"
             value={
               status?.lastBackfillAt ? format(new Date(status.lastBackfillAt), "HH:mm") : "--:--"
             }
           />
-          <KpiStat label="Registros Reparados" value={status?.lastBackfillProcessed || 0} />
-        </KpiCard>
+          <MetricStat label="Registros Reparados" value={status?.lastBackfillProcessed || 0} />
+        </MetricCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

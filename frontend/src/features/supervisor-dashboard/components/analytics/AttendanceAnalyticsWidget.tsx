@@ -82,25 +82,25 @@ export const AttendanceAnalyticsWidget: React.FC<AttendanceAnalyticsWidgetProps>
             <MetricCard
               title="Asistencia Promedio"
               value={`${stats.averageAttendance.toFixed(1)}%`}
-              indicatorColor={
+              tone={
                 stats.averageAttendance >= 90
-                  ? "emerald"
+                  ? "success"
                   : stats.averageAttendance >= 80
-                    ? "orange"
-                    : "red"
+                    ? "warning"
+                    : "danger"
               }
             />
             <MetricCard
               title="Llegadas Tarde/Día"
               value={stats.averageLate.toFixed(1)}
-              indicatorColor={
-                stats.averageLate <= 1 ? "emerald" : stats.averageLate <= 3 ? "orange" : "red"
+              tone={
+                stats.averageLate <= 1 ? "success" : stats.averageLate <= 3 ? "warning" : "danger"
               }
             />
             <MetricCard
               title="Mejor Día"
               value={stats.bestDay.attendance}
-              indicatorColor="emerald"
+              tone="success"
               className="text-sm"
             />
           </div>

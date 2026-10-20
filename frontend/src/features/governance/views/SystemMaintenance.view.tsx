@@ -17,7 +17,7 @@ import {
   ShieldIcon,
   ActivityIcon,
 } from "../../../components/ui/icons/index";
-import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
+import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
 import BackupListModal from "../components/BackupListModal";
 
 interface MaintenanceStats {
@@ -104,33 +104,33 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
       className="space-y-8 animate-in fade-in duration-500"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Usuarios" icon={<UsersIcon />}>
-          <KpiStat label="Total Activos" value={stats?.usersCount || 0} />
-          <KpiStat
+        <MetricCard kind="panel" title="Usuarios" icon={<UsersIcon />}>
+          <MetricStat label="Total Activos" value={stats?.usersCount || 0} />
+          <MetricStat
             label="MFA Habilitado"
             value={stats?.mfaStats?.enabled || 0}
             isActive={!!stats?.mfaStats?.enabled}
           />
-        </KpiCard>
+        </MetricCard>
 
-        <KpiCard title="Empleados" icon={<UserIcon />}>
-          <KpiStat label="Nómina Total" value={stats?.employeesCount || 0} />
-          <KpiStat label="En Turno" value={stats?.activeEmployeesCount || 0} />
-        </KpiCard>
+        <MetricCard kind="panel" title="Empleados" icon={<UserIcon />}>
+          <MetricStat label="Nómina Total" value={stats?.employeesCount || 0} />
+          <MetricStat label="En Turno" value={stats?.activeEmployeesCount || 0} />
+        </MetricCard>
 
-        <KpiCard title="Registros" icon={<ClockIcon />}>
-          <KpiStat label="Total Asistencia" value={stats?.recordsCount?.toLocaleString() || 0} />
-          <KpiStat label="Hoy" value={stats?.todayRecordsCount || 0} />
-        </KpiCard>
+        <MetricCard kind="panel" title="Registros" icon={<ClockIcon />}>
+          <MetricStat label="Total Asistencia" value={stats?.recordsCount?.toLocaleString() || 0} />
+          <MetricStat label="Hoy" value={stats?.todayRecordsCount || 0} />
+        </MetricCard>
 
-        <KpiCard title="Auditoría" icon={<ShieldCheckIcon />}>
-          <KpiStat label="Eventos Log" value={stats?.auditLogsCount?.toLocaleString() || 0} />
-          <KpiStat
+        <MetricCard kind="panel" title="Auditoría" icon={<ShieldCheckIcon />}>
+          <MetricStat label="Eventos Log" value={stats?.auditLogsCount?.toLocaleString() || 0} />
+          <MetricStat
             label="Críticos (24h)"
             value={stats?.criticalLogsCount || 0}
             isActive={!!stats?.criticalLogsCount && stats.criticalLogsCount > 0}
           />
-        </KpiCard>
+        </MetricCard>
       </div>
 
       <HealthDashboard />

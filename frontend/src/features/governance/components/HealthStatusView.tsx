@@ -1,7 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 import Card from "../../../components/ui/Card";
-import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
+import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
 import Badge from "../../../components/ui/Badge";
 import {
   ActivityIcon,
@@ -51,43 +51,53 @@ const HealthStatusView: React.FC = () => {
 
       {/* Main KPI Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
+        <MetricCard
+          kind="panel"
           title="Estado Global"
           icon={<ActivityIcon className={isHealthy ? "text-sap-success" : "text-sap-error"} />}
         >
-          <KpiStat
+          <MetricStat
             label="Sistema"
             value={isHealthy ? "OPERATIVO" : "DEGRADADO"}
             isActive={!isHealthy}
           />
-          <KpiStat label="Respuesta API" value={`${health?.responseTime || 0} ms`} />
-        </KpiCard>
+          <MetricStat label="Respuesta API" value={`${health?.responseTime || 0} ms`} />
+        </MetricCard>
 
-        <KpiCard title="Base de Datos" icon={<CircleStackIcon className="text-sap-blue" />}>
-          <KpiStat
+        <MetricCard
+          kind="panel"
+          title="Base de Datos"
+          icon={<CircleStackIcon className="text-sap-blue" />}
+        >
+          <MetricStat
             label="Latencia Query"
             value={`${health?.database?.latency || 0} ms`}
             isActive={(health?.database?.latency || 0) > 100}
           />
-          <KpiStat label="Tamaño DB" value={health?.database?.size || "---"} />
-        </KpiCard>
+          <MetricStat label="Tamaño DB" value={health?.database?.size || "---"} />
+        </MetricCard>
 
-        <KpiCard title="Recursos Server" icon={<CpuChipIcon className="text-sap-warning" />}>
-          <KpiStat
+        <MetricCard
+          kind="panel"
+          title="Recursos Server"
+          icon={<CpuChipIcon className="text-sap-warning" />}
+        >
+          <MetricStat
             label="Memoria Node (Heap)"
             value={`${health?.system?.memory?.heapUsed || 0} MB`}
           />
-          <KpiStat
+          <MetricStat
             label="Uptime"
             value={`${Math.floor((health?.uptime || 0) / 3600)}h ${Math.floor(((health?.uptime || 0) % 3600) / 60)}m`}
           />
-        </KpiCard>
+        </MetricCard>
 
-        <KpiCard
+        <MetricCard
+          kind="panel"
           title="Integridad & Seguridad"
           icon={<ShieldCheckIcon className="text-indigo-500" />}
         >
-          <KpiStat
+          <MetricStat
             label="Health Score"
             value={`${
               health?.integrity?.lastCheckedCount
@@ -99,12 +109,12 @@ const HealthStatusView: React.FC = () => {
                 : 100
             }%`}
           />
-          <KpiStat
+          <MetricStat
             label="Integridad"
             value={health?.integrity?.status === "ok" ? "OK" : "CHECK"}
             isActive={health?.integrity?.status !== "ok"}
           />
-        </KpiCard>
+        </MetricCard>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
