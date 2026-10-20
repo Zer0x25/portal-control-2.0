@@ -17,11 +17,12 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       ForceChangePasswordModal) (AC2).
 - [x] T3: Migrar los 5 modales feature a CinematicModal hasta el test de T2 en
       verde; anotar `aria-label` en close icon-only (AC2).
-- [ ] T4: Nuevo guardrail `frontend/src/tests/guardrails/modalGuardrails.test.ts`
-      que bloquea overlays `fixed inset-0` en features sin CinematicModal y con
-      **whitelist gobernada por budget monotónico decreciente** (constante
-      exportada con el conteo de modales hand-rolled restantes, ~28; crecer
-      falla el CI, reducir no exige tocar el test) (AC2).
+- [x] T4: Nuevo guardrail `frontend/src/tests/guardrails/modalGuardrails.test.ts`
+      que bloquea overlays `fixed inset-0` en `src/features` y
+      `src/components/ui` sin CinematicModal, con **whitelist gobernada por
+      budget monotónico decreciente** (29 = 11 features + 18 ui, conteo real
+      medido; crecer falla el CI, reducir no exige tocar el test) y test de
+      honestidad que obliga a retirar entradas obsoletas (AC2).
 
 ## Fase B — Tokens de dominio y ratchet completo
 

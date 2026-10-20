@@ -108,10 +108,12 @@ Fuera (explícito):
 - [ ] AC2: Los 5 modales feature listados en Problema.2 y los modales de dominio
       reubicados usan CinematicModal o registran Escape + focus trap + `aria-modal`
       propios; el guardrail de overlays (`fixed inset-0` fuera de CinematicModal)
-      mantiene una whitelist explícita gobernada por **budget monotónico
-      decreciente** inicializada al conteo real de modales hand-rolled restantes
-      (~28): crecer el budget falla el CI; reducirlo nunca exige ediciones del
-      test. Un test en [src/tests/components](file:///frontend/src/tests/components)
+      escanea `src/features` y `src/components/ui` y mantiene una whitelist
+      explícita gobernada por **budget monotónico decreciente** inicializada al
+      conteo real de overlays hand-rolled restantes (29 verificados: 11 en
+      features + 18 en `components/ui`; la estimación inicial de ~28 se ajustó
+      al medir el código): crecer el budget falla el CI; reducirlo nunca exige
+      ediciones del test. Un test en [src/tests/components](file:///frontend/src/tests/components)
       verifica Escape, wrap del Tab y retorno de foco en los modales migrados.
 - [ ] AC3: El audit script detecta el palette crudo completo (prefijos
       `bg|text|border|ring|divide|from|via|to|fill|stroke|decoration|shadow` con
