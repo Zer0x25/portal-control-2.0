@@ -85,6 +85,29 @@ test.describe("Accesibilidad axe-core", () => {
     await expectNoBlockingA11y(page, "dashboard-dark");
   });
 
+  test("planificador (calendario de turnos) light sin violaciones bloqueantes", async ({
+    page,
+    request,
+  }) => {
+    await loginFast(page, request, "admin");
+    await page.goto("/#/shift-calendar");
+    await expect(page).toHaveURL(/#\/shift-calendar/, { timeout: 30000 });
+    await page.waitForTimeout(3000); // setlean el calendario lazy
+    await expectNoBlockingA11y(page, "planificador-light");
+  });
+
+  test("planificador (calendario de turnos) dark sin violaciones bloqueantes", async ({
+    page,
+    request,
+  }) => {
+    await gotoDark(page);
+    await loginFast(page, request, "admin");
+    await page.goto("/#/shift-calendar");
+    await expect(page).toHaveURL(/#\/shift-calendar/, { timeout: 30000 });
+    await page.waitForTimeout(3000);
+    await expectNoBlockingA11y(page, "planificador-dark");
+  });
+
   test("worker portal light sin violaciones bloqueantes", async ({ page, request }) => {
     await withWorker(page, request, async () => {
       await page.goto("/#/worker-portal");

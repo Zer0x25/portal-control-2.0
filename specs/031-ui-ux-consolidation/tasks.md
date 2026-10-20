@@ -80,7 +80,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Verificación final
 
-- [ ] T19: Extender `frontend/e2e/a11y.spec.ts` con axe core/serious en dashboard,
+- [x] T19: Extender `frontend/e2e/a11y.spec.ts` con axe core/serious en dashboard,
       planificador y worker-portal (claro+oscuro) (AC13).
 - [ ] T20: Correr suite completa: `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run audit:design-system`, `npm run e2e:staging`,

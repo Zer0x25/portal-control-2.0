@@ -44,6 +44,8 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
   `empty-state` (vacío compartido e inline).
 - Paginación: `pagination[data-page][data-total-pages]`,
   `pagination-first|prev|next|last` (solo cuando hay >1 página).
+- Accesibilidad (axe-core, core+serious): login, dashboard, planificador
+  (calendario de turnos) y worker-portal, en tema claro y oscuro.
 - Modales: `modal-dialog` genérico (con `role="dialog"` + `aria-labelledby`);
   MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`.
 - Kiosco (`/#/kiosk`): fuera del shell (sin `app-shell`/`main-content`);
