@@ -163,7 +163,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
           onClick={() => setIsOpen(!isOpen)}
           className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center cursor-pointer hover:bg-token-surface-active transition-colors group/text py-1 rounded-sm"
         >
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5 opacity-80 group-hover/text:text-sap-blue">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-sap-blue">
             {label}
           </p>
           <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap flex items-center gap-2">

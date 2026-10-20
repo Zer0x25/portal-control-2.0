@@ -16,7 +16,7 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    `frontend/src/utils/mappings.ts:20-120` (107), donde los estados reales del
    dominio de jornada (Laborando, En Colación, Ausente, Vacaciones, ...) no
    tienen tokens: el sistema solo define 4 estados (`--status-success/error/
-   warning/info`), por lo que la excepción se convirtió en regla de facto.
+warning/info`), por lo que la excepción se convirtió en regla de facto.
 2. **Doble sistema de datos**: 7 slices de Zustand (`store/slices/absenceSlice.ts`,
    `shiftSlice.ts`, `meterReadingSlice.ts`, `employeeSlice.ts`, `userSlice.ts`,
    `configSlice.ts`, `dashboardSlice.ts`) importan servicios, escriben IndexedDB
@@ -50,7 +50,7 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
 2. **Ratchet sin blindspots**: `audit-design-system.cjs` y
    `frontend/design-system-budget.json` pasan a detectar palette crudo en todos
    los prefijos de Tailwind (`bg|text|border|ring|divide|from|via|to|fill|stroke|
-   decoration|shadow`). El budget inicial se fija al conteo real verificado y es
+decoration|shadow`). El budget inicial se fija al conteo real verificado y es
    monotónico decreciente: cada PR solo puede reducirlo. Perfección no instantánea,
    regresión prohibida (igual política que `lint-budget.json`).
 
@@ -71,6 +71,7 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    - Budgets vigentes al cierre de la Fase B: `totalIssuesBudget` 0 (scope
      estricto slate/gray, cero tolerancia), `paletteIssuesBudget` **977** (palette
      crudo completo) y `certifiedPaletteBudget` **189** (subconjunto certificado).
+
 3. **Estado remoto único con caché seguro**: las colecciones remotas viven
    exclusivamente en TanStack Query con persistencia offline de lectura vía
    `@tanstack/react-query-persist-client` (`PersistQueryClientProvider`) +
@@ -83,7 +84,7 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    dispositivos compartidos (kiosk), el caché persistido exige un ciclo de vida
    seguro: purge íntegro al logout/cambio de usuario (incluida expiración de
    sesión), exclusión de queries sensibles vía `dehydrateOptions.
-   shouldDehydrateQuery` (allowlist de catálogos, nunca blocklist) y `buster`
+shouldDehydrateQuery` (allowlist de catálogos, nunca blocklist) y `buster`
    por versión de despliegue.
 4. **Estándar de modal accesible**: `CinematicModal` es la única implementación
    legal de overlay de modal; todo overlay `fixed inset-0` fuera de su uso o de
@@ -130,9 +131,24 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    `features/design-system/`. El enlace vive en el Sidebar (solo
    Administrador) y el DeveloperPanel navega a la ruta en vez de abrir un modal.
 10. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
-   una sola tarjeta de métrica con variantes tipadas. Los
-   modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
-   queda reservado a primitivas transversales y utilidades shell.
+    una sola tarjeta de métrica con variantes tipadas. Los
+    modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
+    queda reservado a primitivas transversales y utilidades shell.
+
+## Verificacion de cierre (2026-10-20)
+
+- `npm run validate:ci` (frontend): format, lint, lint-budget 0/0, tsc, 470
+  tests y build en verde.
+- Guardrails: 52/52 (modal, palette, tipografia, z-scale, spinner, tab,
+  metric card, date picker, iconos y capa UI).
+- Audit de design system: budgets 0 (scope estricto), 879 (palette crudo) y
+  173 (certificados); el ratchet solo bajo durante la consolidacion.
+- e2e axe-core: 8/8 (login, dashboard, planificador y worker-portal, en tema
+  claro y oscuro) contra el build de produccion y el backend real. La
+  extension al planificador destapo violaciones preexistentes de contraste y
+  de nombre accesible en el calendario de turnos, ya corregidas.
+- `npm run spec:check` (32 specs), `npm run docs:check` (206 md, 22 ADR) y
+  `npm run preflight` en verde.
 
 ## Alternativas consideradas
 

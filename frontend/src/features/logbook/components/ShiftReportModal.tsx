@@ -266,7 +266,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                       <span className="text-xs font-bold text-token-text-primary uppercase truncate leading-none">
                         {se.driverName}
                       </span>
-                      <p className="text-xxs font-medium text-token-text-tertiary mt-1.5 opacity-80">
+                      <p className="text-xxs font-medium text-token-text-tertiary mt-1.5">
                         PATENTE: {se.licensePlate} • PAX: {se.paxCount}
                       </p>
                     </div>

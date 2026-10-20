@@ -82,9 +82,15 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 - [x] T19: Extender `frontend/e2e/a11y.spec.ts` con axe core/serious en dashboard,
       planificador y worker-portal (claro+oscuro) (AC13).
-- [ ] T20: Correr suite completa: `npm run validate:ci` (frontend),
+- [x] T20: Correr suite completa: `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run audit:design-system`, `npm run e2e:staging`,
       `npm run spec:check`, `npm run docs:check`, `npm run preflight` (AC13).
+      **Resultado (2026-10-20)**: validate:ci frontend en verde (format, lint,
+      lint-budget 0/0, tsc, 470 tests, build); guardrails 52/52; audit sin
+      violacion (budgets 0 / 879 / 173 tras el decremento); e2e axe-core 8/8
+      (login, dashboard, planificador y worker-portal en claro y oscuro contra
+      el build de produccion y el backend real); spec-check 32 specs, docs-check
+      206 md/22 ADR y preflight completo en verde.
 - Nota: la promoción de ADR-0022 a "Aceptado" vive como T10 en
   [032-remote-state-consolidation](file:///specs/032-remote-state-consolidation/tasks.md),
   para que el cierre de 031 no dependa de la consolidación de estado remoto.

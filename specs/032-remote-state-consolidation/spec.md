@@ -42,8 +42,8 @@ Dentro:
 
 - Montaje de la persistencia oficial de TanStack Query en IndexedDB:
   `@tanstack/react-query-persist-client` (React 19/runtime: `PersistQueryClientProvider`)
-  + `@tanstack/query-async-storage-persister` (`createAsyncStoragePersister`),
-  ambas dependencias de **runtime**.
+  - `@tanstack/query-async-storage-persister` (`createAsyncStoragePersister`),
+    ambas dependencias de **runtime**.
 - Migración de las 7 colecciones remotas de slices Zustand a los query hooks
   existentes (`useLeavesQuery`, `useHolidaysQuery`, `useShiftPatternsQuery`,
   `useAssignedShiftsQuery`, `useConfigQuery`, y equivalentes para
@@ -77,16 +77,13 @@ Fuera (explícito):
       `loadXData()` simultáneos (patrón de `useShiftMutations`/`useHolidayMutations`
       eliminado y detectado por el mismo guardrail).
 - [ ] AC2: El caché persistido en IndexedDB es **seguro para dispositivo
-      compartido**:
-      1. se purga íntegramente al hacer logout o al cambiar de usuario (Given
-         usuario A cierra sesión en kiosk, When usuario B inicia sesión, Then el
-         caché de IndexedDB no contiene datos de A); el purge es idempotente y
-         cubre también la expiración de sesión;
-      2. `dehydrateOptions.shouldDehydrateQuery` excluye queries sensibles
-         (autenticación, datos PII marcados), quedando solo catálogos y datos de
-         operación ya visibles para el rol al entrar;
-      3. el `buster` deriva de la versión de despliegue (build), invalidando el
-         caché entre versiones.
+      compartido**: 1. se purga íntegramente al hacer logout o al cambiar de usuario (Given
+      usuario A cierra sesión en kiosk, When usuario B inicia sesión, Then el
+      caché de IndexedDB no contiene datos de A); el purge es idempotente y
+      cubre también la expiración de sesión; 2. `dehydrateOptions.shouldDehydrateQuery` excluye queries sensibles
+      (autenticación, datos PII marcados), quedando solo catálogos y datos de
+      operación ya visibles para el rol al entrar; 3. el `buster` deriva de la versión de despliegue (build), invalidando el
+      caché entre versiones.
 - [ ] AC3: La lectura offline no se degrada: sin red y tras login previo, el
       worker-portal y kiosk sirven datos desde el caché persistido; la cola de
       escritura offline (`syncSlice`) sigue funcionando intacta y el flujo PWA

@@ -55,17 +55,17 @@ preceden a la migración de datos PII).
 
 ## Archivos a tocar
 
-| Archivo | Cambio |
-| ------- | ------ |
-| `frontend/package.json` | `@tanstack/react-query-persist-client` + `@tanstack/query-async-storage-persister` (runtime) |
-| `frontend/src/contexts/AppProviders.tsx` | `PersistQueryClientProvider` + persister + dehydrate allowlist + buster |
-| `frontend/src/store/slices/{absence,shift,config,employee,user,meterReading,dashboard}Slice.ts` | retirar servicio+IDB, colecciones remotas |
-| `frontend/src/store/slices/{syncSlice,authSlice}.ts` | sin cambios funcionales (whitelist explícita); authSlice gana purge de caché en logout |
-| `frontend/src/hooks/useShiftMutations.ts` | quitar refresh doble |
-| `frontend/src/hooks/useHolidayMutations.ts` | quitar refresh doble |
-| `frontend/src/tests/guardrails/stateBoundaryGuardrails.test.ts` | nuevo: servicios en slices + doble-refresh |
-| `frontend/vite.config.ts` / constantes de build | `buster` desde versión de build |
-| `docs/adr/0022-ui-ux-consolidation.md` | decisión permanente |
+| Archivo                                                                                         | Cambio                                                                                       |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `frontend/package.json`                                                                         | `@tanstack/react-query-persist-client` + `@tanstack/query-async-storage-persister` (runtime) |
+| `frontend/src/contexts/AppProviders.tsx`                                                        | `PersistQueryClientProvider` + persister + dehydrate allowlist + buster                      |
+| `frontend/src/store/slices/{absence,shift,config,employee,user,meterReading,dashboard}Slice.ts` | retirar servicio+IDB, colecciones remotas                                                    |
+| `frontend/src/store/slices/{syncSlice,authSlice}.ts`                                            | sin cambios funcionales (whitelist explícita); authSlice gana purge de caché en logout       |
+| `frontend/src/hooks/useShiftMutations.ts`                                                       | quitar refresh doble                                                                         |
+| `frontend/src/hooks/useHolidayMutations.ts`                                                     | quitar refresh doble                                                                         |
+| `frontend/src/tests/guardrails/stateBoundaryGuardrails.test.ts`                                 | nuevo: servicios en slices + doble-refresh                                                   |
+| `frontend/vite.config.ts` / constantes de build                                                 | `buster` desde versión de build                                                              |
+| `docs/adr/0022-ui-ux-consolidation.md`                                                          | decisión permanente                                                                          |
 
 ## Contratos afectados
 
@@ -79,13 +79,13 @@ preceden a la migración de datos PII).
 
 ## Riesgos y rollback
 
-| Riesgo | Mitigación | Rollback |
-| ------ | ---------- | -------- |
+| Riesgo                                                                      | Mitigación                                                                                                                          | Rollback                                                |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | Fuga de datos de usuario A visible para B en dispositivo compartido (kiosk) | la seguridad va antes que el dato: PR 1 persiste solo catálogos; purge + shouldDehydrateQuery exclusions antes de migrar PII (PR 3) | desmontar persister por flag y volver al estado pre-PR1 |
-| Regresión offline de worker-portal/kiosk al cortar slices | e2e offline como puerta de salida de cada batch; cola de escritura no tocada | revertir el batch (el slice vuelve a servicio+IDB) |
-| Hidratación anticipada causa doble-loading | persist manual de restauración con `staleTime` intacto; probar en boot | desmontar plugin en `AppProviders` |
-| Borrar `loadXData()` quiebra consumidores invisibles del store | grep de consumidores antes de borrar (`useXStore`); checklist por slice en T6/T7 | restaurar skip del slice puntual |
-| Purge en logout falla en pestañas múltiples | purge vía broadcast/localStorage event inicial; test con dos pestañas | purge solo al boot con usuario distinto |
+| Regresión offline de worker-portal/kiosk al cortar slices                   | e2e offline como puerta de salida de cada batch; cola de escritura no tocada                                                        | revertir el batch (el slice vuelve a servicio+IDB)      |
+| Hidratación anticipada causa doble-loading                                  | persist manual de restauración con `staleTime` intacto; probar en boot                                                              | desmontar plugin en `AppProviders`                      |
+| Borrar `loadXData()` quiebra consumidores invisibles del store              | grep de consumidores antes de borrar (`useXStore`); checklist por slice en T6/T7                                                    | restaurar skip del slice puntual                        |
+| Purge en logout falla en pestañas múltiples                                 | purge vía broadcast/localStorage event inicial; test con dos pestañas                                                               | purge solo al boot con usuario distinto                 |
 
 ## Verificación
 

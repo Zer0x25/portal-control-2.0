@@ -72,23 +72,23 @@ dejar a medio camino.
 
 ## Archivos a tocar
 
-| Archivo | Cambio |
-| ------- | ------ |
-| `frontend/eslint.config.js` | añadir `eslint-plugin-jsx-a11y` (dev) |
-| `frontend/package.json` | `eslint-plugin-jsx-a11y` + `@testing-library/dom` (devDep; peer explícito de RTL v16) |
-| `frontend/src/index.css` | tokens `status-*` dominio + `chart-1..8` |
-| `frontend/src/utils/mappings.ts` | migrar CONFIG block a clases token |
-| `frontend/scripts/audit-design-system.cjs` | regex palette completa |
-| `frontend/design-system-budget.json` | budget inicial real + ratchet |
-| `frontend/src/components/ui/CinematicModal.tsx` | (referencia) sin cambios |
-| `frontend/src/features/{supervisor,meters,governance,auth}/...` | modales → CinematicModal |
-| `frontend/src/tests/guardrails/modalGuardrails.test.ts` | nuevo guardrail + whitelist-budget |
-| `frontend/src/tests/guardrails/designSystemGuardrails.test.ts` | certified list (CardHeader), texto y z-scale |
-| `frontend/src/components/ui/{GlassDatePicker,MetricCard,TabNav}.tsx` | unificar/borrar |
-| `frontend/src/features/supervisor-dashboard/components/Supervisor*` | borrar (muerto) |
-| `frontend/src/components/ui/*.tsx` (~24) | trasladar a `features/<dominio>/components/` |
-| `frontend/src/components/ui/icons/*` | dedup CloseIcon/XMarkIcon |
-| `docs/adr/0022-ui-ux-consolidation.md` | decisión permanente |
+| Archivo                                                              | Cambio                                                                                |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `frontend/eslint.config.js`                                          | añadir `eslint-plugin-jsx-a11y` (dev)                                                 |
+| `frontend/package.json`                                              | `eslint-plugin-jsx-a11y` + `@testing-library/dom` (devDep; peer explícito de RTL v16) |
+| `frontend/src/index.css`                                             | tokens `status-*` dominio + `chart-1..8`                                              |
+| `frontend/src/utils/mappings.ts`                                     | migrar CONFIG block a clases token                                                    |
+| `frontend/scripts/audit-design-system.cjs`                           | regex palette completa                                                                |
+| `frontend/design-system-budget.json`                                 | budget inicial real + ratchet                                                         |
+| `frontend/src/components/ui/CinematicModal.tsx`                      | (referencia) sin cambios                                                              |
+| `frontend/src/features/{supervisor,meters,governance,auth}/...`      | modales → CinematicModal                                                              |
+| `frontend/src/tests/guardrails/modalGuardrails.test.ts`              | nuevo guardrail + whitelist-budget                                                    |
+| `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`       | certified list (CardHeader), texto y z-scale                                          |
+| `frontend/src/components/ui/{GlassDatePicker,MetricCard,TabNav}.tsx` | unificar/borrar                                                                       |
+| `frontend/src/features/supervisor-dashboard/components/Supervisor*`  | borrar (muerto)                                                                       |
+| `frontend/src/components/ui/*.tsx` (~24)                             | trasladar a `features/<dominio>/components/`                                          |
+| `frontend/src/components/ui/icons/*`                                 | dedup CloseIcon/XMarkIcon                                                             |
+| `docs/adr/0022-ui-ux-consolidation.md`                               | decisión permanente                                                                   |
 
 ## Contratos afectados
 
@@ -101,15 +101,15 @@ dejar a medio camino.
 
 ## Riesgos y rollback
 
-| Riesgo | Mitigación | Rollback |
-| ------ | ---------- | -------- |
-| Budgets iniciales mal calibrados (bloquean CI inmediatamente) | `--update` con conteo verificado en PR separado antes de cambiar regex | revertir budget |
-| Migración de modales rompe rutas de imports/barrels | mover+actualizar en el mismo commit; tsc como red | revertir commit por-feature |
-| Purgar text-[10px|11px] rompe estándares de densidad industrial | sólo 7-9px se eliminan; 10/11px van a budget monotónico, no hard ban | ajustar budget |
-| A11y plugin genera ruido en codebase legacy | activar en modo `recommended` subset, sin warnings en budget 0/0; reglas experimentales off | subset aún más pequeño de reglas |
-| Plugin declara peer `eslint ^3..^9` bajo eslint@10 | instalar vía `--legacy-peer-deps` CLI (una vez, sin `.npmrc` committeado — un flag global elimina peers marcados en `npm ci`) y auditar lockfile con 0 bumps/0 removals | quitar el devDep y la config para volver al estado sin plugin |
-| Borrar CardHeader rompe el guardrail de archivos certificados | actualizar `designSystemGuardrails.test.ts` en el mismo PR de borrado (T9) | re-listado del archivo |
-| Traslado de ~24 modales desordena la whitelist del guardrail de overlays | whitelist se regenera por script en el mismo PR; budget decrece o se mantiene | revertir traslado individual |
+| Riesgo                                                                   | Mitigación                                                                                                                                                              | Rollback                                                             |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Budgets iniciales mal calibrados (bloquean CI inmediatamente)            | `--update` con conteo verificado en PR separado antes de cambiar regex                                                                                                  | revertir budget                                                      |
+| Migración de modales rompe rutas de imports/barrels                      | mover+actualizar en el mismo commit; tsc como red                                                                                                                       | revertir commit por-feature                                          |
+| Purgar text-[10px                                                        | 11px] rompe estándares de densidad industrial                                                                                                                           | sólo 7-9px se eliminan; 10/11px van a budget monotónico, no hard ban | ajustar budget |
+| A11y plugin genera ruido en codebase legacy                              | activar en modo `recommended` subset, sin warnings en budget 0/0; reglas experimentales off                                                                             | subset aún más pequeño de reglas                                     |
+| Plugin declara peer `eslint ^3..^9` bajo eslint@10                       | instalar vía `--legacy-peer-deps` CLI (una vez, sin `.npmrc` committeado — un flag global elimina peers marcados en `npm ci`) y auditar lockfile con 0 bumps/0 removals | quitar el devDep y la config para volver al estado sin plugin        |
+| Borrar CardHeader rompe el guardrail de archivos certificados            | actualizar `designSystemGuardrails.test.ts` en el mismo PR de borrado (T9)                                                                                              | re-listado del archivo                                               |
+| Traslado de ~24 modales desordena la whitelist del guardrail de overlays | whitelist se regenera por script en el mismo PR; budget decrece o se mantiene                                                                                           | revertir traslado individual                                         |
 
 ## Verificación
 
