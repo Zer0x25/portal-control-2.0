@@ -1,18 +1,18 @@
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import React, { useEffect, useRef, useState } from "react";
-import { useToasts } from "../../hooks/useToasts";
-import { getDBInstance } from "../../utils/indexedDB";
-import Button from "./Button";
+import { useToasts } from "../../../hooks/useToasts";
+import { getDBInstance } from "../../../utils/indexedDB";
+import Button from "../../../components/ui/Button";
 import {
   CodeBracketSquareIcon,
   ArrowPathIcon,
   ExclamationTriangleIcon,
   SparklesIcon,
-} from "./icons/index";
-import ConfirmationModal from "./ConfirmationModal";
+} from "../../../components/ui/icons/index";
+import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import SeedingOptionsModal, { SeedingOptions } from "./SeedingOptionsModal";
 import SeedingProgressModal from "./SeedingProgressModal";
-import DesignSystemShowcaseModal from "./DesignSystemShowcaseModal";
+import DesignSystemShowcaseModal from "../../../components/ui/DesignSystemShowcaseModal";
 import {
   seedPhase1,
   startSeedPhase2,
@@ -22,9 +22,9 @@ import {
   getSeedPhase2Status,
   getSeedPhase2Logs,
   SeedPhase2Job,
-} from "../../services/seedingService";
-import { API_BASE_URL } from "../../services/apiBase";
-import { authService } from "../../services/authService";
+} from "../../../services/seedingService";
+import { API_BASE_URL } from "../../../services/apiBase";
+import { authService } from "../../../services/authService";
 
 export const DeveloperPanel: React.FC = () => {
   const { addToast } = useToasts();
@@ -117,7 +117,7 @@ export const DeveloperPanel: React.FC = () => {
     let cleanupSocketListeners: (() => void) | undefined;
 
     const setupSocket = async () => {
-      const { socketService } = await import("../../services/socketService");
+      const { socketService } = await import("../../../services/socketService");
       if (!mounted) return;
 
       const socket = socketService.connect();

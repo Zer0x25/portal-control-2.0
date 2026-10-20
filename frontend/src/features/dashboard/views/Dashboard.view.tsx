@@ -6,7 +6,7 @@
 import React from "react";
 import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import { QuickNotesModal } from "..";
-import ShiftReportModal from "../../../components/ui/ShiftReportModal";
+import ShiftReportModal from "../../logbook/components/ShiftReportModal";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import { EditTimestampModal, QuickActionModal } from "../../time-control";
 import EmptyState from "../../../components/ui/EmptyState";

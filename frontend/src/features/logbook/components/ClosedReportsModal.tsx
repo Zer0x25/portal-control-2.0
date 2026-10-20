@@ -7,13 +7,13 @@ import {
   CalendarDaysIcon,
   FunnelIcon,
   XCircleIcon,
-} from "./icons/index";
-import Button from "./Button";
-import Input from "./Input";
-import DatePickerDialog from "./DatePickerDialog";
-import { ShiftReport } from "../../types/index";
-import { useShiftReportsInfinite } from "../../hooks/queries/useShiftReportsInfinite";
-import { useIntersectionObserver } from "../../hooks/useIntersectionObserver";
+} from "../../../components/ui/icons/index";
+import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
+import DatePickerDialog from "../../../components/ui/DatePickerDialog";
+import { ShiftReport } from "../../../types/index";
+import { useShiftReportsInfinite } from "../../../hooks/queries/useShiftReportsInfinite";
+import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 import { useRef, useEffect } from "react";
 
 interface ClosedReportsModalProps {
@@ -24,8 +24,8 @@ interface ClosedReportsModalProps {
   onPreview: (report: ShiftReport) => void;
 }
 
-import CinematicModal from "./CinematicModal";
-import LoadingSpinner from "./LoadingSpinner";
+import CinematicModal from "../../../components/ui/CinematicModal";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
   isOpen,

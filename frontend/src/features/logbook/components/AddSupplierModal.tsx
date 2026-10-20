@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Button from "./Button";
-import Input from "./Input";
+import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
 import {
   ClockIcon,
   FingerPrintIcon,
@@ -8,10 +8,10 @@ import {
   HomeIcon,
   UsersIcon,
   ChatBubbleLeftRightIcon,
-} from "./icons/index";
-import { formatTime } from "../../utils/formatters";
-import { SupplierEntry } from "../../types";
-import TimePickerDialog from "./TimePickerDialog";
+} from "../../../components/ui/icons/index";
+import { formatTime } from "../../../utils/formatters";
+import { SupplierEntry } from "../../../types/index";
+import TimePickerDialog from "../../../components/ui/TimePickerDialog";
 
 interface AddSupplierModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ interface AddSupplierModalProps {
   isEditing: boolean;
 }
 
-import CinematicModal from "./CinematicModal";
+import CinematicModal from "../../../components/ui/CinematicModal";
 
 const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
   isOpen,

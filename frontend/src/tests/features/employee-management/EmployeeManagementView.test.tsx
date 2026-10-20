@@ -9,10 +9,10 @@ vi.mock("../../../features/employee-management/components/EmployeeForm", () => (
 vi.mock("../../../features/employee-management/components/EmployeeListCard", () => ({
   default: () => <div>EMPLOYEE-LIST</div>,
 }));
-vi.mock("../../../components/ui/ImportModal", () => ({
+vi.mock("../../../features/employee-management/components/ImportModal", () => ({
   default: () => <div>IMPORT-MODAL</div>,
 }));
-vi.mock("../../../components/ui/ShiftHistoryModal", () => ({
+vi.mock("../../../features/employee-management/components/ShiftHistoryModal", () => ({
   default: () => <div>SHIFT-HISTORY-MODAL</div>,
 }));
 vi.mock("../../../components/ui/CinematicModal", () => ({

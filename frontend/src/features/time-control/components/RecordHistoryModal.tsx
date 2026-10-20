@@ -1,9 +1,15 @@
 import React from "react";
-import { CloseIcon, UserIcon, InformationCircleIcon, ShieldIcon, ActivityIcon } from "./icons";
-import { useRecordHistory } from "../../hooks/queries/useRecordHistory";
-import { formatLogTimestamp } from "../../utils/formatters";
-import Button from "./Button";
-import LoadingSpinner from "./LoadingSpinner";
+import {
+  CloseIcon,
+  UserIcon,
+  InformationCircleIcon,
+  ShieldIcon,
+  ActivityIcon,
+} from "../../../components/ui/icons/index";
+import { useRecordHistory } from "../../../hooks/queries/useRecordHistory";
+import { formatLogTimestamp } from "../../../utils/formatters";
+import Button from "../../../components/ui/Button";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface RecordHistoryModalProps {
   isOpen: boolean;

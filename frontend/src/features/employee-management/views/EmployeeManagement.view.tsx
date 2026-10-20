@@ -2,7 +2,7 @@ import React from "react";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
 const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
-const ShiftHistoryModal = React.lazy(() => import("../../../components/ui/ShiftHistoryModal"));
+const ShiftHistoryModal = React.lazy(() => import("../components/ShiftHistoryModal"));
 import CinematicModal from "../../../components/ui/CinematicModal";
 import {
   ExportIcon,
@@ -13,7 +13,7 @@ import {
 } from "../../../components/ui/icons/index";
 import EmployeeForm from "../components/EmployeeForm";
 import EmployeeListCard from "../components/EmployeeListCard";
-const ImportModal = React.lazy(() => import("../../../components/ui/ImportModal"));
+const ImportModal = React.lazy(() => import("../components/ImportModal"));
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";

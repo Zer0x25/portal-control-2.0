@@ -114,7 +114,12 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    (`ArrowPathIcon`, `SyncStatus`) queda grandfathered con un budget monotónico
    (17 usos) que solo puede decrecer, y el guardrail
    `spinnerGuardrails.test.ts` bloquea cualquier spinner circular nuevo.
-7. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
+7. **Capa UI sin modales de dominio**: `src/components/ui/` queda con
+   primitivas transversales, modales de meta/ayuda del shell y utilidades
+   (overlays de sesion/sincronizacion). Los modales de dominio viven en
+   `features/<dominio>/components/` (15 modales migrados en T15) y las
+   primitivas no dependen de features (guardrail `uiLayeringGuardrails.test.ts`).
+8. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
    una sola tarjeta de métrica con variantes tipadas. Los
    modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
    queda reservado a primitivas transversales y utilidades shell.

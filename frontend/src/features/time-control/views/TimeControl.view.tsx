@@ -15,14 +15,12 @@ import ClockingPanel from "../components/ClockingPanel";
 import TimeRecordFilters from "../components/TimeRecordFilters";
 import TimeRecordTable from "../components/TimeRecordTable";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-const RecordHistoryModal = React.lazy(() => import("../../../components/ui/RecordHistoryModal"));
+const RecordHistoryModal = React.lazy(() => import("../components/RecordHistoryModal"));
 const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
 const QuickActionModal = React.lazy(() =>
   import("..").then((m) => ({ default: m.QuickActionModal })),
 );
-const AnomalyResolutionModal = React.lazy(
-  () => import("../../../components/ui/AnomalyResolutionModal"),
-);
+const AnomalyResolutionModal = React.lazy(() => import("../components/AnomalyResolutionModal"));
 const EditTimestampModal = React.lazy(() =>
   import("..").then((m) => ({ default: m.EditTimestampModal })),
 );

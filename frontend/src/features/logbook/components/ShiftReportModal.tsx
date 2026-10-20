@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
-import { ShiftReport } from "../../types/index";
-import { useUsers } from "../../hooks/useUsers";
-import { useEmployees } from "../../hooks/useEmployees";
-import { exportShiftReportToPDF } from "../../utils/export/index";
+import { ShiftReport } from "../../../types/index";
+import { useUsers } from "../../../hooks/useUsers";
+import { useEmployees } from "../../../hooks/useEmployees";
+import { exportShiftReportToPDF } from "../../../utils/export/index";
 import {
   PrinterIcon,
   ChevronLeftIcon,
@@ -11,8 +11,8 @@ import {
   CalendarDaysIcon,
   UserIcon,
   ClockIcon,
-} from "./icons/index";
-import CinematicModal from "./CinematicModal";
+} from "../../../components/ui/icons/index";
+import CinematicModal from "../../../components/ui/CinematicModal";
 
 const parseDate = (dateString: string): Date | null => {
   if (!dateString) return null;

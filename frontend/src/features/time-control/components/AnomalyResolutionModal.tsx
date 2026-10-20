@@ -1,7 +1,7 @@
 import React from "react";
-import CinematicModal from "./CinematicModal";
-import Button from "./Button";
-import { EnrichedTimeRecord } from "../../types";
+import CinematicModal from "../../../components/ui/CinematicModal";
+import Button from "../../../components/ui/Button";
+import { EnrichedTimeRecord } from "../../../types/index";
 import {
   ExclamationTriangleIcon,
   EditIcon,
@@ -10,8 +10,8 @@ import {
   ClipboardCheckIcon,
   MinusCircleIcon,
   CalendarDaysIcon,
-} from "./icons/index";
-import IconBox from "./IconBox";
+} from "../../../components/ui/icons/index";
+import IconBox from "../../../components/ui/IconBox";
 
 interface AnomalyResolutionModalProps {
   isOpen: boolean;

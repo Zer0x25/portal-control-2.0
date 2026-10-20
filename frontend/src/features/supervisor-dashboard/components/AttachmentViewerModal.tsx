@@ -1,5 +1,5 @@
 import React from "react";
-import { CloseIcon, DocumentArrowDownIcon } from "./icons/index";
+import { CloseIcon, DocumentArrowDownIcon } from "../../../components/ui/icons/index";
 
 interface AttachmentViewerModalProps {
   isOpen: boolean;

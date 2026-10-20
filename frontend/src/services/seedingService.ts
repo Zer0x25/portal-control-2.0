@@ -1,4 +1,4 @@
-﻿import { SeedingOptions } from "../components/ui/SeedingOptionsModal";
+﻿import { SeedingOptions } from "../features/configuration/components/SeedingOptionsModal";
 import { authService } from "./authService";
 import { API_BASE_URL } from "./apiBase";
 

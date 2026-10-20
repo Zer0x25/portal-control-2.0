@@ -14,8 +14,8 @@ import {
   CalendarDaysIcon,
 } from "../../../components/ui/icons/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
-import ShiftReportModal from "../../../components/ui/ShiftReportModal";
-import ClosedReportsModal from "../../../components/ui/ClosedReportsModal";
+import ShiftReportModal from "../components/ShiftReportModal";
+import ClosedReportsModal from "../components/ClosedReportsModal";
 import LogEntriesCard from "../components/LogEntriesCard";
 import SupplierEntriesCard from "../components/SupplierEntriesCard";
 import Container from "../../../components/ui/Container";

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useToasts } from "../../hooks/useToasts";
-import { emailService } from "../../services/emailService";
-import { SmtpConfig, MultiSmtpConfig } from "../../types";
-import Input from "./Input";
-import Button from "./Button";
+import { useToasts } from "../../../hooks/useToasts";
+import { emailService } from "../../../services/emailService";
+import { SmtpConfig, MultiSmtpConfig } from "../../../types/index";
+import Input from "../../../components/ui/Input";
+import Button from "../../../components/ui/Button";
 import {
   CloseIcon,
   ArrowPathIcon,
@@ -11,7 +11,7 @@ import {
   EnvelopeIcon,
   CogIcon,
   CheckCircleIcon,
-} from "./icons/index";
+} from "../../../components/ui/icons/index";
 
 interface SmtpConfigModalProps {
   isOpen: boolean;

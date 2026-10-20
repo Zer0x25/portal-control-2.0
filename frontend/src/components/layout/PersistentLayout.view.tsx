@@ -2,9 +2,13 @@ import React, { Suspense, useRef } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 const DeveloperPanel = React.lazy(() =>
-  import("../ui/DeveloperPanel").then((m) => ({ default: m.DeveloperPanel })),
+  import("../../features/configuration/components/DeveloperPanel").then((m) => ({
+    default: m.DeveloperPanel,
+  })),
 );
-const ShiftHandoverModal = React.lazy(() => import("../ui/ShiftHandoverModal"));
+const ShiftHandoverModal = React.lazy(
+  () => import("../../features/time-control/components/ShiftHandoverModal"),
+);
 import ScreenSizeIndicator from "../ui/ScreenSizeIndicator";
 import { HomeIcon } from "../ui/icons/index";
 import type { ShiftHandoverData } from "../../types";

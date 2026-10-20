@@ -60,7 +60,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [x] T14: Unificar spinners sobre `LoadingSpinner` (variantes `sm|md|lg`);
       borrar overlays/spinners duplicados y migrar los 54 usos crudos
       (`animate-spin` inline permitido solo dentro de Button loading) (AC9).
-- [ ] T15: PR 4 — trasladar ~24 modales de dominio de `components/ui/` a
+- [x] T15: PR 4 — trasladar ~24 modales de dominio de `components/ui/` a
       `features/<dominio>/components/` con imports/whitelist actualizados;
       `components/ui/` queda solo con primitivas + shell utils; los migrados
       se re-auditan contra el estándar de AC2 (AC8, AC2).

@@ -7,8 +7,8 @@ import Button from "../../../components/ui/Button";
 import { CorrectionRequest } from "../../../types/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import { CORRECTION_REQUEST_STATUS_TEXT, TIME_RECORD_FIELD_LABELS } from "../../../utils/mappings";
-import RejectionReasonModal from "../../../components/ui/RejectionReasonModal";
-import AttachmentViewerModal from "../../../components/ui/AttachmentViewerModal";
+import RejectionReasonModal from "./RejectionReasonModal";
+import AttachmentViewerModal from "./AttachmentViewerModal";
 import {
   ArrowPathIcon,
   AttachmentIcon,

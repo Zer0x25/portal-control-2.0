@@ -16,7 +16,7 @@ import { AuditLog } from "../../../types/index";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import { useDebounce } from "../../../hooks/useDebounce";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
-import ExportLogsModal from "../../../components/ui/ExportLogsModal";
+import ExportLogsModal from "./ExportLogsModal";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import IconBox from "../../../components/ui/IconBox";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";

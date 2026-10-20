@@ -1,14 +1,14 @@
 import React, { useState, useRef } from "react";
-import Button from "./Button";
-import { importService } from "../../services/importService";
-import LoadingSpinner from "./LoadingSpinner";
+import Button from "../../../components/ui/Button";
+import { importService } from "../../../services/importService";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   DocumentArrowDownIcon,
   CloseIcon,
   DocumentArrowUpIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-} from "./icons";
+} from "../../../components/ui/icons/index";
 
 /** A single read-excel-file column mapping (serialized to the backend preview endpoint). */
 export interface ImportFieldSchema {

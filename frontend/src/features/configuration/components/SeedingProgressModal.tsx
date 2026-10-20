@@ -1,9 +1,14 @@
 import React from "react";
-import Button from "./Button";
-import { CloseIcon, CheckCircleIcon, ExclamationTriangleIcon, ArrowPathIcon } from "./icons/index";
+import Button from "../../../components/ui/Button";
+import {
+  CloseIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+} from "../../../components/ui/icons/index";
 import { SeedingOptions } from "./SeedingOptionsModal";
-import { getDBInstance } from "../../utils/indexedDB";
-import { healthService, HealthData } from "../../services/healthService";
+import { getDBInstance } from "../../../utils/indexedDB";
+import { healthService, HealthData } from "../../../services/healthService";
 
 interface SeedingProgressModalProps {
   isOpen: boolean;
@@ -12,7 +17,7 @@ interface SeedingProgressModalProps {
   isFinished: boolean;
   error: string | null;
   seedingOptions: SeedingOptions | null;
-  job?: import("../../services/seedingService").SeedPhase2Job | null;
+  job?: import("../../../services/seedingService").SeedPhase2Job | null;
   jobLogs?: string[];
   onStartPhase2?: () => void;
   onPausePhase2?: () => void;

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Button from "./Button";
-import { ClockIcon, ChevronRightIcon, UserIcon } from "./icons/index";
-import { authService } from "../../services/authService";
-import { API_BASE_URL } from "../../services/apiBase";
-import CinematicModal from "./CinematicModal";
-import IconBox from "./IconBox";
-import { IndustrialIndicator } from "./IndustrialIndicator";
-import EmptyState from "./EmptyState";
-import { ExclamationTriangleIcon } from "./icons/index";
-import LoadingSpinner from "./LoadingSpinner";
+import Button from "../../../components/ui/Button";
+import { ClockIcon, ChevronRightIcon, UserIcon } from "../../../components/ui/icons/index";
+import { authService } from "../../../services/authService";
+import { API_BASE_URL } from "../../../services/apiBase";
+import CinematicModal from "../../../components/ui/CinematicModal";
+import IconBox from "../../../components/ui/IconBox";
+import { IndustrialIndicator } from "../../../components/ui/IndustrialIndicator";
+import EmptyState from "../../../components/ui/EmptyState";
+import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface ShiftHistoryEntry {
   id: string;

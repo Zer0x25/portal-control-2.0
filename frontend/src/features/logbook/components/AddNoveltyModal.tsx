@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Button from "./Button";
-import { BookOpenIcon, ClockIcon } from "./icons/index";
-import { formatTime } from "../../utils/formatters";
-import TimePickerDialog from "./TimePickerDialog";
-import CinematicModal from "./CinematicModal";
+import Button from "../../../components/ui/Button";
+import { BookOpenIcon, ClockIcon } from "../../../components/ui/icons/index";
+import { formatTime } from "../../../utils/formatters";
+import TimePickerDialog from "../../../components/ui/TimePickerDialog";
+import CinematicModal from "../../../components/ui/CinematicModal";
 
 interface AddNoveltyModalProps {
   isOpen: boolean;

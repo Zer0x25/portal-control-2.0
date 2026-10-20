@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useToasts } from "../../hooks/useToasts";
-import Button from "./Button";
-import Input from "./Input";
-import { CloseIcon, SparklesIcon } from "./icons/index";
+import { useToasts } from "../../../hooks/useToasts";
+import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
+import { CloseIcon, SparklesIcon } from "../../../components/ui/icons/index";
 
 export interface SeedingOptions {
   employees: number;

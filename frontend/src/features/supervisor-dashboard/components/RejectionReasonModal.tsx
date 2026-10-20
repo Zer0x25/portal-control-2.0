@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Button from "./Button";
-import { CloseIcon } from "./icons/index";
+import Button from "../../../components/ui/Button";
+import { CloseIcon } from "../../../components/ui/icons/index";
 
 interface RejectionReasonModalProps {
   isOpen: boolean;

@@ -1,14 +1,14 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import { ShiftHandoverData } from "../../types/index";
-import Button from "./Button";
+import { ShiftHandoverData } from "../../../types/index";
+import Button from "../../../components/ui/Button";
 import {
   CloseIcon,
   InformationCircleIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-} from "./icons/index";
-import { formatDisplayDateTime } from "../../utils/formatters";
+} from "../../../components/ui/icons/index";
+import { formatDisplayDateTime } from "../../../utils/formatters";
 
 interface ShiftHandoverModalProps {
   isOpen: boolean;
