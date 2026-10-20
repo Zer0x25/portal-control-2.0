@@ -10,12 +10,12 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [x] T1: Añadir `eslint-plugin-jsx-a11y` (devDep) a `frontend/eslint.config.js`,
       subset core; corregir las violaciones que revela hasta lint verde con
       budget 0/0 (AC1).
-- [ ] T2: Test failing primero en
+- [x] T2: Test failing primero en
       `frontend/src/tests/components/CinematicModalCoverage.spec.tsx` que
       verifique Escape/focus-trap/`aria-modal` para los 5 modales feature
       (KpiDetailsModal, SingleMeterInputModal, ReportsTab, AuditLogDetailDrawer,
       ForceChangePasswordModal) (AC2).
-- [ ] T3: Migrar los 5 modales feature a CinematicModal hasta el test de T2 en
+- [x] T3: Migrar los 5 modales feature a CinematicModal hasta el test de T2 en
       verde; anotar `aria-label` en close icon-only (AC2).
 - [ ] T4: Nuevo guardrail `frontend/src/tests/guardrails/modalGuardrails.test.ts`
       que bloquea overlays `fixed inset-0` en features sin CinematicModal y con

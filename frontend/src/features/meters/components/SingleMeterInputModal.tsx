@@ -4,7 +4,7 @@ import { useToasts } from "../../../hooks/useToasts";
 import { MeterConfig } from "../../../types";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
-import { CloseIcon } from "../../../components/ui/icons";
+import CinematicModal from "../../../components/ui/CinematicModal";
 
 interface SingleMeterInputModalProps {
   isOpen: boolean;
@@ -102,50 +102,32 @@ const SingleMeterInputModal: React.FC<SingleMeterInputModalProps> = ({
     meterConfig.type === "PERCENT" ? "Valor en %" : `Valor en ${meterConfig.unit}`;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4"
-      onClick={onClose}
-      role="dialog"
+    <CinematicModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Nueva Lectura: ${meterConfig.name}`}
+      maxWidth="max-w-md"
     >
-      <div
-        className="bg-token-surface-card border border-token-border-technical rounded-md shadow-2xl w-full max-w-md overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center p-4 border-b border-token-border-subtle">
-          <h3 className="text-base font-black text-token-text-primary uppercase tracking-tight">
-            Nueva Lectura: {meterConfig.name}
-          </h3>
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="p-1 text-token-text-secondary hover:text-token-text-primary"
-            aria-label="Cerrar modal"
-          >
-            <CloseIcon className="w-5 h-5" />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Nuevo Valor"
+          id={`single-meter-input-${meterConfig.id}`}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholderText}
+          autoComplete="off"
+          autoFocus
+        />
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="primary" disabled={isSubmitting}>
+            {isSubmitting ? "Guardando..." : "Guardar Lectura"}
           </Button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <Input
-            label="Nuevo Valor"
-            id={`single-meter-input-${meterConfig.id}`}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder={placeholderText}
-            autoComplete="off"
-            autoFocus
-          />
-          <div className="flex justify-end gap-3 pt-2">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
-              {isSubmitting ? "Guardando..." : "Guardar Lectura"}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </CinematicModal>
   );
 };
 

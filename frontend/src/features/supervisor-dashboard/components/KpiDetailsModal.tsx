@@ -1,7 +1,7 @@
 import React from "react";
 import { DailyTimeRecord, Employee } from "../../../types";
 import Button from "../../../components/ui/Button";
-import { CloseIcon } from "../../../components/ui/icons/index";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import { parseDateOnlyUTC } from "../../../utils/dateUtils";
 
@@ -24,8 +24,6 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
   data,
   dataType,
 }) => {
-  if (!isOpen) return null;
-
   const renderContent = () => {
     if (data.length === 0) {
       return (
@@ -101,44 +99,12 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-60 flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        className="bg-token-surface-card border border-token-border-technical rounded-sm shadow-2xl w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center p-5 border-b border-token-border-technical bg-token-surface-stripe shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-1 h-5 bg-sap-blue rounded-full" />
-            <h3 className="text-[13px] font-bold text-token-text-primary uppercase tracking-widest">
-              {title}
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Cerrar detalles"
-            className="p-2 text-token-text-tertiary hover:text-sap-blue hover:bg-sap-blue/10 rounded-sm transition-all"
-          >
-            <CloseIcon className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="overflow-y-auto custom-scrollbar grow bg-token-surface-card">
-          <ul className="divide-y divide-token-border-subtle">{renderContent()}</ul>
-        </div>
-        <div className="p-5 bg-token-surface-stripe border-t border-token-border-technical shrink-0 flex justify-end">
-          <Button
-            onClick={onClose}
-            className="px-8 py-2.5 text-[11px] font-bold uppercase tracking-widest bg-sap-blue hover:brightness-110 text-white rounded-sm border-none shadow-md active:scale-95 transition-all"
-          >
-            Finalizar Revisión
-          </Button>
-        </div>
+    <CinematicModal isOpen={isOpen} onClose={onClose} title={title} maxWidth="max-w-xl">
+      <ul className="divide-y divide-token-border-subtle">{renderContent()}</ul>
+      <div className="mt-6 flex justify-end">
+        <Button onClick={onClose}>Finalizar Revisión</Button>
       </div>
-    </div>
+    </CinematicModal>
   );
 };
 
