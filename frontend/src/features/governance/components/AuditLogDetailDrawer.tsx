@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import {
-  XMarkIcon,
+  CloseIcon,
   ClockIcon,
   UserIcon,
   ServerIcon,
@@ -183,7 +183,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
               aria-label="Cerrar detalle"
               className="p-2 hover:bg-token-surface-active rounded-full transition-colors text-token-text-tertiary"
             >
-              <XMarkIcon className="w-5 h-5" />
+              <CloseIcon className="w-5 h-5" />
             </button>
           </div>
 

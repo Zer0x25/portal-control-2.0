@@ -75,7 +75,6 @@ export * from "./ShieldCheckIcon";
 export * from "./InboxArrowDownIcon";
 export * from "./MegaphoneIcon";
 export * from "./CheckIcon";
-export * from "./XMarkIcon";
 export * from "./SpeakerWaveIcon";
 export * from "./SpeakerXMarkIcon";
 export * from "./WrenchScrewdriverIcon";

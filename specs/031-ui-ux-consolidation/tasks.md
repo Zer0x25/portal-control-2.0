@@ -48,7 +48,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `components/ui/CardHeader.tsx`; **actualizar la lista de archivos
       certificados de `designSystemGuardrails.test.ts` (línea 172) en el mismo
       PR**; `npm run check` verde sin referencias (AC5).
-- [ ] T10: Fusionar `CloseIcon`/`XMarkIcon` en un solo archivo y actualizar el
+- [x] T10: Fusionar `CloseIcon`/`XMarkIcon` en un solo archivo y actualizar el
       barrel `icons/index.ts`; grep que no queden glifos duplicados (AC6).
 - [ ] T11: PR 2 — extender `DatePickerDialog` a modo componible (`value/onChange`,
       `weekStartsOn: 1`, nav accesible por teclado), borrar `GlassDatePicker`,
