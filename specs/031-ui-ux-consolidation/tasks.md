@@ -53,7 +53,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [x] T11: PR 2 — extender `DatePickerDialog` a modo componible (`value/onChange`,
       `weekStartsOn: 1`, nav accesible por teclado), borrar `GlassDatePicker`,
       migrar `ExportLogsModal`, evaluar el reemplazo de inputs nativos date (AC7).
-- [ ] T12: PR 3 — TabNav APG (`role="tablist"/tab/aria-selected` + flechas) y
+- [x] T12: PR 3 — TabNav APG (`role="tablist"/tab/aria-selected` + flechas) y
       migrar las copias de GovernanceHub/Configuration (AC7).
 - [ ] T13: Unificar KpiCard/MetricCard en una primitiva tipada (variantes de
       color en union type, sin parsing runtime), migrar ~11 usos (AC9).

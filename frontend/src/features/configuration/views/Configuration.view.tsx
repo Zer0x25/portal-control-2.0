@@ -9,6 +9,7 @@ import {
 } from "../../../components/ui/icons/index";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
 import Container from "../../../components/ui/Container";
+import TabNav from "../../../components/ui/TabNav";
 
 const GlobalVariablesView = React.lazy(() => import("../components/GlobalVariablesView"));
 const EmailCenterView = React.lazy(() => import("../components/EmailCenterView"));
@@ -53,40 +54,22 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
         subtitle="Configuración centralizada de variables, comunicaciones y exportación estratégica"
       />
 
-      <div
-        role="tablist"
-        aria-label="Secciones de configuración"
-        data-testid="config-tabs"
-        data-active-tab={activeTab}
-        className="flex border-b border-token-border-technical gap-8 overflow-x-auto scrollbar-hide"
-      >
-        <div className="flex min-w-max gap-8">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={isActive}
-                data-testid={`config-tab-${tab.id}`}
-                onClick={() => handleTabChange(tab.id)}
-                className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
-                  isActive
-                    ? "text-(--sidebar-text-active)"
-                    : "text-token-text-tertiary hover:text-token-text-primary"
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "opacity-100" : "opacity-60"}`} />
-                <span className="text-[11px] font-bold uppercase tracking-widest">{tab.label}</span>
-                {isActive && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--sidebar-text-active) shadow-[0_-2px_8px_rgba(var(--sidebar-text-active-rgb),0.3)] animate-in fade-in" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <TabNav
+        variant="underline"
+        ariaLabel="Secciones de configuración"
+        testId="config-tabs"
+        tabTestIdPrefix="config-tab"
+        tabs={tabs.map((tab) => {
+          const Icon = tab.icon;
+          return {
+            id: tab.id,
+            label: tab.label,
+            icon: <Icon className="w-4 h-4" />,
+          };
+        })}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       <div className="relative">
         <div className="bg-token-surface-card border border-token-border-technical rounded-sm p-6 md:p-8 min-h-[65vh] shadow-sm">
