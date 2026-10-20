@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Button from "../../../components/ui/Button";
 import { CloseIcon } from "../../../components/ui/icons/index";
+import { Z } from "../../../constants/zScale";
 
 interface RejectionReasonModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ const RejectionReasonModal: React.FC<RejectionReasonModalProps> = ({
 
   return (
     isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className={`fixed inset-0 ${Z.overlay} flex items-center justify-center p-4`}>
         {/* Overlay sobrio y elegante (Sólido, sin Glassmorphism) */}
         <div
           className="absolute inset-0 bg-token-text-primary/40 backdrop-blur-[2px] animate-in fade-in"

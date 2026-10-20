@@ -5,6 +5,7 @@ import {
   ScheduleInfo,
 } from "../../types/index";
 import type { ScheduleMapValue } from "../../hooks/useCalendarData";
+import { Z } from "../../constants/zScale";
 
 type ShiftCalendarDayCellProps = {
   day: Date;
@@ -138,7 +139,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
                 group relative p-2 ${cellHeightClass} overflow-hidden cursor-pointer transition-colors duration-150
                 ${isToday ? "bg-token-accent-brand/5 dark:bg-token-accent-brand/20" : "bg-token-surface-card"}
                 border-r border-b border-token-border-subtle
-                hover:z-10 hover:shadow-sm hover:bg-sap-blue/5
+                hover:${Z.sticky} hover:shadow-sm hover:bg-sap-blue/5
             `}
     >
       {/* Header: Date number & Today tag */}

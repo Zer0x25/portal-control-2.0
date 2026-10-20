@@ -20,6 +20,7 @@ import {
 } from "../../../components/ui/icons/index";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 type RequestStatusFilter = "pending" | "approved" | "rejected";
 
@@ -481,7 +482,7 @@ const RequestsTab: React.FC = () => {
               >
                 {statusFilter === status && (
                   <div
-                    className={`absolute inset-0 shadow-md rounded-sm -z-10 animate-in fade-in ${
+                    className={`absolute inset-0 shadow-md rounded-sm -${Z.sticky} animate-in fade-in ${
                       status === "pending"
                         ? "bg-amber-500 shadow-amber-500/20"
                         : status === "approved"
@@ -490,7 +491,9 @@ const RequestsTab: React.FC = () => {
                     }`}
                   />
                 )}
-                <span className="relative z-10">{CORRECTION_REQUEST_STATUS_TEXT[status]}</span>
+                <span className={`relative ${Z.sticky}`}>
+                  {CORRECTION_REQUEST_STATUS_TEXT[status]}
+                </span>
                 <span
                   className={`
                     px-2 py-0.5 rounded-sm text-[10px] font-bold transition-colors

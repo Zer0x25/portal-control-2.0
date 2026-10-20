@@ -3,6 +3,7 @@ import { useQuickNotes } from "../../hooks/useQuickNotes";
 import { BellIcon, CheckIcon, SparklesIcon } from "../../components/ui/icons/index";
 import { useAudio } from "../../hooks/useAudio";
 import { QuickNote } from "../../types/index";
+import { Z } from "../../constants/zScale";
 
 const INTERVALS = [10, 15, 20, 25, 30]; // in minutes
 const STORAGE_KEY = "portal_reminder_next_trigger";
@@ -89,7 +90,9 @@ const AmbientReminderManager: React.FC = () => {
 
   return (
     activeNote && (
-      <div className="fixed inset-0 z-10000 flex items-start justify-center pointer-events-none p-6 pt-16">
+      <div
+        className={`fixed inset-0 ${Z.max} flex items-start justify-center pointer-events-none p-6 pt-16`}
+      >
         <div
           className={`pointer-events-auto max-w-sm w-full p-6 shadow-[0_15px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_15px_40px_rgba(0,0,0,0.4)] border-b-4 ${NOTE_COLORS[currentColor]} rounded-2xl overflow-hidden relative animate-in fade-in slide-in-from-top-8 [animation-duration:300ms]`}
         >

@@ -10,6 +10,7 @@ import {
 import { AuditLog } from "../../../types/index";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import IconBox from "../../../components/ui/IconBox";
+import { Z } from "../../../constants/zScale";
 
 interface AuditLogDetailDrawerProps {
   log: AuditLog | null;
@@ -148,7 +149,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
         {/* Overlay */}
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90 animate-in fade-in"
+          className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${Z.overlay} animate-in fade-in`}
         />
 
         {/* Drawer */}
@@ -158,7 +159,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
           role="dialog"
           aria-modal="true"
           aria-label="Detalle de evento de auditoría"
-          className="fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl z-100 border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms] focus:outline-none"
+          className={`fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl ${Z.modal} border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms] focus:outline-none`}
         >
           {/* Header */}
           <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">

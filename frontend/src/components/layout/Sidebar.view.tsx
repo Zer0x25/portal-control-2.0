@@ -2,6 +2,7 @@ import React from "react";
 import { InformationCircleIcon, MoonIcon, SunIcon } from "../ui/icons/index";
 import type { SidebarMenuItem } from "../../hooks/layout/sidebarMenu";
 import SidebarNavItem from "./SidebarNavItem";
+import { Z } from "../../constants/zScale";
 
 const AboutModal = React.lazy(() => import("../ui/AboutModal"));
 
@@ -38,7 +39,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-55 bg-black/50 lg:hidden transition-opacity duration-300"
+          className={`fixed inset-0 ${Z.overlay} bg-black/50 lg:hidden transition-opacity duration-300`}
           onClick={onToggleSidebar}
         />
       )}
@@ -51,7 +52,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         className={`
-          fixed top-16 left-0 h-[calc(100dvh-4rem)] z-58 flex flex-col
+          fixed top-16 left-0 h-[calc(100dvh-4rem)] ${Z.overlay} flex flex-col
           bg-token-surface-sidebar
           border-r border-token-border-technical
           transition-[width,transform] duration-200 ease-out

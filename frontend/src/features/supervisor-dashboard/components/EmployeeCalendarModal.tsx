@@ -6,6 +6,7 @@ import ShiftCalendarView from "../../../components/ui/ShiftCalendarView";
 import Button from "../../../components/ui/Button";
 import { CloseIcon, UserIcon, ShieldCheckIcon } from "../../../components/ui/icons/index";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 interface EmployeeCalendarModalProps {
   employee: Employee;
@@ -36,7 +37,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
 
   return createPortal(
     isOpen && (
-      <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
+      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
         <div
           onClick={onClose}
           className="absolute inset-0 bg-token-text-primary/60 backdrop-blur-[3px] animate-in fade-in"

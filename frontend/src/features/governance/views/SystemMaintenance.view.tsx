@@ -19,6 +19,7 @@ import {
 } from "../../../components/ui/icons/index";
 import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
 import BackupListModal from "../components/BackupListModal";
+import { Z } from "../../../constants/zScale";
 
 interface MaintenanceStats {
   usersCount: number;
@@ -301,7 +302,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-700 pointer-events-none">
               <ShieldIcon className="w-32 h-32 text-(--status-error)" />
             </div>
-            <div className="relative z-10 space-y-6">
+            <div className={`relative ${Z.sticky} space-y-6`}>
               <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-widest border-b border-token-border-technical pb-4">
                 Protocolos Críticos
               </h3>

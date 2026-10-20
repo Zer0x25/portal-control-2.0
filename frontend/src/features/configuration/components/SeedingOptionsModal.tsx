@@ -3,6 +3,7 @@ import { useToasts } from "../../../hooks/useToasts";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { CloseIcon, SparklesIcon } from "../../../components/ui/icons/index";
+import { Z } from "../../../constants/zScale";
 
 export interface SeedingOptions {
   employees: number;
@@ -123,7 +124,7 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/70 p-4"
+      className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-black/70 p-4`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="seeding-options-title"

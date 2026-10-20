@@ -4,6 +4,7 @@ import DOMPurify from "dompurify";
 import Button from "./Button";
 import { CloseIcon, BookOpenIcon } from "./icons/index";
 import LoadingSpinner from "./LoadingSpinner";
+import { Z } from "../../constants/zScale";
 
 interface UserManualModalProps {
   isOpen: boolean;
@@ -94,7 +95,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
 
   return createPortal(
     isOpen && (
-      <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
+      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
         {/* Backdrop */}
         <div
           onClick={onClose}

@@ -14,6 +14,7 @@ import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import PatternListDesktop from "../components/PatternListDesktop";
 import PatternListMobile from "../components/PatternListMobile";
 import type { TheoreticalShiftPattern, DayInCycleSchedule } from "../../../types";
+import { Z } from "../../../constants/zScale";
 
 interface ShiftPatternFormState {
   editingPattern: TheoreticalShiftPattern | null;
@@ -135,7 +136,9 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
       </div>
 
       <div className="relative flex-1 group w-full">
-        <EyeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors z-10" />
+        <EyeIcon
+          className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors ${Z.sticky}`}
+        />
         <Input
           type="text"
           value={searchTerm}

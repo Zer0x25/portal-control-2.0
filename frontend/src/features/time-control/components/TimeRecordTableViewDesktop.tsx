@@ -8,6 +8,7 @@ import {
 import { ArrowPathIcon } from "../../../components/ui/icons/index";
 import TimeRecordRow from "./TimeRecordRow";
 import { useInfiniteVirtualizedList } from "../hooks/useInfiniteVirtualizedList";
+import { Z } from "../../../constants/zScale";
 
 interface TimeRecordTableViewDesktopProps {
   records: AugmentedTimeRecord[];
@@ -80,7 +81,7 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
           data-testid="data-table"
           className="min-w-full divide-y divide-token-border-technical relative table-fixed"
         >
-          <thead className="bg-token-surface-header sticky top-0 z-20 shadow-sm">
+          <thead className={`bg-token-surface-header sticky top-0 ${Z.dropdown} shadow-sm`}>
             <tr>
               <th className="w-[12%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical hidden sm:table-cell">
                 Área

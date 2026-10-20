@@ -9,6 +9,7 @@ import {
 import { SeedingOptions } from "./SeedingOptionsModal";
 import { getDBInstance } from "../../../utils/indexedDB";
 import { healthService, HealthData } from "../../../services/healthService";
+import { Z } from "../../../constants/zScale";
 
 interface SeedingProgressModalProps {
   isOpen: boolean;
@@ -168,7 +169,7 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-110 flex items-center justify-center bg-black/70 p-4"
+      className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-black/70 p-4`}
       onClick={onClose}
     >
       <div

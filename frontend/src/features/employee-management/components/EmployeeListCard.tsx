@@ -10,6 +10,7 @@ import {
   ArchiveBoxIcon,
   ArrowUturnLeftIcon,
 } from "../../../components/ui/icons/index";
+import { Z } from "../../../constants/zScale";
 
 type SortableEmployeeKey = keyof Employee;
 
@@ -162,7 +163,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
   const renderDesktopView = () => (
     <div className="border border-token-border-technical bg-token-surface-stripe rounded-lg">
       <table data-testid="data-table" className="min-w-full border-separate border-spacing-0">
-        <thead className="sticky top-0 z-20 bg-token-surface-header backdrop-blur-sm">
+        <thead className={`sticky top-0 ${Z.dropdown} bg-token-surface-header backdrop-blur-sm`}>
           <tr>
             <SortableHeader
               title="Nombre"

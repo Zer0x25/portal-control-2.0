@@ -13,6 +13,7 @@ import {
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { formatBusinessDate } from "../../../utils/dateUtils";
 import { useAccountingClosureTabController } from "../hooks/useAccountingClosureTabController";
+import { Z } from "../../../constants/zScale";
 
 /**
  * 🔐 AccountingClosureTab: Protocolo de Blindaje Contable
@@ -182,7 +183,7 @@ const AccountingClosureTab: React.FC = () => {
                     <div className="absolute -top-10 -right-10 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity rotate-12">
                       <ShieldCheckIcon className="w-40 h-40" />
                     </div>
-                    <div className="flex flex-col items-center gap-6 relative z-10">
+                    <div className={`flex flex-col items-center gap-6 relative ${Z.sticky}`}>
                       <div className="w-16 h-16 rounded-sm bg-emerald-600 text-white flex items-center justify-center shadow-lg border border-emerald-500/20">
                         <ShieldCheckIcon className="w-9 h-9" />
                       </div>
@@ -208,7 +209,7 @@ const AccountingClosureTab: React.FC = () => {
                   </div>
                 ) : (
                   <div className="p-8 bg-rose-600/5 border border-rose-600/20 rounded-sm space-y-8 relative overflow-hidden shadow-inner">
-                    <div className="flex items-center gap-5 relative z-10">
+                    <div className={`flex items-center gap-5 relative ${Z.sticky}`}>
                       <div className="w-12 h-12 rounded-sm bg-rose-600 text-white flex items-center justify-center shadow-lg border border-rose-500/20">
                         <ExclamationTriangleIcon className="w-7 h-7" />
                       </div>
@@ -222,7 +223,7 @@ const AccountingClosureTab: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
+                    <div className={`grid grid-cols-1 md:grid-cols-3 gap-5 relative ${Z.sticky}`}>
                       {validationResult.openShifts.length > 0 && (
                         <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-amber-500 rounded-sm flex flex-col justify-between gap-5 shadow-sm">
                           <div>
@@ -313,7 +314,7 @@ const AccountingClosureTab: React.FC = () => {
               <div className="absolute top-0 right-0 p-6 opacity-[0.05]">
                 <ShieldCheckIcon className="w-20 h-20" />
               </div>
-              <div className="relative z-10 space-y-8">
+              <div className={`relative ${Z.sticky} space-y-8`}>
                 <p className="text-[15px] font-bold text-token-text-primary leading-relaxed text-center">
                   SE SELLARA EL PERIODO HASTA EL <br />
                   <span className="text-2xl font-bold text-rose-600 uppercase tracking-tight block mt-3">
@@ -342,7 +343,9 @@ const AccountingClosureTab: React.FC = () => {
       />
 
       {isHistoryModalOpen && (
-        <div className="fixed inset-0 z-120 flex items-center justify-center bg-black/70 p-4">
+        <div
+          className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-black/70 p-4`}
+        >
           <div className="w-full max-w-4xl rounded-sm border border-token-border-technical bg-token-surface-card shadow-2xl">
             <div className="flex items-center justify-between border-b border-token-border-technical px-5 py-4">
               <div>

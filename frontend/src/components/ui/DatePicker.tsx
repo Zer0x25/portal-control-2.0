@@ -16,6 +16,7 @@ import {
 import { es } from "date-fns/locale";
 import { CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon } from "./icons/index";
 import Button from "./Button";
+import { Z } from "../../constants/zScale";
 
 /**
  * Unico date picker del design system (spec 031 T11 / AC7).
@@ -251,7 +252,7 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
                           ${isDisabled ? "opacity-20 cursor-not-allowed grayscale" : ""}
                           ${
                             isSelected
-                              ? "bg-token-accent-brand text-token-text-onAccent shadow-md scale-105 z-10"
+                              ? "bg-token-accent-brand text-token-text-onAccent shadow-md scale-105 ${Z.sticky}"
                               : isDisabled
                                 ? ""
                                 : "hover:bg-token-surface-hover hover:text-token-text-primary"
@@ -384,7 +385,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         <div
           role="dialog"
           aria-label={label ?? "Seleccionar fecha"}
-          className="absolute z-50 mt-1 w-[320px] bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95"
+          className={`absolute ${Z.overlay} mt-1 w-[320px] bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95`}
         >
           <DatePickerCalendar
             selectedDate={selectedDate}

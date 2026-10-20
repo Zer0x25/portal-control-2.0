@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import Button from "./Button";
+import { Z } from "../../constants/zScale";
 
 export interface TabItem {
   id: string;
@@ -94,7 +95,7 @@ const TabNav: React.FC<TabNavProps> = ({
 
   return (
     <div
-      className={`${!isMinimal && !isUnderline ? "sticky top-0 z-30 pt-1 -mx-2" : ""} ${className} w-full`}
+      className={`${!isMinimal && !isUnderline ? "sticky top-0 ${Z.dropdown} pt-1 -mx-2" : ""} ${className} w-full`}
     >
       <div className={`${containerClasses} ${surfaceClasses}`}>
         <div
@@ -150,14 +151,14 @@ const TabNav: React.FC<TabNavProps> = ({
                 {!isUnderline && isActive && (
                   <div
                     key={tab.id}
-                    className="absolute inset-0 bg-token-surface-stripe border border-token-border-subtle shadow-sm rounded-md -z-10 animate-in fade-in"
+                    className={`absolute inset-0 bg-token-surface-stripe border border-token-border-subtle shadow-sm rounded-md -${Z.sticky} animate-in fade-in`}
                   />
                 )}
-                <span className="relative z-10">{tab.label}</span>
+                <span className={`relative ${Z.sticky}`}>{tab.label}</span>
                 {tab.badge !== undefined && (
                   <span
                     className={`
-                                        px-1.5 py-0.5 rounded-full text-xxs font-black transition-colors relative z-10
+                                        px-1.5 py-0.5 rounded-full text-xxs font-black transition-colors relative ${Z.sticky}
                                         ${isActive ? "bg-token-accent-brand text-token-text-onAccent" : "bg-token-surface-technical text-token-text-secondary"}
                                     `}
                   >

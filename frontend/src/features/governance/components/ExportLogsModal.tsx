@@ -11,6 +11,7 @@ import {
 import DatePicker from "../../../components/ui/DatePicker";
 import { compareBusinessDate, toBusinessDateChile } from "../../../utils/dateUtils";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
+import { Z } from "../../../constants/zScale";
 
 interface ExportLogsModalProps {
   isOpen: boolean;
@@ -76,7 +77,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
 
   return (
     isOpen && (
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}>
         <div
           onClick={onClose}
           className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md animate-in fade-in"

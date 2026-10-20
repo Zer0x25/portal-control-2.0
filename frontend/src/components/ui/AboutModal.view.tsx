@@ -3,6 +3,7 @@ import { CloseIcon, InformationCircleIcon } from "./icons/index";
 import easterEggImg from "../../assets/images/Mini_Zer0x.jpg";
 import CinematicModal from "./CinematicModal";
 import Button from "./Button";
+import { Z } from "../../constants/zScale";
 
 interface AboutModalViewProps {
   isOpen: boolean;
@@ -122,13 +123,13 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
       </CinematicModal>
 
       {showMonkey && (
-        <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+        <div className={`fixed inset-0 ${Z.max} flex items-center justify-center p-4`}>
           <div
             onClick={onCloseMonkey}
             className="absolute inset-0 bg-black/95 backdrop-blur-xl animate-in fade-in"
           />
           <div
-            className="relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
+            className={`relative ${Z.sticky} animate-in fade-in zoom-in-95 slide-in-from-bottom-2`}
             onClick={(e) => e.stopPropagation()}
           >
             <img

@@ -26,6 +26,7 @@ interface ClosedReportsModalProps {
 
 import CinematicModal from "../../../components/ui/CinematicModal";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
   isOpen,
@@ -162,16 +163,18 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.2em] bg-token-surface-stripe border-b border-token-border-subtle">
-                  <th className="px-6 py-5 sticky top-0 bg-inherit backdrop-blur-md z-10">
+                  <th className={`px-6 py-5 sticky top-0 bg-inherit backdrop-blur-md ${Z.sticky}`}>
                     Folio / Fecha
                   </th>
-                  <th className="px-6 py-5 sticky top-0 bg-inherit backdrop-blur-md z-10">
+                  <th className={`px-6 py-5 sticky top-0 bg-inherit backdrop-blur-md ${Z.sticky}`}>
                     Estado Turno
                   </th>
-                  <th className="px-6 py-5 sticky top-0 bg-inherit backdrop-blur-md z-10">
+                  <th className={`px-6 py-5 sticky top-0 bg-inherit backdrop-blur-md ${Z.sticky}`}>
                     Gestión Responsable
                   </th>
-                  <th className="px-6 py-5 text-right sticky top-0 bg-inherit backdrop-blur-md z-10">
+                  <th
+                    className={`px-6 py-5 text-right sticky top-0 bg-inherit backdrop-blur-md ${Z.sticky}`}
+                  >
                     Operaciones
                   </th>
                 </tr>

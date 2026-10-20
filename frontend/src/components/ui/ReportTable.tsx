@@ -9,6 +9,7 @@ import ResponsiveView from "./ResponsiveView";
 import ReportTableMobileSummaryCard from "./ReportTableMobileSummaryCard";
 import ReportTableMobileDailyCard from "./ReportTableMobileDailyCard";
 import EmptyState from "./EmptyState";
+import { Z } from "../../constants/zScale";
 
 const REPORT_ITEMS_PER_PAGE = 40;
 
@@ -451,7 +452,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] opacity-80 block text-center mb-6 italic">
                       RESUMEN CONSOLIDADO
                     </span>
-                    <div className="space-y-4 relative z-10">
+                    <div className={`space-y-4 relative ${Z.sticky}`}>
                       <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex justify-between items-center px-8">
                         <div className="text-[10px] font-black opacity-70 uppercase tracking-widest italic">
                           Horas Ciclo

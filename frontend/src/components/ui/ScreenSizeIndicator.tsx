@@ -3,6 +3,7 @@ import { useScreenSize } from "../../hooks/useScreenSize";
 import { useAuth } from "../../hooks/useAuth";
 import { DevicePhoneMobileIcon } from "./icons/index";
 import { STORAGE_KEYS } from "../../constants";
+import { Z } from "../../constants/zScale";
 
 const ScreenSizeIndicator: React.FC = () => {
   const { width, height } = useScreenSize();
@@ -36,7 +37,7 @@ const ScreenSizeIndicator: React.FC = () => {
 
   return (
     <div
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full bg-token-surface-card/90 border border-token-border-technical px-3 py-1.5 text-xs font-mono text-token-text-primary shadow-lg backdrop-blur-sm"
+      className={`fixed bottom-4 left-1/2 -translate-x-1/2 ${Z.overlay} flex items-center gap-2 rounded-full bg-token-surface-card/90 border border-token-border-technical px-3 py-1.5 text-xs font-mono text-token-text-primary shadow-lg backdrop-blur-sm`}
       title={`Ancho: ${width}px, Alto: ${height}px`}
     >
       <DevicePhoneMobileIcon className="h-4 w-4" />

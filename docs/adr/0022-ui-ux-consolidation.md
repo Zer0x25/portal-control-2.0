@@ -119,7 +119,12 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    (overlays de sesion/sincronizacion). Los modales de dominio viven en
    `features/<dominio>/components/` (15 modales migrados en T15) y las
    primitivas no dependen de features (guardrail `uiLayeringGuardrails.test.ts`).
-8. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
+8. **Escala z-index con nombres**: `src/constants/zScale.ts` define los 7
+   niveles `base|sticky|dropdown|overlay|modal|max|toast`; los 129 usos de
+   numeros magicos (`z-50`, `z-9999`, `z-100000`, …) pasan a `Z.<nivel>` con
+   un mapeo por ranking que conserva el orden relativo de apilado. El guardrail
+   `zScaleGuardrails.test.ts` bloquea nuevos `z-<numero>`.
+9. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
    una sola tarjeta de métrica con variantes tipadas. Los
    modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
    queda reservado a primitivas transversales y utilidades shell.

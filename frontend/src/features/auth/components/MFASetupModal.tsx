@@ -3,6 +3,7 @@ import { authService } from "../../../services/authService";
 import { useToasts } from "../../../hooks/useToasts";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import { Z } from "../../../constants/zScale";
 
 interface MFASetupModalProps {
   isOpen: boolean;
@@ -62,14 +63,16 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
     isOpen && (
       <div
         data-testid="mfa-setup-modal"
-        className="fixed inset-0 z-100 flex items-center justify-center p-6"
+        className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-6`}
       >
         <div
           className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in"
           onClick={onClose}
         />
 
-        <div className="w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
+        <div
+          className={`w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative ${Z.sticky} animate-in fade-in zoom-in-95 slide-in-from-bottom-2`}
+        >
           <div className="text-center mb-6">
             <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
               Configurar MFA

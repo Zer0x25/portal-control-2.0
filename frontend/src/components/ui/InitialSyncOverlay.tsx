@@ -1,6 +1,7 @@
 import React from "react";
 import { useStore } from "../../store/useStore";
 import LoadingSpinner from "./LoadingSpinner";
+import { Z } from "../../constants/zScale";
 
 /**
  * InitialSyncOverlay: The definitive "Industrial-Elegant" transition screen.
@@ -13,15 +14,19 @@ const InitialSyncOverlay: React.FC = () => {
 
   return (
     isInitialSync && (
-      <div className="fixed inset-0 z-99999 flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]">
+      <div
+        className={`fixed inset-0 ${Z.toast} flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]`}
+      >
         {/* Decorative Technical Background - Unified with Login */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 bg-token-surface-app/95 z-0" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.12)_0%,transparent_70%)] z-0" />
+          <div className={`absolute inset-0 bg-token-surface-app/95 ${Z.base}`} />
+          <div
+            className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.12)_0%,transparent_70%)] ${Z.base}`}
+          />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-45"></div>
         </div>
 
-        <div className="z-10 text-center relative max-w-md w-full px-8">
+        <div className={`${Z.sticky} text-center relative max-w-md w-full px-8`}>
           {/* Main Animated Status Indicator */}
           <div className="relative mb-12">
             {/* Outer Glow */}

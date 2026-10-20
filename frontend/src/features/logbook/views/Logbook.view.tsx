@@ -20,6 +20,7 @@ import LogEntriesCard from "../components/LogEntriesCard";
 import SupplierEntriesCard from "../components/SupplierEntriesCard";
 import Container from "../../../components/ui/Container";
 import type { ShiftReport } from "../../../types";
+import { Z } from "../../../constants/zScale";
 
 export interface LogbookViewProps {
   isLoadingReports: boolean;
@@ -124,7 +125,9 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
       {activeShift ? (
         <>
           <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 bg-token-surface-card p-6 rounded-sm border border-token-border-technical shadow-sm relative overflow-hidden group animate-in fade-in">
-            <div className="relative z-10 transition-transform duration-500 group-hover:translate-x-1">
+            <div
+              className={`relative ${Z.sticky} transition-transform duration-500 group-hover:translate-x-1`}
+            >
               <h1 className="text-3xl font-bold text-token-text-primary tracking-tight">
                 {activeShift.shiftName}
               </h1>
@@ -142,7 +145,9 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
               </div>
             </div>
 
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-5 bg-token-surface-stripe p-5 rounded-sm border border-token-border-technical shadow-inner">
+            <div
+              className={`relative ${Z.sticky} flex flex-col sm:flex-row items-start sm:items-center gap-5 bg-token-surface-stripe p-5 rounded-sm border border-token-border-technical shadow-inner`}
+            >
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider">
                   Responsable Operativo
@@ -223,7 +228,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
 
       {showLogoutCountdownModal && (
         <div
-          className="fixed inset-0 z-101 flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
+          className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4`}
           aria-modal="true"
         >
           <div className="p-10 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical text-center max-w-sm w-full">
@@ -252,7 +257,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
       )}
       {/* Floating Action Button for Mobile */}
       {isMobile && activeShift && (
-        <div className="fixed bottom-6 right-6 z-60 flex flex-col items-end gap-3">
+        <div className={`fixed bottom-6 right-6 ${Z.overlay} flex flex-col items-end gap-3`}>
           {showFabMenu && (
             <div className="flex flex-col items-end gap-3 mb-2">
               {/* Option: Add Supplier */}

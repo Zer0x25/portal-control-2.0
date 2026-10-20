@@ -22,6 +22,7 @@ interface AddSupplierModalProps {
 }
 
 import CinematicModal from "../../../components/ui/CinematicModal";
+import { Z } from "../../../constants/zScale";
 
 const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
   isOpen,
@@ -114,11 +115,15 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
               Hora del Ingreso
             </label>
             <div className="relative group cursor-pointer" onClick={handleClockClick}>
-              <div className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500 z-10 pointer-events-none">
+              <div
+                className={`absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500 ${Z.sticky} pointer-events-none`}
+              >
                 <ClockIcon className="w-6 h-6 animate-pulse" />
               </div>
               <div className="relative overflow-hidden rounded-2xl bg-token-surface-card border border-token-border-subtle p-1 transition-all group-hover:border-emerald-500/30 shadow-inner">
-                <div className="w-full h-20 pl-16 pr-8 bg-transparent text-4xl font-mono font-black text-token-text-primary dark:text-emerald-400 outline-none relative z-10 flex items-center select-none pointer-events-none">
+                <div
+                  className={`w-full h-20 pl-16 pr-8 bg-transparent text-4xl font-mono font-black text-token-text-primary dark:text-emerald-400 outline-none relative ${Z.sticky} flex items-center select-none pointer-events-none`}
+                >
                   {data.time}
                 </div>
               </div>
@@ -129,7 +134,9 @@ const AddSupplierModal: React.FC<AddSupplierModalProps> = ({
               Patente Vehicular
             </label>
             <div className="relative group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-token-text-tertiary z-10 pointer-events-none">
+              <div
+                className={`absolute left-4 top-1/2 -translate-y-1/2 text-token-text-tertiary ${Z.sticky} pointer-events-none`}
+              >
                 <FingerPrintIcon className="w-5 h-5" />
               </div>
               <Input

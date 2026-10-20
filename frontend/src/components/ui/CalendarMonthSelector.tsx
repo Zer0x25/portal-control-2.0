@@ -16,6 +16,7 @@ import {
 } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons/index";
+import { Z } from "../../constants/zScale";
 
 interface CalendarMonthSelectorProps {
   currentDate: Date;
@@ -185,7 +186,9 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute left-1/2 top-full -translate-x-1/2 z-100 w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2">
+        <div
+          className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
+        >
           <div className="space-y-6">
             <YearPicker
               currentDate={currentDate}

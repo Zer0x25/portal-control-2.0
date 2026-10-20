@@ -9,6 +9,7 @@ import {
   ClockIcon,
 } from "../../../components/ui/icons/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
+import { Z } from "../../../constants/zScale";
 
 interface ShiftHandoverModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface ShiftHandoverModalProps {
 const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose, data }) => {
   return createPortal(
     isOpen && data && (
-      <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
+      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
         {/* Backdrop */}
         <div
           onClick={onClose}
@@ -60,7 +61,9 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
           <div className="grow overflow-y-auto p-8 space-y-8 scrollbar-premium">
             {/* Turno Info Card */}
             <div className="bg-token-surface-stripe p-6 rounded-md border border-token-border-subtle relative overflow-hidden group">
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div
+                className={`relative ${Z.sticky} flex flex-col md:flex-row md:items-center justify-between gap-4`}
+              >
                 <div>
                   <h4 className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest mb-1">
                     Turno Anterior

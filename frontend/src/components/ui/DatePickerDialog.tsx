@@ -3,6 +3,7 @@ import { addMonths, format, startOfDay, subMonths } from "date-fns";
 import { CloseIcon, CheckCircleIcon } from "./icons/index";
 import Button from "./Button";
 import { DatePickerCalendar } from "./DatePicker";
+import { Z } from "../../constants/zScale";
 
 interface DatePickerDialogProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-110 flex items-center justify-center p-4">
+    <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}>
       <div
         onClick={onClose}
         className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-in fade-in"

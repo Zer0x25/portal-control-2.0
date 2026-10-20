@@ -17,6 +17,7 @@ import ReportFilterPanel from "./ReportFilterPanel";
 import PdfExportModeModal from "./PdfExportModeModal";
 import { useReportsTabController } from "../hooks/useReportsTabController";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 const justificationStyles: Record<string, string> = {
   Vacaciones: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
@@ -60,7 +61,9 @@ const ReportsTab: FC = () => {
       />
 
       {isLoading && (
-        <div className="fixed inset-0 z-200 flex items-center justify-center pointer-events-none">
+        <div
+          className={`fixed inset-0 ${Z.max} flex items-center justify-center pointer-events-none`}
+        >
           <div className="bg-token-surface-card px-10 py-6 rounded-sm border border-token-border-technical shadow-lg flex items-center gap-6 animate-in fade-in zoom-in-95">
             <LoadingSpinner size="md" variant="default" />
             <span className="text-[11px] font-black uppercase tracking-widest text-token-text-primary">
@@ -124,7 +127,9 @@ const ReportsTab: FC = () => {
                     <ExportIcon className="h-4 w-4" /> EXPORTAR
                   </button>
                   {isExportMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical z-150 p-2 animate-in fade-in slide-in-from-top-2">
+                    <div
+                      className={`absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical ${Z.modal} p-2 animate-in fade-in slide-in-from-top-2`}
+                    >
                       <button
                         onClick={() => handleExport("csv")}
                         className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"

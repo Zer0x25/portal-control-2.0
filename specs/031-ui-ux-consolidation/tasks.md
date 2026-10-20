@@ -71,7 +71,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `text-xxs`; adoptar `typo-ui-*` en shell (Header, Sidebar, badges);
       añadir al guardrail el budget monotónico para `text-[10px]`/`text-[11px]`
       restantes (AC10).
-- [ ] T17: Definir escala z con nombres unificados en `frontend/src/constants/`:
+- [x] T17: Definir escala z con nombres unificados en `frontend/src/constants/`:
       `Z.base|sticky|dropdown|overlay|modal|max|toast`; reemplazar mágicos
       (`z-60`, `z-100`, `z-9999`); guardrail z-scale (AC11).
 - [ ] T18: Publicar showcase como ruta `/design-system` (lazy, gating

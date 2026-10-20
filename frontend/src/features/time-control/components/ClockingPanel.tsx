@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useClockingPanel } from "../hooks/useClockingPanel";
 import Button from "../../../components/ui/Button";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
+import { Z } from "../../../constants/zScale";
 
 interface ClockingPanelProps {
   isActionDisabled: boolean;
@@ -44,7 +45,9 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
             />
 
             {searchTerm && !selectedEmployeeId && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-token-surface-card border border-token-border-subtle rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+              <div
+                className={`absolute top-full left-0 right-0 mt-2 bg-token-surface-card border border-token-border-subtle rounded-lg shadow-lg ${Z.overlay} max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2`}
+              >
                 {filteredEmployees.length > 0 ? (
                   <div className="p-2 space-y-1">
                     {filteredEmployees.map((e) => (

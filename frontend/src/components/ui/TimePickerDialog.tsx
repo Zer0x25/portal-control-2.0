@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CheckCircleIcon } from "./icons/index";
 import Button from "./Button";
+import { Z } from "../../constants/zScale";
 
 interface TimePickerDialogProps {
   isOpen: boolean;
@@ -35,7 +36,9 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
 
   return (
     isOpen && (
-      <div className="fixed inset-0 z-110 flex items-center justify-center p-4 pointer-events-none">
+      <div
+        className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 pointer-events-none`}
+      >
         <div
           onClick={onClose}
           className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto animate-in fade-in"

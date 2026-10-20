@@ -25,6 +25,7 @@ import {
 } from "../../../services/seedingService";
 import { API_BASE_URL } from "../../../services/apiBase";
 import { authService } from "../../../services/authService";
+import { Z } from "../../../constants/zScale";
 
 export const DeveloperPanel: React.FC = () => {
   const { addToast } = useToasts();
@@ -264,7 +265,7 @@ export const DeveloperPanel: React.FC = () => {
   return (
     <div className="relative" ref={panelRef}>
       {isResetting && (
-        <div className="fixed inset-0 bg-black/90 z-9999 flex items-center justify-center p-4">
+        <div className={`fixed inset-0 bg-black/90 ${Z.max} flex items-center justify-center p-4`}>
           <div className="max-w-md w-full text-center">
             <LoadingSpinner
               size="xl"
@@ -290,9 +291,12 @@ export const DeveloperPanel: React.FC = () => {
       )}
 
       {isDevPanelOpen && (
-        <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setIsDevPanelOpen(false)} />
+        <div
+          className={`fixed inset-0 bg-black/30 ${Z.dropdown}`}
+          onClick={() => setIsDevPanelOpen(false)}
+        />
       )}
-      <div className="relative z-50">
+      <div className={`relative ${Z.overlay}`}>
         {isDevPanelOpen && (
           <div className="absolute bottom-full right-0 mb-4 w-80 bg-token-surface-card/90 backdrop-blur-2xl text-token-text-primary rounded-2xl shadow-2xl border border-token-border-technical overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 bg-white/5">

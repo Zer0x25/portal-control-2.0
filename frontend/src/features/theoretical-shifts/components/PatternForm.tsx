@@ -11,6 +11,7 @@ import {
   ExclamationTriangleIcon,
 } from "../../../components/ui/icons/index";
 import type { DayInCycleSchedule, TheoreticalShiftPattern } from "../../../types";
+import { Z } from "../../../constants/zScale";
 
 const daysOfWeekOptions = [
   { value: 1, label: "Lunes" },
@@ -104,7 +105,9 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
             </div>
           </div>
           {patternForm.calculatedPatternWeeklyHours > patternForm.globalMaxWeeklyHours && (
-            <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-token-status-error text-token-text-onAccent text-[10px] font-bold rounded-xl shadow-xl z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <div
+              className={`absolute top-full right-0 mt-2 w-64 p-3 bg-token-status-error text-token-text-onAccent text-[10px] font-bold rounded-xl shadow-xl ${Z.overlay} opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}
+            >
               <p className="flex items-center gap-2">
                 <ExclamationTriangleIcon className="w-3 h-3" />
                 ADVERTENCIA LEGAL
@@ -170,7 +173,7 @@ const PatternForm: React.FC<PatternFormProps> = ({ onCancel, onSave, patternForm
               value={patternForm.patternColor}
               onChange={(e) => patternForm.setPatternColor(e.target.value)}
               aria-label="Color del patrón"
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              className={`absolute inset-0 w-full h-full opacity-0 cursor-pointer ${Z.sticky}`}
             />
             <div
               className="w-full h-full rounded-md border border-token-border-technical shadow-sm transition-transform group-hover:scale-105"

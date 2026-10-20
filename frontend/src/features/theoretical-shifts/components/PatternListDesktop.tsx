@@ -5,6 +5,7 @@ import { EditIcon, DeleteIcon, DocumentDuplicateIcon } from "../../../components
 import Button from "../../../components/ui/Button";
 import { LIST_ROW_HEIGHT, ROW_BASE_CLASS, ROW_HOVER_CLASS, TEXT_PRIMARY } from "./listTokens";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 interface PatternListDesktopProps {
   patterns: TheoreticalShiftPattern[];
@@ -62,7 +63,7 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
     <div className="flex flex-col h-full bg-token-surface-card border border-token-border-technical rounded-lg shadow-sm overflow-hidden">
       {/* Header */}
       <div
-        className="grid items-center px-4 py-3 bg-token-surface-header border-b border-token-border-technical text-xs font-bold text-token-text-tertiary uppercase tracking-wider sticky top-0 z-10"
+        className={`grid items-center px-4 py-3 bg-token-surface-header border-b border-token-border-technical text-xs font-bold text-token-text-tertiary uppercase tracking-wider sticky top-0 ${Z.sticky}`}
         style={{ gridTemplateColumns }}
       >
         <div className="pl-4">Nombre del Patrón</div>

@@ -1,5 +1,6 @@
 import React from "react";
 import { CloseIcon, DocumentArrowDownIcon } from "../../../components/ui/icons/index";
+import { Z } from "../../../constants/zScale";
 
 interface AttachmentViewerModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ const AttachmentViewerModal: React.FC<AttachmentViewerModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4"
+      className={`fixed inset-0 ${Z.overlay} flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"

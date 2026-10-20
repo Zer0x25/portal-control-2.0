@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
 } from "../../../components/ui/icons/index";
+import { Z } from "../../../constants/zScale";
 
 /** A single read-excel-file column mapping (serialized to the backend preview endpoint). */
 export interface ImportFieldSchema {
@@ -115,7 +116,7 @@ const ImportModal = <T extends ImportPreviewRow>({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6">
+    <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 sm:p-6`}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
       <div className="relative w-full max-w-2xl bg-token-surface-card rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-token-border-technical animate-in fade-in zoom-in-95 slide-in-from-bottom-2">

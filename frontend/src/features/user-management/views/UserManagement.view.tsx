@@ -17,6 +17,7 @@ import CinematicModal from "../../../components/ui/CinematicModal";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import RoleBadge from "../../../components/ui/RoleBadge";
 import type { Employee, User, UserRole } from "../../../types";
+import { Z } from "../../../constants/zScale";
 
 interface UserFormData {
   username: string;
@@ -101,7 +102,9 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
         data-testid="data-table"
         className="min-w-full divide-y divide-token-border-technical border-separate border-spacing-0"
       >
-        <thead className="bg-token-surface-header sticky top-0 z-20 backdrop-blur-md shadow-sm border-b border-token-border-technical">
+        <thead
+          className={`bg-token-surface-header sticky top-0 ${Z.dropdown} backdrop-blur-md shadow-sm border-b border-token-border-technical`}
+        >
           <tr className="text-token-text-secondary text-[11px] font-bold uppercase tracking-wider">
             <th className="px-6 py-4 text-left border-b border-token-border-subtle">Acceso</th>
             <th className="px-6 py-4 text-left border-b border-token-border-subtle">Jerarquía</th>

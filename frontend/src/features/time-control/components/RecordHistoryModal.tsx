@@ -10,6 +10,7 @@ import { useRecordHistory } from "../../../hooks/queries/useRecordHistory";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import Button from "../../../components/ui/Button";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 interface RecordHistoryModalProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+    <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}>
       <div
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"

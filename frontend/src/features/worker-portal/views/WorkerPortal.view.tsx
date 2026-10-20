@@ -25,6 +25,7 @@ import {
 } from "../../../components/ui/icons/index";
 import { CorrectionRequestModal } from "..";
 import { formatBusinessDate } from "../../../utils/dateUtils";
+import { Z } from "../../../constants/zScale";
 
 export interface WorkerPortalViewProps {
   currentUser?: User | null;
@@ -198,7 +199,9 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
       </div>
 
       <div className="relative overflow-hidden p-8 rounded-[3rem] bg-token-surface-card border border-token-border-technical backdrop-blur-xl profile-card-glass">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div
+          className={`relative ${Z.sticky} flex flex-col md:flex-row justify-between items-center gap-8`}
+        >
           <div className="flex items-center gap-6">
             <div className="relative group">
               <div className="absolute inset-0 bg-sap-blue/20 rounded-2xl blur-2xl group-hover:bg-sap-blue/40 transition-all scale-125" />
@@ -261,7 +264,9 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   disabled={isDisabled}
                   className={`h-24 rounded-2xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
                 >
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] relative z-10">
+                  <div
+                    className={`text-[10px] font-black uppercase tracking-[0.2em] relative ${Z.sticky}`}
+                  >
                     {item.label}
                   </div>
                 </button>

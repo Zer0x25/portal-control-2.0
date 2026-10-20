@@ -14,6 +14,7 @@ import Input from "../../../components/ui/Input";
 import { CloseIcon, PlusCircleIcon, EditIcon, DeleteIcon } from "../../../components/ui/icons";
 import { idFactory } from "../../../utils/idFactory";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
+import { Z } from "../../../constants/zScale";
 
 interface MeterConfigPanelProps {
   isOpen: boolean;
@@ -125,7 +126,7 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
 
   return (
     <div
-      className={`fixed inset-0 z-40 transition-opacity duration-300 ${isOpen ? "bg-black/50" : "bg-transparent pointer-events-none"}`}
+      className={`fixed inset-0 ${Z.dropdown} transition-opacity duration-300 ${isOpen ? "bg-black/50" : "bg-transparent pointer-events-none"}`}
       onClick={onClose}
     >
       <div

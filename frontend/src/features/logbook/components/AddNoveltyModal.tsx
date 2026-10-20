@@ -4,6 +4,7 @@ import { BookOpenIcon, ClockIcon } from "../../../components/ui/icons/index";
 import { formatTime } from "../../../utils/formatters";
 import TimePickerDialog from "../../../components/ui/TimePickerDialog";
 import CinematicModal from "../../../components/ui/CinematicModal";
+import { Z } from "../../../constants/zScale";
 
 interface AddNoveltyModalProps {
   isOpen: boolean;
@@ -72,11 +73,15 @@ const AddNoveltyModal: React.FC<AddNoveltyModalProps> = ({
             Hora del Evento
           </label>
           <div className="relative group cursor-pointer" onClick={handleClockClick}>
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-token-accent-brand z-10 pointer-events-none">
+            <div
+              className={`absolute left-6 top-1/2 -translate-y-1/2 text-token-accent-brand ${Z.sticky} pointer-events-none`}
+            >
               <ClockIcon className="w-6 h-6 animate-pulse" />
             </div>
             <div className="relative overflow-hidden rounded-2xl bg-token-surface-card border border-token-border-subtle p-1 transition-all group-hover:border-token-accent-brand/30 shadow-inner">
-              <div className="w-full h-20 pl-16 pr-8 bg-transparent text-4xl font-mono font-black text-token-text-primary dark:text-token-accent-brand outline-none relative z-10 flex items-center select-none pointer-events-none">
+              <div
+                className={`w-full h-20 pl-16 pr-8 bg-transparent text-4xl font-mono font-black text-token-text-primary dark:text-token-accent-brand outline-none relative ${Z.sticky} flex items-center select-none pointer-events-none`}
+              >
                 {time}
               </div>
             </div>

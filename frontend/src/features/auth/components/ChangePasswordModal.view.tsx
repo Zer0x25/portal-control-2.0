@@ -3,6 +3,7 @@ import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import { CloseIcon } from "../../../components/ui/icons/index";
 import { PasswordChangeForm } from "../../../components/ui/PasswordChangeForm";
+import { Z } from "../../../constants/zScale";
 
 interface ChangePasswordModalViewProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ const ChangePasswordModalView: React.FC<ChangePasswordModalViewProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-4"
+      className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-black/60 p-4`}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
