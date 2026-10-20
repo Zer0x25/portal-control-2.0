@@ -89,6 +89,9 @@ const MonthlyPlanningPage = React.lazy(() =>
     default: m.MonthlyPlanningContainer,
   })),
 );
+const DesignSystemCatalogPage = React.lazy(
+  () => import("./features/design-system/views/DesignSystemCatalog.view"),
+);
 const GovernanceHubPage = React.lazy(() =>
   import("./features/governance/containers/GovernanceHub.container").then((m) => ({
     default: m.GovernanceHubContainer,
@@ -348,6 +351,16 @@ const App: React.FC = () => {
                 requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.AUDITOR]}
               >
                 <GovernanceHubPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.DESIGN_SYSTEM}
+            element={
+              <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                <Suspense fallback={<LoadingSpinner fullScreen />}>
+                  <DesignSystemCatalogPage />
+                </Suspense>
               </ProtectedRoute>
             }
           />

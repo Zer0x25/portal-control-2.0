@@ -1,5 +1,7 @@
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
+import { ROUTES } from "../../../constants";
 import { useToasts } from "../../../hooks/useToasts";
 import { getDBInstance } from "../../../utils/indexedDB";
 import Button from "../../../components/ui/Button";
@@ -12,7 +14,6 @@ import {
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import SeedingOptionsModal, { SeedingOptions } from "./SeedingOptionsModal";
 import SeedingProgressModal from "./SeedingProgressModal";
-import DesignSystemShowcaseModal from "../../../components/ui/DesignSystemShowcaseModal";
 import {
   seedPhase1,
   startSeedPhase2,
@@ -31,8 +32,8 @@ export const DeveloperPanel: React.FC = () => {
   const { addToast } = useToasts();
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const navigate = useNavigate();
   const [isDevPanelOpen, setIsDevPanelOpen] = useState(false);
-  const [isDesignShowcaseOpen, setIsDesignShowcaseOpen] = useState(false);
   const [isSeedingModalOpen, setIsSeedingModalOpen] = useState(false);
   const [isSeedingOptionsOpen, setIsSeedingOptionsOpen] = useState(false);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
@@ -319,13 +320,13 @@ export const DeveloperPanel: React.FC = () => {
               )}
               <Button
                 onClick={() => {
-                  setIsDesignShowcaseOpen(true);
                   setIsDevPanelOpen(false);
+                  navigate(ROUTES.DESIGN_SYSTEM);
                 }}
                 size="sm"
                 className="w-full h-11 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20 text-white"
               >
-                <SparklesIcon className="w-4 h-4 mr-2" /> Design System Gallery
+                <SparklesIcon className="w-4 h-4 mr-2" /> Abrir catalogo
               </Button>
               <Button
                 onClick={() => setIsSeedingOptionsOpen(true)}
@@ -390,11 +391,6 @@ export const DeveloperPanel: React.FC = () => {
           phase2Job &&
           void stopSeedPhase2(phase2Job.id).then(() => refreshPhase2Status(phase2Job.id))
         }
-      />
-
-      <DesignSystemShowcaseModal
-        isOpen={isDesignShowcaseOpen}
-        onClose={() => setIsDesignShowcaseOpen(false)}
       />
 
       {isClearServerConfirmOpen && (

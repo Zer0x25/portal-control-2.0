@@ -55,7 +55,7 @@ cambio con mayor riesgo offline):
 4. **Jerarquía tipográfica y catalogación ausente**: ~940 tamaños arbitrarios
    `text-[Npx]` (482× `text-[10px]`, 154× `text-[9px]`, 27× `text-[8px]`) contra
    solo 20 usos de las utilidades oficiales `typo-ui-*`; el catálogo
-   [DesignSystemShowcaseModal.tsx](file:///frontend/src/components/ui/DesignSystemShowcaseModal.tsx)
+   [DesignSystemShowcaseModal.tsx`features/design-system/` (ruta `/design-system`)
    solo es accesible por Administrador en modo dev (~24 modales de dominio viven
    además en `components/ui/`, contaminando la capa canónica); no hay plugin de
    accesibilidad en el lint.

@@ -27,6 +27,7 @@ export const ROUTES = {
   MONTHLY_PLANNING: "/planning/monthly", // New route for Monthly Shift Assistant wizard
   GOVERNANCE_HUB: "/admin/governance", // Unified Governance & Security Center
   ADMIN_TOOLS: "/admin/tools", // Redirected to Governance Hub
+  DESIGN_SYSTEM: "/design-system", // Catalogo navegable del design system (Administrador)
   INTEGRITY_DASHBOARD: "/admin/integrity", // Redirected to Governance Hub
 };
 

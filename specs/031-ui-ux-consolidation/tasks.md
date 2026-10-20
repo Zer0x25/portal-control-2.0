@@ -74,7 +74,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [x] T17: Definir escala z con nombres unificados en `frontend/src/constants/`:
       `Z.base|sticky|dropdown|overlay|modal|max|toast`; reemplazar mágicos
       (`z-60`, `z-100`, `z-9999`); guardrail z-scale (AC11).
-- [ ] T18: Publicar showcase como ruta `/design-system` (lazy, gating
+- [x] T18: Publicar showcase como ruta `/design-system` (lazy, gating
       Administrador), link desde Sidebar + DeveloperPanel y documentación por
       primitiva (variantes/estados/uso) (AC12).
 

@@ -124,7 +124,12 @@ gobernanza de ADR-0020 dejó de operar en sus zonas no blindadas:
    numeros magicos (`z-50`, `z-9999`, `z-100000`, …) pasan a `Z.<nivel>` con
    un mapeo por ranking que conserva el orden relativo de apilado. El guardrail
    `zScaleGuardrails.test.ts` bloquea nuevos `z-<numero>`.
-9. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
+9. **Catálogo navegable del design system**: la ruta `/design-system`
+   (lazy, restringida a Administrador) publica el catálogo con documentación por
+   primitiva (variantes, estados, uso y notas de accesibilidad) en
+   `features/design-system/`. El enlace vive en el Sidebar (solo
+   Administrador) y el DeveloperPanel navega a la ruta en vez de abrir un modal.
+10. **Catálogo tipado y verificable**: un solo TabNav APG, un solo spinner,
    una sola tarjeta de métrica con variantes tipadas. Los
    modales de dominio viven en `features/<dominio>/components/`; `components/ui/`
    queda reservado a primitivas transversales y utilidades shell.
