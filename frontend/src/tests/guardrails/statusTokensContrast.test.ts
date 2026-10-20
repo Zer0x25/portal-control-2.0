@@ -22,15 +22,22 @@ const STATUS_KEYS = [
   "ausente",
   "vacaciones",
   "permiso-especial",
+  "licencia-medica",
   "anomalia",
   "sin-marcaje",
   "completado",
+  "feriado",
+  "no-programado",
 ] as const;
+
+const GENERIC_STATUS_KEYS = ["success", "warning", "error", "info"] as const;
 
 const CHART_KEYS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 const AA_TEXT = 4.5;
 const AA_NON_TEXT = 3;
+/** Tinte del 10% que usa RoleBadge/IconBox sobre la card. */
+const TINT_RATIO = 0.1;
 
 function parseBlocks(css: string): { light: string; dark: string } {
   const darkMatch = /\.dark\s*\{/.exec(css);
@@ -88,6 +95,19 @@ function contrastRatio(foreground: string, background: string): number {
   return (light + 0.05) / (dark + 0.05);
 }
 
+/** Mezcla tipo color-mix: `ratio` del color sobre el fondo (tinte). */
+function mixOver(color: string, background: string, ratio: number): string {
+  const fg = hexToRgb(color);
+  const bg = hexToRgb(background);
+  return `#${fg
+    .map((channel, index) =>
+      Math.round(channel * ratio + bg[index] * (1 - ratio))
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+}
+
 const css = readFileSync(INDEX_CSS, "utf8");
 const blocks = parseBlocks(css);
 const lightVars = parseVars(blocks.light);
@@ -119,13 +139,25 @@ describe("Contraste de tokens de dominio (spec 031 AC4)", () => {
     });
   }
 
-  it("chart-1..8 mantienen contraste no textual contra la card de cada tema", () => {
+  it("chart-1..8 mantienen contraste de texto contra la card y su tinte", () => {
     const lightCard = requireVar(lightVars, "surface-card", "light");
     const darkCard = requireVar(darkVars, "surface-card", "dark");
 
     for (const index of CHART_KEYS) {
       const lightChart = requireVar(lightVars, `chart-${index}`, "light");
       const darkChart = requireVar(darkVars, `chart-${index}`, "dark");
+
+      // Uso categorico en badge: texto sobre el tinte del 10% de la card.
+      expect(
+        contrastRatio(lightChart, mixOver(lightChart, lightCard, TINT_RATIO)),
+        `chart-${index} claro sobre su tinte`,
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(
+        contrastRatio(darkChart, mixOver(darkChart, darkCard, TINT_RATIO)),
+        `chart-${index} oscuro sobre su tinte`,
+      ).toBeGreaterThanOrEqual(AA_TEXT);
+
+      // Uso data-viz: relleno contra la card.
       expect(contrastRatio(lightChart, lightCard), `chart-${index} claro`).toBeGreaterThanOrEqual(
         AA_NON_TEXT,
       );
@@ -135,9 +167,29 @@ describe("Contraste de tokens de dominio (spec 031 AC4)", () => {
     }
   });
 
+  it("estados genericos: texto AA sobre su surface en claro y oscuro", () => {
+    for (const key of GENERIC_STATUS_KEYS) {
+      const lightText = requireVar(lightVars, `status-${key}-text`, "light");
+      const lightSurface = requireVar(lightVars, `status-${key}-surface`, "light");
+      expect(contrastRatio(lightText, lightSurface), `status-${key} claro`).toBeGreaterThanOrEqual(
+        AA_TEXT,
+      );
+
+      const darkText = requireVar(darkVars, `status-${key}-text`, "dark");
+      const darkSurface = requireVar(darkVars, `status-${key}-surface`, "dark");
+      expect(contrastRatio(darkText, darkSurface), `status-${key} oscuro`).toBeGreaterThanOrEqual(
+        AA_TEXT,
+      );
+    }
+  });
+
   it("expone los tokens en @theme para generar utilidades Tailwind", () => {
     for (const key of STATUS_KEYS) {
       expect(lightVars.get(`color-token-status-${key}`)).toBeTruthy();
+      expect(lightVars.get(`color-token-status-${key}-surface`)).toBeTruthy();
+      expect(lightVars.get(`color-token-status-${key}-text`)).toBeTruthy();
+    }
+    for (const key of GENERIC_STATUS_KEYS) {
       expect(lightVars.get(`color-token-status-${key}-surface`)).toBeTruthy();
       expect(lightVars.get(`color-token-status-${key}-text`)).toBeTruthy();
     }

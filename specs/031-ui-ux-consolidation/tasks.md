@@ -30,7 +30,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       de jornada (laborando, colación, ausente, vacaciones, permiso especial,
       anomalía, sin marcaje, completado) y `--chart-1..8`, con variantes light/
       dark y contraste AA verificado en claro/oscuro (AC4).
-- [ ] T6: Migrar `frontend/src/utils/mappings.ts` a clases `token-status-*`
+- [x] T6: Migrar `frontend/src/utils/mappings.ts` a clases `token-status-*`
       nuevas conservando la API `Record<K, { label, bg, text }>`; actualizar
       `RoleBadge.tsx`/`IconBox.tsx` a tokens (AC4).
 - [ ] T7: Extender `audit-design-system.cjs` a la detección del palette crudo en

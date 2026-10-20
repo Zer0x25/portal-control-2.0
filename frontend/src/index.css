@@ -78,6 +78,24 @@
   --color-token-status-completado: var(--status-completado);
   --color-token-status-completado-surface: var(--status-completado-surface);
   --color-token-status-completado-text: var(--status-completado-text);
+  --color-token-status-licencia-medica: var(--status-licencia-medica);
+  --color-token-status-licencia-medica-surface: var(--status-licencia-medica-surface);
+  --color-token-status-licencia-medica-text: var(--status-licencia-medica-text);
+  --color-token-status-feriado: var(--status-feriado);
+  --color-token-status-feriado-surface: var(--status-feriado-surface);
+  --color-token-status-feriado-text: var(--status-feriado-text);
+  --color-token-status-no-programado: var(--status-no-programado);
+  --color-token-status-no-programado-surface: var(--status-no-programado-surface);
+  --color-token-status-no-programado-text: var(--status-no-programado-text);
+
+  /* Estados genericos: surface + text. */
+  --color-token-status-success-surface: var(--status-success-surface);
+  --color-token-status-success-text: var(--status-success-text);
+  --color-token-status-warning-surface: var(--status-warning-surface);
+  --color-token-status-warning-text: var(--status-warning-text);
+  --color-token-status-error-surface: var(--status-error-surface);
+  --color-token-status-info-surface: var(--status-info-surface);
+  --color-token-status-info-text: var(--status-info-text);
 
   /* Categorical data-viz palette (spec 031 T5 / AC4). */
   --color-token-chart-1: var(--chart-1);
@@ -416,14 +434,32 @@
     --status-completado: #2563eb;
     --status-completado-surface: #dbeafe;
     --status-completado-text: #1e40af;
+    --status-licencia-medica: #7c3aed;
+    --status-licencia-medica-surface: #ede9fe;
+    --status-licencia-medica-text: #5b21b6;
+    --status-feriado: #a16207;
+    --status-feriado-surface: #fef9c3;
+    --status-feriado-text: #854d0e;
+    --status-no-programado: #475569;
+    --status-no-programado-surface: #f1f5f9;
+    --status-no-programado-text: #334155;
+
+    /* Estados genericos: surface + text (base ya existe arriba). */
+    --status-success-surface: #d1fae5;
+    --status-success-text: #065f46;
+    --status-warning-surface: #fef3c7;
+    --status-warning-text: #92400e;
+    --status-error-surface: #fee2e2;
+    --status-info-surface: #e0f2fe;
+    --status-info-text: #075985;
 
     /* Categorical data-viz palette (spec 031 T5 / AC4). */
     --chart-1: #005792;
-    --chart-2: #0284c7;
+    --chart-2: #0369a1;
     --chart-3: #047857;
-    --chart-4: #b45309;
+    --chart-4: #92400e;
     --chart-5: #7c3aed;
-    --chart-6: #dc2626;
+    --chart-6: #b91c1c;
     --chart-7: #0f766e;
     --chart-8: #475569;
 
@@ -453,7 +489,7 @@
     --text-on-accent: #020617; /* Slate-950 for high contrast on light sky-400 accent */
 
     --status-error: #ef4444;
-    --status-error-text: #ef4444;
+    --status-error-text: #fca5a5;
 
     /*
       Domain Status Tokens - Dark (spec 031 T5 / AC4).
@@ -483,6 +519,24 @@
     --status-completado: #60a5fa;
     --status-completado-surface: #1e3a8a;
     --status-completado-text: #93c5fd;
+    --status-licencia-medica: #a78bfa;
+    --status-licencia-medica-surface: #4c1d95;
+    --status-licencia-medica-text: #c4b5fd;
+    --status-feriado: #facc15;
+    --status-feriado-surface: #713f12;
+    --status-feriado-text: #fde68a;
+    --status-no-programado: #94a3b8;
+    --status-no-programado-surface: #1e293b;
+    --status-no-programado-text: #cbd5e1;
+
+    /* Estados genericos: surface + text (base ya existe arriba). */
+    --status-success-surface: #064e3b;
+    --status-success-text: #6ee7b7;
+    --status-warning-surface: #78350f;
+    --status-warning-text: #fcd34d;
+    --status-error-surface: #7f1d1d;
+    --status-info-surface: #0c4a6e;
+    --status-info-text: #7dd3fc;
 
     /* Categorical data-viz palette - Dark (spec 031 T5 / AC4). */
     --chart-1: #38bdf8;

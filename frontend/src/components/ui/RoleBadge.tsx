@@ -9,36 +9,38 @@ interface RoleBadgeProps {
 
 const RoleBadge: React.FC<RoleBadgeProps> = ({ role, className = "", size = "md" }) => {
   const getRoleStyles = (role: UserRole) => {
+    // Paleta categorica del design system (--chart-N): los roles son
+    // categorias, no estados semanticos, asi que no usan --status-*.
     const roles: Record<UserRole, { color: string; bg: string; border: string; dot: string }> = {
       Administrador: {
-        color: "text-red-600 dark:text-red-400",
-        bg: "bg-red-50 dark:bg-red-900/10",
-        border: "border-red-200 dark:border-red-900/30",
-        dot: "bg-red-600 dark:bg-red-400",
+        color: "text-token-chart-6",
+        bg: "bg-token-chart-6/10",
+        border: "border-token-chart-6/30",
+        dot: "bg-token-chart-6",
       },
       Supervisor_Elevado: {
-        color: "text-purple-600 dark:text-purple-400",
-        bg: "bg-purple-50 dark:bg-purple-900/10",
-        border: "border-purple-200 dark:border-purple-900/30",
-        dot: "bg-purple-600 dark:bg-purple-400",
+        color: "text-token-chart-5",
+        bg: "bg-token-chart-5/10",
+        border: "border-token-chart-5/30",
+        dot: "bg-token-chart-5",
       },
       Supervisor: {
-        color: "text-amber-600 dark:text-amber-400",
-        bg: "bg-amber-50 dark:bg-amber-900/10",
-        border: "border-amber-200 dark:border-amber-900/30",
-        dot: "bg-amber-600 dark:bg-amber-400",
+        color: "text-token-chart-4",
+        bg: "bg-token-chart-4/10",
+        border: "border-token-chart-4/30",
+        dot: "bg-token-chart-4",
       },
       Reloj_Control: {
-        color: "text-blue-600 dark:text-blue-400",
-        bg: "bg-blue-50 dark:bg-blue-900/10",
-        border: "border-blue-200 dark:border-blue-900/30",
-        dot: "bg-blue-600 dark:bg-blue-400",
+        color: "text-token-chart-2",
+        bg: "bg-token-chart-2/10",
+        border: "border-token-chart-2/30",
+        dot: "bg-token-chart-2",
       },
       Fiscalizador: {
-        color: "text-teal-600 dark:text-teal-400",
-        bg: "bg-teal-50 dark:bg-teal-900/10",
-        border: "border-teal-200 dark:border-teal-900/30",
-        dot: "bg-teal-600 dark:bg-teal-400",
+        color: "text-token-chart-7",
+        bg: "bg-token-chart-7/10",
+        border: "border-token-chart-7/30",
+        dot: "bg-token-chart-7",
       },
       Usuario: {
         color: "text-token-text-secondary",

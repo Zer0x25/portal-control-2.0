@@ -22,48 +22,48 @@ export const TIME_RECORD_STATUS_CONFIG: Record<
 > = {
   AnomaliaManual: {
     label: "Anomalía Manual",
-    bg: "bg-red-100 dark:bg-red-900/50",
-    text: "text-red-800 dark:text-red-300",
+    bg: "bg-token-status-anomalia-surface",
+    text: "text-token-status-anomalia-text",
   },
   SinMarcajeTurnoAsignado: {
     label: "Sin Marcaje",
-    bg: "bg-orange-100 dark:bg-orange-900/50",
-    text: "text-orange-800 dark:text-orange-300",
+    bg: "bg-token-status-sin-marcaje-surface",
+    text: "text-token-status-sin-marcaje-text",
   },
   Colacion: {
     label: "En Colación",
-    bg: "bg-indigo-100 dark:bg-indigo-900/50",
-    text: "text-indigo-800 dark:text-indigo-300",
+    bg: "bg-token-status-colacion-surface",
+    text: "text-token-status-colacion-text",
   },
   Laborando: {
     label: "Laborando",
-    bg: "bg-green-100 dark:bg-green-900/50",
-    text: "text-green-800 dark:text-green-300",
+    bg: "bg-token-status-laborando-surface",
+    text: "text-token-status-laborando-text",
   },
   Completado: {
     label: "Completado",
-    bg: "bg-blue-100 dark:bg-blue-900/50",
-    text: "text-blue-800 dark:text-blue-300",
+    bg: "bg-token-status-completado-surface",
+    text: "text-token-status-completado-text",
   },
   Ausente: {
     label: "Ausente",
-    bg: "bg-rose-100 dark:bg-rose-900/50",
-    text: "text-rose-800 dark:text-rose-300",
+    bg: "bg-token-status-ausente-surface",
+    text: "text-token-status-ausente-text",
   },
   "Permiso Especial": {
     label: "Permiso Especial",
-    bg: "bg-amber-100 dark:bg-amber-900/50",
-    text: "text-amber-800 dark:text-amber-300",
+    bg: "bg-token-status-permiso-especial-surface",
+    text: "text-token-status-permiso-especial-text",
   },
   Vacaciones: {
     label: "Vacaciones",
-    bg: "bg-cyan-100 dark:bg-cyan-900/50",
-    text: "text-cyan-800 dark:text-cyan-300",
+    bg: "bg-token-status-vacaciones-surface",
+    text: "text-token-status-vacaciones-text",
   },
   "Licencia Médica": {
     label: "Licencia Médica",
-    bg: "bg-sky-100 dark:bg-sky-900/50",
-    text: "text-sky-800 dark:text-sky-300",
+    bg: "bg-token-status-licencia-medica-surface",
+    text: "text-token-status-licencia-medica-text",
   },
   DiaLibre: {
     label: "Día Libre",
@@ -72,8 +72,8 @@ export const TIME_RECORD_STATUS_CONFIG: Record<
   },
   Feriado: {
     label: "Feriado",
-    bg: "bg-yellow-100 dark:bg-yellow-900/50",
-    text: "text-yellow-800 dark:text-yellow-300",
+    bg: "bg-token-status-feriado-surface",
+    text: "text-token-status-feriado-text",
   },
 };
 
@@ -84,9 +84,9 @@ export const CORRECTION_REQUEST_STATUS_TEXT: Record<CorrectionRequest["status"],
 };
 
 export const CORRECTION_REQUEST_STATUS_COLORS: Record<CorrectionRequest["status"], string> = {
-  pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  approved: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-  rejected: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+  pending: "bg-token-status-warning-surface text-token-status-warning-text",
+  approved: "bg-token-status-success-surface text-token-status-success-text",
+  rejected: "bg-token-status-error-surface text-token-status-error-text",
 };
 
 export const USER_ROLES: UserRole[] = [
@@ -131,9 +131,9 @@ export const PLANNING_STATUS_CONFIG: Record<
 > = {
   Programado: {
     label: "Programado para trabajar",
-    dot: "bg-green-500",
-    bg: "bg-green-100",
-    text: "text-green-800",
+    dot: "bg-token-status-laborando",
+    bg: "bg-token-status-laborando-surface",
+    text: "text-token-status-laborando-text",
   },
   DiaLibre: {
     label: "Día Libre",
@@ -143,33 +143,33 @@ export const PLANNING_STATUS_CONFIG: Record<
   },
   Vacaciones: {
     label: "Vacaciones",
-    dot: "bg-blue-500",
-    bg: "bg-blue-100",
-    text: "text-blue-800",
+    dot: "bg-token-status-vacaciones",
+    bg: "bg-token-status-vacaciones-surface",
+    text: "text-token-status-vacaciones-text",
   },
   LicenciaMedica: {
     label: "Licencia Médica",
-    dot: "bg-purple-500",
-    bg: "bg-purple-100",
-    text: "text-purple-800",
+    dot: "bg-token-status-licencia-medica",
+    bg: "bg-token-status-licencia-medica-surface",
+    text: "text-token-status-licencia-medica-text",
   },
   PermisoEspecial: {
     label: "Permiso Especial",
-    dot: "bg-orange-500",
-    bg: "bg-orange-100",
-    text: "text-orange-800",
+    dot: "bg-token-status-permiso-especial",
+    bg: "bg-token-status-permiso-especial-surface",
+    text: "text-token-status-permiso-especial-text",
   },
   Feriado: {
     label: "Feriado",
-    dot: "bg-yellow-500",
-    bg: "bg-yellow-100",
-    text: "text-yellow-800",
+    dot: "bg-token-status-feriado",
+    bg: "bg-token-status-feriado-surface",
+    text: "text-token-status-feriado-text",
   },
   SinTurnoAsignado: {
     label: "Sin Turno Asignado",
-    dot: "bg-token-text-tertiary",
-    bg: "bg-token-surface-stripe",
-    text: "text-token-text-secondary",
+    dot: "bg-token-status-no-programado",
+    bg: "bg-token-status-no-programado-surface",
+    text: "text-token-status-no-programado-text",
   },
 };
 
@@ -179,23 +179,23 @@ export const CLOCKING_STATUS_CONFIG: Record<
 > = {
   en_jornada: {
     label: "En Jornada",
-    dot: "bg-green-500",
-    bg: "bg-green-100 dark:bg-green-900/50",
-    text: "text-green-800 dark:text-green-300",
+    dot: "bg-token-status-laborando",
+    bg: "bg-token-status-laborando-surface",
+    text: "text-token-status-laborando-text",
     description: "El empleado ha marcado su entrada y está trabajando.",
   },
   en_jornada_post_colacion: {
     label: "En Jornada",
-    dot: "bg-green-500",
-    bg: "bg-green-100 dark:bg-green-900/50",
-    text: "text-green-800 dark:text-green-300",
+    dot: "bg-token-status-laborando",
+    bg: "bg-token-status-laborando-surface",
+    text: "text-token-status-laborando-text",
     description: "El empleado ha regresado de su colación y está trabajando.",
   },
   en_colacion: {
     label: "En Colación",
-    dot: "bg-yellow-500",
-    bg: "bg-yellow-100 dark:bg-yellow-900/50",
-    text: "text-yellow-800 dark:text-yellow-300",
+    dot: "bg-token-status-colacion",
+    bg: "bg-token-status-colacion-surface",
+    text: "text-token-status-colacion-text",
     description: "El empleado ha iniciado su período de colación.",
   },
   fuera: {
@@ -207,37 +207,37 @@ export const CLOCKING_STATUS_CONFIG: Record<
   },
   por_iniciar: {
     label: "Por Iniciar",
-    dot: "bg-orange-400",
-    bg: "bg-orange-100 dark:bg-orange-900/50",
-    text: "text-orange-800 dark:text-orange-300",
+    dot: "bg-token-status-sin-marcaje",
+    bg: "bg-token-status-sin-marcaje-surface",
+    text: "text-token-status-sin-marcaje-text",
     description: "El empleado tiene turno hoy pero aún no ha marcado entrada.",
   },
   no_programado: {
     label: "No Programado / Libre",
-    dot: "bg-indigo-300",
-    bg: "bg-indigo-100 dark:bg-indigo-900/50",
-    text: "text-indigo-800 dark:text-indigo-300",
+    dot: "bg-token-status-no-programado",
+    bg: "bg-token-status-no-programado-surface",
+    text: "text-token-status-no-programado-text",
     description: "El empleado no tiene turno asignado para el día de hoy.",
   },
   ausente: {
     label: "Ausente (Hoy)",
-    dot: "bg-rose-500",
-    bg: "bg-rose-100 dark:bg-rose-900/50",
-    text: "text-rose-800 dark:text-rose-300",
+    dot: "bg-token-status-ausente",
+    bg: "bg-token-status-ausente-surface",
+    text: "text-token-status-ausente-text",
     description: "Se ha detectado una ausencia o licencia para el turno de hoy.",
   },
   terminada: {
     label: "Jornada Finalizada",
-    dot: "bg-blue-500",
-    bg: "bg-blue-100 dark:bg-blue-900/50",
-    text: "text-blue-800 dark:text-blue-300",
+    dot: "bg-token-status-completado",
+    bg: "bg-token-status-completado-surface",
+    text: "text-token-status-completado-text",
     description: "El empleado completó su jornada y marcó la salida el día de hoy.",
   },
   jornada_terminada_anomalia: {
     label: "Finalizada (Anomalía)",
-    dot: "bg-red-500",
-    bg: "bg-red-100 dark:bg-red-900/50",
-    text: "text-red-800 dark:text-red-300",
+    dot: "bg-token-status-anomalia",
+    bg: "bg-token-status-anomalia-surface",
+    text: "text-token-status-anomalia-text",
     description:
       'La jornada del empleado fue cerrada por el sistema o manualmente como "SIN REGISTRO".',
   },
