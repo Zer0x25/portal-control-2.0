@@ -85,6 +85,7 @@ export const MeterReadingsView: React.FC<MeterReadingsViewProps> = ({
                 onClick={() => setIsFormOpen(false)}
                 variant="secondary"
                 size="sm"
+                aria-label="Cerrar formulario de lecturas"
                 className="p-1 bg-transparent! hover:bg-token-surface-active!"
               >
                 <CloseIcon className="w-5 h-5 text-token-text-secondary" />
