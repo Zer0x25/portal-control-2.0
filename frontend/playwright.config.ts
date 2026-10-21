@@ -39,5 +39,14 @@ export default defineConfig({
       dependencies: ["functional"],
       use: { ...devices["Desktop Chrome"] },
     },
+    // Regresion visual (spec 035 T15): corre despues de los funcionales
+    // (incluido axe-core) y antes de `perf`, que necesita serie sin carga
+    // concurrente. Solo sobre el conjunto curado de visual-targets.ts.
+    {
+      name: "visual",
+      testMatch: "**/visual-regression.spec.ts",
+      dependencies: ["functional"],
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
 });

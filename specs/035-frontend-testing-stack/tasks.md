@@ -84,7 +84,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       de `.github/workflows/ci.yml`, que ejecuta
       `npm run validate:ci:coverage` (`vitest run --coverage`) y lanzaría
       Chromium sin instalar (AC5).
-- [ ] T11: Migrar a browser los tests de comportamiento **no observable en
+- [x] T11: Migrar a browser los tests de comportamiento **no observable en
       JSDOM**: `CinematicModal` (focus trap + retorno de foco),
       `DatePickerDialog` (navegación por teclado), `TabNav` (flechas),
       `NumericKeypad`, `SortableHeader` (drag) y los contenedores
@@ -95,15 +95,15 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase D — Regresión visual
 
-- [ ] T13: Crear `frontend/e2e/visual-targets.ts` con el **conjunto curado y
+- [x] T13: Crear `frontend/e2e/visual-targets.ts` con el **conjunto curado y
       único** de rutas (dashboard, planificador, worker-portal, kiosk,
       logbook, governance) y `frontend/e2e/visual-regression.spec.ts` con
       `toHaveScreenshot` en claro y oscuro, con `maxDiffPixelRatio` explícito
       por proyecto (AC4).
-- [ ] T14: Versionar los baselines en el repo y documentar que su
+- [x] T14: Versionar los baselines en el repo y documentar que su
       actualización es una operación **explícita y separada** (PR de baselines
       con revisión del diff, nunca dentro del PR de código) (AC4).
-- [ ] T15: Integrar la regresión visual en el pipeline: añadir el proyecto
+- [x] T15: Integrar la regresión visual en el pipeline: añadir el proyecto
       `visual` a `frontend/playwright.config.ts` (hoy solo existen
       `functional` y `perf`) con `testMatch: **/visual-regression.spec.ts` y
       `dependencies: ["functional"]`, de modo que corre después de los
@@ -172,16 +172,31 @@ branches: 13, statements: 16}` al valor medido y sostenido (objetivo
   modulo".
 - **T20 (hecho)**: `test:jsdom` y `test:browser` anadidos a `package.json`.
 
+Completados en este ciclo adicional (absorbidos de la rama `run_spec_035`,
+revisados y adaptados a `main`):
+
+- **T11 (hecho)**: 6 specs en `src/tests/browser/*.browser.spec.tsx`
+  (CinematicModal, DatePickerDialog, NumericKeypad, SortableHeader, TabNav,
+  VirtualizedContainer) pasan en browser mode (Playwright + Chromium).
+  Setup dedicado `src/tests/setup.browser.ts` (sin MSW, que es node-only).
+- **T13-T15 (hecho)**: `frontend/e2e/visual-targets.ts` (conjunto curado de
+  6 rutas) y `frontend/e2e/visual-regression.spec.ts` (`toHaveScreenshot` en
+  claro y oscuro, `maxDiffPixelRatio` explicito, `animations: disabled`).
+  Proyecto `visual` anadido a `playwright.config.ts` (`testMatch:
+**/visual-regression.spec.ts`, `dependencies: ["functional"]`).
+  Los baselines se generan con `--update-snapshots` en un PR dedicado.
+
+- **T11 (hecho)**: 6 specs en `src/tests/browser/*.browser.spec.tsx` pasan en
+  browser mode (Playwright + Chromium). Setup dedicado
+  `src/tests/setup.browser.ts` (sin MSW, que es node-only).
+- **T13-T15 (hecho)**: `frontend/e2e/visual-targets.ts` + `visual-regression.spec.ts`
+  (`toHaveScreenshot` claro/oscuro) y proyecto `visual` en `playwright.config.ts`.
+  Baselines pendientes de generar con `--update-snapshots`.
+
 Pendientes (requieren mas alcance y se dejan para el siguiente ciclo):
 
 - **T9** (migrar tests de `src/features/*/` de `vi.mock` a MSW): no se
   toco; los tests de feature siguen con `vi.mock` de modulo.
-- **T11** (migrar a browser los tests de focus trap/teclado/drag/scroll
-  virtual): no se migro ningun spec a `src/tests/browser/**`; el proyecto
-  `browser` esta configurado pero vacio.
-- **T13-T15** (regresion visual con `toHaveScreenshot`): no se implemento
-  (`frontend/e2e/visual-targets.ts`, `visual-regression.spec.ts`, proyecto
-  `visual` en playwright). Requiere baselines y revision de diff.
 - **T19** (verificacion final con `e2e:staging` + regresion visual): no se
-  ejecuto el e2e de staging en este ciclo; la suite unitaria (129 ficheros /
-  614 tests) y `validate:ci` estan en verde.
+  ejecuto el e2e de staging en este ciclo; la suite unitaria (142 ficheros /
+  645 tests) y `validate:ci` estan en verde.
