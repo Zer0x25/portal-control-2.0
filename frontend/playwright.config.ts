@@ -30,7 +30,7 @@ export default defineConfig({
     // pasó de ~50ms a ~600ms solo por contención de CPU).
     {
       name: "functional",
-      testIgnore: "**/performance.spec.ts",
+      testIgnore: ["**/performance.spec.ts", "**/visual-regression.spec.ts"],
       use: { ...devices["Desktop Chrome"] },
     },
     {
