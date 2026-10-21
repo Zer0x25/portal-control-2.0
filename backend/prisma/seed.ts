@@ -58,7 +58,7 @@ async function main() {
     create: {
       id: testEmployeeId,
       name: "Juan Perez",
-      rut: "12.345.678-9",
+      rut: "12.345.678-5", // dv 5: mod-11 para el cuerpo 12345678 (la semilla usaba dv 9, invalido)
       position: "Operador",
       area: "Producción",
       workdayType: "Ordinaria",
