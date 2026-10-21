@@ -26,15 +26,16 @@ export const useEmployeesQuery = () => {
 /**
  * Lista reducida para el kiosk: igual criterio que el servicio, pero como
  * query para que el modo sin red sirva desde el cache persistido (AC3).
+ *
+ * `GET /api/employees/kiosk` es la unica ruta publica de empleados (contrato
+ * del backend): el kiosco funciona en dispositivo sin sesion, por lo que esta
+ * query NUNCA se gatea con token.
  */
 export const useKioskEmployeesQuery = () => {
-  const hasToken = !!authService.getToken();
-
   return useQuery<Employee[]>({
     queryKey: ["employees", "kiosk"],
     queryFn: () => employeeService.getKioskEmployees(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
-    enabled: hasToken,
   });
 };

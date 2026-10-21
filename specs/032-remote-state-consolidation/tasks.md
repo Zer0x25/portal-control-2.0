@@ -75,9 +75,25 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## PR 5 — E2E offline de salida
 
-- [ ] T8: Ejecutar e2e offline de kiosk/worker-portal: lectura desde caché
+- [x] T8: Ejecutar e2e offline de kiosk/worker-portal: lectura desde caché
       persistido sin red y cola de escritura intacta (`syncSlice` sin cambios
       funcionales) (AC3).
+      **Hecho (2026-10-20)**: nuevo `frontend/e2e/offline.spec.ts` (3 tests,
+      verde ×2 corridas a 1 y 2 workers) contra build de producción
+      (`vite preview`) + backend real: (1) worker-portal recarga con
+      `context.setOffline(true)` y sirve "Identidad Digital" desde el cache
+      persistido, (2) kiosk sirve la lista de personal offline tras una carga
+      pública online, (3) escritura con `/api/**` abortado degrada con toast
+      "Error de conexión al registrar marcaje." y la sesión sobrevive;
+      reconectada, la app opera con normalidad. La recarga offline la sirve
+      el service worker (PWA autoUpdate con precache + navigateFallback); el
+      spec espera control del SW y una carga de calentamiento online, igual
+      que un dispositivo que ya usó la app. Corrección derivada:
+      `useKioskEmployeesQuery` deja de gatearse por token porque
+      `GET /api/employees/kiosk` es la única ruta pública de empleados
+      (contrato del backend) y el kiosco funciona sin sesión. La cola de
+      escritura de `syncSlice` (`bulkAddRecords`, delta sync) quedó intacta
+      en T4/T5: solo cambiaron los pasos de carga a invalidación.
 - [ ] T9: Suite completa verde: `npm run validate:ci` (frontend),
       `npm run test:run -- src/tests/guardrails`, `npm run e2e:staging`,
       `npm run spec:check`, `npm run docs:check`, `npm run preflight`; promover
