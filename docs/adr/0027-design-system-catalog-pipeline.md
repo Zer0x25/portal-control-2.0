@@ -96,7 +96,8 @@ quien lo escribió**.
 ## Decisión
 
 1. **El catálogo de primitivas se externaliza a Storybook 10** (tooling de
-   desarrollo, no runtime). Una historia por cada una de las **65 entradas**
+   desarrollo, no runtime), con **Ladle 5.1.1 como fallback documentado**.
+   Una historia por cada una de las **65 entradas**
    de `frontend/design-system-certified.json`, **con la taxonomía que el
    fichero real impone**: 37 primitivas en `src/components/ui/`, 21 en
    `src/features/**` (16 modales/tablas de dominio, 4 vistas de feature y
@@ -112,6 +113,15 @@ error` no aplica a `Container`, `Skeleton`, `LiberalitasSignature` ni
    el catálogo — no hay una lista paralela que mantener. **El catálogo dentro
    del app se conserva** (es la vista de negocio para el Administrador) pero
    **delega** la documentación.
+
+   Storybook 10 gana por: **auditoría a11y de primera clase** (el proyecto
+   tiene invariantes duras de WCAG AA, focus traps y regiones scrollables —
+   `.agents/rules/design-system-governance.md` §5; Storybook 10 integra
+   axe-core por historia y `@storybook/addon-vitest`, que conecta con la spec
+   035), **compatibilidad nativa** con Vite 8 y React 19 sin capas de
+   Webpack, y **ausencia de lock-in**: al ser las historias CSF3 puro con
+   imports de tipo, cambiar de runner es **un solo fichero de
+   configuración**, sin tocar ninguna de las 65 historias.
 
 2. **Storybook no toca el bundle de producción.** Las historias usan CSF3 con
    `import type { Meta, StoryObj }` (imports **de tipo**, borrados al
@@ -170,17 +180,34 @@ error` no aplica a `Container`, `Skeleton`, `LiberalitasSignature` ni
    invoca Playwright ni ningún proceso externo: sigue siendo un check
    rápido (0,096 s) que solo lee ficheros.
 
+8. **El orden respecto a la spec 033 es 033 → 038, y solo la Fase D depende
+   de ella.** La spec 033 parte `DesignSystemCatalog.view.tsx` (su **T8**) en
+   hook + container + view, y sus **T14-T19** dejan los modales certificados
+   sin imports de `services/`. Si esta spec tocara el catálogo antes, la 033
+   tendría que volver a partir el mismo fichero (trabajo doble) y las
+   histories de los 16 modales de dominio se escribirían sobre componentes
+   con imports de `services/`, obligando a mockear `authService`,
+   `emailService`, `healthService` e `importService` en el catálogo. Por
+   tanto: **la spec 033 cierra su T8 antes de que esta spec toque
+   `features/design-system/`**, y las Fases A, B y C (retirada de `sap-*`,
+   pipeline de tokens, ratchet de huérfanos) **no dependen de la 033** y
+   pueden ejecutarse en cualquier momento, incluso en paralelo.
+
 ## Alternativas consideradas
 
 1. **Storybook como sustituto del catálogo del app** — descartada: el
    catálogo del app cumple una función de negocio (quién puede ver qué
    primitivas existen) y el usuario final lo necesita. Se **conserva** y se
    le delega la documentación. Eliminarlo quitaría una ruta del producto.
-2. **Ladle en vez de Storybook** — alternativa equivalente y **más ligera**
-   (Vite native, sin webpack). Se deja la decisión al primer PR de la Fase D:
-   la frontera de la spec es "un catálogo headless con historias", y ambos
-   la cumplen. La diferencia real (Storybook tiene ecosistema y addon de
-   a11y maduro) favorece Storybook como opción por defecto.
+2. **Ladle 5.1.1 en vez de Storybook 10** — **fallback documentado**, no la
+   opción por defecto. Ladle es más ligero (Vite native, sin webpack) y
+   cumple la misma frontera ("un catálogo headless con historias"), pero
+   Storybook 10 aporta la auditoría a11y con axe-core por historia y el
+   addon de Vitest (que conecta con la spec 035), y es compatible de forma
+   nativa con Vite 8 y React 19. Como las historias son CSF3 puro con
+   imports de tipo, la decisión **es reversible**: si el primer PR de la
+   Fase D (T15) introduce fricción de tiempos en CI, cambiar a Ladle cuesta
+   un solo fichero de configuración, sin tocar ninguna de las 65 historias.
 3. **Storybook 9** — descartada por obsolescencia: la versión vigente es
    **10.6.3**, y `@storybook/react-vite@10.6.3` admite `vite ^5–^8` y
    `react ^16.8–^19`, compatible con el stack del repo (Vite 8.3.2, React
@@ -250,6 +277,12 @@ Positivas:
   check rápido.
 - **ADR-0020 no se deroga**: Storybook es documentación y playground, no un
   runtime de componentes.
+- **El trabajo sobre `DesignSystemCatalog.view.tsx` se hace una sola vez**:
+  el orden 033 → 038 garantiza que la vista se parte una única vez (en la 033) y que aquí solo se le enchufa el manifiesto tipado.
+- **Las stories de los modales de dominio no necesitan mocks de servicios**:
+  al escribirse después de las tareas 033 T14-T19, los componentes ya no
+  importan `services/`, y la story monta la superficie presentacional tal
+  cual.
 
 Negativas / costos aceptados:
 
@@ -277,6 +310,10 @@ Negativas / costos aceptados:
 - `tokens.json` **no cubre** el resto de `index.css` (breakpoints,
   utilidades custom, media queries): siguen escritos a mano. La generización
   total del CSS es un objetivo mayor que esta spec no asume.
+- **Esta spec espera a la 033 en su Fase D**: el calendario de las historias
+  (la parte más grande del trabajo) queda condicionado al cierre de la
+  spec 033. A cambio, no se toca dos veces el mismo fichero. Las Fases A, B
+  y C no tienen esa espera.
 
 ## Referencias
 
@@ -307,7 +344,9 @@ Negativas / costos aceptados:
 - [spec 038](file:///specs/038-design-system-catalog-pipeline/spec.md) —
   implementación, AC y plan.
 - [spec 033](file:///specs/033-frontend-layering-hardening/spec.md) — la
-  frontera de capas que presupone el catálogo y las historias.
+  frontera de capas que presupone el catálogo y las historias: su **T8** parte
+  `DesignSystemCatalog.view.tsx` y sus **T14-T19** dejan los modales
+  certificados sin imports de `services/`. Es la dependencia de la Fase D.
 - [spec 035](file:///specs/035-frontend-testing-stack/spec.md) — la
   regresión visual que esta spec reutiliza.
 - [ADR-0020](0020-design-system-governance.md) — la gobernanza que esta spec

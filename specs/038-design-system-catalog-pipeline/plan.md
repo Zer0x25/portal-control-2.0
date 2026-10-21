@@ -111,6 +111,21 @@ spec).
      auditar las historias). `@storybook/react-vite@10.6.3` admite
      `vite ^5–^8` y `react ^16.8–^19`: encaja con el stack del repo (Vite
      8.3.2, React 19.3, TypeScript 5.3).
+   - **Por qué Storybook 10 y no Ladle 5.1.1** (decisión cerrada en el
+     ADR-0027):
+     - **Auditoría a11y de primera clase**: el proyecto tiene invariantes
+       duras de WCAG AA, focus traps y regiones scrollables
+       (`.agents/rules/design-system-governance.md` §5). Storybook 10 integra
+       axe-core por historia y `@storybook/addon-vitest`, que conecta
+       directamente con la spec 035 (Vitest Browser Mode).
+     - **Compatibilidad nativa** con Vite 8 y React 19, sin capas de Webpack.
+     - **Sin lock-in**: como AC2 y T20 exigen CSF3 puro con
+       `import type { Meta, StoryObj }` y cero imports de runtime de
+       `@storybook/*`, las 65 historias son objetos planos estándar. Si el
+       primer PR de esta fase (T15) introdujera fricción de tiempos en CI
+       (`.agents/rules/ci-performance.md`), cambiar el runner a Ladle 5.1.1
+       cuesta **un solo fichero de configuración**, sin tocar ninguna de las
+       65 historias.
    - **Una historia por entrada certificada** (65). La lista sale de
      `frontend/design-system-certified.json` — la **misma** fuente de verdad
      que ya consumen el audit script y el guardrail — para que no exista una
@@ -134,7 +149,14 @@ loading/error` no aplica a `Container`, `Skeleton`,
      (`tokens`/`variantes`/`props`), no el runtime de Storybook.
    - El `features/design-system/` del app **se mantiene** y se le **delega**
      la documentación; la migración de capas de
-     `DesignSystemCatalog.view.tsx` la ejecuta la spec 033.
+     `DesignSystemCatalog.view.tsx` la ejecuta la spec 033 (su **T8**).
+     **Orden aprobado 033 → 038**: la spec 033 cierra su T8 antes de que
+     esta fase toque el catálogo, para no partir dos veces el mismo
+     fichero; y las stories de los 16 modales de dominio (T19 de esta spec)
+     se escriben después de las tareas 033 **T14-T19**, que dejan esos
+     componentes sin imports de `services/` (superficies puras, sin mocks
+     de `authService`, `emailService`, `healthService` ni `importService`
+     en el catálogo).
 5. **Fase E — Regresión visual y scorecard (2 PR)**:
    - Snapshots de las primitivas certificadas en claro y oscuro, apoyándose
      en la infraestructura de la spec 035
@@ -202,24 +224,24 @@ loading/error` no aplica a `Container`, `Skeleton`,
 
 ## Riesgos y rollback
 
-| Riesgo                                                                                    | Mitigación                                                                                                                                          | Rollback                                           |
-| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| La migración de `sap-*` cambia el color de superficies (diferencia semántica no evidente) | el mapa de equivalencias se revisa **por área**, con comparación visual en claro/oscuro (ADR-0020 exige contraste AA)                               | revertir el área migrada                           |
-| El contador de `sap-*` rompe `totalIssuesBudget: 0` al entrar en `fileStrictIssues`       | el contador se implementa **separado** de `fileStrictIssues` (`audit-design-system.cjs:252`) mientras `sapTokenBudget > 0`; a 0 pasa a bloqueo duro | revertir el contador (sin tocar el resto)          |
-| `sap-blue-dark` no tiene token de destino (uso sin declaración)                           | se resuelve en el mapa de equivalencias (declarar o mapear) antes de borrar la familia `sap-*`                                                      | mantener el alias temporal                         |
-| El pipeline de tokens genera un CSS distinto del actual y rompe el audit                  | el generador se escribe **extrayendo** las dos regiones actuales, no reescribiéndolas; el primer run debe dar diff vacío                            | revertir el pipeline (el CSS sigue a mano)         |
-| Las variables light-only se pierden al generar                                            | el modelo distingue `:root` de `.dark` y admite variables declaradas solo en claro (`--status-success`, `--status-warning`, `--status-info`)        | volver a la región escrita a mano                  |
-| Tokens Studio / Figma produce un JSON con otra forma y rompe el generador                 | el formato del JSON es un **contrato**, versionado y validado por el generador; la integración de Figma es opcional y posterior                     | adaptar el generador                               |
-| El ratchet de huérfanos mutila una escala protegida y rompe el guardrail de contraste     | las escalas de `statusTokensContrast.test.ts` son **atómicas**: solo se elimina la escala completa, nunca un miembro suelto                         | restaurar el miembro eliminado                     |
-| El escáner da falsos negativos por consumo dinámico (`bg-token-chart-${index}`)           | se reconocen las formas dinámicas y se reportan aparte las clases que Tailwind v4 no puede generar                                                  | enumerar las clases literales en el catálogo       |
-| Storybook se desincroniza de la app (las historias no reflejan el render real)            | las historias importan los **componentes reales** del proyecto (no hay copias); el `vite.config.ts` es el mismo                                     | corregir la historia                               |
-| El runtime de Storybook entra en el bundle de producción                                  | CSF3 con `import type` (borrado al compilar) y manifiesto tipado para el catálogo del app; verificación en el build de producción                   | retirar el import que Filtró el runtime            |
-| 65 historias son mucho trabajo de creación                                                | se migran por bloques (primitivas base → formularios → overlays → layout) y se acepta que el guardrail exija cobertura progressive                  | el budget de cobertura de historias es decreciente |
-| La regresión visual de primitivas genera falsos positivos por antialiasing                | `maxDiffPixelRatio` explícito e imagen base fijada en CI                                                                                            | relajar el umbral con justificación                |
-| El scorecard combinado (estático + visual) es más difícil de leer                         | el reporte mantiene el formato tabular actual y añade **una sección**, no un formato nuevo                                                          | revertir a la sección estática                     |
-| El audit script se vuelve lento o con dependencias al leer la evidencia visual            | el audit sigue siendo **estático** (0,096 s hoy): lee un **resumen JSON** opcional y reporta `skipped` si no existe; nunca invoca Playwright        | volver al scorecard estático puro                  |
-| La spec 033 y esta spec tocan `features/design-system/` a la vez                          | **orden explícito**: la spec 033 migra las capas del catálogo (AC2/AC5 de 033) antes de que esta spec lo modifique; esta spec consume el resultado  | rebase: 033 primero                                |
-| La spec 035 no está lista y bloquea la regresión visual                                   | la Fase E depende de `frontend/e2e/visual-regression.spec.ts`; si no existe, la Fase E se implementa con `toHaveScreenshot` sobre las historias     | Fallback: snapshots solo de Storybook              |
+| Riesgo                                                                                    | Mitigación                                                                                                                                                                          | Rollback                                           |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| La migración de `sap-*` cambia el color de superficies (diferencia semántica no evidente) | el mapa de equivalencias se revisa **por área**, con comparación visual en claro/oscuro (ADR-0020 exige contraste AA)                                                               | revertir el área migrada                           |
+| El contador de `sap-*` rompe `totalIssuesBudget: 0` al entrar en `fileStrictIssues`       | el contador se implementa **separado** de `fileStrictIssues` (`audit-design-system.cjs:252`) mientras `sapTokenBudget > 0`; a 0 pasa a bloqueo duro                                 | revertir el contador (sin tocar el resto)          |
+| `sap-blue-dark` no tiene token de destino (uso sin declaración)                           | se resuelve en el mapa de equivalencias (declarar o mapear) antes de borrar la familia `sap-*`                                                                                      | mantener el alias temporal                         |
+| El pipeline de tokens genera un CSS distinto del actual y rompe el audit                  | el generador se escribe **extrayendo** las dos regiones actuales, no reescribiéndolas; el primer run debe dar diff vacío                                                            | revertir el pipeline (el CSS sigue a mano)         |
+| Las variables light-only se pierden al generar                                            | el modelo distingue `:root` de `.dark` y admite variables declaradas solo en claro (`--status-success`, `--status-warning`, `--status-info`)                                        | volver a la región escrita a mano                  |
+| Tokens Studio / Figma produce un JSON con otra forma y rompe el generador                 | el formato del JSON es un **contrato**, versionado y validado por el generador; la integración de Figma es opcional y posterior                                                     | adaptar el generador                               |
+| El ratchet de huérfanos mutila una escala protegida y rompe el guardrail de contraste     | las escalas de `statusTokensContrast.test.ts` son **atómicas**: solo se elimina la escala completa, nunca un miembro suelto                                                         | restaurar el miembro eliminado                     |
+| El escáner da falsos negativos por consumo dinámico (`bg-token-chart-${index}`)           | se reconocen las formas dinámicas y se reportan aparte las clases que Tailwind v4 no puede generar                                                                                  | enumerar las clases literales en el catálogo       |
+| Storybook se desincroniza de la app (las historias no reflejan el render real)            | las historias importan los **componentes reales** del proyecto (no hay copias); el `vite.config.ts` es el mismo                                                                     | corregir la historia                               |
+| El runtime de Storybook entra en el bundle de producción                                  | CSF3 con `import type` (borrado al compilar) y manifiesto tipado para el catálogo del app; verificación en el build de producción                                                   | retirar el import que Filtró el runtime            |
+| 65 historias son mucho trabajo de creación                                                | se migran por bloques (primitivas base → formularios → overlays → layout) y se acepta que el guardrail exija cobertura progressive                                                  | el budget de cobertura de historias es decreciente |
+| La regresión visual de primitivas genera falsos positivos por antialiasing                | `maxDiffPixelRatio` explícito e imagen base fijada en CI                                                                                                                            | relajar el umbral con justificación                |
+| El scorecard combinado (estático + visual) es más difícil de leer                         | el reporte mantiene el formato tabular actual y añade **una sección**, no un formato nuevo                                                                                          | revertir a la sección estática                     |
+| El audit script se vuelve lento o con dependencias al leer la evidencia visual            | el audit sigue siendo **estático** (0,096 s hoy): lee un **resumen JSON** opcional y reporta `skipped` si no existe; nunca invoca Playwright                                        | volver al scorecard estático puro                  |
+| La spec 033 y esta spec tocan `features/design-system/` a la vez                          | **orden aprobado 033 → 038**: la spec 033 migra las capas del catálogo (su T8) antes de que esta spec lo modifique; las Fases A, B y C no tocan ese feature y pueden ir en paralelo | rebase: 033 primero                                |
+| La spec 035 no está lista y bloquea la regresión visual                                   | la Fase E depende de `frontend/e2e/visual-regression.spec.ts`; si no existe, la Fase E se implementa con `toHaveScreenshot` sobre las historias                                     | Fallback: snapshots solo de Storybook              |
 
 ## Verificación
 

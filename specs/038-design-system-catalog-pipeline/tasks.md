@@ -114,9 +114,12 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase D — Catálogo externo
 
-> **Depende de la spec 033** para los componentes y vistas que se parten en
-> `.container.tsx` + `.view.tsx`. La story se monta sobre la **superficie
-> presentacional**.
+> **Depende de la spec 033** (orden aprobado **033 → 038**): su **T8**
+> parte `DesignSystemCatalog.view.tsx` en hook + container + view, y sus
+> **T14-T19** dejan los modales certificados sin imports de `services/`.
+> Esta fase se escribe **después**: las stories se montan sobre la
+> **superficie presentacional** (sin mocks de `authService`, `emailService`,
+> `healthService` ni `importService` en el catálogo).
 
 - [ ] T15: Añadir `storybook` (versión **10**, no 9) y los addons mínimos
       (`@storybook/addon-a11y`) como devDependencies; crear
@@ -124,7 +127,13 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `vite.config.ts` principal (alias y Tailwind) para que las historias
       rendericen **exactamente** lo que renderiza la app
       (`@storybook/react-vite@10.6.3` admite `vite ^5–^8` y `react ^16.8–^19`,
-      compatible con Vite 8.3.2 y React 19.3) (AC1).
+      compatible con Vite 8.3.2 y React 19.3) (AC1). **Storybook 10 es la
+      opción por defecto** (decisión del ADR-0027: auditoría a11y con axe-core
+      por historia, integración con `@storybook/addon-vitest` y la spec 035, y
+      compatibilidad nativa con Vite 8 / React 19). **Ladle 5.1.1 queda como
+      fallback documentado**: como las stories son CSF3 puro con imports de
+      tipo, cambiar de runner es **un solo fichero de configuración**, sin
+      tocar ninguna de las 65 historias.
 - [ ] T16: Crear `frontend/src/**/*.stories.tsx` para las primitivas base
       (`Button`, `Input`, `Card`, `Container`, `Badge`, `Select`, `Checkbox`,
       `Switch`, `Textarea`, `EmptyState`, `Skeleton`, `LoadingSpinner`…),
@@ -147,11 +156,12 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       tienen props `disabled`/`loading`/`error`) (AC1).
 - [ ] T19: Crear las historias de los **16 modales y tablas de dominio** de
       `src/features/**`, montando la **superficie presentacional**: el
-      `.view.tsx` cuando hay gemelo `.container.tsx` (p. ej.
-      `SmtpConfigModal`, que 033 parte en hook + container + view) y el
-      componente con el contrato del hook de dominio cuando 033 solo extrae
-      los imports de `services/` sin container gemelo (`SeedingProgressModal`,
-      `ImportModal`, `ExportLogsModal`, `ShiftHistoryModal`). Cerrar la lista
+      `.view.tsx` cuando hay gemelo `.container.tsx` (`SmtpConfigModal`, que
+      033 parte en hook + container + view en su **T15**) y el componente con
+      el contrato del hook de dominio cuando 033 solo extrae los imports de
+      `services/` sin container gemelo (`SeedingProgressModal` — 033 **T16**—,
+      `ImportModal` — 033 **T18**—, `ExportLogsModal` — 033 **T19**— y
+      `ShiftHistoryModal` — 033 **T14**—). Cerrar la lista
       de **65** entradas de `frontend/design-system-certified.json` y añadir al
       guardrail `designSystemGuardrails.test.ts` la comprobación de que toda
       entrada certificada tiene historia, **con las excepciones de la
@@ -164,7 +174,8 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       compilar) y **cero imports de runtime** de `@storybook/*` en
       `*.stories.tsx` ni en código de producción — el bundle de producción no
       contiene el runtime de Storybook. La migración de capas de
-      `DesignSystemCatalog.view.tsx` la ejecuta la spec 033; además se
+      `DesignSystemCatalog.view.tsx` la ejecuta la spec 033 (su **T8**), que
+      debe estar **cerrada** antes de esta tarea; además se
       sustituye la interpolación `bg-token-chart-${index}` por clases
       literales, que hoy no generan utilidad en el build (AC2).
 
