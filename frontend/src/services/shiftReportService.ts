@@ -1,15 +1,11 @@
 import { ShiftReport } from "../types/index";
-import { authService } from "./authService";
-import { apiClient, type BinaryResponse } from "./apiClient";
-import { API_BASE_URL } from "./apiBase";
+import { apiClient, request as apiRequest, type BinaryResponse } from "./apiClient";
 
-const API_URL = `${API_BASE_URL}/shift-reports`;
-const REQUEST_TIMEOUT_MS = 15000;
-
-function timeoutSignal(ms = REQUEST_TIMEOUT_MS): AbortSignal {
-  return typeof AbortSignal.timeout === "function"
-    ? AbortSignal.timeout(ms)
-    : new AbortController().signal;
+interface ShiftReportListResponse {
+  data: ShiftReport[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export const shiftReportService = {
@@ -26,81 +22,41 @@ export const shiftReportService = {
     page: number;
     totalPages: number;
   }> {
-    const query = new URLSearchParams();
-    if (params.since) query.append("since", params.since.toString());
-    if (params.page) query.append("page", params.page.toString());
-    if (params.pageSize) query.append("pageSize", params.pageSize.toString());
-    if (params.status) query.append("status", params.status);
-
-    const url = `${API_URL}?${query.toString()}`;
-    const response = await fetch(url, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
+    return apiRequest<ShiftReportListResponse>({
+      method: "GET",
+      url: "/api/shift-reports",
+      params: {
+        since: params.since || undefined,
+        page: params.page || undefined,
+        pageSize: params.pageSize || undefined,
+        status: params.status,
       },
-      signal: timeoutSignal(),
     });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) throw new Error("Error al obtener reportes de turno");
-    return response.json();
   },
 
   async save(report: ShiftReport): Promise<ShiftReport> {
-    const response = await fetch(API_URL, {
+    return apiRequest<ShiftReport>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(report),
-      signal: timeoutSignal(),
+      url: "/api/shift-reports",
+      body: report,
     });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Error al guardar reporte de turno");
-    }
-    return response.json();
   },
 
   async update(id: string, report: Partial<ShiftReport>): Promise<ShiftReport> {
-    const response = await fetch(`${API_URL}/${id}`, {
+    return apiRequest<ShiftReport>({
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(report),
-      signal: timeoutSignal(),
+      url: "/api/shift-reports/{id}",
+      path: { id },
+      body: report,
     });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Error al actualizar reporte de turno");
-    }
-    return response.json();
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/${id}`, {
+    await apiRequest<void>({
       method: "DELETE",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      signal: timeoutSignal(),
+      url: "/api/shift-reports/{id}",
+      path: { id },
     });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Error al eliminar reporte de turno");
-    }
   },
 
   /**

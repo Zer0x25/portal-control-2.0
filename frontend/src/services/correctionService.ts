@@ -1,13 +1,45 @@
 import { CorrectionRequest, CorrectionHistoryEvent } from "../types/index";
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
+import { request as apiRequest } from "./apiClient";
 
-const API_URL = `${API_BASE_URL}/corrections`;
 type ApiCorrectionRequest = CorrectionRequest & {
   createdAt: string | number;
   resolvedAt?: string | number | null;
   updatedAt?: string | number;
 };
+
+/**
+ * El contrato OpenAPI del modulo de correcciones esta **desfasado** respecto a
+ * la implementacion del backend (`GET /api/corrections` devuelve
+ * `{ requests, total }` y `GET /api/corrections/stats` devuelve
+ * `{ pending, approved, rejected }`, no las envolturas `{ data }` del
+ * swagger). El service declara por eso sus propias formas de respuesta en
+ * lugar de usar `paths[P]`: la migracion no puede cambiar el contrato
+ * publico (spec 034, T9).
+ */
+interface CorrectionListResponse {
+  requests: ApiCorrectionRequest[];
+  total: number;
+}
+
+interface CorrectionStatsResponse {
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
+interface CorrectionHistoryResponse {
+  data?: CorrectionHistoryEvent[];
+}
+
+/** Normaliza la fila del backend al modelo que consume el frontend. */
+const toCorrectionRequest = (item: ApiCorrectionRequest): CorrectionRequest => ({
+  ...item,
+  createdAt: new Date(item.createdAt).getTime(),
+  resolvedAt: item.resolvedAt ? new Date(item.resolvedAt).getTime() : undefined,
+  lastModified: item.updatedAt ? new Date(item.updatedAt).getTime() : Date.now(),
+  syncStatus: "synced" as const,
+  isDeleted: false,
+});
 
 export const correctionService = {
   async getAll(options?: {
@@ -16,56 +48,32 @@ export const correctionService = {
     offset?: number;
     status?: string;
   }): Promise<{ requests: CorrectionRequest[]; total: number }> {
-    let url = API_URL;
-    const params = new URLSearchParams();
-    if (options?.since) params.append("since", options.since.toString());
-    if (options?.limit) params.append("limit", options.limit.toString());
-    if (options?.offset) params.append("offset", options.offset.toString());
-    if (options?.status) params.append("status", options.status);
-
-    if (params.toString()) url += `?${params.toString()}`;
-
-    const response = await fetch(url, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+    const data = await apiRequest<CorrectionListResponse>({
+      method: "GET",
+      url: "/api/corrections",
+      params: {
+        // `|| undefined` conserva el filtrado del codigo anterior: un 0 no
+        // se enviaia (no es un delta ni un offset valido).
+        since: options?.since || undefined,
+        limit: options?.limit || undefined,
+        offset: options?.offset || undefined,
+        status: options?.status,
+      },
     });
-    if (!response.ok) throw new Error("Error al obtener solicitudes");
-    const data = await response.json();
 
-    const mappedRequests = (data.requests as ApiCorrectionRequest[]).map((item) => ({
-      ...item,
-      createdAt: new Date(item.createdAt).getTime(),
-      resolvedAt: item.resolvedAt ? new Date(item.resolvedAt).getTime() : undefined,
-      lastModified: item.updatedAt ? new Date(item.updatedAt).getTime() : Date.now(),
-      syncStatus: "synced" as const,
-      isDeleted: false,
-    }));
+    const mappedRequests = data.requests.map(toCorrectionRequest);
 
     return { requests: mappedRequests, total: data.total };
   },
 
   async create(request: CorrectionRequest): Promise<CorrectionRequest> {
-    const response = await fetch(API_URL, {
+    const item = await apiRequest<ApiCorrectionRequest>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(request),
+      url: "/api/corrections",
+      body: request,
     });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Error del backend al crear solicitud:", errorData);
-      throw new Error(errorData.message || "Error al crear solicitud");
-    }
-    const item = await response.json();
-    return {
-      ...item,
-      createdAt: new Date(item.createdAt).getTime(),
-      resolvedAt: item.resolvedAt ? new Date(item.resolvedAt).getTime() : undefined,
-      lastModified: item.updatedAt ? new Date(item.updatedAt).getTime() : Date.now(),
-      syncStatus: "synced" as const,
-      isDeleted: false,
-    };
+
+    return toCorrectionRequest(item);
   },
 
   async updateStatus(
@@ -74,43 +82,30 @@ export const correctionService = {
     resolvedBy: string,
     rejectionReason?: string,
   ): Promise<CorrectionRequest> {
-    const response = await fetch(`${API_URL}/${id}/status`, {
+    const item = await apiRequest<ApiCorrectionRequest>({
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ status, resolvedBy, rejectionReason }),
+      url: "/api/corrections/{id}/status",
+      path: { id },
+      body: { status, resolvedBy, rejectionReason },
     });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Error al actualizar estado");
-    }
-    const item = await response.json();
-    return {
-      ...item,
-      createdAt: new Date(item.createdAt).getTime(),
-      resolvedAt: item.resolvedAt ? new Date(item.resolvedAt).getTime() : undefined,
-      lastModified: item.updatedAt ? new Date(item.updatedAt).getTime() : Date.now(),
-      syncStatus: "synced" as const,
-      isDeleted: false,
-    };
+
+    return toCorrectionRequest(item);
   },
 
   async getStats(): Promise<{ pending: number; approved: number; rejected: number }> {
-    const response = await fetch(`${API_URL}/stats`, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+    return apiRequest<CorrectionStatsResponse>({
+      method: "GET",
+      url: "/api/corrections/stats",
     });
-    if (!response.ok) throw new Error("Error al obtener estadísticas");
-    return await response.json();
   },
 
   async getHistory(id: string): Promise<CorrectionHistoryEvent[]> {
-    const response = await fetch(`${API_URL}/${id}/history`, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+    const result = await apiRequest<CorrectionHistoryResponse>({
+      method: "GET",
+      url: "/api/corrections/{id}/history",
+      path: { id },
     });
-    if (!response.ok) throw new Error("Error al obtener historial de la solicitud");
-    const result = await response.json();
-    return (result?.data || []) as CorrectionHistoryEvent[];
+
+    return result?.data || [];
   },
 };

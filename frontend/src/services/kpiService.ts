@@ -6,11 +6,7 @@ import {
   KpiWorkerPayload,
   KpiWorkerResult,
 } from "../types";
-import { authService } from "./authService";
-import { apiClient, type BinaryResponse } from "./apiClient";
-import { API_BASE_URL } from "./apiBase";
-
-const API_URL = API_BASE_URL;
+import { apiClient, request as apiRequest, type BinaryResponse } from "./apiClient";
 
 // Simplified signature delegating to backend
 export const runKpiCalculation = async (payload: KpiWorkerPayload): Promise<KpiWorkerResult> => {
@@ -18,24 +14,15 @@ export const runKpiCalculation = async (payload: KpiWorkerPayload): Promise<KpiW
     const { filters } = payload;
     const employeeIds = filters.employees.map((employee) => employee.id);
 
-    const response = await fetch(`${API_URL}/kpis/summary`, {
+    return await apiRequest<KpiWorkerResult>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({
+      url: "/api/kpis/summary",
+      body: {
         startDate: filters.startDate,
         endDate: filters.endDate,
         employeeIds: employeeIds,
-      }),
+      },
     });
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
   } catch (error) {
     console.error("Error fetching KPI summary from backend:", error);
     throw error;
@@ -44,18 +31,11 @@ export const runKpiCalculation = async (payload: KpiWorkerPayload): Promise<KpiW
 
 export const getDashboardOverview = async (): Promise<DashboardOverviewResponse> => {
   try {
-    const response = await fetch(`${API_URL}/kpis/overview`, {
+    const result = await apiRequest<Partial<DashboardOverviewResponse>>({
       method: "GET",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+      url: "/api/kpis/overview",
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    const result = (await response.json()) as DashboardOverviewResponse;
     return {
       alerts: result.alerts ?? [],
       activeShifts: result.activeShifts ?? 0,
@@ -79,20 +59,12 @@ export const getDetailedReport = async (
   filters: DetailedReportRequest,
 ): Promise<DetailedReportResponse> => {
   try {
-    const response = await fetch(`${API_URL}/kpis/detailed-report`, {
+    const result = await apiRequest<Partial<DetailedReportResponse>>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(filters),
+      url: "/api/kpis/detailed-report",
+      body: filters,
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    const result = (await response.json()) as Partial<DetailedReportResponse>;
     return {
       summary: result.summary ?? [],
       details: result.details ?? {},
@@ -105,18 +77,11 @@ export const getDetailedReport = async (
 
 export const getDailyPlanningSummary = async (): Promise<DailyPlanningSummaryResponse> => {
   try {
-    const response = await fetch(`${API_URL}/kpis/daily-planning`, {
+    const result = await apiRequest<Partial<DailyPlanningSummaryResponse>>({
       method: "GET",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+      url: "/api/kpis/daily-planning",
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    const result = (await response.json()) as Partial<DailyPlanningSummaryResponse>;
     return {
       date: result.date ?? "",
       stats: result.stats ?? {},

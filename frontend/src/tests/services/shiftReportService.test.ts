@@ -8,6 +8,7 @@ vi.mock("../../services/authService", () => ({
 
 import { shiftReportService } from "../../services/shiftReportService";
 import { ShiftReport } from "../../types/index";
+import { jsonResponse } from "../helpers/mockResponse";
 
 describe("shiftReportService HTTP timeouts and abort signals (anti-regression)", () => {
   afterEach(() => {
@@ -33,11 +34,9 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
   };
 
   it("getAll attaches an AbortSignal with timeout to fetch options", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: [], total: 0, page: 1, totalPages: 1 }),
-    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ data: [], total: 0, page: 1, totalPages: 1 }));
     vi.stubGlobal("fetch", fetchMock);
 
     await shiftReportService.getAll({ page: 2, pageSize: 10, status: "COMPLETADO" });
@@ -51,11 +50,7 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
   });
 
   it("save attaches an AbortSignal with timeout to POST request", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => sampleReport,
-    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(sampleReport, 201));
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await shiftReportService.save(sampleReport);
@@ -71,11 +66,7 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
 
   it("update attaches an AbortSignal with timeout to PATCH request", async () => {
     const patchPayload: Partial<ShiftReport> = { status: "closed", endTime: "16:00" };
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ ...sampleReport, ...patchPayload }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ ...sampleReport, ...patchPayload }));
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await shiftReportService.update("rep-123", patchPayload);
@@ -91,11 +82,7 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
   });
 
   it("delete attaches an AbortSignal with timeout to DELETE request", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 204,
-      json: async () => ({}),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
     vi.stubGlobal("fetch", fetchMock);
 
     await shiftReportService.delete("rep-123");
@@ -108,11 +95,7 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
   });
 
   it("dispatches unauthorized window event when response status is 401", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: async () => ({ message: "Unauthorized" }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ message: "Unauthorized" }, 401));
     vi.stubGlobal("fetch", fetchMock);
 
     const eventListener = vi.fn();
@@ -125,11 +108,9 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
   });
 
   it("propagates error message from backend when non-ok response is received in save", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: async () => ({ message: "El turno ya se encuentra cerrado" }),
-    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ message: "El turno ya se encuentra cerrado" }, 400));
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(shiftReportService.save(sampleReport)).rejects.toThrow(

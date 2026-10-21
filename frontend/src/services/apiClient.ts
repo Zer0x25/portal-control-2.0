@@ -414,7 +414,18 @@ async function executeRequest(prepared: PreparedRequest): Promise<ExecutionResul
  * - `errorMode: "throw"` (por defecto): lanza `ApiHttpError` con `status`.
  * - `errorMode: "result"`: devuelve `{ ok, status, data?, error? }` sin lanzar,
  *   para los endpoints donde un 404 es un caso de negocio legítimo.
+ *
+ * El `url` se **verifica contra el contrato OpenAPI** (`keyof paths`) cuando
+ * la ruta existe en el: una ruta mal escrita no compila. Las rutas que el
+ * swagger todavia no documenta (p. ej. `/api/shifts/schedule/employee/{id}`)
+ * pasan por la sobrecarga con `url: string`.
  */
+export async function request<T = unknown>(
+  spec: RequestSpec & { url: Path; errorMode: "result" },
+): Promise<RequestResult<T>>;
+export async function request<T = unknown>(
+  spec: RequestSpec & { url: Path; errorMode?: "throw" },
+): Promise<T>;
 export async function request<T = unknown>(
   spec: RequestSpec & { errorMode: "result" },
 ): Promise<RequestResult<T>>;
@@ -634,17 +645,26 @@ function resolvePath(path: string, params?: Record<string, string | number>): st
   return resolved;
 }
 
+/**
+ * Construye la query string.
+ *
+ * Un valor **array** se repite (`?tag=a&tag=b`): los filtros multidimensionales
+ * de la auditoría usan el mismo parametro con varios valores.
+ */
 function buildQuery(params?: Record<string, unknown>): string {
   if (!params) return "";
-  const entries = Object.entries(params).reduce(
-    (acc, [key, value]) => {
-      if (value !== undefined && value !== null) {
-        acc[key] = String(value);
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item === undefined || item === null) continue;
+        query.append(key, String(item));
       }
-      return acc;
-    },
-    {} as Record<string, string>,
-  );
-  const query = new URLSearchParams(entries).toString();
-  return query ? `?${query}` : "";
+      continue;
+    }
+    query.append(key, String(value));
+  }
+  const serialized = query.toString();
+  return serialized ? `?${serialized}` : "";
 }

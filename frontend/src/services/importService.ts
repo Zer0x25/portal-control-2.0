@@ -1,13 +1,21 @@
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
+import { apiClient } from "./apiClient";
 
-const API_URL = API_BASE_URL;
+/**
+ * Vista previa de una importacion: filas extraidas del archivo y metadatos.
+ *
+ * El endpoint (`POST /api/import/preview`) devuelve `content?: never` en el
+ * contrato OpenAPI, asi que la forma se declara aqui.
+ */
+export interface ImportPreviewResult {
+  rows: Record<string, unknown>[];
+  total?: number;
+}
 
 export const importService = {
   /**
    * Send a file to the backend to get a JSON preview
    */
-  previewImport: async (file: File, schema?: unknown) => {
+  previewImport: async (file: File, schema?: unknown): Promise<ImportPreviewResult> => {
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -18,22 +26,11 @@ export const importService = {
         );
       }
 
-      const response = await fetch(`${API_URL}/import/preview`, {
-        method: "POST",
-        headers: {
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
+      // El cuerpo es `FormData`: el cliente omite el `Content-Type` para que el
+      // navegador fije el `boundary` de `multipart/form-data`.
+      return (await apiClient.post("/api/import/preview", {
         body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response
-          .json()
-          .catch(() => ({ message: "Error al procesar el archivo" }));
-        throw new Error(error.message || "Error al procesar el archivo");
-      }
-
-      return await response.json();
+      })) as ImportPreviewResult;
     } catch (error) {
       console.error("Preview import error:", error);
       throw error;

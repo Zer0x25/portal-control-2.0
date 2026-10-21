@@ -1,8 +1,58 @@
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
+import { request as apiRequest } from "./apiClient";
 import { AuditLog } from "../types/index";
 
-const API_URL = `${API_BASE_URL}/audit-logs`;
+/**
+ * Envoltura variable del listado de auditoria: el backend puede devolver
+ * `{ data: [...] }`, `{ items: [...] }` o el array suelto.
+ */
+interface AuditLogListPayload {
+  items?: AuditLog[];
+  data?: AuditLog[];
+  total?: number;
+  page?: number;
+  totalPages?: number;
+  nextCursor?: string | null;
+}
+
+/** Listado de auditoria con la forma que consume el frontend. */
+export interface AuditLogListResult {
+  data: AuditLog[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+/** Estado de integridad de la auditoria (respuesta de `integrity-status`). */
+export interface AuditIntegrityStatus {
+  status: "ok" | "degraded";
+  lastRunAt: string | null;
+  lastCheckedCount: number;
+  lastBrokenCount: number;
+  bulkModeLastRun: boolean;
+  lastBrokenByReason: {
+    missingHash: number;
+    hashMismatch: number;
+    prevHashMismatch: number;
+  };
+  lastBackfillAt: string | null;
+  lastBackfillProcessed: number;
+  lastBackfillErrors: number;
+  bulkAlert: {
+    lastSignature: string | null;
+    lastAlertAt: string | null;
+    suppressedCount: number;
+  };
+}
+
+/** Respuesta de las operaciones de escritura (el toast usa `message`). */
+interface AuditActionResponse {
+  message?: string;
+  [key: string]: unknown;
+}
+
+interface AuditIntegrityStatusResponse {
+  data?: AuditIntegrityStatus;
+}
 
 export const auditLogService = {
   async getAll(params: {
@@ -12,42 +62,35 @@ export const auditLogService = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     cursor?: string;
-  }) {
-    const query = new URLSearchParams({
-      page: params.page.toString(),
-      pageSize: params.pageSize.toString(),
-    });
-
-    if (params.cursor) query.set("cursor", params.cursor);
-
-    if (params.sortBy) query.set("sortBy", params.sortBy);
-    if (params.sortOrder) query.set("sortOrder", params.sortOrder);
-
-    // Builder for multidimensional/multiple filters
+  }): Promise<AuditLogListResult> {
+    // Los filtros son dinamicos (y pueden repetirse: `category=a&category=b`),
+    // asi que se construyen como query plana y los arrays se repiten.
+    const filters: Record<string, string | string[] | undefined> = {};
     Object.entries(params.filters).forEach(([key, value]) => {
       if (!value) return;
-
-      const mappedKey = key === "actorUsername" ? "actor" : key;
-
-      if (Array.isArray(value)) {
-        value.forEach((val) => query.append(mappedKey, val));
-      } else {
-        query.set(mappedKey, value as string);
-      }
+      filters[key === "actorUsername" ? "actor" : key] = value;
     });
 
-    const response = await fetch(`${API_URL}?${query.toString()}`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
+    const result = await apiRequest<AuditLogListPayload>({
+      method: "GET",
+      url: "/api/audit-logs",
+      params: {
+        page: params.page.toString(),
+        pageSize: params.pageSize.toString(),
+        cursor: params.cursor,
+        sortBy: params.sortBy,
+        sortOrder: params.sortOrder,
+        ...filters,
       },
     });
-    if (!response.ok) throw new Error("Failed to fetch audit logs");
 
-    const result = await response.json();
-    const data = result.data || result;
+    // El backend devuelve `{ items, total, page, totalPages }`; otras
+    // envolturas (array suelto o `{ data: [...] }`) tambien se aceptan.
+    const raw = (result.data ?? result) as AuditLogListPayload | AuditLog[];
+    const payload: AuditLogListPayload = Array.isArray(raw) ? {} : raw;
 
     // Use 'items' from the standardized structure, or fallback to 'data' or the array itself
-    let items = Array.isArray(data) ? data : data.items || data.data || [];
+    let items = Array.isArray(raw) ? raw : payload.items || payload.data || [];
 
     // Ensure 'details' is parsed safely in all items
     if (Array.isArray(items)) {
@@ -70,55 +113,43 @@ export const auditLogService = {
 
     // Return the full metadata object with the processed items
     return {
-      ...(typeof data === "object" ? data : {}),
+      ...(typeof payload === "object" ? payload : {}),
       data: items, // Map back to 'data' for compat with components
+      total: payload.total ?? 0,
+      page: payload.page ?? 0,
+      totalPages: payload.totalPages ?? 0,
     };
   },
 
-  async cleanup(months: number = 6) {
-    const response = await fetch(`${API_URL}/cleanup`, {
+  async cleanup(months: number = 6): Promise<AuditActionResponse> {
+    return apiRequest<AuditActionResponse>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ months }),
+      url: "/api/audit-logs/cleanup",
+      body: { months },
     });
-    if (!response.ok) throw new Error("Failed to cleanup audit logs");
-    return response.json();
   },
 
-  async create(logData: Partial<AuditLog>) {
-    const response = await fetch(API_URL, {
+  async create(logData: Partial<AuditLog>): Promise<AuditActionResponse> {
+    return apiRequest<AuditActionResponse>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(logData),
+      url: "/api/audit-logs",
+      body: logData,
     });
-    if (!response.ok) throw new Error("Failed to create audit log");
-    return response.json();
   },
 
-  async verifyIntegrity() {
-    const response = await fetch(`${API_URL}/verify-integrity`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+  async verifyIntegrity(): Promise<AuditActionResponse> {
+    return apiRequest<AuditActionResponse>({
+      method: "GET",
+      url: "/api/audit-logs/verify-integrity",
     });
-    if (!response.ok) throw new Error("Failed to verify integrity");
-    return response.json();
   },
 
-  async getIntegrityStatus() {
-    const response = await fetch(`${API_URL}/integrity-status`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+  async getIntegrityStatus(): Promise<AuditIntegrityStatus> {
+    const result = await apiRequest<AuditIntegrityStatusResponse>({
+      method: "GET",
+      url: "/api/audit-logs/integrity-status",
     });
-    if (!response.ok) throw new Error("Failed to fetch integrity status");
-    const result = await response.json();
-    return result.data || result;
+
+    return (result?.data || result) as AuditIntegrityStatus;
   },
 };
