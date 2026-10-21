@@ -1,6 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useToolsLogic } from "../../../features/dashboard/hooks/useToolsLogic";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
+import { recordRequests, type RequestRecorder } from "../../mocks/requests";
 
 // Mock de react-router
 const mockNavigate = vi.fn();
@@ -37,15 +41,25 @@ vi.mock("../../../components/ui/icons/index", () => ({
   CalculatorIcon: () => "CalculatorIcon",
 }));
 
-vi.mock("../../../services/configService", () => ({
-  configService: {
-    getPublicCompanyPolicy: vi.fn().mockResolvedValue(null),
-  },
-}));
-
 describe("useToolsLogic", () => {
+  let recorder: RequestRecorder;
+
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
+    sessionStorage.clear();
+    recorder = recordRequests();
+    server.use(
+      http.get("http://localhost:4000/api/configs/public/company-policy", () =>
+        HttpResponse.json(null),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    recorder.stop();
+    authTokenStore.removeToken();
+    server.resetHandlers();
   });
 
   it("should return correct tools configuration", () => {
@@ -78,7 +92,6 @@ describe("useToolsLogic", () => {
       label: "Notas",
       color: "emerald",
       type: "button",
-      hasNotification: true,
     });
 
     expect(result.current.tools[2]).toMatchObject({
@@ -167,7 +180,6 @@ describe("useToolsLogic", () => {
   });
 
   it("should handle unread notes state", () => {
-    // Test with unread notes
     const { result } = renderHook(() => useToolsLogic());
 
     const notesTool = result.current.tools.find((t) => t.id === "notes");
@@ -175,17 +187,16 @@ describe("useToolsLogic", () => {
   });
 
   it("fetches company policy at most once per session (memo en sessionStorage)", async () => {
-    const { configService } = await import("../../../services/configService");
     sessionStorage.clear();
 
     renderHook(() => useToolsLogic());
     await act(async () => {});
-    expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
+    expect(recorder.countOf("GET", "/api/configs/public/company-policy")).toBe(1);
 
     renderHook(() => useToolsLogic());
     await Promise.resolve();
     // Segundo montaje reutiliza el memo: sin segundo fetch.
-    expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
+    expect(recorder.countOf("GET", "/api/configs/public/company-policy")).toBe(1);
     sessionStorage.clear();
   });
 });

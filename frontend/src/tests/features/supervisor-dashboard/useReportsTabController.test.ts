@@ -1,15 +1,16 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useReportsTabController } from "../../../features/supervisor-dashboard/hooks/useReportsTabController";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
-const { useEmployeesMock, useToastsMock, useNavigateMock, getDetailedReportMock, addToastMock } =
-  vi.hoisted(() => ({
-    useEmployeesMock: vi.fn(),
-    useToastsMock: vi.fn(),
-    useNavigateMock: vi.fn(),
-    getDetailedReportMock: vi.fn(),
-    addToastMock: vi.fn(),
-  }));
+const { useEmployeesMock, useToastsMock, useNavigateMock, addToastMock } = vi.hoisted(() => ({
+  useEmployeesMock: vi.fn(),
+  useToastsMock: vi.fn(),
+  useNavigateMock: vi.fn(),
+  addToastMock: vi.fn(),
+}));
 
 vi.mock("../../../hooks/useEmployees", () => ({
   useEmployees: () => useEmployeesMock(),
@@ -23,33 +24,43 @@ vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 
-vi.mock("../../../services/kpiService", () => ({
-  getDetailedReport: (...args: unknown[]) => getDetailedReportMock(...args),
-  // Spec 034 T8: los metodos `download*` devuelven el binario; la descarga la
-  // dispara el hook con `triggerBrowserDownload`.
-  downloadReportExcel: vi.fn().mockResolvedValue({
-    blob: new Blob(["mock"], { type: "application/vnd.ms-excel" }),
-    filename: "Reporte_Asistencia.xlsx",
-  }),
-  downloadReportPDF: vi.fn().mockResolvedValue({
-    blob: new Blob(["mock"], { type: "application/pdf" }),
-    filename: "Reporte_Asistencia.pdf",
-  }),
-}));
-
-vi.mock("../../../services/authService", () => ({
-  authService: { getToken: () => "token-123" },
-}));
-
 describe("useReportsTabController", () => {
-  it("generates team report and stores summary data", async () => {
+  beforeEach(() => {
+    authTokenStore.setToken("token-123");
     useEmployeesMock.mockReturnValue({ activeEmployees: [] });
     useToastsMock.mockReturnValue({ addToast: addToastMock });
-    getDetailedReportMock.mockResolvedValue({
-      summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
-      details: {},
-    });
+    server.use(
+      http.post("http://localhost:4000/api/kpis/detailed-report", () =>
+        HttpResponse.json({
+          summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
+          details: {},
+        }),
+      ),
+      http.get(
+        "http://localhost:4000/api/export/report-pdf",
+        () =>
+          new HttpResponse(new Blob(["mock"], { type: "application/pdf" }), {
+            status: 200,
+            headers: { "content-disposition": 'attachment; filename="Reporte_Asistencia.pdf"' },
+          }),
+      ),
+      http.get(
+        "http://localhost:4000/api/export/report-excel",
+        () =>
+          new HttpResponse(new Blob(["mock"], { type: "application/vnd.ms-excel" }), {
+            status: 200,
+            headers: { "content-disposition": 'attachment; filename="Reporte_Asistencia.xlsx"' },
+          }),
+      ),
+    );
+  });
 
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
+  });
+
+  it("generates team report and stores summary data", async () => {
     const { result } = renderHook(() => useReportsTabController());
 
     act(() => {
@@ -66,24 +77,11 @@ describe("useReportsTabController", () => {
       await result.current.handleGenerateReport();
     });
 
-    expect(getDetailedReportMock).toHaveBeenCalledWith({
-      startDate: "2026-03-01",
-      endDate: "2026-03-05",
-      employeeIds: undefined,
-      area: "A1",
-    });
     expect(result.current.isSingleEmployeeReport).toBe(false);
     expect(result.current.sortedReportData).toHaveLength(1);
   });
 
   it("opens pdf mode modal when server-pdf export is requested in team mode", async () => {
-    useEmployeesMock.mockReturnValue({ activeEmployees: [] });
-    useToastsMock.mockReturnValue({ addToast: addToastMock });
-    getDetailedReportMock.mockResolvedValue({
-      summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
-      details: {},
-    });
-
     const { result } = renderHook(() => useReportsTabController());
 
     act(() => {

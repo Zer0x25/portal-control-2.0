@@ -1,6 +1,10 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useEmployeeManagementData } from "../../../features/employee-management/hooks/useEmployeeManagementData";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
 const {
   addToastMock,
@@ -9,8 +13,6 @@ const {
   createBulkEmployeesMock,
   refreshEmployeesMock,
   exportToCSVMock,
-  exportToPDFMock,
-  downloadEmployeesExcelMock,
   checkOpenRecordMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
@@ -19,11 +21,6 @@ const {
   createBulkEmployeesMock: vi.fn(),
   refreshEmployeesMock: vi.fn(),
   exportToCSVMock: vi.fn(),
-  exportToPDFMock: vi.fn(),
-  downloadEmployeesExcelMock: vi.fn().mockResolvedValue({
-    blob: new Blob(["mock"], { type: "application/vnd.ms-excel" }),
-    filename: "lista_empleados.xlsx",
-  }),
   checkOpenRecordMock: vi.fn(),
 }));
 
@@ -58,14 +55,7 @@ vi.mock("../../../hooks/useEmployees", () => ({
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
-    currentUser: {
-      id: "u1",
-      role: "Administrador",
-      username: "admin",
-      lastModified: 0,
-      syncStatus: "synced",
-      isDeleted: false,
-    },
+    currentUser: { id: "u1", username: "admin", role: "Administrador" },
   }),
 }));
 
@@ -73,39 +63,46 @@ vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => ({ addToast: addToastMock }),
 }));
 
-vi.mock("../../../hooks/queries/useConfigQuery", () => ({
-  useAreaListQuery: () => ({ data: ["Ops"], isLoading: false }),
-  useWorkdayTypeListQuery: () => ({ data: ["Full"], isLoading: false }),
-}));
-
-vi.mock("../../../utils/export/index", () => ({
-  exportToCSV: exportToCSVMock,
-  exportToPDF: exportToPDFMock,
-}));
-
-vi.mock("../../../services/exportService", () => ({
-  exportService: {
-    downloadEmployeesExcel: downloadEmployeesExcelMock,
-  },
+vi.mock("../../../hooks/useIntersectionObserver", () => ({
+  useIntersectionObserver: () => null,
 }));
 
 vi.mock("../../../hooks/useDebounce", () => ({
   useDebounce: (value: string) => value,
 }));
 
-vi.mock("../../../hooks/useIntersectionObserver", () => ({
-  useIntersectionObserver: () => null,
-}));
-
 describe("useEmployeeManagementData", () => {
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
+    server.use(
+      http.get(
+        "http://localhost:4000/api/employees/export",
+        () =>
+          new HttpResponse(new Blob(["mock"], { type: "application/vnd.ms-excel" }), {
+            status: 200,
+            headers: { "content-disposition": 'attachment; filename="lista_empleados.xlsx"' },
+          }),
+      ),
+    );
   });
+
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
+  });
+
+  const createWrapper = () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+  };
 
   it("shows info toast when exporting with no loaded employees", () => {
     vi.spyOn(window, "innerWidth", "get").mockReturnValue(1024);
 
-    const { result } = renderHook(() => useEmployeeManagementData());
+    const { result } = renderHook(() => useEmployeeManagementData(), { wrapper: createWrapper() });
 
     act(() => {
       result.current.handleViewChange("archived");
@@ -123,7 +120,7 @@ describe("useEmployeeManagementData", () => {
     createBulkEmployeesMock.mockResolvedValue(true);
     checkOpenRecordMock.mockResolvedValue(true);
 
-    const { result } = renderHook(() => useEmployeeManagementData());
+    const { result } = renderHook(() => useEmployeeManagementData(), { wrapper: createWrapper() });
 
     const importOk = await result.current.handleImportEmployees([
       {
@@ -163,7 +160,7 @@ describe("useEmployeeManagementData", () => {
   it("sends createUserAccount in employee save payload", async () => {
     addEmployeeMock.mockResolvedValue({ id: "e2", name: "Luis" });
 
-    const { result } = renderHook(() => useEmployeeManagementData());
+    const { result } = renderHook(() => useEmployeeManagementData(), { wrapper: createWrapper() });
 
     act(() => {
       result.current.setEmployeeData({

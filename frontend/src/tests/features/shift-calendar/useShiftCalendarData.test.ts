@@ -1,6 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useShiftCalendarData } from "../../../features/shift-calendar/hooks/useShiftCalendarData";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
 const {
   addToastMock,
@@ -8,18 +11,12 @@ const {
   decrementProcessingMock,
   exportShiftScheduleToICSMock,
   exportCalendarToPDFMock,
-  downloadCalendarPDFMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   incrementProcessingMock: vi.fn(),
   decrementProcessingMock: vi.fn(),
   exportShiftScheduleToICSMock: vi.fn(),
   exportCalendarToPDFMock: vi.fn(),
-  downloadCalendarPDFMock: vi.fn().mockResolvedValue({
-    blob: new Blob(["mock"], { type: "application/pdf" }),
-    filename: "Calendario_Turnos.pdf",
-    action: "download",
-  }),
 }));
 
 let mockCurrentUser: { role: string; employeeId?: string } | null = { role: "Administrador" };
@@ -72,14 +69,9 @@ vi.mock("../../../utils/export/index", () => ({
   exportCalendarToPDF: exportCalendarToPDFMock,
 }));
 
-vi.mock("../../../services/exportService", () => ({
-  exportService: {
-    downloadCalendarPDF: downloadCalendarPDFMock,
-  },
-}));
-
 describe("useShiftCalendarData", () => {
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
     mockCurrentUser = { role: "Administrador" };
     mockCalendarData = {
@@ -88,6 +80,21 @@ describe("useShiftCalendarData", () => {
       isShiftPatternsLoading: false,
       isLoadingCalendar: false,
     };
+    server.use(
+      http.get(
+        "http://localhost:4000/api/export/calendar-pdf",
+        () =>
+          new HttpResponse(new Blob(["mock"], { type: "application/pdf" }), {
+            status: 200,
+            headers: { "content-disposition": 'attachment; filename="Calendario_Turnos.pdf"' },
+          }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
   });
 
   it("filters employees by area/cargo and resets dependent filters", () => {

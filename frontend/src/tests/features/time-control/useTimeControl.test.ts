@@ -1,26 +1,21 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
 
-const {
-  openQuickActionModalMock,
-  closeQuickActionModalMock,
-  getTokenMock,
-  queryArgsMock,
-  filtersMock,
-} = vi.hoisted(() => ({
-  openQuickActionModalMock: vi.fn(),
-  closeQuickActionModalMock: vi.fn(),
-  getTokenMock: vi.fn(),
-  queryArgsMock: vi.fn(),
-  filtersMock: {
-    name: "Ana",
-    area: "Ops",
-    workdayType: "Full",
-    status: "Activo",
-    showAnomalies: false,
-  },
-}));
+const { openQuickActionModalMock, closeQuickActionModalMock, queryArgsMock, filtersMock } =
+  vi.hoisted(() => ({
+    openQuickActionModalMock: vi.fn(),
+    closeQuickActionModalMock: vi.fn(),
+    queryArgsMock: vi.fn(),
+    filtersMock: {
+      name: "Ana",
+      area: "Ops",
+      workdayType: "Full",
+      status: "Activo",
+      showAnomalies: false,
+    },
+  }));
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
@@ -139,18 +134,13 @@ vi.mock("../../../utils/calculations", () => ({
   getEmployeeClockingStatus: vi.fn(() => null),
 }));
 
-vi.mock("../../../services/authService", () => ({
-  authService: {
-    getToken: getTokenMock,
-  },
-}));
-
 vi.mock("../../../services/apiBase", () => ({
   API_BASE_URL: "http://localhost:4000",
 }));
 
 describe("useTimeControl", () => {
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
     filtersMock.name = "Ana";
     filtersMock.area = "Ops";
@@ -187,13 +177,13 @@ describe("useTimeControl", () => {
 
     const { result } = renderHook(() => useTimeControl());
 
-    getTokenMock.mockReturnValueOnce(null);
+    authTokenStore.removeToken();
     act(() => {
       result.current.handleExportStreaming("csv");
     });
     expect(hrefSetter).not.toHaveBeenCalled();
 
-    getTokenMock.mockReturnValueOnce("token-123");
+    authTokenStore.setToken("token-123");
     act(() => {
       result.current.handleExportStreaming("excel");
     });

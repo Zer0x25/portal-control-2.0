@@ -1,6 +1,9 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useKioskData } from "../../../features/kiosk/hooks/useKioskData";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
 const { addToastMock, punchMutateAsyncMock, geolocationMock, loggerErrorMock } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
@@ -56,14 +59,6 @@ vi.mock("../../../utils/logger", () => ({
   },
 }));
 
-vi.mock("../../../services/authService", () => ({
-  authService: { removeToken: vi.fn(), kioskVerifyPin: vi.fn() },
-}));
-
-vi.mock("../../../services/timeRecordService", () => ({
-  timeRecordService: { getAll: vi.fn(async () => ({ data: [] })) },
-}));
-
 vi.mock("../../../utils/indexedDB", () => ({
   STORES: { DAILY_TIME_RECORDS: "dailyTimeRecords" },
   idbGetAllBy: vi.fn(async () => []),
@@ -71,9 +66,23 @@ vi.mock("../../../utils/indexedDB", () => ({
 
 describe("useKioskData (spec 029)", () => {
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
     geolocationMock.mockResolvedValue({ latitude: -33.4, longitude: -70.6 });
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json({ success: true, message: "ok" }),
+      ),
+      http.get("http://localhost:4000/api/records", () =>
+        HttpResponse.json({ data: [], total: 0, page: 1, totalPages: 1 }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
   });
 
   it("auditoria v8.31.2: la entrada por teclado del RUT normaliza los puntos del rut almacenado", async () => {
@@ -87,8 +96,6 @@ describe("useKioskData (spec 029)", () => {
     });
 
     await waitFor(() => {
-      // employeeK1.rut = "12.345.678-5" (con puntos): la comparacion sin
-      // normalizacion de puntos dejaba selectedEmployee en null (F2).
       expect(result.current.selectedEmployee?.id).toBe("k1");
     });
   });

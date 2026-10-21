@@ -1,27 +1,26 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useWorkerPortalData } from "../../../features/worker-portal/hooks/useWorkerPortalData";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
 const {
   addToastMock,
   punchMutateAsyncMock,
   refreshEmployeesMock,
-  downloadReportPDFMock,
   getEmployeeDailyScheduleInfoMock,
   useTimeRecordsMock,
   useUserClockingStatusMock,
   useEmployeesMock,
-  getAllEmployeesMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   punchMutateAsyncMock: vi.fn(),
   refreshEmployeesMock: vi.fn(),
-  downloadReportPDFMock: vi.fn(),
   getEmployeeDailyScheduleInfoMock: vi.fn(),
   useTimeRecordsMock: vi.fn(),
   useUserClockingStatusMock: vi.fn(),
   useEmployeesMock: vi.fn(),
-  getAllEmployeesMock: vi.fn(),
 }));
 
 const employeeE1 = {
@@ -113,14 +112,6 @@ vi.mock("../../../hooks/useScheduling", () => ({
   }),
 }));
 
-vi.mock("../../../services/employeeService", () => ({
-  employeeService: { getAll: (...args: unknown[]) => getAllEmployeesMock(...args) },
-}));
-
-vi.mock("../../../services/kpiService", () => ({
-  downloadReportPDF: (...args: unknown[]) => downloadReportPDFMock(...args),
-}));
-
 vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: () => false,
 }));
@@ -136,6 +127,7 @@ vi.mock("../../../utils/logger", () => ({
 
 describe("useWorkerPortalData (spec 028)", () => {
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
     getEmployeeDailyScheduleInfoMock.mockReturnValue({
       scheduleText: "08:00 - 16:00",
@@ -143,10 +135,31 @@ describe("useWorkerPortalData (spec 028)", () => {
       planningStatus: "Programado",
     });
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
-    downloadReportPDFMock.mockResolvedValue({
-      blob: new Blob(["mock"], { type: "application/pdf" }),
-      filename: "Reporte_Asistencia.pdf",
-    });
+    server.use(
+      http.get("http://localhost:4000/api/employees", () =>
+        HttpResponse.json([
+          {
+            id: "e1",
+            name: "Ana",
+            area: "Ops",
+            position: "Operador",
+            workdayType: "Full",
+            status: "Activo",
+            lastModified: 0,
+            syncStatus: "synced",
+            isDeleted: false,
+          },
+        ]),
+      ),
+      http.get(
+        "http://localhost:4000/api/export/report-pdf",
+        () =>
+          new HttpResponse(new Blob(["mock"], { type: "application/pdf" }), {
+            status: 200,
+            headers: { "content-disposition": 'attachment; filename="report.pdf"' },
+          }),
+      ),
+    );
     useEmployeesMock.mockReturnValue({
       getEmployeeById: (id: string) => (id === "e1" ? employeeE1 : null),
       allEmployees: [employeeE1],
@@ -164,9 +177,12 @@ describe("useWorkerPortalData (spec 028)", () => {
       time: "",
       isLoading: false,
     });
-    getAllEmployeesMock.mockResolvedValue([employeeE1]);
   });
 
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
+  });
   it("AC2: enrichedRecords filtra por empleado y por selectedMonth", async () => {
     const { result } = renderHook(() => useWorkerPortalData());
 
@@ -219,7 +235,7 @@ describe("useWorkerPortalData (spec 028)", () => {
       isLoadingEmployees: false,
       refreshEmployees: refreshEmployeesMock,
     });
-    getAllEmployeesMock.mockResolvedValue([]);
+    server.use(http.get("http://localhost:4000/api/employees", () => HttpResponse.json([])));
 
     const { result } = renderHook(() => useWorkerPortalData());
     await waitFor(() => {
@@ -325,7 +341,11 @@ describe("useWorkerPortalData (spec 028)", () => {
   });
 
   it("AC6b: fallo de export PDF muestra toast de error", async () => {
-    downloadReportPDFMock.mockRejectedValueOnce(new Error("pdf down"));
+    server.use(
+      http.get("http://localhost:4000/api/export/report-pdf", () =>
+        HttpResponse.json({ message: "pdf down" }, { status: 400 }),
+      ),
+    );
     const { result } = renderHook(() => useWorkerPortalData());
     await waitFor(() => {
       expect(result.current.employee?.id).toBe("e1");

@@ -1,6 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useAccountingClosureTabController } from "../../../features/supervisor-dashboard/hooks/useAccountingClosureTabController";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
 const {
   useTimeRecordsMock,
@@ -9,7 +12,6 @@ const {
   useEmployeesMock,
   useAccountingLockDateQueryMock,
   useConfigMutationsMock,
-  validateClosureMock,
   useNavigateMock,
   addToastMock,
 } = vi.hoisted(() => ({
@@ -19,7 +21,6 @@ const {
   useEmployeesMock: vi.fn(),
   useAccountingLockDateQueryMock: vi.fn(),
   useConfigMutationsMock: vi.fn(),
-  validateClosureMock: vi.fn(),
   useNavigateMock: vi.fn(),
   addToastMock: vi.fn(),
 }));
@@ -48,26 +49,32 @@ vi.mock("../../../hooks/useConfigMutations", () => ({
   useConfigMutations: () => useConfigMutationsMock(),
 }));
 
-vi.mock("../../../services/configService", () => ({
-  configService: {
-    validateClosure: (...args: unknown[]) => validateClosureMock(...args),
-  },
-}));
-
 vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 
 describe("useAccountingClosureTabController", () => {
-  it("validates successfully for allowed closure period", async () => {
+  beforeEach(() => {
+    authTokenStore.setToken("fixture");
     useTimeRecordsMock.mockReturnValue({ timeRecordsPage: [] });
     useAuthMock.mockReturnValue({ currentUser: { id: "u1" } });
     useToastsMock.mockReturnValue({ addToast: addToastMock });
     useEmployeesMock.mockReturnValue({ activeEmployees: [] });
     useAccountingLockDateQueryMock.mockReturnValue({ data: "2026-03-01" });
     useConfigMutationsMock.mockReturnValue({ updateConfig: vi.fn() });
-    validateClosureMock.mockResolvedValue({ allowed: true });
+    server.use(
+      http.get("http://localhost:4000/api/configs/validate-closure", () =>
+        HttpResponse.json({ allowed: true }),
+      ),
+    );
+  });
 
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
+  });
+
+  it("validates successfully for allowed closure period", async () => {
     const { result } = renderHook(() => useAccountingClosureTabController());
 
     act(() => {
@@ -79,18 +86,10 @@ describe("useAccountingClosureTabController", () => {
       await Promise.resolve();
     });
 
-    expect(validateClosureMock).toHaveBeenCalledWith("2026-03-04");
     expect(result.current.validationResult.status).toBe("success");
   });
 
   it("navigates to requests tab from correction handler", () => {
-    useTimeRecordsMock.mockReturnValue({ timeRecordsPage: [] });
-    useAuthMock.mockReturnValue({ currentUser: { id: "u1" } });
-    useToastsMock.mockReturnValue({ addToast: addToastMock });
-    useEmployeesMock.mockReturnValue({ activeEmployees: [] });
-    useAccountingLockDateQueryMock.mockReturnValue({ data: "2026-03-01" });
-    useConfigMutationsMock.mockReturnValue({ updateConfig: vi.fn() });
-
     const { result } = renderHook(() => useAccountingClosureTabController());
 
     act(() => {

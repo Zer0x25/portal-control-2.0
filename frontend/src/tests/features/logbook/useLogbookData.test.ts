@@ -1,6 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { authTokenStore } from "../../../services/authToken";
 import { useLogbookData } from "../../../features/logbook/hooks/useLogbookData";
+import { server } from "../../mocks/server";
+import { http, HttpResponse } from "msw";
 
 const { navigateMock, setSearchParamsMock, startNewShiftMock } = vi.hoisted(() => ({
   navigateMock: vi.fn(),
@@ -16,31 +19,6 @@ vi.mock("react-router", async () => {
     useSearchParams: () => [new URLSearchParams("id=r1"), setSearchParamsMock],
   };
 });
-
-vi.mock("../../../hooks/queries/useReportsQuery", () => ({
-  useReportsQuery: () => ({
-    data: [
-      {
-        id: "r1",
-        folio: "101",
-        date: "2026-03-03",
-        shiftName: "Turno Día",
-        responsibleUser: "admin",
-        startTime: "2026-03-03T08:00:00.000Z",
-        status: "open",
-        logEntries: [],
-        supplierEntries: [],
-        reportCreatedAt: "2026-03-03T08:00:00.000Z",
-        updatedAt: "2026-03-03T08:00:00.000Z",
-        lastModified: 0,
-        syncStatus: "synced",
-        isDeleted: false,
-      },
-    ],
-    refetch: vi.fn(),
-    isLoading: false,
-  }),
-}));
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
@@ -95,16 +73,49 @@ vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: () => false,
 }));
 
-vi.mock("../../../services/shiftReportService", () => ({
-  shiftReportService: {
-    getAll: vi.fn(async () => ({ data: [] })),
-    save: vi.fn(async () => undefined),
-  },
+// useReportsQuery se deja mockeado: es un hook de composicion, no un servicio.
+vi.mock("../../../hooks/queries/useReportsQuery", () => ({
+  useReportsQuery: () => ({
+    data: [
+      {
+        id: "r1",
+        folio: "101",
+        date: "2026-03-03",
+        shiftName: "Turno Día",
+        responsibleUser: "admin",
+        startTime: "2026-03-03T08:00:00.000Z",
+        status: "open",
+        logEntries: [],
+        supplierEntries: [],
+        reportCreatedAt: "2026-03-03T08:00:00.000Z",
+        updatedAt: "2026-03-03T08:00:00.000Z",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      },
+    ],
+    refetch: vi.fn(),
+    isLoading: false,
+  }),
 }));
 
 describe("useLogbookData", () => {
   beforeEach(() => {
+    authTokenStore.setToken("fixture");
     vi.clearAllMocks();
+    server.use(
+      http.get("http://localhost:4000/api/shift-reports", () =>
+        HttpResponse.json({ data: [], total: 0, page: 1, totalPages: 1 }),
+      ),
+      http.post("http://localhost:4000/api/shift-reports", () =>
+        HttpResponse.json({ id: "r2" }, { status: 201 }),
+      ),
+    );
+  });
+
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
   });
 
   it("resolves responsible employee display name", () => {
