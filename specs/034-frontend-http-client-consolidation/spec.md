@@ -36,7 +36,7 @@ en paralelo** y **tres bugs P0** derivados de esa duplicación.
 
 2. **Consecuencia crítica: los errores HTTP pierden el status numérico.**
    Los 13 services lanzan `new Error(\`Error ${response.status}: ...\`)`en vez
-de`ApiHttpError` (`services/apiClient.ts:20-32`, que preserva `status`).
+de`ApiHttpError` (`services/apiClient.ts:37-49`, que preserva `status`).
 El guard global `hasHttpStatus`de`src/lib/queryClient.ts:23-31`**nunca
 puede matchear** un status en estos 13 services → **un 403 (permiso) o un
 404 (inexistente) se reintentan 2 veces** contra el backend antes de
@@ -48,7 +48,8 @@ reportarse como error. Un`403` reintentado 2 veces es 2 requests
    convierte en error duro; dos GET concurrentes idénticos se ejecutan dos
    veces.
 
-4. **Dos políticas de 429 compitiendo.** `services/apiClient.ts:18` reintenta
+4. **Dos políticas de 429 compitiendo.** _(resuelto en T3 + T15, Fase A)_
+   `services/apiClient.ts:21,26` reintenta
    429 respetando `Retry-After`; `services/fetchGuards.ts` **monkey-patchea
    `window.fetch` globalmente** (instalado en `src/main.tsx:12`) y dispara un
    `CustomEvent("rate_limited")` que `src/store/useStore.ts:52-66` convierte en
@@ -93,9 +94,10 @@ runKpiCalculation()` manual, **sin TanStack Query**, en paralelo a
    huérfana**: `["calendar"]` (8 sitios) nunca alcanza a
    `["calendarMatrix", ...]`.
 
-9. **Doble bucle de reintentos: hasta 9 requests HTTP por fallo.** El cliente
+9. **Doble bucle de reintentos: hasta 9 requests HTTP por fallo.**
+   _(resuelto en T5, Fase A)_ El cliente
    endurecido reintenta (`MAX_GET_RETRIES = 2` → 3 intentos,
-   `apiClient.ts:14,153-185`) **y** TanStack Query también
+   `apiClient.ts:20-21,310-341`) **y** TanStack Query también
    (`retry: (failureCount) => failureCount < 2` → 3 ejecuciones de `queryFn`,
    `src/lib/queryClient.ts:23-31`). Un GET que devuelve 500/503 dentro de un
    `useQuery` dispara **3 × 3 = 9** peticiones al backend por fallo. Además
@@ -115,17 +117,18 @@ runKpiCalculation()` manual, **sin TanStack Query**, en paralelo a
     | `components/ui/UserManualModal.tsx:64` (`/ManualRelojControl.md`)  |        1 | whitelist legítima                 |
 
 11. **El cliente endurecido no cubre el tráfico que hay que migrar.**
+    _(resuelto en T2, Fase A)_
     `apiClient` hoy no soporta: (a) **respuestas binarias** — `handleResponse`
-    (`apiClient.ts:340-349`) hace `response.text()` cuando el content-type no
+    (`apiClient.ts:360-384`) hace `response.text()` cuando el content-type no
     es JSON, **corrompiendo PDFs y XLSX**, y descarta el header
     `Content-Disposition` que usa `exportService.ts:61,110`; (b) **cuerpos
     `FormData`** — `apiClient.post` fuerza `Content-Type: application/json` y
-    `JSON.stringify(body)` (`apiClient.ts:227-236`), lo que rompe
+    `JSON.stringify(body)` (`apiClient.ts:259-274`), lo que rompe
     `configService.ts:63,87` (`uploadBrandLogo`,
     `uploadCompanyPolicy`) e `importService.ts:12` (`previewImport`); y (c)
     **método `PATCH`**, requerido por `shiftReportService.ts:70` y
     `correctionService.ts:78`. Además `apiClient` dispara globalmente
-    `unauthorized` ante cualquier 401 (`apiClient.ts:306-308,326-328`), lo que
+    `unauthorized` ante cualquier 401 (`apiClient.ts:277-285`), lo que
     **rompe `authService`** si se migra sin supresión de eventos (ver punto 4
     del problema).
 
@@ -266,7 +269,7 @@ Fuera (explícito):
       incorrecto **no** dispara `unauthorized` (porque `authService` usa
       `fetch` crudo), y con el cliente endurecido dispararía
       `window.dispatchEvent(new CustomEvent("unauthorized"))`
-      (`apiClient.ts:326-328`), lo que limpiaría la sesión
+      (`apiClient.ts:277-285`), lo que limpiaría la sesión
       (`src/store/useStore.ts:47-49`, `src/App.tsx:123`) en lugar de tratarse
       como credencial inválida. `/auth/mfa/setup` y `/auth/mfa/verify` **sí**
       conservan el evento `unauthorized` (exigen sesión previa: un 401 ahí sí

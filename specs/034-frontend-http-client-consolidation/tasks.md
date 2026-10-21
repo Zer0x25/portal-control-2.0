@@ -6,13 +6,13 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase A — Fundaciones del cliente
 
-- [ ] T1: Extender `frontend/src/services/apiClient.ts` con un helper
+- [x] T1: Extender `frontend/src/services/apiClient.ts` con un helper
       `request<T>()` tipado contra `src/types/api` (`paths[P]` /
       `components["schemas"]`), con **dos modos de error**: _lanzar_
       `ApiHttpError` (comportamiento actual) y _devolver_ resultado tipado
       con `status` para endpoints donde el 404 es un caso de negocio
       (p. ej. `GET /brand-logo` sin logo configurado) (AC1, AC2).
-- [ ] T2: Ampliar `apiClient` con las **capacidades que la migración exige**
+- [x] T2: Ampliar `apiClient` con las **capacidades que la migración exige**
       y que hoy faltan: (a) `patch()` (lo piden `shiftReportService.ts:70` y
       `correctionService.ts:78`); (b) **cuerpo `FormData`**, omitiendo el
       header `Content-Type` para que el navegador fije el `boundary` de
@@ -22,24 +22,29 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       binaria** que devuelve `{ blob, headers, filename? }` **sin** pasar por
       `response.text()` (que corrompe PDF/XLSX) y preservando el
       `Content-Disposition` que hoy leen `exportService.ts:61,110` (AC1).
-- [ ] T3: Mover a `apiClient` la emisión del evento `rate_limited` (hoy en
+- [x] T3: Mover a `apiClient` la emisión del evento `rate_limited` (hoy en
       `src/services/fetchGuards.ts:27-38`), conservando **nombre, payload
       (`{status, url, retryAfter}`) y lock de 5 s anti-tormenta**; documentar
       la interacción con el retry 429 existente
-      (`apiClient.ts:18,163-172`): el toast se emite en el primer 429 y el
+      (`apiClient.ts:21,26,292-307`): el toast se emite en el primer 429 y el
       retry respeta `Retry-After` sin re-emitir el evento (AC4).
-- [ ] T4: Suprimir los eventos globales en los **endpoints de autenticación
+      **Nota de ejecución**: la eliminación del parche global (T15) se
+      **adelantó a esta misma fase**: emitir el evento desde el cliente
+      mientras `fetchGuards.ts` siguiera instalado habría duplicado el
+      `rate_limited` (dos mecanismos compitiendo por el mismo status, que es
+      justo lo que AC4 prohíbe).
+- [x] T4: Suprimir los eventos globales en los **endpoints de autenticación
       anónima**: `apiClient` gana la opción `skipAuthEvents?: boolean` en
       `RequestOptions` (por defecto `false`) y la aplica **por defecto** a
       `/auth/login`, `/auth/mfa/validate` y `/auth/kiosk-login`, de modo que
       en ellos **no** se emitan ni `rate_limited` ni `unauthorized`
-      (`apiClient.ts:306-308,326-328`). Preserva la exclusión que hoy hace
+      (`apiClient.ts:277-285`). Preserva la exclusión que hoy hace
       `fetchGuards.ts:25` y evita la regresión de que un 401 por contraseña,
       PIN o código MFA incorrecto cierre la sesión
       (`src/store/useStore.ts:47-49`, `src/App.tsx:123`). `/auth/mfa/setup` y
       `/auth/mfa/verify` **conservan** el evento `unauthorized` (exigen
       sesión previa) (AC4).
-- [ ] T5: Fijar el **dueño único del retry** en `apiClient`: `queries.retry`
+- [x] T5: Fijar el **dueño único del retry** en `apiClient`: `queries.retry`
       pasa a `false` en `src/lib/queryClient.ts` (un GET con 500/503 deja de
       generar 9 peticiones y genera 3) y el clasificador de status se
       corrige a `status >= 400 && status < 500 && status !== 408 && status !== 429`,
@@ -50,7 +55,13 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `retry: 1`, `retry: 2`, `retry: 3`) y los `retry: false` redundantes de
       `useReportsQuery.ts:22`, `useHealthQuery.ts:78,86`,
       `useLeavesQuery.ts:17` y `useConfigQuery.ts:92` (AC2).
-- [ ] T6: Añadir en `apiClient.spec.ts` los casos de regresión: 403 y 404
+      **Desvío aplicado (verificado en código)**: de los dos `retry: false`
+      de `useHealthQuery.ts`, solo se elimina el de la **query** (ahora
+      redundante); el de `apiClient.get("/health", { retry: false })`
+      (`useHealthQuery.ts:78`) se **mantiene** porque es **política de
+      transporte** (un sonda de salud que falla se reporta de inmediato, sin
+      2 reintentos con backoff), no un override de la capa de cache.
+- [x] T6: Añadir en `apiClient.spec.ts` los casos de regresión: 403 y 404
       **no** se reintentan; 400, 409 y 422 tampoco; 500 y 503 sí (GET, máx.
       2, con backoff); `Retry-After` respetado; timeout por
       `AbortSignal.timeout` (15 s) y composabilidad con la señal del
@@ -60,9 +71,9 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       respuesta binaria sin corrupción y con `Content-Disposition` legible;
       `FormData` enviado **sin** `Content-Type` manual; `patch()` operativo;
       y **nunca más de 3 peticiones HTTP** por fallo (AC2, AC3, AC4).
-- [ ] T7: Nuevo `frontend/src/lib/queryClient.spec.ts` que fija
+- [x] T7: Nuevo `frontend/src/lib/queryClient.spec.ts` que fija
       `queries.retry === false` y el clasificador de 4xx no transitorio (AC2).
-- [ ] T8: Extraer los **side-effects de DOM** de los services a los hooks de
+- [x] T8: Extraer los **side-effects de DOM** de los services a los hooks de
       feature: `kpiService.ts:154-162,194-202` (`document.createElement` +
       `URL.createObjectURL` + `.click()`), `exportService.ts` y
       `shiftReportService.ts`; un service no crea nodos DOM ni dispara
@@ -72,6 +83,12 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `src/utils/`, que preserva el comportamiento visible (incluida la
       variante `action: "print"` de `downloadCalendarPDF`, que pasa a
       `window.open` con object URL en el hook) (AC1).
+      **Nota de ejecución**: los 6 métodos `download*` migraron además al
+      **modo binario** de `apiClient` en este mismo cambio (y no en el lote de
+      la Fase B): el modo binario es lo que garantiza que el PDF/XLSX no se
+      corrompa, y tocar dos veces el mismo código era peor que migrarlo una
+      vez. El resto de los métodos de `kpiService` y `shiftReportService`
+      sigue con `fetch` crudo hasta su lote de la Fase B.
 
 ## Fase B — Migración de services (5 PR, por riesgo)
 
@@ -114,10 +131,10 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase C — Política de red única
 
-- [ ] T15: Eliminar `src/services/fetchGuards.ts` y la llamada
+- [x] T15: Eliminar `src/services/fetchGuards.ts` y la llamada
       `installFetchGuards()` de `src/main.tsx:12`; el monkey-patch de
       `window.fetch` desaparece por completo del bundle (AC4).
-- [ ] T16: Verificar que el toast de `rate_limited` en
+- [x] T16: Verificar que el toast de `rate_limited` en
       `src/store/useStore.ts:52-66` se sigue mostrando tras la eliminación
       del parche global (test de integración del evento) (AC4).
 

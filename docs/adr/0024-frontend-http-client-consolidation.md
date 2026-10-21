@@ -7,25 +7,26 @@
 ## Contexto
 
 `portal-control` construyó un cliente HTTP endurecido en
-`frontend/src/services/apiClient.ts` (376 líneas) con timeout por
+`frontend/src/services/apiClient.ts` con timeout por
 `AbortSignal.timeout` (15 s), retry **GET-only** con backoff exponencial y
-respeto de `Retry-After` (`apiClient.ts:18,153-185`), dedup de GET en vuelo
-por (método, URL, auth) (`apiClient.ts:34,189-198`), `ApiHttpError` que
-**preserva el status numérico** (`apiClient.ts:20-32`) y tipado contra
-`backend/docs/swagger.json` vía `src/types/api` (`apiClient.ts:101-139`).
+respeto de `Retry-After` (`apiClient.ts:20-21,310-341`), dedup de GET en vuelo
+por (método, URL, auth) (`apiClient.ts:426-442`), `ApiHttpError` que
+**preserva el status numérico** (`apiClient.ts:37-49`) y tipado contra
+`backend/docs/swagger.json` vía `src/types/api` (`apiClient.ts:460-647`).
 
 **Solo 7 de 24 services lo usan.** Los otros 13 mantienen `fetch` crudo, lo
 que produce tres defectos verificables:
 
 1. **Los errores pierden el status.** Los 13 services lanzan
    `new Error(\`Error ${response.status}: ...\`)`en vez de`ApiHttpError`. El
-guard global `hasHttpStatus`de`src/lib/queryClient.ts:23-31` **no puede
+guard global `hasHttpStatus`de`src/lib/queryClient.ts:16-21,48` **no puede
    matchear** un status en ellos → la política de retry global **reintenta un
    403 y un 404**, que son respuestas definitivas.
 2. **No hay timeout, retry ni dedup** en el 54% de los services: un request
    colgado cuelga la UI; un 5xx transitorio es un error duro; dos GET
    concurrentes idénticos se ejecutan dos veces.
-3. **Dos políticas de 429 compitiendo**: `apiClient.ts:18` reintenta el 429
+3. **Dos políticas de 429 compitiendo** _(resuelto en T3 + T15)_:
+   `apiClient.ts:21,26` reintenta el 429
    respetado `Retry-After`, mientras `src/services/fetchGuards.ts`
    **monkey-patchea `window.fetch` globalmente** (instalado en
    `src/main.tsx:12`) y dispara un `CustomEvent("rate_limited")` que
@@ -56,10 +57,11 @@ A esto se suman tres bugs abiertos que la misma fragmentación permite:
    (`src/lib/queryCache.ts:33-60`): escapan de ambas allowlists.
 7. **Doble bucle de reintentos**: `apiClient` reintenta 2 veces
    (`MAX_GET_RETRIES = 2`) **y** TanStack Query reintenta 2 veces
-   (`src/lib/queryClient.ts:23-31`) → un GET con 500/503 dentro de un `useQuery`
+   (`src/lib/queryClient.ts:16-21,48`) → un GET con 500/503 dentro de un `useQuery`
    genera **9** peticiones HTTP. `hasHttpStatus` solo clasifica 401/403/404,
    así que un 400/409/422 se reintenta.
-8. **El cliente no cubre el tráfico a migrar**: no soporta respuestas
+8. **El cliente no cubre el tráfico a migrar** _(resuelto en T2)_: no
+   soporta respuestas
    binarias (`handleResponse` hace `response.text()` y corrompe PDF/XLSX),
    ni cuerpos `FormData` (`post` fuerza `application/json`), ni el método
    `PATCH`. Además dispara `unauthorized` ante cualquier 401, lo que rompe
@@ -171,7 +173,7 @@ Negativas / costos aceptados:
   un flag booleano.
 - El dedup de GET puede **suprimir** dos peticiones idénticas concurrentes
   que la app creía distintas. La clave incluye método + URL + auth, que es
-  lo que hoy ya usa `apiClient.ts:189-198`; los params van en la query
+  lo que hoy ya usa `apiClient.ts:426-442`; los params van en la query
   string, así que no hay colisión real.
 - El timeout de 15 s puede **cortar** una exportación legítima lenta; esos
   endpoints pasan a usar un timeout explícito mayor.
@@ -183,16 +185,20 @@ Negativas / costos aceptados:
 
 ## Referencias
 
-- `frontend/src/services/apiClient.ts:18,20-32,34,101-139,153-185,189-198,326-328`
+- `frontend/src/services/apiClient.ts:20-21,37-49,259-274,277-285,310-341,426-442,460-647`
   — el cliente endurecido que se convierte en el único.
-- `frontend/src/services/fetchGuards.ts` — el parche global que se elimina.
-- `frontend/src/main.tsx:12` — instalación del parche que se elimina.
+- `frontend/src/services/fetchGuards.ts` — el parche global que se elimina
+  (**eliminado** en T15).
+- `frontend/src/main.tsx:12` — instalación del parche que se elimina
+  (**eliminada** en T15).
 - `frontend/src/store/useStore.ts:52-66` — consumidor del evento `rate_limited`
   (el contrato **no cambia**).
-- `frontend/src/lib/queryClient.ts:6-10,23-31` — el clasificador de status y
+- `frontend/src/lib/queryClient.ts:16-21,48` — el clasificador de status y
   el retry de TanStack Query que dejan de duplicar el de `apiClient`.
-- `frontend/src/features/supervisor-dashboard/config/performance.ts:14,22,30`
-  — los overrides por query (`retry: 1/2/3`) que se eliminan.
+- `frontend/src/features/supervisor-dashboard/config/performance.ts`
+  — los overrides por query (`retry: 1/2/3`) que se eliminan (T5).
+- `frontend/src/utils/triggerBrowserDownload.ts` — el helper que recibe el
+  binario y dispara la descarga en el navegador (T8).
 - `frontend/src/hooks/useReportMutations.ts` y
   `frontend/src/hooks/queries/useShiftReportsInfinite.ts:11` — el bug de
   caché stale.
