@@ -8,17 +8,38 @@
 
 ## Dependencias de secuencia
 
-| Fase | Tareas  | Dependencia                                                                                |
-| ---- | ------- | ------------------------------------------------------------------------------------------ |
-| A    | T1-T6   | **Ninguna bloqueante**: ejecutable de inmediato                                            |
-| B    | T7-T10  | **Ninguna bloqueante**: ejecutable de inmediato                                            |
-| C    | T11-T13 | **Ninguna bloqueante**: ejecutable de inmediato                                            |
-| D    | T14-T20 | **Spec 033** para los componentes y vistas que se parten en `.container.tsx` + `.view.tsx` |
-| E    | T21-T23 | **Spec 035** para la infraestructura `frontend/e2e/visual-regression.spec.ts`              |
+| Fase  | Tareas  | Dependencia                                                                                |
+| ----- | ------- | ------------------------------------------------------------------------------------------ |
+| A     | T1-T6   | **Ninguna bloqueante**: ejecutable de inmediato                                            |
+| B     | T7-T11  | **Ninguna bloqueante**: ejecutable de inmediato                                            |
+| C     | T12-T14 | **Ninguna bloqueante**: ejecutable de inmediato                                            |
+| D     | T15-T20 | **Spec 033** para los componentes y vistas que se parten en `.container.tsx` + `.view.tsx` |
+| E     | T21-T23 | **Spec 035** para la infraestructura `frontend/e2e/visual-regression.spec.ts`              |
+| Final | T24-T26 | **Ninguna bloqueante**: verificación, documentación y promoción del ADR                    |
 
 El orden interno dentro de A es A → B → C: retirar `sap-*` y poner los
-tokens bajo ratchet **simplifica** el catálogo; migrar 432 usos antes de
+tokens bajo ratchet **simplifica** el catálogo; migrar 431 usos antes de
 tener el pipeline sería reescribir a ciegas.
+
+**Orden 033 → 038 (aprobado).** La Fase D es la única que consume la spec
+033, y lo hace **después**, no en paralelo:
+
+- **La spec 033 va primero** porque `DesignSystemCatalog.view.tsx` (517
+  líneas, 7 hooks) es hoy la vista que más viola el estándar de capas. Si
+  esta spec lo tocara antes (T20, enchufe del manifiesto), la spec 033
+  (T8) tendría que volver a partir ese mismo fichero → doble trabajo sobre
+  el mismo archivo. Con 033 primero, T20 solo enchufa el manifiesto en un
+  hook/container ya limpios.
+- **Las stories de los modales certificados** (T19) se escriben **después**
+  de 033: se montan sobre superficies ya puras, sin tener que mockear
+  `authService`, `emailService`, `healthService` ni `importService` en el
+  catálogo.
+- **Las Fases A, B y C no chocan con la spec 033** y pueden ejecutarse en
+  cualquier momento (incluso antes o en paralelo): solo tocan `index.css`,
+  `scripts/`, `design-system-budget.json` y los 431 usos de `sap-*`.
+
+Consecuencia operativa: `features/design-system/` es propiedad exclusiva de
+la spec 033 hasta que cierre su T8; esta spec no lo modifica antes.
 
 ## Problema
 
@@ -137,10 +158,14 @@ Fuera (explícito):
 ## Criterios de aceptación
 
 - [ ] AC1: **Catálogo de las 65 entradas certificadas, con la taxonomía
-      correcta**. Las **65 entradas** de
-      `frontend/design-system-certified.json` tienen una historia (story) en el
-      catálogo. La taxonomía es explícita, porque **no todas son primitivas ni
-      componentes React**: - **37** están en `src/components/ui/` (primitivas canónicas); - **21** en `src/features/**` (**16** modales/tablas de dominio, **4**
+      correcta**. El catálogo externo es **Storybook 10** (decisión del
+      [ADR-0027](file:///docs/adr/0027-design-system-catalog-pipeline.md);
+      **Ladle 5.1.1** queda como **fallback** documentado). Las **65 entradas**
+      de `frontend/design-system-certified.json` tienen una historia (story)
+      en el catálogo. La taxonomía es explícita, porque **no todas son
+      primitivas ni componentes React**: - **37** están en
+      `src/components/ui/` (primitivas canónicas); - **21** en
+      `src/features/**` (**16** modales/tablas de dominio, **4**
       vistas completas de feature —`AssignmentManager.view.tsx`,
       `HolidayManager.view.tsx`, `LeaveManager.view.tsx`,
       `PatternManager.view.tsx`— y **1** fichero que **no es componente**:
@@ -158,10 +183,11 @@ Fuera (explícito):
       y oscuro. En los componentes que la
       [spec 033](file:///specs/033-frontend-layering-hardening/spec.md)
       parte, la story se monta sobre la **superficie presentacional** (el
-      `.view.tsx` cuando hay gemelo `.container.tsx`; el componente con el
-      contrato del hook de dominio cuando 033 solo extrae los imports de
-      `services/`, como en `SeedingProgressModal`, `ImportModal`,
-      `ExportLogsModal` y `ShiftHistoryModal`). La lista de 65 es la **misma
+      `.view.tsx` cuando hay gemelo `.container.tsx` —`SmtpConfigModal`, que
+      033 parte en su T15—; el componente con el contrato del hook de
+      dominio cuando 033 solo extrae los imports de `services/` —`T16`
+      `SeedingProgressModal`, `T18` `ImportModal`, `T19` `ExportLogsModal` y
+      `T14` `ShiftHistoryModal`—). La lista de 65 es la **misma
       fuente de verdad** que consumen `frontend/scripts/audit-design-system.cjs`
       y `frontend/src/tests/guardrails/designSystemGuardrails.test.ts` (no hay
       una lista nueva que mantener en paralelo).
