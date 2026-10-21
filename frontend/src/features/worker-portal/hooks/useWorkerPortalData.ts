@@ -23,6 +23,7 @@ import {
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { logger } from "../../../utils/logger";
+import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 
 const getCurrentMonthYYYYMM = (now: Date) => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -264,11 +265,12 @@ export const useWorkerPortalData = () => {
     const endISO = formatDateUTCISO(endDate);
 
     try {
-      await kpiService.downloadReportPDF({
+      const { blob, filename } = await kpiService.downloadReportPDF({
         startDate: startISO,
         endDate: endISO,
         employeeId: employee.id,
       });
+      triggerBrowserDownload(blob, filename);
       addToast("PDF descargado correctamente", "success");
     } catch (error) {
       logger.error("Error al descargar PDF:", error);

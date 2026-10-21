@@ -83,7 +83,6 @@ export const useHealthQuery = (options: { refetchInterval?: number } = {}) => {
     staleTime: 15000,
     gcTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    retry: false,
   });
 };
 

@@ -19,7 +19,6 @@ export const useReportsQuery = (params: { status?: "open" | "closed"; pageSize?:
       return result.data; // Return the data array for backward compatibility where possible
     },
     enabled: canReadReports,
-    retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

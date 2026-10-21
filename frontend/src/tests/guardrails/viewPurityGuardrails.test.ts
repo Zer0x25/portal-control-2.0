@@ -281,11 +281,27 @@ const shimFiles = (dir: string): string[] =>
 /* Sonda negativa: la regla de ESLint tiene que disparar                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Instancia compartida de ESLint.
+ *
+ * Cada `new ESLint()` resuelve la flat config completa (con el parser de
+ * TypeScript): hacerlo por sonda multiplicaba el coste de arranque del
+ * guardrail. La instancia es perezosa y se reutiliza en las 3 sondas.
+ */
+let eslintInstance: ESLint | null = null;
+
+const getEslint = (): ESLint => {
+  eslintInstance ??= new ESLint({ cwd: FRONTEND_ROOT });
+  return eslintInstance;
+};
+
 const lintProbe = async (code: string, filePath: string): Promise<string[]> => {
-  const eslint = new ESLint({ cwd: FRONTEND_ROOT });
-  const [result] = await eslint.lintText(code, { filePath });
+  const [result] = await getEslint().lintText(code, { filePath });
   return result.messages.map((message) => message.ruleId ?? "unknown");
 };
+
+/** Timeout de las sondas: resolver la flat config de ESLint no es instantáneo. */
+const PROBE_TIMEOUT_MS = 60000;
 
 describe("Guardrail de pureza de la vista (spec 033 T3-T5, AC1/AC2/AC3/AC6/AC11)", () => {
   it("ninguna vista llama a un hook (spec 033 AC1)", () => {
@@ -412,30 +428,42 @@ describe("Guardrail de pureza de la vista (spec 033 T3-T5, AC1/AC2/AC3/AC6/AC11)
     ).toBeLessThanOrEqual(CONTAINER_INTRINSIC_JSX_BUDGET);
   });
 
-  it("la regla de ESLint de hooks en vistas dispara (sonda negativa, spec 033 T1)", async () => {
-    const rules = await lintProbe(
-      "export const Probe = () => { const [a] = React.useState(0); return <div>{a}</div>; };",
-      "src/__view_purity_probe__.view.tsx",
-    );
+  it(
+    "la regla de ESLint de hooks en vistas dispara (sonda negativa, spec 033 T1)",
+    async () => {
+      const rules = await lintProbe(
+        "export const Probe = () => { const [a] = React.useState(0); return <div>{a}</div>; };",
+        "src/__view_purity_probe__.view.tsx",
+      );
 
-    expect(rules).toContain("no-restricted-syntax");
-  });
+      expect(rules).toContain("no-restricted-syntax");
+    },
+    PROBE_TIMEOUT_MS,
+  );
 
-  it("la regla de ESLint de JSX en containers dispara (sonda negativa, spec 033 T2)", async () => {
-    const rules = await lintProbe(
-      'export const Probe = () => <div className="x">hola</div>;',
-      "src/__view_purity_probe__.container.tsx",
-    );
+  it(
+    "la regla de ESLint de JSX en containers dispara (sonda negativa, spec 033 T2)",
+    async () => {
+      const rules = await lintProbe(
+        'export const Probe = () => <div className="x">hola</div>;',
+        "src/__view_purity_probe__.container.tsx",
+      );
 
-    expect(rules).toContain("no-restricted-syntax");
-  });
+      expect(rules).toContain("no-restricted-syntax");
+    },
+    PROBE_TIMEOUT_MS,
+  );
 
-  it("una vista sin hooks no es reportada por la regla (sonda positiva, spec 033 T1)", async () => {
-    const rules = await lintProbe(
-      "export const Probe = () => <div>ok</div>;",
-      "src/__view_purity_probe__.view.tsx",
-    );
+  it(
+    "una vista sin hooks no es reportada por la regla (sonda positiva, spec 033 T1)",
+    async () => {
+      const rules = await lintProbe(
+        "export const Probe = () => <div>ok</div>;",
+        "src/__view_purity_probe__.view.tsx",
+      );
 
-    expect(rules).not.toContain("no-restricted-syntax");
-  });
+      expect(rules).not.toContain("no-restricted-syntax");
+    },
+    PROBE_TIMEOUT_MS,
+  );
 });

@@ -15,7 +15,11 @@ const {
   decrementProcessingMock: vi.fn(),
   exportShiftScheduleToICSMock: vi.fn(),
   exportCalendarToPDFMock: vi.fn(),
-  downloadCalendarPDFMock: vi.fn(),
+  downloadCalendarPDFMock: vi.fn().mockResolvedValue({
+    blob: new Blob(["mock"], { type: "application/pdf" }),
+    filename: "Calendario_Turnos.pdf",
+    action: "download",
+  }),
 }));
 
 let mockCurrentUser: { role: string; employeeId?: string } | null = { role: "Administrador" };

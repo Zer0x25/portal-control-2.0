@@ -143,7 +143,10 @@ describe("useWorkerPortalData (spec 028)", () => {
       planningStatus: "Programado",
     });
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
-    downloadReportPDFMock.mockResolvedValue(undefined);
+    downloadReportPDFMock.mockResolvedValue({
+      blob: new Blob(["mock"], { type: "application/pdf" }),
+      filename: "Reporte_Asistencia.pdf",
+    });
     useEmployeesMock.mockReturnValue({
       getEmployeeById: (id: string) => (id === "e1" ? employeeE1 : null),
       allEmployees: [employeeE1],

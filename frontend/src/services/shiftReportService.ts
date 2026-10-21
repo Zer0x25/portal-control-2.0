@@ -1,5 +1,6 @@
 import { ShiftReport } from "../types/index";
 import { authService } from "./authService";
+import { apiClient, type BinaryResponse } from "./apiClient";
 import { API_BASE_URL } from "./apiBase";
 
 const API_URL = `${API_BASE_URL}/shift-reports`;
@@ -102,54 +103,35 @@ export const shiftReportService = {
     }
   },
 
-  async downloadShiftReportPDF(reportId: string): Promise<void> {
-    const response = await fetch(
-      `${API_URL.replace("/shift-reports", "/export/shift-report-pdf")}/${reportId}`,
-      {
-        headers: {
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-      },
-    );
-
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-
-    if (!response.ok) throw new Error("Error al descargar el PDF del turno");
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Reporte_Turno_${reportId}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  },
-
-  async downloadShiftReportExcel(reportId: string): Promise<void> {
-    const response = await fetch(`${API_URL}/export/${reportId}`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+  /**
+   * Descarga la bitacora de un turno en PDF.
+   *
+   * Devuelve el binario: la descarga la dispara el hook de feature con
+   * `triggerBrowserDownload` (spec 034, T8).
+   */
+  async downloadShiftReportPDF(reportId: string): Promise<{ blob: Blob; filename: string }> {
+    const response = await apiClient.get("/api/export/shift-report-pdf/{id}", {
+      path: { id: reportId },
+      responseType: "binary",
     });
 
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
+    const binary = response as unknown as BinaryResponse;
+    return { blob: binary.blob, filename: binary.filename ?? `Reporte_Turno_${reportId}.pdf` };
+  },
 
-    if (!response.ok) throw new Error("Error al descargar el Excel del turno");
+  /**
+   * Descarga la bitacora de un turno en Excel.
+   *
+   * Devuelve el binario: la descarga la dispara el hook de feature con
+   * `triggerBrowserDownload` (spec 034, T8).
+   */
+  async downloadShiftReportExcel(reportId: string): Promise<{ blob: Blob; filename: string }> {
+    const response = await apiClient.get("/api/shift-reports/export/{id}", {
+      path: { id: reportId },
+      responseType: "binary",
+    });
 
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Reporte_Turno_${reportId}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    const binary = response as unknown as BinaryResponse;
+    return { blob: binary.blob, filename: binary.filename ?? `Reporte_Turno_${reportId}.xlsx` };
   },
 };

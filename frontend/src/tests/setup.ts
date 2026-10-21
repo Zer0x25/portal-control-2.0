@@ -21,6 +21,22 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: vi.fn(),
   })),
 });
+// jsdom no implementa la Object URL API: los helpers de descarga
+// (src/utils/triggerBrowserDownload.ts) y las exportaciones CSV/ICS/XML la
+// necesitan. Sin este stub, `URL.createObjectURL` es undefined en jsdom.
+if (typeof URL.createObjectURL !== "function") {
+  Object.defineProperty(URL, "createObjectURL", {
+    writable: true,
+    value: vi.fn(() => "blob:mock-object-url"),
+  });
+}
+if (typeof URL.revokeObjectURL !== "function") {
+  Object.defineProperty(URL, "revokeObjectURL", {
+    writable: true,
+    value: vi.fn(),
+  });
+}
+
 // Mock de indexedDB completo para evitar errores de importación en servicios
 vi.stubGlobal("indexedDB", {
   open: vi.fn().mockReturnValue({

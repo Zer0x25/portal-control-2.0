@@ -7,6 +7,7 @@ import {
   KpiWorkerResult,
 } from "../types";
 import { authService } from "./authService";
+import { apiClient, type BinaryResponse } from "./apiClient";
 import { API_BASE_URL } from "./apiBase";
 
 const API_URL = API_BASE_URL;
@@ -126,80 +127,76 @@ export const getDailyPlanningSummary = async (): Promise<DailyPlanningSummaryRes
   }
 };
 
+/**
+ * Descarga el reporte de asistencia en PDF.
+ *
+ * Devuelve el binario: la descarga la dispara el hook de feature con
+ * `triggerBrowserDownload` (spec 034, T8). El service no crea nodos DOM.
+ */
 export const downloadReportPDF = async (filters: {
   startDate: string;
   endDate: string;
   employeeId?: string;
   area?: string;
   mode?: "summary" | "compiled_detailed";
-}): Promise<void> => {
+}): Promise<{ blob: Blob; filename: string }> => {
   try {
-    const params = new URLSearchParams({
-      startDate: filters.startDate,
-      endDate: filters.endDate,
-    });
-    if (filters.employeeId) params.append("employeeId", filters.employeeId);
-    if (filters.area) params.append("area", filters.area);
-    if (filters.mode) params.append("mode", filters.mode);
-
-    const response = await fetch(`${API_URL}/export/report-pdf?${params.toString()}`, {
-      method: "GET",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+    const response = await apiClient.get("/api/export/report-pdf", {
+      // `mode` lo acepta el backend (ExportQuerySchema) pero no lo documenta
+      // el swagger: se envia igualmente.
+      params: {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        employeeId: filters.employeeId,
+        area: filters.area,
+        mode: filters.mode,
+      } as never,
+      responseType: "binary",
     });
 
-    if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Reporte_Asistencia_${filters.startDate}_al_${filters.endDate}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    const binary = response as unknown as BinaryResponse;
+    return {
+      blob: binary.blob,
+      filename:
+        binary.filename ?? `Reporte_Asistencia_${filters.startDate}_al_${filters.endDate}.pdf`,
+    };
   } catch (error) {
     console.error("Error downloading PDF:", error);
     throw error;
   }
 };
 
+/**
+ * Descarga el reporte de asistencia en Excel.
+ *
+ * Devuelve el binario: la descarga la dispara el hook de feature con
+ * `triggerBrowserDownload` (spec 034, T8).
+ */
 export const downloadReportExcel = async (filters: {
   startDate: string;
   endDate: string;
   employeeId?: string;
   area?: string;
   mode?: "summary" | "detailed";
-}): Promise<void> => {
+}): Promise<{ blob: Blob; filename: string }> => {
   try {
-    const params = new URLSearchParams({
-      startDate: filters.startDate,
-      endDate: filters.endDate,
-    });
-    if (filters.employeeId) params.append("employeeId", filters.employeeId);
-    if (filters.area) params.append("area", filters.area);
-    if (filters.mode) params.append("mode", filters.mode);
-
-    const response = await fetch(`${API_URL}/export/report-excel?${params.toString()}`, {
-      method: "GET",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+    const response = await apiClient.get("/api/export/report-excel", {
+      params: {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        employeeId: filters.employeeId,
+        area: filters.area,
+        mode: filters.mode,
+      } as never,
+      responseType: "binary",
     });
 
-    if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Reporte_Asistencia_${filters.startDate}_al_${filters.endDate}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    const binary = response as unknown as BinaryResponse;
+    return {
+      blob: binary.blob,
+      filename:
+        binary.filename ?? `Reporte_Asistencia_${filters.startDate}_al_${filters.endDate}.xlsx`,
+    };
   } catch (error) {
     console.error("Error downloading Excel:", error);
     throw error;

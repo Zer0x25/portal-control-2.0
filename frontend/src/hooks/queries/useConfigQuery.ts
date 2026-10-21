@@ -88,8 +88,8 @@ export const useBrandLogoQuery = () => {
     queryKey: ["config", "public", "branding_logo"],
     queryFn: () => configService.getPublicBrandLogo(),
     staleTime: 1000 * 60 * 5,
-    // 404 = estado esperado (sin logo cargado), no falla transitoria: sin reintentos.
-    retry: false,
+    // 404 = estado esperado (sin logo cargado), no falla transitoria: la
+    // politica global no reintenta (spec 034, AC2).
     refetchOnWindowFocus: false,
   });
 };
