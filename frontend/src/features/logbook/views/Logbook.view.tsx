@@ -128,9 +128,9 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
             <div
               className={`relative ${Z.sticky} transition-transform duration-500 group-hover:translate-x-1`}
             >
-              <h1 className="text-3xl font-bold text-token-text-primary tracking-tight">
+              <h2 className="text-3xl font-bold text-token-text-primary tracking-tight">
                 {activeShift.shiftName}
-              </h1>
+              </h2>
               <div className="flex items-center gap-2.5 mt-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-(--sidebar-text-active) animate-pulse" />
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-(--sidebar-text-active)">

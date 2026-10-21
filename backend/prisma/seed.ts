@@ -54,11 +54,13 @@ async function main() {
   const testEmployeeId = "EMP001";
   const employee = await prisma.employee.upsert({
     where: { id: testEmployeeId },
-    update: {},
+    // El fixture es idempotente: re-run repara drift (ej. el rut sembrado
+    // con dv invalido en staging anterior a la auditoria v8.31.2).
+    update: { rut: "12.345.678-5" },
     create: {
       id: testEmployeeId,
       name: "Juan Perez",
-      rut: "12.345.678-9",
+      rut: "12.345.678-5", // dv 5: mod-11 para el cuerpo 12345678 (la semilla usaba dv 9, invalido)
       position: "Operador",
       area: "Producción",
       workdayType: "Ordinaria",

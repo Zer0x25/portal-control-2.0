@@ -45,3 +45,9 @@
 **Vulnerability:** Sanitized HTML (communications board, user manual modal) could carry `target="_blank"` anchors without a `rel` guard, leaving spawned tabs with `window.opener` access to the app (reverse tabnabbing).
 **Learning:** DOMPurify sanitizes attributes but does not inject mitigation attributes by default; modern browsers apply implicit `noopener` to `target="_blank"`, but older engines require the explicit attribute (defense-in-depth).
 **Action:** Centralized wrapper `frontend/src/utils/domPurify.ts` registers an `afterSanitizeAttributes` hook that sets `rel="noopener noreferrer"` on surviving `_blank` anchors; both importers (`UserManualModal`, `Communications.view`) share the singleton, so every sanitize pass is covered. Absorbed from agent draft PR #73 into commit `7e66c45` via PR #80.
+
+## 2026-10-21 - DOMPurify html profile purges target: hook is a backstop
+
+**Vulnerability:** Reverse tabnabbing risk assessment depends on what DOMPurify actually lets through; assuming `target` survives sanitization overstates the attack surface.
+**Learning:** Verified on staging with a seed containing `<a target="_blank">` + `<img onerror>`: the html USE_PROFILES profile strips `target` completely (rendered anchor had target/rel null) and drops `onerror`; modern browsers also apply implicit noopener. The `afterSanitizeAttributes` hook from the wrapper only matters for future configs that allow `target`.
+**Action:** No code change; wrapper stays as defense-in-depth. Evidence captured in audit run 2026-10-21 (communications seeded content).
