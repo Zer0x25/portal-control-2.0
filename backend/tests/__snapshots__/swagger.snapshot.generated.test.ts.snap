@@ -1089,8 +1089,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           "type": {
             "enum": [
-              "Civil",
-              "Religioso",
+              "Nacional",
+              "Regional",
+              "Específico",
             ],
             "type": "string",
           },
