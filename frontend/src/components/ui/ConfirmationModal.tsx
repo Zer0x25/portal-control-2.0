@@ -71,7 +71,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       maxWidth="max-w-lg"
     >
       <div className="text-center sm:text-left">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-token-text-tertiary mb-2">
+        <p className="text-xxs font-black uppercase tracking-[0.3em] text-token-text-tertiary mb-2">
           Acción Requerida
         </p>
         <div className="text-sm font-bold text-token-text-secondary leading-relaxed mb-8">

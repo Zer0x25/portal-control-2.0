@@ -64,6 +64,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       {actions && (
         <div
           className="flex items-center gap-3 w-full md:w-auto overflow-x-auto scrollbar-hide"
+          role="region"
+          aria-label="Acciones de encabezado"
+          // Región scrollable accesible por teclado (WCAG 2.1): patrón
+          // sancionado, no es un elemento interactivo.
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
           tabIndex={0}
         >
           {actions}

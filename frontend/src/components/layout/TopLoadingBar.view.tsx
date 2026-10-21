@@ -1,4 +1,5 @@
 import React from "react";
+import { Z } from "../../constants/zScale";
 
 interface TopLoadingBarViewProps {
   loadingProgress: number;
@@ -16,7 +17,9 @@ const TopLoadingBarView: React.FC<TopLoadingBarViewProps> = ({
   if (!visible || isInitialSync) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-100000 h-[2px] bg-transparent pointer-events-none">
+    <div
+      className={`fixed top-0 left-0 right-0 ${Z.toast} h-[2px] bg-transparent pointer-events-none`}
+    >
       <div
         className="h-full bg-linear-to-r from-transparent via-sap-blue to-indigo-400 shadow-[0_0_15px_rgba(0,143,211,0.8),0_0_5px_rgba(255,255,255,0.5)] transition-[width,opacity] duration-300 ease-out"
         style={{

@@ -4,6 +4,7 @@
  *
  * Scans frontend source files for design system deviations:
  * - Raw palette colors (slate/gray/zinc/neutral/stone) instead of semantic tokens
+ * - Raw palette colors across the full Tailwind palette and all color prefixes
  * - Arbitrary HEX values (e.g. bg-[#...])
  * - Outlier radii (rounded-3xl, rounded-4xl)
  * - Raw <button> HTML elements without primitives
@@ -11,11 +12,13 @@
  * Enforces:
  * 1. Zero drift in Certified Files (core primitives & layout)
  * 2. Monotonic Ratchet on Total Drift Issues via design-system-budget.json
+ * 3. Monotonic Ratchet on raw palette usage (global + certified subset),
+ *    initialized to the real measured count (spec 031 T7 / AC3)
  *
  * Usage:
  *   node scripts/audit-design-system.cjs            # check & report
  *   node scripts/audit-design-system.cjs --detail   # show line-by-line issues
- *   node scripts/audit-design-system.cjs --update   # update budget to current count
+ *   node scripts/audit-design-system.cjs --update   # lower budget to current count
  */
 const fs = require("node:fs");
 const path = require("node:path");
@@ -23,85 +26,94 @@ const path = require("node:path");
 const ROOT = path.resolve(__dirname, "..");
 const SRC_DIR = path.join(ROOT, "src");
 const BUDGET_FILE = path.join(ROOT, "design-system-budget.json");
+const CERTIFIED_FILE = path.join(ROOT, "design-system-certified.json");
 
-const CERTIFIED_FILES = [
-  "src/components/ui/Button.tsx",
-  "src/components/ui/Input.tsx",
-  "src/components/ui/Card.tsx",
-  "src/components/ui/Container.tsx",
-  "src/components/ui/Badge.tsx",
-  "src/components/ui/Select.tsx",
-  "src/components/ui/Checkbox.tsx",
-  "src/components/ui/Switch.tsx",
-  "src/components/ui/Textarea.tsx",
-  "src/components/ui/EmptyState.tsx",
-  "src/components/ui/Skeleton.tsx",
-  "src/components/ui/LoadingSpinner.tsx",
-  "src/components/ui/PaginationControls.tsx",
-  "src/components/ui/PageHeader.tsx",
-  "src/components/ui/KpiCard.tsx",
-  "src/components/ui/MetricCard.tsx",
-  "src/components/ui/CinematicModal.tsx",
-  "src/components/ui/ConfirmationModal.tsx",
-  "src/components/ui/SortableHeader.tsx",
-  "src/components/ui/ReportTable.tsx",
-  "src/components/ui/DesignSystemShowcaseModal.tsx",
-  "src/components/ui/CardHeader.tsx",
-  "src/components/ui/LoadingOverlay.tsx",
-  "src/components/ui/NumericKeypad.tsx",
-  "src/components/ui/PasswordChangeForm.tsx",
-  "src/components/ui/ToastItem.tsx",
-  "src/components/ui/Tooltip.tsx",
-  "src/components/ui/LiveStatus.tsx",
-  "src/components/ui/ServerClock.tsx",
-  "src/components/ui/SyncStatus.tsx",
-  "src/components/ui/CollapsibleSection.tsx",
-  "src/components/ui/ExportLogsModal.tsx",
-  "src/components/ui/ClosedReportsModal.tsx",
-  "src/components/ui/AnomalyResolutionModal.tsx",
-  "src/components/ui/SmtpConfigModal.tsx",
-  "src/components/ui/RecordHistoryModal.tsx",
-  "src/components/ui/ImportModal.tsx",
-  "src/components/ui/AddSupplierModal.tsx",
-  "src/components/ui/ShiftHandoverModal.tsx",
-  "src/components/ui/AddNoveltyModal.tsx",
-  "src/components/ui/DatePickerDialog.tsx",
-  "src/components/ui/GlassDatePicker.tsx",
-  "src/components/ui/TimePickerDialog.tsx",
-  "src/components/ui/SeedingProgressModal.tsx",
-  "src/components/ui/AboutModal.view.tsx",
-  "src/components/ui/ShiftHistoryModal.tsx",
-  "src/components/ui/SeedingOptionsModal.tsx",
-  "src/components/ui/UserManualModal.tsx",
-  "src/components/ui/ShiftCalendarDayCell.tsx",
-  "src/components/ui/TabNav.tsx",
-  "src/components/ui/ShiftPatternLegend.tsx",
-  "src/components/ui/PremiumSearchInput.tsx",
-  "src/components/ui/RoleBadge.tsx",
-  "src/components/ui/IconBox.tsx",
-  "src/components/ui/WeatherDisplay.tsx",
-  "src/components/ui/SyncErrorsModal.tsx",
-  "src/components/ui/SessionExpiredOverlay.tsx",
-  "src/components/layout/Header.view.tsx",
-  "src/components/layout/Sidebar.view.tsx",
-  "src/components/layout/SidebarNavItem.tsx",
-  "src/components/layout/PersistentLayout.view.tsx",
-  "src/components/layout/NotificationCenter.view.tsx",
-  "src/components/ErrorBoundary.tsx",
-  "src/components/LiberalitasSignature.tsx",
-  "src/features/theoretical-shifts/components/listTokens.ts",
-  "src/features/theoretical-shifts/components/HolidayForm.tsx",
-  "src/features/theoretical-shifts/components/PatternForm.tsx",
-  "src/features/theoretical-shifts/views/AssignmentManager.view.tsx",
-  "src/features/theoretical-shifts/views/HolidayManager.view.tsx",
-  "src/features/theoretical-shifts/views/LeaveManager.view.tsx",
-  "src/features/theoretical-shifts/views/PatternManager.view.tsx",
-  "src/features/time-control/components/ClockingPanel.tsx",
-  "src/features/time-control/components/TimeRecordTable.tsx",
-];
+/**
+ * Archivos certificados (fuente unica: design-system-certified.json).
+ * El guardrail de tests (src/tests/guardrails/designSystemGuardrails.test.ts)
+ * lee la misma lista para evitar drift entre script y test.
+ */
+const CERTIFIED_FILES = (() => {
+  if (!fs.existsSync(CERTIFIED_FILE)) {
+    throw new Error(
+      `Falta ${CERTIFIED_FILE}: la lista de archivos certificados es la fuente unica del audit.`,
+    );
+  }
+  const parsed = JSON.parse(fs.readFileSync(CERTIFIED_FILE, "utf8"));
+  if (!Array.isArray(parsed.files) || parsed.files.length === 0) {
+    throw new Error(`${CERTIFIED_FILE} debe contener un array "files" no vacio.`);
+  }
+  return parsed.files;
+})();
 
-const RAW_PALETTE_REGEX =
+/**
+ * Scope estricto: el que ya se auditaba (budget 0, cero tolerancia en
+ * archivos certificados). Se mantiene igual para no romper el gate actual.
+ */
+const STRICT_PALETTE_REGEX =
   /\b(?:bg|text|border|ring|divide)-(?:slate|gray|zinc|neutral|stone)-(?:50|100|200|300|400|500|600|700|800|900|950)(?:\/[0-9]+)?\b/g;
+
+/**
+ * Scope extendido (spec 031 T7 / AC3): paleta completa de Tailwind sobre
+ * todos los prefijos de color. Governed by a monotonic ratchet initialized
+ * to the real measured count.
+ */
+const PALETTE_FAMILIES = [
+  "slate",
+  "gray",
+  "zinc",
+  "neutral",
+  "stone",
+  "red",
+  "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
+  "teal",
+  "cyan",
+  "sky",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
+].join("|");
+const PALETTE_PREFIXES = [
+  "bg",
+  "text",
+  "border",
+  "ring",
+  "divide",
+  "from",
+  "via",
+  "to",
+  "fill",
+  "stroke",
+  "decoration",
+  "shadow",
+].join("|");
+const PALETTE_TONES = [
+  "50",
+  "100",
+  "200",
+  "300",
+  "400",
+  "500",
+  "600",
+  "700",
+  "800",
+  "900",
+  "950",
+].join("|");
+const RAW_PALETTE_REGEX = new RegExp(
+  `\\b(?:${PALETTE_PREFIXES})-(?:${PALETTE_FAMILIES})-(?:${PALETTE_TONES})(?:/[0-9]+)?\\b`,
+  "g",
+);
+
 const ARBITRARY_HEX_REGEX = /\b(?:bg|text|border|ring|fill|stroke)-\[#[0-9a-fA-F]{3,8}\]/g;
 const OUTLIER_RADIUS_REGEX = /\brounded-(?:3xl|4xl)\b/g;
 const RAW_BUTTON_REGEX = /<button\b[^>]*className=/g;
@@ -134,12 +146,22 @@ function auditFile(filePath) {
   lines.forEach((line, lineIdx) => {
     const lineNum = lineIdx + 1;
 
-    // 1. Raw palette colors
+    // 1. Raw palette colors (scope extendido: paleta completa + prefijos)
     let match;
     RAW_PALETTE_REGEX.lastIndex = 0;
     while ((match = RAW_PALETTE_REGEX.exec(line)) !== null) {
       issues.push({
         type: "raw-palette",
+        match: match[0],
+        line: lineNum,
+      });
+    }
+
+    // 1b. Scope estricto (slate/gray family): budget en 0, cero tolerancia
+    STRICT_PALETTE_REGEX.lastIndex = 0;
+    while ((match = STRICT_PALETTE_REGEX.exec(line)) !== null) {
+      issues.push({
+        type: "raw-palette-strict",
         match: match[0],
         line: lineNum,
       });
@@ -198,7 +220,9 @@ function runAudit() {
   let totalFiles = 0;
   let cleanFiles = 0;
   let totalIssues = 0;
+  let paletteIssues = 0;
   let certifiedViolations = 0;
+  let certifiedPaletteIssues = 0;
 
   for (const res of results) {
     totalFiles++;
@@ -215,13 +239,24 @@ function runAudit() {
     }
 
     if (!moduleGroups[moduleKey]) {
-      moduleGroups[moduleKey] = { files: 0, clean: 0, issues: 0, details: [] };
+      moduleGroups[moduleKey] = {
+        files: 0,
+        clean: 0,
+        issues: 0,
+        palette: 0,
+        details: [],
+      };
     }
 
     const group = moduleGroups[moduleKey];
+    const fileStrictIssues = res.issues.filter((i) => i.type !== "raw-palette");
+    const filePaletteIssues = res.issues.filter((i) => i.type === "raw-palette");
+
     group.files++;
-    group.issues += res.issues.length;
-    totalIssues += res.issues.length;
+    group.issues += fileStrictIssues.length;
+    group.palette += filePaletteIssues.length;
+    totalIssues += fileStrictIssues.length;
+    paletteIssues += filePaletteIssues.length;
 
     if (res.issues.length === 0) {
       group.clean++;
@@ -229,7 +264,8 @@ function runAudit() {
     } else {
       group.details.push(res);
       if (res.isCertified) {
-        certifiedViolations += res.issues.length;
+        certifiedViolations += fileStrictIssues.length;
+        certifiedPaletteIssues += filePaletteIssues.length;
       }
     }
   }
@@ -239,26 +275,31 @@ function runAudit() {
   console.log("==========================================================================\n");
 
   console.log(
-    `Total Files Scanned: ${totalFiles} | Clean: ${cleanFiles} (${Math.round((cleanFiles / totalFiles) * 100)}%) | Total Drift Issues: ${totalIssues}\n`,
+    `Total Files Scanned: ${totalFiles} | Clean: ${cleanFiles} (${Math.round((cleanFiles / totalFiles) * 100)}%) | Strict Drift Issues: ${totalIssues} | Raw Palette Usages: ${paletteIssues}\n`,
   );
 
   console.log("----------------------------------------------------------------------------------");
   console.log(
-    "Module / Feature                  | Files | Clean | Drift Issues | Compliance Score",
+    "Module / Feature                  | Files | Clean | Strict Drift | Raw Palette | Compliance Score",
   );
   console.log("----------------------------------------------------------------------------------");
 
-  const sortedModules = Object.entries(moduleGroups).sort((a, b) => b[1].issues - a[1].issues);
+  const sortedModules = Object.entries(moduleGroups).sort(
+    (a, b) => b[1].issues + b[1].palette - (a[1].issues + a[1].palette),
+  );
 
   for (const [mod, data] of sortedModules) {
     const score = Math.round((data.clean / data.files) * 100);
     const modCol = mod.padEnd(33, " ");
     const filesCol = String(data.files).padStart(5, " ");
     const cleanCol = String(data.clean).padStart(5, " ");
-    const issuesCol = String(data.issues).padStart(12, " ");
+    const issuesCol = String(data.issues).padStart(11, " ");
+    const paletteCol = String(data.palette).padStart(11, " ");
     const scoreCol = `${score}%`.padStart(15, " ");
     const badge = score === 100 ? " ✅" : score >= 70 ? " ⚠️" : " ❌";
-    console.log(`${modCol} | ${filesCol} | ${cleanCol} | ${issuesCol} | ${scoreCol}${badge}`);
+    console.log(
+      `${modCol} | ${filesCol} | ${cleanCol} | ${issuesCol} | ${paletteCol} | ${scoreCol}${badge}`,
+    );
   }
 
   console.log(
@@ -276,17 +317,58 @@ function runAudit() {
   }
 
   if (update || !budget) {
+    // Ratchet monotono: --update solo puede BAJAR el presupuesto.
+    // Si el conteo actual supera el existente, el drift debe corregirse
+    // (no se absorbe aumentando el budget).
+    const nextStrict = budget ? Math.min(budget.totalIssuesBudget, totalIssues) : totalIssues;
+    const nextPalette = budget
+      ? Math.min(budget.paletteIssuesBudget ?? Number.POSITIVE_INFINITY, paletteIssues)
+      : paletteIssues;
+    const nextCertifiedPalette = budget
+      ? Math.min(
+          budget.certifiedPaletteBudget ?? Number.POSITIVE_INFINITY,
+          certifiedPaletteIssues,
+        )
+      : certifiedPaletteIssues;
+
+    const grew =
+      (budget && totalIssues > budget.totalIssuesBudget) ||
+      (budget && paletteIssues > (budget.paletteIssuesBudget ?? Number.POSITIVE_INFINITY)) ||
+      (budget &&
+        certifiedPaletteIssues >
+          (budget.certifiedPaletteBudget ?? Number.POSITIVE_INFINITY));
+
+    if (grew) {
+      console.error(
+        "\n🚨 BUDGET NO PUEDE AUMENTAR: el drift actual supera el presupuesto vigente.",
+      );
+      console.error(
+        "   Migra los usos a tokens semanticos y vuelve a correr el audit.",
+      );
+      process.exit(1);
+    }
+
     const newBudget = {
-      version: 1,
-      totalIssuesBudget: totalIssues,
+      version: 2,
+      totalIssuesBudget: nextStrict,
+      paletteIssuesBudget: nextPalette,
+      certifiedPaletteBudget: nextCertifiedPalette,
       certifiedFilesCount: CERTIFIED_FILES.length,
       updatedAt: new Date().toISOString(),
     };
     fs.writeFileSync(BUDGET_FILE, JSON.stringify(newBudget, null, 2) + "\n", "utf8");
-    console.log(`[Budget] design-system-budget.json updated to ${totalIssues} drift issues.`);
+    console.log(
+      `[Budget] design-system-budget.json actualizado: strict=${nextStrict}, palette=${nextPalette}, certifiedPalette=${nextCertifiedPalette}.`,
+    );
   } else {
     console.log(
-      `[Budget] Current issues: ${totalIssues} | Budget max allowed: ${budget.totalIssuesBudget}`,
+      `[Budget] Strict issues: ${totalIssues} | Budget max allowed: ${budget.totalIssuesBudget}`,
+    );
+    console.log(
+      `[Budget] Raw palette usages: ${paletteIssues} | Budget max allowed: ${budget.paletteIssuesBudget ?? "n/a"}`,
+    );
+    console.log(
+      `[Budget] Raw palette in certified files: ${certifiedPaletteIssues} | Budget max allowed: ${budget.certifiedPaletteBudget ?? "n/a"}`,
     );
   }
 
@@ -327,6 +409,23 @@ function runAudit() {
   if (budget && totalIssues > budget.totalIssuesBudget) {
     console.error(
       `\n🚨 BUDGET EXCEEDED: Drift issues (${totalIssues}) exceed allowed budget (${budget.totalIssuesBudget})!`,
+    );
+    hasError = true;
+  }
+
+  if (budget && paletteIssues > (budget.paletteIssuesBudget ?? Number.POSITIVE_INFINITY)) {
+    console.error(
+      `\n🚨 BUDGET EXCEEDED: Raw palette usages (${paletteIssues}) exceed allowed budget (${budget.paletteIssuesBudget})!`,
+    );
+    hasError = true;
+  }
+
+  if (
+    budget &&
+    certifiedPaletteIssues > (budget.certifiedPaletteBudget ?? Number.POSITIVE_INFINITY)
+  ) {
+    console.error(
+      `\n🚨 BUDGET EXCEEDED: Raw palette in certified files (${certifiedPaletteIssues}) exceeds allowed budget (${budget.certifiedPaletteBudget})!`,
     );
     hasError = true;
   }

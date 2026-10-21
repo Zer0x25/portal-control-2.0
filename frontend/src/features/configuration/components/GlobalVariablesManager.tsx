@@ -357,7 +357,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Jornada Laboral
                 </h4>
-                <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                   LÍMITES LEGALES Y NORMATIVOS
                 </p>
               </div>
@@ -391,7 +391,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Departamentos
                 </h4>
-                <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                   ESTRUCTURA ORGANIZACIONAL
                 </p>
               </div>
@@ -442,7 +442,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   </ul>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-token-text-tertiary">
+                    <p className="text-xxs font-black uppercase tracking-[0.4em] text-token-text-tertiary">
                       SIN DEPARTAMENTOS REGISTRADOS
                     </p>
                   </div>
@@ -460,7 +460,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Protocolos de Jornada
                 </h4>
-                <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                   CONFIGURACIÓN DE CONTRATOS
                 </p>
               </div>
@@ -511,7 +511,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   </ul>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-token-text-tertiary">
+                    <p className="text-xxs font-black uppercase tracking-[0.4em] text-token-text-tertiary">
                       SIN PROTOCOLOS REGISTRADOS
                     </p>
                   </div>
@@ -529,7 +529,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Central de Alertas Email
                 </h4>
-                <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                   SUSCRIPCIÓN A REPORTES AUTOMÁTICOS
                 </p>
               </div>
@@ -581,7 +581,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   </ul>
                 ) : (
                   <div className="py-12 text-center">
-                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-token-text-tertiary">
+                    <p className="text-xxs font-black uppercase tracking-[0.4em] text-token-text-tertiary">
                       LISTA DE DIFUSIÓN VACÍA
                     </p>
                   </div>
@@ -599,7 +599,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Modularidad
                 </h4>
-                <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                   ACTIVAR/DESACTIVAR FUNCIONES EXTENDIDAS
                 </p>
               </div>
@@ -631,7 +631,7 @@ export const GlobalVariablesManager: React.FC = () => {
 
               {isControlInternoEnabled && (
                 <div className="p-3 bg-amber-500/10 rounded-md border border-amber-500/20 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <p className="text-[9px] font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest text-center">
+                  <p className="text-xxs font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest text-center">
                     FUNCIONES ACTIVAS: LIBRO, MEDIDORES, NOTAS
                   </p>
                 </div>
@@ -647,7 +647,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                     Reglamento Empresarial
                   </h4>
-                  <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                  <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                     PDF DINÁMICO POR CLIENTE
                   </p>
                 </div>
@@ -706,7 +706,7 @@ export const GlobalVariablesManager: React.FC = () => {
                   <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                     Marca / Logo
                   </h4>
-                  <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                  <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                     LOGO POR CLIENTE · LOGIN
                   </p>
                 </div>
@@ -724,7 +724,7 @@ export const GlobalVariablesManager: React.FC = () => {
                         decoding="async"
                       />
                     ) : (
-                      <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest px-2 text-center">
+                      <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest px-2 text-center">
                         Logo por defecto
                       </span>
                     )}

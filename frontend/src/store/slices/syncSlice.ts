@@ -4,6 +4,7 @@ import { AppState } from "../types";
 import { timeRecordService } from "../../services/timeRecordService";
 import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
+import { queryClient } from "../../lib/queryClient";
 
 export interface SyncSlice {
   syncState: SyncState;
@@ -82,24 +83,37 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         );
       }
 
+      // Spec 032 T5: colecciones remotas ya viven en query hooks; el sync
+      // solo invalida sus raices (refresco bajo demanda, sin duplicacion).
       const steps = [
         {
           name: "Usuarios",
-          action: () => get().loadUsers(),
+          action: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
           skip: role === "Usuario",
         },
         {
           name: "Empleados",
-          action: () => get().loadEmployees(),
+          action: () => queryClient.invalidateQueries({ queryKey: ["employees"] }),
         },
+        // Spec 032 T4: config y shift ahora viven en query hooks; el sync
+        // solo invalida sus raices para que react-query refresque bajo demanda.
         {
           name: "Configuraciones",
-          action: () => get().loadConfigData(),
+          action: () => queryClient.invalidateQueries({ queryKey: ["config"] }),
         },
-        { name: "Horarios", action: () => get().loadShiftData() },
+        {
+          name: "Horarios",
+          action: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
+            await queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
+          },
+        },
         {
           name: "Medidores",
-          action: () => get().loadMeterData(),
+          action: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["meterReadings"] });
+            await queryClient.invalidateQueries({ queryKey: ["config", "meter_configs"] });
+          },
           skip: role === "Usuario",
         },
         {

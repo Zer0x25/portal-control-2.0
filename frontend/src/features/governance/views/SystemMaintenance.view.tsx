@@ -17,8 +17,9 @@ import {
   ShieldIcon,
   ActivityIcon,
 } from "../../../components/ui/icons/index";
-import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
+import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
 import BackupListModal from "../components/BackupListModal";
+import { Z } from "../../../constants/zScale";
 
 interface MaintenanceStats {
   usersCount: number;
@@ -104,33 +105,33 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
       className="space-y-8 animate-in fade-in duration-500"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Usuarios" icon={<UsersIcon />}>
-          <KpiStat label="Total Activos" value={stats?.usersCount || 0} />
-          <KpiStat
+        <MetricCard kind="panel" title="Usuarios" icon={<UsersIcon />}>
+          <MetricStat label="Total Activos" value={stats?.usersCount || 0} />
+          <MetricStat
             label="MFA Habilitado"
             value={stats?.mfaStats?.enabled || 0}
             isActive={!!stats?.mfaStats?.enabled}
           />
-        </KpiCard>
+        </MetricCard>
 
-        <KpiCard title="Empleados" icon={<UserIcon />}>
-          <KpiStat label="Nómina Total" value={stats?.employeesCount || 0} />
-          <KpiStat label="En Turno" value={stats?.activeEmployeesCount || 0} />
-        </KpiCard>
+        <MetricCard kind="panel" title="Empleados" icon={<UserIcon />}>
+          <MetricStat label="Nómina Total" value={stats?.employeesCount || 0} />
+          <MetricStat label="En Turno" value={stats?.activeEmployeesCount || 0} />
+        </MetricCard>
 
-        <KpiCard title="Registros" icon={<ClockIcon />}>
-          <KpiStat label="Total Asistencia" value={stats?.recordsCount?.toLocaleString() || 0} />
-          <KpiStat label="Hoy" value={stats?.todayRecordsCount || 0} />
-        </KpiCard>
+        <MetricCard kind="panel" title="Registros" icon={<ClockIcon />}>
+          <MetricStat label="Total Asistencia" value={stats?.recordsCount?.toLocaleString() || 0} />
+          <MetricStat label="Hoy" value={stats?.todayRecordsCount || 0} />
+        </MetricCard>
 
-        <KpiCard title="Auditoría" icon={<ShieldCheckIcon />}>
-          <KpiStat label="Eventos Log" value={stats?.auditLogsCount?.toLocaleString() || 0} />
-          <KpiStat
+        <MetricCard kind="panel" title="Auditoría" icon={<ShieldCheckIcon />}>
+          <MetricStat label="Eventos Log" value={stats?.auditLogsCount?.toLocaleString() || 0} />
+          <MetricStat
             label="Críticos (24h)"
             value={stats?.criticalLogsCount || 0}
             isActive={!!stats?.criticalLogsCount && stats.criticalLogsCount > 0}
           />
-        </KpiCard>
+        </MetricCard>
       </div>
 
       <HealthDashboard />
@@ -215,7 +216,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   autoComplete="off"
                   className="space-y-3 p-4 bg-token-surface-stripe border border-token-border-subtle rounded-sm"
                 >
-                  <label className="block text-[9px] uppercase tracking-widest text-token-text-tertiary font-bold">
+                  <label className="block text-xxs uppercase tracking-widest text-token-text-tertiary font-bold">
                     Reset Password Manual
                   </label>
                   <input
@@ -242,7 +243,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     type="submit"
                     variant="secondary"
                     loading={isResettingPassword}
-                    className="w-full h-9 rounded-sm text-[9px] font-bold uppercase tracking-widest border border-token-border-technical"
+                    className="w-full h-9 rounded-sm text-xxs font-bold uppercase tracking-widest border border-token-border-technical"
                   >
                     Actualizar Credencial
                   </Button>
@@ -266,7 +267,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   autoComplete="off"
                   className="space-y-3 p-4 bg-token-surface-stripe border border-token-border-subtle rounded-sm"
                 >
-                  <label className="block text-[9px] uppercase tracking-widest text-token-text-tertiary font-bold">
+                  <label className="block text-xxs uppercase tracking-widest text-token-text-tertiary font-bold">
                     Purgar Sesiones Activas
                   </label>
                   <input
@@ -283,7 +284,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     type="submit"
                     variant="secondary"
                     loading={isPurgingSessions}
-                    className="w-full h-9 rounded-sm text-[9px] font-bold uppercase tracking-widest border border-token-border-technical"
+                    className="w-full h-9 rounded-sm text-xxs font-bold uppercase tracking-widest border border-token-border-technical"
                   >
                     Ejecutar Purga
                   </Button>
@@ -301,7 +302,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 group-hover:opacity-10 transition-all duration-700 pointer-events-none">
               <ShieldIcon className="w-32 h-32 text-(--status-error)" />
             </div>
-            <div className="relative z-10 space-y-6">
+            <div className={`relative ${Z.sticky} space-y-6`}>
               <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-widest border-b border-token-border-technical pb-4">
                 Protocolos Críticos
               </h3>
@@ -318,7 +319,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Capturar Snapshot Manual
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Genera un respaldo completo de la base de datos PostgreSQL.
                   </p>
                 </div>
@@ -335,7 +336,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     <ArrowPathIcon className="w-4 h-4 mr-2" />
                     Restaurar Desde Backup
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Recupera el sistema a un punto anterior. (Requiere reinicio)
                   </p>
                 </div>
@@ -352,7 +353,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Disparar Cierre Contable Auto
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Fuerza la regla de cierre automático contable al mes objetivo.
                   </p>
                 </div>
@@ -369,7 +370,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                     <ArrowPathIcon className="w-4 h-4 mr-2" />
                     Reiniciar Backend
                   </Button>
-                  <p className="text-[9px] text-token-text-tertiary italic">
+                  <p className="text-xxs text-token-text-tertiary italic">
                     Fuerza un reinicio del proceso del servidor backend.
                   </p>
                 </div>
@@ -386,7 +387,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Reseteo Maestro (Clear DB)
                   </Button>
-                  <p className="text-[9px] text-sap-error/70 font-bold uppercase">
+                  <p className="text-xxs text-sap-error/70 font-bold uppercase">
                     ¡ADVERTENCIA! Esta acción no se puede deshacer.
                   </p>
                 </div>

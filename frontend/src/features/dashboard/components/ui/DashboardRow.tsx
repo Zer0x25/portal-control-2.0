@@ -58,7 +58,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
           <p className="text-sm font-bold text-token-text-primary truncate leading-tight">
             {title}
           </p>
-          <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest leading-none">
+          <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest leading-none">
             {subtitle}
           </p>
         </div>

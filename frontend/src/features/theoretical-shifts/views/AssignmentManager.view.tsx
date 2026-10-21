@@ -13,6 +13,7 @@ import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import AssignmentListDesktop from "../components/AssignmentListDesktop";
 import AssignmentListMobile from "../components/AssignmentListMobile";
 import type { Employee, TheoreticalShiftPattern } from "../../../types";
+import { Z } from "../../../constants/zScale";
 
 type ProcessedAssignment = AssignedShift & {
   assignmentWeeklyHours: number;
@@ -189,7 +190,9 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                       className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical text-token-text-primary rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all placeholder:text-token-text-tertiary"
                     />
                     {isEmployeeDropdownOpen && filteredEmployeesForSearch.length > 0 && (
-                      <div className="absolute z-60 left-0 right-0 mt-2 bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
+                      <div
+                        className={`absolute ${Z.overlay} left-0 right-0 mt-2 bg-token-surface-card border border-token-border-technical rounded-xl shadow-2xl max-h-64 overflow-y-auto overflow-x-hidden backdrop-blur-sm animate-in fade-in slide-in-from-top-2`}
+                      >
                         {filteredEmployeesForSearch.map((e) => (
                           <button
                             key={e.id}

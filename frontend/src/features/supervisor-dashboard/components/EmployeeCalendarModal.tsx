@@ -5,6 +5,8 @@ import { useCalendarData } from "../../../hooks/useCalendarData";
 import ShiftCalendarView from "../../../components/ui/ShiftCalendarView";
 import Button from "../../../components/ui/Button";
 import { CloseIcon, UserIcon, ShieldCheckIcon } from "../../../components/ui/icons/index";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 interface EmployeeCalendarModalProps {
   employee: Employee;
@@ -35,7 +37,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
 
   return createPortal(
     isOpen && (
-      <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
+      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
         <div
           onClick={onClose}
           className="absolute inset-0 bg-token-text-primary/60 backdrop-blur-[3px] animate-in fade-in"
@@ -56,7 +58,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
                   EXPEDIENTE: {employee.name}
                 </h2>
                 <div className="flex items-center gap-4">
-                  <span className="px-3 py-1 text-[9px] font-black bg-token-surface-active text-token-text-primary border border-token-border-subtle rounded-sm uppercase tracking-widest">
+                  <span className="px-3 py-1 text-xxs font-black bg-token-surface-active text-token-text-primary border border-token-border-subtle rounded-sm uppercase tracking-widest">
                     {employee.position}
                   </span>
                   <div className="w-1.5 h-1.5 rounded-full bg-sap-blue animate-pulse" />
@@ -80,7 +82,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
           <div className="px-12 py-5 flex items-center justify-between bg-token-surface-card border-b border-token-border-subtle ml-2">
             <div className="flex items-center gap-6">
               <div>
-                <span className="text-[9px] font-black text-sap-blue uppercase tracking-[0.2em] block mb-1">
+                <span className="text-xxs font-black text-sap-blue uppercase tracking-[0.2em] block mb-1">
                   PERIODO TÉCNICO ANALIZADO
                 </span>
                 <h3 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
@@ -89,7 +91,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="px-6 py-2.5 rounded-sm border border-sap-blue/20 bg-sap-blue/3 text-[9px] font-black text-sap-blue uppercase tracking-[0.3em] flex items-center gap-3">
+              <div className="px-6 py-2.5 rounded-sm border border-sap-blue/20 bg-sap-blue/3 text-xxs font-black text-sap-blue uppercase tracking-[0.3em] flex items-center gap-3">
                 <ShieldCheckIcon className="w-4 h-4" />
                 SISTEMA SINCRONIZADO
               </div>
@@ -101,7 +103,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
             {isLoadingCalendar ? (
               <div className="h-full flex flex-col items-center justify-center gap-8">
                 <div className="relative">
-                  <div className="w-16 h-16 border-4 border-sap-blue/10 border-t-sap-blue rounded-full animate-spin" />
+                  <LoadingSpinner size="xl" variant="default" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-2 h-2 bg-sap-blue rounded-full animate-ping" />
                   </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { useHealthQuery } from "../../hooks/queries/useHealthQuery";
 import { ServerIcon, CpuChipIcon, CircleStackIcon, ActivityIcon } from "../ui/icons/index";
+import LoadingSpinner from "../ui/LoadingSpinner";
 
 const MetricCard: React.FC<{
   title: string;
@@ -50,7 +51,7 @@ const HealthDashboard: React.FC = () => {
   if (loading && !data) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
+        <LoadingSpinner size="md" variant="default" />
       </div>
     );
   }
@@ -174,7 +175,7 @@ const HealthDashboard: React.FC = () => {
                 Estado de Backup
               </span>
               <span
-                className={`px-3 py-1 rounded-md text-[9px] font-black tracking-widest ${backupStatusTone}`}
+                className={`px-3 py-1 rounded-md text-xxs font-black tracking-widest ${backupStatusTone}`}
               >
                 {backupStatusLabel}
               </span>

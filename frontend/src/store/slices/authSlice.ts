@@ -4,6 +4,24 @@ import { AppState } from "../types";
 import { STORAGE_KEYS, ROUTES } from "../../constants";
 import { authService } from "../../services/authService";
 import { wipeAllData } from "../../utils/indexedDB";
+import { QUERY_CACHE_OWNER_KEY, purgePersistedQueryCache } from "../../lib/queryCache";
+import { queryClient } from "../../lib/queryClient";
+
+/**
+ * Purga del cache persistido + en memoria (spec 032 AC2.1).
+ *
+ * Idempotente y limitada al cache de queries: nunca toca la base del offline
+ * queue (`wipeAllData`), cuya cola de escritura es invariante.
+ */
+const resetPersistedQueryCache = async (ownerId: string | null): Promise<void> => {
+  await purgePersistedQueryCache();
+  queryClient.clear();
+  if (ownerId) {
+    localStorage.setItem(QUERY_CACHE_OWNER_KEY, ownerId);
+  } else {
+    localStorage.removeItem(QUERY_CACHE_OWNER_KEY);
+  }
+};
 
 const getEmployeeIdFromToken = (token?: string): string | undefined => {
   if (!token) return undefined;
@@ -47,6 +65,13 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
+
+        // AC2.1: si el cache persistido pertenece a otra cuenta, se purga
+        // antes de hidratar para no exponer datos de un usuario previo.
+        if (localStorage.getItem(QUERY_CACHE_OWNER_KEY) !== user.id) {
+          await resetPersistedQueryCache(user.id);
+        }
+
         set({ currentUser: user, isAuthenticated: true, isAuthLoading: false });
 
         // Re-trigger global sync to populate store from IDB or Server
@@ -131,8 +156,12 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     if (isNewUser) {
       console.warn("🔄 Nuevo usuario detectado. Limpiando caché local...");
       await wipeAllData();
+      // AC2.1: el cache de queries persistido tambien cambia de dueño.
+      await resetPersistedQueryCache(loginResponse.userId);
       localStorage.removeItem(STORAGE_KEYS.LAST_SYNC_TIMESTAMP);
       localStorage.setItem(STORAGE_KEYS.LAST_LOGGED_USER_ID, loginResponse.userId);
+    } else {
+      localStorage.setItem(QUERY_CACHE_OWNER_KEY, loginResponse.userId);
     }
 
     const resolvedEmployeeId =
@@ -182,6 +211,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     });
     // Keep calling the service to clear backend session, but frontend log is removed
     await authService.logout().catch(() => {});
+
+    // AC2.1: purga del cache persistido en logout (no toca la cola offline).
+    await resetPersistedQueryCache(null);
 
     // No borramos LAST_SYNC_TIMESTAMP aquí para permitir sincronización delta si el mismo usuario vuelve a entrar.
     // La validación se hace en el login (si el ID cambia, se limpia todo).

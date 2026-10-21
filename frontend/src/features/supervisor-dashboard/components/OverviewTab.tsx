@@ -1,5 +1,5 @@
 ﻿import React, { useState, useMemo } from "react";
-import KpiCard, { KpiStat, KpiStatProps } from "../../../components/ui/KpiCard";
+import { MetricCard, MetricStat, MetricStatProps } from "../../../components/ui/MetricCard";
 import { CalendarDaysIcon } from "../../../components/ui/icons/index";
 import LiveStatusPanel from "./LiveStatusPanel";
 import EmployeeCalendarModal from "./EmployeeCalendarModal";
@@ -60,7 +60,7 @@ const OverviewTab: React.FC = () => {
     return counts;
   }, [employeesWithStatus]);
 
-  const planningKpis: KpiStatProps[] = [
+  const planningKpis: MetricStatProps[] = [
     {
       value: stats.scheduled,
       label: "Total Programados Hoy",
@@ -119,13 +119,18 @@ const OverviewTab: React.FC = () => {
       {/* 📊 Matrix Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-4">
-          <KpiCard title="Planificación del Día" icon={<CalendarDaysIcon />} className="h-full">
+          <MetricCard
+            kind="panel"
+            title="Planificación del Día"
+            icon={<CalendarDaysIcon />}
+            className="h-full"
+          >
             <div className="space-y-2 mt-4">
               {planningKpis.map((stat) => (
-                <KpiStat key={stat.label} {...stat} />
+                <MetricStat key={stat.label} {...stat} />
               ))}
             </div>
-          </KpiCard>
+          </MetricCard>
         </div>
 
         <div className="lg:col-span-8">

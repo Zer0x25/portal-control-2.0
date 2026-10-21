@@ -12,6 +12,7 @@ import {
   ShieldIcon,
   CalculatorIcon,
   ChatBubbleLeftRightIcon,
+  SparklesIcon,
 } from "../../components/ui/icons/index";
 import { ROUTES } from "../../constants";
 import type { UserRole } from "../../types";
@@ -112,6 +113,10 @@ export const buildSidebarMenuByRole = ({
     if (role === "Administrador" || role === "Supervisor_Elevado") {
       items.push({ to: ROUTES.GOVERNANCE_HUB, icon: ShieldIcon, label: "Gobernanza" });
     }
+  }
+
+  if (role === "Administrador") {
+    items.push({ to: ROUTES.DESIGN_SYSTEM, icon: SparklesIcon, label: "Design System" });
   }
 
   items.push({ to: ROUTES.CONFIGURATION, icon: CogIcon, label: "Config" });

@@ -6,7 +6,7 @@ import React from "react";
 
 // Mock de MetricCard
 vi.mock("../../../../components/ui/MetricCard", () => ({
-  default: ({ title, value, indicatorColor, onClick, className }: any) => {
+  default: ({ title, value, tone, onClick, className }: any) => {
     // Normalizar el título para data-testid
     const normalizedTitle = title
       .toLowerCase()
@@ -24,7 +24,7 @@ vi.mock("../../../../components/ui/MetricCard", () => ({
       [
         React.createElement("span", { key: "title" }, title),
         React.createElement("span", { key: "value" }, value),
-        React.createElement("span", { key: "color" }, indicatorColor),
+        React.createElement("span", { key: "color" }, tone),
       ],
     );
   },
@@ -35,19 +35,19 @@ describe("MetricGrid", () => {
     {
       title: "Presentes",
       value: 5,
-      indicatorColor: "emerald" as const,
+      tone: "success" as const,
       onClick: vi.fn(),
       clickable: true,
     },
     {
       title: "Total",
       value: 10,
-      indicatorColor: "slate" as const,
+      tone: "neutral" as const,
     },
     {
       title: "Anomalías",
       value: 2,
-      indicatorColor: "orange" as const,
+      tone: "warning" as const,
       onClick: vi.fn(),
       clickable: true,
     },
@@ -120,7 +120,7 @@ describe("useTeamMetrics", () => {
     expect(result.current[0]).toEqual({
       title: "Presentes",
       value: 5,
-      indicatorColor: "emerald",
+      tone: "success",
       className: "cursor-pointer",
       onClick: onPresentClick,
       clickable: true,
@@ -130,14 +130,14 @@ describe("useTeamMetrics", () => {
     expect(result.current[1]).toEqual({
       title: "Plantilla",
       value: 10,
-      indicatorColor: "slate",
+      tone: "neutral",
     });
 
     // Anomalías metric
     expect(result.current[2]).toEqual({
       title: "Anomalías",
       value: 2,
-      indicatorColor: "orange",
+      tone: "warning",
       className: "cursor-pointer",
       onClick: onAnomaliesClick,
       clickable: true,

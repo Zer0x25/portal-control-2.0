@@ -3,11 +3,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { LogbookView } from "../../../features/logbook/views/Logbook.view";
 
-vi.mock("../../../components/ui/ShiftReportModal", () => ({
+vi.mock("../../../features/logbook/components/ShiftReportModal", () => ({
   default: () => <div>SHIFT-REPORT-MODAL</div>,
 }));
 
-vi.mock("../../../components/ui/ClosedReportsModal", () => ({
+vi.mock("../../../features/logbook/components/ClosedReportsModal", () => ({
   default: () => <div>CLOSED-REPORTS-MODAL</div>,
 }));
 

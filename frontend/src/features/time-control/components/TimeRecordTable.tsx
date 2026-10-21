@@ -11,6 +11,7 @@ import {
 import ResponsiveView from "../../../components/ui/ResponsiveView";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
 import { useTimeRecordTableController } from "../hooks/useTimeRecordTableController";
+import { Z } from "../../../constants/zScale";
 
 // Lazy load table views for better performance
 const TimeRecordTableViewDesktop = React.lazy(() => import("./TimeRecordTableViewDesktop"));
@@ -73,7 +74,7 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
 
     return (
       <div className="space-y-6">
-        <div className="relative z-10">
+        <div className={`relative ${Z.sticky}`}>
           <div className="flex flex-col md:flex-row gap-6 justify-between items-end mb-8">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-md bg-sap-blue border border-sap-blue shadow-lg shadow-sap-blue/20">
@@ -111,8 +112,10 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
                 </Button>
 
                 {isExportMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-md shadow-2xl bg-token-surface-card border border-token-border-technical overflow-hidden z-50 p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2">
-                    <div className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
+                  <div
+                    className={`absolute right-0 mt-2 w-64 rounded-md shadow-2xl bg-token-surface-card border border-token-border-technical overflow-hidden ${Z.overlay} p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2`}
+                  >
+                    <div className="px-3 py-2 text-xxs font-black uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
                       Seleccionar Formato de Salida
                     </div>
                     <Button

@@ -68,6 +68,9 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
       </div>
 
       <div
+        // Región scrollable accesible por teclado (WCAG 2.1): patrón
+        // sancionado, no es un elemento interactivo.
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={0}
         role="region"
         aria-label="Alertas operativas"

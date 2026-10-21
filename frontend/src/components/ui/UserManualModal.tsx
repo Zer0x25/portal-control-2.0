@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import DOMPurify from "dompurify";
 import Button from "./Button";
 import { CloseIcon, BookOpenIcon } from "./icons/index";
+import LoadingSpinner from "./LoadingSpinner";
+import { Z } from "../../constants/zScale";
 
 interface UserManualModalProps {
   isOpen: boolean;
@@ -93,7 +95,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
 
   return createPortal(
     isOpen && (
-      <div className="fixed inset-0 z-150 flex items-center justify-center p-4 md:p-8">
+      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
         {/* Backdrop */}
         <div
           onClick={onClose}
@@ -135,7 +137,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
           <div className="grow overflow-y-auto p-8 scrollbar-premium">
             {isLoading ? (
               <div className="h-full flex flex-col items-center justify-center gap-4 py-20">
-                <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                <LoadingSpinner size="lg" variant="default" />
                 <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest animate-pulse">
                   Consultando base de conocimientos...
                 </p>

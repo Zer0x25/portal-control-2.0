@@ -63,7 +63,7 @@ const Button = React.memo(
       let sizeStyles = "";
       switch (size) {
         case "xs":
-          sizeStyles = "px-3 py-1.5 text-[9px]";
+          sizeStyles = "px-3 py-1.5 text-xxs";
           break;
         case "sm":
           sizeStyles = "px-4 py-2 text-[10px]";

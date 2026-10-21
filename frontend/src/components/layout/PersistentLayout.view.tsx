@@ -2,13 +2,18 @@ import React, { Suspense, useRef } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 const DeveloperPanel = React.lazy(() =>
-  import("../ui/DeveloperPanel").then((m) => ({ default: m.DeveloperPanel })),
+  import("../../features/configuration/components/DeveloperPanel").then((m) => ({
+    default: m.DeveloperPanel,
+  })),
 );
-const ShiftHandoverModal = React.lazy(() => import("../ui/ShiftHandoverModal"));
+const ShiftHandoverModal = React.lazy(
+  () => import("../../features/time-control/components/ShiftHandoverModal"),
+);
 import ScreenSizeIndicator from "../ui/ScreenSizeIndicator";
 import { HomeIcon } from "../ui/icons/index";
-import LoadingSpinner from "../ui/LoadingSpinner";
 import type { ShiftHandoverData } from "../../types";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import { Z } from "../../constants/zScale";
 
 interface PersistentLayoutViewProps {
   children: React.ReactNode;
@@ -62,7 +67,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
       <a
         href="#main-content"
         data-testid="skip-to-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:px-4 focus:py-2 focus:bg-token-accent-brand focus:text-token-text-onAccent focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-token-border-focus transition-all"
+        className={`sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:${Z.modal} focus:px-4 focus:py-2 focus:bg-token-accent-brand focus:text-token-text-onAccent focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-token-border-focus transition-all`}
       >
         Saltar al contenido principal
       </a>
@@ -79,7 +84,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
               data-testid="sidebar-swipe-area"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
-              className="fixed top-0 left-0 w-4 h-full z-40 lg:hidden cursor-pointer touch-none"
+              className={`fixed top-0 left-0 w-4 h-full ${Z.dropdown} lg:hidden cursor-pointer touch-none`}
               title="Desliza para abrir el menú"
               role="presentation"
             />
@@ -108,7 +113,9 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
             </Suspense>
           </main>
 
-          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
+          <div
+            className={`fixed bottom-6 right-6 ${Z.overlay} flex flex-col items-end gap-3 pointer-events-none`}
+          >
             {canShowDevPanel && (
               <div className="pointer-events-auto">
                 <Suspense fallback={null}>
@@ -131,7 +138,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
           </div>
 
           {showHomeFab && (
-            <div className="fixed bottom-6 left-6 z-50 md:hidden">
+            <div className={`fixed bottom-6 left-6 ${Z.overlay} md:hidden`}>
               <button
                 data-testid="home-fab-mobile"
                 onClick={onGoHome}

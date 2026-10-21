@@ -11,6 +11,7 @@ import { useMeterReadingsInfinite } from "../../../hooks/queries/useMeterReading
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { formatDateUTCISO } from "../../../utils/dateUtils";
+import { Z } from "../../../constants/zScale";
 
 const EVENT_TYPE_LABELS: Record<MeterReadingItem["eventType"], string> = {
   CONSUMPTION: "Consumo",
@@ -144,7 +145,7 @@ const MeterHistory: React.FC = () => {
   const renderDesktopView = () => (
     <div className="overflow-x-auto min-h-[400px] max-h-[800px] overflow-y-auto custom-scrollbar">
       <table className="min-w-full text-sm relative">
-        <thead className="bg-token-surface-header sticky top-0 z-10 shadow-sm">
+        <thead className={`bg-token-surface-header sticky top-0 ${Z.sticky} shadow-sm`}>
           <tr>
             <th className="p-2 text-left">Fecha</th>
             <th className="p-2 text-left">Medidor</th>
@@ -323,7 +324,9 @@ const MeterHistory: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="relative group">
-            <label className="absolute -top-2 left-3 px-1.5 bg-token-surface-card text-[9px] font-black text-sap-blue uppercase tracking-widest rounded z-10 transition-all group-focus-within:scale-110">
+            <label
+              className={`absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-sap-blue uppercase tracking-widest rounded ${Z.sticky} transition-all group-focus-within:scale-110`}
+            >
               Desde
             </label>
             <button
@@ -346,7 +349,9 @@ const MeterHistory: React.FC = () => {
           </div>
 
           <div className="relative group">
-            <label className="absolute -top-2 left-3 px-1.5 bg-token-surface-card text-[9px] font-black text-sap-blue uppercase tracking-widest rounded z-10 transition-all group-focus-within:scale-110">
+            <label
+              className={`absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-sap-blue uppercase tracking-widest rounded ${Z.sticky} transition-all group-focus-within:scale-110`}
+            >
               Hasta
             </label>
             <button

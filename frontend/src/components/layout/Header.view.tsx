@@ -7,6 +7,7 @@ const ChangePasswordModal = React.lazy(() =>
 const UserManualModal = React.lazy(() => import("../ui/UserManualModal"));
 import NotificationCenter from "./NotificationCenter";
 import { SpeakerWaveIcon, SpeakerXMarkIcon, UserCircleIcon } from "../ui/icons/index";
+import { Z } from "../../constants/zScale";
 
 interface HeaderViewProps {
   toggleSidebar: () => void;
@@ -50,7 +51,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
       <header
         role="banner"
         data-testid="app-header"
-        className="sticky top-0 left-0 right-0 z-60 bg-token-surface-header border-b border-token-border-technical shadow-sm"
+        className={`sticky top-0 left-0 right-0 ${Z.overlay} bg-token-surface-header border-b border-token-border-technical shadow-sm`}
       >
         <div className="mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -118,7 +119,7 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                     <p className="text-xs font-bold text-token-text-primary uppercase tracking-tight leading-none">
                       {welcomeName}
                     </p>
-                    <p className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest mt-1.5">
+                    <p className="typo-ui-badge text-token-text-tertiary uppercase mt-1.5">
                       {currentUser.role}
                     </p>
                   </div>
@@ -127,10 +128,10 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                 {isDropdownOpen && (
                   <div
                     data-testid="user-menu-dropdown"
-                    className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden"
+                    className={`animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl ${Z.overlay} overflow-hidden`}
                   >
                     <div className="px-4 py-3 border-b border-token-border-subtle bg-token-surface-stripe">
-                      <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest mb-1">
+                      <p className="typo-ui-badge text-token-text-tertiary uppercase mb-1">
                         Usuario Activo
                       </p>
                       <p className="text-xs font-bold text-token-text-primary truncate">

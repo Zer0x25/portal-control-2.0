@@ -3,6 +3,7 @@ import { CloseIcon, InformationCircleIcon } from "./icons/index";
 import easterEggImg from "../../assets/images/Mini_Zer0x.jpg";
 import CinematicModal from "./CinematicModal";
 import Button from "./Button";
+import { Z } from "../../constants/zScale";
 
 interface AboutModalViewProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
               <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tight italic leading-none">
                 Información del Sistema
               </h3>
-              <p className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
+              <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
                 Portal Modernizado v3.0
               </p>
             </div>
@@ -68,7 +69,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
           <div className="space-y-4 relative">
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-token-surface-stripe p-4 rounded-xl border border-token-border-subtle group hover:border-token-border-focus/20 transition-all">
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest block mb-1 italic">
+                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest block mb-1 italic">
                   Versión Nucleus
                 </span>
                 <span className="text-sm font-black text-token-text-primary italic">
@@ -76,7 +77,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
                 </span>
               </div>
               <div className="bg-token-surface-stripe p-4 rounded-xl border border-token-border-subtle group hover:border-token-border-focus/20 transition-all">
-                <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-widest block mb-1 italic">
+                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest block mb-1 italic">
                   Estado Kernel
                 </span>
                 <div className="flex items-center gap-2">
@@ -114,7 +115,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
           </div>
 
           <div className="text-center pt-4">
-            <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest opacity-50">
+            <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest opacity-50">
               © 2024 PORTAL SYSTEM • ALL RIGHTS RESERVED
             </p>
           </div>
@@ -122,13 +123,13 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
       </CinematicModal>
 
       {showMonkey && (
-        <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
+        <div className={`fixed inset-0 ${Z.max} flex items-center justify-center p-4`}>
           <div
             onClick={onCloseMonkey}
             className="absolute inset-0 bg-black/95 backdrop-blur-xl animate-in fade-in"
           />
           <div
-            className="relative z-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
+            className={`relative ${Z.sticky} animate-in fade-in zoom-in-95 slide-in-from-bottom-2`}
             onClick={(e) => e.stopPropagation()}
           >
             <img

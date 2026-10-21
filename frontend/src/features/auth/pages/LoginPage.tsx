@@ -13,6 +13,8 @@ import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
 import BrandLogo from "../../../components/ui/BrandLogo";
 import MFALoginModal from "../components/MFALoginModal";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -72,10 +74,14 @@ const LoginPage: React.FC = () => {
       {/* Crystal Clear Spotlight Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none bg-token-surface-stripe">
         {/* Main Spotlight */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.08)_0%,transparent_70%)] z-0" />
+        <div
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.08)_0%,transparent_70%)] ${Z.base}`}
+        />
 
         {/* Inner Glow behind the card */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] z-0" />
+        <div
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] ${Z.base}`}
+        />
 
         {/* Technical Grid - Pure CSS & Sharp */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
@@ -84,7 +90,9 @@ const LoginPage: React.FC = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-70"></div>
       </div>
 
-      <div className="w-full max-w-[380px] z-10 perspective-1000 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 [animation-duration:800ms]">
+      <div
+        className={`w-full max-w-[380px] ${Z.sticky} perspective-1000 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 [animation-duration:800ms]`}
+      >
         <Card
           noPadding
           className="overflow-hidden bg-token-surface-card md:backdrop-blur-2xl border border-token-border-subtle shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative group rounded-2xl"
@@ -92,12 +100,14 @@ const LoginPage: React.FC = () => {
           {/* Top colored line */}
           <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-sap-blue to-transparent opacity-50"></div>
 
-          <div className="px-8 py-10 sm:px-10 sm:py-8 relative z-10">
+          <div className={`px-8 py-10 sm:px-10 sm:py-8 relative ${Z.sticky}`}>
             {/* Header Section */}
             <div className="text-center mb-10 sm:mb-8">
               <div className="mb-8 sm:mb-6 relative inline-block group-hover:scale-105 transition-transform duration-500 animate-in fade-in slide-in-from-top-4 [animation-duration:600ms] [animation-delay:200ms]">
                 <div className="absolute inset-0 bg-sap-blue rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
-                <BrandLogo className="h-20 sm:h-16 w-auto relative z-10 rounded-2xl shadow-2xl" />
+                <BrandLogo
+                  className={`h-20 sm:h-16 w-auto relative ${Z.sticky} rounded-2xl shadow-2xl`}
+                />
               </div>
 
               <div className="animate-in fade-in slide-in-from-bottom-2 [animation-duration:600ms] [animation-delay:300ms]">
@@ -166,7 +176,7 @@ const LoginPage: React.FC = () => {
 
                   {loading ? (
                     <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <LoadingSpinner size="xs" variant="onAccent" />
                       <span className="opacity-80 font-black uppercase tracking-widest text-[10px] text-token-text-onAccent">
                         Verificando...
                       </span>
@@ -209,7 +219,9 @@ const LoginPage: React.FC = () => {
       </div>
 
       {/* Footer Status */}
-      <div className="fixed bottom-6 left-6 z-20 animate-in fade-in slide-in-from-left-4 [animation-duration:800ms] [animation-delay:1000ms]">
+      <div
+        className={`fixed bottom-6 left-6 ${Z.dropdown} animate-in fade-in slide-in-from-left-4 [animation-duration:800ms] [animation-delay:1000ms]`}
+      >
         <div className="bg-token-surface-card backdrop-blur-md border border-token-border-subtle px-4 py-2 rounded-full shadow-lg hover:bg-token-surface-active transition-colors cursor-default">
           <SimpleConnectionIndicator />
         </div>
@@ -217,7 +229,9 @@ const LoginPage: React.FC = () => {
 
       <MFALoginModal isOpen={mfaRequired} onSuccess={handleMFASuccess} onCancel={logout} />
 
-      <div className="fixed bottom-6 right-6 z-20 text-[10px] font-mono text-token-text-tertiary pointer-events-none select-none animate-in fade-in [animation-duration:800ms] [animation-delay:1200ms]">
+      <div
+        className={`fixed bottom-6 right-6 ${Z.dropdown} text-[10px] font-mono text-token-text-tertiary pointer-events-none select-none animate-in fade-in [animation-duration:800ms] [animation-delay:1200ms]`}
+      >
         v3.0.0-RC1
       </div>
     </div>

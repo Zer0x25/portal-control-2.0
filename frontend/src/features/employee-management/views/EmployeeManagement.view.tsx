@@ -2,7 +2,7 @@ import React from "react";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
 const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
-const ShiftHistoryModal = React.lazy(() => import("../../../components/ui/ShiftHistoryModal"));
+const ShiftHistoryModal = React.lazy(() => import("../components/ShiftHistoryModal"));
 import CinematicModal from "../../../components/ui/CinematicModal";
 import {
   ExportIcon,
@@ -13,11 +13,13 @@ import {
 } from "../../../components/ui/icons/index";
 import EmployeeForm from "../components/EmployeeForm";
 import EmployeeListCard from "../components/EmployeeListCard";
-const ImportModal = React.lazy(() => import("../../../components/ui/ImportModal"));
+const ImportModal = React.lazy(() => import("../components/ImportModal"));
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import type { Employee } from "../../../types";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 type EditableEmployeeData = Partial<
   Pick<Employee, "name" | "rut" | "position" | "area" | "workdayType" | "email" | "pin">
@@ -247,8 +249,10 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                   </span>
                 </Button>
                 {isExportMenuOpen && (
-                  <div className="animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 bg-token-surface-card rounded-sm shadow-2xl border border-token-border-technical z-50 p-1">
-                    <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
+                  <div
+                    className={`animate-in fade-in slide-in-from-top-1 duration-150 absolute right-0 mt-2 w-56 bg-token-surface-card rounded-sm shadow-2xl border border-token-border-technical ${Z.overlay} p-1`}
+                  >
+                    <div className="px-3 py-2 text-xxs font-bold uppercase tracking-widest text-token-text-tertiary border-b border-token-border-subtle mb-1">
                       Acciones Masivas
                     </div>
                     <button
@@ -260,7 +264,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
                     >
                       <DocumentArrowUpIcon className="w-4 h-4 mr-3" /> Importar Excel
                     </button>
-                    <div className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary border-y border-token-border-subtle my-1">
+                    <div className="px-3 py-2 text-xxs font-bold uppercase tracking-widest text-token-text-tertiary border-y border-token-border-subtle my-1">
                       Exportar Lista
                     </div>
                     <button
@@ -289,7 +293,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
 
           <div
             ref={setScrollRoot}
-            className="h-[450px] overflow-y-scroll border border-token-border-technical rounded-sm shadow-inner bg-token-surface-stripe w-full relative z-10 custom-scrollbar"
+            className={`h-[450px] overflow-y-scroll border border-token-border-technical rounded-sm shadow-inner bg-token-surface-stripe w-full relative ${Z.sticky} custom-scrollbar`}
           >
             <EmployeeListCard
               paginatedEmployees={processedEmployees}
@@ -312,7 +316,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
               <div ref={sentinelRef} className="h-4 w-full" />
               {isLoadingEmployees ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-(--sidebar-text-active) border-t-transparent animate-spin" />
+                  <LoadingSpinner size="lg" variant="default" />
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--sidebar-text-active)">
                     Sincronizando expedientes...
                   </span>
@@ -322,7 +326,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
               ) : processedEmployees.length > 0 ? (
                 <div className="flex flex-col items-center gap-2 py-4">
                   <div className="w-24 h-0.5 bg-token-border-technical rounded-full opacity-20" />
-                  <span className="text-[9px] uppercase font-bold tracking-[0.3em] opacity-40">
+                  <span className="text-xxs uppercase font-bold tracking-[0.3em] opacity-40">
                     Fin del Catálogo de Personal
                   </span>
                 </div>
@@ -403,7 +407,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         </React.Suspense>
       )}
 
-      <div className="fixed bottom-6 right-6 z-50 md:hidden">
+      <div className={`fixed bottom-6 right-6 ${Z.overlay} md:hidden`}>
         <Button
           onClick={handleOpenNewForm}
           className="w-14 h-14 rounded-full bg-(--sidebar-text-active) text-white shadow-2xl flex items-center justify-center p-0 border-none active:scale-95 transition-transform"

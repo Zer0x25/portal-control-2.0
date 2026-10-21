@@ -83,7 +83,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
             </div>
           )}
         </div>
-        <p className="text-[9px] sm:text-[10px] font-black text-token-text-secondary uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
+        <p className="text-xxs sm:text-[10px] font-black text-token-text-secondary uppercase tracking-widest truncate max-w-[80px] sm:max-w-none">
           {weather.location}
         </p>
         <div className="flex items-center gap-1 mt-0.5 sm:mt-1" title={`Índice UV: ${uvInfo.text}`}>

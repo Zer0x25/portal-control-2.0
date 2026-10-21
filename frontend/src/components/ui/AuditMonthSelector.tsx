@@ -17,6 +17,7 @@ import {
 import { es } from "date-fns/locale";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons/index";
 import { useBusinessNow } from "../../hooks/useBusinessNow";
+import { Z } from "../../constants/zScale";
 
 interface AuditMonthSelectorProps {
   currentDate: Date;
@@ -39,10 +40,10 @@ const YearPicker: React.FC<{
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center pr-1">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-sap-blue pl-1">Años</p>
+        <p className="text-xxs font-bold uppercase tracking-widest text-sap-blue pl-1">Años</p>
         <button
           onClick={onGoToToday}
-          className="text-[9px] font-bold uppercase tracking-widest text-token-text-tertiary hover:text-sap-blue transition-colors flex items-center gap-1 group/today"
+          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-sap-blue transition-colors flex items-center gap-1 group/today"
         >
           <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
           Actual
@@ -98,7 +99,7 @@ const MonthPicker: React.FC<{
 
   return (
     <div className="flex flex-col gap-3 pt-4 border-t border-token-border-subtle">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-600 pl-1">
+      <p className="text-xxs font-bold uppercase tracking-widest text-emerald-600 pl-1">
         Seleccionar Mes
       </p>
       <div className="grid grid-cols-4 gap-1.5">
@@ -111,7 +112,7 @@ const MonthPicker: React.FC<{
               key={idx}
               disabled={isDisabled}
               onClick={() => onChange(idx)}
-              className={`px-2 py-2 rounded-sm text-[9px] font-bold capitalize tracking-wider transition-all border ${
+              className={`px-2 py-2 rounded-sm text-xxs font-bold capitalize tracking-wider transition-all border ${
                 isSelected
                   ? "bg-indigo-700 text-white border-indigo-700 shadow-sm"
                   : isDisabled
@@ -170,7 +171,7 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
           onClick={() => setIsOpen(!isOpen)}
           className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center cursor-pointer hover:bg-token-surface-active transition-colors group/text py-1 rounded-sm"
         >
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary leading-none mb-1.5 opacity-80 group-hover/text:text-sap-blue">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-sap-blue">
             Periodo de Consulta
           </p>
           <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap flex items-center gap-2">
@@ -193,7 +194,9 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
 
       {/* Floating Panel */}
       {isOpen && (
-        <div className="absolute left-1/2 top-full -translate-x-1/2 z-100 w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden animate-in fade-in slide-in-from-top-2">
+        <div
+          className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
+        >
           <div className="space-y-6">
             <YearPicker
               currentDate={currentDate}

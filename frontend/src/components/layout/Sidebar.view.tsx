@@ -2,6 +2,7 @@ import React from "react";
 import { InformationCircleIcon, MoonIcon, SunIcon } from "../ui/icons/index";
 import type { SidebarMenuItem } from "../../hooks/layout/sidebarMenu";
 import SidebarNavItem from "./SidebarNavItem";
+import { Z } from "../../constants/zScale";
 
 const AboutModal = React.lazy(() => import("../ui/AboutModal"));
 
@@ -38,7 +39,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-55 bg-black/50 lg:hidden transition-opacity duration-300"
+          className={`fixed inset-0 ${Z.overlay} bg-black/50 lg:hidden transition-opacity duration-300`}
           onClick={onToggleSidebar}
         />
       )}
@@ -51,7 +52,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         className={`
-          fixed top-16 left-0 h-[calc(100dvh-4rem)] z-58 flex flex-col
+          fixed top-16 left-0 h-[calc(100dvh-4rem)] ${Z.overlay} flex flex-col
           bg-token-surface-sidebar
           border-r border-token-border-technical
           transition-[width,transform] duration-200 ease-out
@@ -82,7 +83,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="theme-toggle-button"
             onClick={onToggleTheme}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
+            className="group flex items-center w-full px-4 py-3 rounded-md typo-ui-caption uppercase text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div
               className={`w-6 h-6 flex items-center justify-center ${effectiveTheme === "dark" ? "text-token-status-warning" : "text-token-sidebar-text-active"}`}
@@ -103,7 +104,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="about-modal-button"
             onClick={onOpenAbout}
-            className="group flex items-center w-full px-4 py-3 rounded-md text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
+            className="group flex items-center w-full px-4 py-3 rounded-md typo-ui-caption uppercase text-token-text-tertiary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <InformationCircleIcon className="w-5 h-5" />

@@ -6,6 +6,7 @@ import {
   ExclamationTriangleIcon,
 } from "../ui/icons/index";
 import { NotificationItem } from "../../types";
+import { Z } from "../../constants/zScale";
 
 interface NotificationCenterViewProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
         {unreadCount > 0 && (
           <span className="absolute top-1.5 right-1.5 flex h-4 w-4">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-token-status-error opacity-75"></span>
-            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-token-status-error text-token-text-onAccent text-[9px] font-black border border-token-surface-header">
+            <span className="relative inline-flex items-center justify-center rounded-full h-4 w-4 bg-token-status-error text-token-text-onAccent text-xxs font-black border border-token-surface-header">
               {unreadCount}
             </span>
           </span>
@@ -77,7 +78,9 @@ const NotificationCenterView: React.FC<NotificationCenterViewProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl z-70 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div
+          className={`absolute right-0 mt-3 w-80 rounded-md bg-token-surface-card border border-token-border-technical shadow-2xl ${Z.overlay} overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150`}
+        >
           <div className="px-6 py-4 border-b border-token-border-subtle bg-token-surface-stripe">
             <h3 className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.2em] leading-none">
               Notificaciones del Sistema

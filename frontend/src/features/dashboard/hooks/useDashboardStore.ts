@@ -1,5 +1,6 @@
 import { useShallow } from "zustand/react/shallow";
 import { useStore } from "../../../store/useStore";
+import { useDashboardClockActions } from "./useDashboardClockActions";
 
 export const useDashboardModalsLoading = () => {
   const modals = useStore(
@@ -11,7 +12,6 @@ export const useDashboardModalsLoading = () => {
       isAnomaliesModalOpen: s.isAnomaliesModalOpen,
       isPresentModalOpen: s.isPresentModalOpen,
       quickActionRecord: s.quickActionRecord,
-      isLoadingDashboardData: s.isLoadingDashboardData,
     })),
   );
 
@@ -19,15 +19,14 @@ export const useDashboardModalsLoading = () => {
 };
 
 export const useDashboardActions = () => {
+  const { confirmResponsibleClockOut } = useDashboardClockActions();
+
   const actions = useStore(
     useShallow((s) => ({
-      updateDashboardData: s.updateDashboardData,
       openReportDetailsModal: s.openReportDetailsModal,
       closeReportDetailsModal: s.closeReportDetailsModal,
       openClockInConfirmation: s.openClockInConfirmation,
       closeClockInConfirmation: s.closeClockInConfirmation,
-      confirmClockIn: s.confirmClockIn,
-      confirmResponsibleClockOut: s.confirmResponsibleClockOut,
       closeResponsibleClockOutConfirmation: s.closeResponsibleClockOutConfirmation,
       openAnomaliesModal: s.openAnomaliesModal,
       closeAnomaliesModal: s.closeAnomaliesModal,
@@ -41,5 +40,5 @@ export const useDashboardActions = () => {
     })),
   );
 
-  return actions;
+  return { ...actions, confirmResponsibleClockOut };
 };

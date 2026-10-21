@@ -18,13 +18,13 @@ export const IconBox: React.FC<IconBoxProps> = ({
   className = "",
 }) => {
   const variantStyles = {
-    primary:
-      "bg-token-surface-stripe text-token-text-primary border-token-border-subtle dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-900/50",
+    primary: "bg-token-surface-stripe text-token-accent-brand border-token-border-subtle",
     success:
-      "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/30",
+      "bg-token-status-success-surface text-token-status-success-text border-token-status-success/30",
     warning:
-      "bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/30",
-    danger: "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/30",
+      "bg-token-status-warning-surface text-token-status-warning-text border-token-status-warning/30",
+    danger:
+      "bg-token-status-error-surface text-token-status-error-text border-token-status-error/30",
     neutral: "bg-token-surface-stripe text-token-text-secondary border-token-border-subtle",
     light: "bg-token-surface-card border-token-border-subtle text-token-text-primary shadow-sm",
   };

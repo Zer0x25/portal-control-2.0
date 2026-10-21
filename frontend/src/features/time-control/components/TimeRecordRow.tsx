@@ -122,7 +122,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
         <div className={`${rowClassName} flex items-center h-full`} {...commonProps}>
           {/* Área - 12% */}
           <div className="w-[12%] px-4 py-4 hidden sm:flex flex-col gap-1.5">
-            <span className="font-bold text-token-text-tertiary text-[9px] uppercase tracking-wider truncate">
+            <span className="font-bold text-token-text-tertiary text-xxs uppercase tracking-wider truncate">
               {record.employeeArea}
             </span>
           </div>
@@ -160,7 +160,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
           <div className="w-[10%] px-3 py-4 flex items-center">
             <span
               className={`
-                 px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md border border-token-border-subtle shadow-sm truncate
+                 px-3 py-1 text-xxs font-black uppercase tracking-widest rounded-md border border-token-border-subtle shadow-sm truncate
                  ${statusVisualConfig.bg}
                  ${statusVisualConfig.text}
                `}
@@ -221,7 +221,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
       <tr className={rowClassName} {...commonProps}>
         <td className="px-4 py-4 whitespace-nowrap text-sm hidden sm:table-cell">
           <div className="flex flex-col gap-1.5">
-            <span className="font-bold text-token-text-tertiary text-[9px] uppercase tracking-wider">
+            <span className="font-bold text-token-text-tertiary text-xxs uppercase tracking-wider">
               {record.employeeArea}
             </span>
             {["Laborando", "Colacion"].includes(record.status) && progressPercent > 0 && (
@@ -267,7 +267,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
         <td className="px-3 py-4 whitespace-nowrap">
           <span
             className={`
-          px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-md border border-token-border-subtle shadow-sm
+          px-3 py-1 text-xxs font-black uppercase tracking-widest rounded-md border border-token-border-subtle shadow-sm
           ${statusVisualConfig.bg}
           ${statusVisualConfig.text}
         `}

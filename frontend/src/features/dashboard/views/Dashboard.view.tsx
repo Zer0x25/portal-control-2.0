@@ -6,7 +6,7 @@
 import React from "react";
 import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import { QuickNotesModal } from "..";
-import ShiftReportModal from "../../../components/ui/ShiftReportModal";
+import ShiftReportModal from "../../logbook/components/ShiftReportModal";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import { EditTimestampModal, QuickActionModal } from "../../time-control";
 import EmptyState from "../../../components/ui/EmptyState";
@@ -14,6 +14,7 @@ import CinematicModal from "../../../components/ui/CinematicModal";
 import WelcomePanel from "../components/WelcomePanel";
 import Container from "../../../components/ui/Container";
 import AmbientReminderManager from "../../../notifications/components/AmbientReminderManager";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   DailyTimeRecord,
   ClockingStatus,
@@ -84,7 +85,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     return (
       <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
         <div className="relative mb-8">
-          <div className="w-10 h-10 border-2 border-token-border-subtle border-t-sap-blue rounded-full animate-spin opacity-40"></div>
+          <LoadingSpinner size="md" variant="default" />
         </div>
         <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em] animate-pulse">
           Sincronizando Dashboard

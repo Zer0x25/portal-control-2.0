@@ -120,9 +120,9 @@ export const useSocketEvents = () => {
       socket.on("correctionRequest:deleted", handleCorrectionUpdate);
 
       // -- User Events --
+      // Spec 032 T5: users ya es query, solo invalidacion (sin doble refresh).
       const handleUserUpdate = () => {
         debouncedInvalidate("users", ["users"]);
-        useStore.getState().loadUsers();
       };
       socket.on("user:updated", handleUserUpdate);
 

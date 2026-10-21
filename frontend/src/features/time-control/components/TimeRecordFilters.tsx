@@ -99,7 +99,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = React.memo(
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="h-8 px-3 rounded-md font-black uppercase tracking-widest text-[9px] bg-token-surface-card border border-token-border-technical"
+                className="h-8 px-3 rounded-md font-black uppercase tracking-widest text-xxs bg-token-surface-card border border-token-border-technical"
               >
                 {isExpanded ? "Ocultar Filtros" : "Mostrar Filtros"}
               </Button>

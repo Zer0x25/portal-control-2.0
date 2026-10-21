@@ -1,13 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { holidayService, CreateHolidayPayload } from "../services/holidayService";
 import { useToasts } from "./useToasts";
-import { useStore } from "../store/useStore";
 import { Holiday, BulkCreateHolidayPayload } from "../types/scheduling";
 
 export const useHolidayMutations = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
-  const loadAbsenceData = useStore((state) => state.loadAbsenceData);
   type UpdateHolidayPayload = Partial<Pick<Holiday, "name" | "date" | "type">>;
 
   const createHolidayMutation = useMutation({
@@ -15,8 +13,6 @@ export const useHolidayMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      // Refresh Zustand/IDB state to keep everything in sync
-      loadAbsenceData();
       addToast("Feriado creado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -29,8 +25,6 @@ export const useHolidayMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      // Refresh Zustand/IDB state
-      loadAbsenceData();
       addToast("Feriado eliminado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -43,8 +37,6 @@ export const useHolidayMutations = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      // Refresh Zustand/IDB state
-      loadAbsenceData();
       addToast(`${data.added} feriados nuevos cargados.`, "success");
     },
     onError: (error: Error) => {
@@ -58,7 +50,6 @@ export const useHolidayMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      loadAbsenceData();
       addToast("Feriado actualizado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -71,7 +62,6 @@ export const useHolidayMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      loadAbsenceData();
       addToast("Feriados cargados exitosamente", "success");
     },
     onError: (error: Error) => {

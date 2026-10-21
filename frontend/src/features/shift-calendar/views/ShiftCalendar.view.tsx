@@ -207,7 +207,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     </span>
                   </div>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[9px] font-black text-(--sidebar-text-active) uppercase tracking-[0.2em]">
+                    <span className="text-xxs font-black text-(--sidebar-text-active) uppercase tracking-[0.2em]">
                       Ver Mes →
                     </span>
                   </div>
@@ -256,7 +256,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                   onClick={() => setViewMode(mode)}
                   className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${
                     viewMode === mode
-                      ? "bg-(--sidebar-text-active) text-white shadow-sm"
+                      ? "bg-(--sidebar-text-active) text-token-text-onAccent shadow-sm"
                       : "text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-active"
                   }`}
                 >
@@ -283,6 +283,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     Área Operativa
                   </label>
                   <select
+                    aria-label="Filtrar por area"
                     value={selectedArea}
                     onChange={handleAreaChange}
                     className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
@@ -300,6 +301,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     Cargo Técnico
                   </label>
                   <select
+                    aria-label="Filtrar por cargo"
                     value={selectedCargo}
                     onChange={handleCargoChange}
                     className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
@@ -317,6 +319,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
                     Colaborador
                   </label>
                   <select
+                    aria-label="Filtrar por empleado"
                     value={selectedEmployeeId || "ALL"}
                     onChange={(e) =>
                       setSelectedEmployeeId(e.target.value === "ALL" ? null : e.target.value)

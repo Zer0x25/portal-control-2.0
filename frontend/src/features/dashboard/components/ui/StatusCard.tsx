@@ -34,7 +34,7 @@ export const StatusCard: React.FC<StatusCardProps> = React.memo(
           <div className="flex-1 min-w-0">
             <p className={`text-lg font-bold ${status.textColor} leading-tight`}>{status.text}</p>
             {timeText && (
-              <p className="text-[9px] font-bold uppercase tracking-wider text-token-text-tertiary mt-1">
+              <p className="text-xxs font-bold uppercase tracking-wider text-token-text-tertiary mt-1">
                 {timeText}
               </p>
             )}
@@ -80,7 +80,7 @@ export const ShiftStatusCard: React.FC<ShiftStatusCardProps> = ({
     >
       <IconBox icon={<BookOpenIcon />} variant="primary" size="sm" className="rounded-sm" />
       <div className="min-w-0">
-        <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest leading-none mb-1.5">
+        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest leading-none mb-1.5">
           Turno en curso
         </p>
         <p className="text-sm font-bold text-sap-blue truncate">{responsibleName}</p>

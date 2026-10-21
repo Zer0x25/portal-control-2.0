@@ -7,8 +7,8 @@ import Button from "../../../components/ui/Button";
 import { CorrectionRequest } from "../../../types/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import { CORRECTION_REQUEST_STATUS_TEXT, TIME_RECORD_FIELD_LABELS } from "../../../utils/mappings";
-import RejectionReasonModal from "../../../components/ui/RejectionReasonModal";
-import AttachmentViewerModal from "../../../components/ui/AttachmentViewerModal";
+import RejectionReasonModal from "./RejectionReasonModal";
+import AttachmentViewerModal from "./AttachmentViewerModal";
 import {
   ArrowPathIcon,
   AttachmentIcon,
@@ -19,6 +19,8 @@ import {
   InboxArrowDownIcon,
 } from "../../../components/ui/icons/index";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 type RequestStatusFilter = "pending" | "approved" | "rejected";
 
@@ -147,10 +149,10 @@ const ApprovedRequestCard: FC<{
         </div>
 
         <div className="flex flex-col items-end gap-1 text-right">
-          <div className="px-2 py-0.5 rounded-sm bg-emerald-500/10 text-[9px] font-bold text-emerald-700 uppercase tracking-wider border border-emerald-500/20">
+          <div className="px-2 py-0.5 rounded-sm bg-emerald-500/10 text-xxs font-bold text-emerald-700 uppercase tracking-wider border border-emerald-500/20">
             Auditor: {req.resolvedBy}
           </div>
-          <p className="text-[9px] font-semibold text-token-text-tertiary uppercase tracking-wider">
+          <p className="text-xxs font-semibold text-token-text-tertiary uppercase tracking-wider">
             {req.resolvedAt ? formatDisplayDateTime(new Date(req.resolvedAt).toISOString()) : "-"}
           </p>
         </div>
@@ -170,7 +172,7 @@ const ApprovedRequestCard: FC<{
         <div className="mt-auto pt-2 border-t border-token-border-subtle flex justify-end">
           <button
             onClick={() => onViewAttachment(req.attachment!)}
-            className="flex items-center gap-1 text-[8px] font-black text-sap-blue hover:text-indigo-700 uppercase tracking-widest transition-colors"
+            className="flex items-center gap-1 text-xxs font-black text-sap-blue hover:text-indigo-700 uppercase tracking-widest transition-colors"
           >
             <AttachmentIcon className="w-3 h-3" /> VER EVIDENCIA
           </button>
@@ -206,10 +208,10 @@ const RejectedRequestCard: FC<{
         </div>
 
         <div className="flex flex-col items-end gap-1 text-right">
-          <div className="px-2 py-0.5 rounded-sm bg-rose-500/10 text-[9px] font-bold text-rose-700 uppercase tracking-wider border border-rose-500/20">
+          <div className="px-2 py-0.5 rounded-sm bg-rose-500/10 text-xxs font-bold text-rose-700 uppercase tracking-wider border border-rose-500/20">
             Auditor: {req.resolvedBy}
           </div>
-          <p className="text-[9px] font-semibold text-token-text-tertiary uppercase tracking-wider">
+          <p className="text-xxs font-semibold text-token-text-tertiary uppercase tracking-wider">
             {req.resolvedAt ? formatDisplayDateTime(new Date(req.resolvedAt).toISOString()) : "-"}
           </p>
         </div>
@@ -447,7 +449,7 @@ const RequestsTab: React.FC = () => {
     return (
       <div className="min-h-[500px] flex flex-col items-center justify-center gap-5">
         <div className="relative">
-          <div className="w-12 h-12 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
+          <LoadingSpinner size="lg" variant="default" />
           <div className="absolute inset-0 flex items-center justify-center">
             <InboxArrowDownIcon className="w-5 h-5 text-sap-blue animate-pulse" />
           </div>
@@ -480,7 +482,7 @@ const RequestsTab: React.FC = () => {
               >
                 {statusFilter === status && (
                   <div
-                    className={`absolute inset-0 shadow-md rounded-sm -z-10 animate-in fade-in ${
+                    className={`absolute inset-0 shadow-md rounded-sm -${Z.sticky} animate-in fade-in ${
                       status === "pending"
                         ? "bg-amber-500 shadow-amber-500/20"
                         : status === "approved"
@@ -489,7 +491,9 @@ const RequestsTab: React.FC = () => {
                     }`}
                   />
                 )}
-                <span className="relative z-10">{CORRECTION_REQUEST_STATUS_TEXT[status]}</span>
+                <span className={`relative ${Z.sticky}`}>
+                  {CORRECTION_REQUEST_STATUS_TEXT[status]}
+                </span>
                 <span
                   className={`
                     px-2 py-0.5 rounded-sm text-[10px] font-bold transition-colors

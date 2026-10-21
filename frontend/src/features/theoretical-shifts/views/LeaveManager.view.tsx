@@ -25,6 +25,7 @@ import EmptyState from "../../../components/ui/EmptyState";
 import LeaveListDesktop from "../components/LeaveListDesktop";
 import LeaveListMobile from "../components/LeaveListMobile";
 import { formatBusinessDate } from "../../../utils/dateUtils";
+import { Z } from "../../../constants/zScale";
 
 type ProcessedLeave = LeaveRecord & { employeeName: string };
 
@@ -183,7 +184,9 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                       />
                     </div>
                     {isDropdownOpen && searchTerm && (
-                      <ul className="absolute z-50 w-full bg-token-surface-card border border-token-border-technical rounded-xl mt-2 max-h-60 overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-top-2">
+                      <ul
+                        className={`absolute ${Z.overlay} w-full bg-token-surface-card border border-token-border-technical rounded-xl mt-2 max-h-60 overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-top-2`}
+                      >
                         {filteredEmployeesForSearch.length > 0 ? (
                           filteredEmployeesForSearch.map((employee: Employee) => (
                             <li

@@ -164,7 +164,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-token-border-technical text-[9px] uppercase tracking-widest text-token-text-tertiary bg-token-surface-stripe/50 font-black">
+              <tr className="border-b border-token-border-technical text-xxs uppercase tracking-widest text-token-text-tertiary bg-token-surface-stripe/50 font-black">
                 <th className="p-4">Timestamp</th>
                 <th className="p-4">Operador</th>
                 <th className="p-4">Acción</th>

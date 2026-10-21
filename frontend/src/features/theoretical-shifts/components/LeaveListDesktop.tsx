@@ -3,6 +3,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { LeaveRecord } from "../../../types/index";
 import Button from "../../../components/ui/Button";
 import { EditIcon, DeleteIcon } from "../../../components/ui/icons/index";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   LIST_ROW_HEIGHT,
   ROW_BASE_CLASS,
@@ -109,7 +110,7 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-token-accent-brand"></div>
+            <LoadingSpinner size="md" variant="default" />
           </div>
         ) : (
           <div

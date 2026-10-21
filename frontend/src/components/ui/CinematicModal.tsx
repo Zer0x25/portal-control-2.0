@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./icons";
+import { Z } from "../../constants/zScale";
 
 interface CinematicModalProps {
   isOpen: boolean;
@@ -103,7 +104,7 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 ${overlayAnimation}`}
+      className={`fixed inset-0 ${Z.max} flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 ${overlayAnimation}`}
       onClick={onClose}
     >
       <div

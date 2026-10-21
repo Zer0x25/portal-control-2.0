@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef } from "react";
 import { CLOCKING_STATUS_CONFIG } from "../../../utils/mappings";
 import { ClockingStatus, Employee } from "../../../types";
 import Input from "../../../components/ui/Input";
-import KpiCard from "../../../components/ui/KpiCard";
+import { MetricCard } from "../../../components/ui/MetricCard";
 import { UsersIcon } from "../../../components/ui/icons/index";
 
 interface EmployeeWithStatus {
@@ -56,7 +56,8 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
   });
 
   return (
-    <KpiCard
+    <MetricCard
+      kind="panel"
       title={
         <div className="flex items-center gap-3">
           <span className="text-[11px] font-bold uppercase tracking-wider text-token-text-primary">
@@ -148,7 +149,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
 
                     <div
                       className={`
-                          text-[9px] font-bold px-3 py-1.5 rounded-sm border border-black/5 dark:border-white/10 tracking-widest uppercase whitespace-nowrap transition-transform group-hover:scale-105
+                          text-xxs font-bold px-3 py-1.5 rounded-sm border border-black/5 dark:border-white/10 tracking-widest uppercase whitespace-nowrap transition-transform group-hover:scale-105
                           ${config.bg} ${config.text}
                       `}
                     >
@@ -170,7 +171,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
           )}
         </div>
       </div>
-    </KpiCard>
+    </MetricCard>
   );
 };
 

@@ -40,8 +40,8 @@ const Badge: React.FC<BadgeProps> = ({
   };
 
   const sizeStyles = {
-    sm: "px-2 py-0.5 text-[8px] gap-1.5",
-    md: "px-3 py-1 text-[10px] gap-2",
+    sm: "px-2 py-0.5 typo-ui-badge gap-1.5",
+    md: "px-3 py-1 typo-ui-badge gap-2",
   };
 
   return (

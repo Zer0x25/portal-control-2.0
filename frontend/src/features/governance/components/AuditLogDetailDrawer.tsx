@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
-  XMarkIcon,
+  CloseIcon,
   ClockIcon,
   UserIcon,
   ServerIcon,
@@ -10,6 +10,7 @@ import {
 import { AuditLog } from "../../../types/index";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import IconBox from "../../../components/ui/IconBox";
+import { Z } from "../../../constants/zScale";
 
 interface AuditLogDetailDrawerProps {
   log: AuditLog | null;
@@ -56,7 +57,7 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
                   {key}
                 </span>
                 {isDiff && (
-                  <span className="text-[9px] font-bold bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded-xs border border-blue-500/20">
+                  <span className="text-xxs font-bold bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded-xs border border-blue-500/20">
                     MODIFICADO
                   </span>
                 )}
@@ -95,21 +96,70 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
 };
 
 const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClose }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Escape: el drawer es descartable por teclado (estándar de modal, AC2).
+  useEffect(() => {
+    if (!log) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [log, onClose]);
+
+  // Focus inicial + focus trap + retorno (misma garantía que CinematicModal).
+  useEffect(() => {
+    if (!log) return;
+    const panel = panelRef.current;
+    const previous = document.activeElement as HTMLElement | null;
+    panel?.focus({ preventScroll: true });
+
+    const handleTab = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !panel) return;
+      const items = [
+        ...panel.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ];
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTab);
+    return () => {
+      document.removeEventListener("keydown", handleTab);
+      previous?.focus?.();
+    };
+  }, [log]);
+
   return (
     log && (
       <>
         {/* Overlay */}
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90 animate-in fade-in"
+          className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${Z.overlay} animate-in fade-in`}
         />
 
         {/* Drawer */}
         <div
+          ref={panelRef}
+          tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-label="Detalle de evento de auditoría"
-          className="fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl z-100 border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms]"
+          className={`fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl ${Z.modal} border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms] focus:outline-none`}
         >
           {/* Header */}
           <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">
@@ -134,7 +184,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
               aria-label="Cerrar detalle"
               className="p-2 hover:bg-token-surface-active rounded-full transition-colors text-token-text-tertiary"
             >
-              <XMarkIcon className="w-5 h-5" />
+              <CloseIcon className="w-5 h-5" />
             </button>
           </div>
 
@@ -209,7 +259,7 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
 
           {/* Footer */}
           <div className="p-6 border-t border-token-border-technical bg-token-surface-stripe flex justify-end">
-            <span className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-[0.2em] opacity-40">
+            <span className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.2em] opacity-40">
               Seguridad Enterprise &bull; Trazabilidad v3.5
             </span>
           </div>

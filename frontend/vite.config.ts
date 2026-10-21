@@ -2,6 +2,17 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { readFileSync } from "node:fs";
+
+// Version de despliegue: release-please la actualiza en package.json. El
+// `buster` del cache persistido de TanStack Query (spec 032) la usa para
+// invalidar datos entre releases.
+const appVersion = (
+  JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as {
+    version?: string;
+  }
+).version;
+const buildVersion = process.env.VITE_BUILD_VERSION || appVersion || "dev";
 
 // Preload de la fuente del cuerpo (Inter-Regular, pesos 400/500) con su URL
 // hasheada del bundle: sin esto el navegador la descubre tarde vía CSS y el
@@ -35,6 +46,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
+    define: {
+      __BUILD_VERSION__: JSON.stringify(buildVersion),
+    },
     server: {
       host: true,
       proxy: {

@@ -15,7 +15,7 @@ import {
   ShieldIcon,
   DocumentTextIcon,
 } from "../../../components/ui/icons/index";
-import SmtpConfigModal from "../../../components/ui/SmtpConfigModal";
+import SmtpConfigModal from "../components/SmtpConfigModal";
 import Button from "../../../components/ui/Button";
 import type { EmailNotificationRules } from "../../../types";
 
@@ -223,7 +223,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-primary">
                   Nueva Comunicación
                 </h2>
-                <p className="text-[9px] text-token-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-60">
+                <p className="text-xxs text-token-text-tertiary font-bold uppercase tracking-widest mt-0.5 opacity-60">
                   DRAFT COMPOSER
                 </p>
               </div>

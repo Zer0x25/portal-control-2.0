@@ -98,7 +98,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                   initialDate={startDate}
                   maxDate={todayStr}
                 />
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-tight opacity-50 px-1">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-tight opacity-50 px-1">
                   Límite operativo: registros históricos
                 </p>
               </div>
@@ -131,7 +131,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                   minDate={startDate}
                   maxDate={todayStr}
                 />
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-tight opacity-50 px-1">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-tight opacity-50 px-1">
                   Se recomienda cierre de mes contable
                 </p>
               </div>
@@ -190,7 +190,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                 </p>
               </div>
               <div className="p-4 bg-token-surface-card border border-token-border-technical rounded-sm mt-8">
-                <p className="text-[9px] font-bold text-token-text-tertiary uppercase leading-relaxed text-center">
+                <p className="text-xxs font-bold text-token-text-tertiary uppercase leading-relaxed text-center">
                   Toda extracción de datos es auditada bajo los protocolos del Centro de Control.
                 </p>
               </div>

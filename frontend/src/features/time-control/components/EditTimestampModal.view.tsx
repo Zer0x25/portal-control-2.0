@@ -45,7 +45,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
             <h3 className="text-sm font-black text-token-text-primary uppercase italic leading-none truncate">
               Ajustar Registro
             </h3>
-            <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
+            <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-1.5 italic leading-none">
               {fieldLabel} Operativo
             </p>
           </div>

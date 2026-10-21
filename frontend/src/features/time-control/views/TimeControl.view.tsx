@@ -14,14 +14,13 @@ import Container from "../../../components/ui/Container";
 import ClockingPanel from "../components/ClockingPanel";
 import TimeRecordFilters from "../components/TimeRecordFilters";
 import TimeRecordTable from "../components/TimeRecordTable";
-const RecordHistoryModal = React.lazy(() => import("../../../components/ui/RecordHistoryModal"));
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+const RecordHistoryModal = React.lazy(() => import("../components/RecordHistoryModal"));
 const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
 const QuickActionModal = React.lazy(() =>
   import("..").then((m) => ({ default: m.QuickActionModal })),
 );
-const AnomalyResolutionModal = React.lazy(
-  () => import("../../../components/ui/AnomalyResolutionModal"),
-);
+const AnomalyResolutionModal = React.lazy(() => import("../components/AnomalyResolutionModal"));
 const EditTimestampModal = React.lazy(() =>
   import("..").then((m) => ({ default: m.EditTimestampModal })),
 );
@@ -100,7 +99,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
     return (
       <div className="py-20 text-center text-token-text-primary min-h-[500px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sap-blue"></div>
+          <LoadingSpinner size="md" variant="default" />
           <p className="text-sm font-medium animate-pulse">
             Optimizando registros de asistencia...
           </p>

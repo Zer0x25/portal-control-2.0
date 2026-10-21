@@ -14,6 +14,7 @@ import Container from "../../../components/ui/Container";
 import MeterConfigPanel from "../components/MeterConfigPanel";
 import MeterForm from "../components/MeterForm";
 import MeterHistory from "../components/MeterHistory";
+import { Z } from "../../../constants/zScale";
 
 export interface MeterReadingsViewProps {
   isLoadingReadings: boolean;
@@ -68,7 +69,7 @@ export const MeterReadingsView: React.FC<MeterReadingsViewProps> = ({
       )}
 
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${isFormOpen ? "bg-black/50" : "bg-transparent pointer-events-none"}`}
+        className={`fixed inset-0 ${Z.dropdown} transition-opacity duration-300 ${isFormOpen ? "bg-black/50" : "bg-transparent pointer-events-none"}`}
         onClick={() => setIsFormOpen(false)}
       >
         <div

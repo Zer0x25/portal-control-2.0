@@ -1,6 +1,6 @@
 import React from "react";
 import KpiFilterPanel from "./KpiFilterPanel";
-import KpiCard, { KpiStat } from "../../../components/ui/KpiCard";
+import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
 import {
   ClockIcon,
   DocumentChartBarIcon,
@@ -67,23 +67,28 @@ const KpisTab: React.FC = React.memo(() => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5">
             <div className="lg:col-span-8">
-              <KpiCard title="Asistencia y Puntualidad" icon={<ClockIcon />} className="h-full">
+              <MetricCard
+                kind="panel"
+                title="Asistencia y Puntualidad"
+                icon={<ClockIcon />}
+                className="h-full"
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                  <KpiStat
+                  <MetricStat
                     value={kpis.tardinessCount}
                     label="Registros con Atraso"
                     onClick={() =>
                       handleKpiClick("Detalle de Atrasos", kpiDetails.tardyRecords, "record")
                     }
                   />
-                  <KpiStat
+                  <MetricStat
                     value={kpis.absenceCount}
                     label="Ausencias Detectadas"
                     onClick={() =>
                       handleKpiClick("Detalle de Ausencias", kpiDetails.absentEmployees, "employee")
                     }
                   />
-                  <KpiStat
+                  <MetricStat
                     value={kpis.vacationCount}
                     label="Días de Vacaciones"
                     onClick={() =>
@@ -94,7 +99,7 @@ const KpisTab: React.FC = React.memo(() => {
                       )
                     }
                   />
-                  <KpiStat
+                  <MetricStat
                     value={kpis.medicalLeaveCount}
                     label="Licencias Médicas"
                     onClick={() =>
@@ -106,7 +111,7 @@ const KpisTab: React.FC = React.memo(() => {
                     }
                   />
                   <div className="sm:col-span-2">
-                    <KpiStat
+                    <MetricStat
                       value={kpis.specialPermitCount}
                       label="Permisos Especiales Vigentes"
                       onClick={() =>
@@ -119,21 +124,22 @@ const KpisTab: React.FC = React.memo(() => {
                     />
                   </div>
                 </div>
-              </KpiCard>
+              </MetricCard>
             </div>
 
             <div className="lg:col-span-4">
-              <KpiCard
+              <MetricCard
+                kind="panel"
                 title="Eficiencia Horaria"
                 icon={<DocumentChartBarIcon />}
                 className="h-full"
               >
                 <div className="space-y-3 mt-2">
                   {kpiMetrics.map((stat) => (
-                    <KpiStat key={stat.label} value={stat.value} label={stat.label} />
+                    <MetricStat key={stat.label} value={stat.value} label={stat.label} />
                   ))}
                 </div>
-              </KpiCard>
+              </MetricCard>
             </div>
           </div>
         </div>

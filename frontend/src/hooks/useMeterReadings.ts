@@ -1,14 +1,23 @@
 import { useStore } from "../store/useStore";
 import { useMeterMutations } from "./useMeterMutations";
+import {
+  useMeterConfigMutation,
+  useMeterConfigsQuery,
+  useMeterReadingsQuery,
+} from "./queries/useMeterReadingsQuery";
 import { idFactory } from "../utils/idFactory";
+import { MeterConfig } from "../types";
 import { MeterReadingItem } from "../types/dashboard";
 
+/**
+ * Lecturas de medidores: única fuente = `useMeterReadingsQuery`
+ * (spec 032 T5). El store deja de duplicar `readings`/`meterConfigs`.
+ */
 export const useMeterReadings = () => {
-  const readings = useStore((state) => state.readings);
-  const meterConfigs = useStore((state) => state.meterConfigs);
-  const isLoadingReadings = useStore((state) => state.isLoadingReadings);
-  const updateMeterConfigs = useStore((state) => state.updateMeterConfigs);
+  const { data: readings = [], isLoading } = useMeterReadingsQuery();
+  const { data: meterConfigs = [] } = useMeterConfigsQuery();
   const currentUser = useStore((state) => state.currentUser);
+  const saveMeterConfigs = useMeterConfigMutation();
 
   const { addReading: addReadingMutation, isPending } = useMeterMutations();
 
@@ -37,8 +46,9 @@ export const useMeterReadings = () => {
   return {
     readings,
     meterConfigs,
-    isLoadingReadings: isLoadingReadings || isPending,
+    isLoadingReadings: isLoading || isPending,
     addReading,
-    updateMeterConfigs,
+    updateMeterConfigs: (configs: MeterConfig[], _actor?: string) =>
+      saveMeterConfigs.mutateAsync(configs),
   };
 };

@@ -288,7 +288,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                     ? "Generar Cuenta de Acceso Asociada"
                     : "Crear Cuenta Electrónica para este Empleado"}
                 </p>
-                <p className="text-[9px] text-token-text-tertiary font-medium tracking-wide mt-0.5">
+                <p className="text-xxs text-token-text-tertiary font-medium tracking-wide mt-0.5">
                   Habilita el acceso al portal de autoservicio y marcación digital
                 </p>
               </div>

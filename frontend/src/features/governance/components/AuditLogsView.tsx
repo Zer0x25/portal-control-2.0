@@ -16,7 +16,7 @@ import { AuditLog } from "../../../types/index";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import { useDebounce } from "../../../hooks/useDebounce";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
-import ExportLogsModal from "../../../components/ui/ExportLogsModal";
+import ExportLogsModal from "./ExportLogsModal";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import IconBox from "../../../components/ui/IconBox";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
@@ -30,6 +30,7 @@ import {
   AuditLogsFilterParams,
 } from "../../../hooks/queries/useAuditLogsInfinite";
 import Tooltip from "../../../components/ui/Tooltip";
+import { Z } from "../../../constants/zScale";
 
 const ROW_HEIGHT_DESKTOP = 48;
 const ROW_HEIGHT_MOBILE = 90;
@@ -291,7 +292,9 @@ const AuditLogsView: React.FC = () => {
     <div className="w-full">
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-0">
-          <thead className="bg-token-surface-header sticky top-0 z-30 shadow-sm border-b border-token-border-technical">
+          <thead
+            className={`bg-token-surface-header sticky top-0 ${Z.dropdown} shadow-sm border-b border-token-border-technical`}
+          >
             <tr className="flex">
               {[
                 { label: "Temporalidad", width: "15%" },

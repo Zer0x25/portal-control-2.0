@@ -47,14 +47,14 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
             <h2 className="text-sm font-black uppercase tracking-widest text-token-text-primary">
               SISTEMA DE FILTRADO AVANZADO
             </h2>
-            <p className="text-[9px] font-bold text-token-text-secondary uppercase tracking-widest mt-1">
+            <p className="text-xxs font-bold text-token-text-secondary uppercase tracking-widest mt-1">
               Refinar búsqueda por metadatos de auditoría
             </p>
           </div>
         </div>
         <div className="flex items-center gap-6">
           {!isOpen && totalActive > 0 && (
-            <span className="text-[9px] font-black text-white bg-indigo-700 px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-2">
+            <span className="text-xxs font-black text-white bg-indigo-700 px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-2">
               <span className="bg-white text-indigo-700 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold">
                 {totalActive}
               </span>
@@ -342,7 +342,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                         endDate: "",
                       })
                     }
-                    className="text-[9px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
+                    className="text-xxs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
                   >
                     Limpiar Todo
                   </button>
@@ -446,7 +446,7 @@ const FilterPill: React.FC<FilterPillProps> = ({ label, onRemove, color }) => {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded-full border ${colorClasses[color]}`}
+      className={`inline-flex items-center gap-2 px-3 py-1.5 text-xxs font-bold uppercase tracking-wider rounded-full border ${colorClasses[color]}`}
     >
       {label}
       <button onClick={onRemove} aria-label={`Quitar filtro ${label}`}>

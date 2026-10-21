@@ -1,5 +1,4 @@
 import { useCallback, useMemo } from "react";
-import { useStore } from "../store/useStore";
 import * as schedulingService from "../services/schedulingService";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
 import { useAssignedShiftsQuery } from "./queries/useAssignedShiftsQuery";
@@ -7,6 +6,14 @@ import { useHolidaysQuery } from "./queries/useHolidaysQuery";
 import { useLeavesQuery } from "./queries/useLeavesQuery";
 import { useEmployees } from "./useEmployees";
 import { useCorrectionRequestsQuery } from "./queries/useCorrectionRequestsQuery";
+import {
+  useGlobalMaxWeeklyHoursQuery,
+  useAreaListQuery,
+  useWorkdayTypeListQuery,
+  useEmailRecipientsListQuery,
+  useAccountingLockDateQuery,
+} from "./queries/useConfigQuery";
+import { useConfigMutations } from "./useConfigMutations";
 import { useCorrectionRequestMutations } from "./useCorrectionRequestMutations";
 import {
   EmployeeDailyScheduleInfo,
@@ -40,17 +47,22 @@ export const useScheduling = (requestsStatus?: string, sinceRequests?: number) =
     return [];
   };
 
-  // --- Config (Kept in Store) ---
-  const globalMaxWeeklyHours = useStore((state) => state.globalMaxWeeklyHours);
-  const areaList = useStore((state) => state.areaList);
-  const workdayTypeList = useStore((state) => state.workdayTypeList);
-  const emailRecipientsList = useStore((state) => state.emailRecipientsList);
-  const accountingLockDate = useStore((state) => state.accountingLockDate);
-  const updateGlobalMaxWeeklyHours = useStore((state) => state.updateGlobalMaxWeeklyHours);
-  const updateAreaList = useStore((state) => state.updateAreaList);
-  const updateWorkdayTypeList = useStore((state) => state.updateWorkdayTypeList);
-  const updateEmailRecipientsList = useStore((state) => state.updateEmailRecipientsList);
-  const updateAccountingLockDate = useStore((state) => state.updateAccountingLockDate);
+  // --- Config (spec 032 T4: única fuente = query hooks) ---
+  const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery();
+  const { data: areaList = ["Otros"] } = useAreaListQuery();
+  const { data: workdayTypeList = ["Artículo 22", "Full-Time", "Part-Time"] } =
+    useWorkdayTypeListQuery();
+  const { data: emailRecipientsList = ["info@test.lan"] } = useEmailRecipientsListQuery();
+  const { data: accountingLockDate = null } = useAccountingLockDateQuery();
+  const { updateConfig } = useConfigMutations();
+  const updateGlobalMaxWeeklyHours = (v: number) =>
+    updateConfig({ key: "global_max_hours", value: v });
+  const updateAreaList = (v: string[]) => updateConfig({ key: "area_list", value: v });
+  const updateWorkdayTypeList = (v: string[]) => updateConfig({ key: "workday_types", value: v });
+  const updateEmailRecipientsList = (v: string[]) =>
+    updateConfig({ key: "email_recipients", value: v });
+  const updateAccountingLockDate = (v: string | null) =>
+    updateConfig({ key: "accounting_lock_date", value: v });
 
   // --- Remote State (TanStack Query) ---
   const { data: shiftPatterns = [] } = useShiftPatternsQuery();

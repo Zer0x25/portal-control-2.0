@@ -14,7 +14,10 @@ import {
 } from "../../../components/ui/icons/index";
 import ReportTable from "../../../components/ui/ReportTable";
 import ReportFilterPanel from "./ReportFilterPanel";
+import PdfExportModeModal from "./PdfExportModeModal";
 import { useReportsTabController } from "../hooks/useReportsTabController";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 const justificationStyles: Record<string, string> = {
   Vacaciones: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
@@ -58,9 +61,11 @@ const ReportsTab: FC = () => {
       />
 
       {isLoading && (
-        <div className="fixed inset-0 z-200 flex items-center justify-center pointer-events-none">
+        <div
+          className={`fixed inset-0 ${Z.max} flex items-center justify-center pointer-events-none`}
+        >
           <div className="bg-token-surface-card px-10 py-6 rounded-sm border border-token-border-technical shadow-lg flex items-center gap-6 animate-in fade-in zoom-in-95">
-            <div className="w-10 h-10 border-4 border-sap-blue/20 border-t-sap-blue rounded-full animate-spin" />
+            <LoadingSpinner size="md" variant="default" />
             <span className="text-[11px] font-black uppercase tracking-widest text-token-text-primary">
               Estructurando Reporte Analítico...
             </span>
@@ -122,7 +127,9 @@ const ReportsTab: FC = () => {
                     <ExportIcon className="h-4 w-4" /> EXPORTAR
                   </button>
                   {isExportMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical z-150 p-2 animate-in fade-in slide-in-from-top-2">
+                    <div
+                      className={`absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical ${Z.modal} p-2 animate-in fade-in slide-in-from-top-2`}
+                    >
                       <button
                         onClick={() => handleExport("csv")}
                         className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
@@ -164,78 +171,12 @@ const ReportsTab: FC = () => {
       )}
 
       {/* Premium PDF Mode Modal */}
-      {showPdfModeModal && (
-        <div className="fixed inset-0 z-300 flex items-center justify-center p-6">
-          <div
-            onClick={() => setShowPdfModeModal(false)}
-            className="absolute inset-0 bg-black/70 backdrop-blur-md animate-in fade-in"
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Seleccionar formato de exportación PDF"
-            className="relative bg-token-surface-card rounded-sm shadow-2xl max-w-xl w-full p-12 border border-token-border-technical animate-in fade-in zoom-in-90"
-          >
-            <div className="space-y-10">
-              <div className="text-center">
-                <h3 className="text-3xl font-black text-token-text-primary uppercase tracking-tight leading-loose mb-2">
-                  Arquitectura Documental
-                </h3>
-                <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest opacity-70">
-                  SELECCIONE EL FORMATO DE COMPILACIÓN
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                <button
-                  onClick={async () => {
-                    await handleExportPdfSummary();
-                  }}
-                  className="flex items-center p-8 rounded-sm bg-token-surface-stripe border border-token-border-subtle transition duration-300 hover:border-sap-blue hover:shadow-xl group text-left"
-                >
-                  <div className="bg-sap-blue/10 p-4 rounded-sm mr-6 text-sap-blue group-hover:bg-sap-blue group-hover:text-white transition-colors">
-                    <TableCellsIcon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="font-black text-lg text-token-text-primary uppercase tracking-tight">
-                      Resumen Analítico
-                    </div>
-                    <div className="text-[9px] font-bold text-sap-blue mt-1 uppercase tracking-widest">
-                      MATRIZ TÉCNICA COMPARATIVA DE EQUIPO
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={async () => {
-                    await handleExportPdfCompiled();
-                  }}
-                  className="flex items-center p-8 rounded-sm bg-token-surface-stripe border border-token-border-subtle transition duration-300 hover:border-emerald-500 hover:shadow-xl group text-left"
-                >
-                  <div className="bg-emerald-500/10 p-4 rounded-sm mr-6 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                    <DocumentArrowDownIcon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="font-black text-lg text-token-text-primary uppercase tracking-tight">
-                      Expedientes Totales
-                    </div>
-                    <div className="text-[9px] font-bold text-emerald-600 mt-1 uppercase tracking-widest">
-                      FICHAS TÉCNICAS INDIVIDUALES COMPILADAS
-                    </div>
-                  </div>
-                </button>
-              </div>
-
-              <button
-                onClick={() => setShowPdfModeModal(false)}
-                className="w-full py-4 text-[10px] font-black text-token-text-tertiary hover:text-rose-500 transition-colors uppercase tracking-widest"
-              >
-                [ CANCELAR OPERACIÓN ]
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PdfExportModeModal
+        isOpen={showPdfModeModal}
+        onClose={() => setShowPdfModeModal(false)}
+        onExportSummary={handleExportPdfSummary}
+        onExportCompiled={handleExportPdfCompiled}
+      />
     </div>
   );
 };

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { useStore } from "../../../store/useStore";
 import { AssignedShift } from "../../../types";
+import { detectAssignmentConflicts } from "../../../utils/shiftUtils";
 
 export const useAssignmentConflicts = (assignments: AssignedShift[]) => {
-  const detectAssignmentConflicts = useStore((state) => state.detectAssignmentConflicts);
   const [conflictingAssignmentIds, setConflictingAssignmentIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {

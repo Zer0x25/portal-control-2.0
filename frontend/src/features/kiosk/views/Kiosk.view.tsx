@@ -17,6 +17,8 @@ import {
 } from "../../../components/ui/icons/index";
 import { DailyTimeRecord, Employee, ClockingStatus } from "../../../types/index";
 import type { KioskStep } from "../hooks/useKioskData";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import { Z } from "../../../constants/zScale";
 
 export interface KioskViewProps {
   step: KioskStep;
@@ -101,10 +103,10 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   } = props;
 
   const internalRenderHeader = () => (
-    <div className="absolute top-4 left-6 right-6 flex justify-between items-center z-50">
+    <div className={`absolute top-4 left-6 right-6 flex justify-between items-center ${Z.overlay}`}>
       <div className="hidden sm:flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-sap-blue flex items-center justify-center text-white shadow-lg shadow-sap-blue/20 border border-white/10 relative overflow-hidden group">
-          <FingerPrintIcon className="w-6 h-6 relative z-10" />
+          <FingerPrintIcon className={`w-6 h-6 relative ${Z.sticky}`} />
         </div>
         <div className="hidden sm:block">
           <h1 className="text-sm font-black text-white uppercase italic tracking-tighter leading-none">
@@ -117,7 +119,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         {step !== "rut_input" && (
           <button
             onClick={() => resetState && resetState()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-surface-stripe hover:bg-token-surface-active border border-token-border-subtle hover:border-token-border-technical text-[9px] font-black text-token-text-tertiary hover:text-token-text-primary uppercase tracking-[0.2em] transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-surface-stripe hover:bg-token-surface-active border border-token-border-subtle hover:border-token-border-technical text-xxs font-black text-token-text-tertiary hover:text-token-text-primary uppercase tracking-[0.2em] transition-all"
           >
             <ArrowUturnLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300 opacity-70 group-hover:opacity-100" />
             Atrás
@@ -142,14 +144,16 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
     <div key="rut" className="flex flex-col items-center">
       <div className="relative mb-5 sm:hidden">
         <div className="absolute inset-0 bg-sap-blue/40 rounded-2xl blur-2xl animate-pulse" />
-        <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-sap-blue via-indigo-600 to-sap-blue flex items-center justify-center text-white relative z-10 border border-white/20 shadow-2xl">
+        <div
+          className={`w-16 h-16 rounded-2xl bg-linear-to-br from-sap-blue via-indigo-600 to-sap-blue flex items-center justify-center text-white relative ${Z.sticky} border border-white/20 shadow-2xl`}
+        >
           <FingerPrintIcon className="w-8 h-8" />
         </div>
       </div>
       <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-1">
         Identificación
       </h2>
-      <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
+      <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
         Ingrese su RUT para comenzar
       </p>
 
@@ -237,11 +241,11 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       {clockStatusConfig && (
         <div className="rounded-2xl border border-token-border-technical bg-token-surface-stripe px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.25em]">
+            <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.25em]">
               Estado actual
             </span>
             <span
-              className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] ${clockStatusConfig.bg} ${clockStatusConfig.text}`}
+              className={`rounded-full px-3 py-1 text-xxs font-black uppercase tracking-[0.2em] ${clockStatusConfig.bg} ${clockStatusConfig.text}`}
             >
               {clockStatusConfig.label}
             </span>
@@ -327,7 +331,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
             </div>
           ))}
         </div>
-        <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest text-center mb-4">
+        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest text-center mb-4">
           Ingrese Nuevo PIN (4 dígitos)
         </p>
 
@@ -341,7 +345,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
             </div>
           ))}
         </div>
-        <p className="text-[9px] font-bold text-token-text-tertiary uppercase tracking-widest text-center">
+        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest text-center">
           Confirme Nuevo PIN
         </p>
       </div>
@@ -380,12 +384,14 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-token-surface-stripe overflow-hidden relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.1)_0%,transparent_70%)] z-0" />
+          <div
+            className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.1)_0%,transparent_70%)] ${Z.base}`}
+          />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-40"></div>
         </div>
 
-        <div className="z-10 text-center relative">
-          <div className="w-12 h-12 border-[3px] border-white/5 border-t-sap-blue rounded-full animate-spin mb-6 mx-auto" />
+        <div className={`${Z.sticky} text-center relative`}>
+          <LoadingSpinner size="lg" variant="onAccent" />
           <p className="font-black uppercase tracking-[0.4em] text-[10px] text-sap-blue animate-pulse">
             Sincronizando Biometría
           </p>
@@ -402,8 +408,12 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       className="min-h-dvh lg:min-h-screen bg-token-surface-stripe flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-sap-blue/30 selection:text-white"
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] z-0" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] z-0" />
+        <div
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] ${Z.base}`}
+        />
+        <div
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] ${Z.base}`}
+        />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-70"></div>
       </div>
@@ -413,7 +423,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       <div
         data-testid="kiosk-step"
         data-step={step}
-        className="relative z-10 w-full max-w-sm sm:max-w-[340px] bg-token-surface-card backdrop-blur-2xl rounded-[2.5rem] border border-token-border-technical shadow-4xl p-5 sm:p-6 overflow-hidden"
+        className={`relative ${Z.sticky} w-full max-w-sm sm:max-w-[340px] bg-token-surface-card backdrop-blur-2xl rounded-[2.5rem] border border-token-border-technical shadow-4xl p-5 sm:p-6 overflow-hidden`}
       >
         <div className="contents">
           {step === "rut_input" && renderRutInput()}
@@ -428,7 +438,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
                 Ingrese PIN
               </h2>
-              <p className="text-[9px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
+              <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
                 {selectedEmployee?.name}
               </p>
 
@@ -470,7 +480,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="fixed bottom-6 left-6 z-20">
+      <div className={`fixed bottom-6 left-6 ${Z.dropdown}`}>
         <div className="bg-token-surface-card backdrop-blur-xl border border-token-border-subtle px-4 py-2 rounded-full shadow-2xl">
           <SimpleConnectionIndicator />
         </div>

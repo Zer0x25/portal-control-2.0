@@ -9,6 +9,7 @@ import Container from "../../../components/ui/Container";
 import { ArrowPathIcon, CircleStackIcon, ClockIcon } from "../../../components/ui/icons/index";
 import { formatDateTime } from "../../../utils/dateUtils";
 import type { BackupFile } from "../../../types";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface BackupListModalViewProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
             <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tight italic leading-none">
               Respaldo de Sistema
             </h3>
-            <p className="text-[9px] font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
+            <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
               Listado de Snapshots y Backups
             </p>
           </div>
@@ -53,7 +54,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
       <Container variant="standard" noPadding data-ui-protected className="space-y-6">
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
+            <LoadingSpinner size="md" variant="default" />
             <p className="mt-2 text-sm text-token-text-secondary">Cargando respaldos...</p>
           </div>
         ) : error ? (
@@ -105,7 +106,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
                 >
                   {restoring === backup.name ? (
                     <>
-                      <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <LoadingSpinner size="md" variant="onAccent" />
                       Restaurando...
                     </>
                   ) : (

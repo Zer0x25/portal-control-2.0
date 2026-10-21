@@ -3,11 +3,11 @@ import { Routes, Route, Navigate } from "react-router";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROUTES } from "./constants";
 import { useAuth } from "./hooks/useAuth";
-import LoadingSpinner from "./components/ui/LoadingSpinner";
 import { useNavigationLoading } from "./hooks/useNavigationLoading";
 import { ROLES } from "./utils/mappings";
 import { useSocketEvents } from "./hooks/useSocketEvents";
 import { useControlInternoEnabledQuery } from "./hooks/queries/useConfigQuery";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 
 // Lazy loading components
 const LoginPage = React.lazy(() => import("./features/auth/pages/LoginPage"));
@@ -88,6 +88,9 @@ const MonthlyPlanningPage = React.lazy(() =>
   import("./features/planning/containers/MonthlyPlanning.container").then((m) => ({
     default: m.MonthlyPlanningContainer,
   })),
+);
+const DesignSystemCatalogPage = React.lazy(
+  () => import("./features/design-system/views/DesignSystemCatalog.view"),
 );
 const GovernanceHubPage = React.lazy(() =>
   import("./features/governance/containers/GovernanceHub.container").then((m) => ({
@@ -348,6 +351,16 @@ const App: React.FC = () => {
                 requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.AUDITOR]}
               >
                 <GovernanceHubPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.DESIGN_SYSTEM}
+            element={
+              <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                <Suspense fallback={<LoadingSpinner fullScreen />}>
+                  <DesignSystemCatalogPage />
+                </Suspense>
               </ProtectedRoute>
             }
           />

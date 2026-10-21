@@ -8,7 +8,7 @@ import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
 import PageHeader from "../../../components/ui/PageHeader";
-import { MegaphoneIcon, EditIcon, CheckIcon, XMarkIcon } from "../../../components/ui/icons";
+import { MegaphoneIcon, EditIcon, CheckIcon, CloseIcon } from "../../../components/ui/icons";
 
 export interface CommunicationsViewProps {
   content: string;
@@ -95,7 +95,7 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
                   variant="secondary"
                   className="h-11 px-8 bg-token-surface-card border-token-border-technical rounded-sm"
                 >
-                  <XMarkIcon className="w-4 h-4 mr-2" />
+                  <CloseIcon className="w-4 h-4 mr-2" />
                   Descartar
                 </Button>
               </div>

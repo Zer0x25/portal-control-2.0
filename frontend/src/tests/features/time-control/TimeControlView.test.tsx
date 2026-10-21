@@ -23,7 +23,7 @@ vi.mock("../../../features/time-control/components/TimeRecordTable", () => ({
   ),
 }));
 
-vi.mock("../../../components/ui/RecordHistoryModal", () => ({
+vi.mock("../../../features/time-control/components/RecordHistoryModal", () => ({
   default: () => <div>RECORD-HISTORY-MODAL</div>,
 }));
 vi.mock("../../../components/ui/ConfirmationModal", () => ({
@@ -37,7 +37,7 @@ vi.mock("../../../features/time-control", async (importOriginal) => {
     EditTimestampModal: () => <div>EDIT-TIMESTAMP-MODAL</div>,
   };
 });
-vi.mock("../../../components/ui/AnomalyResolutionModal", () => ({
+vi.mock("../../../features/time-control/components/AnomalyResolutionModal", () => ({
   default: () => <div>ANOMALY-RESOLUTION-MODAL</div>,
 }));
 
