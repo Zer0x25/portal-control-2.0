@@ -83,6 +83,7 @@ const SidebarView: React.FC<SidebarViewProps> = ({
           <button
             data-testid="theme-toggle-button"
             onClick={onToggleTheme}
+            aria-label={effectiveTheme === "dark" ? "Cambiar a modo luz" : "Cambiar a modo noche"}
             className="group flex items-center w-full px-4 py-3 rounded-md typo-ui-caption uppercase text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active transition-colors"
           >
             <div
