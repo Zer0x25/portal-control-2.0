@@ -8,6 +8,7 @@ import { exportToCSV, exportToPDF } from "../../../utils/export/index";
 import { exportService } from "../../../services/exportService";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
+import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 
 type EditableEmployeeData = Partial<
   Pick<Employee, "name" | "rut" | "position" | "area" | "workdayType" | "email" | "pin">
@@ -254,10 +255,13 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
         exportToCSV(headers, data, "lista_empleados");
         break;
       case "excel":
-        exportService.downloadEmployeesExcel({
-          search: searchTermTable,
-          status: view === "active" ? "Activo" : "Archivado",
-        });
+        void exportService
+          .downloadEmployeesExcel({
+            search: searchTermTable,
+            status: view === "active" ? "Activo" : "Archivado",
+          })
+          .then(({ blob, filename }) => triggerBrowserDownload(blob, filename))
+          .catch(() => addToast("Error al exportar a Excel.", "error"));
         break;
       case "pdf":
         exportToPDF("Lista de Empleados", headers, data, filtersString, {

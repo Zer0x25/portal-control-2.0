@@ -1,10 +1,11 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { shiftService } from "../../services/shiftService";
 import { PaginationOptions } from "../../types/scheduling";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useAssignedShiftsInfiniteQuery = (filters: PaginationOptions) => {
   return useInfiniteQuery({
-    queryKey: ["assignedShifts", filters],
+    queryKey: queryKeys.assignedShiftsList(filters),
     queryFn: async ({ pageParam = 1 }) => {
       const result = await shiftService.getAssignments({
         ...filters,

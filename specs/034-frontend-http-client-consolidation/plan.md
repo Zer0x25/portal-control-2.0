@@ -97,13 +97,18 @@ dedicado.
      `action: "print"` de `exportService.downloadCalendarPDF`, que pasa a
      `window.open` con un object URL en el hook.
 3. **Fase C — Política de red única (PR)**:
+   - **Ejecutada dentro del PR de la Fase A** (T15 y T16 adelantadas): emitir
+     `rate_limited` desde el cliente mientras el parche global siguiera
+     instalado habría duplicado el evento (dos mecanismos compitiendo por el
+     mismo status, que es justo lo que AC4 prohíbe). El parche y su instalación
+     desaparecen del mismo cambio que introduce al emisor único.
    - Eliminar `src/services/fetchGuards.ts` y su instalación en
      `src/main.tsx:12`.
    - Emitir `rate_limited` desde `apiClient`, conservando payload y consumidor
      (`src/store/useStore.ts:52-66`). El evento se emite **una sola vez por
      respuesta**, con el mismo lock de 5 s para no generar tormentas.
    - Verificar que `apiClient` ya reintentaba 429 con `Retry-After`
-     (`apiClient.ts:18,163-172`): con `fetchGuards` eliminado, la política
+     (`apiClient.ts:21,26,292-307`): con `fetchGuards` eliminado, la política
      queda en un solo sitio. Decisión a confirmar en el PR: si el evento de
      toast y el retry compiten, el toast se emite en el **primer** 429 y el
      retry respeta `Retry-After` sin re-emitir el evento.
@@ -183,7 +188,7 @@ dedicado.
 | `frontend/src/services/{config,holiday,seeding,health,email,kpi,shiftReport,auth,auditLog,correction,scheduling,export,import}Service.ts` | migrar a `apiClient` (firma intacta salvo los 6 `download*`)                                                                       |
 | `frontend/src/features/governance/hooks/useSystemMaintenanceController.ts`                                                                | los 8 `fetch(` salen a `healthService` / `apiClient`                                                                               |
 | `frontend/src/features/governance/hooks/useSecurityInsightsController.ts`                                                                 | el `fetch(` sale a `healthService` / `apiClient`                                                                                   |
-| `frontend/src/utils/download.ts`                                                                                                          | **nuevo** — `triggerBrowserDownload(blob, filename)`                                                                               |
+| `frontend/src/utils/triggerBrowserDownload.ts`                                                                                            | **nuevo** — `triggerBrowserDownload(blob, filename)`                                                                               |
 | `frontend/src/lib/queryKeys.ts`                                                                                                           | **nuevo** — tabla canónica de raíces y constructores de clave                                                                      |
 | `frontend/src/lib/queryCache.ts`                                                                                                          | allowlists alineadas con la tabla canónica                                                                                         |
 | `frontend/src/lib/queryClient.ts`                                                                                                         | `queries.retry: false` (dueño único del retry en `apiClient`) + clasificador de 4xx no transitorio                                 |
@@ -225,6 +230,12 @@ dedicado.
   que ya son `retry: false` (`useReportsQuery.ts:22`, `useHealthQuery.ts:78,86`,
   `useLeavesQuery.ts:17`, `useConfigQuery.ts:92`) son redundantes y se
   eliminan para no dejar dos políticas distintas escritas en el código.
+  **Excepción verificada en código**: de los dos de `useHealthQuery.ts`, solo
+  se elimina el de la **query** (redundante con el default `false`); el de
+  `apiClient.get("/health", { retry: false })` (`useHealthQuery.ts:78`) se
+  **mantiene** porque es **política de transporte** —un sonda de salud que
+  falla se reporta de inmediato, sin 2 reintentos con backoff— y no un
+  override de la capa de cache.
 - **Contrato del evento `rate_limited`**: **no cambia** (mismo nombre, mismo
   payload `{status, url, retryAfter}`, mismo consumidor). Se documenta para
   que el cambio de implementación (de parche global a emisión del cliente) sea
@@ -246,7 +257,7 @@ dedicado.
 | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | La migración a `apiClient` cambia el comportamiento de error (lanza vs devuelve)                          | el modo de error se decide **por endpoint** en el PR de cada lote, no de forma global; `authService` va en PR aparte                                | revertir el lote                |
 | Un 404 que antes era "sin datos" ahora lanza excepción y rompe una vista                                  | `apiClient` gana un modo "no-launching" para endpoints donde el 404 es de negocio (p. ej. brand-logo)                                               | revertir el service afectado    |
-| El dedup de GET en vuelo rompe una petición legítima que depende de respuestas distintas con la misma URL | la clave de dedup incluye (método, URL, auth) como ya hace `apiClient.ts:189-198`; los params van en la query string                                | revertir el cliente             |
+| El dedup de GET en vuelo rompe una petición legítima que depende de respuestas distintas con la misma URL | la clave de dedup incluye (método, URL, auth) como ya hace `apiClient.ts:426-442`; los params van en la query string                                | revertir el cliente             |
 | El evento `rate_limited` deja de dispararse (el toast no aparece)                                         | test explícito de emisión del evento en `apiClient.spec.ts` (AC4)                                                                                   | revertir `fetchGuards`          |
 | La barra de carga parpadea (flicker) por consultas muy rápidas                                            | piso mínimo de ~120 ms basado en la **duración real** de la query, no en un timer de simulación                                                     | volver al comportamiento actual |
 | La canonicalización de query keys deja alguna query huérfana                                              | el guardrail de la Fase E verifica que **toda** raíz usada está en una de las dos allowlists                                                        | revertir la tabla `QUERY_KEYS`  |

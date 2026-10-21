@@ -5,7 +5,16 @@ import {
   getDetailedReport,
   runKpiCalculation,
 } from "../../services/kpiService";
+import { jsonResponse } from "../helpers/mockResponse";
 
+vi.mock("../../services/authToken", () => ({
+  authTokenStore: {
+    getToken: () => "test-token",
+    setToken: vi.fn(),
+    removeToken: vi.fn(),
+    getAuthHeader: () => ({ Authorization: "Bearer test-token" }),
+  },
+}));
 vi.mock("../../services/authService", () => ({
   authService: {
     getAuthHeader: () => ({ Authorization: "Bearer test-token" }),
@@ -20,9 +29,8 @@ describe("kpiService contracts", () => {
   it("normalizes dashboard overview response", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
+      vi.fn().mockResolvedValue(
+        jsonResponse({
           activeShifts: 4,
           teamStatus: {
             present: 3,
@@ -30,7 +38,7 @@ describe("kpiService contracts", () => {
             anomaliesCount: 1,
           },
         }),
-      }),
+      ),
     );
 
     const result = await getDashboardOverview();
@@ -48,10 +56,7 @@ describe("kpiService contracts", () => {
   it("normalizes detailed report response", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ summary: [{ employeeId: "e1", name: "Ana" }] }),
-      }),
+      vi.fn().mockResolvedValue(jsonResponse({ summary: [{ employeeId: "e1", name: "Ana" }] })),
     );
 
     const result = await getDetailedReport({
@@ -64,13 +69,7 @@ describe("kpiService contracts", () => {
   });
 
   it("normalizes daily planning response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ date: "2026-03-05" }),
-      }),
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ date: "2026-03-05" })));
 
     const result = await getDailyPlanningSummary();
 
@@ -79,10 +78,7 @@ describe("kpiService contracts", () => {
   });
 
   it("sends employee ids only in KPI summary payload", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ kpis: {}, kpiDetails: {} }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ kpis: {}, kpiDetails: {} }));
     vi.stubGlobal("fetch", fetchMock);
 
     await runKpiCalculation({

@@ -4,6 +4,7 @@ import { useToasts } from "./useToasts";
 import { useUsersQuery } from "./queries/useUsersQuery";
 import { User, UserRole } from "../types";
 import { userService } from "../services/userService";
+import { queryKeys } from "../lib/queryKeys";
 
 /**
  * Cuentas de usuario: única fuente = `useUsersQuery` (spec 032 T5).
@@ -15,7 +16,7 @@ export const useUsers = () => {
   const { addToast } = useToasts();
   const { currentUser } = useAuth();
 
-  const refreshUsers = () => queryClient.invalidateQueries({ queryKey: ["users"] });
+  const refreshUsers = () => queryClient.invalidateQueries({ queryKey: queryKeys.users() });
 
   const getUserById = (id: string) => users.find((user) => user.id === id);
 

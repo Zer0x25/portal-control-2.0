@@ -1,13 +1,14 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { correctionService } from "../../services/correctionService";
 import { useAuth } from "../useAuth";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useCorrectionRequestsQuery = (status?: string, since?: number) => {
   const { currentUser } = useAuth();
   const isAuthorized = !!currentUser;
 
   return useInfiniteQuery({
-    queryKey: ["correctionRequests", { status, since }],
+    queryKey: queryKeys.correctionRequestsList({ status, since }),
     queryFn: async ({ pageParam = 0 }) => {
       if (!isAuthorized) return { requests: [], total: 0 };
       return await correctionService.getAll({

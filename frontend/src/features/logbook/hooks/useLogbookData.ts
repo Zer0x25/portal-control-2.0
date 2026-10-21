@@ -13,6 +13,7 @@ import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { idFactory } from "../../../utils/idFactory";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { shiftReportService } from "../../../services/shiftReportService";
+import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 
 export const useLogbookData = () => {
   const { currentUser, logout } = useAuth();
@@ -188,7 +189,8 @@ export const useLogbookData = () => {
 
   const onDownloadPDF = async (report: ShiftReport) => {
     try {
-      await shiftReportService.downloadShiftReportPDF(report.id);
+      const { blob, filename } = await shiftReportService.downloadShiftReportPDF(report.id);
+      triggerBrowserDownload(blob, filename);
       addToast("Descarga iniciada", "success");
     } catch (error) {
       console.error("Download error:", error);
@@ -198,7 +200,8 @@ export const useLogbookData = () => {
 
   const onExportExcel = async (report: ShiftReport) => {
     try {
-      await shiftReportService.downloadShiftReportExcel(report.id);
+      const { blob, filename } = await shiftReportService.downloadShiftReportExcel(report.id);
+      triggerBrowserDownload(blob, filename);
       addToast("Exportación Excel iniciada", "success");
     } catch (error) {
       console.error("Export error:", error);

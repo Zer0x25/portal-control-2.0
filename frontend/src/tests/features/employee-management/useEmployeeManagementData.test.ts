@@ -20,7 +20,10 @@ const {
   refreshEmployeesMock: vi.fn(),
   exportToCSVMock: vi.fn(),
   exportToPDFMock: vi.fn(),
-  downloadEmployeesExcelMock: vi.fn(),
+  downloadEmployeesExcelMock: vi.fn().mockResolvedValue({
+    blob: new Blob(["mock"], { type: "application/vnd.ms-excel" }),
+    filename: "lista_empleados.xlsx",
+  }),
   checkOpenRecordMock: vi.fn(),
 }));
 

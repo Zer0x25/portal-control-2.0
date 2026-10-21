@@ -17,6 +17,7 @@ import { useIntegrityStatus } from "../../../hooks/queries/useIntegrityStatus";
 import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
 import { useAuditLogMutations } from "../../../hooks/useAuditLogMutations";
 import IntegrityAnomalyTable from "./IntegrityAnomalyTable";
+import { queryKeys } from "../../../lib/queryKeys";
 
 const IntegritySummaryView: React.FC = () => {
   const tableRef = React.useRef<HTMLDivElement>(null);
@@ -49,7 +50,7 @@ const IntegritySummaryView: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["integrityStatus"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.integrityStatus() });
   };
 
   return (

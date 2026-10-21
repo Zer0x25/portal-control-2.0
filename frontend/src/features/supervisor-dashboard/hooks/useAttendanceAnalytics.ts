@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
 import { SUPERVISOR_DASHBOARD_CONFIG } from "../config/performance";
 import { timeRecordService } from "../../../services/timeRecordService";
+import { queryKeys } from "../../../lib/queryKeys";
 
 interface AttendanceData {
   date: string;
@@ -41,7 +42,7 @@ export function useAttendanceAnalytics(days: number = 30) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["attendance-analytics", startDate, endDate],
+    queryKey: queryKeys.attendanceAnalytics(startDate, endDate),
     queryFn: async (): Promise<AttendanceData[]> => {
       // Agregado en servidor (una sola request de ~30 filas) en vez del
       // volcado paginado completo (~6MB) con agregación en cliente.

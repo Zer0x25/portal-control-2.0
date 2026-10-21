@@ -16,6 +16,7 @@ import {
   SortableReportKey,
 } from "../../../types/index";
 import { getChileDateISO } from "../../../utils/dateUtils";
+import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 
 export interface ReportsTabFilters {
   employeeId: string;
@@ -173,28 +174,32 @@ export const useReportsTabController = () => {
         }
 
         switch (formatType) {
-          case "excel":
-            await downloadReportExcel({
+          case "excel": {
+            const { blob, filename } = await downloadReportExcel({
               startDate: filters.startDateISO,
               endDate: filters.endDateISO,
               employeeId: filters.employeeId,
               area: filters.area,
               mode: isSingleEmployeeReport ? "detailed" : "summary",
             });
+            triggerBrowserDownload(blob, filename);
             addToast("Descarga Excel iniciada", "success");
             break;
+          }
           case "pdf":
             addToast("PDF Local deshabilitado - Use Descargar PDF (Servidor)", "warning");
             break;
-          case "server-pdf":
-            await downloadReportPDF({
+          case "server-pdf": {
+            const { blob, filename } = await downloadReportPDF({
               startDate: filters.startDateISO,
               endDate: filters.endDateISO,
               area: filters.area,
               employeeId: filters.employeeId,
             });
+            triggerBrowserDownload(blob, filename);
             addToast("Reporte PDF generado correctamente.", "success");
             break;
+          }
         }
       } catch (error) {
         console.error("Export failure:", error);
@@ -208,12 +213,13 @@ export const useReportsTabController = () => {
     setShowPdfModeModal(false);
     try {
       addToast("Arquitecturando Resumen General...", "info");
-      await downloadReportPDF({
+      const { blob, filename } = await downloadReportPDF({
         startDate: filters.startDateISO,
         endDate: filters.endDateISO,
         area: filters.area,
         mode: "summary",
       });
+      triggerBrowserDownload(blob, filename);
       addToast("PDF Generado", "success");
     } catch {
       addToast("Falla en compilación", "error");
@@ -224,12 +230,13 @@ export const useReportsTabController = () => {
     setShowPdfModeModal(false);
     try {
       addToast("Compilando Fichas Detalladas...", "info");
-      await downloadReportPDF({
+      const { blob, filename } = await downloadReportPDF({
         startDate: filters.startDateISO,
         endDate: filters.endDateISO,
         area: filters.area,
         mode: "compiled_detailed",
       });
+      triggerBrowserDownload(blob, filename);
       addToast("Reporte descargado exitosamente", "success");
     } catch {
       addToast("Falla en compilación", "error");

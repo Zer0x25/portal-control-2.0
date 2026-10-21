@@ -20,12 +20,30 @@ describe("persistencia del cache de queries (spec 032 AC2.2/AC2.3)", () => {
       "leaves",
       "shiftPatterns",
       "assignedShifts",
-      "calendar",
+      "calendarMatrix",
       "meterReadings",
       "timeRecords",
+      "shiftReports",
+      "attendanceAnalytics",
+      "dashboard",
+      "correctionRequests",
+      "notes",
+      "recordHistory",
     ]) {
       expect(shouldDehydrateQuery(queryWith([root, "x"])), root).toBe(true);
     }
+  });
+
+  /**
+   * Spec 034, T17/T22/T23: `calendar` y `reports` son raices **retiradas**.
+   *
+   * - `calendar` no tenia ninguna query (las invalidaciones apuntaban a un
+   *   arbol vacio); ahora apuntan a `calendarMatrix`.
+   * - `reports` se unifico con `shiftReports` (un unico recurso).
+   */
+  it("no persiste las raices retiradas (`calendar`, `reports`)", () => {
+    expect(shouldDehydrateQuery(queryWith(["calendar", "x"]))).toBe(false);
+    expect(shouldDehydrateQuery(queryWith(["reports", "x"]))).toBe(false);
   });
 
   it("no persiste cuentas, auditoria ni diagnostico", () => {

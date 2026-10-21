@@ -25,8 +25,16 @@ vi.mock("react-router", () => ({
 
 vi.mock("../../../services/kpiService", () => ({
   getDetailedReport: (...args: unknown[]) => getDetailedReportMock(...args),
-  downloadReportExcel: vi.fn(),
-  downloadReportPDF: vi.fn(),
+  // Spec 034 T8: los metodos `download*` devuelven el binario; la descarga la
+  // dispara el hook con `triggerBrowserDownload`.
+  downloadReportExcel: vi.fn().mockResolvedValue({
+    blob: new Blob(["mock"], { type: "application/vnd.ms-excel" }),
+    filename: "Reporte_Asistencia.xlsx",
+  }),
+  downloadReportPDF: vi.fn().mockResolvedValue({
+    blob: new Blob(["mock"], { type: "application/pdf" }),
+    filename: "Reporte_Asistencia.pdf",
+  }),
 }));
 
 vi.mock("../../../services/authService", () => ({

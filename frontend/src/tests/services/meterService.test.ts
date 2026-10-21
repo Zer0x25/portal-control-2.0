@@ -1,4 +1,12 @@
 import { afterEach, expect, it, vi } from "vitest";
+vi.mock("../../services/authToken", () => ({
+  authTokenStore: {
+    getToken: () => "fixture",
+    setToken: vi.fn(),
+    removeToken: vi.fn(),
+    getAuthHeader: () => ({ Authorization: "Bearer fixture" }),
+  },
+}));
 vi.mock("../../services/authService", () => ({
   authService: { getAuthHeader: () => ({ Authorization: "Bearer fixture" }) },
 }));

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { auditLogService } from "../../services/auditLogService";
+import { queryKeys } from "../../lib/queryKeys";
 
 export interface IntegrityStatusSnapshot {
   status: "ok" | "degraded";
@@ -24,7 +25,7 @@ export interface IntegrityStatusSnapshot {
 
 export const useIntegrityStatus = () => {
   return useQuery<IntegrityStatusSnapshot>({
-    queryKey: ["integrityStatus"],
+    queryKey: queryKeys.integrityStatus(),
     queryFn: () => auditLogService.getIntegrityStatus(),
     refetchInterval: 1000 * 30, // Poll every 30 seconds
     staleTime: 1000 * 10,

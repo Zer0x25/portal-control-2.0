@@ -141,6 +141,11 @@ export default [
       ...prettierConfig.rules,
       "prettier/prettier": ["error", { endOfLine: "auto" }],
       "no-undef": "off",
+      // La regla base no entiende las sobrecargas de TypeScript (las marca
+      // como redeclaracion); el compilador reporta las redeclaraciones reales
+      // (TS2451). Guide oficial de typescript-eslint:
+      // https://typescript-eslint.io/rules/no-redeclare/
+      "no-redeclare": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-console": ["warn", { allow: ["warn", "error"] }],

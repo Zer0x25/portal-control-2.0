@@ -5,6 +5,7 @@ import { timeRecordService } from "../../services/timeRecordService";
 import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
+import { queryKeys } from "../../lib/queryKeys";
 
 export interface SyncSlice {
   syncState: SyncState;
@@ -88,31 +89,31 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
       const steps = [
         {
           name: "Usuarios",
-          action: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.users() }),
           skip: role === "Usuario",
         },
         {
           name: "Empleados",
-          action: () => queryClient.invalidateQueries({ queryKey: ["employees"] }),
+          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.employees() }),
         },
         // Spec 032 T4: config y shift ahora viven en query hooks; el sync
         // solo invalida sus raices para que react-query refresque bajo demanda.
         {
           name: "Configuraciones",
-          action: () => queryClient.invalidateQueries({ queryKey: ["config"] }),
+          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.configRoot() }),
         },
         {
           name: "Horarios",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
-            await queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.shiftPatterns() });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.assignedShifts() });
           },
         },
         {
           name: "Medidores",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["meterReadings"] });
-            await queryClient.invalidateQueries({ queryKey: ["config", "meter_configs"] });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.meterReadings() });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.config("meter_configs") });
           },
           skip: role === "Usuario",
         },

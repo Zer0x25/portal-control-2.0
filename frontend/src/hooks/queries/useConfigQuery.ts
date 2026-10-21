@@ -2,11 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { configService } from "../../services/configService";
 import type { BrandLogo } from "../../services/configService";
 import { authService } from "../../services/authService";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useConfigQuery = <T = unknown>(key: string) => {
   const hasToken = !!authService.getToken();
   return useQuery<T | null>({
-    queryKey: ["config", key],
+    queryKey: queryKeys.config(key),
     queryFn: () => configService.get<T>(key),
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: hasToken,
@@ -16,7 +17,7 @@ export const useConfigQuery = <T = unknown>(key: string) => {
 export const useAccountingLockDateQuery = () => {
   const hasToken = !!authService.getToken();
   return useQuery<string | null>({
-    queryKey: ["config", "accounting_lock_date"],
+    queryKey: queryKeys.config("accounting_lock_date"),
     queryFn: () => configService.get<string>("accounting_lock_date"),
     staleTime: 1000 * 60 * 5,
     enabled: hasToken,
@@ -26,7 +27,7 @@ export const useAccountingLockDateQuery = () => {
 export const useGlobalMaxWeeklyHoursQuery = () => {
   const hasToken = !!authService.getToken();
   return useQuery<number>({
-    queryKey: ["config", "global_max_hours"],
+    queryKey: queryKeys.config("global_max_hours"),
     queryFn: async () => (await configService.get<number>("global_max_hours")) ?? 44,
     staleTime: 1000 * 60 * 5,
     enabled: hasToken,
@@ -36,7 +37,7 @@ export const useGlobalMaxWeeklyHoursQuery = () => {
 export const useAreaListQuery = () => {
   const hasToken = !!authService.getToken();
   return useQuery<string[]>({
-    queryKey: ["config", "area_list"],
+    queryKey: queryKeys.config("area_list"),
     queryFn: async () => (await configService.get<string[]>("area_list")) ?? ["Otros"],
     staleTime: 1000 * 60 * 5,
     enabled: hasToken,
@@ -46,7 +47,7 @@ export const useAreaListQuery = () => {
 export const useWorkdayTypeListQuery = () => {
   const hasToken = !!authService.getToken();
   return useQuery<string[]>({
-    queryKey: ["config", "workday_types"],
+    queryKey: queryKeys.config("workday_types"),
     queryFn: async () =>
       (await configService.get<string[]>("workday_types")) ?? [
         "Artículo 22",
@@ -61,7 +62,7 @@ export const useWorkdayTypeListQuery = () => {
 export const useEmailRecipientsListQuery = () => {
   const hasToken = !!authService.getToken();
   return useQuery<string[]>({
-    queryKey: ["config", "email_recipients"],
+    queryKey: queryKeys.config("email_recipients"),
     queryFn: async () =>
       (await configService.get<string[]>("email_recipients")) ?? ["info@test.lan"],
     staleTime: 1000 * 60 * 5,
@@ -72,7 +73,7 @@ export const useEmailRecipientsListQuery = () => {
 export const useControlInternoEnabledQuery = () => {
   const hasToken = !!authService.getToken();
   return useQuery<boolean>({
-    queryKey: ["config", "is_control_interno_enabled"],
+    queryKey: queryKeys.config("is_control_interno_enabled"),
     queryFn: async () => (await configService.get<boolean>("is_control_interno_enabled")) ?? true,
     staleTime: 1000 * 60 * 5,
     enabled: hasToken,
@@ -85,11 +86,11 @@ export const useControlInternoEnabledQuery = () => {
  */
 export const useBrandLogoQuery = () => {
   return useQuery<BrandLogo | null>({
-    queryKey: ["config", "public", "branding_logo"],
+    queryKey: queryKeys.configPublic("branding_logo"),
     queryFn: () => configService.getPublicBrandLogo(),
     staleTime: 1000 * 60 * 5,
-    // 404 = estado esperado (sin logo cargado), no falla transitoria: sin reintentos.
-    retry: false,
+    // 404 = estado esperado (sin logo cargado), no falla transitoria: la
+    // politica global no reintenta (spec 034, AC2).
     refetchOnWindowFocus: false,
   });
 };

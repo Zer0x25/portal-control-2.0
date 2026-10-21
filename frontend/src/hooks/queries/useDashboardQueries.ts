@@ -3,13 +3,14 @@ import { getDashboardOverview, getDailyPlanningSummary } from "../../services/kp
 import { timeRecordService } from "../../services/timeRecordService";
 import { useAuth } from "../useAuth";
 import { DashboardOverviewResponse, DailyPlanningSummaryResponse } from "../../types";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useDashboardOverviewQuery = () => {
   const { currentUser } = useAuth();
   const isEnabled = !!currentUser;
 
   return useQuery({
-    queryKey: ["dashboard", "overview"],
+    queryKey: queryKeys.dashboardOverview(),
     queryFn: getDashboardOverview as () => Promise<DashboardOverviewResponse>,
     enabled: isEnabled,
     staleTime: 1000 * 60, // 1 minute (Real-time critical)
@@ -22,7 +23,7 @@ export const useDailyPlanningQuery = () => {
   const isEnabled = !!currentUser;
 
   return useQuery({
-    queryKey: ["dashboard", "dailyPlanning"],
+    queryKey: queryKeys.dashboardDailyPlanning(),
     queryFn: getDailyPlanningSummary as () => Promise<DailyPlanningSummaryResponse>,
     enabled: isEnabled,
     staleTime: 1000 * 60 * 5, // 5 minutes (Planning doesn't change much during day)
@@ -34,7 +35,7 @@ export const useRecentActivityQuery = () => {
   const isEnabled = !!currentUser;
 
   return useQuery({
-    queryKey: ["dashboard", "recentActivity"],
+    queryKey: queryKeys.dashboardRecentActivity(),
     queryFn: async () => {
       const response = await timeRecordService.getAll({ pageSize: 50, page: 1 });
       return response.data;

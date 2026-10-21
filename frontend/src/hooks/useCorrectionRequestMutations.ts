@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { correctionService } from "../services/correctionService";
 import { useToasts } from "./useToasts";
 import { CorrectionRequest } from "../types";
+import { queryKeys } from "../lib/queryKeys";
 
 export const useCorrectionRequestMutations = () => {
   const queryClient = useQueryClient();
@@ -11,7 +12,7 @@ export const useCorrectionRequestMutations = () => {
     mutationFn: (request: Partial<CorrectionRequest>) =>
       correctionService.create(request as CorrectionRequest),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["correctionRequests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.correctionRequests() });
       addToast("Solicitud enviada exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -32,23 +33,23 @@ export const useCorrectionRequestMutations = () => {
       rejectionReason?: string;
     }) => correctionService.updateStatus(id, status, resolvedBy, rejectionReason),
     onMutate: async ({ id, status, resolvedBy, rejectionReason }) => {
-      await queryClient.cancelQueries({ queryKey: ["correctionRequests"] });
+      await queryClient.cancelQueries({ queryKey: queryKeys.correctionRequests() });
 
       const previousQueries = queryClient.getQueriesData<{
         pages: Array<{ requests: CorrectionRequest[]; total: number }>;
         pageParams: unknown[];
-      }>({ queryKey: ["correctionRequests"] });
+      }>({ queryKey: queryKeys.correctionRequests() });
 
       const previousStats = queryClient.getQueryData<{
         pending: number;
         approved: number;
         rejected: number;
-      }>(["correctionRequests", "stats"]);
+      }>(queryKeys.correctionRequestsStats());
 
       queryClient.setQueriesData<{
         pages: Array<{ requests: CorrectionRequest[]; total: number }>;
         pageParams: unknown[];
-      }>({ queryKey: ["correctionRequests"] }, (old) => {
+      }>({ queryKey: queryKeys.correctionRequests() }, (old) => {
         if (!old || !old.pages) return old;
         return {
           ...old,
@@ -71,7 +72,7 @@ export const useCorrectionRequestMutations = () => {
 
       if (previousStats) {
         queryClient.setQueryData(
-          ["correctionRequests", "stats"],
+          queryKeys.correctionRequestsStats(),
           (old: { pending: number; approved: number; rejected: number } | undefined) => {
             if (!old) return old;
             return {
@@ -93,7 +94,7 @@ export const useCorrectionRequestMutations = () => {
         });
       }
       if (context?.previousStats) {
-        queryClient.setQueryData(["correctionRequests", "stats"], context.previousStats);
+        queryClient.setQueryData(queryKeys.correctionRequestsStats(), context.previousStats);
       }
       addToast(`Error al actualizar solicitud: ${error.message}`, "error");
     },
@@ -101,7 +102,7 @@ export const useCorrectionRequestMutations = () => {
       addToast("Estado de solicitud actualizado", "success");
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["correctionRequests"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.correctionRequests() });
     },
   });
 

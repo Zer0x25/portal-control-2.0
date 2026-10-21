@@ -10,6 +10,7 @@ import { Employee, EmployeeStatus } from "../types";
 import { useEffect, useMemo } from "react";
 import { toBusinessDateChile } from "../utils/dateUtils";
 import { UserRole } from "../types/user";
+import { queryKeys } from "../lib/queryKeys";
 
 /**
  * Empleados: única fuente = `useEmployeesQuery` (spec 032 T5).
@@ -26,7 +27,8 @@ export const useEmployees = (_isKiosk: boolean = false) => {
   const employeesQuery = useEmployeesQuery();
   const kioskQuery = useKioskEmployeesQuery();
 
-  const invalidateEmployees = () => queryClient.invalidateQueries({ queryKey: ["employees"] });
+  const invalidateEmployees = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.employees() });
 
   const allEmployees = employeesQuery.data ?? [];
   const isLoading = employeesQuery.isLoading;
@@ -230,7 +232,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         }
 
         await invalidateEmployees();
-        await queryClient.invalidateQueries({ queryKey: ["users"] });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.users() });
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al archivar empleado";
@@ -270,7 +272,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         );
 
         await invalidateEmployees();
-        await queryClient.invalidateQueries({ queryKey: ["users"] });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.users() });
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al reactivar empleado";
