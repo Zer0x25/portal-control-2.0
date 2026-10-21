@@ -410,6 +410,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 </div>
                 <Button
                   onClick={handleAddArea}
+                  aria-label="Agregar nuevo departamento o área"
                   className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-sap-blue text-white shadow-lg shadow-sap-blue/20 p-0 shrink-0"
                 >
                   <PlusCircleIcon className="w-6 h-6" />
@@ -431,7 +432,8 @@ export const GlobalVariablesManager: React.FC = () => {
                         </div>
                         {area !== "Otros" && (
                           <button
-                            className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 border border-rose-500/20"
+                            aria-label={`Eliminar área ${area}`}
+                            className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-rose-500/20"
                             onClick={() => handleDeleteArea(area)}
                           >
                             <DeleteIcon className="w-4 h-4" />
@@ -479,6 +481,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 </div>
                 <Button
                   onClick={handleAddWorkdayType}
+                  aria-label="Agregar nuevo protocolo o tipo de jornada"
                   className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 p-0 shrink-0"
                 >
                   <PlusCircleIcon className="w-6 h-6" />
@@ -500,7 +503,8 @@ export const GlobalVariablesManager: React.FC = () => {
                         </div>
                         {!["Artículo 22", "Full-Time", "Part-Time"].includes(type) && (
                           <button
-                            className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 border border-rose-500/20"
+                            aria-label={`Eliminar protocolo ${type}`}
+                            className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-rose-500/20"
                             onClick={() => handleDeleteWorkdayType(type)}
                           >
                             <DeleteIcon className="w-4 h-4" />
@@ -549,6 +553,7 @@ export const GlobalVariablesManager: React.FC = () => {
                 </div>
                 <Button
                   onClick={handleAddEmailRecipient}
+                  aria-label="Registrar nuevo receptor de correo"
                   className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-rose-500 text-white shadow-lg shadow-rose-500/20 p-0 shrink-0"
                 >
                   <EnvelopeIcon className="w-5 h-5" />
@@ -571,7 +576,8 @@ export const GlobalVariablesManager: React.FC = () => {
                           </span>
                         </div>
                         <button
-                          className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 border border-rose-500/20"
+                          aria-label={`Eliminar receptor ${email}`}
+                          className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-rose-500/20"
                           onClick={() => handleDeleteEmailRecipient(email)}
                         >
                           <DeleteIcon className="w-4 h-4" />
