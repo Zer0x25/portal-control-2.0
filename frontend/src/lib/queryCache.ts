@@ -21,6 +21,9 @@ export const QUERY_CACHE_DB_VERSION = 1;
 export const QUERY_CACHE_STORE = "queryCache";
 export const QUERY_CACHE_KEY = "saphr:react-query-cache";
 
+/** Marca local del usuario propietario del cache persistido (sin PII). */
+export const QUERY_CACHE_OWNER_KEY = "saphr:query-cache-owner";
+
 export const QUERY_CACHE_BUSTER = BUILD_VERSION;
 
 /**
