@@ -1,8 +1,9 @@
 # Spec 032: Remote State Consolidation
 
-- Estado: Aprobado
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-20
+- Cierre: 2026-10-20 (T1–T10, suite completa verde)
 - ADR relacionado: [0022-ui-ux-consolidation.md](file:///docs/adr/0022-ui-ux-consolidation.md) (extiende [0020-design-system-governance.md](file:///docs/adr/0020-design-system-governance.md))
 - Spec hermano: [specs/031-ui-ux-consolidation/spec.md](file:///specs/031-ui-ux-consolidation/spec.md) (superficie UI, no depende de este y viceversa)
 
@@ -13,10 +14,12 @@ paralelo**, con contratos y riesgos propios:
 
 1. **Colecciones remotas duplicadas**: 7 slices de Zustand importan servicios de
    dominio y escriben IndexedDB, duplicando colecciones que TanStack Query ya
-   gestiona ([absenceSlice.ts](file:///frontend/src/store/slices/absenceSlice.ts):5-105,
-   [shiftSlice.ts](file:///frontend/src/store/slices/shiftSlice.ts):5,
+   gestiona (`absenceSlice.ts`:5-105, `shiftSlice.ts`:5,
    `meterReadingSlice.ts`, `employeeSlice.ts`, `userSlice.ts`, `configSlice.ts`,
-   `dashboardSlice.ts`) — violando la invariante 4 de
+   `dashboardSlice.ts` — los tres primeros se eliminaron y los demás quedaron
+   como flags de UI en T4/T5, ver
+   [tasks.md](file:///specs/032-remote-state-consolidation/tasks.md)) —
+   violando la invariante 4 de
    [frontend-performance.md](file:///.agents/rules/frontend-performance.md).
    La cola de escritura offline ([syncSlice.ts](file:///frontend/src/store/slices/syncSlice.ts))
    y la sesión ([authSlice.ts](file:///frontend/src/store/slices/authSlice.ts))

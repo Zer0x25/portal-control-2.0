@@ -18,10 +18,22 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## PR 2 — Purga de caché en sesión
 
-- [ ] T3: Purge íntegro del caché persistido al logout, expiración de sesión y
+- [x] T3: Purge íntegro del caché persistido al logout, expiración de sesión y
       cambio de usuario (comparando token/userId en boot); purge idempotente,
       limitado al store del caché de queries (nunca a la cola offline); test
       kiosk login A → logout → login B sin datos de A (AC2.1).
+      **Hecho (2026-10-20)**: `authSlice` purga en `logout()` (que también
+      recibe la expiración vía evento `unauthorized`), en
+      `_handleSuccessfulLogin` cuando cambia el userId y en `_verifyAuth`
+      cuando el `saphr:query-cache-owner` de localStorage no coincide con la
+      sesión restaurada; marca de dueño sin PII en el resto de los casos. El
+      purge es `Promise.allSettled` sobre `removeClient()` + `clear()` del
+      store propio (idempotente) y `queryClient.clear()` en memoria; nunca
+      llama `wipeAllData` (cola offline intacta). El kiosk no crea sesión de
+      app (PIN por empleado), por lo que su caso compartido lo cubre el purge
+      de usuario. 6 tests en
+      [sessionQueryCache.test.ts](file:///frontend/src/tests/state/sessionQueryCache.test.ts)
+      (logout, idempotencia, cambio de usuario, arranque y no-tocar-cola).
 
 ## PR 3 — Migración de slices
 
@@ -94,10 +106,21 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       (contrato del backend) y el kiosco funciona sin sesión. La cola de
       escritura de `syncSlice` (`bulkAddRecords`, delta sync) quedó intacta
       en T4/T5: solo cambiaron los pasos de carga a invalidación.
-- [ ] T9: Suite completa verde: `npm run validate:ci` (frontend),
+- [x] T9: Suite completa verde: `npm run validate:ci` (frontend),
       `npm run test:run -- src/tests/guardrails`, `npm run e2e:staging`,
       `npm run spec:check`, `npm run docs:check`, `npm run preflight`; promover
       el estado del spec a Implementado (AC4).
+      **Hecho (2026-10-20)**: `validate:ci` (format, lint 0/0, tsc, 486 tests,
+      build+PWA), guardrails 14 archivos/60 tests, suite e2e completa
+      **56/56** contra build de producción + backend real (smoke, user-flows,
+      business-flows, governance, routes-sweep, a11y, offline 3/3 y perf con
+      su warning calibrado), `spec:check` (32 specs), `docs:check` (206 md /
+      22 ADR; corregidos 2 enlaces a los slices eliminados en el Problema del
+      spec) y `preflight` ✅ (secrets-scan, prettier de md, lint-budget 0/0,
+      tsc backend+frontend). Ajuste de gobernanza: la entrada de
+      `secret-scan.allow` del default `changeme123` se movió de
+      `store/slices/userSlice.ts` a `hooks/useUsers.ts` (mismo literal
+      documentado, cambio de path por la migración T5).
 - [ ] T10: Con 031 y 032 completos: promover ADR-0022 de "Propuesto" a
       "Aceptado" con links a la implementación, verificar indexación en
       `docs/adr/README.md` y cerrar las tareas pendientes de ambos specs (AC4).
