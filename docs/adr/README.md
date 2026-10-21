@@ -30,6 +30,12 @@ con Prettier (`printWidth: 100`).
 | [0020](0020-design-system-governance.md)                | Aceptado  | Design System & Gobernanza Agéntica    |
 | [0021](0021-branding-por-instancia-logo.md)             | Propuesto | Branding por instancia en SystemConfig |
 | [0022](0022-ui-ux-consolidation.md)                     | Aceptado  | Ui Ux Consolidation                    |
+| [0023](0023-frontend-layering-hardening.md)             | Propuesto | Frontera de capas frontend enforceable |
+| [0024](0024-frontend-http-client-consolidation.md)      | Propuesto | Cliente HTTP único en el frontend      |
+| [0025](0025-frontend-form-table-primitives.md)          | Propuesto | Capa headless de formularios y tablas  |
+| [0026](0026-frontend-rendering-observability.md)        | Propuesto | Compilador, container queries y CWV    |
+| [0027](0027-design-system-catalog-pipeline.md)          | Propuesto | Catálogo externo y pipeline de tokens  |
+| [0028](0028-frontend-testing-stack.md)                  | Propuesto | MSW, browser mode y cobertura          |
 | [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida
@@ -60,4 +66,3 @@ Reglas:
 - `README.md`: cómo desplegar. Los ADR explican por qué se despliega así.
 - `OBSERVABILITY.md`: señales actuales. Detalle operativo de ADR-0009.
 - `backend/docs/swagger.json`: contrato generado. Ver ADR-0003.
-  | [0020](0020-design-system-governance.md) | Propuesto | Design System Governance |
