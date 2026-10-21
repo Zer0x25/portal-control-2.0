@@ -7,7 +7,7 @@ WORKDIR /app
 ARG VITE_SENTRY_DSN
 ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
 
-COPY package*.json ./
+COPY package*.json .npmrc ./
 RUN npm ci --include=dev
 
 COPY . .
