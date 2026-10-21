@@ -59,10 +59,19 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       negativa (una slice con servicio importado rompe el guardrail) y
       agregado a `test:guardrails`/`lint:guardrails` (13 archivos/56 tests).
 
-- [ ] T7: Aplicar la regla: quitar `loadShiftData()`/`loadAbsenceData()` de
+- [x] T7: Aplicar la regla: quitar `loadShiftData()`/`loadAbsenceData()` de
       `useShiftMutations.ts` y `useHolidayMutations.ts` (solo
       `invalidateQueries`); auditar con grep que ninguna otra mutación tiene el
       patrón (AC1).
+      **Hecho (2026-10-20)**: la eliminación ya se aplicó en T4 (los loaders
+      dejaron de existir con los slices); auditoría final con grep: (a) 0
+      loaders `load*()` en `src/hooks/use*Mutations*.ts`, (b) 0 imports de
+      servicios/IDB fuera de `syncSlice`/`authSlice`, (c) 0 archivos con
+      `invalidateQueries` + loader del store en hooks de mutación. Único
+      `state.load*()` restante de `src`: `loadNotifications()` en
+      `useSocketEvents.ts` y `syncSlice.ts`, que es un reset local de flags
+      (no recarga una colección remota) y vive fuera del alcance de AC1.
+      El guardrail de T6 impide regresiones.
 
 ## PR 5 — E2E offline de salida
 
