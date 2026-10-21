@@ -69,7 +69,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       (segundo lote): verificar status, body y headers; un 401 produce
       `ApiHttpError` con `status === 401`, un 204 produce body vacío, un body
       malformado produce error tipado (AC3).
-- [ ] T9: Migrar los tests de `src/features/*/` de `vi.mock` a handlers MSW
+- [x] T9: Migrar los tests de `src/features/*/` de `vi.mock` a handlers MSW
       (tercer lote) (AC1).
 
 ## Fase C — Vitest Browser Mode
@@ -147,6 +147,9 @@ branches: 13, statements: 16}` al valor medido y sostenido (objetivo
 
 ## Notas de ejecucion (2026-10-21)
 
+- **T9 (hecho)**: 10 ficheros de `src/tests/features/*/` migrados de
+  `vi.mock(".../services/...")` a handlers MSW. Suite: 142 ficheros / 645 tests.
+
 - **T8 (hecho)**: 8 ficheros de `src/services/` migrados de `vi.stubGlobal("fetch")`
   a handlers MSW (`auditLogService`, `authService`, `correctionService`,
   `holidayAndConfigService`, `importService`, `kpiService.contract`,
@@ -195,8 +198,17 @@ revisados y adaptados a `main`):
 
 Pendientes (requieren mas alcance y se dejan para el siguiente ciclo):
 
-- **T9** (migrar tests de `src/features/*/` de `vi.mock` a MSW): no se
-  toco; los tests de feature siguen con `vi.mock` de modulo.
 - **T19** (verificacion final con `e2e:staging` + regresion visual): no se
   ejecuto el e2e de staging en este ciclo; la suite unitaria (142 ficheros /
   645 tests) y `validate:ci` estan en verde.
+
+Completados en este ciclo (T9):
+
+- **T9 (hecho)**: 10 ficheros de `src/tests/features/*/` migrados de
+  `vi.mock(".../services/...")` a handlers MSW (useToolsLogic,
+  useEmployeeManagementData, useKioskData.regression, useLogbookData,
+  useShiftCalendarData, useAccountingClosureTabController,
+  useAttendanceAnalytics, useReportsTabController, useTimeControl,
+  useWorkerPortalData). Los mocks de hooks de UI (useAuth, useStore,
+  useToasts, useEmployees) y de utilidades (geolocation, logger, indexedDB)
+  se mantienen por ser concerns de UI, no de red.
