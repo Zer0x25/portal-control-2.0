@@ -1,27 +1,99 @@
-import { useStore } from "../store/useStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
-import { User } from "../types";
+import { useToasts } from "./useToasts";
+import { useUsersQuery } from "./queries/useUsersQuery";
+import { User, UserRole } from "../types";
 import { userService } from "../services/userService";
 
+/**
+ * Cuentas de usuario: única fuente = `useUsersQuery` (spec 032 T5).
+ * El store ya no replica esta colección ni escribe IndexedDB.
+ */
 export const useUsers = () => {
-  const users = useStore((state) => state.users);
-  const isLoadingUsers = useStore((state) => state.isLoadingUsers);
-  const loadUsers = useStore((state) => state.loadUsers);
-  const getUserByIdFromStore = useStore((state) => state.getUserById);
-  const getUserByUsernameFromStore = useStore((state) => state.getUserByUsername);
-  const createUserForEmployeeInSlice = useStore((state) => state.createUserForEmployee);
+  const { data: users = [], isLoading: isLoadingUsers, refetch } = useUsersQuery();
+  const queryClient = useQueryClient();
+  const { addToast } = useToasts();
   const { currentUser } = useAuth();
+
+  const refreshUsers = () => queryClient.invalidateQueries({ queryKey: ["users"] });
+
+  const getUserById = (id: string) => users.find((user) => user.id === id);
+
+  const getUserByUsername = (username: string) => {
+    const normalized = username.toLowerCase();
+    return users.find((user) => user.username.toLowerCase() === normalized);
+  };
+
+  const createUserForEmployee = async (
+    employeeId: string,
+    fullName: string,
+    role: UserRole,
+  ): Promise<boolean> => {
+    try {
+      // Normaliza y parte el nombre para derivar un alias estable.
+      const normalize = (value: string) =>
+        value
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase()
+          .replace(/[^A-Z0-9\s]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const cleanName = normalize(fullName);
+      const parts = cleanName.split(" ").filter(Boolean);
+      const firstName = parts[0] || "";
+      const firstSurname = parts[1] || "";
+
+      let baseAlias = "";
+      if (firstName && firstSurname) {
+        baseAlias = `${firstName.charAt(0)}${firstSurname.slice(0, 5)}`;
+      } else {
+        baseAlias = firstName.slice(0, 6);
+      }
+
+      baseAlias = baseAlias.replace(/[^A-Z0-9]/g, "");
+      if (!baseAlias) baseAlias = "USER";
+
+      let finalAlias = baseAlias;
+      let counter = 2;
+      while (users.find((user) => user.username.toUpperCase() === finalAlias.toUpperCase())) {
+        finalAlias = `${baseAlias}${String(counter).padStart(2, "0")}`;
+        counter++;
+      }
+
+      const newUser: Omit<User, "id"> = {
+        username: finalAlias,
+        role,
+        password: "changeme123", // Default per requirements
+        employeeId,
+        isDeleted: false,
+        lastModified: Date.now(),
+        syncStatus: "pending",
+      };
+
+      await userService.create(newUser as User);
+      await refreshUsers();
+      addToast(`Usuario '${finalAlias}' creado correctamente para el empleado.`, "success");
+      return true;
+    } catch (error) {
+      console.error("[useUsers] Error creating user for employee:", error);
+      addToast("Error al generar cuenta de usuario automática.", "error");
+      return false;
+    }
+  };
 
   return {
     users,
     isLoadingUsers,
-    refreshUsers: loadUsers,
+    refetchUsers: refetch,
+    refreshUsers,
 
     // Actions
     addUser: async (user: Omit<User, "id">): Promise<User | null> => {
       try {
         const newUser = await userService.create(user as User);
-        await loadUsers();
+        await refreshUsers();
         return newUser;
       } catch {
         return null;
@@ -30,7 +102,7 @@ export const useUsers = () => {
     updateUser: async (id: string, updates: Partial<User>) => {
       try {
         await userService.update(id, updates);
-        await loadUsers();
+        await refreshUsers();
         return true;
       } catch {
         return false;
@@ -38,15 +110,14 @@ export const useUsers = () => {
     },
     deleteUser: async (id: string) => {
       await userService.delete(id);
-      await loadUsers();
+      await refreshUsers();
     },
 
     // Selectors
-    getUserById: getUserByIdFromStore,
-    getUserByUsername: getUserByUsernameFromStore,
+    getUserById,
+    getUserByUsername,
 
-    // Composite Actions - Now delegated to slice
-    createUserForEmployee: createUserForEmployeeInSlice,
+    createUserForEmployee,
 
     changeOwnPassword: async (data: { newPassword: string }) => {
       if (!currentUser?.id) return false;
@@ -54,7 +125,7 @@ export const useUsers = () => {
         await userService.update(currentUser.id, {
           password: data.newPassword,
         });
-        await loadUsers();
+        await refreshUsers();
         return true;
       } catch {
         return false;

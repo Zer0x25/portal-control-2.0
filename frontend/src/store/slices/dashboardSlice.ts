@@ -8,15 +8,15 @@ import {
   UpcomingEmployeeStatus,
 } from "../../types/index";
 import { formatChileTimeHHmm } from "../../utils/chileClock";
-import { toCaughtError } from "../../utils/caughtError";
-import { timeRecordService } from "../../services/timeRecordService";
 
+/**
+ * Estado de UI puro (spec 032 T5).
+ *
+ * Las colecciones remotas del dashboard (`dailyRecords`, `recentRecords`)
+ * viven en `useDashboardQueries` y los relojes marcan fuera de este archivo:
+ * aqui no hay imports de servicios ni escritura a IndexedDB.
+ */
 export interface DashboardSlice {
-  // State
-  isLoadingDashboardData: boolean;
-  dailyRecords: DailyTimeRecord[];
-  recentRecords: DailyTimeRecord[];
-
   // Modals State
   showReportDetailsModal: ShiftReport | null;
   employeeToClockIn: UpcomingEmployeeStatus | null;
@@ -28,9 +28,6 @@ export interface DashboardSlice {
   isEditTimestampModalOpen: boolean;
   editingRecordInfo: { record: DailyTimeRecord; field: TimeRecordField } | null;
   newTimestampValue: string;
-
-  // Actions
-  updateDashboardData: () => Promise<void>;
 
   // Modal Actions
   openReportDetailsModal: (report: ShiftReport) => void;
@@ -48,19 +45,10 @@ export interface DashboardSlice {
   openEditTimestampModal: (record: DailyTimeRecord, field: TimeRecordField) => void;
   closeEditTimestampModal: () => void;
   setNewTimestampValue: (value: string) => void;
-
-  // Logic Actions
-  confirmClockIn: () => Promise<void>;
-  confirmResponsibleClockOut: () => Promise<boolean>;
 }
 
-export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice> = (set, get) => ({
+export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice> = (set) => ({
   // Initial State
-  isLoadingDashboardData: true,
-  welcomeName: "Invitado",
-  userClockingStatus: { status: "unknown" },
-  dailyRecords: [],
-  recentRecords: [],
   showReportDetailsModal: null,
   employeeToClockIn: null,
   employeeToConfirmClockOut: null,
@@ -71,24 +59,6 @@ export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice
   isEditTimestampModalOpen: false,
   editingRecordInfo: null,
   newTimestampValue: "",
-
-  // Actions
-
-  updateDashboardData: async () => {
-    try {
-      // Fetch recent records for the recent activity widget
-      const recentResponse = await timeRecordService.getAll({
-        pageSize: 50,
-        page: 1,
-      });
-      const recentRecords = recentResponse.data;
-      set({ dailyRecords: recentRecords, recentRecords });
-    } catch (error) {
-      console.error("Error updating dashboard data:", error);
-    } finally {
-      set({ isLoadingDashboardData: false });
-    }
-  },
 
   // Modal Actions
   openReportDetailsModal: (report) => set({ showReportDetailsModal: report }),
@@ -133,38 +103,5 @@ export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice
   },
   setNewTimestampValue: (value) => {
     set({ newTimestampValue: value });
-  },
-
-  // Logic Actions
-  confirmClockIn: async () => {
-    const { employeeToClockIn, updateDashboardData, addToast } = get();
-    if (!employeeToClockIn) return;
-    try {
-      await timeRecordService.punch(employeeToClockIn.employee.id, "OPERATOR");
-      set({ employeeToClockIn: null });
-      await updateDashboardData();
-      addToast("Entrada registrada con éxito", "success");
-    } catch (error: unknown) {
-      addToast(toCaughtError(error).message || "Error al registrar entrada", "error");
-    }
-  },
-
-  confirmResponsibleClockOut: async () => {
-    const { employeeToConfirmClockOut, updateDashboardData, addToast } = get();
-    if (!employeeToConfirmClockOut) return false;
-    try {
-      // Clock out the responsible user which triggers automatic shift closure on backend
-      await timeRecordService.punch(employeeToConfirmClockOut.id, "WEB", "salida");
-      set({
-        showResponsibleUserClockOutConfirmation: false,
-        employeeToConfirmClockOut: null,
-      });
-      await updateDashboardData();
-      addToast("Turno cerrado y salida registrada correctamente", "success");
-      return true;
-    } catch (error: unknown) {
-      addToast(toCaughtError(error).message || "Error al cerrar turno", "error");
-      return false;
-    }
   },
 });

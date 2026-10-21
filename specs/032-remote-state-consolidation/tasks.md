@@ -36,8 +36,15 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `loadConfigData`/`loadShiftData`; `useShiftMutations` y
       `useHolidayMutations` dejan el double-refresh (solo `invalidateQueries`).
       tsc 0 errores, 482/482 tests, guardrails 52/52, lint 0/0.
-- [ ] T5: Batch 2 — `employeeSlice`, `userSlice`, `meterReadingSlice`,
+- [x] T5: Batch 2 — `employeeSlice`, `userSlice`, `meterReadingSlice`,
       `dashboardSlice`: idem; los slices reducen a flags de UI (AC1).
+      **Hecho (2026-10-20)**: nuevos `useEmployeesQuery`/`useKioskEmployeesQuery`,
+      `useUsersQuery` y `useMeterReadingsQuery`+`useMeterConfigsQuery`; los
+      slices `employee`, `user` y `meterReading` se eliminan y `dashboardSlice`
+      queda solo con flags de modales; `confirmResponsibleClockOut` pasa a
+      `useDashboardClockActions`; cada acción invalida su raíz en vez de
+      recargar el store; `useSocketEvents` dejó el double-refresh de `users`.
+      tsc 0 errores, 482/482 tests, guardrails 52/52, lint 0/0, build OK.
 
 ## PR 4 — Guardrail de frontera y refresh único
 

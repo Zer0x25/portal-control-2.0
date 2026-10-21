@@ -4,8 +4,6 @@ import { devtools } from "zustand/middleware";
 import { createAuthSlice } from "./slices/authSlice";
 import { createToastSlice } from "./slices/toastSlice";
 import { createThemeSlice } from "./slices/themeSlice";
-import { createMeterReadingSlice } from "./slices/meterReadingSlice";
-import { createEmployeeSlice } from "./slices/employeeSlice";
 import { createDashboardSlice } from "./slices/dashboardSlice";
 import { createNotificationSlice } from "./slices/notificationSlice";
 import { createUxSlice } from "./slices/uxSlice";
@@ -15,7 +13,6 @@ import { AppState } from "./types";
 import { createSyncSlice } from "./slices/syncSlice";
 import { createQuickNotesSlice } from "./slices/quickNotesSlice";
 import { createSystemSlice } from "./slices/systemSlice";
-import { createUserSlice } from "./slices/userSlice";
 
 import { sentryMiddleware } from "../utils/sentryMiddlewares";
 
@@ -26,13 +23,10 @@ export const useStore = create<AppState>()(
         ...createAuthSlice(set, get, api),
         ...createToastSlice(set, get, api),
         ...createThemeSlice(set, get, api),
-        ...createMeterReadingSlice(set, get, api),
-        ...createEmployeeSlice(set, get, api),
         ...createDashboardSlice(set, get, api),
         ...createNotificationSlice(set, get, api),
         ...createCorrectionRequestSlice(set, get, api),
         ...createSyncSlice(set, get, api),
-        ...createUserSlice(set, get, api),
         ...createQuickNotesSlice(set, get, api),
         ...createUxSlice(set, get, api),
         ...createSystemSlice(set, get, api),

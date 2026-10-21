@@ -1,56 +1,45 @@
-import { useStore } from "../store/useStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { useUsers } from "./useUsers";
 import { useToasts } from "./useToasts";
+import { useEmployeesQuery, useKioskEmployeesQuery } from "./queries/useEmployeesQuery";
+import { useStore } from "../store/useStore";
 import { shiftService } from "../services/shiftService";
 import { timeRecordService } from "../services/timeRecordService";
 import { employeeService } from "../services/employeeService";
 import { Employee, EmployeeStatus } from "../types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { toBusinessDateChile } from "../utils/dateUtils";
 import { UserRole } from "../types/user";
 
+/**
+ * Empleados: única fuente = `useEmployeesQuery` (spec 032 T5).
+ * El store deja de duplicar la colección ni a escribir IndexedDB; cada
+ * acción invalida `employees` para que react-query refresque.
+ */
 export const useEmployees = (_isKiosk: boolean = false) => {
   const { users: usersData, deleteUser: hardDeleteUser, addUser: recreateUser } = useUsers();
-  const allEmployees = useStore((state) => state.employees);
-  const isLoading = useStore((state) => state.isLoadingEmployees);
   const currentUser = useStore((state) => state.currentUser);
 
-  const loadEmployees = useStore((state) => state.loadEmployees);
+  const queryClient = useQueryClient();
   const { addToast } = useToasts();
-  const [kioskEmployees, setKioskEmployees] = useState<Employee[]>([]);
-  const [isLoadingKioskEmployees, setIsLoadingKioskEmployees] = useState(_isKiosk);
+
+  const employeesQuery = useEmployeesQuery();
+  const kioskQuery = useKioskEmployeesQuery();
+
+  const invalidateEmployees = () => queryClient.invalidateQueries({ queryKey: ["employees"] });
+
+  const allEmployees = employeesQuery.data ?? [];
+  const isLoading = employeesQuery.isLoading;
+
+  const kioskEmployees = kioskQuery.data ?? [];
+  const isLoadingKioskEmployees = kioskQuery.isLoading;
 
   useEffect(() => {
-    if (!_isKiosk) return;
-
-    let cancelled = false;
-
-    const loadKioskEmployees = async () => {
-      setIsLoadingKioskEmployees(true);
-      try {
-        const employees = await employeeService.getKioskEmployees();
-        if (!cancelled) {
-          setKioskEmployees(employees.filter((employee) => employee.status === "Activo"));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          const message = error instanceof Error ? error.message : "Error al cargar empleados";
-          addToast(message, "error");
-          setKioskEmployees([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingKioskEmployees(false);
-        }
-      }
-    };
-
-    loadKioskEmployees();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [_isKiosk, addToast]);
+    if (!_isKiosk || !kioskQuery.isError) return;
+    const message =
+      kioskQuery.error instanceof Error ? kioskQuery.error.message : "Error al cargar empleados";
+    addToast(message, "error");
+  }, [_isKiosk, kioskQuery.isError, kioskQuery.error, addToast]);
 
   const data = useMemo(() => {
     if (_isKiosk) {
@@ -122,7 +111,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
   };
 
   return {
-    // Data from Store
+    // Data from Query
     employees: data?.active || [],
     activeEmployees: data?.activeForWork || [],
     archivedEmployees: data?.archived || [],
@@ -135,7 +124,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
     addEmployee: async (emp: Partial<Employee>): Promise<Employee | null> => {
       try {
         const newEmp = await employeeService.create(emp as Employee);
-        await loadEmployees();
+        await invalidateEmployees();
         addToast("Empleado creado exitosamente", "success");
         return newEmp;
       } catch (error) {
@@ -147,7 +136,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
     updateEmployee: async (emp: Employee) => {
       try {
         await employeeService.update(emp.id, emp);
-        await loadEmployees();
+        await invalidateEmployees();
         addToast("Empleado actualizado", "success");
         return true;
       } catch (error) {
@@ -159,7 +148,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
     updateEmployeeStatus: async (id: string, status: EmployeeStatus) => {
       try {
         await employeeService.update(id, { status, lastModified: Date.now() });
-        await loadEmployees();
+        await invalidateEmployees();
         addToast(`Estado actualizado a ${status}`, "success");
         return true;
       } catch (error) {
@@ -176,7 +165,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
           isPinBlocked: false,
           lastModified: Date.now(),
         });
-        await loadEmployees();
+        await invalidateEmployees();
         addToast("PIN reseteado correctamente", "success");
         return true;
       } catch (error) {
@@ -188,7 +177,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
     createBulkEmployees: async (employees: Employee[]) => {
       try {
         await employeeService.createBulk(employees);
-        await loadEmployees();
+        await invalidateEmployees();
         return { count: employees.length };
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error en carga masiva";
@@ -240,10 +229,8 @@ export const useEmployees = (_isKiosk: boolean = false) => {
           );
         }
 
-        // Trigger backgrounds reloads instead of invalidation
-        useStore.getState().loadEmployees();
-        useStore.getState().loadUsers();
-        // Shift reports/assignments still use Query for now
+        await invalidateEmployees();
+        await queryClient.invalidateQueries({ queryKey: ["users"] });
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al archivar empleado";
@@ -259,7 +246,6 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         await employeeService.update(employee.id, { status: "Activo", lastModified: Date.now() });
 
         // 2. Automatically recreate User Account
-        // Pattern: username = name normalized, pass/pin default
         const username = employee.name
           .toLowerCase()
           .normalize("NFD")
@@ -283,8 +269,8 @@ export const useEmployees = (_isKiosk: boolean = false) => {
           "success",
         );
 
-        useStore.getState().loadEmployees();
-        useStore.getState().loadUsers();
+        await invalidateEmployees();
+        await queryClient.invalidateQueries({ queryKey: ["users"] });
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al reactivar empleado";
@@ -311,6 +297,6 @@ export const useEmployees = (_isKiosk: boolean = false) => {
     getEmployeeById: (id: string) => data?.all?.find((e) => e.id === id),
     getNextEmployeeId,
     // Manual Refetch
-    refreshEmployees: () => useStore.getState().loadEmployees(),
+    refreshEmployees: invalidateEmployees,
   };
 };
