@@ -39,3 +39,9 @@
 **Vulnerability:** Use of $executeRawUnsafe allows string interpolation, which could potentially lead to a SQL injection if user input were ever interpolated into the string. It violates project agentic guardrails.
 **Learning:** Prisma's $executeRaw automatically parameterizes values, defending against injection attacks.
 **Prevention:** Replace instances of $executeRawUnsafe with the safe parameterizable tag $executeRaw in Prisma.
+
+## 2026-10-21 - Reverse tabnabbing hardening for sanitized HTML
+
+**Vulnerability:** Sanitized HTML (communications board, user manual modal) could carry `target="_blank"` anchors without a `rel` guard, leaving spawned tabs with `window.opener` access to the app (reverse tabnabbing).
+**Learning:** DOMPurify sanitizes attributes but does not inject mitigation attributes by default; modern browsers apply implicit `noopener` to `target="_blank"`, but older engines require the explicit attribute (defense-in-depth).
+**Action:** Centralized wrapper `frontend/src/utils/domPurify.ts` registers an `afterSanitizeAttributes` hook that sets `rel="noopener noreferrer"` on surviving `_blank` anchors; both importers (`UserManualModal`, `Communications.view`) share the singleton, so every sanitize pass is covered. Absorbed from agent draft PR #73 into commit `7e66c45` via PR #80.
