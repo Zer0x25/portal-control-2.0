@@ -6,6 +6,7 @@ import { LeaveRecord } from "../../types/scheduling";
 import { useToasts } from "../useToasts";
 import { useEffect, useState } from "react";
 import { idbGetAll, idbPutBulk, STORES } from "../../utils/indexedDB";
+import { queryKeys } from "../../lib/queryKeys";
 
 export interface TimeRecordsFilterParams {
   pageSize: number;
@@ -94,7 +95,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
   }, []);
 
   return useInfiniteQuery({
-    queryKey: ["timeRecords", params],
+    queryKey: queryKeys.timeRecordsList(params),
     enabled: params.enabled ?? true,
     queryFn: async ({ pageParam = 1 }) => {
       try {
@@ -145,7 +146,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
 
 export const useUserClockingStatus = (employeeId?: string) => {
   const query = useQuery({
-    queryKey: ["timeRecords", "last", employeeId],
+    queryKey: queryKeys.timeRecordsLast(employeeId),
     queryFn: async () => {
       if (!employeeId) return null;
       // Fetch only the latest record for this employee
@@ -219,9 +220,9 @@ export const useTimeRecordMutations = () => {
     onSuccess: (result) => {
       if (result.success) {
         // Invalidate both lists and dashboard
-        queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-        queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-        queryClient.invalidateQueries({ queryKey: ["employees"] }); // Emps status changes
+        queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.employees() }); // Emps status changes
       } else {
         addToast("Error al marcar", "error");
       }
@@ -239,8 +240,8 @@ export const useTimeRecordMutations = () => {
       return await timeRecordService.save(record);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
       addToast("Registro actualizado", "success");
     },
     onError: (error: unknown) => {
@@ -254,8 +255,8 @@ export const useTimeRecordMutations = () => {
       return await timeRecordService.delete(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
       addToast("Registro eliminado", "success");
     },
     onError: () => {
@@ -268,8 +269,8 @@ export const useTimeRecordMutations = () => {
       return await leaveService.createLeave(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-      queryClient.invalidateQueries({ queryKey: ["leaves"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leaves() });
       addToast("Licencia/Permiso registrado", "success");
     },
     onError: (error: unknown) => {
@@ -287,8 +288,8 @@ export const useTimeRecordMutations = () => {
       return await timeRecordService.resolveAnomaly(data.id, data.resolution);
     },
     onSuccess: (_record) => {
-      queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
       addToast("Anomalía resuelta", "success");
     },
     onError: (error: unknown) => {

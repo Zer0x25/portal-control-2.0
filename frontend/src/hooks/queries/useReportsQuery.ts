@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { shiftReportService } from "../../services/shiftReportService";
 import { useAuth } from "../useAuth";
+import { queryKeys } from "../../lib/queryKeys";
 export const useReportsQuery = (params: { status?: "open" | "closed"; pageSize?: number } = {}) => {
   const { currentUser } = useAuth();
   const canReadReports =
@@ -10,7 +11,7 @@ export const useReportsQuery = (params: { status?: "open" | "closed"; pageSize?:
     );
 
   return useQuery({
-    queryKey: ["reports", params],
+    queryKey: queryKeys.shiftReportsList(params),
     queryFn: async () => {
       const result = await shiftReportService.getAll({
         ...params,

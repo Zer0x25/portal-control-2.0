@@ -14,9 +14,15 @@ interface AuditLogListPayload {
   nextCursor?: string | null;
 }
 
-/** Listado de auditoria con la forma que consume el frontend. */
-export interface AuditLogListResult {
-  data: AuditLog[];
+/**
+ * Listado de auditoria con la forma que consume el frontend.
+ *
+ * El item es generico porque cada consumidor conoce su propio `details`
+ * (p. ej. el historial de asignaciones de turno): el service normaliza el
+ * `details` serializado y devuelve la lista con esa forma.
+ */
+export interface AuditLogListResult<T = AuditLog> {
+  data: T[];
   total: number;
   page: number;
   totalPages: number;
@@ -55,14 +61,14 @@ interface AuditIntegrityStatusResponse {
 }
 
 export const auditLogService = {
-  async getAll(params: {
+  async getAll<T = AuditLog>(params: {
     page: number;
     pageSize: number;
     filters: Record<string, string | string[] | undefined>;
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     cursor?: string;
-  }): Promise<AuditLogListResult> {
+  }): Promise<AuditLogListResult<T>> {
     // Los filtros son dinamicos (y pueden repetirse: `category=a&category=b`),
     // asi que se construyen como query plana y los arrays se repiten.
     const filters: Record<string, string | string[] | undefined> = {};
@@ -114,7 +120,9 @@ export const auditLogService = {
     // Return the full metadata object with the processed items
     return {
       ...(typeof payload === "object" ? payload : {}),
-      data: items, // Map back to 'data' for compat with components
+      // El `details` normalizado es un `AuditLog`; el consumidor puede
+      // tipar el item con su propia forma (`T`).
+      data: items as unknown as T[], // Map back to 'data' for compat with components
       total: payload.total ?? 0,
       page: payload.page ?? 0,
       totalPages: payload.totalPages ?? 0,

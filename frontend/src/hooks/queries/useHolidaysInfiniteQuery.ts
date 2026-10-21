@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { holidayService } from "../../services/holidayService";
+import { queryKeys } from "../../lib/queryKeys";
 
 interface HolidaysInfiniteParams {
   pageSize?: number;
@@ -11,7 +12,7 @@ export const useHolidaysInfiniteQuery = (params: HolidaysInfiniteParams = {}) =>
   const pageSize = params.pageSize ?? 50;
 
   return useInfiniteQuery({
-    queryKey: ["holidays", "infinite", params],
+    queryKey: queryKeys.holidaysInfinite(params),
     queryFn: async ({ pageParam = 1 }) =>
       holidayService.getAllPaginated({
         page: pageParam as number,

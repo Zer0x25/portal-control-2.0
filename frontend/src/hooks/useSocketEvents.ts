@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "../store/useStore";
+import { queryKeys } from "../lib/queryKeys";
 
 /**
  * A global hook to listen for WebSocket events and trigger Query invalidations.
@@ -14,7 +15,7 @@ export const useSocketEvents = () => {
 
   // Helper to debounce invalidations (prevents spamming refetches)
   const debouncedInvalidate = useCallback(
-    (key: string, queryKey: string[], delay = 500) => {
+    (key: string, queryKey: readonly string[], delay = 500) => {
       if (debounceTimeouts.current[key]) {
         clearTimeout(debounceTimeouts.current[key]);
       }
@@ -54,8 +55,8 @@ export const useSocketEvents = () => {
 
       // -- Time Record Events --
       const handleTimeRecordUpdate = () => {
-        debouncedInvalidate("timeRecords", ["timeRecords"]);
-        debouncedInvalidate("dashboard", ["dashboard"]);
+        debouncedInvalidate("timeRecords", queryKeys.timeRecords());
+        debouncedInvalidate("dashboard", queryKeys.dashboard());
       };
 
       socket.on("timeRecord:created", handleTimeRecordUpdate);
@@ -65,16 +66,16 @@ export const useSocketEvents = () => {
 
       // -- Employee Events --
       const handleEmployeeUpdate = () => {
-        debouncedInvalidate("employees", ["employees"]);
+        debouncedInvalidate("employees", queryKeys.employees());
       };
 
       socket.on("employee:updated", handleEmployeeUpdate);
 
       // -- Shift Events --
       const handleShiftUpdate = () => {
-        debouncedInvalidate("shiftPatterns", ["shiftPatterns"]);
-        debouncedInvalidate("assignedShifts", ["assignedShifts"]);
-        debouncedInvalidate("calendar", ["calendar"]);
+        debouncedInvalidate("shiftPatterns", queryKeys.shiftPatterns());
+        debouncedInvalidate("assignedShifts", queryKeys.assignedShifts());
+        debouncedInvalidate("calendarMatrix", queryKeys.calendarMatrix());
       };
 
       socket.on("shiftPattern:updated", handleShiftUpdate);
@@ -82,13 +83,13 @@ export const useSocketEvents = () => {
 
       // -- Global Config Events --
       const handleConfigUpdate = () => {
-        queryClient.invalidateQueries({ queryKey: ["config"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.configRoot() });
       };
       socket.on("config:updated", handleConfigUpdate);
 
       // -- Shift Report Events --
       const handleShiftReportUpdate = () => {
-        debouncedInvalidate("reports", ["reports"]);
+        debouncedInvalidate("reports", queryKeys.shiftReports());
       };
       socket.on("shiftReport:created", handleShiftReportUpdate);
       socket.on("shiftReport:updated", handleShiftReportUpdate);
@@ -96,14 +97,14 @@ export const useSocketEvents = () => {
 
       // -- Audit Log Events --
       const handleAuditLogCreated = () => {
-        debouncedInvalidate("auditLogs", ["auditLogs"], 1000);
+        debouncedInvalidate("auditLogs", queryKeys.auditLogs(), 1000);
       };
       socket.on("auditLog:created", handleAuditLogCreated);
 
       // -- Quick Note Events --
       const handleQuickNoteUpdate = (data: unknown) => {
         useStore.getState().handleQuickNoteSocketEvent(data);
-        debouncedInvalidate("notes", ["notes"]);
+        debouncedInvalidate("notes", queryKeys.notes());
       };
       socket.on("quickNote:created", handleQuickNoteUpdate);
       socket.on("quickNote:deleted", handleQuickNoteUpdate);
@@ -113,7 +114,7 @@ export const useSocketEvents = () => {
       const handleCorrectionUpdate = (data: unknown) => {
         useStore.getState().handleCorrectionRequestSocketEvent(data);
         useStore.getState().loadNotifications();
-        debouncedInvalidate("correctionRequests", ["correctionRequests"]);
+        debouncedInvalidate("correctionRequests", queryKeys.correctionRequests());
       };
       socket.on("correctionRequest:created", handleCorrectionUpdate);
       socket.on("correctionRequest:updated", handleCorrectionUpdate);
@@ -122,25 +123,25 @@ export const useSocketEvents = () => {
       // -- User Events --
       // Spec 032 T5: users ya es query, solo invalidacion (sin doble refresh).
       const handleUserUpdate = () => {
-        debouncedInvalidate("users", ["users"]);
+        debouncedInvalidate("users", queryKeys.users());
       };
       socket.on("user:updated", handleUserUpdate);
 
       // -- Holiday Events --
       const handleHolidayUpdate = () => {
-        debouncedInvalidate("holidays", ["holidays"]);
+        debouncedInvalidate("holidays", queryKeys.holidays());
       };
       socket.on("holiday:updated", handleHolidayUpdate);
 
       // -- Leave Events --
       const handleLeaveUpdate = () => {
-        debouncedInvalidate("leaves", ["leaves"]);
+        debouncedInvalidate("leaves", queryKeys.leaves());
       };
       socket.on("leave:updated", handleLeaveUpdate);
 
       // -- Meter Events --
       const handleMeterUpdate = () => {
-        debouncedInvalidate("meters", ["meters"]);
+        debouncedInvalidate("meters", queryKeys.meterReadings());
       };
       socket.on("meter:updated", handleMeterUpdate);
 

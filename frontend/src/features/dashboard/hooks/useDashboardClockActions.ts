@@ -3,6 +3,7 @@ import { useStore } from "../../../store/useStore";
 import { useToasts } from "../../../hooks/useToasts";
 import { timeRecordService } from "../../../services/timeRecordService";
 import { toCaughtError } from "../../../utils/caughtError";
+import { queryKeys } from "../../../lib/queryKeys";
 
 /**
  * Relojes del dashboard (spec 032 T5): antes vivian en `dashboardSlice` con
@@ -23,9 +24,9 @@ export const useDashboardClockActions = () => {
       // Clock out del responsable dispara el cierre automatico de turno en backend
       await timeRecordService.punch(employeeToConfirmClockOut.id, "WEB", "salida");
       closeResponsibleClockOutConfirmation();
-      await queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-      await queryClient.invalidateQueries({ queryKey: ["reports"] });
-      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.shiftReports() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
       addToast("Turno cerrado y salida registrada correctamente", "success");
       return true;
     } catch (error: unknown) {

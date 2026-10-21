@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { shiftReportService } from "../../services/shiftReportService";
+import { queryKeys } from "../../lib/queryKeys";
 
 export interface ShiftReportsFilterParams {
   pageSize: number;
@@ -8,7 +9,7 @@ export interface ShiftReportsFilterParams {
 
 export const useShiftReportsInfinite = (params: ShiftReportsFilterParams) => {
   return useInfiniteQuery({
-    queryKey: ["shiftReports", params],
+    queryKey: queryKeys.shiftReportsList(params),
     queryFn: async ({ pageParam = 1 }) => {
       const result = await shiftReportService.getAll({
         ...params,

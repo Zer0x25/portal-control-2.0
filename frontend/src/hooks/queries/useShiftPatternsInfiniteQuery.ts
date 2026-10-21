@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { shiftService } from "../../services/shiftService";
+import { queryKeys } from "../../lib/queryKeys";
 
 interface ShiftPatternsInfiniteParams {
   pageSize?: number;
@@ -11,7 +12,7 @@ export const useShiftPatternsInfiniteQuery = (params: ShiftPatternsInfiniteParam
   const pageSize = params.pageSize ?? 50;
 
   return useInfiniteQuery({
-    queryKey: ["shiftPatterns", "infinite", params],
+    queryKey: queryKeys.shiftPatternsInfinite(params),
     queryFn: async ({ pageParam = 1 }) =>
       shiftService.getPatternsPaginated({
         page: pageParam as number,

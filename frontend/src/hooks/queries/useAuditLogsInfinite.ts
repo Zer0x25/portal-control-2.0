@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { auditLogService } from "../../services/auditLogService";
 import { AuditLog } from "../../types/index";
+import { queryKeys } from "../../lib/queryKeys";
 
 export interface AuditLogsFilterParams {
   pageSize: number;
@@ -26,7 +27,7 @@ export interface AuditLogsResponse {
 
 export const useAuditLogsInfinite = (params: AuditLogsFilterParams) => {
   return useInfiniteQuery<AuditLogsResponse>({
-    queryKey: ["auditLogs", params],
+    queryKey: queryKeys.auditLogsList(params),
     queryFn: async ({ pageParam = 1 }) => {
       const result = await auditLogService.getAll({
         ...params,

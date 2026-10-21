@@ -1,12 +1,13 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { leaveService } from "../../services/leaveService";
 import { PaginationOptions } from "../../types/scheduling";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useLeavesInfiniteQuery = (
   filters: Omit<PaginationOptions, "page" | "pageSize"> = {},
 ) => {
   return useInfiniteQuery({
-    queryKey: ["leaves", filters],
+    queryKey: queryKeys.leavesList(filters),
     queryFn: ({ pageParam = 1 }) =>
       leaveService.getLeaves({
         ...filters,

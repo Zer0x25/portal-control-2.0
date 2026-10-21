@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { noteService } from "../services/noteService";
 import { useToasts } from "./useToasts";
 import { QuickNote } from "../types/index";
+import { queryKeys } from "../lib/queryKeys";
 
 export const useNoteMutations = () => {
   const queryClient = useQueryClient();
@@ -10,7 +11,7 @@ export const useNoteMutations = () => {
   const createNoteMutation = useMutation({
     mutationFn: (note: QuickNote) => noteService.create(note),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notes() });
       addToast("Nota creada exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -21,7 +22,7 @@ export const useNoteMutations = () => {
   const deleteNoteMutation = useMutation({
     mutationFn: (id: string) => noteService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notes() });
       addToast("Nota eliminada", "info");
     },
     onError: (error: Error) => {
@@ -32,7 +33,7 @@ export const useNoteMutations = () => {
   const archiveNoteMutation = useMutation({
     mutationFn: (id: string) => noteService.archive(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notes() });
       addToast("Nota archivada", "info");
     },
     onError: (error: Error) => {

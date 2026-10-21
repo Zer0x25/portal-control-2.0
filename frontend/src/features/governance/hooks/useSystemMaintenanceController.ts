@@ -7,6 +7,7 @@ import {
 } from "../../../services/healthService";
 import { useStore } from "../../../store/useStore";
 import { useShallow } from "zustand/react/shallow";
+import { queryKeys } from "../../../lib/queryKeys";
 
 export const useSystemMaintenanceController = () => {
   const queryClient = useQueryClient();
@@ -77,7 +78,7 @@ export const useSystemMaintenanceController = () => {
     try {
       await healthService.triggerBackup();
       addToast("Snapshot manual capturado exitosamente", "success");
-      queryClient.invalidateQueries({ queryKey: ["system", "health"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.systemHealth() });
       await fetchStats();
     } catch (error: unknown) {
       addToast(error instanceof Error ? error.message : "Error ejecutando backup", "error");

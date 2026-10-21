@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { auditLogService } from "../services/auditLogService";
 import { useToasts } from "./useToasts";
+import { queryKeys } from "../lib/queryKeys";
 
 export const useAuditLogMutations = () => {
   const queryClient = useQueryClient();
@@ -10,8 +11,8 @@ export const useAuditLogMutations = () => {
     mutationFn: () => auditLogService.verifyIntegrity(),
     onSuccess: (data) => {
       addToast(data.message || "Auditoría de integridad iniciada correctamente", "success");
-      queryClient.invalidateQueries({ queryKey: ["integrityStatus"] });
-      queryClient.invalidateQueries({ queryKey: ["auditLogs"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.integrityStatus() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auditLogs() });
     },
     onError: (error: Error) => {
       addToast(error.message || "Error al iniciar auditoría de integridad", "error");
@@ -22,7 +23,7 @@ export const useAuditLogMutations = () => {
     mutationFn: (months: number) => auditLogService.cleanup(months),
     onSuccess: (data) => {
       addToast(data.message || "Limpieza de logs completada", "success");
-      queryClient.invalidateQueries({ queryKey: ["auditLogs"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auditLogs() });
     },
     onError: (error: Error) => {
       addToast(error.message || "Error al limpiar logs", "error");

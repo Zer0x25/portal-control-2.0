@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { meterService } from "../services/meterService";
 import { useToasts } from "./useToasts";
 import { MeterReadingItem } from "../types/dashboard";
+import { queryKeys } from "../lib/queryKeys";
 
 export const useMeterMutations = () => {
   const queryClient = useQueryClient();
@@ -10,8 +11,8 @@ export const useMeterMutations = () => {
   const addReadingMutation = useMutation({
     mutationFn: (newReadings: MeterReadingItem[]) => meterService.saveBulk(newReadings),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["meterReadings"] });
-      queryClient.invalidateQueries({ queryKey: ["config", "meter_configs"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.meterReadings() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.config("meter_configs") });
       addToast("Lectura guardada exitosamente", "success");
     },
     onError: (error: Error) => {

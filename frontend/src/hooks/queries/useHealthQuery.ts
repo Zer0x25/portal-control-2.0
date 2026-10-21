@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../../services/apiClient";
+import { queryKeys } from "../../lib/queryKeys";
 
 export interface HealthData {
   status: "healthy" | "degraded";
@@ -58,7 +59,7 @@ export interface HealthResponse {
   data: HealthData;
 }
 
-export const HEALTH_QUERY_KEY = ["system", "health"] as const;
+export const HEALTH_QUERY_KEY = queryKeys.systemHealth();
 
 /**
  * Single source of truth for backend liveness (Fase 1: shared query).

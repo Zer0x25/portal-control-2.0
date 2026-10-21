@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { leaveService } from "../../services/leaveService";
 import { useAuth } from "../useAuth";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useLeavesQuery = () => {
   const { currentUser } = useAuth();
@@ -11,7 +12,7 @@ export const useLeavesQuery = () => {
     );
 
   return useQuery({
-    queryKey: ["leaves"],
+    queryKey: queryKeys.leaves(),
     queryFn: () => leaveService.getLeaves(),
     enabled: canReadLeaves,
     staleTime: 1000 * 60 * 5, // 5 minutes

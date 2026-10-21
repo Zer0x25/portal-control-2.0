@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { shiftService } from "../../services/shiftService";
 import { AssignedShift } from "../../types/scheduling";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useAssignedShiftsQuery = () => {
   return useQuery<AssignedShift[]>({
-    queryKey: ["assignedShifts"],
+    queryKey: queryKeys.assignedShifts(),
     queryFn: async () => {
       const response = await shiftService.getAssignments();
       return response.data;

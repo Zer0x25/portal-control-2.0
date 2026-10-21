@@ -29,10 +29,21 @@ export const QUERY_CACHE_BUSTER = BUILD_VERSION;
 /**
  * Raices de query que SI se persisten. Es una allowlist (nunca blocklist):
  * una query nueva queda fuera hasta que se declare aqui de forma explicita.
+ *
+ * La tabla canonica de claves vive en `src/lib/queryKeys.ts` (spec 034, T20):
+ * las raices de aqui deben coincidir con las de la tabla, y el guardrail de
+ * T25 verifica que **toda** raiz usada en el codigo esta clasificada en una
+ * de las dos listas.
+ *
+ * - `calendar` desaparece: no existia ninguna query con esa raiz (las
+ *   invalidaciones apuntaban a un arbol vacio); ahora apuntan a
+ *   `calendarMatrix`, que es la query real (spec 034, T23).
+ * - `reports` desaparece: se unifico con `shiftReports` (spec 034, T17).
+ * - `attendanceAnalytics` entra: es un agregado diario sin PII por empleado.
  */
 export const PERSISTED_QUERY_ROOTS: readonly string[] = [
   "assignedShifts",
-  "calendar",
+  "attendanceAnalytics",
   "calendarMatrix",
   "config",
   "correctionRequests",
@@ -43,17 +54,26 @@ export const PERSISTED_QUERY_ROOTS: readonly string[] = [
   "meterReadings",
   "notes",
   "recordHistory",
-  "reports",
   "shiftPatterns",
   "shiftReports",
   "timeRecords",
 ] as const;
 
-/** Raices excluidas por PII o seguridad (documentadas para auditoria). */
+/**
+ * Raices excluidas por PII o seguridad (documentadas para auditoria).
+ *
+ * `health` y `user` son raices reservadas: hoy la sonda de salud usa la raiz
+ * `system` y no existe query de `user`, pero quedan marcadas como sensibles
+ * para que un uso futuro no las persista por descuido.
+ *
+ * `kpis` es sensible porque el detalle del calculo incluye nombres de
+ * empleados (atrasos, ausencias, permisos).
+ */
 export const SENSITIVE_QUERY_ROOTS: readonly string[] = [
   "auditLogs",
   "health",
   "integrityStatus",
+  "kpis",
   "system",
   "user",
   "users",
