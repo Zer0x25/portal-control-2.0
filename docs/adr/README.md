@@ -29,6 +29,7 @@ con Prettier (`printWidth: 100`).
 | [0019](0019-auth-mfa-pin-estado-persistente.md)         | Aceptado  | Estado persistente para MFA y PIN      |
 | [0020](0020-design-system-governance.md)                | Aceptado  | Design System & Gobernanza Agéntica    |
 | [0021](0021-branding-por-instancia-logo.md)             | Propuesto | Branding por instancia en SystemConfig |
+| [0022](0022-ui-ux-consolidation.md)                     | Aceptado  | Ui Ux Consolidation                    |
 | [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida
@@ -60,4 +61,3 @@ Reglas:
 - `OBSERVABILITY.md`: señales actuales. Detalle operativo de ADR-0009.
 - `backend/docs/swagger.json`: contrato generado. Ver ADR-0003.
   | [0020](0020-design-system-governance.md) | Propuesto | Design System Governance |
-  | [0022](0022-ui-ux-consolidation.md) | Propuesto | Ui Ux Consolidation |

@@ -1,7 +1,10 @@
 # ADR-0022: UI/UX Consolidation — Tokens de dominio, Ratchet completo y Estado remoto único
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-20
+- Aceptación: 2026-10-20, al completar las specs
+  [031](file:///specs/031-ui-ux-consolidation/spec.md) (20/20) y
+  [032](file:///specs/032-remote-state-consolidation/spec.md) (10/10)
 - Autores: zer0x
 
 ## Contexto
@@ -137,6 +140,8 @@ shouldDehydrateQuery` (allowlist de catálogos, nunca blocklist) y `buster`
 
 ## Verificacion de cierre (2026-10-20)
 
+### Spec 031 — superficie UI (20/20 tareas)
+
 - `npm run validate:ci` (frontend): format, lint, lint-budget 0/0, tsc, 470
   tests y build en verde.
 - Guardrails: 52/52 (modal, palette, tipografia, z-scale, spinner, tab,
@@ -147,6 +152,29 @@ shouldDehydrateQuery` (allowlist de catálogos, nunca blocklist) y `buster`
   claro y oscuro) contra el build de produccion y el backend real. La
   extension al planificador destapo violaciones preexistentes de contraste y
   de nombre accesible en el calendario de turnos, ya corregidas.
+- `npm run spec:check` (32 specs), `npm run docs:check` (206 md, 22 ADR) y
+  `npm run preflight` en verde.
+
+### Spec 032 — estado remoto y cache offline (10/10 tareas)
+
+- Persister con allowlist de 16 raices operacionales, denylist de queries
+  sensibles y `buster` por version de build
+  (`frontend/src/lib/queryCache.ts`); purge al logout, expiracion y cambio de
+  dueno con marca de dueno `saphr:query-cache-owner`, idempotente y limitado
+  a su propio store (6 tests).
+- 9 slices de colecciones remotas -> query hooks unicos (`configSlice` quedo
+  como `systemSlice` de solo offset y `dashboardSlice` como flags de modales);
+  guardrail de frontera con whitelist congelada en `syncSlice`/`authSlice`
+  (guardrails 13 archivos / 56 tests, con los 4 de
+  `stateBoundaryGuardrails.test.ts`) y auditoria de double-refresh sin
+  hallazgos (0 loaders en mutaciones).
+- `npm run validate:ci` (frontend): format, lint 0/0, tsc, 486 tests y
+  build+PWA en verde.
+- e2e completo 56/56 contra build de produccion y backend real, incluidos los
+  3 tests offline de AC3 (`frontend/e2e/offline.spec.ts`): worker-portal y
+  kiosk sirven desde el cache persistido sin red (el service worker entrega
+  el shell) y la escritura online-first degrada con toast sin romper la
+  sesion; cola de escritura de `syncSlice` intacta.
 - `npm run spec:check` (32 specs), `npm run docs:check` (206 md, 22 ADR) y
   `npm run preflight` en verde.
 
@@ -207,6 +235,9 @@ Negativas / costos aceptados:
   (audit script + guardrail de tests).
 - `frontend/src/contexts/AppProviders.tsx` — `PersistQueryClientProvider` +
   persister seguro (purge, `shouldDehydrateQuery`, `buster`).
+- `frontend/src/lib/queryCache.ts` + `frontend/src/lib/queryClient.ts` —
+  persister con allowlist/denylist/buster y unico cliente de queries
+  (implementacion de la decision 3, spec 032).
 - `frontend/src/components/ui/CinematicModal.tsx` + `modalGuardrails.test.ts` —
   estándar de modales.
 - Antecedentes: [0020-design-system-governance.md](file:///docs/adr/0020-design-system-governance.md),
@@ -215,3 +246,8 @@ Negativas / costos aceptados:
   (superficie UI: fases A/B/C/D) y
   [specs/032-remote-state-consolidation/spec.md](file:///specs/032-remote-state-consolidation/spec.md)
   (estado remoto + seguridad de caché, extraído por riesgo).
+- Implementacion verificada tarea a tarea (commits por tarea):
+  [specs/031-ui-ux-consolidation/tasks.md](file:///specs/031-ui-ux-consolidation/tasks.md)
+  (20/20) y
+  [specs/032-remote-state-consolidation/tasks.md](file:///specs/032-remote-state-consolidation/tasks.md)
+  (10/10).

@@ -121,6 +121,21 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       `secret-scan.allow` del default `changeme123` se movió de
       `store/slices/userSlice.ts` a `hooks/useUsers.ts` (mismo literal
       documentado, cambio de path por la migración T5).
-- [ ] T10: Con 031 y 032 completos: promover ADR-0022 de "Propuesto" a
+- [x] T10: Con 031 y 032 completos: promover ADR-0022 de "Propuesto" a
       "Aceptado" con links a la implementación, verificar indexación en
       `docs/adr/README.md` y cerrar las tareas pendientes de ambos specs (AC4).
+      **Hecho (2026-10-20)**: `docs/adr/0022-ui-ux-consolidation.md` pasa a
+      `Aceptado` con línea de aceptación que enlaza ambas specs; la sección
+      "Verificación de cierre" queda partida en la evidencia de 031 (20/20)
+      y la de 032 (10/10: persister con allowlist/buster y purge de sesión,
+      9 slices → query hooks con whitelist congelada, guardrails 13/56 con
+      `stateBoundaryGuardrails`, e2e 56/56 con offline 3/3); "Referencias"
+      incorpora `src/lib/queryCache.ts` + `src/lib/queryClient.ts` y los
+      `tasks.md` de ambas specs como implementación verificada. En
+      `docs/adr/README.md`, 0022 queda como fila de la tabla principal con
+      `Aceptado` (regla "actualizar esta tabla en el mismo commit") y se
+      elimina la fila residual del EOF que era artefacto del propio commit
+      `8bf3953` (la fila residual de 0020 es preexistente de PR #28 y queda
+      fuera de alcance). Ambos specs cierran sin tareas pendientes: 031
+      20/20, 032 10/10. `docs:check` (206 md / 22 ADR), `spec:check` (32) y
+      prettier de md en verde.
