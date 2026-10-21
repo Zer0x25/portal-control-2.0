@@ -3,7 +3,7 @@
 */
 
 import React from "react";
-import DOMPurify from "dompurify";
+import DOMPurify from "../../../utils/domPurify";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";

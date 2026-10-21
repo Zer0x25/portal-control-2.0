@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import DOMPurify from "dompurify";
+import DOMPurify from "../../utils/domPurify";
 import Button from "./Button";
 import { CloseIcon, BookOpenIcon } from "./icons/index";
 import LoadingSpinner from "./LoadingSpinner";
