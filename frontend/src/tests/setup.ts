@@ -1,10 +1,60 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
-// Limpiar el DOM después de cada test
+import { server } from "./mocks/server";
+import { resetCatalog } from "./mocks/catalog";
+
+// ---------------------------------------------------------------------------
+// Spies/stubs del entorno de test (spec 035, T16).
+//
+// El SDK de Sentry **nunca** se ejecuta en los tests unitarios: cualquier
+// llamada a `initSentry()` se queda en no-op. El `logger` se expone como
+// spies para que los tests puedan afirmar sobre los mensajes emitidos sin
+// tocar la consola real.
+// ---------------------------------------------------------------------------
+vi.mock("@sentry/react", () => ({
+  init: vi.fn(),
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  browserTracingIntegration: vi.fn(() => ({})),
+  replayIntegration: vi.fn(() => ({})),
+}));
+
+vi.mock("../utils/logger.ts", () => ({
+  logger: {
+    log: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+// ---------------------------------------------------------------------------
+// MSW: la red se intercepta en el proceso de test (spec 035, T1/T3).
+//
+// `onUnhandledRequest: "error"` hace que una llamada sin handler **falle el
+// test**: es la garantia de que los tests de service ejercitan el contrato
+// HTTP real y no un mock de modulo.
+// ---------------------------------------------------------------------------
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" });
+});
+
 afterEach(() => {
+  // Cada test empieza con el conjunto de handlers por defecto: los overrides
+  // con `server.use(...)` no se filtran al test siguiente.
+  server.resetHandlers();
+  // El catalogo de payloads (spec 035, T5) tambien se reinicia: un payload
+  // fijado por un test no puede cambiar el resultado del siguiente.
+  resetCatalog();
   cleanup();
+});
+
+afterAll(() => {
+  server.close();
 });
 
 // Mock de matchMedia (requerido por algunos componentes de UI)

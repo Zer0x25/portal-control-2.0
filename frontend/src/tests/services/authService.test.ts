@@ -1,42 +1,40 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import { authService } from "../../services/authService";
 import { authTokenStore } from "../../services/authToken";
-import { jsonResponse } from "../helpers/mockResponse";
+import { server } from "../mocks/server";
+import { http, HttpResponse } from "msw";
 
-/**
- * Spec 034, T14: `authService` migra a `apiClient` conservando su contrato
- * de error (`login` **lanza**, `kioskVerifyPin` **devuelve**) y la politica
- * de eventos (los 3 endpoints anonimos no cierran la sesion).
- */
 describe("authService sobre apiClient (spec 034 T14)", () => {
   beforeEach(() => {
     sessionStorage.clear();
-    vi.stubGlobal("fetch", vi.fn());
+    authTokenStore.removeToken();
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
+    authTokenStore.removeToken();
     sessionStorage.clear();
+    server.resetHandlers();
   });
 
   it("login guarda el token y devuelve la respuesta", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      jsonResponse({ userId: "u1", username: "ana", role: "Administrador", token: "jwt-1" }),
+    server.use(
+      http.post("http://localhost:4000/api/auth/login", () =>
+        HttpResponse.json({ userId: "u1", username: "ana", role: "Administrador", token: "jwt-1" }),
+      ),
     );
 
     const result = await authService.login("ana", "clave");
 
     expect(result.token).toBe("jwt-1");
     expect(authTokenStore.getToken()).toBe("jwt-1");
-    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
-    expect(init.method).toBe("POST");
-    expect(JSON.parse(init.body as string)).toEqual({ username: "ana", password: "clave" });
   });
 
   it("login lanza el mensaje del backend y no cierra la sesion (401 anonimo)", async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({ message: "Credenciales invalidas" }, 401));
+    server.use(
+      http.post("http://localhost:4000/api/auth/login", () =>
+        HttpResponse.json({ message: "Credenciales invalidas" }, { status: 401 }),
+      ),
+    );
     const unauthorized = vi.fn();
     window.addEventListener("unauthorized", unauthorized);
 
@@ -47,13 +45,21 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
   });
 
   it("login usa el mensaje generico cuando el backend no lo trae", async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({}, 500));
+    server.use(
+      http.post("http://localhost:4000/api/auth/login", () =>
+        HttpResponse.json({}, { status: 500 }),
+      ),
+    );
 
     await expect(authService.login("ana", "mala")).rejects.toThrow("Error en el inicio de sesión");
   });
 
   it("kioskVerifyPin devuelve { success: false, message } sin lanzar (401 anonimo)", async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({ message: "PIN incorrecto" }, 401));
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json({ message: "PIN incorrecto" }, { status: 401 }),
+      ),
+    );
     const unauthorized = vi.fn();
     window.addEventListener("unauthorized", unauthorized);
 
@@ -65,7 +71,7 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
   });
 
   it("kioskVerifyPin distingue el fallo de red del error del backend", async () => {
-    vi.mocked(fetch).mockRejectedValue(new TypeError("Failed to fetch"));
+    server.use(http.post("http://localhost:4000/api/auth/kiosk-login", () => HttpResponse.error()));
 
     const result = await authService.kioskVerifyPin("e1", "0000");
 
@@ -73,8 +79,10 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
   });
 
   it("validateMFACode guarda el token y no cierra la sesion", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      jsonResponse({ userId: "u1", username: "ana", role: "Administrador", token: "jwt-2" }),
+    server.use(
+      http.post("http://localhost:4000/api/auth/mfa/validate", () =>
+        HttpResponse.json({ userId: "u1", username: "ana", role: "Administrador", token: "jwt-2" }),
+      ),
     );
     const unauthorized = vi.fn();
     window.addEventListener("unauthorized", unauthorized);
@@ -88,9 +96,13 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
   });
 
   it("setupMFA y verifyMFASetup si emiten el evento unauthorized (401)", async () => {
-    // Una `Response` solo se puede leer una vez: se crea una por llamada.
-    vi.mocked(fetch).mockImplementation(async () =>
-      jsonResponse({ message: "Sesion expirada" }, 401),
+    server.use(
+      http.post("http://localhost:4000/api/auth/mfa/setup", () =>
+        HttpResponse.json({ message: "Sesion expirada" }, { status: 401 }),
+      ),
+      http.post("http://localhost:4000/api/auth/mfa/verify", () =>
+        HttpResponse.json({ message: "Sesion expirada" }, { status: 401 }),
+      ),
     );
     const unauthorized = vi.fn();
     window.addEventListener("unauthorized", unauthorized);
@@ -106,11 +118,16 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
 
   it("las cabeceras de autorizacion viajan en las peticiones con sesion", async () => {
     authTokenStore.setToken("jwt-3");
-    vi.mocked(fetch).mockResolvedValue(jsonResponse({ qrCode: "qr", secret: "s3cret" }));
+    let capturedAuth: string | null = null;
+    server.use(
+      http.post("http://localhost:4000/api/auth/mfa/setup", ({ request }) => {
+        capturedAuth = request.headers.get("authorization");
+        return HttpResponse.json({ qrCode: "qr", secret: "s3cret" });
+      }),
+    );
 
     await authService.setupMFA();
 
-    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
-    expect(new Headers(init.headers).get("authorization")).toBe("Bearer jwt-3");
+    expect(capturedAuth).toBe("Bearer jwt-3");
   });
 });

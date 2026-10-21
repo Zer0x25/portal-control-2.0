@@ -1,41 +1,27 @@
 import React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, afterEach } from "vitest";
 
 import { useReportMutations } from "../../hooks/useReportMutations";
 import { queryKeys } from "../../lib/queryKeys";
+import { recordRequests, type RequestRecorder } from "../mocks/requests";
 import type { ShiftReport } from "../../types";
 
-const { saveMock, updateMock, deleteMock } = vi.hoisted(() => ({
-  saveMock: vi.fn(),
-  updateMock: vi.fn(),
-  deleteMock: vi.fn(),
-}));
-
-vi.mock("../../services/shiftReportService", () => ({
-  shiftReportService: {
-    save: saveMock,
-    update: updateMock,
-    delete: deleteMock,
-  },
-}));
-
 /**
- * Spec 034, T17 (AC5): las 4 invalidaciones de la bitacora de turno apuntan a
- * **una sola raiz canonica** (`shiftReports`).
+ * Spec 035, T4 (AC3): la bitácora de turno se prueba contra el backend por
+ * MSW, no contra un modulo mockeado.
  *
- * Antes de la unificacion, la query de reportes cerrados (la que consume
- * `features/logbook/components/ClosedReportsModal.tsx`) usaba la raiz
- * `shiftReports` mientras las 4 invalidaciones usaban `reports`: la
- * invalidacion no alcanzaba a la query y el modal mostraba datos stale.
+ * El test sigue verificando lo importante (spec 034, T17): las 3 mutaciones
+ * invalidan la **raiz canonica** `shiftReports`, de modo que la query de
+ * reportes cerrados deja de mostrar datos stale. Ahora, ademas, comprueba que
+ * la peticion HTTP sale con el verbo y el path correctos.
  */
-describe("useReportMutations: invalidacion de la bitacora de turno (spec 034 T17)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    saveMock.mockResolvedValue({} as ShiftReport);
-    updateMock.mockResolvedValue({} as ShiftReport);
-    deleteMock.mockResolvedValue(undefined);
+describe("useReportMutations: invalidacion de la bitacora de turno (spec 034 T17 / spec 035 T4)", () => {
+  let recorder: RequestRecorder;
+
+  afterEach(() => {
+    recorder?.stop();
   });
 
   const buildReport = (): ShiftReport => ({
@@ -56,6 +42,7 @@ describe("useReportMutations: invalidacion de la bitacora de turno (spec 034 T17
   });
 
   const setup = () => {
+    recorder = recordRequests();
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -80,7 +67,7 @@ describe("useReportMutations: invalidacion de la bitacora de turno (spec 034 T17
       await result.current.addReport(buildReport());
     });
 
-    expect(saveMock).toHaveBeenCalledTimes(1);
+    expect(recorder.countOf("POST", "/api/shift-reports")).toBe(1);
     expect(queryClient.getQueryState(closedKey)?.isInvalidated).toBe(true);
   });
 
@@ -93,7 +80,7 @@ describe("useReportMutations: invalidacion de la bitacora de turno (spec 034 T17
       await result.current.updateReport(buildReport());
     });
 
-    expect(updateMock).toHaveBeenCalledTimes(1);
+    expect(recorder.countOf("PATCH", "/api/shift-reports/r-1")).toBe(1);
     expect(queryClient.getQueryState(closedKey)?.isInvalidated).toBe(true);
   });
 
@@ -106,7 +93,7 @@ describe("useReportMutations: invalidacion de la bitacora de turno (spec 034 T17
       await result.current.deleteReport("r-1");
     });
 
-    expect(deleteMock).toHaveBeenCalledWith("r-1");
+    expect(recorder.countOf("DELETE", "/api/shift-reports/r-1")).toBe(1);
     expect(queryClient.getQueryState(closedKey)?.isInvalidated).toBe(true);
   });
 

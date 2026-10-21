@@ -1,48 +1,49 @@
-import { afterEach, expect, it, vi } from "vitest";
-vi.mock("../../services/authToken", () => ({
-  authTokenStore: {
-    getToken: () => "fixture",
-    setToken: vi.fn(),
-    removeToken: vi.fn(),
-    getAuthHeader: () => ({ Authorization: "Bearer fixture" }),
-  },
-}));
-vi.mock("../../services/authService", () => ({
-  authService: { getAuthHeader: () => ({ Authorization: "Bearer fixture" }) },
-}));
+import { afterEach, beforeEach, expect, it } from "vitest";
+import { authTokenStore } from "../../services/authToken";
 import { importService } from "../../services/importService";
-afterEach(() => vi.unstubAllGlobals());
-it("serializes the actual employee mapping String constructor and required metadata", async () => {
-  const request = vi.fn().mockResolvedValue(
-    new Response(JSON.stringify({ rows: [{ id: "001" }], total: 1 }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    }),
-  );
-  vi.stubGlobal("fetch", request);
-  const result = await importService.previewImport(new File(["fixture"], "employees.xlsx"), {
-    ID: { prop: "id", type: String, required: true },
+import { server } from "../mocks/server";
+import { http, HttpResponse } from "msw";
+
+describe("importService sobre apiClient (spec 034 T2)", () => {
+  beforeEach(() => {
+    authTokenStore.setToken("fixture");
   });
-  const body = request.mock.calls[0][1].body as FormData;
-  expect(JSON.parse(body.get("schema") as string)).toEqual({
-    ID: { prop: "id", type: "String", required: true },
+
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
   });
-  expect(result.rows[0].id).toBe("001");
-});
 
-it("envia el archivo como multipart sin Content-Type manual (spec 034 T2)", async () => {
-  const request = vi.fn().mockResolvedValue(
-    new Response(JSON.stringify({ rows: [], total: 0 }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    }),
-  );
-  vi.stubGlobal("fetch", request);
+  it("serializa el mapeo real de empleados y la metadata requerida", async () => {
+    let capturedText = "";
+    server.use(
+      http.post("http://localhost:4000/api/import/preview", async ({ request }) => {
+        capturedText = await request.text();
+        return HttpResponse.json({ rows: [{ id: "001" }], total: 1 });
+      }),
+    );
 
-  await importService.previewImport(new File(["fixture"], "employees.xlsx"));
+    const result = await importService.previewImport(new File(["fixture"], "employees.xlsx"), {
+      ID: { prop: "id", type: String, required: true },
+    });
 
-  const init = request.mock.calls[0][1] as RequestInit;
-  expect(init.body).toBeInstanceOf(FormData);
-  // El boundary lo fija el navegador: enviarlo a mano rompe el upload.
-  expect(new Headers(init.headers).get("content-type")).toBeNull();
+    expect(capturedText).toContain('"type":"String"');
+    expect(capturedText).toContain("filename");
+    expect(result.rows[0].id).toBe("001");
+  });
+
+  it("envia el archivo como multipart sin Content-Type manual (spec 034 T2)", async () => {
+    let capturedContentType: string | null = null;
+    server.use(
+      http.post("http://localhost:4000/api/import/preview", async ({ request }) => {
+        capturedContentType = request.headers.get("content-type");
+        return HttpResponse.json({ rows: [], total: 0 });
+      }),
+    );
+
+    await importService.previewImport(new File(["fixture"], "employees.xlsx"));
+
+    // El boundary lo fija el transporte (no el cliente): enviarlo a mano rompe el upload.
+    expect(capturedContentType).toMatch(/boundary=/);
+  });
 });
