@@ -117,7 +117,8 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
       isHandoverModalOpen: false,
       handoverData: null,
       onToggleSidebar: vi.fn(),
-      onOpenSidebarFromSwipe: vi.fn(),
+      onSwipeTouchStart: vi.fn(),
+      onSwipeTouchEnd: vi.fn(),
       onGoHome: vi.fn(),
       onCloseHandoverModal: vi.fn(),
     };

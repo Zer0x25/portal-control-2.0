@@ -6,6 +6,113 @@ import prettierConfig from "eslint-config-prettier";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import globals from "globals";
 
+/**
+ * Selectores de `no-restricted-syntax` compartidos entre el bloque general y
+ * el bloque de `*.view.tsx` (flat config: el bloque posterior **reemplaza**
+ * la lista de la regla, no la fusiona).
+ */
+const DATE_RESTRICTED_SYNTAX = [
+  {
+    selector:
+      "CallExpression[callee.property.name='split'][callee.object.type='CallExpression'][callee.object.callee.property.name='toISOString']",
+    message:
+      "Evita toISOString().split('T')[0] para fechas de negocio. Usa utilidades de src/utils/dateUtils.ts.",
+  },
+  {
+    selector: "NewExpression[callee.name='Date'] > BinaryExpression > Literal[value='T00:00:00']",
+    message: "Evita new Date(... + 'T00:00:00'). Usa parseDateOnlyUTC/toBusinessDateChile según el caso.",
+  },
+  {
+    selector: "NewExpression[callee.name='Date'] > Literal[value=/^\\d{4}-\\d{2}-\\d{2}$/]",
+    message: "Evita new Date('YYYY-MM-DD'). Usa timePolicy/BusinessDate helpers.",
+  },
+  {
+    selector: "BinaryExpression[right.value='T00:00:00Z']",
+    message: "Evita concatenar 'T00:00:00Z'. Usa parseBusinessDateCL.",
+  },
+];
+
+/**
+ * Spec 033 AC1: una vista (`*.view.tsx`) es **presentacional puro**.
+ *
+ * La prohibición **no es una lista cerrada** de hooks: cualquier llamada
+ * `useXxx(...)` (de React o de dominio) y cualquier import de hook quedan
+ * fuera de una vista. El estado, los efectos y la orquestación viven en el
+ * `*.container.tsx` o en un hook de dominio del feature.
+ */
+const VIEW_HOOK_RESTRICTED_SYNTAX = [
+  {
+    selector: "CallExpression[callee.type='Identifier'][callee.name=/^use[A-Z]/]",
+    message:
+      "No llames hooks en *.view.tsx: una vista es presentacional puro. Mueve el estado/efecto al container o a un hook de dominio.",
+  },
+  {
+    selector:
+      "CallExpression[callee.type='MemberExpression'][callee.object.name='React'][callee.property.name=/^use[A-Z]/]",
+    message:
+      "No llames React.useXxx en *.view.tsx: una vista es presentacional puro. Mueve el estado/efecto al container o a un hook de dominio.",
+  },
+  {
+    selector: "CallExpression[callee.type='Identifier'][callee.name='use']",
+    message: "No uses el hook `use` de React 19 en *.view.tsx: una vista es presentacional puro.",
+  },
+  {
+    selector: "ImportDeclaration[source.value='react'] > ImportSpecifier[imported.name=/^use[A-Z]/]",
+    message:
+      "No importes hooks de React en *.view.tsx: recibe el estado por props desde el container.",
+  },
+  {
+    selector: "ImportDeclaration[source.value='react'] > ImportSpecifier[imported.name='use']",
+    message:
+      "No importes el hook `use` de React 19 en *.view.tsx: recibe el estado por props desde el container.",
+  },
+];
+
+/** Red de seguridad: referencias sueltas (no llamadas) a identificadores de hook de React. */
+const VIEW_HOOK_RESTRICTED_GLOBALS = [
+  "useState",
+  "useEffect",
+  "useLayoutEffect",
+  "useInsertionEffect",
+  "useMemo",
+  "useCallback",
+  "useRef",
+  "useReducer",
+  "useContext",
+  "useId",
+  "useSyncExternalStore",
+  "useTransition",
+  "useDeferredValue",
+  "useImperativeHandle",
+  "useOptimistic",
+  "useActionState",
+].map((name) => ({
+  name,
+  message: `No uses \`${name}\` en *.view.tsx: una vista es presentacional puro.`,
+}));
+
+/**
+ * Spec 033 AC1/AC4: un container orquesta, no presenta.
+ *
+ * Puede devolver **otros containers como props** (composición), pero no
+ * puede emitir elementos DOM intrínsecos (`<div>`, `<span>`, ...): la
+ * estructura visual pertenece a la vista. El invariante de "un único
+ * elemento JSX de primer nivel en el return" lo verifica el guardrail
+ * `viewPurityGuardrails.test.ts` (análisis AST, budget 0).
+ */
+const CONTAINER_RESTRICTED_SYNTAX = [
+  {
+    selector: "JSXOpeningElement[name.type='JSXIdentifier'][name.name=/^[a-z]/]",
+    message:
+      "Un *.container.tsx no emite JSX de presentación (elementos DOM intrínsecos). Devuelve la vista o components como props.",
+  },
+  {
+    selector: "JSXOpeningElement[name.type='JSXMemberExpression']",
+    message:
+      "Un *.container.tsx no emite JSX de presentación. Devuelve la vista o components como props.",
+  },
+];
+
 export default [
   js.configs.recommended,
   {
@@ -42,29 +149,7 @@ export default [
       "jsx-a11y/alt-text": "error",
       "jsx-a11y/interactive-supports-focus": "error",
       "jsx-a11y/no-noninteractive-tabindex": "error",
-      "no-restricted-syntax": [
-        "warn",
-        {
-          selector:
-            "CallExpression[callee.property.name='split'][callee.object.type='CallExpression'][callee.object.callee.property.name='toISOString']",
-          message:
-            "Evita toISOString().split('T')[0] para fechas de negocio. Usa utilidades de src/utils/dateUtils.ts.",
-        },
-        {
-          selector:
-            "NewExpression[callee.name='Date'] > BinaryExpression > Literal[value='T00:00:00']",
-          message:
-            "Evita new Date(... + 'T00:00:00'). Usa parseDateOnlyUTC/toBusinessDateChile según el caso.",
-        },
-        {
-          selector: "NewExpression[callee.name='Date'] > Literal[value=/^\\d{4}-\\d{2}-\\d{2}$/]",
-          message: "Evita new Date('YYYY-MM-DD'). Usa timePolicy/BusinessDate helpers.",
-        },
-        {
-          selector: "BinaryExpression[right.value='T00:00:00Z']",
-          message: "Evita concatenar 'T00:00:00Z'. Usa parseBusinessDateCL.",
-        },
-      ],
+      "no-restricted-syntax": ["warn", ...DATE_RESTRICTED_SYNTAX],
     },
   },
   {
@@ -109,6 +194,10 @@ export default [
           ],
         },
       ],
+      // Spec 033 AC1: sin hooks en la vista. La lista de `no-restricted-syntax`
+      // **reemplaza** la del bloque general (flat config), así que se compone
+      // explicitamente con los selectores de fecha.
+      "no-restricted-syntax": ["error", ...DATE_RESTRICTED_SYNTAX, ...VIEW_HOOK_RESTRICTED_SYNTAX],
       "no-restricted-globals": [
         "warn",
         {
@@ -123,6 +212,7 @@ export default [
           name: "sessionStorage",
           message: "No uses sessionStorage en *.view.tsx. Mueve side effects a hooks/controllers.",
         },
+        ...VIEW_HOOK_RESTRICTED_GLOBALS,
       ],
       "no-restricted-properties": [
         "warn",
@@ -133,6 +223,13 @@ export default [
             "No uses window.location en *.view.tsx. Mueve navegación/descargas a hooks/controllers.",
         },
       ],
+    },
+  },
+  {
+    // Spec 033 AC1/AC4: el container orquesta, la vista presenta.
+    files: ["src/**/*.container.tsx"],
+    rules: {
+      "no-restricted-syntax": ["error", ...CONTAINER_RESTRICTED_SYNTAX],
     },
   },
 ];

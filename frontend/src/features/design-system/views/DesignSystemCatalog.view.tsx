@@ -1,3 +1,12 @@
+/* eslint-disable no-restricted-syntax --
+ * Spec 033 AC1 (allowlist temporal): esta vista todavía tiene hooks y es la
+ * entrada de ruta del catálogo de primitivas. La retirada del disable está
+ * asignada a la spec 033 T8, que parte el feature en
+ * hooks/useDesignSystemCatalog.ts + containers/DesignSystemCatalog.container.tsx
+ * + views/DesignSystemCatalog.view.tsx presentacional.
+ * El guardrail `viewPurityGuardrails.test.ts` (VIEW_HOOK_BUDGET) impide que
+ * la allowlist vuelva a crecer.
+ */
 import React, { useId, useState } from "react";
 import PageHeader from "../../../components/ui/PageHeader";
 import Container from "../../../components/ui/Container";

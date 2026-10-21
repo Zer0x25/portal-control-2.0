@@ -28,6 +28,12 @@ const auditedViewFiles = [
   "src/features/meters/views/MeterReadings.view.tsx",
   "src/features/communications/views/Communications.view.tsx",
   "src/features/logbook/views/Logbook.view.tsx",
+  // Spec 033 AC1: las vistas que tenian hooks y que el guardrail de pureza
+  // audita de forma explicita.
+  "src/features/design-system/views/DesignSystemCatalog.view.tsx",
+  "src/features/worker-portal/views/WorkerPortal.view.tsx",
+  "src/features/auth/components/ChangePasswordModal.view.tsx",
+  "src/components/layout/PersistentLayout.view.tsx",
 ];
 
 const lintSnippet = async (code: string, filePath: string) => {

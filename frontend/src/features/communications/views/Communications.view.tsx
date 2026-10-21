@@ -3,7 +3,6 @@
 */
 
 import React from "react";
-import DOMPurify from "../../../utils/domPurify";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
@@ -12,6 +11,8 @@ import { MegaphoneIcon, EditIcon, CheckIcon, CloseIcon } from "../../../componen
 
 export interface CommunicationsViewProps {
   content: string;
+  /** HTML ya saneado por el controller (la vista no sanitiza). */
+  safeContent: string;
   isLoading: boolean;
   isEditing: boolean;
   isAdmin: boolean;
@@ -21,12 +22,16 @@ export interface CommunicationsViewProps {
 }
 
 export const CommunicationsView: React.FC<CommunicationsViewProps> = React.memo(
-  ({ content, isLoading, isEditing, isAdmin, setContent, setIsEditing, handleSave }) => {
-    const safeContent = React.useMemo(
-      () => DOMPurify.sanitize(content ?? "", { USE_PROFILES: { html: true } }),
-      [content],
-    );
-
+  ({
+    content,
+    safeContent,
+    isLoading,
+    isEditing,
+    isAdmin,
+    setContent,
+    setIsEditing,
+    handleSave,
+  }) => {
     if (isLoading) {
       return (
         <div className="py-20 text-center text-(--sidebar-text-active) font-bold uppercase tracking-widest animate-pulse">

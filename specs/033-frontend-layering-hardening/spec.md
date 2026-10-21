@@ -20,19 +20,19 @@ presentación pura por props, `hooks` = reglas de negocio) más la regla 2 de
 no es enforceable**:
 
 1. **La única regla que protege la capa de vista está atada al sufijo del
-   archivo, no a la capa.** `frontend/eslint.config.js:88-137` aplica
+   archivo, no a la capa.** `frontend/eslint.config.js:174-228` aplica
    `no-restricted-imports` / `no-restricted-globals` / `no-restricted-properties`
    al glob `src/**/*.view.tsx`. Prohíbe `services/`, `store/`, `react-router`,
    `fetch`, `localStorage`, `sessionStorage` y `window.location` — **pero no
    prohíbe hooks de React**. Un archivo `components/X.tsx` (sin sufijo `.view.`)
    **no está cubierto por ninguna regla**: es tierra de nadie.
-2. **61 de 160 componentes no-view (38%) mezclan estado y presentación.**
-   De ellos, **39 son "grandes con lógica inline"**: >150 líneas, llaman hooks
+2. **95 de 236 componentes no-view (40%) mezclan estado y presentación.**
+   De ellos, **56 son "grandes con lógica inline"**: >150 líneas, llaman hooks
    de React en el cuerpo del componente y **no tienen un `.container.tsx` /
-   `.view.tsx` gemelo** en su feature (34 en `features/**/components/`, 5 en
+   `.view.tsx` gemelo** en su feature (49 en `features/**/components/`, 7 en
    `components/ui/`: `ReportTable.tsx` 549, `DatePicker.tsx` 406,
-   `AuditMonthSelector.tsx` 225, `CalendarMonthSelector.tsx` 215,
-   `UserManualModal.tsx` 178). Los de lógica **realmente inline** (no
+   `DatePickerDialog.tsx` 158, `TabNav.tsx` 177, `AuditMonthSelector.tsx` 225,
+   `CalendarMonthSelector.tsx` 215, `UserManualModal.tsx` 178). Los de lógica **realmente inline** (no
    delegan a un hook de controlador) son 7:
    `features/configuration/components/GlobalVariablesManager.tsx` (865 líneas,
    19 hooks), `features/supervisor-dashboard/components/RequestsTab.tsx` (594,
@@ -46,13 +46,17 @@ no es enforceable**:
    (457, **0 hooks**: es presentacional puro) y
    `features/supervisor-dashboard/components/AccountingClosureTab.tsx` (419,
    **1 hook**: `useAccountingClosureTabController`, que ya extrae la lógica).
-3. **4 vistas violan la "presentación pura"** porque llaman hooks:
+3. **5 vistas violan la "presentación pura"** porque llaman hooks:
    `features/design-system/views/DesignSystemCatalog.view.tsx` (517 líneas, 7
    hooks — además `useId` ×3 y `useToasts` ×1, y **es la entrada de ruta**;
    no existe `containers/` ni `hooks/` en ese feature),
    `features/worker-portal/views/WorkerPortal.view.tsx` (506, 2),
-   `features/communications/views/Communications.view.tsx` (124, 1),
+   `components/layout/PersistentLayout.view.tsx` (1 `useRef` para el gesto de
+   swipe), `features/communications/views/Communications.view.tsx` (124, 1) y
    `features/auth/components/ChangePasswordModal.view.tsx` (89, 1).
+   El quinto (`PersistentLayout`) **no lo detecta un regex**: su hook se
+   llama con genérico (`useRef<number | null>(null)`), por lo que el conteo
+   del guardrail se hace sobre el **AST de TypeScript**, no sobre texto.
 4. **8 componentes importan `services/` por valor** (los `import type` quedan
    permitidos):
    `features/auth/components/MFASetupModal.tsx:2` (`authService`),
@@ -171,18 +175,22 @@ Fuera (explícito, con spec propio):
       `useRef`, `useReducer`, `useContext`, **`useId`** y cualquier hook de
       dominio como **`useToasts`**) más los miembros `React.use*`. La
       enumeración **no es una lista cerrada**: cualquier hook queda fuera de
-      una vista. Los 4 views hoy-infractores
+      una vista. Los 5 views hoy-infractores
       (`DesignSystemCatalog.view`, `WorkerPortal.view`, `Communications.view`,
-      `ChangePasswordModal.view`) quedan sin hooks o se reescriben como
-      presentacional puro, y **`src/**/*.view.tsx` con hooks queda en 0**.
+      `ChangePasswordModal.view`, `PersistentLayout.view`) quedan sin hooks o
+      se reescriben como presentacional puro, y **`src/**/*.view.tsx` con
+      hooks queda en 0**.
       **Orden de activación**: la regla se activa como `error` desde el
-      primer día, pero los 4 views offenders quedan cubiertos por una
+      primer día, pero los 5 views offenders quedan cubiertos por una
       **allowlist temporal explícita** (`eslint-disable` por archivo, listada
       y con tarea de retirada asignada: T7 para `WorkerPortal`,
-      `Communications` y `ChangePasswordModal`, T8 para
+      `Communications`, `ChangePasswordModal` y `PersistentLayout`, T8 para
       `DesignSystemCatalog`). El allowlist desaparece por completo al
-      cerrarse T7+T8; el guardrail `VIEW_HOOK_BUDGET` (= 4 → 0) impide que
-      vuelva a crecer.
+      cerrarse T7+T8; el guardrail `VIEW_HOOK_BUDGET` (= 5 → 0) impide que
+      vuelva a crecer. El `eslint-disable` es **de la regla completa**
+      (`no-restricted-syntax`), por lo que suspende también los selectores de
+      fecha de ese archivo: verificado, ninguna de las 5 views los incumple
+      hoy, así que no se pierde cobertura real hasta la retirada.
 - [ ] AC2: **Guardrail de pureza con budgets monótonos**. Nuevo
       `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts` con 5
       budgets decrementables inicializados al conteo real medido y **congelados**
@@ -190,9 +198,9 @@ Fuera (explícito, con spec propio):
       test para bajarlos):
       | Budget | Baseline | Invariante |
       |--------|----------|------------|
-      | `VIEW_HOOK_BUDGET` | 4 | views con hooks → 0 |
-      | `HOOKED_COMPONENT_BUDGET` | 61 | componentes no-view con hooks |
-      | `LARGE_HOOKED_COMPONENT_BUDGET` | 39 | componentes con hooks **y >150 líneas** sin container/view gemelo |
+      | `VIEW_HOOK_BUDGET` | 5 → 1 (tras T7) | views con hooks → 0 |
+      | `HOOKED_COMPONENT_BUDGET` | 95 | componentes no-view con hooks |
+      | `LARGE_HOOKED_COMPONENT_BUDGET` | 56 | componentes con hooks **y >150 líneas** sin container/view gemelo |
       | `SERVICE_IMPORT_BUDGET` | 8 | componentes que importan `services/` **por valor** |
       | `RAW_FETCH_BUDGET` | 3 | `fetch` crudo en componente |
       Más un invariante **no-budget** (`INLINE_CACHE_INVALIDATION_BUDGET` = 1 →
@@ -200,17 +208,21 @@ Fuera (explícito, con spec propio):
       vivir en un hook de mutación. El guardrail se agrega a
       `test:guardrails` y `lint:guardrails`.
       **Alcance del escaneo**: `frontend/src/features/**/components/**` **y**
-      `frontend/src/components/ui/**`. Los `import type` de `services/` están
-      permitidos (`BrandLogo.tsx` ya los usa). `RAW_FETCH_BUDGET` incluye
+      `frontend/src/components/ui/**` (236 ficheros de la capa de componentes,
+      excluyendo `*.view.tsx` y `*.container.tsx`). Los `import type` de
+      `services/` están permitidos (`BrandLogo.tsx` ya los usa). El conteo se
+      hace sobre el **AST de TypeScript**: un regex no ve
+      `useRef<number | null>(null)`, y esa diferencia cambia el resultado
+      (5 vistas, 95 componentes y 56 componentes grandes). `RAW_FETCH_BUDGET` incluye
       `components/ui/UserManualModal.tsx:64` (`fetch("/ManualRelojControl.md")`),
       que es un **asset estático del manual** y por tanto entra en el budget
       como cualquier otro `fetch` en capa de componente.
 - [ ] AC3: **El invariante "componente grande con hooks ⇒ tiene container
       gemelo" es un ratchet, no un fallo duro**. El guardrail **falla si el
       conteo actual de componentes con hooks y >150 líneas sin gemelo supera
-      `LARGE_HOOKED_COMPONENT_BUDGET` (= 39)**: es decir, **bloquea componentes
+      `LARGE_HOOKED_COMPONENT_BUDGET` (= 56)**: es decir, **bloquea componentes
       nuevos** con esa forma y **obliga a bajar** el conteo con cada migración
-      de AC4 (39 → 33 al cerrar T9, T10, T11, T12, T13 y T15; la migración de
+      de AC4 (56 → 50 al cerrar T9, T10, T11, T12, T13 y T15; la migración de
       `DesignSystemCatalog` no cuenta porque vive en `views/` y ya está cubierta
       por `VIEW_HOOK_BUDGET`). No se exige llegar a 0 en esta iteración:
       hacerlo exigiría refactors cosméticos sobre componentes legítimos (p. ej.

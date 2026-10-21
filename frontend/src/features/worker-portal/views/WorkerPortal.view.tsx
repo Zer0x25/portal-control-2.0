@@ -3,7 +3,7 @@
    from `WorkerPortal.container.tsx` and renders UI only.
 */
 
-import React, { useMemo } from "react";
+import React from "react";
 import {
   DailyTimeRecord,
   AugmentedTimeRecord,
@@ -89,40 +89,40 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
 
   const formatRecordDate = (dateStr: string, options: Intl.DateTimeFormatOptions): string =>
     formatBusinessDate(dateStr, options);
-  const quickMonthOptions = useMemo(() => monthOptions.slice(0, 3), [monthOptions]);
-  const clockingActions = useMemo(
-    () => [
-      {
-        id: "jornada_inicio",
-        label: "Inicio Jornada",
-        color: "green",
-        statusGroup: ["fuera", "terminada", "jornada_terminada_anomalia"] as ClockingStatus[],
-        action: () => handleClockingAction("jornada_inicio"),
-      },
-      {
-        id: "colacion_inicio",
-        label: "Inicio Colación",
-        color: "yellow",
-        statusGroup: ["en_jornada"] as ClockingStatus[],
-        action: () => handleClockingAction("colacion_inicio"),
-      },
-      {
-        id: "colacion_fin",
-        label: "Fin Colación",
-        color: "blue",
-        statusGroup: ["en_colacion"] as ClockingStatus[],
-        action: () => handleClockingAction("colacion_fin"),
-      },
-      {
-        id: "jornada_fin",
-        label: "Fin Jornada",
-        color: "red",
-        statusGroup: ["en_jornada", "en_jornada_post_colacion", "en_colacion"] as ClockingStatus[],
-        action: () => handleClockingAction("jornada_fin"),
-      },
-    ],
-    [handleClockingAction],
-  );
+  // Derivaciones puras de props: sin estado, sin efectos y sin hooks. La vista
+  // es presentacional puro (spec 033 AC1); el compilador de React (spec 037)
+  // se encarga de memoizar estas constantes.
+  const quickMonthOptions = monthOptions.slice(0, 3);
+  const clockingActions = [
+    {
+      id: "jornada_inicio",
+      label: "Inicio Jornada",
+      color: "green",
+      statusGroup: ["fuera", "terminada", "jornada_terminada_anomalia"] as ClockingStatus[],
+      action: () => handleClockingAction("jornada_inicio"),
+    },
+    {
+      id: "colacion_inicio",
+      label: "Inicio Colación",
+      color: "yellow",
+      statusGroup: ["en_jornada"] as ClockingStatus[],
+      action: () => handleClockingAction("colacion_inicio"),
+    },
+    {
+      id: "colacion_fin",
+      label: "Fin Colación",
+      color: "blue",
+      statusGroup: ["en_colacion"] as ClockingStatus[],
+      action: () => handleClockingAction("colacion_fin"),
+    },
+    {
+      id: "jornada_fin",
+      label: "Fin Jornada",
+      color: "red",
+      statusGroup: ["en_jornada", "en_jornada_post_colacion", "en_colacion"] as ClockingStatus[],
+      action: () => handleClockingAction("jornada_fin"),
+    },
+  ];
 
   const renderTimestampCell = (
     record: AugmentedTimeRecord,

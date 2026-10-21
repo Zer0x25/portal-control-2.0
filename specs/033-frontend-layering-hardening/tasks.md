@@ -30,8 +30,8 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       (AC1, AC4).
 - [ ] T3: Crear `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`
       con los budgets **congelados en constantes exportadas** (patrón de
-      `stateBoundaryGuardrails.test.ts`): `VIEW_HOOK_BUDGET=4`,
-      `HOOKED_COMPONENT_BUDGET=61`, `LARGE_HOOKED_COMPONENT_BUDGET=39`,
+      `stateBoundaryGuardrails.test.ts`): `VIEW_HOOK_BUDGET=5` (→ 1 al cerrar T7),
+      `HOOKED_COMPONENT_BUDGET=95`, `LARGE_HOOKED_COMPONENT_BUDGET=56`,
       `SERVICE_IMPORT_BUDGET=8`, `RAW_FETCH_BUDGET=3`,
       `INLINE_CACHE_INVALIDATION_BUDGET=1`; el test falla si el conteo actual
       **supera** el budget y acepta que baje sin tocar el test (AC2).
@@ -42,7 +42,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       componentes de la capa de componentes que (a) llaman hooks de React,
       (b) superan 150 líneas y (c) **no** tienen un `.container.tsx` /
       `.view.tsx` gemelo en el mismo feature; el test **falla si el conteo
-      supera `LARGE_HOOKED_COMPONENT_BUDGET` (39)** y el mensaje nombra la
+      supera `LARGE_HOOKED_COMPONENT_BUDGET` (56)** y el mensaje nombra la
       ruta exacta del ofensor y la acción concreta. Las vistas
       (`features/**/views/**`) **no** se cuentan en este budget: ya están
       cubiertas por `VIEW_HOOK_BUDGET` (AC3).
@@ -54,14 +54,18 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       (`test:guardrails` y `lint:guardrails`) y extender la lista de vistas
       auditadas de `frontendAuditGuardrails.test.ts` a las 4 views offenders
       (AC1, AC2).
-- [ ] T7: Migrar las 3 views no-design-system que violan la pureza para que
+- [ ] T7: Migrar las 4 views no-design-system que violan la pureza para que
       `VIEW_HOOK_BUDGET` baje a **1** (solo queda `DesignSystemCatalog`):
-      `worker-portal/views/WorkerPortal.view.tsx` (2 `useMemo` → derivar en el
-      container),
+      `worker-portal/views/WorkerPortal.view.tsx` (2 `useMemo` → derivaciones
+      puras de props, sin hooks),
       `communications/views/Communications.view.tsx` (1 `useMemo` de sanitización
-      → mover al hook de datos),
+      → mover al hook de datos `useCommunicationsData`, que pasa `safeContent`),
       `auth/components/ChangePasswordModal.view.tsx` (1 `useEffect` de listener
-      Escape → mover al `useChangePasswordModalController`); **retirar el
+      Escape → mover al `useChangePasswordModalController`),
+      `components/layout/PersistentLayout.view.tsx` (1 `useRef` del gesto de
+      swipe → mover a `usePersistentLayoutController`, que pasa los handlers
+      por props; **este quinto offender no lo detecta un regex**, porque su
+      hook se llama con genérico: `useRef<number | null>(null)`); **retirar el
       `eslint-disable` temporal** de cada una (AC1).
 
 ## Fase B — Migración de los contenedores que faltan
@@ -139,8 +143,8 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [ ] T23: Verificar que ningún container nuevo supere 200 líneas ni contenga
       más de un elemento JSX de primer nivel ni elementos DOM intrínsecos; si
       alguno lo hace, se divide antes de cerrar la fase. Con T9, T10, T11,
-      T12, T13 y T15 cerrados, `LARGE_HOOKED_COMPONENT_BUDGET` baja de 39 a
-      **33** (AC1, AC3, AC4).
+      T12, T13 y T15 cerrados, `LARGE_HOOKED_COMPONENT_BUDGET` baja de 56 a
+      **50** (AC1, AC3, AC4).
 
 ## Fase C — Unificación del estado de UI
 
@@ -229,7 +233,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [ ] T38: Confirmar los budgets finales del guardrail:
       `VIEW_HOOK_BUDGET=0`, `RAW_FETCH_BUDGET=0`,
       `INLINE_CACHE_INVALIDATION_BUDGET=0`, `SERVICE_IMPORT_BUDGET=0`,
-      `LARGE_HOOKED_COMPONENT_BUDGET=33` y `HOOKED_COMPONENT_BUDGET` ≤ 61 (el
+      `LARGE_HOOKED_COMPONENT_BUDGET=50` y `HOOKED_COMPONENT_BUDGET` ≤ 95 (el
       valor exacto se registra en la evidencia de cierre); actualizar las
       constantes del guardrail **solo** a la baja (AC2, AC3).
 - [ ] T39: Promover `docs/adr/0023-frontend-layering-hardening.md` de

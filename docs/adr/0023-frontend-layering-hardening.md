@@ -19,18 +19,19 @@ negocio), pero **no es enforceable**, y la auditoría del 2026-10-21 (583
 archivos, 698 TS/TSX, ~75.8K LOC) confirma la fuga:
 
 1. **La única regla que protege la capa de vista está atada al sufijo del
-   archivo.** `frontend/eslint.config.js:89` aplica
+   archivo.** `frontend/eslint.config.js:174` aplica
    `no-restricted-imports` / `no-restricted-globals` / `no-restricted-properties`
    al glob `src/**/*.view.tsx`. Prohíbe `services/`, `store/`, `react-router`,
    `fetch`, `localStorage`, `sessionStorage` y `window.location` — **pero no
    prohíbe hooks de React**, y **no aplica a `components/*.tsx`**, que es donde
    vive el 75% del código de UI.
-2. **61 de 160 componentes no-view (38%) mezclan estado y presentación.**
-   De ellos, **39 son "grandes con lógica inline"** (>150 líneas, hooks en el
-   cuerpo del componente y sin container/view gemelo): 34 en
-   `features/**/components/` y 5 en `components/ui/` (`ReportTable.tsx` 549,
-   `DatePicker.tsx` 406, `AuditMonthSelector.tsx` 225,
-   `CalendarMonthSelector.tsx` 215, `UserManualModal.tsx` 178). **7 de ellos
+2. **95 de 236 componentes no-view (40%) mezclan estado y presentación.**
+   De ellos, **56 son "grandes con lógica inline"** (>150 líneas, hooks en el
+   cuerpo del componente y sin container/view gemelo): 49 en
+   `features/**/components/` y 7 en `components/ui/` (`ReportTable.tsx` 549,
+   `DatePicker.tsx` 406, `DatePickerDialog.tsx` 158, `TabNav.tsx` 177,
+   `AuditMonthSelector.tsx` 225, `CalendarMonthSelector.tsx` 215,
+   `UserManualModal.tsx` 178). **7 de ellos
    tienen la lógica realmente inline** y son los que el spec obliga a partir:
    `features/configuration/components/GlobalVariablesManager.tsx`
    (865 líneas, 19 hooks), `features/supervisor-dashboard/components/RequestsTab.tsx`
@@ -43,12 +44,15 @@ archivos, 698 TS/TSX, ~75.8K LOC) confirma la fuga:
    presentacional puro) y
    `features/supervisor-dashboard/components/AccountingClosureTab.tsx` (419,
    **1 hook**: `useAccountingClosureTabController`, que ya extrae la lógica).
-3. **4 vistas violan la "presentación pura"**:
+3. **5 vistas violan la "presentación pura"**:
    `features/design-system/views/DesignSystemCatalog.view.tsx` (517 líneas,
    7 hooks — **es además la entrada de ruta**; el feature no tiene
    `containers/` ni `hooks/`), `features/worker-portal/views/WorkerPortal.view.tsx`
-   (506, 2), `features/communications/views/Communications.view.tsx` (124, 1) y
-   `features/auth/components/ChangePasswordModal.view.tsx` (89, 1).
+   (506, 2), `components/layout/PersistentLayout.view.tsx` (1 `useRef` del gesto
+   de swipe), `features/communications/views/Communications.view.tsx` (124, 1) y
+   `features/auth/components/ChangePasswordModal.view.tsx` (89, 1). El quinto
+   solo es detectable con **AST**: su hook se llama con genérico
+   (`useRef<number | null>(null)`), que un regex no ve.
 4. **La capa de componentes bypasea la capa de datos**:
    `features/configuration/components/DeveloperPanel.tsx:249` y
    `features/employee-management/components/ShiftHistoryModal.tsx:60` hacen
@@ -104,14 +108,15 @@ diseño: es de **cobertura y de enforcement**.
    congelados en constantes exportadas**, inicializados al conteo real
    medido y **solo decrecientes** — el mismo patrón que ya gobierna
    `design-system-budget.json` y `stateBoundaryGuardrails.test.ts`:
-   `VIEW_HOOK_BUDGET=4`, `HOOKED_COMPONENT_BUDGET=61`,
-   `LARGE_HOOKED_COMPONENT_BUDGET=39`, `SERVICE_IMPORT_BUDGET=8`,
-   `RAW_FETCH_BUDGET=3`, `INLINE_CACHE_INVALIDATION_BUDGET=1`.
+   `VIEW_HOOK_BUDGET=5` (→ 1 al cerrar T7), `HOOKED_COMPONENT_BUDGET=95`,
+   `LARGE_HOOKED_COMPONENT_BUDGET=56`, `SERVICE_IMPORT_BUDGET=8`,
+   `RAW_FETCH_BUDGET=3`, `INLINE_CACHE_INVALIDATION_BUDGET=1`. El conteo se
+   hace sobre el **AST de TypeScript**, no con expresiones regulares.
    **Crecer cualquier budget falla el CI; reducirlo nunca exige editar el
    test.** La implementación y los conteos verificados están en
    [spec 033](file:///specs/033-frontend-layering-hardening/spec.md).
    La regla de hooks se activa como `error` desde el primer día con una
-   **allowlist temporal explícita** para los 4 views offenders, cuya retirada
+   **allowlist temporal explícita** para los 5 views offenders, cuya retirada
    está asignada a tareas concretas: así el ratchet de lint 0/0 se respeta
    desde el primer PR sin aplazar la frontera.
 
@@ -120,9 +125,9 @@ diseño: es de **cobertura y de enforcement**.
    líneas y **no** tenga un `.container.tsx` / `.view.tsx` gemelo en el mismo
    feature **es una infracción que se cuenta**, no un CI roto de inmediato: el
    guardrail falla solo cuando el conteo **supera**
-   `LARGE_HOOKED_COMPONENT_BUDGET` (baseline 39, verificado: 34 en
-   `features/**/components/` + 5 en `components/ui/`). Esto bloquea infracciones
-   nuevas y obliga a bajar el conteo con cada migración (39 → 33). No se exige
+   `LARGE_HOOKED_COMPONENT_BUDGET` (baseline 56, verificado: 49 en
+   `features/**/components/` + 7 en `components/ui/`). Esto bloquea infracciones
+   nuevas y obliga a bajar el conteo con cada migración (56 → 50). No se exige
    llegar a 0 en esta iteración: hacerlo exigiría refactors cosméticos sobre
    componentes legítimos (p. ej. `components/ui/DatePicker.tsx`). Cuando el
    conteo llegue a 0, el budget baja a 0 y el invariante pasa a ser de fallo
@@ -197,7 +202,7 @@ diseño: es de **cobertura y de enforcement**.
    (`LARGE_HOOKED_COMPONENT_BUDGET`), en lugar de un ban plano.
    La variante "fallo duro desde el día 1" (todo componente con hooks y >150
    líneas debe tener gemelo) se descartó además por **irreductibilidad
-   cuantificada**: el baseline real es **39** componentes, no 6 — llegar a 0
+   cuantificada**: el baseline real es **56** componentes, no 6 — llegar a 0
    exigiría refactors cosméticos sobre componentes legítimos como
    `components/ui/DatePicker.tsx` o `components/ui/ReportTable.tsx`.
 5. **Dejar el estado de modal en el store global** — descartada porque
@@ -245,16 +250,16 @@ Negativas / costos aceptados:
   **no se renombran**.
 - La expulsión del estado de UI del store rompe cualquier consumidor externo del
   store (no hay ninguno fuera de `frontend/src`); verificado por grep.
-- `HOOKED_COMPONENT_BUDGET=61` es alto y solo puede bajar lentamente: el
+- `HOOKED_COMPONENT_BUDGET=95` es alto y solo puede bajar lentamente: el
   spec **no** exige llegar a 0 en esta iteración (exigirlo produciría
   refactors cosméticos); los 7 con lógica inline sí son obligatorios.
-- `LARGE_HOOKED_COMPONENT_BUDGET=39` queda en **33** al cierre: es un ratchet
+- `LARGE_HOOKED_COMPONENT_BUDGET=56` queda en **50** al cierre: es un ratchet
   que bloquea infracciones nuevas, no un objetivo de llegar a 0. El remanente
   se documenta en la evidencia de cierre.
 
 ## Referencias
 
-- `frontend/eslint.config.js:89` — bloque actual de `src/**/*.view.tsx` que
+- `frontend/eslint.config.js:174` — bloque actual de `src/**/*.view.tsx` que
   inspired la regla de hooks (AC1, AC2).
 - `frontend/src/features/README.md` — las 4 reglas del estándar que este ADR
   vuelve exigibles.

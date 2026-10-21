@@ -45,17 +45,18 @@ para que las migraciones no reintroduzcan la fuga que se está cerrando.
      budget se inicializa al conteo real medido, el test falla si el conteo
      actual **supera** el budget, y bajar el budget **nunca exige editar el
      test** (se acepta `conteo_actual <= budget`).
-     Los 6 budgets:
-     `VIEW_HOOK_BUDGET=4`, `HOOKED_COMPONENT_BUDGET=61`,
-     `LARGE_HOOKED_COMPONENT_BUDGET=39`, `SERVICE_IMPORT_BUDGET=8`,
+     Los 6 budgets (valores **medidos sobre el AST**, no con regex):
+     `VIEW_HOOK_BUDGET=5` (→ 1 tras T7), `HOOKED_COMPONENT_BUDGET=95`,
+     `LARGE_HOOKED_COMPONENT_BUDGET=56`, `SERVICE_IMPORT_BUDGET=8`,
      `RAW_FETCH_BUDGET=3`, `INLINE_CACHE_INVALIDATION_BUDGET=1`.
      **Alcance del escaneo**: `frontend/src/features/**/components/**` **y**
      `frontend/src/components/ui/**`. Los `import type` de `services/` están
      permitidos (el guardrail distingue tipo de valor).
    - El guardrail además implementa AC3 **como ratchet, no como fallo duro**:
      cuenta los componentes con hooks **y > 150 líneas** sin container/view
-     gemelo (baseline 39) y falla **solo si el conteo supera el budget**; cada
-     migración de la Fase B lo baja (39 → 33). Las vistas (`features/**/views/**`)
+     gemelo (baseline 56: 49 en `features/**/components/` y 7 en
+     `components/ui/`) y falla **solo si el conteo supera el budget**; cada
+     migración de la Fase B lo baja (56 → 50). Las vistas (`features/**/views/**`)
      no se cuentan en este budget: ya están cubiertas por `VIEW_HOOK_BUDGET`.
    - Y AC6: ningún archivo de 1–3 líneas en `features/**` cuyo único propósito
      sea re-exportar otro archivo del mismo feature (los 9 shims + `KioskPage`).
@@ -253,7 +254,7 @@ import("../containers/X.container"))`).
 | **Duplicar el estado del modal** entre dashboard y time-control (hoy comparten store)         | `EditTimestampModal.container.tsx` pasa a **props controladas**; cada container instancia su propio hook; se elimina la importación cross-feature                                                            | revertir T24                                   |
 | **Perder la señal `hasUnreadNotes`**: no viene de la API, solo del socket `quickNote:created` | se documenta que `QuickNote` no tiene campo read/unread; el cableado del badge de `ToolsPanel` (montado por `WIDGET_REGISTRY`, sin props) queda explícito en T26                                             | revertir T26                                   |
 | Migrar los flags de `dashboardSlice` al estado local rompe vistas que los comparten           | inventario previo de los 10 flags × consumidores; los que cruzan feature se resuelven con props controladas (no con store compartido)                                                                        | revertir la fase C (PR independiente)          |
-| El ratchet `LARGE_HOOKED_COMPONENT_BUDGET` no llega a 0 (39 → 33)                             | es **intencional**: el budget solo decrece y bloquea nuevas infracciones; llegar a 0 exigiría refactors cosméticos sobre componentes legítimos (p. ej. `components/ui/DatePicker.tsx`)                       | bajar el budget a 33 y documentar el remanente |
+| El ratchet `LARGE_HOOKED_COMPONENT_BUDGET` no llega a 0 (56 → 50)                             | es **intencional**: el budget solo decrece y bloquea nuevas infracciones; llegar a 0 exigiría refactors cosméticos sobre componentes legítimos (p. ej. `components/ui/DatePicker.tsx`)                       | bajar el budget a 50 y documentar el remanente |
 | Borrar `syncSlice.bulkAddRecords` rompe la cola de escritura offline                          | **verificar consumidores con grep antes de borrar**; la cola offline es invariante de la spec 032 y no se toca funcionalmente                                                                                | restaurar el slice                             |
 | Eliminar `src/types/contexts.ts` rompe imports en `src/types/index.ts`                        | `npm run check` (tsc) es la red; grep de `ContextType` antes de borrar                                                                                                                                       | restaurar el archivo                           |
 | El guardrail nuevo se vuelve ruido y el equipo lo ignora                                      | el budget se inicializa al conteo real y **solo decrece**; el mensaje de error nombra el archivo y la acción concreta                                                                                        | bajar la severidad a `warn` en el test         |
