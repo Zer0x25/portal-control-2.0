@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.31.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.1...v8.31.2) (2026-10-21)
+
+
+### Bug Fixes
+
+* **frontend:** absorbe hardenings de drafts de agentes (dompurify + aria-label) ([#80](https://github.com/Zer0x25/portal-control-2.0/issues/80)) ([523bb4d](https://github.com/Zer0x25/portal-control-2.0/commit/523bb4d66e6f9e4fc8b44d94014968f93b589505))
+
 ## [8.31.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.0...v8.31.1) (2026-10-21)
 
 
