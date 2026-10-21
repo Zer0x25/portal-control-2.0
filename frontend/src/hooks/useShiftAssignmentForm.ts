@@ -3,8 +3,8 @@ import { AssignedShift, Syncable } from "../types/index";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
 import { useAssignedShiftsQuery } from "./queries/useAssignedShiftsQuery";
 import { useShiftMutations } from "./useShiftMutations";
+import { detectAssignmentConflicts } from "../utils/shiftUtils";
 import { useToasts } from "./useToasts";
-import { useStore } from "../store/useStore";
 import {
   addBusinessDaysChile,
   compareBusinessDate,
@@ -16,7 +16,6 @@ export const useShiftAssignmentForm = () => {
   const { data: shiftPatterns = [] } = useShiftPatternsQuery();
   const { data: assignedShifts = [] } = useAssignedShiftsQuery();
   const { assignShift, updateAssignment } = useShiftMutations();
-  const detectAssignmentConflicts = useStore((state) => state.detectAssignmentConflicts);
 
   const { addToast } = useToasts();
 

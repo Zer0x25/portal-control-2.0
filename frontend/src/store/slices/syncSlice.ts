@@ -4,6 +4,7 @@ import { AppState } from "../types";
 import { timeRecordService } from "../../services/timeRecordService";
 import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
+import { queryClient } from "../../lib/queryClient";
 
 export interface SyncSlice {
   syncState: SyncState;
@@ -92,11 +93,19 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
           name: "Empleados",
           action: () => get().loadEmployees(),
         },
+        // Spec 032 T4: config y shift ahora viven en query hooks; el sync
+        // solo invalida sus raices para que react-query refresque bajo demanda.
         {
           name: "Configuraciones",
-          action: () => get().loadConfigData(),
+          action: () => queryClient.invalidateQueries({ queryKey: ["config"] }),
         },
-        { name: "Horarios", action: () => get().loadShiftData() },
+        {
+          name: "Horarios",
+          action: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
+            await queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
+          },
+        },
         {
           name: "Medidores",
           action: () => get().loadMeterData(),

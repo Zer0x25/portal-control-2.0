@@ -6,12 +6,12 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## PR 1 — Persister seguro
 
-- [ ] T1: Añadir `@tanstack/react-query-persist-client` +
+- [x] T1: Añadir `@tanstack/react-query-persist-client` +
       `@tanstack/query-async-storage-persister` (ambas runtime) y montar
       `PersistQueryClientProvider` con `createAsyncStoragePersister` (IndexedDB,
       store separado de la cola offline) en
       `frontend/src/contexts/AppProviders.tsx` (AC3).
-- [ ] T2: Configurar `dehydrateOptions.shouldDehydrateQuery` con **allowlist**
+- [x] T2: Configurar `dehydrateOptions.shouldDehydrateQuery` con **allowlist**
       de queries seguras (catálogos/operación; fuera: auth, PII) y `buster`
       derivado de la versión de build; test de que ninguna query sensible se
       persiste (AC2.2, AC2.3).
@@ -25,9 +25,17 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## PR 3 — Migración de slices
 
-- [ ] T4: Batch 1 — `absenceSlice`, `shiftSlice`, `configSlice`: retirar imports
+- [x] T4: Batch 1 — `absenceSlice`, `shiftSlice`, `configSlice`: retirar imports
       de servicio y escritura IDB; unificar a los query hooks existentes como
       única fuente (AC1).
+      **Hecho (2026-10-20)**: `absenceSlice` y `shiftSlice` eliminados (sus
+      miembros ya no tenían consumidores; todo leía de `use*Query`);
+      `configSlice` reemplazado por `systemSlice` (solo `serverTimeOffset`, sin
+      servicio) más las queries de config; `syncSlice.runSync` invalida
+      `config`/`shiftPatterns`/`assignedShifts` en vez de llamar
+      `loadConfigData`/`loadShiftData`; `useShiftMutations` y
+      `useHolidayMutations` dejan el double-refresh (solo `invalidateQueries`).
+      tsc 0 errores, 482/482 tests, guardrails 52/52, lint 0/0.
 - [ ] T5: Batch 2 — `employeeSlice`, `userSlice`, `meterReadingSlice`,
       `dashboardSlice`: idem; los slices reducen a flags de UI (AC1).
 

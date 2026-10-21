@@ -1,3 +1,4 @@
+import { useGlobalMaxWeeklyHoursQuery } from "../../../hooks/queries/useConfigQuery";
 import { useMemo, useState } from "react";
 import { AssignedShift, TheoreticalShiftPattern } from "../../../types";
 import { useShiftPatternsInfiniteQuery } from "../../../hooks/queries/useShiftPatternsInfiniteQuery";
@@ -6,7 +7,6 @@ import { useShiftMutations } from "../../../hooks/useShiftMutations";
 import { useShiftPatternForm } from "../../../hooks/useShiftPatternForm";
 import { useToasts } from "../../../hooks/useToasts";
 import { useDebounce } from "../../../hooks/useDebounce";
-import { useStore } from "../../../store/useStore";
 
 export const usePatternManagerController = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,7 +23,7 @@ export const usePatternManagerController = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [patternToDelete, setPatternToDelete] = useState<string | null>(null);
   const { addToast } = useToasts();
-  const globalMaxWeeklyHours = useStore((state) => state.globalMaxWeeklyHours);
+  const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery();
 
   const affectedAssignments = useMemo(() => {
     if (!patternToDelete) return [];

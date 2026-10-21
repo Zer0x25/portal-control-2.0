@@ -9,15 +9,13 @@ import { createEmployeeSlice } from "./slices/employeeSlice";
 import { createDashboardSlice } from "./slices/dashboardSlice";
 import { createNotificationSlice } from "./slices/notificationSlice";
 import { createUxSlice } from "./slices/uxSlice";
+import { createCorrectionRequestSlice } from "./slices/correctionRequestSlice";
 
 import { AppState } from "./types";
-import { createConfigSlice } from "./slices/configSlice";
-import { createCorrectionRequestSlice } from "./slices/correctionRequestSlice";
-import { createShiftSlice } from "./slices/shiftSlice";
 import { createSyncSlice } from "./slices/syncSlice";
-import { createUserSlice } from "./slices/userSlice";
-import { createAbsenceSlice } from "./slices/absenceSlice";
 import { createQuickNotesSlice } from "./slices/quickNotesSlice";
+import { createSystemSlice } from "./slices/systemSlice";
+import { createUserSlice } from "./slices/userSlice";
 
 import { sentryMiddleware } from "../utils/sentryMiddlewares";
 
@@ -32,15 +30,12 @@ export const useStore = create<AppState>()(
         ...createEmployeeSlice(set, get, api),
         ...createDashboardSlice(set, get, api),
         ...createNotificationSlice(set, get, api),
-        // ...createConfigSlice(set, get, api), // Check if kept (yes)
-        ...createConfigSlice(set, get, api),
         ...createCorrectionRequestSlice(set, get, api),
-        ...createShiftSlice(set, get, api),
         ...createSyncSlice(set, get, api),
         ...createUserSlice(set, get, api),
-        ...createAbsenceSlice(set, get, api),
         ...createQuickNotesSlice(set, get, api),
         ...createUxSlice(set, get, api),
+        ...createSystemSlice(set, get, api),
       }),
       { name: "AppStore" },
     ),

@@ -5,14 +5,12 @@ import { MeterReadingSlice } from "./slices/meterReadingSlice";
 import { EmployeeSlice } from "./slices/employeeSlice";
 import { DashboardSlice } from "./slices/dashboardSlice";
 import { NotificationSlice } from "./slices/notificationSlice";
-import { ConfigSlice } from "./slices/configSlice";
 import { CorrectionRequestSlice } from "./slices/correctionRequestSlice";
-import { ShiftSlice } from "./slices/shiftSlice";
 import { UxSlice } from "./slices/uxSlice";
 import { SyncSlice } from "./slices/syncSlice";
 import { UserSlice } from "./slices/userSlice";
-import { AbsenceSlice } from "./slices/absenceSlice";
 import { QuickNotesSlice } from "./slices/quickNotesSlice";
+import { SystemSlice } from "./slices/systemSlice";
 
 export type AppState = AuthSlice &
   ToastSlice &
@@ -21,11 +19,9 @@ export type AppState = AuthSlice &
   EmployeeSlice &
   DashboardSlice &
   NotificationSlice &
-  ConfigSlice &
   CorrectionRequestSlice &
-  ShiftSlice &
   SyncSlice &
   UserSlice &
-  AbsenceSlice &
   QuickNotesSlice &
-  UxSlice;
+  UxSlice &
+  SystemSlice;

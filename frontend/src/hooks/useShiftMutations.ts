@@ -2,12 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { shiftService } from "../services/shiftService";
 import { TheoreticalShiftPattern, AssignedShift } from "../types";
 import { useToasts } from "./useToasts";
-import { useStore } from "../store/useStore";
 
 export const useShiftMutations = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
-  const loadShiftData = useStore((state) => state.loadShiftData);
   type MonthlyPlanPayload = Record<string, unknown>;
 
   // --- Patterns ---
@@ -15,7 +13,6 @@ export const useShiftMutations = () => {
     mutationFn: (pattern: TheoreticalShiftPattern) => shiftService.savePattern(pattern),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
-      loadShiftData();
       addToast("Patrón creado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -27,7 +24,6 @@ export const useShiftMutations = () => {
     mutationFn: (pattern: TheoreticalShiftPattern) => shiftService.updatePattern(pattern),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
-      loadShiftData();
       addToast("Patrón actualizado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -40,7 +36,6 @@ export const useShiftMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
       queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
-      loadShiftData();
       addToast("Patrón eliminado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -53,7 +48,6 @@ export const useShiftMutations = () => {
     mutationFn: (assignment: AssignedShift) => shiftService.assignShift(assignment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
-      loadShiftData();
       addToast("Turno asignado exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -66,7 +60,6 @@ export const useShiftMutations = () => {
       shiftService.updateAssignment(id, assignment),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
-      loadShiftData();
       addToast("Asignación actualizada exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -78,7 +71,6 @@ export const useShiftMutations = () => {
     mutationFn: (id: string) => shiftService.deleteAssignment(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
-      loadShiftData();
       addToast("Asignación eliminada exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -92,7 +84,6 @@ export const useShiftMutations = () => {
       queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
       queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      loadShiftData();
       addToast("Plan mensual creado exitosamente", "success");
     },
     onError: (error: Error) => {

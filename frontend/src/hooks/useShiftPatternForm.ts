@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { TheoreticalShiftPattern, DayInCycleSchedule } from "../types/index";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
+import { useGlobalMaxWeeklyHoursQuery } from "./queries/useConfigQuery";
 import { useShiftMutations } from "./useShiftMutations";
-import { useStore } from "../store/useStore";
 import { useToasts } from "./useToasts";
 import { calculateHoursBetween } from "../utils/calculations";
 
@@ -66,7 +66,7 @@ const omitHoursAndDayIndex = (
 export const useShiftPatternForm = () => {
   const { data: shiftPatterns = [] } = useShiftPatternsQuery();
   const { createPattern, updatePattern } = useShiftMutations();
-  const globalMaxWeeklyHours = useStore((state) => state.globalMaxWeeklyHours);
+  const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery();
 
   const { addToast } = useToasts();
 
