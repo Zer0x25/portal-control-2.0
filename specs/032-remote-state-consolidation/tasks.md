@@ -48,12 +48,17 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## PR 4 — Guardrail de frontera y refresh único
 
-- [ ] T6: Nuevo guardrail `frontend/src/tests/guardrails/stateBoundaryGuardrails.test.ts`:
+- [x] T6: Nuevo guardrail `frontend/src/tests/guardrails/stateBoundaryGuardrails.test.ts`:
       bloquea servicios de dominio en `store/slices/*` **con whitelist explícita
       de exactamente dos archivos — `syncSlice.ts` (cola offline de escritura) y
       `authSlice.ts` (sesión) — congela la longitud (crecer falla CI)** y detecta
       el patrón double-refresh (`invalidateQueries` + `loadXData()`
       simultáneos) en `hooks/use*Mutations.ts` (AC1).
+      **Hecho (2026-10-20)**: 4 tests (frontera, congelación de whitelist a
+      2, double-refresh y cobertura de invalidación); verificado con sonda
+      negativa (una slice con servicio importado rompe el guardrail) y
+      agregado a `test:guardrails`/`lint:guardrails` (13 archivos/56 tests).
+
 - [ ] T7: Aplicar la regla: quitar `loadShiftData()`/`loadAbsenceData()` de
       `useShiftMutations.ts` y `useHolidayMutations.ts` (solo
       `invalidateQueries`); auditar con grep que ninguna otra mutación tiene el
