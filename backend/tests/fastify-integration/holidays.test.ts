@@ -8,7 +8,7 @@ import { SocketService } from "../../src/services/socketService";
 import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
 
 let app: FastifyInstance;
-const body = { date: "2026-10-10", name: "Feriado integración", type: "Civil" };
+const body = { date: "2026-10-10", name: "Feriado integración", type: "Nacional" };
 async function session(
   username: string,
   role: "Supervisor" | "Usuario" = "Supervisor",

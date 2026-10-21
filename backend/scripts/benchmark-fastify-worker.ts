@@ -13,7 +13,7 @@ async function main() {
       id: `benchmark-${index}`,
       date: new Date(Date.UTC(2024, 0, index + 1)).toISOString().slice(0, 10),
       name: `Feriado ${index}`,
-      type: "Civil",
+      type: "Nacional",
     })),
   });
   const user = await prismaDirect.user.upsert({

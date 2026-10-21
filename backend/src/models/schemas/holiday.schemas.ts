@@ -5,7 +5,7 @@ export const HolidaySchema = z
     id: z.string().optional(),
     date: isoDateSchema(),
     name: z.string().min(2),
-    type: z.enum(["Civil", "Religioso"]),
+    type: z.enum(["Nacional", "Regional", "Específico"]),
     isRenounceable: z.boolean().optional(),
     syncStatus: syncAuditFields.syncStatus,
     isDeleted: syncAuditFields.isDeleted,

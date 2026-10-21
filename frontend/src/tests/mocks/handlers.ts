@@ -240,7 +240,7 @@ export const holidayFixture = {
   id: "h-1",
   date: "2026-03-01",
   name: "Feriado",
-  type: "Civil",
+  type: "Nacional",
   isRenounceable: false,
   syncStatus: "synced",
   isDeleted: false,

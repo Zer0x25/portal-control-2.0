@@ -440,7 +440,7 @@ describe("Spec 015 shifts on Fastify", () => {
       },
     });
     await prismaDirect.holiday.create({
-      data: { date: "2026-09-01", name: "Month start", type: "Civil" },
+      data: { date: "2026-09-01", name: "Month start", type: "Nacional" },
     });
     await prismaDirect.leaveRecord.create({
       data: {

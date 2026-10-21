@@ -48,7 +48,7 @@ describe("Holiday commands without infrastructure", () => {
     expect(
       await commands.bulk(
         [
-          { id: "a", date: "2026-01-01", name: "Uno", type: "Civil" },
+          { id: "a", date: "2026-01-01", name: "Uno", type: "Nacional" },
           { date: "2026-01-02", name: "Dos" },
         ],
         "bulk-actor",

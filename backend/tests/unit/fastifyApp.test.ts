@@ -19,7 +19,7 @@ import { Prisma } from "../../src/generated/prisma/client";
 
 const secret = "test-only-fastify-http-secret";
 const apps: FastifyInstance[] = [];
-const body = { date: "2026-10-10", name: "Feriado de prueba", type: "Civil" };
+const body = { date: "2026-10-10", name: "Feriado de prueba", type: "Nacional" };
 afterEach(async () => {
   await Promise.all(apps.splice(0).map((app) => app.close()));
 });

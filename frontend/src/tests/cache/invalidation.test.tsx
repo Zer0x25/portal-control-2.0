@@ -163,9 +163,11 @@ const RESOURCES: ResourceSpec[] = [
     method: "GET",
     useReader: () => useHolidaysQuery(),
     oldPayload: [],
-    newPayload: [{ id: "h-nuevo", name: "Feriado", date: "2026-03-01", type: "Civil" }],
+    newPayload: [{ id: "h-nuevo", name: "Feriado", date: "2026-03-01", type: "Nacional" }],
     expectNew: (data) => {
-      expect(data).toEqual([{ id: "h-nuevo", name: "Feriado", date: "2026-03-01", type: "Civil" }]);
+      expect(data).toEqual([
+        { id: "h-nuevo", name: "Feriado", date: "2026-03-01", type: "Nacional" },
+      ]);
     },
   },
   {
@@ -388,7 +390,7 @@ const MUTATIONS: MutationSpec[] = [
       const { result } = renderHook(() => useHolidayMutations(), { wrapper });
       await act(async () => {
         await result.current.createBulkHolidays([
-          { name: "Feriado", date: "2026-03-01", type: "national" },
+          { name: "Feriado", date: "2026-03-01", type: "Nacional" },
         ] as never);
       });
     },

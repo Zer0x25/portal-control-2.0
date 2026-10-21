@@ -5182,7 +5182,7 @@ export interface components {
       date: string;
       name: string;
       /** @enum {string} */
-      type: "Civil" | "Religioso";
+      type: "Nacional" | "Regional" | "Específico";
       isRenounceable?: boolean;
       syncStatus?: string;
       isDeleted?: boolean;
