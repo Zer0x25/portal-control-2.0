@@ -7,6 +7,14 @@ import {
 } from "../../services/kpiService";
 import { jsonResponse } from "../helpers/mockResponse";
 
+vi.mock("../../services/authToken", () => ({
+  authTokenStore: {
+    getToken: () => "test-token",
+    setToken: vi.fn(),
+    removeToken: vi.fn(),
+    getAuthHeader: () => ({ Authorization: "Bearer test-token" }),
+  },
+}));
 vi.mock("../../services/authService", () => ({
   authService: {
     getAuthHeader: () => ({ Authorization: "Bearer test-token" }),

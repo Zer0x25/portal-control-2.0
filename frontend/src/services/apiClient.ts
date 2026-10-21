@@ -1,5 +1,5 @@
 import { paths, components } from "../types/api";
-import { authService } from "./authService";
+import { authTokenStore } from "./authToken";
 import { API_BASE_URL } from "./apiBase";
 
 /**
@@ -101,7 +101,7 @@ export const resetRateLimitEventLockForTests = (): void => {
 
 function getAuthHeaderString(): string {
   try {
-    const headers = authService.getAuthHeader() as Record<string, string>;
+    const headers = authTokenStore.getAuthHeader() as Record<string, string>;
     return headers["Authorization"] ?? "";
   } catch {
     return "";
@@ -260,7 +260,7 @@ function prepareRequest(spec: RequestSpec): PreparedRequest {
   const fullUrl = `${getFullUrl(resolvedPath)}${buildQuery(spec.params)}`;
   const isGet = spec.method === "GET";
   const { body, headers } = prepareBody(spec.body, {
-    ...(authService.getAuthHeader() as Record<string, string>),
+    ...(authTokenStore.getAuthHeader() as Record<string, string>),
     ...spec.headers,
   });
 

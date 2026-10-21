@@ -1,4 +1,5 @@
-import { API_BASE_URL } from "./apiBase";
+import { request as apiRequest, errorMessageOr, ApiHttpError } from "./apiClient";
+import { authTokenStore } from "./authToken";
 
 export interface LoginResponse {
   userId: string;
@@ -29,25 +30,31 @@ export interface AuthService {
   ) => Promise<{ success: boolean; message: string; employeeName?: string }>;
 }
 
+/**
+ * Servicio de autenticacion (spec 034, T14).
+ *
+ * Las llamadas pasan por `apiClient`, asi que heredan timeout, dedup y
+ * `ApiHttpError` con status. **El contrato de error se preserva**:
+ *
+ * - `login`, `setupMFA`, `verifyMFASetup` y `validateMFACode` **lanzan** un
+ *   error con el mensaje del backend (`data.message`) y, si el backend no lo
+ *   trae, con el mensaje generico historico de cada metodo.
+ * - `kioskVerifyPin` **devuelve** `{ success: false, message }` en vez de
+ *   lanzar (el kiosk muestra el mensaje en pantalla).
+ *
+ * Los 3 endpoints anonimos (`/auth/login`, `/auth/mfa/validate`,
+ * `/auth/kiosk-login`) no emiten eventos globales: un 401 por credencial
+ * invalida no cierra la sesion. `/auth/mfa/setup` y `/auth/mfa/verify` si los
+ * emiten (son parte de la sesion activa).
+ */
 class AuthServiceImpl implements AuthService {
-  private readonly TOKEN_KEY = "authToken";
-  private readonly API_URL = API_BASE_URL;
-
   async login(username: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await fetch(`${this.API_URL}/auth/login`, {
+      const data = await apiRequest<LoginResponse>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
+        url: "/api/auth/login",
+        body: { username, password },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error en el inicio de sesión");
-      }
 
       if (data.token) {
         this.setToken(data.token);
@@ -55,49 +62,48 @@ class AuthServiceImpl implements AuthService {
       return data;
     } catch (error) {
       console.error("Login error:", error);
-      throw error;
+      throw new Error(errorMessageOr(error, "Error en el inicio de sesión"), {
+        cause: error,
+      });
     }
   }
 
   async setupMFA(): Promise<{ qrCode: string; secret: string }> {
-    const response = await fetch(`${this.API_URL}/auth/mfa/setup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(this.getAuthHeader() as Record<string, string>),
-      },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Error al configurar MFA");
-    return data;
+    try {
+      return await apiRequest<{ qrCode: string; secret: string }>({
+        method: "POST",
+        url: "/api/auth/mfa/setup",
+      });
+    } catch (error) {
+      throw new Error(errorMessageOr(error, "Error al configurar MFA"), { cause: error });
+    }
   }
 
   async verifyMFASetup(token: string): Promise<{ message: string }> {
-    const response = await fetch(`${this.API_URL}/auth/mfa/verify`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(this.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ token }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Error al verificar MFA");
-    return data;
+    try {
+      return await apiRequest<{ message: string }>({
+        method: "POST",
+        url: "/api/auth/mfa/verify",
+        body: { token },
+      });
+    } catch (error) {
+      throw new Error(errorMessageOr(error, "Error al verificar MFA"), { cause: error });
+    }
   }
 
   async validateMFACode(mfaToken: string, code: string): Promise<LoginResponse> {
-    const response = await fetch(`${this.API_URL}/auth/mfa/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ mfaToken, code }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Código MFA inválido");
-    if (data.token) this.setToken(data.token);
-    return data;
+    try {
+      const data = await apiRequest<LoginResponse>({
+        method: "POST",
+        url: "/api/auth/mfa/validate",
+        body: { mfaToken, code },
+      });
+
+      if (data.token) this.setToken(data.token);
+      return data;
+    } catch (error) {
+      throw new Error(errorMessageOr(error, "Código MFA inválido"), { cause: error });
+    }
   }
 
   async logout(): Promise<void> {
@@ -117,20 +123,19 @@ class AuthServiceImpl implements AuthService {
   }
 
   getToken(): string | null {
-    return sessionStorage.getItem(this.TOKEN_KEY);
+    return authTokenStore.getToken();
   }
 
   setToken(token: string): void {
-    sessionStorage.setItem(this.TOKEN_KEY, token);
+    authTokenStore.setToken(token);
   }
 
   removeToken(): void {
-    sessionStorage.removeItem(this.TOKEN_KEY);
+    authTokenStore.removeToken();
   }
 
   getAuthHeader(): HeadersInit {
-    const token = this.getToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return authTokenStore.getAuthHeader();
   }
 
   async kioskVerifyPin(
@@ -138,18 +143,16 @@ class AuthServiceImpl implements AuthService {
     pin: string,
   ): Promise<{ success: boolean; message: string; employeeName?: string }> {
     try {
-      const response = await fetch(`${this.API_URL}/auth/kiosk-login`, {
+      const data = await apiRequest<{
+        success: boolean;
+        message: string;
+        employeeName?: string;
+        token?: string;
+      }>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ employeeId, pin }),
+        url: "/api/auth/kiosk-login",
+        body: { employeeId, pin },
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        return { success: false, message: data.message || "Error de verificación" };
-      }
 
       if (data.token) {
         this.setToken(data.token);
@@ -158,6 +161,11 @@ class AuthServiceImpl implements AuthService {
       return data;
     } catch (error) {
       console.error("Kiosk verify pin error:", error);
+      // El kiosk no lanza: muestra el mensaje en pantalla. Un 4xx del backend
+      // trae su propio mensaje ("PIN incorrecto"); un fallo de red no.
+      if (error instanceof ApiHttpError) {
+        return { success: false, message: errorMessageOr(error, "Error de verificación") };
+      }
       return { success: false, message: "Error de conexión con el servidor" };
     }
   }
