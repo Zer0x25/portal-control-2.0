@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { readFileSync } from "node:fs";
 
+import { TEST_API_URL } from "./src/tests/mocks/baseUrl.ts";
+
 // Version de despliegue: release-please la actualiza en package.json. El
 // `buster` del cache persistido de TanStack Query (spec 032) la usa para
 // invalidar datos entre releases.
@@ -234,6 +236,13 @@ export default defineConfig(({ mode }) => {
       setupFiles: "./src/tests/setup.ts",
       include: ["src/**/*.{test,spec}.{ts,tsx}"],
       exclude: ["e2e/**", "node_modules/**", "dist/**"],
+      // MSW intercepta la red en el proceso de test (spec 035, T1). El
+      // cliente HTTP resuelve su base desde `VITE_API_URL`: aqui se fija al
+      // mismo origen que usan los handlers (`src/tests/mocks/baseUrl.ts`), o
+      // el `onUnhandledRequest: "error"` dispararia en cada test.
+      env: {
+        VITE_API_URL: TEST_API_URL,
+      },
       // Ratchet de cobertura (spec 003 G-02, AC2). Baseline remedido
       // 2026-10-03 sobre `npm run test:coverage` con Vitest 5: 17.49%
       // líneas, 17.07% statements, 14.5% funciones, 14.46% ramas. Vitest 4+

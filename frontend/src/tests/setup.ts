@@ -1,10 +1,30 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
-// Limpiar el DOM después de cada test
+import { server } from "./mocks/server";
+
+// ---------------------------------------------------------------------------
+// MSW: la red se intercepta en el proceso de test (spec 035, T1/T3).
+//
+// `onUnhandledRequest: "error"` hace que una llamada sin handler **falle el
+// test**: es la garantia de que los tests de service ejercitan el contrato
+// HTTP real y no un mock de modulo.
+// ---------------------------------------------------------------------------
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" });
+});
+
 afterEach(() => {
+  // Cada test empieza con el conjunto de handlers por defecto: los overrides
+  // con `server.use(...)` no se filtran al test siguiente.
+  server.resetHandlers();
   cleanup();
+});
+
+afterAll(() => {
+  server.close();
 });
 
 // Mock de matchMedia (requerido por algunos componentes de UI)
