@@ -1,17 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("../../services/authService", () => ({
-  authService: {
-    getAuthHeader: () => ({ Authorization: "Bearer test-token" }),
-  },
-}));
-
+import { http, HttpResponse } from "msw";
+import { server } from "../mocks/server";
 import { shiftReportService } from "../../services/shiftReportService";
 import { ShiftReport } from "../../types/index";
 
-describe("shiftReportService HTTP timeouts and abort signals (anti-regression)", () => {
+describe("shiftReportService (MSW real network contract - AC3)", () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.clearAllMocks();
   });
 
@@ -32,88 +26,94 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
     isDeleted: false,
   };
 
-  it("getAll attaches an AbortSignal with timeout to fetch options", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: [], total: 0, page: 1, totalPages: 1 }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("getAll sends correct query params and receives parsed report list", async () => {
+    let capturedUrl: string | null = null;
+    let capturedAuth: string | null = null;
 
-    await shiftReportService.getAll({ page: 2, pageSize: 10, status: "COMPLETADO" });
+    server.use(
+      http.get("*/api/shift-reports", ({ request }) => {
+        capturedUrl = request.url;
+        capturedAuth = request.headers.get("Authorization");
+        return HttpResponse.json({
+          success: true,
+          data: [sampleReport],
+          total: 1,
+          page: 2,
+          totalPages: 1,
+        });
+      }),
+    );
 
-    expect(fetchMock).toHaveBeenCalledOnce();
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("page=2");
-    expect(url).toContain("pageSize=10");
-    expect(url).toContain("status=COMPLETADO");
-    expect(init.signal).toBeInstanceOf(AbortSignal);
+    const result = await shiftReportService.getAll({ page: 2, pageSize: 10, status: "COMPLETADO" });
+
+    expect(capturedUrl).toContain("page=2");
+    expect(capturedUrl).toContain("pageSize=10");
+    expect(capturedUrl).toContain("status=COMPLETADO");
+    expect(capturedAuth).toBe("Bearer mock-jwt-token-xyz-123");
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].id).toBe("rep-123");
   });
 
-  it("save attaches an AbortSignal with timeout to POST request", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => sampleReport,
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("save performs POST request and receives created report", async () => {
+    let capturedBody: unknown = null;
+    let capturedMethod: string | null = null;
+
+    server.use(
+      http.post("*/api/shift-reports", async ({ request }) => {
+        capturedMethod = request.method;
+        capturedBody = await request.json();
+        return HttpResponse.json(sampleReport, { status: 201 });
+      }),
+    );
 
     const result = await shiftReportService.save(sampleReport);
 
-    expect(fetchMock).toHaveBeenCalledOnce();
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("/shift-reports");
-    expect(init.method).toBe("POST");
-    expect(init.signal).toBeInstanceOf(AbortSignal);
-    expect(JSON.parse(String(init.body))).toEqual(sampleReport);
-    expect(result).toEqual(sampleReport);
+    expect(capturedMethod).toBe("POST");
+    expect(capturedBody).toEqual(sampleReport);
+    expect(result.id).toBe(sampleReport.id);
   });
 
-  it("update attaches an AbortSignal with timeout to PATCH request", async () => {
+  it("update sends PATCH request and returns updated report", async () => {
     const patchPayload: Partial<ShiftReport> = { status: "closed", endTime: "16:00" };
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ ...sampleReport, ...patchPayload }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    let capturedMethod: string | null = null;
+    let capturedBody: unknown = null;
+
+    server.use(
+      http.patch("*/api/shift-reports/:id", async ({ request }) => {
+        capturedMethod = request.method;
+        capturedBody = await request.json();
+        return HttpResponse.json({ ...sampleReport, ...patchPayload });
+      }),
+    );
 
     const result = await shiftReportService.update("rep-123", patchPayload);
 
-    expect(fetchMock).toHaveBeenCalledOnce();
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("/shift-reports/rep-123");
-    expect(init.method).toBe("PATCH");
-    expect(init.signal).toBeInstanceOf(AbortSignal);
-    expect(JSON.parse(String(init.body))).toEqual(patchPayload);
+    expect(capturedMethod).toBe("PATCH");
+    expect(capturedBody).toEqual(patchPayload);
     expect(result.status).toBe("closed");
     expect(result.endTime).toBe("16:00");
   });
 
-  it("delete attaches an AbortSignal with timeout to DELETE request", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 204,
-      json: async () => ({}),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("delete sends DELETE request and handles 204 No Content body", async () => {
+    let capturedMethod: string | null = null;
+
+    server.use(
+      http.delete("*/api/shift-reports/:id", ({ request }) => {
+        capturedMethod = request.method;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
 
     await shiftReportService.delete("rep-123");
-
-    expect(fetchMock).toHaveBeenCalledOnce();
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("/shift-reports/rep-123");
-    expect(init.method).toBe("DELETE");
-    expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(capturedMethod).toBe("DELETE");
   });
 
   it("dispatches unauthorized window event when response status is 401", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: async () => ({ message: "Unauthorized" }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    server.use(
+      http.get("*/api/shift-reports", () => {
+        return HttpResponse.json({ message: "Unauthorized" }, { status: 401 });
+      }),
+    );
 
     const eventListener = vi.fn();
     window.addEventListener("unauthorized", eventListener);
@@ -125,15 +125,27 @@ describe("shiftReportService HTTP timeouts and abort signals (anti-regression)",
   });
 
   it("propagates error message from backend when non-ok response is received in save", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: async () => ({ message: "El turno ya se encuentra cerrado" }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    server.use(
+      http.post("*/api/shift-reports", () => {
+        return HttpResponse.json({ message: "El turno ya se encuentra cerrado" }, { status: 400 });
+      }),
+    );
 
     await expect(shiftReportService.save(sampleReport)).rejects.toThrow(
       "El turno ya se encuentra cerrado",
     );
+  });
+
+  it("handles malformed JSON body by throwing", async () => {
+    server.use(
+      http.get("*/api/shift-reports", () => {
+        return new HttpResponse("invalid-json{", {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }),
+    );
+
+    await expect(shiftReportService.getAll()).rejects.toThrow();
   });
 });

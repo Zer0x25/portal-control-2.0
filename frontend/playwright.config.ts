@@ -24,19 +24,25 @@ export default defineConfig({
   //   },
   // },
   projects: [
-    // Funcionales en paralelo (ver workers). El spec de performance mide
-    // tiempos de render: corre DESPUÉS y en serie, sin carga concurrente
-    // que contamine las mediciones (bajo 4 browsers el scroll virtualizado
-    // pasó de ~50ms a ~600ms solo por contención de CPU).
+    // Funcionales en paralelo (ver workers). Excluye perf y visual.
     {
       name: "functional",
-      testIgnore: "**/performance.spec.ts",
+      testIgnore: ["**/performance.spec.ts", "**/visual-regression.spec.ts"],
       use: { ...devices["Desktop Chrome"] },
     },
+    // Regresión visual (Spec 035 - AC4): corre después de functional y antes de perf.
+    {
+      name: "visual",
+      testMatch: "**/visual-regression.spec.ts",
+      dependencies: ["functional"],
+      use: { ...devices["Desktop Chrome"] },
+    },
+    // Performance mide tiempos de render: corre DESPUÉS de visual y en serie,
+    // sin carga concurrente que contamine las mediciones.
     {
       name: "perf",
       testMatch: "**/performance.spec.ts",
-      dependencies: ["functional"],
+      dependencies: ["visual"],
       use: { ...devices["Desktop Chrome"] },
     },
   ],

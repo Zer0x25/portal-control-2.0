@@ -10,7 +10,6 @@ const {
   refreshEmployeesMock,
   exportToCSVMock,
   exportToPDFMock,
-  downloadEmployeesExcelMock,
   checkOpenRecordMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
@@ -20,7 +19,6 @@ const {
   refreshEmployeesMock: vi.fn(),
   exportToCSVMock: vi.fn(),
   exportToPDFMock: vi.fn(),
-  downloadEmployeesExcelMock: vi.fn(),
   checkOpenRecordMock: vi.fn(),
 }));
 
@@ -78,12 +76,6 @@ vi.mock("../../../hooks/queries/useConfigQuery", () => ({
 vi.mock("../../../utils/export/index", () => ({
   exportToCSV: exportToCSVMock,
   exportToPDF: exportToPDFMock,
-}));
-
-vi.mock("../../../services/exportService", () => ({
-  exportService: {
-    downloadEmployeesExcel: downloadEmployeesExcelMock,
-  },
 }));
 
 vi.mock("../../../hooks/useDebounce", () => ({

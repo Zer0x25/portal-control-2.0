@@ -95,13 +95,6 @@ vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: () => false,
 }));
 
-vi.mock("../../../services/shiftReportService", () => ({
-  shiftReportService: {
-    getAll: vi.fn(async () => ({ data: [] })),
-    save: vi.fn(async () => undefined),
-  },
-}));
-
 describe("useLogbookData", () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { http, HttpResponse } from "msw";
+import { server } from "../mocks/server";
 import {
   getDashboardOverview,
   getDailyPlanningSummary,
@@ -6,30 +8,22 @@ import {
   runKpiCalculation,
 } from "../../services/kpiService";
 
-vi.mock("../../services/authService", () => ({
-  authService: {
-    getAuthHeader: () => ({ Authorization: "Bearer test-token" }),
-  },
-}));
-
-describe("kpiService contracts", () => {
+describe("kpiService contracts (MSW real network - AC3)", () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it("normalizes dashboard overview response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
+    server.use(
+      http.get("*/api/kpis/overview", () => {
+        return HttpResponse.json({
           activeShifts: 4,
           teamStatus: {
             present: 3,
             total: 10,
             anomaliesCount: 1,
           },
-        }),
+        });
       }),
     );
 
@@ -46,11 +40,9 @@ describe("kpiService contracts", () => {
   });
 
   it("normalizes detailed report response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ summary: [{ employeeId: "e1", name: "Ana" }] }),
+    server.use(
+      http.post("*/api/kpis/detailed-report", () => {
+        return HttpResponse.json({ summary: [{ employeeId: "e1", name: "Ana" }] });
       }),
     );
 
@@ -64,11 +56,9 @@ describe("kpiService contracts", () => {
   });
 
   it("normalizes daily planning response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ date: "2026-03-05" }),
+    server.use(
+      http.get("*/api/kpis/daily-planning", () => {
+        return HttpResponse.json({ date: "2026-03-05" });
       }),
     );
 
@@ -79,11 +69,15 @@ describe("kpiService contracts", () => {
   });
 
   it("sends employee ids only in KPI summary payload", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ kpis: {}, kpiDetails: {} }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    let capturedBody: { employeeIds?: string[]; startDate?: string; endDate?: string } | null =
+      null;
+
+    server.use(
+      http.post("*/api/kpis/summary", async ({ request }) => {
+        capturedBody = (await request.json()) as typeof capturedBody;
+        return HttpResponse.json({ kpis: {}, kpiDetails: {} });
+      }),
+    );
 
     await runKpiCalculation({
       filters: {
@@ -93,12 +87,7 @@ describe("kpiService contracts", () => {
       },
     });
 
-    const call = fetchMock.mock.calls[0];
-    const body = JSON.parse(call[1].body as string) as {
-      employeeIds: string[];
-      startDate: string;
-      endDate: string;
-    };
-    expect(body.employeeIds).toEqual(["e1", "e2"]);
+    expect(capturedBody).not.toBeNull();
+    expect(capturedBody!.employeeIds).toEqual(["e1", "e2"]);
   });
 });

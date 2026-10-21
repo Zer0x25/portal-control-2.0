@@ -1,26 +1,21 @@
 import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
+import { authService } from "../../../services/authService";
 
-const {
-  openQuickActionModalMock,
-  closeQuickActionModalMock,
-  getTokenMock,
-  queryArgsMock,
-  filtersMock,
-} = vi.hoisted(() => ({
-  openQuickActionModalMock: vi.fn(),
-  closeQuickActionModalMock: vi.fn(),
-  getTokenMock: vi.fn(),
-  queryArgsMock: vi.fn(),
-  filtersMock: {
-    name: "Ana",
-    area: "Ops",
-    workdayType: "Full",
-    status: "Activo",
-    showAnomalies: false,
-  },
-}));
+const { openQuickActionModalMock, closeQuickActionModalMock, queryArgsMock, filtersMock } =
+  vi.hoisted(() => ({
+    openQuickActionModalMock: vi.fn(),
+    closeQuickActionModalMock: vi.fn(),
+    queryArgsMock: vi.fn(),
+    filtersMock: {
+      name: "Ana",
+      area: "Ops",
+      workdayType: "Full",
+      status: "Activo",
+      showAnomalies: false,
+    },
+  }));
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
@@ -135,20 +130,6 @@ vi.mock("../../../store/useStore", () => ({
     }),
 }));
 
-vi.mock("../../../utils/calculations", () => ({
-  getEmployeeClockingStatus: vi.fn(() => null),
-}));
-
-vi.mock("../../../services/authService", () => ({
-  authService: {
-    getToken: getTokenMock,
-  },
-}));
-
-vi.mock("../../../services/apiBase", () => ({
-  API_BASE_URL: "http://localhost:4000",
-}));
-
 describe("useTimeControl", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -187,13 +168,13 @@ describe("useTimeControl", () => {
 
     const { result } = renderHook(() => useTimeControl());
 
-    getTokenMock.mockReturnValueOnce(null);
+    authService.removeToken();
     act(() => {
       result.current.handleExportStreaming("csv");
     });
     expect(hrefSetter).not.toHaveBeenCalled();
 
-    getTokenMock.mockReturnValueOnce("token-123");
+    authService.setToken("token-123");
     act(() => {
       result.current.handleExportStreaming("excel");
     });

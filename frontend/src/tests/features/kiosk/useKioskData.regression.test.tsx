@@ -1,12 +1,12 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useKioskData } from "../../../features/kiosk/hooks/useKioskData";
+import { logger } from "../../../utils/logger";
 
-const { addToastMock, punchMutateAsyncMock, geolocationMock, loggerErrorMock } = vi.hoisted(() => ({
+const { addToastMock, punchMutateAsyncMock, geolocationMock } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   punchMutateAsyncMock: vi.fn(),
   geolocationMock: vi.fn(),
-  loggerErrorMock: vi.fn(),
 }));
 
 const employeeK1 = {
@@ -44,24 +44,6 @@ vi.mock("../../../hooks/useToasts", () => ({
 
 vi.mock("../../../utils/geolocation", () => ({
   getCurrentGeolocation: (...args: unknown[]) => geolocationMock(...args),
-}));
-
-vi.mock("../../../utils/logger", () => ({
-  logger: {
-    error: (...args: unknown[]) => loggerErrorMock(...args),
-    warn: vi.fn(),
-    info: vi.fn(),
-    log: vi.fn(),
-    debug: vi.fn(),
-  },
-}));
-
-vi.mock("../../../services/authService", () => ({
-  authService: { removeToken: vi.fn(), kioskVerifyPin: vi.fn() },
-}));
-
-vi.mock("../../../services/timeRecordService", () => ({
-  timeRecordService: { getAll: vi.fn(async () => ({ data: [] })) },
 }));
 
 vi.mock("../../../utils/indexedDB", () => ({
@@ -160,7 +142,7 @@ describe("useKioskData (spec 029)", () => {
     });
 
     expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/error/i), "error");
-    expect(loggerErrorMock).toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalled();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
   });

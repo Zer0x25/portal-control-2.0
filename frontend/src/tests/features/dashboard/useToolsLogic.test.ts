@@ -36,12 +36,8 @@ vi.mock("../../../components/ui/icons/index", () => ({
   DocumentTextIcon: () => "DocumentTextIcon",
   CalculatorIcon: () => "CalculatorIcon",
 }));
-
-vi.mock("../../../services/configService", () => ({
-  configService: {
-    getPublicCompanyPolicy: vi.fn().mockResolvedValue(null),
-  },
-}));
+import { http, HttpResponse } from "msw";
+import { server } from "../../mocks/server";
 
 describe("useToolsLogic", () => {
   beforeEach(() => {
@@ -175,17 +171,23 @@ describe("useToolsLogic", () => {
   });
 
   it("fetches company policy at most once per session (memo en sessionStorage)", async () => {
-    const { configService } = await import("../../../services/configService");
+    let policyFetchCount = 0;
+    server.use(
+      http.get("*/api/configs/public/company-policy", () => {
+        policyFetchCount++;
+        return HttpResponse.json(null);
+      }),
+    );
     sessionStorage.clear();
 
     renderHook(() => useToolsLogic());
     await act(async () => {});
-    expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
+    expect(policyFetchCount).toBe(1);
 
     renderHook(() => useToolsLogic());
     await Promise.resolve();
     // Segundo montaje reutiliza el memo: sin segundo fetch.
-    expect(configService.getPublicCompanyPolicy).toHaveBeenCalledTimes(1);
+    expect(policyFetchCount).toBe(1);
     sessionStorage.clear();
   });
 });

@@ -8,14 +8,12 @@ const {
   decrementProcessingMock,
   exportShiftScheduleToICSMock,
   exportCalendarToPDFMock,
-  downloadCalendarPDFMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   incrementProcessingMock: vi.fn(),
   decrementProcessingMock: vi.fn(),
   exportShiftScheduleToICSMock: vi.fn(),
   exportCalendarToPDFMock: vi.fn(),
-  downloadCalendarPDFMock: vi.fn(),
 }));
 
 let mockCurrentUser: { role: string; employeeId?: string } | null = { role: "Administrador" };
@@ -66,12 +64,6 @@ vi.mock("../../../hooks/useCalendarData", () => ({
 vi.mock("../../../utils/export/index", () => ({
   exportShiftScheduleToICS: exportShiftScheduleToICSMock,
   exportCalendarToPDF: exportCalendarToPDFMock,
-}));
-
-vi.mock("../../../services/exportService", () => ({
-  exportService: {
-    downloadCalendarPDF: downloadCalendarPDFMock,
-  },
 }));
 
 describe("useShiftCalendarData", () => {

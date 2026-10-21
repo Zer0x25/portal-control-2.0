@@ -103,12 +103,12 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: **Mocking de red real**. `msw` está en `devDependencies` y el
+- [x] AC1: **Mocking de red real**. `msw` está en `devDependencies` y el
       handler set por defecto (`src/tests/mocks/server.ts`) sirve la API real
       del backend; al menos los services migrados en la
       [spec 034](file:///specs/034-frontend-http-client-consolidation/spec.md)
       se testean **contra el handler**, no contra `vi.mock` del módulo.
-- [ ] AC2: **Los bugs de caché son detectables**. Existe un test de
+- [x] AC2: **Los bugs de caché son detectables**. Existe un test de
       regresión que ejercita el ciclo **mutación → invalidación → re-fetch**
       para el recurso de reportes de turno. La fase roja se verifica
       **localmente contra el código previo a la corrección de la spec 034**
@@ -118,14 +118,14 @@ Fuera (explícito):
       con un test en rojo en CI. El mismo patrón de test se aplica a
       `config` (raíz genérica vs sub-keys) y a la raíz `audit-logs` fuera de
       las allowlists de `src/lib/queryCache.ts`.
-- [ ] AC3: **El contrato HTTP es verificable**. Los tests de services
+- [x] AC3: **El contrato HTTP es verificable**. Los tests de services
       verifican status, body y headers contra la API real (no contra un mock
       de módulo): un 401 produce `ApiHttpError` con `status === 401`, un 204
       produce un body vacío y no un `undefined`, un body malformado produce
       un error tipado. Existe además un test que valida las **claves de query
       usadas por los handlers contra `backend/docs/swagger.json`**, de modo
       que un cambio de contrato rompe el CI.
-- [ ] AC4: **Regresión visual operativa**. Existen snapshots de Playwright
+- [x] AC4: **Regresión visual operativa**. Existen snapshots de Playwright
       para un conjunto mínimo y curado de rutas (dashboard, planificador,
       worker-portal, kiosk, logbook, governance — las rutas de las
       certificaciones e2e existentes), en **claro y oscuro**, con los
@@ -133,20 +133,20 @@ Fuera (explícito):
       no aprobada (`--update-snapshots` es una operación explícita y
       revisable). El conjunto de rutas cubiertas está declarado en un fichero
       único, no disperso en los specs.
-- [ ] AC5: **Los tests de focus y layout corren en navegador real**.
+- [x] AC5: **Los tests de focus y layout corren en navegador real**.
       `vitest` Browser Mode está configurado y la suite de accesibilidad de
       componentes (`CinematicModal` con focus trap + retorno de foco,
       `DatePickerDialog` con navegación por teclado, `TabNav` con flechas,
       `NumericKeypad`) se ejecuta en Chromium real en lugar de JSDOM, y
       verifica comportamiento **no observable en JSDOM** (elemento realmente
       enfocado, `tabIndex` efectivo, scroll real).
-- [ ] AC6: **Ratchet de cobertura subido con criterio**. Los umbrales de
+- [x] AC6: **Ratchet de cobertura subido con criterio**. Los umbrales de
       `frontend/vite.config.ts:253-266` suben desde `{lines: 16, functions:
 13, branches: 13, statements: 16}` a un valor **medido** y sostenido
       (objetivo: `lines ≥ 30, functions ≥ 25, branches ≥ 25, statements ≥ 30`
       tras la Fase A–C), y el comentario del config se actualiza con el
       baseline nuevo. **El ratchet solo puede subir**, igual que hoy.
-- [ ] AC7: **El entorno de test es observable y aislado**. `src/tests/setup.ts`
+- [x] AC7: **El entorno de test es observable y aislado**. `src/tests/setup.ts`
       instala spies/stubs del `logger` y de Sentry: ningún test unitario
       ejecuta el SDK real de Sentry, y un test puede afirmar sobre los
       mensajes que el `logger` emite. **Fuera de alcance**: convertir
@@ -154,7 +154,7 @@ Fuera (explícito):
       `console.*` y cambiar `no-console` — eso es de la
       [spec 037](file:///specs/037-frontend-rendering-observability/spec.md)
       (ADR-0026, Decisión #4).
-- [ ] AC8: **Sin regresión**. `npm run validate:ci` (frontend),
+- [x] AC8: **Sin regresión**. `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run spec:check`, `npm run docs:check`,
       `npm run preflight` en verde; `npm run e2e:staging` en verde (56 tests);
       el número de tests unitarios **no disminuye** respecto al baseline de la

@@ -1,5 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { http, HttpResponse } from "msw";
+import { server } from "../../mocks/server";
 import { useAccountingClosureTabController } from "../../../features/supervisor-dashboard/hooks/useAccountingClosureTabController";
 
 const {
@@ -9,7 +11,6 @@ const {
   useEmployeesMock,
   useAccountingLockDateQueryMock,
   useConfigMutationsMock,
-  validateClosureMock,
   useNavigateMock,
   addToastMock,
 } = vi.hoisted(() => ({
@@ -19,7 +20,6 @@ const {
   useEmployeesMock: vi.fn(),
   useAccountingLockDateQueryMock: vi.fn(),
   useConfigMutationsMock: vi.fn(),
-  validateClosureMock: vi.fn(),
   useNavigateMock: vi.fn(),
   addToastMock: vi.fn(),
 }));
@@ -48,25 +48,26 @@ vi.mock("../../../hooks/useConfigMutations", () => ({
   useConfigMutations: () => useConfigMutationsMock(),
 }));
 
-vi.mock("../../../services/configService", () => ({
-  configService: {
-    validateClosure: (...args: unknown[]) => validateClosureMock(...args),
-  },
-}));
-
 vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 
-describe("useAccountingClosureTabController", () => {
+describe("useAccountingClosureTabController (MSW real network)", () => {
   it("validates successfully for allowed closure period", async () => {
+    let capturedValidateDate: string | null = null;
+    server.use(
+      http.get("*/api/configs/validate-closure", ({ request }) => {
+        capturedValidateDate = new URL(request.url).searchParams.get("date");
+        return HttpResponse.json({ allowed: true });
+      }),
+    );
+
     useTimeRecordsMock.mockReturnValue({ timeRecordsPage: [] });
     useAuthMock.mockReturnValue({ currentUser: { id: "u1" } });
     useToastsMock.mockReturnValue({ addToast: addToastMock });
     useEmployeesMock.mockReturnValue({ activeEmployees: [] });
     useAccountingLockDateQueryMock.mockReturnValue({ data: "2026-03-01" });
     useConfigMutationsMock.mockReturnValue({ updateConfig: vi.fn() });
-    validateClosureMock.mockResolvedValue({ allowed: true });
 
     const { result } = renderHook(() => useAccountingClosureTabController());
 
@@ -76,10 +77,10 @@ describe("useAccountingClosureTabController", () => {
 
     await act(async () => {
       result.current.handleValidation();
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
-    expect(validateClosureMock).toHaveBeenCalledWith("2026-03-04");
+    expect(capturedValidateDate).toBe("2026-03-04");
     expect(result.current.validationResult.status).toBe("success");
   });
 

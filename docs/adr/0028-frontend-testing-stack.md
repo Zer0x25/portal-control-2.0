@@ -1,6 +1,6 @@
 # ADR-0028: Frontend Testing Stack — MSW como contrato ejecutable, frontera JSDOM/Browser y ratchet de cobertura
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-21
 - Autores: zer0x
 

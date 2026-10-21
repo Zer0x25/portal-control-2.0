@@ -166,7 +166,7 @@ export const apiClient = {
             attempt < maxAttempts - 1
           ) {
             const retryAfter = getRetryAfterMs(response);
-            await response.body?.cancel().catch(() => undefined);
+            await response.arrayBuffer().catch(() => undefined);
             await sleep(retryAfter ?? RETRY_BASE_DELAY_MS * (attempt + 1));
             continue;
           }

@@ -293,6 +293,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci --no-audit --no-fund --prefer-offline --loglevel=error
 
+      - name: Install Playwright Chromium for Vitest Browser
+        run: npx playwright install --with-deps chromium
+
       # validate:ci:coverage == validate:ci pero con `test:coverage` en vez de
       # `test:run:ci`: la suite completa corre UNA vez con thresholds
       # (ratchet). El antiguo job `coverage-ratchet` la corria una segunda

@@ -1,27 +1,25 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { http, HttpResponse } from "msw";
+import { server } from "../../mocks/server";
 import { useWorkerPortalData } from "../../../features/worker-portal/hooks/useWorkerPortalData";
 
 const {
   addToastMock,
   punchMutateAsyncMock,
   refreshEmployeesMock,
-  downloadReportPDFMock,
   getEmployeeDailyScheduleInfoMock,
   useTimeRecordsMock,
   useUserClockingStatusMock,
   useEmployeesMock,
-  getAllEmployeesMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   punchMutateAsyncMock: vi.fn(),
   refreshEmployeesMock: vi.fn(),
-  downloadReportPDFMock: vi.fn(),
   getEmployeeDailyScheduleInfoMock: vi.fn(),
   useTimeRecordsMock: vi.fn(),
   useUserClockingStatusMock: vi.fn(),
   useEmployeesMock: vi.fn(),
-  getAllEmployeesMock: vi.fn(),
 }));
 
 const employeeE1 = {
@@ -113,14 +111,6 @@ vi.mock("../../../hooks/useScheduling", () => ({
   }),
 }));
 
-vi.mock("../../../services/employeeService", () => ({
-  employeeService: { getAll: (...args: unknown[]) => getAllEmployeesMock(...args) },
-}));
-
-vi.mock("../../../services/kpiService", () => ({
-  downloadReportPDF: (...args: unknown[]) => downloadReportPDFMock(...args),
-}));
-
 vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: () => false,
 }));
@@ -130,20 +120,16 @@ vi.mock("../../../hooks/useBusinessNow", () => ({
   getBusinessNow: () => new Date("2026-03-15T12:00:00.000Z"),
 }));
 
-vi.mock("../../../utils/logger", () => ({
-  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), log: vi.fn(), debug: vi.fn() },
-}));
-
 describe("useWorkerPortalData (spec 028)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    server.use(http.get("*/api/employees", () => HttpResponse.json([employeeE1])));
     getEmployeeDailyScheduleInfoMock.mockReturnValue({
       scheduleText: "08:00 - 16:00",
       isWorkDay: true,
       planningStatus: "Programado",
     });
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
-    downloadReportPDFMock.mockResolvedValue(undefined);
     useEmployeesMock.mockReturnValue({
       getEmployeeById: (id: string) => (id === "e1" ? employeeE1 : null),
       allEmployees: [employeeE1],
@@ -161,7 +147,6 @@ describe("useWorkerPortalData (spec 028)", () => {
       time: "",
       isLoading: false,
     });
-    getAllEmployeesMock.mockResolvedValue([employeeE1]);
   });
 
   it("AC2: enrichedRecords filtra por empleado y por selectedMonth", async () => {
@@ -216,7 +201,7 @@ describe("useWorkerPortalData (spec 028)", () => {
       isLoadingEmployees: false,
       refreshEmployees: refreshEmployeesMock,
     });
-    getAllEmployeesMock.mockResolvedValue([]);
+    server.use(http.get("*/api/employees", () => HttpResponse.json([])));
 
     const { result } = renderHook(() => useWorkerPortalData());
     await waitFor(() => {
@@ -322,7 +307,7 @@ describe("useWorkerPortalData (spec 028)", () => {
   });
 
   it("AC6b: fallo de export PDF muestra toast de error", async () => {
-    downloadReportPDFMock.mockRejectedValueOnce(new Error("pdf down"));
+    server.use(http.get("*/api/export/report-pdf", () => HttpResponse.error()));
     const { result } = renderHook(() => useWorkerPortalData());
     await waitFor(() => {
       expect(result.current.employee?.id).toBe("e1");

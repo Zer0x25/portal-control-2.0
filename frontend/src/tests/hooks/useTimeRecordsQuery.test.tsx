@@ -2,24 +2,17 @@ import React from "react";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { http, HttpResponse } from "msw";
+import { server } from "../mocks/server";
 import {
   useTimeRecordsQuery,
   useTimeRecordMutations,
 } from "../../hooks/queries/useTimeRecordsQuery";
 
-const { getAllMock, idbGetAllMock, idbPutBulkMock, punchMock, addToastMock } = vi.hoisted(() => ({
-  getAllMock: vi.fn(),
+const { idbGetAllMock, idbPutBulkMock, addToastMock } = vi.hoisted(() => ({
   idbGetAllMock: vi.fn(),
   idbPutBulkMock: vi.fn(),
-  punchMock: vi.fn(),
   addToastMock: vi.fn(),
-}));
-
-vi.mock("../../services/timeRecordService", () => ({
-  timeRecordService: {
-    getAll: getAllMock,
-    punch: punchMock,
-  },
 }));
 
 vi.mock("../../hooks/useToasts", () => ({
@@ -32,13 +25,18 @@ vi.mock("../../utils/indexedDB", () => ({
   idbPutBulk: idbPutBulkMock,
 }));
 
-describe("useTimeRecordsQuery anomaly filtering", () => {
+describe("useTimeRecordsQuery anomaly filtering (MSW)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("filters cached fallback data when showAnomalies is enabled and backend fails", async () => {
-    getAllMock.mockRejectedValue(new Error("network down"));
+    server.use(
+      http.get("*/api/records", () => {
+        return HttpResponse.error();
+      }),
+    );
+
     idbGetAllMock.mockResolvedValue([
       {
         id: "r-anomaly",
@@ -92,7 +90,12 @@ describe("useTimeRecordsQuery anomaly filtering", () => {
   });
 
   it("does not repopulate stale cached rows when backend returns empty for a manual status filter", async () => {
-    getAllMock.mockResolvedValue({ data: [], total: 0, totalPages: 1 });
+    server.use(
+      http.get("*/api/records", () => {
+        return HttpResponse.json({ data: [], total: 0, totalPages: 1 });
+      }),
+    );
+
     idbGetAllMock.mockResolvedValue([
       {
         id: "r-stale",
@@ -135,7 +138,7 @@ describe("useTimeRecordsQuery anomaly filtering", () => {
   });
 });
 
-describe("useTimeRecordMutations punch error toast (spec 030)", () => {
+describe("useTimeRecordMutations punch error toast (spec 030 - MSW)", () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -145,7 +148,11 @@ describe("useTimeRecordMutations punch error toast (spec 030)", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    punchMock.mockRejectedValue(new Error("backend dice no"));
+    server.use(
+      http.post("*/api/records/punch", () => {
+        return HttpResponse.json({ message: "backend dice no" }, { status: 500 });
+      }),
+    );
   });
 
   it("toasts on punch failure by default (time-control path)", async () => {
@@ -161,6 +168,14 @@ describe("useTimeRecordMutations punch error toast (spec 030)", () => {
   });
 
   it("skips the toast when the caller handles the error itself", async () => {
+    let capturedBody: { employeeId?: string } | null = null;
+    server.use(
+      http.post("*/api/records/punch", async ({ request }) => {
+        capturedBody = (await request.json()) as { employeeId?: string };
+        return HttpResponse.json({ message: "backend dice no" }, { status: 500 });
+      }),
+    );
+
     const { result } = renderHook(() => useTimeRecordMutations(), { wrapper });
 
     await act(async () => {
@@ -173,6 +188,6 @@ describe("useTimeRecordMutations punch error toast (spec 030)", () => {
     });
 
     expect(addToastMock).not.toHaveBeenCalled();
-    expect(punchMock).toHaveBeenCalledWith("e1", undefined, undefined, undefined);
+    expect(capturedBody?.employeeId).toBe("e1");
   });
 });

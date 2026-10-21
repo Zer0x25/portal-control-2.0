@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { readFileSync } from "node:fs";
+import { playwright } from "@vitest/browser-playwright";
 
 // Version de despliegue: release-please la actualiza en package.json. El
 // `buster` del cache persistido de TanStack Query (spec 032) la usa para
@@ -229,11 +230,35 @@ export default defineConfig(({ mode }) => {
       },
     },
     test: {
-      environment: "jsdom",
       globals: true,
-      setupFiles: "./src/tests/setup.ts",
-      include: ["src/**/*.{test,spec}.{ts,tsx}"],
-      exclude: ["e2e/**", "node_modules/**", "dist/**"],
+      projects: [
+        {
+          test: {
+            name: "jsdom",
+            environment: "jsdom",
+            setupFiles: "./src/tests/setup.ts",
+            include: ["src/**/*.{test,spec}.{ts,tsx}"],
+            exclude: ["e2e/**", "node_modules/**", "dist/**", "src/tests/browser/**"],
+          },
+        },
+        {
+          test: {
+            name: "browser",
+            include: ["src/tests/browser/**/*.{test,spec}.{ts,tsx}"],
+            exclude: ["e2e/**", "node_modules/**", "dist/**"],
+            browser: {
+              enabled: true,
+              provider: playwright(),
+              instances: [
+                {
+                  browser: "chromium",
+                },
+              ],
+              headless: true,
+            },
+          },
+        },
+      ],
       // Ratchet de cobertura (spec 003 G-02, AC2). Baseline remedido
       // 2026-10-03 sobre `npm run test:coverage` con Vitest 5: 17.49%
       // líneas, 17.07% statements, 14.5% funciones, 14.46% ramas. Vitest 4+
@@ -242,14 +267,13 @@ export default defineConfig(({ mode }) => {
       // es correccion de medicion, no perdida de cobertura. Umbrales con
       // margen anti-flakiness: solo pueden subir. Subir cobertura real va
       // por spec aparte (fuera de alcance de 003).
-      // Spec 004 fase 2 (2026-10-03): +11 tests en dateUtils.test.ts
-      // (helpers puros) -> 17.83% L, 14.73% F, 14.61% B, 17.42% S.
-      // Ratchet 15/12/12/15 -> 16/13/13/15 (statements queda en 15:
-      // 17.42 no da 2pts de margen para 16).
-      // Weather geoaware (2026-10-04): +5 tests en useWeather.test.ts
-      // (cache localStorage, geo/IP, dedup) -> 18.54% L, 15.29% F,
-      // 15.13% B, 18.1% S. Statements 15 -> 16 (margen 2.1); el resto
-      // queda (subir L/F/B deja <2pts de margen).
+      // Spec 035 (2026-10-21): Suite MSW unificada, tests de invalidación
+      // de caché, contratos de services y Vitest Browser Mode en Chromium
+      // real -> medido y sostenido en 2 corridas consecutivas:
+      // Run 1: 31.02% L, 24.99% F, 25.57% B, 30.84% S.
+      // Run 2: 31.06% L, 25.08% F, 25.57% B, 30.89% S.
+      // Umbrales fijados con margen anti-flakiness de ~1.5 - 2pts (AC6):
+      // lines: 29, functions: 23, branches: 23, statements: 29 (antes 16/13/13/16).
       coverage: {
         provider: "v8",
         reporter: ["text", "json-summary"],
@@ -263,10 +287,10 @@ export default defineConfig(({ mode }) => {
           "src/tests/**",
         ],
         thresholds: {
-          lines: 16,
-          functions: 13,
-          branches: 13,
-          statements: 16,
+          lines: 29,
+          functions: 23,
+          branches: 23,
+          statements: 29,
         },
       },
     },

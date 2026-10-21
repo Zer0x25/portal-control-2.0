@@ -1,15 +1,15 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { http, HttpResponse } from "msw";
+import { server } from "../../mocks/server";
 import { useReportsTabController } from "../../../features/supervisor-dashboard/hooks/useReportsTabController";
 
-const { useEmployeesMock, useToastsMock, useNavigateMock, getDetailedReportMock, addToastMock } =
-  vi.hoisted(() => ({
-    useEmployeesMock: vi.fn(),
-    useToastsMock: vi.fn(),
-    useNavigateMock: vi.fn(),
-    getDetailedReportMock: vi.fn(),
-    addToastMock: vi.fn(),
-  }));
+const { useEmployeesMock, useToastsMock, useNavigateMock, addToastMock } = vi.hoisted(() => ({
+  useEmployeesMock: vi.fn(),
+  useToastsMock: vi.fn(),
+  useNavigateMock: vi.fn(),
+  addToastMock: vi.fn(),
+}));
 
 vi.mock("../../../hooks/useEmployees", () => ({
   useEmployees: () => useEmployeesMock(),
@@ -23,24 +23,25 @@ vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 
-vi.mock("../../../services/kpiService", () => ({
-  getDetailedReport: (...args: unknown[]) => getDetailedReportMock(...args),
-  downloadReportExcel: vi.fn(),
-  downloadReportPDF: vi.fn(),
-}));
+describe("useReportsTabController (MSW)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-vi.mock("../../../services/authService", () => ({
-  authService: { getToken: () => "token-123" },
-}));
-
-describe("useReportsTabController", () => {
   it("generates team report and stores summary data", async () => {
     useEmployeesMock.mockReturnValue({ activeEmployees: [] });
     useToastsMock.mockReturnValue({ addToast: addToastMock });
-    getDetailedReportMock.mockResolvedValue({
-      summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
-      details: {},
-    });
+
+    let capturedFilter: unknown = null;
+    server.use(
+      http.post("*/api/kpis/detailed-report", async ({ request }) => {
+        capturedFilter = await request.json();
+        return HttpResponse.json({
+          summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
+          details: {},
+        });
+      }),
+    );
 
     const { result } = renderHook(() => useReportsTabController());
 
@@ -58,10 +59,9 @@ describe("useReportsTabController", () => {
       await result.current.handleGenerateReport();
     });
 
-    expect(getDetailedReportMock).toHaveBeenCalledWith({
+    expect(capturedFilter).toEqual({
       startDate: "2026-03-01",
       endDate: "2026-03-05",
-      employeeIds: undefined,
       area: "A1",
     });
     expect(result.current.isSingleEmployeeReport).toBe(false);
@@ -71,10 +71,15 @@ describe("useReportsTabController", () => {
   it("opens pdf mode modal when server-pdf export is requested in team mode", async () => {
     useEmployeesMock.mockReturnValue({ activeEmployees: [] });
     useToastsMock.mockReturnValue({ addToast: addToastMock });
-    getDetailedReportMock.mockResolvedValue({
-      summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
-      details: {},
-    });
+
+    server.use(
+      http.post("*/api/kpis/detailed-report", () => {
+        return HttpResponse.json({
+          summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
+          details: {},
+        });
+      }),
+    );
 
     const { result } = renderHook(() => useReportsTabController());
 

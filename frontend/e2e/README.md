@@ -20,6 +20,38 @@ await page.goto("/#/configuration?tab=email");
 (`authToken` + `currentUser`) antes de navegar. Preferirlo sobre login UI,
 salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
 
+## Regresión Visual (Spec 035 - AC4)
+
+La suite de regresión visual (`e2e/visual-regression.spec.ts`) valida el aspecto
+estético y layout de las rutas críticas curadas (`e2e/visual-targets.ts`):
+- `dashboard`
+- `planificador`
+- `worker-portal`
+- `kiosk`
+- `logbook`
+- `governance`
+
+Se ejecutan en tema **claro (`light`)** y **oscuro (`dark`)**, con umbral estricto `maxDiffPixelRatio: 0.05`.
+
+### Ejecución
+```bash
+# Ejecutar solo la suite visual
+npx playwright test --project visual
+
+# Ejecutar con visor de reportes
+npx playwright show-report
+```
+
+### Política de Actualización de Baselines
+Los snapshots de referencia viven versionados en el repositorio bajo `frontend/e2e/__snapshots__/` o directorios generados por Playwright.
+> [!IMPORTANT]
+> **Actualización de Baselines**: La actualización de capturas mediante `--update-snapshots`
+> es una operación **explícita y separada** (PR dedicado de baselines con revisión
+> minuciosa del diff visual, NUNCA camuflada dentro de un PR de refactor o lógica).
+```bash
+npx playwright test --project visual --update-snapshots
+```
+
 ## Contrato DOM para agentes
 
 - Shell: `[data-testid="app-shell"][data-current-path]`, `skip-to-content`,
