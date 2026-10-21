@@ -950,7 +950,17 @@ export class TimeRecordService {
       );
     }
 
-    let enriched = await Promise.all(rawRecords.map((r) => this.enrichRecord(r, context)));
+    // ⚡ Bolt Optimization: Process enrichment promises in manageable chunks
+    // Why: Awaiting all records (potentially thousands) concurrently blocked the Node.js event loop
+    // Impact: Prevents event loop stalling, maintaining application responsiveness during heavy queries
+    let enriched = [];
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < rawRecords.length; i += CHUNK_SIZE) {
+      const chunk = rawRecords.slice(i, i + CHUNK_SIZE);
+      const chunkResults = await Promise.all(chunk.map((r) => this.enrichRecord(r, context)));
+      enriched.push(...chunkResults);
+      await new Promise((resolve) => setImmediate(resolve));
+    }
 
     // Synthesis of Virtual "Missing Mark" Anomalies
     if (isAnomalyFilter && desde && hasta && pageSizeNum !== -1) {
@@ -1221,7 +1231,19 @@ export class TimeRecordService {
       );
     }
 
-    return await Promise.all(records.map((r) => this.enrichRecord(r, context)));
+    // ⚡ Bolt Optimization: Process enrichment promises in manageable chunks
+    // Why: Awaiting all records (potentially thousands) concurrently blocked the Node.js event loop
+    // Impact: Prevents event loop stalling, maintaining application responsiveness during heavy queries
+    const enriched = [];
+    const CHUNK_SIZE = 50;
+    for (let i = 0; i < records.length; i += CHUNK_SIZE) {
+      const chunk = records.slice(i, i + CHUNK_SIZE);
+      const chunkResults = await Promise.all(chunk.map((r) => this.enrichRecord(r, context)));
+      enriched.push(...chunkResults);
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+
+    return enriched;
   }
 
   /**

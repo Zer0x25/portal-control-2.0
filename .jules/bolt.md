@@ -125,3 +125,7 @@
 
 **Learning:** Mismo patrón: `GET /api/configs/public/brand-logo` 404 cuando no hay logo — y este dispara incluso en el login anónimo (`useBrandLogoQuery` sin gate de token, `retry: false` ya documentaba que el 404 era esperado). Más simple que company-policy: el frontend ya tolera `null` (`if (!logo...) return null`), sin cambio de código frontend — solo SDK.
 **Action:** (commits backend + frontend-SDK lockstep, skill `api-contracts-sync`) Backend: `brandLogo() ?? null`, OpenAPI `nullable: true` + descripción, 2 tests actualizados (incluido el de reseteo a null en spec027 que fijaba el segundo 404), `docs:generate`, snaps `-u` (limpios esta vez, solo brand-logo). Frontend: solo `sdk:generate` (`| null` + descripción), `check:sdk` OK. Staging: JSON 200 `null`, `/file` sigue 404, login sin 4xx de brand-logo, 0 pageerrors. `dataConfigs` 67/67 en PG efímero (apagado después); `tsc`/`eslint` OK.
+
+## 2026-10-21 - perf(core): Chunked TimeRecord Enrichment
+**Learning:** En map() statements on massive arrays (like potentially up to 20,000 for exports or -1 page sizes in TimeRecordService), resolving all items concurrently via Promise.all starves the Node.js event loop leading to timeouts and unresponsiveness. Using a chunked iteration mechanism yielding with setImmediate correctly mitigates event loop blocks for long-running calculations.
+**Action:** Use a deterministic chunked iteration with await Promise.all() when evaluating huge un-paginated arrays and inject await new Promise(resolve => setImmediate(resolve)) to yield control back to the event loop.
