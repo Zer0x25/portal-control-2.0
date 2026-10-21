@@ -67,6 +67,11 @@ const toJsonSchema = (node: unknown): unknown => {
     // Sin `type` declarado, `nullable` no restringe nada: null ya es valido.
   }
 
+  // OpenAPI 3.0 usa `type: "any"` para "cualquier valor"; JSON Schema
+  // (draft-07) no conoce ese tipo y Ajv rechaza el schema. Sin `type`, el
+  // schema acepta cualquier valor: es la equivalencia correcta.
+  if (result.type === "any") delete result.type;
+
   return result;
 };
 
@@ -186,6 +191,10 @@ describe("Contrato MSW <-> swagger del backend (spec 035, T2)", () => {
 
     for (const route of routeContracts) {
       if (route.responseBody === undefined) continue;
+      // Una ruta con divergencia documentada reproduce el **runtime** del
+      // backend (lo que el frontend consume de verdad): su body no tiene por
+      // que cumplir el schema del swagger.
+      if (route.divergence) continue;
       const schema = responseSchemaOf(operationOf(route));
       // Una respuesta sin schema (p. ej. 204 o "Bitacora guardada") no se
       // puede validar: no es un fallo del mock.
@@ -201,5 +210,31 @@ describe("Contrato MSW <-> swagger del backend (spec 035, T2)", () => {
       offenders,
       "Cuerpos de respuesta que no cumplen el schema OpenAPI: " + offenders.join(" | "),
     ).toEqual([]);
+  });
+
+  it("(c) las divergencias con el swagger estan congeladas y citadas", () => {
+    // Ratchet: la lista de rutas cuyo runtime difiere del swagger **no crece**
+    // sin que alguien lo declare. Si el backend alinea el swagger, este test
+    // falla y obliga a borrar la divergencia.
+    const divergences = routeContracts
+      .filter((route) => route.divergence)
+      .map((route) => `${route.method} ${route.path}`);
+
+    expect(divergences).toEqual([
+      "GET /api/shift-reports",
+      "GET /api/configs/{key}",
+      "GET /api/configs/public/brand-logo",
+      "GET /api/corrections",
+    ]);
+
+    // Cada divergencia cita el `file:line` del backend que manda.
+    for (const route of routeContracts) {
+      if (!route.divergence) continue;
+      expect(
+        route.divergence.source,
+        `La divergencia de ${route.method} ${route.path} no cita el backend que manda.`,
+      ).toMatch(/^backend\/src\/.+:\d+/);
+      expect(route.divergence.detail.length).toBeGreaterThan(20);
+    }
   });
 });

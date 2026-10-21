@@ -6,40 +6,65 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase A — MSW como estándar de mocking
 
-- [ ] T1: Añadir `msw` (devDep) y crear
+- [x] T1: Añadir `msw` (devDep) y crear
       `frontend/src/tests/mocks/{server,handlers,fixtures,browser}.ts`:
       `setupServer` con `onUnhandledRequest: "error"` (una llamada no
       mockeada **falla** el test en lugar de colarse silenciosamente),
       handlers por recurso y fixtures deterministas (AC1).
-- [ ] T2: Crear `frontend/src/tests/contracts/swagger-alignment.test.ts`:
+- [x] T2: Crear `frontend/src/tests/contracts/swagger-alignment.test.ts`:
       cada ruta registrada en `handlers.ts` existe en
       `backend/docs/swagger.json` y el `body` del handler cumple el schema
       OpenAPI correspondiente; los handlers pasan a ser un **contrato
       ejecutable** (AC3).
-- [ ] T3: Extender `frontend/src/tests/setup.ts` para arrancar el server MSW
+      _Evidencia_: el contrato ya detectó 2 fallos reales (una ruta inventada
+      `/api/records/anomalies` y `lastModified` en epoch ms contra texto).
+      _Desvío documentado_: 4 rutas tienen el **runtime** del backend
+      desalineado del `swagger.json` (`GET /api/shift-reports`,
+      `GET /api/configs/{key}`, `GET /api/configs/public/brand-logo`,
+      `GET /api/corrections`). El mock reproduce el runtime (lo que el
+      frontend consume) y la discrepancia queda **documentada** en
+      `MockRouteContract.divergence` con la cita `file:line` del backend y
+      congelada en un ratchet (test `(c)` del contrato). Cuando el backend
+      alinee el swagger, el ratchet obliga a borrar la divergencia.
+- [x] T3: Extender `frontend/src/tests/setup.ts` para arrancar el server MSW
       y resetear los handlers entre tests (`resetHandlers` +
       `server.listen`) (AC1).
-- [ ] T4: Migrar los tests de `src/hooks/` de `vi.mock` de módulo a handlers
+- [x] T4: Migrar los tests de `src/hooks/` de `vi.mock` de módulo a handlers
       MSW (primer lote; son los de mayor riesgo: caché e invalidación)
       (AC1).
 
 ## Fase B — Tests de caché e invalidación
 
-- [ ] T5: Crear `frontend/src/tests/cache/invalidation.test.ts` con el patrón
+- [x] T5: Crear `frontend/src/tests/cache/invalidation.test.ts` con el patrón
       **montar `QueryClient` real → sembrar la query → ejecutar la mutación →
       verificar re-fetch → verificar dato nuevo**, aplicado a **cada**
       mutación que declara `invalidateQueries` en `src/hooks/use*Mutations.ts`
       (AC2).
-- [ ] T6: Verificar **en local**, contra el código previo a la corrección de
+      _Desvío documentado_: el fichero es `invalidation.test.tsx` (el harness
+      monta el `QueryClientProvider` en JSX).
+      _Cobertura_: 27 mutaciones → **40 casos** (una mutación que invalida
+      varias raíces produce un caso por raíz); el catálogo cubre las 14
+      raíces con lector real (`auditLogs`, `integrityStatus`, `config`,
+      `configPublic`, `correctionRequests`, `holidays`, `calendarMatrix`,
+      `leaves`, `meterReadings`, `meterConfigs`, `notes`, `shiftReports`,
+      `shiftPatterns`, `assignedShifts`).
+- [x] T6: Verificar **en local**, contra el código previo a la corrección de
       la spec 034, que el test de la mutación de reportes de turno **falla**
       (raíz `["shiftReports"]` no invalidada por `["reports"]`) y adjuntar esa
       evidencia roja al PR; el test que se mergea **queda en verde** gracias a
       la Fase D de la 034. Si este task llegara a abrirse antes de la 034, se
       marca temporalmente con `test.fails` y se quita la marca en el PR de la
       034 — nunca se mergea un test en rojo en CI (AC2).
-- [ ] T7: Extender el patrón a `config` (raíz genérica `["config", key]` vs
+      _Evidencia_: `specs/035-frontend-testing-stack/evidencia/T6-invalidacion-roja.md`
+      (3 casos en rojo con la raiz `["reports"]`: `expected 1 to be 2` = la query
+      no se volvio a pedir; en verde con `queryKeys.shiftReports()`).
+- [x] T7: Extender el patrón a `config` (raíz genérica `["config", key]` vs
       sub-keys hardcodeados) y a la raíz `audit-logs` fuera de las allowlists
       de `src/lib/queryCache.ts:33-60` (AC2).
+      _Cobertura_: los 14 recursos del catalogo cubren `config` (raiz generica
+      `["config", key]`) y `configPublic` (raiz `["config", "public", key]`),
+      ademas de `auditLogs` e `integrityStatus` (raiz `audit-logs`), que quedan
+      fuera de las allowlists de `src/lib/queryCache.ts`.
 - [ ] T8: Migrar los tests de `src/services/` de `vi.mock` a handlers MSW
       (segundo lote): verificar status, body y headers; un 401 produce
       `ApiHttpError` con `status === 401`, un 204 produce body vacío, un body

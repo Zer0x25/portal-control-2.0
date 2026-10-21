@@ -3,6 +3,7 @@ import { cleanup } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
 import { server } from "./mocks/server";
+import { resetCatalog } from "./mocks/catalog";
 
 // ---------------------------------------------------------------------------
 // MSW: la red se intercepta en el proceso de test (spec 035, T1/T3).
@@ -20,6 +21,9 @@ afterEach(() => {
   // Cada test empieza con el conjunto de handlers por defecto: los overrides
   // con `server.use(...)` no se filtran al test siguiente.
   server.resetHandlers();
+  // El catalogo de payloads (spec 035, T5) tambien se reinicia: un payload
+  // fijado por un test no puede cambiar el resultado del siguiente.
+  resetCatalog();
   cleanup();
 });
 
