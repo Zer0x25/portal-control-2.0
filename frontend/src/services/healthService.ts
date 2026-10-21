@@ -1,6 +1,5 @@
-import { API_BASE_URL } from "./apiBase";
-import { authService } from "./authService";
-import type { BackupFile } from "../types";
+import { request as apiRequest, ApiHttpError } from "./apiClient";
+import type { AuditLog, BackupFile } from "../types";
 
 export interface HealthData {
   status: "healthy" | "degraded";
@@ -53,108 +52,188 @@ export interface HealthData {
   responseTime: number;
 }
 
+/** Envoltura `{ data }` de la API de salud y de administracion. */
+interface DataEnvelope<T> {
+  data: T;
+}
+
+/** Envoltura `{ success, data }` de la API de administracion. */
+export interface AdminEnvelope<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+/** Estadisticas de mantenimiento del panel de governance. */
+export interface AdminStats {
+  usersCount: number;
+  employeesCount: number;
+  activeEmployeesCount: number;
+  recordsCount: number;
+  todayRecordsCount: number;
+  auditLogsCount: number;
+  criticalLogsCount: number;
+  mfaStats: {
+    enabled: number;
+    disabled: number;
+  };
+}
+
+/** Diagnostico de cierres huerfanos. */
+export interface AutoCloseDiagnosis {
+  success: boolean;
+  message?: string;
+  summary: {
+    needingAction: number;
+    totalChecked: number;
+  };
+}
+
+/** Insights de seguridad del panel de governance. */
+export interface SecurityInsights {
+  stats: {
+    totalUsers: number;
+    mfaUsers: number;
+    mfaAdoption: number;
+    criticalAlertsCount: number;
+  };
+  recentAlerts: AuditLog[];
+}
+
+/** Resultado de una accion de administracion con mensaje de negocio. */
+export interface AdminActionResult {
+  message?: string;
+  closedCount?: number;
+  deletedCount?: number;
+}
+
 export const healthService = {
   async getHealth(): Promise<HealthData> {
-    const response = await fetch(`${API_BASE_URL}/health`, {
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-    });
-    if (!response.ok && response.status !== 503) {
-      throw new Error("Failed to fetch health data");
+    try {
+      const result = await apiRequest<DataEnvelope<HealthData>>({
+        method: "GET",
+        url: "/api/health",
+        // Un sonda de salud no se reintenta: se informa de inmediato.
+        retry: false,
+      });
+      return result.data;
+    } catch (error) {
+      // Un 503 es un estado "degraded" valido: el backend responde con el
+      // snapshot de salud y el frontend lo muestra como caida de base de datos.
+      if (error instanceof ApiHttpError && error.status === 503) {
+        const payload = error.data as DataEnvelope<HealthData> | undefined;
+        if (payload?.data) return payload.data;
+      }
+      throw error;
     }
-    const result = await response.json();
-    return result.data;
   },
 
   async getBackups(): Promise<BackupFile[]> {
-    const response = await fetch(`${API_BASE_URL}/admin/backups`, {
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
+    const result = await apiRequest<DataEnvelope<BackupFile[]>>({
+      method: "GET",
+      url: "/api/admin/backups",
     });
-    if (!response.ok) {
-      throw new Error("Failed to fetch backups");
-    }
-    const result = await response.json();
     return result.data;
   },
 
   async restoreBackup(filename: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/admin/restore`, {
+    await apiRequest<void>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-      body: JSON.stringify({ filename }),
+      url: "/api/admin/restore",
+      body: { filename },
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to restore backup");
-    }
   },
 
   async restartBackend(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/admin/restart`, {
+    await apiRequest<void>({
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
+      url: "/api/admin/restart",
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to restart backend");
-    }
   },
 
-  async triggerBackup(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/admin/trigger-backup`, {
+  async triggerBackup(): Promise<AdminEnvelope<AdminActionResult>> {
+    return apiRequest<AdminEnvelope<AdminActionResult>>({
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
+      url: "/api/admin/trigger-backup",
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to trigger backup");
-    }
   },
 
-  async triggerAutoClose(): Promise<number> {
-    const response = await fetch(`${API_BASE_URL}/admin/trigger-autoclose`, {
+  async triggerAutoClose(): Promise<AdminEnvelope<AdminActionResult>> {
+    return apiRequest<AdminEnvelope<AdminActionResult>>({
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
+      url: "/api/admin/trigger-autoclose",
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to trigger auto-close");
-    }
-    const result = await response.json();
-    return result.data.closedCount;
   },
 
-  async purgeSessions(username?: string): Promise<number> {
-    const response = await fetch(`${API_BASE_URL}/admin/purge-sessions`, {
+  async purgeSessions(username?: string): Promise<AdminEnvelope<AdminActionResult>> {
+    return apiRequest<AdminEnvelope<AdminActionResult>>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-      body: JSON.stringify({ username }),
+      url: "/api/admin/purge-sessions",
+      body: { username },
     });
+  },
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to purge sessions");
+  /** Estadisticas de mantenimiento del panel de governance. */
+  async getAdminStats(): Promise<AdminStats> {
+    const result = await apiRequest<AdminEnvelope<AdminStats>>({
+      method: "GET",
+      url: "/api/admin/stats",
+    });
+    if (!result.success || !result.data) {
+      throw new Error(result.message ?? "No se pudieron obtener las estadísticas de mantenimiento");
     }
-    const result = await response.json();
-    return result.data.deletedCount;
+    return result.data;
+  },
+
+  /** Diagnostico de cierres huerfanos. */
+  async diagnoseAutoClose(): Promise<AutoCloseDiagnosis> {
+    const result = await apiRequest<AdminEnvelope<AutoCloseDiagnosis>>({
+      method: "GET",
+      url: "/api/admin/diagnose-autoclose",
+    });
+    if (!result.success || !result.data) {
+      throw new Error(result.message ?? "Error en diagnóstico");
+    }
+    return result.data;
+  },
+
+  /** Restablece la contrasena de un usuario. */
+  async resetPassword(
+    username: string,
+    newPassword: string,
+  ): Promise<AdminEnvelope<AdminActionResult>> {
+    return apiRequest<AdminEnvelope<AdminActionResult>>({
+      method: "POST",
+      url: "/api/admin/reset-password",
+      body: { username, newPassword },
+    });
+  },
+
+  /** Elimina los datos del servidor (reset maestro). */
+  async clearDatabase(): Promise<void> {
+    await apiRequest<void>({
+      method: "DELETE",
+      url: "/api/maintenance/clear-database",
+    });
+  },
+
+  /** Dispara el cierre contable automatico. */
+  async triggerAccountingAutoClose(): Promise<AdminEnvelope<AdminActionResult>> {
+    return apiRequest<AdminEnvelope<AdminActionResult>>({
+      method: "POST",
+      url: "/api/admin/trigger-accounting-autoclose",
+    });
+  },
+
+  /** Insights de seguridad (adopcion de MFA y alertas criticas). */
+  async getSecurityInsights(): Promise<SecurityInsights> {
+    const result = await apiRequest<AdminEnvelope<SecurityInsights>>({
+      method: "GET",
+      url: "/api/admin/security-insights",
+    });
+    if (!result.success || !result.data) {
+      throw new Error(result.message ?? "No se pudieron obtener los insights de seguridad");
+    }
+    return result.data;
   },
 };

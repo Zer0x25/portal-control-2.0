@@ -1,10 +1,10 @@
-import { authService } from "./authService";
 import { EmailNotificationRules, SmtpConfig, MultiSmtpConfig } from "../types";
-import { API_BASE_URL } from "./apiBase";
+import { request as apiRequest, errorMessageOr } from "./apiClient";
 
-const API_URL = API_BASE_URL;
-const extractErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : "Error desconocido";
+interface EmailOperationResult {
+  success: boolean;
+  message: string;
+}
 
 export const emailService = {
   verifyStatus: async (): Promise<{ success: boolean; message: string }> => {
@@ -18,47 +18,46 @@ export const emailService = {
         };
       }
 
-      const response = await fetch(`${API_URL}/email/verify`, {
+      return await apiRequest<EmailOperationResult>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-        body: JSON.stringify(config),
+        url: "/api/email/verify",
+        body: config,
       });
-
-      if (!response.ok) throw new Error("Error al verificar conexión SMTP");
-      return await response.json();
     } catch (error: unknown) {
-      return { success: false, message: extractErrorMessage(error) };
+      return {
+        success: false,
+        message: errorMessageOr(error, "Error al verificar conexión SMTP"),
+      };
     }
   },
 
   verifyConnection: async (config: SmtpConfig): Promise<{ success: boolean; message: string }> => {
     try {
-      const response = await fetch(`${API_URL}/email/verify`, {
+      return await apiRequest<EmailOperationResult>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-        body: JSON.stringify(config),
+        url: "/api/email/verify",
+        body: config,
       });
-
-      if (!response.ok) throw new Error("Error al verificar conexión SMTP");
-      return await response.json();
     } catch (error: unknown) {
-      return { success: false, message: extractErrorMessage(error) };
+      return {
+        success: false,
+        message: errorMessageOr(error, "Error al verificar conexión SMTP"),
+      };
     }
   },
 
   getConfig: async (): Promise<MultiSmtpConfig | null> => {
     try {
-      const response = await fetch(`${API_URL}/email/config`, {
-        headers: authService.getAuthHeader() as Record<string, string>,
+      // Sin configuracion el backend responde 404: es un caso de negocio
+      // (la UI muestra "sin configurar"), no un error.
+      const result = await apiRequest<MultiSmtpConfig>({
+        method: "GET",
+        url: "/api/email/config",
+        errorMode: "result",
       });
-      if (!response.ok) return null;
-      return await response.json();
+
+      if (!result.ok) return null;
+      return result.data ?? null;
     } catch (error) {
       console.error("Error fetching SMTP config:", error);
       return null;
@@ -67,35 +66,25 @@ export const emailService = {
 
   saveConfig: async (config: MultiSmtpConfig): Promise<{ success: boolean; message: string }> => {
     try {
-      const response = await fetch(`${API_URL}/email/config`, {
+      return await apiRequest<EmailOperationResult>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-        body: JSON.stringify(config),
+        url: "/api/email/config",
+        body: config,
       });
-      if (!response.ok) {
-        const detail = await response.json();
-        throw new Error(
-          typeof detail.message === "string"
-            ? detail.message
-            : "Error al guardar configuración SMTP",
-        );
-      }
-      return await response.json();
     } catch (error: unknown) {
-      return { success: false, message: extractErrorMessage(error) };
+      return {
+        success: false,
+        message: errorMessageOr(error, "Error al guardar configuración SMTP"),
+      };
     }
   },
 
   getRules: async (): Promise<EmailNotificationRules> => {
     try {
-      const response = await fetch(`${API_URL}/email/rules`, {
-        headers: authService.getAuthHeader() as Record<string, string>,
+      return await apiRequest<EmailNotificationRules>({
+        method: "GET",
+        url: "/api/email/rules",
       });
-      if (!response.ok) throw new Error("Error al cargar reglas de notificación");
-      return await response.json();
     } catch (error) {
       console.error("Error fetching notification rules:", error);
       return {
@@ -110,18 +99,16 @@ export const emailService = {
     rules: EmailNotificationRules,
   ): Promise<{ success: boolean; message: string }> => {
     try {
-      const response = await fetch(`${API_URL}/email/rules`, {
+      return await apiRequest<EmailOperationResult>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-        body: JSON.stringify(rules),
+        url: "/api/email/rules",
+        body: rules,
       });
-      if (!response.ok) throw new Error("Error al guardar reglas de notificación");
-      return await response.json();
     } catch (error: unknown) {
-      return { success: false, message: extractErrorMessage(error) };
+      return {
+        success: false,
+        message: errorMessageOr(error, "Error al guardar reglas de notificación"),
+      };
     }
   },
 
@@ -131,18 +118,16 @@ export const emailService = {
     message: string,
   ): Promise<{ success: boolean; message: string }> => {
     try {
-      const response = await fetch(`${API_URL}/email/send-test`, {
+      return await apiRequest<EmailOperationResult>({
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-        body: JSON.stringify({ to, subject, message }),
+        url: "/api/email/send-test",
+        body: { to, subject, message },
       });
-      if (!response.ok) throw new Error("Error al enviar correo de prueba");
-      return await response.json();
     } catch (error: unknown) {
-      return { success: false, message: extractErrorMessage(error) };
+      return {
+        success: false,
+        message: errorMessageOr(error, "Error al enviar correo de prueba"),
+      };
     }
   },
 };

@@ -1,6 +1,5 @@
 ﻿import { SeedingOptions } from "../features/configuration/components/SeedingOptionsModal";
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
+import { request as apiRequest } from "./apiClient";
 
 export type SeedPhase2JobStatus =
   "pending" | "running" | "paused" | "completed" | "failed" | "stopped";
@@ -19,27 +18,41 @@ export interface SeedPhase2Job {
   errorSummary?: string;
 }
 
-const API_URL = `${API_BASE_URL}/maintenance`;
+/** Linea de log de la fase 2. */
+export interface SeedPhase2Log {
+  createdAt: string | number | Date;
+  message: string;
+}
 
+/** Respuesta de las acciones de fase 2 (iniciar/pausar/reanudar/detener). */
+export interface SeedPhase2ActionResponse {
+  success: boolean;
+  job: SeedPhase2Job;
+}
+
+/** Respuesta del listado de logs de fase 2. */
+export interface SeedPhase2LogsResponse {
+  success: boolean;
+  logs: SeedPhase2Log[];
+}
+
+/**
+ * Fase 1 del seeding: el backend responde con **JSON por lineas** (una linea
+ * por progreso). El cliente entrega la `Response` cruda (`responseType:
+ * "stream"`) para que este service lea el flujo linea a linea.
+ */
 export const seedPhase1 = async (
   options: SeedingOptions,
   onProgress: (message: string) => void,
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     onProgress("Conectando con el servidor (Fase 1)...");
-    const response = await fetch(`${API_URL}/seed/phase1`, {
+    const response = await apiRequest<Response>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(options),
+      url: "/api/maintenance/seed/phase1",
+      body: options,
+      responseType: "stream",
     });
-
-    if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || "Falló fase 1 en el servidor.");
-    }
 
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
@@ -83,84 +96,56 @@ export const seedPhase1 = async (
 
 export const startSeedPhase2 = async (
   options: Pick<SeedingOptions, "days" | "leaveRatio" | "correctionRequestRatio">,
-) => {
-  const response = await fetch(`${API_URL}/seed/phase2/start`, {
+): Promise<SeedPhase2ActionResponse> => {
+  return apiRequest<SeedPhase2ActionResponse>({
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(authService.getAuthHeader() as Record<string, string>),
-    },
-    body: JSON.stringify(options),
+    url: "/api/maintenance/seed/phase2/start",
+    body: options,
   });
-  if (!response.ok) throw new Error("No se pudo iniciar Fase 2");
-  return response.json();
 };
 
-export const pauseSeedPhase2 = async (jobId: string) => {
-  const response = await fetch(`${API_URL}/seed/phase2/pause`, {
+export const pauseSeedPhase2 = async (jobId: string): Promise<SeedPhase2ActionResponse> => {
+  return apiRequest<SeedPhase2ActionResponse>({
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(authService.getAuthHeader() as Record<string, string>),
-    },
-    body: JSON.stringify({ jobId }),
+    url: "/api/maintenance/seed/phase2/pause",
+    body: { jobId },
   });
-  if (!response.ok) throw new Error("No se pudo pausar");
-  return response.json();
 };
 
-export const resumeSeedPhase2 = async (jobId: string) => {
-  const response = await fetch(`${API_URL}/seed/phase2/resume`, {
+export const resumeSeedPhase2 = async (jobId: string): Promise<SeedPhase2ActionResponse> => {
+  return apiRequest<SeedPhase2ActionResponse>({
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(authService.getAuthHeader() as Record<string, string>),
-    },
-    body: JSON.stringify({ jobId }),
+    url: "/api/maintenance/seed/phase2/resume",
+    body: { jobId },
   });
-  if (!response.ok) throw new Error("No se pudo reanudar");
-  return response.json();
 };
 
-export const stopSeedPhase2 = async (jobId: string) => {
-  const response = await fetch(`${API_URL}/seed/phase2/stop`, {
+export const stopSeedPhase2 = async (jobId: string): Promise<SeedPhase2ActionResponse> => {
+  return apiRequest<SeedPhase2ActionResponse>({
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(authService.getAuthHeader() as Record<string, string>),
-    },
-    body: JSON.stringify({ jobId }),
+    url: "/api/maintenance/seed/phase2/stop",
+    body: { jobId },
   });
-  if (!response.ok) throw new Error("No se pudo detener");
-  return response.json();
 };
 
 export const getSeedPhase2Status = async (
   jobId?: string,
 ): Promise<{ success: boolean; job: SeedPhase2Job | null }> => {
-  const q = jobId ? `?jobId=${encodeURIComponent(jobId)}` : "";
-  const response = await fetch(`${API_URL}/seed/phase2/status${q}`, {
+  return apiRequest<{ success: boolean; job: SeedPhase2Job | null }>({
+    method: "GET",
+    url: "/api/maintenance/seed/phase2/status",
+    params: { jobId },
     cache: "no-store",
-    headers: {
-      ...(authService.getAuthHeader() as Record<string, string>),
-    },
   });
-  if (!response.ok) throw new Error("No se pudo consultar estado");
-  return response.json();
 };
 
-export const getSeedPhase2Logs = async (jobId: string) => {
-  const response = await fetch(
-    `${API_URL}/seed/phase2/logs?jobId=${encodeURIComponent(jobId)}&limit=200`,
-    {
-      cache: "no-store",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    },
-  );
-  if (!response.ok) throw new Error("No se pudo consultar logs");
-  return response.json();
+export const getSeedPhase2Logs = async (jobId: string): Promise<SeedPhase2LogsResponse> => {
+  return apiRequest<SeedPhase2LogsResponse>({
+    method: "GET",
+    url: "/api/maintenance/seed/phase2/logs",
+    params: { jobId, limit: 200 },
+    cache: "no-store",
+  });
 };
 
 // Backward compatibility for existing calls

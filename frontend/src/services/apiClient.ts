@@ -48,6 +48,30 @@ export class ApiHttpError extends Error {
   }
 }
 
+/**
+ * Modos de respuesta del cliente.
+ *
+ * - `json` (por defecto): cuerpo JSON (o texto si el backend no lo dice).
+ * - `binary`: `{ blob, headers, filename? }` sin pasar por `response.text()`.
+ * - `stream`: devuelve la `Response` cruda para que el consumidor lea el
+ *   flujo (SSE, respuestas JSON por lineas).
+ */
+export type ResponseType = "json" | "binary" | "stream";
+
+/**
+ * Mensaje de error utilizable por el llamante.
+ *
+ * `ApiHttpError` ya lleva el mensaje del backend; cuando la respuesta no
+ * traia mensaje, se devuelve el texto generico del llamante en vez del
+ * placeholder `API Error (status)`.
+ */
+export const errorMessageOr = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message && !error.message.startsWith("API Error (")) {
+    return error.message;
+  }
+  return fallback;
+};
+
 /** Respuesta binaria (PDF/XLSX): no pasa por `response.text()`, que lo corrompe. */
 export interface BinaryResponse {
   blob: Blob;
@@ -156,7 +180,8 @@ export interface RequestOptions {
    */
   skipAuthEvents?: boolean;
   /** `binary` devuelve `{ blob, headers, filename? }` sin pasar por `text()`. */
-  responseType?: "json" | "binary";
+  /** `stream` devuelve la `Response` cruda (flujo de progreso). */
+  responseType?: ResponseType;
 }
 
 export interface GetOptions extends RequestOptions {
@@ -182,7 +207,9 @@ export interface RequestSpec {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   timeoutMs?: number;
-  responseType?: "json" | "binary";
+  responseType?: ResponseType;
+  /** Cache HTTP del navegador (`no-store` para consultas de estado). */
+  cache?: RequestCache;
   /**
    * `throw` (por defecto): lanza `ApiHttpError`.
    * `result`: devuelve `{ ok, status, data?, error? }` sin lanzar, para los
@@ -224,7 +251,8 @@ interface PreparedRequest {
   retry: boolean;
   dedup: boolean;
   skipAuthEvents: boolean;
-  responseType: "json" | "binary";
+  responseType: ResponseType;
+  cache?: RequestCache;
 }
 
 function prepareRequest(spec: RequestSpec): PreparedRequest {
@@ -248,6 +276,7 @@ function prepareRequest(spec: RequestSpec): PreparedRequest {
     dedup: isGet ? (spec.dedup ?? true) && !spec.signal : false,
     skipAuthEvents: spec.skipAuthEvents ?? ANONYMOUS_AUTH_PATH.test(resolvedPath),
     responseType: spec.responseType ?? "json",
+    cache: spec.cache,
   };
 }
 
@@ -318,6 +347,7 @@ async function performRequest(prepared: PreparedRequest): Promise<Response> {
         headers: prepared.headers,
         body: prepared.body,
         signal: buildTimeoutSignal(prepared.timeoutMs, prepared.signal),
+        cache: prepared.cache,
       });
 
       emitAuthEvents(response, prepared);
@@ -359,6 +389,11 @@ async function toApiHttpError(response: Response, url: string): Promise<ApiHttpE
 /** Lee el cuerpo de la respuesta según el modo (JSON o binario). */
 async function readBody(response: Response, prepared: PreparedRequest): Promise<unknown> {
   if (response.status === 204) return undefined;
+
+  if (prepared.responseType === "stream") {
+    // El consumidor lee el flujo: el cuerpo no se consume aqui.
+    return response;
+  }
 
   if (prepared.responseType === "binary") {
     const blob = await response.blob();
@@ -483,7 +518,7 @@ export const apiClient = {
       retry?: boolean;
       dedup?: boolean;
       skipAuthEvents?: boolean;
-      responseType?: "json" | "binary";
+      responseType?: ResponseType;
     },
   ): Promise<
     paths[P] extends { get: { responses: { 200: { content: { "application/json": infer R } } } } }
@@ -520,7 +555,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
-      responseType?: "json" | "binary";
+      responseType?: ResponseType;
     },
   ): Promise<
     paths[P] extends { post: { responses: { 201: { content: { "application/json": infer R } } } } }
@@ -555,7 +590,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
-      responseType?: "json" | "binary";
+      responseType?: ResponseType;
     },
   ): Promise<
     paths[P] extends { put: { responses: { 200: { content: { "application/json": infer R } } } } }
@@ -591,7 +626,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
-      responseType?: "json" | "binary";
+      responseType?: ResponseType;
     },
   ): Promise<
     paths[P] extends { patch: { responses: { 200: { content: { "application/json": infer R } } } } }

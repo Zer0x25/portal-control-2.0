@@ -1,22 +1,23 @@
 import { Holiday } from "../types/index";
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
+import { request as apiRequest } from "./apiClient";
 import { BulkCreateHolidayPayload, PaginatedResponse } from "../types/scheduling";
 
 export type CreateHolidayPayload = Pick<Holiday, "name" | "date" | "type"> & { id?: string };
 
-const API_URL = `${API_BASE_URL}/holidays`;
+/** Resultado de la sincronizacion de feriados externos. */
+interface HolidaySyncResult {
+  total: number;
+  added: number;
+  skipped: number;
+}
 
 export const holidayService = {
   async getAll(since?: number): Promise<Holiday[]> {
-    const url = since ? `${API_URL}?since=${since}` : API_URL;
-    const response = await fetch(url, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+    return apiRequest<Holiday[]>({
+      method: "GET",
+      url: "/api/holidays",
+      params: { since: since || undefined },
     });
-    if (!response.ok) {
-      throw new Error("Error al obtener feriados");
-    }
-    return response.json();
   },
 
   async getAllPaginated(options: {
@@ -25,112 +26,67 @@ export const holidayService = {
     search?: string;
     showArchived?: boolean;
   }): Promise<PaginatedResponse<Holiday>> {
-    const params = new URLSearchParams({
-      page: String(options.page),
-      pageSize: String(options.pageSize),
+    return apiRequest<PaginatedResponse<Holiday>>({
+      method: "GET",
+      url: "/api/holidays",
+      params: {
+        page: String(options.page),
+        pageSize: String(options.pageSize),
+        search: options.search,
+        showArchived: options.showArchived !== undefined ? String(options.showArchived) : undefined,
+      },
     });
-    if (options.search) params.set("search", options.search);
-    if (options.showArchived !== undefined)
-      params.set("showArchived", String(options.showArchived));
-
-    const response = await fetch(`${API_URL}?${params.toString()}`, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
-    });
-    if (!response.ok) {
-      throw new Error("Error al obtener feriados");
-    }
-    return response.json();
   },
 
   async save(holiday: Holiday): Promise<Holiday> {
-    const response = await fetch(API_URL, {
+    return apiRequest<Holiday>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(holiday),
+      url: "/api/holidays",
+      body: holiday,
     });
-    if (!response.ok) {
-      throw new Error("Error al guardar feriado");
-    }
-    return response.json();
   },
 
   async create(holiday: CreateHolidayPayload): Promise<Holiday> {
-    const response = await fetch(API_URL, {
+    return apiRequest<Holiday>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(holiday),
+      url: "/api/holidays",
+      body: holiday,
     });
-    if (!response.ok) {
-      throw new Error("Error al guardar feriado");
-    }
-    return response.json();
   },
 
   async update(
     id: string,
     holiday: Partial<Pick<Holiday, "name" | "date" | "type">>,
   ): Promise<Holiday> {
-    const response = await fetch(API_URL, {
+    // El backend actualiza por `id` en el cuerpo (no por ruta).
+    return apiRequest<Holiday>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ ...holiday, id }),
+      url: "/api/holidays",
+      body: { ...holiday, id },
     });
-    if (!response.ok) {
-      throw new Error("Error al actualizar feriado");
-    }
-    return response.json();
   },
 
   async bulkCreate(holidays: BulkCreateHolidayPayload[]): Promise<{ count: number }> {
-    const response = await fetch(`${API_URL}/bulk`, {
+    return apiRequest<{ count: number }>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(holidays),
+      url: "/api/holidays/bulk",
+      body: holidays,
     });
-    if (!response.ok) {
-      throw new Error("Error en carga masiva de feriados");
-    }
-    return response.json();
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/${id}`, {
+    await apiRequest<void>({
       method: "DELETE",
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+      url: "/api/holidays/{id}",
+      path: { id },
     });
-    if (!response.ok) {
-      throw new Error("Error al eliminar feriado");
-    }
   },
 
-  async syncExternalHolidays(year = new Date().getFullYear()): Promise<{
-    total: number;
-    added: number;
-    skipped: number;
-  }> {
-    const response = await fetch(`${API_URL}/sync`, {
+  async syncExternalHolidays(year = new Date().getFullYear()): Promise<HolidaySyncResult> {
+    return apiRequest<HolidaySyncResult>({
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ year }),
+      url: "/api/holidays/sync",
+      body: { year },
     });
-    if (!response.ok) {
-      throw new Error("Error al sincronizar feriados externos");
-    }
-    return response.json();
   },
 };
