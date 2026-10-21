@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.31.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.30.0...v8.31.0) (2026-10-21)
+
+
+### Features
+
+* **ui:** consolida superficie UI y estado remoto con cache offline (specs 031-032) ([#76](https://github.com/Zer0x25/portal-control-2.0/issues/76)) ([d233fec](https://github.com/Zer0x25/portal-control-2.0/commit/d233fecded3f488c0d63801b42f85ab3a4d2f6c5))
+
 ## [8.30.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.29.1...v8.30.0) (2026-10-14)
 
 
