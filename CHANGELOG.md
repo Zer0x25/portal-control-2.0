@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.31.3](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.2...v8.31.3) (2026-10-21)
+
+
+### Bug Fixes
+
+* corrige hallazgos de la auditoria staging v8.31.2 (kiosco RUT + a11y) ([#83](https://github.com/Zer0x25/portal-control-2.0/issues/83)) ([376bd6d](https://github.com/Zer0x25/portal-control-2.0/commit/376bd6d17f698a8acf818f06accaecd8ac2ac6b9))
+
 ## [8.31.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.1...v8.31.2) (2026-10-21)
 
 
