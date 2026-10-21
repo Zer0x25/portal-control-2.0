@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.31.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.0...v8.31.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deploy:** hereda .npmrc en el build de imagen de frontend ([#78](https://github.com/Zer0x25/portal-control-2.0/issues/78)) ([55b41df](https://github.com/Zer0x25/portal-control-2.0/commit/55b41df9cce3bf949acabbc92c19a74e5da69e57))
+
 ## [8.31.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.30.0...v8.31.0) (2026-10-21)
 
 
