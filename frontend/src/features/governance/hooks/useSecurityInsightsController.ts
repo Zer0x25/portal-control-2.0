@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
+import { healthService } from "../../../services/healthService";
 import { AuditLog } from "../../../types";
 
 interface SecurityStats {
@@ -18,13 +17,13 @@ export const useSecurityInsightsController = () => {
   const fetchInsights = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/security-insights`, {
-        headers: authService.getAuthHeader(),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.data.stats);
-        setAlerts(data.data.recentAlerts);
+      const data = (await healthService.getSecurityInsights()) as {
+        stats?: SecurityStats;
+        recentAlerts?: AuditLog[];
+      };
+      if (data) {
+        if (data.stats) setStats(data.stats);
+        if (data.recentAlerts) setAlerts(data.recentAlerts);
       }
     } catch (error) {
       console.error("Error fetching security insights:", error);

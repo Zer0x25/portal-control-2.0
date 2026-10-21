@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { leaveService } from "../services/leaveService";
 import { useToasts } from "./useToasts";
 import { LeaveRecord } from "../types/scheduling";
+import { QUERY_KEYS } from "../lib/queryKeys";
 
 export const useLeaveMutations = () => {
   const queryClient = useQueryClient();
@@ -14,8 +15,8 @@ export const useLeaveMutations = () => {
   const createLeaveMutation = useMutation({
     mutationFn: (leave: CreateLeavePayload) => leaveService.createLeave(leave),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaves"] });
-      queryClient.invalidateQueries({ queryKey: ["calendar"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leaves.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.calendarMatrix.all });
       addToast("Ausencia registrada exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -26,8 +27,8 @@ export const useLeaveMutations = () => {
   const deleteLeaveMutation = useMutation({
     mutationFn: (id: string) => leaveService.deleteLeave(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaves"] });
-      queryClient.invalidateQueries({ queryKey: ["calendar"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leaves.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.calendarMatrix.all });
       addToast("Ausencia finalizada exitosamente", "success");
     },
     onError: (error: Error) => {

@@ -75,7 +75,6 @@ export const useHealthQuery = (options: { refetchInterval?: number } = {}) => {
       // Use type assertion for the path since /health might not be in the auto-generated types yet
       const response = await apiClient.get("/health" as never, {
         timeoutMs: 5000,
-        retry: false,
       });
       return (response as unknown as HealthResponse).data;
     },
@@ -83,7 +82,6 @@ export const useHealthQuery = (options: { refetchInterval?: number } = {}) => {
     staleTime: 15000,
     gcTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
-    retry: false,
   });
 };
 

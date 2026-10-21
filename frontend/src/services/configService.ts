@@ -1,8 +1,7 @@
-import { authService } from "./authService";
-import { API_BASE_URL, API_ORIGIN_URL } from "./apiBase";
+import { apiClient } from "./apiClient";
+import { API_ORIGIN_URL } from "./apiBase";
 import { ValidateClosureResponse } from "../types/supervisor";
 
-const API_URL = `${API_BASE_URL}/configs`;
 type CompanyPolicy = {
   url: string;
   originalName: string;
@@ -30,14 +29,14 @@ const normalizeApiUrl = (url: string): string => {
 export const configService = {
   async getPublicCompanyPolicy(): Promise<CompanyPolicy | null> {
     try {
-      const response = await fetch(`${API_BASE_URL}/configs/public/company-policy`);
-      if (!response.ok) return null;
-      const policy = (await response.json()) as CompanyPolicy | null;
-      // 200 + null cuando no hay reglamento cargado (estado esperado, no error).
-      if (!policy) return null;
+      const result = await apiClient.request<CompanyPolicy | null>(
+        "/api/configs/public/company-policy",
+        { mode: "result" },
+      );
+      if (!result.ok || !result.data) return null;
       return {
-        ...policy,
-        url: normalizeApiUrl(policy.url),
+        ...result.data,
+        url: normalizeApiUrl(result.data.url),
       };
     } catch {
       return null;
@@ -46,13 +45,16 @@ export const configService = {
 
   async getPublicBrandLogo(): Promise<BrandLogo | null> {
     try {
-      const response = await fetch(`${API_BASE_URL}/configs/public/brand-logo`);
-      if (!response.ok) return null;
-      const logo = (await response.json()) as BrandLogo;
-      if (!logo || typeof logo !== "object" || !logo.source) return null;
+      // 404 es un estado esperado legítimo (sin logo configurado) -> modo no-launching (AC1, AC2)
+      const result = await apiClient.request<BrandLogo | null>("/api/configs/public/brand-logo", {
+        mode: "result",
+      });
+      if (!result.ok || !result.data || typeof result.data !== "object" || !result.data.source) {
+        return null;
+      }
       return {
-        ...logo,
-        url: logo.url ? normalizeApiUrl(logo.url) : undefined,
+        ...result.data,
+        url: result.data.url ? normalizeApiUrl(result.data.url) : undefined,
       };
     } catch {
       return null;
@@ -63,20 +65,10 @@ export const configService = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/configs/brand-logo`, {
-      method: "POST",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+    const logo = (await apiClient.post("/api/configs/brand-logo" as never, {
       body: formData,
-    });
+    })) as BrandLogo;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "Error al subir logo" }));
-      throw new Error(error.message || "Error al subir logo");
-    }
-
-    const logo = (await response.json()) as BrandLogo;
     return {
       ...logo,
       url: logo.url ? normalizeApiUrl(logo.url) : undefined,
@@ -87,20 +79,10 @@ export const configService = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/configs/company-policy`, {
-      method: "POST",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
+    const policy = (await apiClient.post("/api/configs/company-policy" as never, {
       body: formData,
-    });
+    })) as CompanyPolicy;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "Error al subir reglamento" }));
-      throw new Error(error.message || "Error al subir reglamento");
-    }
-
-    const policy = (await response.json()) as CompanyPolicy;
     return {
       ...policy,
       url: normalizeApiUrl(policy.url),
@@ -108,51 +90,29 @@ export const configService = {
   },
 
   async get<T = unknown>(key: string): Promise<T | null> {
-    const response = await fetch(`${API_URL}/${key}`, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
-    });
-    if (!response.ok) return null;
-    return response.json();
+    const result = await apiClient.request<T>(`/api/configs/${key}`, { mode: "result" });
+    if (!result.ok) return null;
+    return result.data;
   },
 
   async list<T = unknown>(): Promise<{ key: string; value: T }[]> {
-    const response = await fetch(`${API_URL}/`, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
+    const result = await apiClient.request<{ key: string; value: T }[]>("/api/configs/", {
+      mode: "result",
     });
-    if (!response.ok) return [];
-    return response.json();
+    if (!result.ok || !Array.isArray(result.data)) return [];
+    return result.data;
   },
 
   async set<T>(key: string, value: T): Promise<T> {
-    const response = await fetch(`${API_URL}/${key}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ value }),
-    });
-    if (!response.ok) {
-      let errorMessage = "Error al guardar configuración";
-      try {
-        const errorData = await response.json();
-        if (errorData.message) errorMessage = errorData.message;
-      } catch {
-        // Fallback to default message
-      }
-      throw new Error(errorMessage);
-    }
-    return response.json();
+    return (await apiClient.post(`/api/configs/${key}` as never, {
+      body: { value } as never,
+    })) as T;
   },
 
   async validateClosure(date: string): Promise<ValidateClosureResponse> {
-    const response = await fetch(`${API_URL}/validate-closure?date=${date}`, {
-      headers: { ...(authService.getAuthHeader() as Record<string, string>) },
-    });
-    if (!response.ok) {
-      throw new Error("Error al validar cierre contable");
-    }
-    return response.json();
+    return (await apiClient.get("/api/configs/validate-closure" as never, {
+      params: { date },
+    })) as ValidateClosureResponse;
   },
 
   async getServerTime(): Promise<{
@@ -161,34 +121,30 @@ export const configService = {
     timezone: string;
     businessDate: string;
   } | null> {
-    try {
-      const response = await fetch(`${API_URL}/server-time`, {
-        headers: { ...(authService.getAuthHeader() as Record<string, string>) },
-      });
-      if (!response.ok) return null;
-      return response.json();
-    } catch (error) {
-      console.error("Error fetching server time:", error);
-      return null;
-    }
+    const result = await apiClient.request<{
+      iso: string;
+      timestamp: number;
+      timezone: string;
+      businessDate: string;
+    }>("/api/configs/server-time", { mode: "result" });
+    if (!result.ok) return null;
+    return result.data;
   },
 
   async getHealth(): Promise<{
     status: string;
     instanceId: string | null;
   } | null> {
-    try {
-      const response = await fetch(`${API_ORIGIN_URL}/api/health`);
-      if (!response.ok) return null;
-      const body = await response.json();
-      const payload = body?.data ?? body;
-      return {
-        status: payload?.status ?? "unknown",
-        instanceId: payload?.instanceId ?? null,
-      };
-    } catch (error) {
-      console.error("Error fetching health:", error);
-      return null;
-    }
+    const result = await apiClient.request<{
+      data?: { status?: string; instanceId?: string | null };
+      status?: string;
+      instanceId?: string | null;
+    }>("/api/health", { mode: "result" });
+    if (!result.ok || !result.data) return null;
+    const payload = result.data.data ?? result.data;
+    return {
+      status: payload?.status ?? "unknown",
+      instanceId: payload?.instanceId ?? null,
+    };
   },
 };

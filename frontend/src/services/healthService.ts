@@ -1,5 +1,4 @@
-import { API_BASE_URL } from "./apiBase";
-import { authService } from "./authService";
+import { apiClient } from "./apiClient";
 import type { BackupFile } from "../types";
 
 export interface HealthData {
@@ -55,106 +54,83 @@ export interface HealthData {
 
 export const healthService = {
   async getHealth(): Promise<HealthData> {
-    const response = await fetch(`${API_BASE_URL}/health`, {
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-    });
-    if (!response.ok && response.status !== 503) {
-      throw new Error("Failed to fetch health data");
-    }
-    const result = await response.json();
+    const result = (await apiClient.get("/api/health" as never)) as { data: HealthData };
     return result.data;
   },
 
   async getBackups(): Promise<BackupFile[]> {
-    const response = await fetch(`${API_BASE_URL}/admin/backups`, {
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch backups");
-    }
-    const result = await response.json();
+    const result = (await apiClient.get("/api/admin/backups" as never)) as { data: BackupFile[] };
     return result.data;
   },
 
   async restoreBackup(filename: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/admin/restore`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-      body: JSON.stringify({ filename }),
+    await apiClient.post("/api/admin/restore" as never, {
+      body: { filename } as never,
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to restore backup");
-    }
   },
 
   async restartBackend(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/admin/restart`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
+    await apiClient.post("/api/admin/restart" as never, {
+      body: {} as never,
     });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to restart backend");
-    }
   },
 
-  async triggerBackup(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/admin/trigger-backup`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to trigger backup");
-    }
+  async triggerBackup(): Promise<{ success: boolean; message?: string }> {
+    return (await apiClient.post("/api/admin/trigger-backup" as never, {
+      body: {} as never,
+    })) as { success: boolean; message?: string };
   },
 
   async triggerAutoClose(): Promise<number> {
-    const response = await fetch(`${API_BASE_URL}/admin/trigger-autoclose`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to trigger auto-close");
-    }
-    const result = await response.json();
-    return result.data.closedCount;
+    const res = (await apiClient.post("/api/admin/trigger-autoclose" as never, {
+      body: {} as never,
+    })) as { data?: { closedCount: number }; closedCount?: number };
+    return res?.data?.closedCount ?? res?.closedCount ?? 0;
   },
 
   async purgeSessions(username?: string): Promise<number> {
-    const response = await fetch(`${API_BASE_URL}/admin/purge-sessions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-      body: JSON.stringify({ username }),
-    });
+    const res = (await apiClient.post("/api/admin/purge-sessions" as never, {
+      body: { username } as never,
+    })) as { data?: { deletedCount: number }; deletedCount?: number };
+    return res?.data?.deletedCount ?? res?.deletedCount ?? 0;
+  },
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || "Failed to purge sessions");
-    }
-    const result = await response.json();
-    return result.data.deletedCount;
+  async getStats(): Promise<unknown> {
+    const res = (await apiClient.get("/api/admin/stats" as never)) as { data?: unknown };
+    return res?.data || res;
+  },
+
+  async diagnoseAutoClose(): Promise<unknown> {
+    const res = (await apiClient.get("/api/admin/diagnose-autoclose" as never)) as {
+      data?: unknown;
+    };
+    return res?.data || res;
+  },
+
+  async resetPassword(username: string, newPassword: string): Promise<unknown> {
+    const res = (await apiClient.post("/api/admin/reset-password" as never, {
+      body: { username, newPassword } as never,
+    })) as { data?: unknown };
+    return res?.data || res;
+  },
+
+  async clearDatabase(): Promise<void> {
+    await apiClient.delete("/api/maintenance/clear-database" as never);
+  },
+
+  async triggerAccountingAutoClose(): Promise<unknown> {
+    const res = (await apiClient.post("/api/admin/trigger-accounting-autoclose" as never, {
+      body: {} as never,
+    })) as { data?: unknown };
+    return res?.data || res;
+  },
+
+  async getSecurityInsights(): Promise<{ stats?: unknown; recentAlerts?: unknown[] }> {
+    const res = (await apiClient.get("/api/admin/security-insights" as never)) as {
+      data?: { stats?: unknown; recentAlerts?: unknown[] };
+      stats?: unknown;
+      recentAlerts?: unknown[];
+    };
+    return res?.data || res;
   },
 };

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../lib/queryKeys";
 
 export const useCalendarMatrixQuery = (
   startDate: string,
@@ -6,7 +7,7 @@ export const useCalendarMatrixQuery = (
   employeeIds?: string[],
 ) => {
   return useQuery({
-    queryKey: ["calendarMatrix", startDate, endDate, employeeIds],
+    queryKey: QUERY_KEYS.calendarMatrix.matrix(startDate, endDate, employeeIds),
     queryFn: () =>
       import("../../services/shiftService").then((m) =>
         m.shiftService.getCalendarMatrix(startDate, endDate, employeeIds),

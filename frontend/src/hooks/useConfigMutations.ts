@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { configService } from "../services/configService";
 import { useToasts } from "./useToasts";
+import { QUERY_KEYS } from "../lib/queryKeys";
 
 export const useConfigMutations = () => {
   const queryClient = useQueryClient();
@@ -12,11 +13,11 @@ export const useConfigMutations = () => {
     mutationFn: ({ key, value }: { key: string; value: ConfigValue }) =>
       configService.set(key, value),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(["config", variables.key], variables.value);
-      queryClient.invalidateQueries({ queryKey: ["config", variables.key] });
+      queryClient.setQueryData(QUERY_KEYS.config.key(variables.key), variables.value);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.config.key(variables.key) });
       // Spec 027: el logo se lee por endpoint público con otra query key.
       if (variables.key === "branding_logo") {
-        queryClient.invalidateQueries({ queryKey: ["config", "public", "branding_logo"] });
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.config.public("branding_logo") });
       }
 
       // Map keys to pretty names for audit and toasts

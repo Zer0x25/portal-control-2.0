@@ -1,42 +1,13 @@
-import { authService } from "./authService";
+import { apiClient } from "./apiClient";
+import type { ScheduleInfo, ConflictValidationResult } from "../types/scheduling";
+import type { ScheduledEmployeeDetail, MonthlyDayScheduleView } from "../types/derived";
 
-import { API_BASE_URL } from "./apiBase";
-
-const API_URL = API_BASE_URL;
-
-export interface ScheduleInfo {
-  scheduleText: string;
-  isWorkDay: boolean;
-  isHoliday?: boolean;
-  holidayName?: string;
-  justificationType?: string;
-  startTime?: string;
-  endTime?: string;
-  hours?: number;
-  shiftPatternId?: string;
-  shiftPatternName?: string;
-  patternColor?: string;
-  hasColacion?: boolean;
-  colacionMinutes?: number;
-  planningStatus?: string;
-}
-
-export interface ScheduledEmployeeDetail {
-  employeeId: string;
-  employeeName: string;
-  shiftPatternName: string;
-  startTime?: string;
-  endTime?: string;
-  patternColor?: string;
-}
-
-export interface MonthlyDayScheduleView {
-  dateIso: string;
-  dayOfWeek: string;
-  dayOfMonth: number;
-  scheduleText: string;
-  isWorkDay: boolean;
-}
+export type {
+  ScheduleInfo,
+  ScheduledEmployeeDetail,
+  MonthlyDayScheduleView,
+  ConflictValidationResult,
+};
 
 /**
  * Get schedule info for a specific employee on a specific date.
@@ -45,24 +16,22 @@ export const getEmployeeScheduleForDate = async (
   employeeId: string,
   date: string,
 ): Promise<ScheduleInfo | null> => {
-  try {
-    const response = await fetch(`${API_URL}/shifts/schedule/employee/${employeeId}?date=${date}`, {
-      method: "GET",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    });
+  const result = await apiClient.request<ScheduleInfo>(
+    `/api/shifts/schedule/employee/${employeeId}`,
+    {
+      params: { date },
+      mode: "result",
+    },
+  );
 
-    if (response.status === 404) return null;
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+  if (!result.ok) {
+    if (result.status === 404) {
+      return null;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching employee schedule for date:", error);
-    throw error;
+    throw result.error;
   }
+
+  return result.data;
 };
 
 /**
@@ -71,23 +40,9 @@ export const getEmployeeScheduleForDate = async (
 export const getScheduledEmployeesOnDate = async (
   date: string,
 ): Promise<ScheduledEmployeeDetail[]> => {
-  try {
-    const response = await fetch(`${API_URL}/shifts/schedule/employees-on-date?date=${date}`, {
-      method: "GET",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching scheduled employees on date:", error);
-    throw error;
-  }
+  return (await apiClient.get("/api/shifts/schedule/employees-on-date" as never, {
+    params: { date },
+  })) as ScheduledEmployeeDetail[];
 };
 
 /**
@@ -98,33 +53,10 @@ export const getEmployeeMonthlySchedule = async (
   year: number,
   month: number,
 ): Promise<MonthlyDayScheduleView[]> => {
-  try {
-    const response = await fetch(
-      `${API_URL}/shifts/schedule/employee/${employeeId}/month?year=${year}&month=${month}`,
-      {
-        method: "GET",
-        headers: {
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching employee monthly schedule:", error);
-    throw error;
-  }
+  return (await apiClient.get(`/api/shifts/schedule/employee/${employeeId}/month` as never, {
+    params: { year, month },
+  })) as MonthlyDayScheduleView[];
 };
-
-export interface ConflictValidationResult {
-  hasConflicts: boolean;
-  conflicts: { id: string; startDate: string; endDate: string | null }[];
-  message: string;
-}
 
 /**
  * Validate if a new assignment would conflict with existing ones.
@@ -136,28 +68,19 @@ export const validateAssignmentConflicts = async (
   endDate?: string | null,
   excludeAssignmentId?: string,
 ): Promise<ConflictValidationResult> => {
-  try {
-    const response = await fetch(`${API_URL}/shifts/validate-conflicts`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({
-        employeeId,
-        startDate,
-        endDate,
-        excludeAssignmentId,
-      }),
-    });
+  return (await apiClient.post("/api/shifts/validate-conflicts" as never, {
+    body: {
+      employeeId,
+      startDate,
+      endDate,
+      excludeAssignmentId,
+    } as never,
+  })) as ConflictValidationResult;
+};
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error validating assignment conflicts:", error);
-    throw error;
-  }
+export const schedulingService = {
+  getEmployeeScheduleForDate,
+  getScheduledEmployeesOnDate,
+  getEmployeeMonthlySchedule,
+  validateAssignmentConflicts,
 };

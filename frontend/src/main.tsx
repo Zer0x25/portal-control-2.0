@@ -4,12 +4,10 @@
  */
 import "./index.css";
 import { initSentry } from "./utils/sentry";
-import { installFetchGuards } from "./services/fetchGuards";
 import { logger } from "./utils/logger";
 
 // Inicializar Sentry
 void initSentry();
-installFetchGuards();
 
 import { registerSW } from "virtual:pwa-register";
 

@@ -74,7 +74,7 @@ export const useSocketEvents = () => {
       const handleShiftUpdate = () => {
         debouncedInvalidate("shiftPatterns", ["shiftPatterns"]);
         debouncedInvalidate("assignedShifts", ["assignedShifts"]);
-        debouncedInvalidate("calendar", ["calendar"]);
+        debouncedInvalidate("calendarMatrix", ["calendarMatrix"]);
       };
 
       socket.on("shiftPattern:updated", handleShiftUpdate);
@@ -88,7 +88,7 @@ export const useSocketEvents = () => {
 
       // -- Shift Report Events --
       const handleShiftReportUpdate = () => {
-        debouncedInvalidate("reports", ["reports"]);
+        debouncedInvalidate("shiftReports", ["shiftReports"]);
       };
       socket.on("shiftReport:created", handleShiftReportUpdate);
       socket.on("shiftReport:updated", handleShiftReportUpdate);
@@ -140,7 +140,7 @@ export const useSocketEvents = () => {
 
       // -- Meter Events --
       const handleMeterUpdate = () => {
-        debouncedInvalidate("meters", ["meters"]);
+        debouncedInvalidate("meterReadings", ["meterReadings"]);
       };
       socket.on("meter:updated", handleMeterUpdate);
 

@@ -24,7 +24,7 @@ export const useDashboardClockActions = () => {
       await timeRecordService.punch(employeeToConfirmClockOut.id, "WEB", "salida");
       closeResponsibleClockOutConfirmation();
       await queryClient.invalidateQueries({ queryKey: ["timeRecords"] });
-      await queryClient.invalidateQueries({ queryKey: ["reports"] });
+      await queryClient.invalidateQueries({ queryKey: ["shiftReports"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       addToast("Turno cerrado y salida registrada correctamente", "success");
       return true;

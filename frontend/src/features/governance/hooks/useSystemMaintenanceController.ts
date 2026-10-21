@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
 import { healthService } from "../../../services/healthService";
 import { useStore } from "../../../store/useStore";
 import { useShallow } from "zustand/react/shallow";
@@ -52,12 +50,9 @@ export const useSystemMaintenanceController = () => {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/stats`, {
-        headers: authService.getAuthHeader(),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setStats(data.data);
+      const data = (await healthService.getStats()) as MaintenanceStats;
+      if (data) {
+        setStats(data);
       }
     } catch {
       addToast("Error al cargar estadísticas", "error");
@@ -72,15 +67,12 @@ export const useSystemMaintenanceController = () => {
     setLoading(true);
     addToast("Iniciando diagnóstico huerfano...", "info");
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/diagnose-autoclose`, {
-        headers: authService.getAuthHeader(),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setDiagnosis(data.data);
+      const data = (await healthService.diagnoseAutoClose()) as DiagnosisResult;
+      if (data) {
+        setDiagnosis(data);
         addToast("Diagnóstico completado", "success");
       } else {
-        addToast(data.data?.message || data.message || "Error en diagnóstico", "error");
+        addToast("Error en diagnóstico", "error");
       }
     } catch {
       addToast("Error al ejecutar diagnóstico", "error");
@@ -94,18 +86,10 @@ export const useSystemMaintenanceController = () => {
     setLoading(true);
     addToast("Ejecutando proceso de cierre masivo...", "info");
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/trigger-autoclose`, {
-        method: "POST",
-        headers: authService.getAuthHeader(),
-      });
-      const data = await response.json();
-      if (data.success) {
-        addToast(`${data.data.closedCount} registros cerrados`, "success");
-        await handleDiagnose();
-        await fetchStats();
-      } else {
-        addToast(data.data?.message || data.message || "Error al ejecutar cierre", "error");
-      }
+      const closedCount = await healthService.triggerAutoClose();
+      addToast(`${closedCount} registros cerrados`, "success");
+      await handleDiagnose();
+      await fetchStats();
     } catch {
       addToast("Error al ejecutar cierre", "error");
     } finally {
@@ -117,18 +101,10 @@ export const useSystemMaintenanceController = () => {
     setIsRunningBackup(true);
     addToast("Iniciando respaldo de base de datos...", "info");
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/trigger-backup`, {
-        method: "POST",
-        headers: authService.getAuthHeader(),
-      });
-      const data = await response.json();
-      if (data.success) {
-        addToast("Snapshot manual capturado exitosamente", "success");
-        queryClient.invalidateQueries({ queryKey: ["system", "health"] });
-        await fetchStats();
-      } else {
-        addToast(data.data?.message || data.message || "Error ejecutando backup", "error");
-      }
+      await healthService.triggerBackup();
+      addToast("Snapshot manual capturado exitosamente", "success");
+      queryClient.invalidateQueries({ queryKey: ["system", "health"] });
+      await fetchStats();
     } catch {
       addToast("Error ejecutando backup", "error");
     } finally {
@@ -140,23 +116,9 @@ export const useSystemMaintenanceController = () => {
     if (!window.confirm("Se purgaran sesiones activas. Deseas continuar?")) return;
     setIsPurgingSessions(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/purge-sessions`, {
-        method: "POST",
-        headers: {
-          ...authService.getAuthHeader(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: purgeUsername.trim() || undefined,
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        addToast(data.data?.message || "Sesiones purgadas", "success");
-        await fetchStats();
-      } else {
-        addToast(data.data?.message || data.message || "Error purgando sesiones", "error");
-      }
+      const deletedCount = await healthService.purgeSessions(purgeUsername.trim() || undefined);
+      addToast(`${deletedCount} sesiones purgadas`, "success");
+      await fetchStats();
     } catch {
       addToast("Error purgando sesiones", "error");
     } finally {
@@ -171,25 +133,10 @@ export const useSystemMaintenanceController = () => {
     }
     setIsResettingPassword(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/reset-password`, {
-        method: "POST",
-        headers: {
-          ...authService.getAuthHeader(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: resetUsername.trim(),
-          newPassword,
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        addToast(data.data?.message || "Password actualizado", "success");
-        setNewPassword("");
-        await fetchStats();
-      } else {
-        addToast(data.data?.message || data.message || "Error reseteando password", "error");
-      }
+      await healthService.resetPassword(resetUsername.trim(), newPassword);
+      addToast("Password actualizado", "success");
+      setNewPassword("");
+      await fetchStats();
     } catch {
       addToast("Error reseteando password", "error");
     } finally {
@@ -201,15 +148,7 @@ export const useSystemMaintenanceController = () => {
     if (!window.confirm("Esta accion elimina datos del servidor. Continuar?")) return;
     setIsResettingDatabase(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/maintenance/clear-database`, {
-        method: "DELETE",
-        headers: authService.getAuthHeader(),
-      });
-
-      if (!response.ok) {
-        const raw = await response.text();
-        throw new Error(raw || "Error de servidor en reset.");
-      }
+      await healthService.clearDatabase();
       addToast("Reset de base de datos completado.", "success");
       await fetchStats();
     } catch (error) {
@@ -225,16 +164,8 @@ export const useSystemMaintenanceController = () => {
     setIsTriggeringAccountingAutoClose(true);
     addToast("Ejecutando cierre contable automático...", "info");
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/trigger-accounting-autoclose`, {
-        method: "POST",
-        headers: authService.getAuthHeader(),
-      });
-      const data = await response.json();
-      if (data.success) {
-        addToast(data.data?.message || "Cierre contable ejecutado.", "success");
-      } else {
-        addToast(data.data?.message || data.message || "Error en cierre contable.", "error");
-      }
+      await healthService.triggerAccountingAutoClose();
+      addToast("Cierre contable ejecutado.", "success");
     } catch {
       addToast("Error en cierre contable.", "error");
     } finally {
@@ -269,13 +200,14 @@ export const useSystemMaintenanceController = () => {
     isResettingDatabase,
     isTriggeringAccountingAutoClose,
     purgeUsername,
-    resetUsername,
-    newPassword,
-    isBackupListOpen,
     setPurgeUsername,
+    resetUsername,
     setResetUsername,
+    newPassword,
     setNewPassword,
+    isBackupListOpen,
     setIsBackupListOpen,
+    fetchStats,
     handleDiagnose,
     handleTriggerAutoClose,
     handleTriggerBackup,

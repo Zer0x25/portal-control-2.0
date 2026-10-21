@@ -11,6 +11,7 @@ import { useScheduling } from "../../../hooks/useScheduling";
 import { employeeService } from "../../../services/employeeService";
 import { getContractAttendanceMetrics, getContractClockingStatus } from "../../../utils/mappings";
 import * as kpiService from "../../../services/kpiService";
+import { triggerBrowserDownload } from "../../../utils/download";
 import { formatDateUTCISO, parseBusinessDateCL } from "../../../utils/dateUtils";
 import { formatDecimalHoursToHHMM, formatDisplayDateTime } from "../../../utils/formatters";
 import {
@@ -264,11 +265,12 @@ export const useWorkerPortalData = () => {
     const endISO = formatDateUTCISO(endDate);
 
     try {
-      await kpiService.downloadReportPDF({
+      const { blob, filename } = await kpiService.downloadReportPDF({
         startDate: startISO,
         endDate: endISO,
         employeeId: employee.id,
       });
+      triggerBrowserDownload(blob, filename);
       addToast("PDF descargado correctamente", "success");
     } catch (error) {
       logger.error("Error al descargar PDF:", error);

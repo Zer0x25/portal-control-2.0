@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { shiftService } from "../services/shiftService";
 import { TheoreticalShiftPattern, AssignedShift } from "../types";
 import { useToasts } from "./useToasts";
+import { QUERY_KEYS } from "../lib/queryKeys";
 
 export const useShiftMutations = () => {
   const queryClient = useQueryClient();
@@ -83,7 +84,7 @@ export const useShiftMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assignedShifts"] });
       queryClient.invalidateQueries({ queryKey: ["shiftPatterns"] });
-      queryClient.invalidateQueries({ queryKey: ["calendar"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.calendarMatrix.all });
       addToast("Plan mensual creado exitosamente", "success");
     },
     onError: (error: Error) => {

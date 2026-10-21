@@ -1,6 +1,6 @@
 # ADR-0024: Frontend HTTP Client Consolidation — Un solo cliente HTTP
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-21
 - Autores: zer0x
 

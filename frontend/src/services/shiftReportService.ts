@@ -1,15 +1,5 @@
 import { ShiftReport } from "../types/index";
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
-
-const API_URL = `${API_BASE_URL}/shift-reports`;
-const REQUEST_TIMEOUT_MS = 15000;
-
-function timeoutSignal(ms = REQUEST_TIMEOUT_MS): AbortSignal {
-  return typeof AbortSignal.timeout === "function"
-    ? AbortSignal.timeout(ms)
-    : new AbortController().signal;
-}
+import { apiClient } from "./apiClient";
 
 export const shiftReportService = {
   async getAll(
@@ -25,131 +15,47 @@ export const shiftReportService = {
     page: number;
     totalPages: number;
   }> {
-    const query = new URLSearchParams();
-    if (params.since) query.append("since", params.since.toString());
-    if (params.page) query.append("page", params.page.toString());
-    if (params.pageSize) query.append("pageSize", params.pageSize.toString());
-    if (params.status) query.append("status", params.status);
-
-    const url = `${API_URL}?${query.toString()}`;
-    const response = await fetch(url, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      signal: timeoutSignal(),
-    });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) throw new Error("Error al obtener reportes de turno");
-    return response.json();
+    return (await apiClient.get("/api/shift-reports" as never, {
+      params,
+    })) as {
+      data: ShiftReport[];
+      total: number;
+      page: number;
+      totalPages: number;
+    };
   },
 
   async save(report: ShiftReport): Promise<ShiftReport> {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(report),
-      signal: timeoutSignal(),
-    });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Error al guardar reporte de turno");
-    }
-    return response.json();
+    return (await apiClient.post("/api/shift-reports" as never, {
+      body: report as never,
+    })) as ShiftReport;
   },
 
   async update(id: string, report: Partial<ShiftReport>): Promise<ShiftReport> {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(report),
-      signal: timeoutSignal(),
-    });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Error al actualizar reporte de turno");
-    }
-    return response.json();
+    return (await apiClient.patch(`/api/shift-reports/${id}` as never, {
+      body: report as never,
+    })) as ShiftReport;
   },
 
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/${id}`, {
-      method: "DELETE",
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      signal: timeoutSignal(),
-    });
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.message || "Error al eliminar reporte de turno");
-    }
+    await apiClient.delete(`/api/shift-reports/${id}` as never);
   },
 
-  async downloadShiftReportPDF(reportId: string): Promise<void> {
-    const response = await fetch(
-      `${API_URL.replace("/shift-reports", "/export/shift-report-pdf")}/${reportId}`,
-      {
-        headers: {
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
-      },
-    );
-
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-
-    if (!response.ok) throw new Error("Error al descargar el PDF del turno");
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Reporte_Turno_${reportId}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+  async downloadShiftReportPDF(reportId: string): Promise<{ blob: Blob; filename: string }> {
+    const { blob, filename } = await apiClient.blob(`/api/export/shift-report-pdf/${reportId}`);
+    const fallback = `Reporte_Turno_${reportId}.pdf`;
+    return {
+      blob,
+      filename: filename && filename !== "download" ? filename : fallback,
+    };
   },
 
-  async downloadShiftReportExcel(reportId: string): Promise<void> {
-    const response = await fetch(`${API_URL}/export/${reportId}`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    });
-
-    if (response.status === 401) {
-      window.dispatchEvent(new CustomEvent("unauthorized"));
-    }
-
-    if (!response.ok) throw new Error("Error al descargar el Excel del turno");
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `Reporte_Turno_${reportId}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+  async downloadShiftReportExcel(reportId: string): Promise<{ blob: Blob; filename: string }> {
+    const { blob, filename } = await apiClient.blob(`/api/shift-reports/export/${reportId}`);
+    const fallback = `Reporte_Turno_${reportId}.xlsx`;
+    return {
+      blob,
+      filename: filename && filename !== "download" ? filename : fallback,
+    };
   },
 };

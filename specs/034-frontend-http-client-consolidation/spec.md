@@ -1,6 +1,6 @@
 # Spec 034: Frontend HTTP Client Consolidation
 
-- Estado: Borrador
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0024-frontend-http-client-consolidation.md](file:///docs/adr/0024-frontend-http-client-consolidation.md)
@@ -192,7 +192,7 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: **`apiClient` es el único cliente HTTP**. Los 13 services migrados
+- [x] AC1: **`apiClient` es el único cliente HTTP**. Los 13 services migrados
       (`configService`, `holidayService`, `seedingService`, `healthService`,
       `emailService`, `kpiService`, `shiftReportService`, `authService`,
       `auditLogService`, `correctionService`, `schedulingService`,
@@ -218,7 +218,7 @@ Fuera (explícito):
       `Content-Type` (para que el navegador fije el `boundary`) y ofrece un
       **modo de respuesta binaria** que devuelve `{ blob, headers, filename? }`
       sin pasar por `response.text()` (que corrompería PDF/XLSX).
-- [ ] AC2: **Todo error de API expone status numérico y el retry tiene un
+- [x] AC2: **Todo error de API expone status numérico y el retry tiene un
       único dueño**. Cada service propaga `ApiHttpError` (o un tipo que
       exponga `status: number`), de modo que el clasificador de status de
       `src/lib/queryClient.ts` puede distinguir 401 / 403 / 404 / 409 / 429.
@@ -245,12 +245,12 @@ Fuera (explícito):
       409 y un 422 **tampoco**; un 500 y un 503 sí se reintentan (GET, hasta 2
       veces, con backoff y respetando `Retry-After`); y el número total de
       peticiones HTTP por fallo **nunca excede 3**.
-- [ ] AC3: **Timeout, retry y dedup uniformes**. Todas las llamadas pasan por
+- [x] AC3: **Timeout, retry y dedup uniformes**. Todas las llamadas pasan por
       el cliente endurecido y por tanto tienen timeout por defecto (15 s,
       `AbortSignal.timeout`, componible con la señal del llamante), retry
       GET-only con backoff exponencial, y dedup de GET en vuelo por
       (método, URL, auth). Un request colgado aborta en lugar de colgar la UI.
-- [ ] AC4: **Una sola política de 429, sin eventos globales espurios**. El
+- [x] AC4: **Una sola política de 429, sin eventos globales espurios**. El
       evento `rate_limited` se emite desde `apiClient` (no desde un parche de
       `window.fetch`); `src/services/fetchGuards.ts` se elimina y
       `src/main.tsx` deja de llamar `installFetchGuards()`; el toast de
@@ -271,7 +271,7 @@ Fuera (explícito):
       como credencial inválida. `/auth/mfa/setup` y `/auth/mfa/verify` **sí**
       conservan el evento `unauthorized` (exigen sesión previa: un 401 ahí sí
       es expiración de sesión).
-- [ ] AC5: **El P0 de caché stale está corregido**. `["shiftReports"]` y
+- [x] AC5: **El P0 de caché stale está corregido**. `["shiftReports"]` y
       `["reports"]` quedan unificados en **una sola raíz canónica**; **las 4
       invalidaciones** de la raíz de reportes apuntan a ella: 3 en
       `src/hooks/useReportMutations.ts:11,18,25` (`addReport` / `updateReport`
@@ -280,12 +280,12 @@ Fuera (explícito):
       Un test verifica que, tras `addReport` / `updateReport` / `deleteReport`,
       la query de reportes cerrados refleja el cambio (hoy
       `ClosedReportsModal.tsx:43` muestra datos stale).
-- [ ] AC6: **La barra de carga refleja la carga real**.
+- [x] AC6: **La barra de carga refleja la carga real**.
       `src/hooks/useNavigationLoading.ts` deja de usar el `setTimeout` fijo de
       400 ms y se acopla al estado real de las queries activas de TanStack
       Query (`isFetching`/`isLoading` del `QueryClient`), con un piso mínimo
       **no** Observable (evita el parpadeo de 1 frame) y sin timer de mentira.
-- [ ] AC7: **KPIs por un solo camino**. `src/hooks/useKpiCalculations.ts`
+- [x] AC7: **KPIs por un solo camino**. `src/hooks/useKpiCalculations.ts`
       deja de hacer fetch manual y se apoya en TanStack Query (con
       `queryKey` canónica); no queda fetch manual en el hook. La raíz
       canónica es `["kpis", "summary", filters]`, declarada en
@@ -297,7 +297,7 @@ Fuera (explícito):
       conserva su endpoint. El `queryClient.invalidateQueries` que hoy se hace
       en `features/governance/components/IntegritySummaryView.tsx:52` **no** se
       toca aquí (pertenece a la spec 033).
-- [ ] AC8: **Namespaces de query key canónicos**. Existe una única raíz por
+- [x] AC8: **Namespaces de query key canónicos**. Existe una única raíz por
       recurso, toda en camelCase; `["audit-logs", ...]` pasa a
       `["auditLogs", ...]` (o queda explícitamente en una allowlist con
       justificación); **también** `["attendance-analytics", ...]`
@@ -322,7 +322,7 @@ Fuera (explícito):
       match de TanStack es por prefijo exacto del array. La raíz de la
       matriz de calendario queda unificada y **sí** invalidada por las
       mutaciones de turnos, permisos y festivos.
-- [ ] AC9: **Guardrail del cliente HTTP único**. Nuevo
+- [x] AC9: **Guardrail del cliente HTTP único**. Nuevo
       `frontend/src/tests/guardrails/httpClientGuardrails.test.ts` que bloquea
       `fetch(` / `XMLHttpRequest` / `axios` fuera de
       `src/services/apiClient.ts`, y que verifica que **todo** service que
@@ -340,7 +340,7 @@ Fuera (explícito):
       `ShiftHistoryModal.tsx:60`) NO entran en la whitelist**: los extrae la
       spec 033 (T11 y T14) y su eliminación es **precondición** de este
       guardrail (ver "Dependencias de orden" en Restricciones).
-- [ ] AC10: **Sin regresión funcional**. `npm run validate:ci` (frontend),
+- [x] AC10: **Sin regresión funcional**. `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run spec:check`, `npm run docs:check`,
       `npm run preflight` en verde y `npm run e2e:staging` en verde (56 tests),
       incluyendo los flujos de **login** (`authService` migrado),

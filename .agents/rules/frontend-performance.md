@@ -32,3 +32,9 @@ description: Invariants for frontend performance, bundle optimization, CSS cachi
    - **Manejo de Errores Asíncronos**: Todo handler de evento en la UI que ejecute `mutateAsync` debe estar envuelto en un bloque `try/catch` para evitar `Uncaught (in promise) Error` en la consola del cliente.
    - **Propagación de Errores de API**: Las funciones del SDK/servicios cliente (`src/services/*`) deben extraer y propagar `errorData.message` o `errorData.error` en lugar de lanzar mensajes genéricos sustitutos que oculten la causa real del servidor.
    - **Actualización Optimista y Filtrado**: Las acciones de cambio de estado en colecciones de tarjetas/listas deben aplicar actualizaciones optimistas (`onMutate` con rollback en `onError` e invalidación en `onSettled`) o filtros estrictos por estado para remover visualmente el ítem inmediatamente.
+
+6. **Consolidación de Red y Cliente HTTP Único (`apiClient`)**:
+   - Toda llamada de red hacia el backend de la aplicación debe realizarse exclusivamente a través de `frontend/src/services/apiClient.ts`.
+   - Prohibido el uso de `fetch(`, `XMLHttpRequest` o `axios` directos en `services/`, en hooks de feature y en componentes UI. Excepciones congeladas por guardrail (`httpClientGuardrails.test.ts` con ratchet = 0): `src/services/apiClient.ts` (transporte único), `src/hooks/useWeather.ts` (API meteorológica pública externa Open-Meteo) y `src/components/ui/UserManualModal.tsx` (asset markdown estático `/ManualRelojControl.md`).
+   - `apiClient` es el dueño único del reintento de transporte (`queries.retry = false` en `src/lib/queryClient.ts`) y preserva siempre el código `status` numérico en `ApiHttpError`.
+   - Todas las raíces de query deben derivarse de la tabla canónica `src/lib/queryKeys.ts` y estar registradas en `PERSISTED_QUERY_ROOTS` o `SENSITIVE_QUERY_ROOTS`.

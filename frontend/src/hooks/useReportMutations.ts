@@ -8,21 +8,21 @@ export const useReportMutations = () => {
   const addReportMutation = useMutation({
     mutationFn: (report: ShiftReport) => shiftReportService.save(report),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["shiftReports"] });
     },
   });
 
   const updateReportMutation = useMutation({
     mutationFn: (report: ShiftReport) => shiftReportService.update(report.id, report),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["shiftReports"] });
     },
   });
 
   const deleteReportMutation = useMutation({
     mutationFn: (id: string) => shiftReportService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      queryClient.invalidateQueries({ queryKey: ["shiftReports"] });
     },
   });
 

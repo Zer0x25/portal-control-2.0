@@ -1,8 +1,15 @@
-import { authService } from "./authService";
-import { API_BASE_URL } from "./apiBase";
+import { apiClient } from "./apiClient";
 import { AuditLog } from "../types/index";
+import type { IntegrityStatusSnapshot } from "../hooks/queries/useIntegrityStatus";
 
-const API_URL = `${API_BASE_URL}/audit-logs`;
+export interface AuditLogsResult {
+  data: AuditLog[];
+  total: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+  [key: string]: unknown;
+}
 
 export const auditLogService = {
   async getAll(params: {
@@ -12,42 +19,42 @@ export const auditLogService = {
     sortBy?: string;
     sortOrder?: "asc" | "desc";
     cursor?: string;
-  }) {
-    const query = new URLSearchParams({
-      page: params.page.toString(),
-      pageSize: params.pageSize.toString(),
-    });
+  }): Promise<AuditLogsResult> {
+    const queryParams: Record<string, unknown> = {
+      page: params.page,
+      pageSize: params.pageSize,
+    };
 
-    if (params.cursor) query.set("cursor", params.cursor);
-
-    if (params.sortBy) query.set("sortBy", params.sortBy);
-    if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+    if (params.cursor) queryParams.cursor = params.cursor;
+    if (params.sortBy) queryParams.sortBy = params.sortBy;
+    if (params.sortOrder) queryParams.sortOrder = params.sortOrder;
 
     // Builder for multidimensional/multiple filters
     Object.entries(params.filters).forEach(([key, value]) => {
       if (!value) return;
-
       const mappedKey = key === "actorUsername" ? "actor" : key;
-
-      if (Array.isArray(value)) {
-        value.forEach((val) => query.append(mappedKey, val));
-      } else {
-        query.set(mappedKey, value as string);
-      }
+      queryParams[mappedKey] = value;
     });
 
-    const response = await fetch(`${API_URL}?${query.toString()}`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    });
-    if (!response.ok) throw new Error("Failed to fetch audit logs");
+    const result = (await apiClient.get("/api/audit-logs" as never, {
+      params: queryParams,
+    })) as {
+      data?: unknown;
+      items?: unknown;
+      total?: number;
+      totalPages?: number;
+      page?: number;
+      pageSize?: number;
+    };
 
-    const result = await response.json();
-    const data = result.data || result;
+    const data = result?.data || result;
 
     // Use 'items' from the standardized structure, or fallback to 'data' or the array itself
-    let items = Array.isArray(data) ? data : data.items || data.data || [];
+    let items = Array.isArray(data)
+      ? data
+      : (data as { items?: unknown; data?: unknown })?.items ||
+        (data as { items?: unknown; data?: unknown })?.data ||
+        [];
 
     // Ensure 'details' is parsed safely in all items
     if (Array.isArray(items)) {
@@ -69,56 +76,41 @@ export const auditLogService = {
     }
 
     // Return the full metadata object with the processed items
+    const logItems = (Array.isArray(items) ? items : []) as AuditLog[];
+    const metaObj = typeof data === "object" && data !== null ? data : {};
     return {
-      ...(typeof data === "object" ? data : {}),
-      data: items, // Map back to 'data' for compat with components
+      total: (metaObj as { total?: number }).total ?? logItems.length,
+      totalPages: (metaObj as { totalPages?: number }).totalPages ?? 1,
+      page: params.page,
+      pageSize: params.pageSize,
+      ...metaObj,
+      data: logItems,
     };
   },
 
-  async cleanup(months: number = 6) {
-    const response = await fetch(`${API_URL}/cleanup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ months }),
-    });
-    if (!response.ok) throw new Error("Failed to cleanup audit logs");
-    return response.json();
+  async cleanup(months: number = 6): Promise<{ message?: string; count?: number }> {
+    return (await apiClient.post("/api/audit-logs/cleanup" as never, {
+      body: { months } as never,
+    })) as { message?: string; count?: number };
   },
 
-  async create(logData: Partial<AuditLog>) {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify(logData),
-    });
-    if (!response.ok) throw new Error("Failed to create audit log");
-    return response.json();
+  async create(logData: Partial<AuditLog>): Promise<AuditLog> {
+    return (await apiClient.post("/api/audit-logs" as never, {
+      body: logData as never,
+    })) as AuditLog;
   },
 
-  async verifyIntegrity() {
-    const response = await fetch(`${API_URL}/verify-integrity`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    });
-    if (!response.ok) throw new Error("Failed to verify integrity");
-    return response.json();
+  async verifyIntegrity(): Promise<{ message?: string; status?: string }> {
+    return (await apiClient.get("/api/audit-logs/verify-integrity" as never)) as {
+      message?: string;
+      status?: string;
+    };
   },
 
-  async getIntegrityStatus() {
-    const response = await fetch(`${API_URL}/integrity-status`, {
-      headers: {
-        ...(authService.getAuthHeader() as Record<string, string>),
-      },
-    });
-    if (!response.ok) throw new Error("Failed to fetch integrity status");
-    const result = await response.json();
-    return result.data || result;
+  async getIntegrityStatus(): Promise<IntegrityStatusSnapshot> {
+    const result = (await apiClient.get("/api/audit-logs/integrity-status" as never)) as {
+      data?: IntegrityStatusSnapshot;
+    } & IntegrityStatusSnapshot;
+    return (result?.data || result) as IntegrityStatusSnapshot;
   },
 };

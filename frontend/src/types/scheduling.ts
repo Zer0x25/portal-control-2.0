@@ -72,6 +72,13 @@ export interface ScheduleInfo {
   colacionMinutes?: number;
   planningStatus?: string;
 }
+
+export interface ConflictValidationResult {
+  hasConflicts: boolean;
+  conflicts: { id: string; startDate: string; endDate: string | null }[];
+  message: string;
+}
+
 // Pagination Types
 export interface PaginationOptions {
   page?: number;

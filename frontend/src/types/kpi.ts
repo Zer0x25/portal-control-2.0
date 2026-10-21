@@ -1,4 +1,5 @@
-import { DailyTimeRecord, Employee } from "./index";
+import { DailyTimeRecord } from "./time";
+import { Employee } from "./user";
 
 export interface ReportStatKpis {
   tardinessCount: number;
@@ -17,6 +18,8 @@ export interface ReportStatKpis {
   totalAbsenteeismRate: number;
   absenceRate: number;
 }
+
+export type KpiData = ReportStatKpis;
 
 export interface KpiDetails {
   tardyRecords: DailyTimeRecord[];

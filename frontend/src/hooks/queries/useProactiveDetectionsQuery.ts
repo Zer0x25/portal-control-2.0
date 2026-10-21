@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { auditLogService } from "../../services/auditLogService";
 import { useAuth } from "../useAuth";
 import { AuditLog } from "../../types/index";
+import { QUERY_KEYS } from "../../lib/queryKeys";
 
 export const useProactiveDetectionsQuery = () => {
   const { currentUser } = useAuth();
@@ -9,7 +10,7 @@ export const useProactiveDetectionsQuery = () => {
     currentUser?.role === "Administrador" || currentUser?.role === "Supervisor_Elevado";
 
   return useQuery({
-    queryKey: ["audit-logs", "proactive-detections"],
+    queryKey: QUERY_KEYS.auditLogs.proactiveDetections(),
     queryFn: async () => {
       if (!isAuthorized) return [];
 

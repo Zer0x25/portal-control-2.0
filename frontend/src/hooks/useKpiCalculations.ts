@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useStore } from "../store/useStore";
-import { Employee } from "../types/index";
+import { Employee, KpiDetails, KpiData } from "../types/index";
 import { isDateRangeValid } from "../utils/validation";
 import { runKpiCalculation } from "../services/kpiService";
 
-interface KpiFilters {
+export interface KpiFilters {
   employees: Employee[];
   startDate: string | null;
   endDate: string | null;
 }
 
-const defaultKpis = {
+const defaultKpis: KpiData = {
   tardinessCount: 0,
   absenceCount: 0,
   vacationCount: 0,
@@ -28,7 +29,7 @@ const defaultKpis = {
   absenceRate: 0,
 };
 
-const defaultKpiDetails: import("../types/index").KpiDetails = {
+const defaultKpiDetails: KpiDetails = {
   tardyRecords: [],
   absentEmployees: [],
   vacationRecords: [],
@@ -36,52 +37,52 @@ const defaultKpiDetails: import("../types/index").KpiDetails = {
   specialPermitRecords: [],
 };
 
+/**
+ * Hook de cálculo de KPIs migrado a TanStack Query (Spec 034 / AC7 / T19).
+ * Raíz canónica: ["kpis", "summary", filters].
+ */
 export const useKpiCalculations = () => {
-  const [kpis, setKpis] = useState(defaultKpis);
-  const [kpiDetails, setKpiDetails] = useState(defaultKpiDetails);
-  const [isLoadingKpis, setIsLoadingKpis] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<KpiFilters | null>(null);
 
-  const calculateKpis = async (filters: KpiFilters) => {
-    const { employees, startDate, endDate } = filters;
-    if (!employees.length || !startDate || !endDate) {
-      setKpis(defaultKpis);
-      setKpiDetails(defaultKpiDetails);
-      setIsLoadingKpis(false);
-      return;
-    }
+  const isValidFilter =
+    !!activeFilters &&
+    activeFilters.employees.length > 0 &&
+    !!activeFilters.startDate &&
+    !!activeFilters.endDate &&
+    isDateRangeValid(activeFilters.startDate, activeFilters.endDate);
 
-    const startDateStr = startDate;
-    const endDateStr = endDate;
+  const filterParam = activeFilters
+    ? {
+        employeeIds: activeFilters.employees.map((e) => e.id),
+        startDate: activeFilters.startDate,
+        endDate: activeFilters.endDate,
+      }
+    : null;
 
-    if (!isDateRangeValid(startDateStr, endDateStr)) {
-      setKpis(defaultKpis);
-      setKpiDetails(defaultKpiDetails);
-      setIsLoadingKpis(false);
-      return;
-    }
+  const { data, isFetching } = useQuery({
+    queryKey: ["kpis", "summary", filterParam],
+    queryFn: async () => {
+      if (!activeFilters) return { kpis: defaultKpis, kpiDetails: defaultKpiDetails };
+      const { incrementProcessing, decrementProcessing } = useStore.getState();
+      incrementProcessing();
+      try {
+        return await runKpiCalculation({ filters: activeFilters });
+      } finally {
+        decrementProcessing();
+      }
+    },
+    enabled: isValidFilter,
+    staleTime: 1000 * 60 * 5,
+  });
 
-    setIsLoadingKpis(true);
-    const { incrementProcessing, decrementProcessing } = useStore.getState();
-    incrementProcessing();
+  const calculateKpis = useCallback(async (filters: KpiFilters) => {
+    setActiveFilters(filters);
+  }, []);
 
-    try {
-      // Calling the service which now hits the backend API
-      // We don't need to pass all scheduling data anymore, just filters
-      const result = await runKpiCalculation({
-        filters: { employees, startDate, endDate },
-      });
-
-      setKpis(result.kpis);
-      setKpiDetails(result.kpiDetails);
-    } catch (error) {
-      console.error("Failed to fetch/calculate KPIs:", error);
-      setKpis(defaultKpis);
-      setKpiDetails(defaultKpiDetails);
-    } finally {
-      setIsLoadingKpis(false);
-      decrementProcessing();
-    }
+  return {
+    kpis: data?.kpis ?? defaultKpis,
+    kpiDetails: data?.kpiDetails ?? defaultKpiDetails,
+    isLoadingKpis: isFetching,
+    calculateKpis,
   };
-
-  return { kpis, kpiDetails, isLoadingKpis, calculateKpis };
 };

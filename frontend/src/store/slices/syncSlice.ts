@@ -5,6 +5,7 @@ import { timeRecordService } from "../../services/timeRecordService";
 import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
+import { QUERY_KEYS } from "../../lib/queryKeys";
 
 export interface SyncSlice {
   syncState: SyncState;
@@ -111,8 +112,10 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         {
           name: "Medidores",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["meterReadings"] });
-            await queryClient.invalidateQueries({ queryKey: ["config", "meter_configs"] });
+            await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.meterReadings.all });
+            await queryClient.invalidateQueries({
+              queryKey: QUERY_KEYS.config.key("meter_configs"),
+            });
           },
           skip: role === "Usuario",
         },

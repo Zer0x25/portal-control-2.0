@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./apiBase";
+import { apiClient } from "./apiClient";
 
 export interface LoginResponse {
   userId: string;
@@ -31,23 +31,13 @@ export interface AuthService {
 
 class AuthServiceImpl implements AuthService {
   private readonly TOKEN_KEY = "authToken";
-  private readonly API_URL = API_BASE_URL;
 
   async login(username: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await fetch(`${this.API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error en el inicio de sesión");
-      }
+      const data = (await apiClient.post("/api/auth/login" as never, {
+        body: { username, password } as never,
+        skipAuthEvents: true,
+      })) as LoginResponse;
 
       if (data.token) {
         this.setToken(data.token);
@@ -60,42 +50,22 @@ class AuthServiceImpl implements AuthService {
   }
 
   async setupMFA(): Promise<{ qrCode: string; secret: string }> {
-    const response = await fetch(`${this.API_URL}/auth/mfa/setup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(this.getAuthHeader() as Record<string, string>),
-      },
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Error al configurar MFA");
-    return data;
+    return (await apiClient.post("/api/auth/mfa/setup" as never, {
+      body: {} as never,
+    })) as { qrCode: string; secret: string };
   }
 
   async verifyMFASetup(token: string): Promise<{ message: string }> {
-    const response = await fetch(`${this.API_URL}/auth/mfa/verify`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(this.getAuthHeader() as Record<string, string>),
-      },
-      body: JSON.stringify({ token }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Error al verificar MFA");
-    return data;
+    return (await apiClient.post("/api/auth/mfa/verify" as never, {
+      body: { token } as never,
+    })) as { message: string };
   }
 
   async validateMFACode(mfaToken: string, code: string): Promise<LoginResponse> {
-    const response = await fetch(`${this.API_URL}/auth/mfa/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ mfaToken, code }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Código MFA inválido");
+    const data = (await apiClient.post("/api/auth/mfa/validate" as never, {
+      body: { mfaToken, code } as never,
+      skipAuthEvents: true,
+    })) as LoginResponse;
     if (data.token) this.setToken(data.token);
     return data;
   }
@@ -138,19 +108,27 @@ class AuthServiceImpl implements AuthService {
     pin: string,
   ): Promise<{ success: boolean; message: string; employeeName?: string }> {
     try {
-      const response = await fetch(`${this.API_URL}/auth/kiosk-login`, {
+      const result = await apiClient.request<{
+        success: boolean;
+        message: string;
+        token?: string;
+        employeeName?: string;
+      }>("/api/auth/kiosk-login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ employeeId, pin }),
+        body: { employeeId, pin },
+        skipAuthEvents: true,
+        mode: "result",
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        return { success: false, message: data.message || "Error de verificación" };
+      if (!result.ok) {
+        const message =
+          (result.data as { message?: string })?.message ||
+          result.error?.message ||
+          "Error de verificación";
+        return { success: false, message };
       }
 
+      const data = result.data;
       if (data.token) {
         this.setToken(data.token);
       }

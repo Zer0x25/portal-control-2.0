@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../../components/ui/Button";
 import { ClockIcon, ChevronRightIcon, UserIcon } from "../../../components/ui/icons/index";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
+import { auditLogService } from "../../../services/auditLogService";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import IconBox from "../../../components/ui/IconBox";
 import { IndustrialIndicator } from "../../../components/ui/IndustrialIndicator";
@@ -56,21 +55,15 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const API_URL = `${API_BASE_URL}/audit-logs`;
-      const response = await fetch(`${API_URL}?category=SHIFT_ASSIGNMENT&pageSize=100`, {
-        headers: {
-          ...(authService.getAuthHeader() as Record<string, string>),
-        },
+      const data = await auditLogService.getAll({
+        page: 1,
+        pageSize: 100,
+        filters: { category: "SHIFT_ASSIGNMENT" },
       });
 
-      if (!response.ok) {
-        throw new Error("Error al obtener historial");
-      }
-
-      const data = await response.json();
-
       // Filter entries that match this employee
-      const filteredEntries = data.data.filter(
+      const entries = (data.data || []) as unknown as ShiftHistoryEntry[];
+      const filteredEntries = entries.filter(
         (entry: ShiftHistoryEntry) => entry.details?.employeeId === employeeId,
       );
 

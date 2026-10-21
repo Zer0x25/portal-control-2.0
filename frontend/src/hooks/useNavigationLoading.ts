@@ -1,25 +1,46 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router";
+import { useIsFetching } from "@tanstack/react-query";
 import { useStore } from "../store/useStore";
 
 /**
- * Hook to detect navigation changes and show loading state via global TopLoadingBar
+ * Top loading bar sincronizada con la carga real de queries y rutas (Spec 034 / AC6 / P0-2).
+ * Refleja el estado real de consultas de red activas en lugar de un timer simulado.
  */
 export const useNavigationLoading = () => {
   const location = useLocation();
+  const isFetching = useIsFetching();
   const startLoading = useStore((state) => state.startLoading);
   const stopLoading = useStore((state) => state.stopLoading);
 
+  const prevLocationRef = useRef(location.pathname);
+  const isNavigatingRef = useRef(false);
+
+  // Al cambiar de ruta, marcar navegación activa
   useEffect(() => {
-    // Al detectar un cambio de ruta, iniciamos la carga visual
-    startLoading();
+    if (prevLocationRef.current !== location.pathname) {
+      prevLocationRef.current = location.pathname;
+      isNavigatingRef.current = true;
+      startLoading();
 
-    // Simulamos un pequeño retraso para que la transición sea perceptible y profesional
-    // En una app real, esto terminaría cuando los datos de la nueva página estén listos.
-    const timer = setTimeout(() => {
+      // Piso mínimo de ~120ms para evitar parpadeo de 1 frame en rutas estáticas
+      const minFloorTimer = setTimeout(() => {
+        isNavigatingRef.current = false;
+        if (isFetching === 0) {
+          stopLoading();
+        }
+      }, 120);
+
+      return () => clearTimeout(minFloorTimer);
+    }
+  }, [location.pathname, startLoading, stopLoading, isFetching]);
+
+  // Mantener la barra activa mientras existan queries en curso
+  useEffect(() => {
+    if (isFetching > 0) {
+      startLoading();
+    } else if (!isNavigatingRef.current) {
       stopLoading();
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [location, startLoading, stopLoading]);
+    }
+  }, [isFetching, startLoading, stopLoading]);
 };

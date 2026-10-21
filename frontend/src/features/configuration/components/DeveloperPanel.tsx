@@ -24,8 +24,7 @@ import {
   getSeedPhase2Logs,
   SeedPhase2Job,
 } from "../../../services/seedingService";
-import { API_BASE_URL } from "../../../services/apiBase";
-import { authService } from "../../../services/authService";
+import { healthService } from "../../../services/healthService";
 import { Z } from "../../../constants/zScale";
 
 export const DeveloperPanel: React.FC = () => {
@@ -245,12 +244,7 @@ export const DeveloperPanel: React.FC = () => {
     setResetProgress(["Iniciando reset del servidor..."]);
     setResetError(null);
     try {
-      const token = authService.getToken();
-      const response = await fetch(`${API_BASE_URL}/maintenance/clear-database`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Error reseteando servidor");
+      await healthService.clearDatabase();
       setResetProgress((p) => [...p, "Reset completado."]);
       const db = await getDBInstance();
       await Promise.all(Array.from(db.objectStoreNames).map((storeName) => db.clear(storeName)));

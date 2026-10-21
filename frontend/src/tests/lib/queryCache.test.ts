@@ -20,7 +20,9 @@ describe("persistencia del cache de queries (spec 032 AC2.2/AC2.3)", () => {
       "leaves",
       "shiftPatterns",
       "assignedShifts",
-      "calendar",
+      "calendarMatrix",
+      "attendanceAnalytics",
+      "kpis",
       "meterReadings",
       "timeRecords",
     ]) {

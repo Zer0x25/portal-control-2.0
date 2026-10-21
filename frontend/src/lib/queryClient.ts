@@ -1,34 +1,35 @@
 import { QueryClient } from "@tanstack/react-query";
 
-import { logQueryError, logMutationError } from "../utils/sentryMiddlewares";
+import { logMutationError } from "../utils/sentryMiddlewares";
 
-/** HTTP errors thrown by the API client carry a numeric `status`. */
-const hasHttpStatus = (error: unknown): boolean => {
+/**
+ * Clasificador de errores HTTP no transitorios (Spec 034 / ADR-0024 / AC2).
+ * Bloquea cualquier 4xx definitivo (400, 401, 403, 404, 409, 422, etc.).
+ * Status transitorios excluidos del bloqueo: 408 (timeout) y 429 (rate limit).
+ */
+export const isNonRetryableStatus = (status: number): boolean => {
+  return status >= 400 && status < 500 && status !== 408 && status !== 429;
+};
+
+export const hasHttpStatus = (error: unknown): boolean => {
   if (error === null || typeof error !== "object" || !("status" in error)) return false;
   const { status } = error as { status: unknown };
-  return status === 401 || status === 403 || status === 404;
+  return typeof status === "number" && isNonRetryableStatus(status);
 };
 
 /**
- * Cliente unico de TanStack Query (spec 032).
+ * Cliente único de TanStack Query (spec 032, spec 034).
  *
  * Vive fuera de `AppProviders` para que la capa de estado (persistencia,
- * purga de sesion y sincronizacion) pueda importarlo sin acoplarse a React.
+ * purga de sesión y sincronización) pueda importarlo sin acoplarse a React.
+ * El dueño único del retry es `apiClient` (queries.retry: false).
  */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
       gcTime: 1000 * 60 * 60 * 24, // 24 hours
-      retry: (failureCount, error: unknown) => {
-        // Log to Sentry if it fails after some retries or specific errors
-        if (failureCount >= 1) {
-          logQueryError(error, { queryKey: ["unknown"] }); // Basic logging, TanStack Query 5 handles meta differently
-        }
-        // Only retry on network errors or server 5xx
-        if (hasHttpStatus(error)) return false;
-        return failureCount < 2;
-      },
+      retry: false,
       refetchOnWindowFocus: false,
     },
     mutations: {

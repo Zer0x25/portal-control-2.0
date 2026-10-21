@@ -32,18 +32,18 @@ export const QUERY_CACHE_BUSTER = BUILD_VERSION;
  */
 export const PERSISTED_QUERY_ROOTS: readonly string[] = [
   "assignedShifts",
-  "calendar",
+  "attendanceAnalytics",
   "calendarMatrix",
   "config",
   "correctionRequests",
   "dashboard",
   "employees",
   "holidays",
+  "kpis",
   "leaves",
   "meterReadings",
   "notes",
   "recordHistory",
-  "reports",
   "shiftPatterns",
   "shiftReports",
   "timeRecords",
@@ -55,7 +55,6 @@ export const SENSITIVE_QUERY_ROOTS: readonly string[] = [
   "health",
   "integrityStatus",
   "system",
-  "user",
   "users",
 ] as const;
 

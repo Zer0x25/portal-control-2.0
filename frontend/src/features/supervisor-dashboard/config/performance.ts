@@ -11,7 +11,6 @@ export const SUPERVISOR_DASHBOARD_CONFIG = {
     staleTime: 10 * 60 * 1000, // 10 minutos - analytics no necesitan refresco frecuente
     gcTime: 30 * 60 * 1000, // 30 minutos - mantener en cache más tiempo
     refetchOnWindowFocus: false, // No refrescar al cambiar de pestaña
-    retry: 1, // Solo 1 reintento para queries pesadas
   },
 
   // Cache moderado para KPIs (datos operativos)
@@ -19,7 +18,6 @@ export const SUPERVISOR_DASHBOARD_CONFIG = {
     staleTime: 5 * 60 * 1000, // 5 minutos
     gcTime: 15 * 60 * 1000, // 15 minutos
     refetchOnWindowFocus: false,
-    retry: 2,
   },
 
   // Cache rápido para datos en tiempo real
@@ -27,7 +25,6 @@ export const SUPERVISOR_DASHBOARD_CONFIG = {
     staleTime: 30 * 1000, // 30 segundos
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: true,
-    retry: 3,
   },
 
   // Configuración de lazy loading

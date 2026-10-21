@@ -6,6 +6,7 @@ import { useToasts } from "../../../hooks/useToasts";
 import { useAreaListQuery, useWorkdayTypeListQuery } from "../../../hooks/queries/useConfigQuery";
 import { exportToCSV, exportToPDF } from "../../../utils/export/index";
 import { exportService } from "../../../services/exportService";
+import { triggerBrowserDownload } from "../../../utils/download";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 
@@ -254,10 +255,17 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
         exportToCSV(headers, data, "lista_empleados");
         break;
       case "excel":
-        exportService.downloadEmployeesExcel({
-          search: searchTermTable,
-          status: view === "active" ? "Activo" : "Archivado",
-        });
+        exportService
+          .downloadEmployeesExcel({
+            search: searchTermTable,
+            status: view === "active" ? "Activo" : "Archivado",
+          })
+          .then(({ blob, filename }) => {
+            triggerBrowserDownload(blob, filename);
+          })
+          .catch(() => {
+            addToast("Error al exportar empleados a Excel.", "error");
+          });
         break;
       case "pdf":
         exportToPDF("Lista de Empleados", headers, data, filtersString, {

@@ -14,6 +14,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useCalendarData } from "../../../hooks/useCalendarData";
 import { exportService } from "../../../services/exportService";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
+import { triggerBrowserDownload } from "../../../utils/download";
 
 export type CalendarViewMode = "month" | "week" | "day";
 type CalendarEntryType = "employee" | "group" | "holiday";
@@ -231,7 +232,7 @@ export const useShiftCalendarData = () => {
     setIsDownloading(true);
     try {
       const { startDate, endDate } = getDateRange(viewMode, displayDate);
-      await exportService.downloadCalendarPDF(
+      const { blob, filename } = await exportService.downloadCalendarPDF(
         {
           startDate: formatDateUTCISO(startDate),
           endDate: formatDateUTCISO(endDate),
@@ -242,6 +243,7 @@ export const useShiftCalendarData = () => {
         },
         "download",
       );
+      triggerBrowserDownload(blob, filename);
       addToast("Calendario descargado correctamente.", "success");
     } catch {
       addToast("Error al descargar el PDF técnico.", "error");
