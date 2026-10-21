@@ -3,18 +3,36 @@ import { authTokenStore } from "./authToken";
 import { API_BASE_URL } from "./apiBase";
 
 /**
- * Shared HTTP hardening (spec 034, Fase A).
- * - ApiHttpError preserves numeric `status` so TanStack `hasHttpStatus` works.
- * - Default 15s timeout via AbortSignal.timeout (composable with user signal).
- * - GET-only retry on network/429/5xx with Retry-After respect + exponential backoff.
- * - GET inflight dedup for identical URL (disabled when caller passes `signal`).
- * - Single owner of the transport retry: `apiClient`. TanStack Query does not
- *   retry on its own (`src/lib/queryClient.ts` -> `queries.retry: false`), so a
- *   failing GET costs 3 HTTP requests, not 9.
- * - Single owner of the global auth events: `rate_limited` is emitted here
- *   (it used to come from the `window.fetch` monkey patch of `fetchGuards.ts`,
- *   which is removed) and `unauthorized` is suppressed for the anonymous auth
- *   endpoints, so a wrong password never logs the user out.
+ * **Contrato del cliente HTTP único** del frontend (spec 034, ADR-0024).
+ *
+ * Este módulo es el **único** que habla HTTP con el backend. El guardrail
+ * `src/tests/guardrails/httpClientGuardrails.test.ts` bloquea `fetch(`,
+ * `XMLHttpRequest` y `axios` fuera de él (y de una whitelist congelada de 3
+ * entradas: este fichero, la API externa de Open-Meteo y un asset estático).
+ *
+ * - `ApiHttpError` preserva el `status` numérico, para que el clasificador
+ *   `hasHttpStatus` de TanStack Query pueda distinguir 401/403/404/409/429.
+ * - Timeout por defecto de 15 s con `AbortSignal.timeout` (componible con la
+ *   señal del llamante).
+ * - Retry **solo GET** (red / 429 / 5xx), con respeto de `Retry-After` y
+ *   backoff exponencial.
+ * - Dedup de GET en vuelo para la misma URL (se desactiva si el llamante pasa
+ *   su propia `signal`).
+ * - **Un solo dueño del retry de transporte**: `apiClient`. TanStack Query no
+ *   reintenta por su cuenta (`src/lib/queryClient.ts` -> `queries.retry:
+ *   false`), asi que un GET que falla cuesta 3 peticiones HTTP, no 9.
+ * - **Un solo dueño de los eventos globales de auth**: `rate_limited` se emite
+ *   aqui (venia del monkey-patch de `window.fetch` de `fetchGuards.ts`, ya
+ *   eliminado) y `unauthorized` se suprime en los endpoints de autenticacion
+ *   anonima, para que una contrasena incorrecta nunca cierre la sesion.
+ * - `request<T>()` verifica el `url` contra el contrato OpenAPI: una ruta mal
+ *   escrita no compila.
+ * - Modos de respuesta `json | binary | stream`; cuerpo `FormData` sin
+ *   `Content-Type` manual; metodo `patch`; opcion `cache` para las lecturas
+ *   de estado.
+ * - El token de sesion vive en `src/services/authToken.ts` (fuera de
+ *   `authService`) para que este modulo y el service de autenticacion no se
+ *   importen de forma circular.
  */
 
 const DEFAULT_TIMEOUT_MS = 15000;

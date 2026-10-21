@@ -1,8 +1,9 @@
 # Spec 034: Frontend HTTP Client Consolidation
 
-- Estado: Borrador
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-21
+- Cierre: 2026-10-21 (T1–T28, suite completa verde)
 - ADR relacionado: [0024-frontend-http-client-consolidation.md](file:///docs/adr/0024-frontend-http-client-consolidation.md)
 - Specs hermanos: [033-frontend-layering-hardening](file:///specs/033-frontend-layering-hardening/spec.md) (frontera de capas), [032-remote-state-consolidation](file:///specs/032-remote-state-consolidation/spec.md) (estado remoto)
 
