@@ -37,6 +37,19 @@ export const useChangePasswordModalController = ({
     }
   }, [isOpen]);
 
+  // Escape cierra el modal. El listener es un efecto del DOM: vive en el
+  // controller, no en la vista (spec 033 AC1: sin hooks en *.view.tsx).
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const modalTitle = isSelfChange
     ? "Cambiar Mi Contraseña"
     : `Cambiar Contraseña para ${targetUser?.username}`;

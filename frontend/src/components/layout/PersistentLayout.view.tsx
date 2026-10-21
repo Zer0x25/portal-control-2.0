@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from "react";
+import React, { Suspense } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 const DeveloperPanel = React.lazy(() =>
@@ -26,7 +26,8 @@ interface PersistentLayoutViewProps {
   isHandoverModalOpen: boolean;
   handoverData: ShiftHandoverData | null;
   onToggleSidebar: () => void;
-  onOpenSidebarFromSwipe: (offsetX: number, velocityX: number) => void;
+  onSwipeTouchStart: (e: React.TouchEvent) => void;
+  onSwipeTouchEnd: (e: React.TouchEvent) => void;
   onGoHome: () => void;
   onCloseHandoverModal: () => void;
 }
@@ -42,26 +43,11 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
   isHandoverModalOpen,
   handoverData,
   onToggleSidebar,
-  onOpenSidebarFromSwipe,
+  onSwipeTouchStart,
+  onSwipeTouchEnd,
   onGoHome,
   onCloseHandoverModal,
 }) => {
-  const touchStartXRef = useRef<number | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current !== null) {
-      const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
-      if (deltaX > 40) {
-        onOpenSidebarFromSwipe(deltaX, 1);
-      }
-      touchStartXRef.current = null;
-    }
-  };
-
   return (
     <>
       <a
@@ -82,8 +68,8 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
           {!isSidebarOpen && (
             <div
               data-testid="sidebar-swipe-area"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
+              onTouchStart={onSwipeTouchStart}
+              onTouchEnd={onSwipeTouchEnd}
               className={`fixed top-0 left-0 w-4 h-full ${Z.dropdown} lg:hidden cursor-pointer touch-none`}
               title="Desliza para abrir el menú"
               role="presentation"

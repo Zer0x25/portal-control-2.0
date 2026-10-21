@@ -19,7 +19,8 @@ const PersistentLayoutContainer: React.FC = () => {
       isHandoverModalOpen={controller.isHandoverModalOpen}
       handoverData={controller.handoverData}
       onToggleSidebar={controller.toggleSidebar}
-      onOpenSidebarFromSwipe={controller.openSidebarFromSwipe}
+      onSwipeTouchStart={controller.handleSwipeTouchStart}
+      onSwipeTouchEnd={controller.handleSwipeTouchEnd}
       onGoHome={controller.goHome}
       onCloseHandoverModal={controller.closeHandoverModal}
     >

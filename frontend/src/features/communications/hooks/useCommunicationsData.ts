@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 import { getSettingValue, setSettingValue, COUNTER_IDS } from "../../../utils/indexedDB";
+import DOMPurify from "../../../utils/domPurify";
 
 export const useCommunicationsData = () => {
   const { currentUser } = useAuth();
@@ -12,6 +13,13 @@ export const useCommunicationsData = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const isAdmin = currentUser?.role === "Administrador";
+
+  // La sanitización vive en el hook (capa de orquestación): la vista solo
+  // presenta el HTML ya saneado (spec 033 AC1: sin hooks en *.view.tsx).
+  const safeContent = useMemo(
+    () => DOMPurify.sanitize(content ?? "", { USE_PROFILES: { html: true } }),
+    [content],
+  );
 
   useEffect(() => {
     const loadContent = async () => {
@@ -45,6 +53,7 @@ export const useCommunicationsData = () => {
 
   return {
     content,
+    safeContent,
     isLoading,
     isEditing,
     isAdmin,

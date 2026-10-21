@@ -6,6 +6,7 @@ import { CommunicationsView } from "../../../features/communications/views/Commu
 describe("CommunicationsView", () => {
   const baseProps: React.ComponentProps<typeof CommunicationsView> = {
     content: "<p>Comunicado activo</p>",
+    safeContent: "<p>Comunicado activo</p>",
     isLoading: false,
     isEditing: false,
     isAdmin: true,

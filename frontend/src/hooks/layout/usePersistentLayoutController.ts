@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../useAuth";
 import { useDataRefresher } from "../useDataRefresher";
@@ -42,6 +42,28 @@ export const usePersistentLayoutController = () => {
     }
   }, []);
 
+  // Gesto de swipe para abrir el sidebar. El `useRef` y los handlers de
+  // touch son estado/effects de interacción: viven en el controller, no en la
+  // vista (spec 033 AC1: sin hooks en *.view.tsx).
+  const touchStartXRef = useRef<number | null>(null);
+
+  const handleSwipeTouchStart = useCallback((e: TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  }, []);
+
+  const handleSwipeTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      if (touchStartXRef.current !== null) {
+        const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+        if (deltaX > 40) {
+          openSidebarFromSwipe(deltaX, 1);
+        }
+        touchStartXRef.current = null;
+      }
+    },
+    [openSidebarFromSwipe],
+  );
+
   const homeFabTarget = useMemo(() => {
     if (!currentUser) return null;
     return getDefaultRouteForRole(currentUser.role);
@@ -79,12 +101,13 @@ export const usePersistentLayoutController = () => {
     currentPath: location.pathname,
     currentUser,
     goHome,
+    handleSwipeTouchEnd,
+    handleSwipeTouchStart,
     handoverData,
     homeFabTitle,
     isHandoverModalOpen,
     isInitialSync,
     isSidebarOpen,
-    openSidebarFromSwipe,
     showHomeFab,
     toggleSidebar,
   };
