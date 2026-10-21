@@ -205,7 +205,12 @@ export const useKioskData = () => {
       return;
     }
 
-    const employee = activeEmployees.find((e) => e.rut === formattedRut);
+    // Los RUT almacenados pueden estar formateados con puntos: compara sin
+    // puntuacion (hallazgo de auditoria v8.31.2: la entrada directa por
+    // teclado nunca encontraba empleados si el rut guardado llevaba puntos).
+    const normalizeRutForCompare = (rut: string): string => rut.replace(/\./g, "").toUpperCase();
+    const normalizedInput = normalizeRutForCompare(formattedRut);
+    const employee = activeEmployees.find((e) => normalizeRutForCompare(e.rut) === normalizedInput);
     if (employee) handleEmployeeSelect(employee);
     else {
       setRutError("Empleado no encontrado.");

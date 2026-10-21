@@ -76,6 +76,23 @@ describe("useKioskData (spec 029)", () => {
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
   });
 
+  it("auditoria v8.31.2: la entrada por teclado del RUT normaliza los puntos del rut almacenado", async () => {
+    const { result } = renderHook(() => useKioskData());
+
+    act(() => {
+      result.current.setRutInput("123456785");
+    });
+    act(() => {
+      result.current.handleRutConfirm();
+    });
+
+    await waitFor(() => {
+      // employeeK1.rut = "12.345.678-5" (con puntos): la comparacion sin
+      // normalizacion de puntos dejaba selectedEmployee en null (F2).
+      expect(result.current.selectedEmployee?.id).toBe("k1");
+    });
+  });
+
   it("AC1: reenvía latitude/longitude al marcar inicio de jornada", async () => {
     const { result } = renderHook(() => useKioskData());
 
