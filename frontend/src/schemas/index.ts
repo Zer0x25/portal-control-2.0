@@ -152,6 +152,9 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     openApi: "Login",
     schema: loginFormSchema,
     forms: ["LoginPage"],
+    divergences: [
+      "username/password vacios: el backend solo pide `required` (la longitud la decide la API); el formulario exige contenido con un `superRefine` porque la credencial se envia sin recortar",
+    ],
   },
   {
     id: "mfaCodeForm",
