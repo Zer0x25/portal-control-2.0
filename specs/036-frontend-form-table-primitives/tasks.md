@@ -401,7 +401,8 @@ permitir que se rompa en silencio.
    presentacion pura (el estado vive en sus hooks de dominio), asi que
    `HOOKED_COMPONENT_BUDGET` **baja de 92 a 90** y
    `LARGE_HOOKED_COMPONENT_BUDGET` **baja de 56 a 54**
-   (`frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`).
+   (`frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`). Con los tres
+   formularios de medidores (T9b) baja a **87** y **52**.
 
 **Payload idéntico al anterior (T13, verificado en esta tarea):** el alta de
 empleado viaja con `{name, rut, position, area, workdayType, createUserAccount}`
@@ -418,6 +419,56 @@ y la edicion con `{role, employeeId}`.
 | Fixtures dorados del empleado | `frontend/src/tests/contracts/cases/employee.cases.json` (+1 caso)  |
 | Paridad de los contratos      | `frontend/src/tests/contracts/form-schema-parity.test.ts`           |
 | Ratchet de la spec 033        | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`        |
+
+### Nota de ejecución — Fase C, PR 5 (T9b: `meters`)
+
+**Los tres formularios de medidores migrados a `useAppForm` + schema:**
+
+| Formulario                        | Hook / controller                                          | Schema con contexto             |
+| --------------------------------- | ---------------------------------------------------------- | ------------------------------- |
+| Lecturas de la página y del modal | `features/meters/hooks/useMeterReadingsFormController.ts`  | `buildMeterReadingsSchema`      |
+| Lectura de un medidor             | `features/meters/hooks/useSingleMeterReadingController.ts` | `buildSingleMeterReadingSchema` |
+
+**Hallazgos (afectan a T10-T13):**
+
+1. **Las reglas de un medidor estaban escritas tres veces** (en `MeterForm.tsx`,
+   en `MetersModal.tsx` y en `SingleMeterInputModal.tsx`, las dos ultimas
+   copiadas de la primera). Ahora hay **una** funcion pura
+   (`validateMeterValue` en `frontend/src/schemas/forms/meter.ts`) que los tres
+   schemas usan: el texto del error sale del mapa central y el error va al
+   medidor que lo incumple (no a un `toast` que no dice que campo es).
+2. **Un formulario con claves dinamicas** (una entrada por medidor) necesita
+   un schema `record`, no un objeto con campos fijos. El error de cada medidor
+   viaja en el `path` del issue (`path: [meterConfigId]`), asi que la capa lo
+   expone como el error de ese campo.
+3. **La identidad de un array que viene de una consulta no es estable**
+   (`data ?? []` crea un array nuevo en cada render): si un `useMemo` o un
+   `useEffect` depende de esa referencia, el formulario se reinicia sin parar
+   (bucle de actualizaciones). La dependencia estable es la **lista de ids**
+   (`meterIdsKey`).
+4. **Un campo transformado puede cambiar de tipo**: la lectura de un medidor
+   es el **texto** que teclea el usuario (puede llevar el prefijo `+` de
+   recarga) y el hook `useMeterReadings` lo convierte a numero. El comparador
+   de paridad salta la comprobacion de tipo de los campos declarados como
+   `transformedFields` (igual que ya hacia con el formato y el patron).
+5. **`MetersModal.tsx` no lo usa nadie** (es codigo muerto: no aparece en
+   ningun arbol de componentes). Se migra igualmente porque la T9 lo pide, pero
+   la migracion no lo hace aparecer en ningun sitio: decidir si se borra es
+   una decision de producto.
+
+**Payload idéntico al anterior (T13, verificado en esta tarea):** la lectura
+sigue viajando como la lista que construye `useMeterReadings.addReading` (que
+no se ha tocado) a `/api/meters/bulk`; el formulario solo deja de enviar los
+medidores sin valor (los omite, como antes).
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                         |
+| ------------------------ | ----------------------------------------------------------------- |
+| Schemas con contexto     | `frontend/src/schemas/forms/meter.ts`                             |
+| Tests de los formularios | `frontend/src/tests/forms/meterReadingsForms.test.tsx` (10 casos) |
+| Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`         |
+| Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`      |
 
 ## Verificación final
 

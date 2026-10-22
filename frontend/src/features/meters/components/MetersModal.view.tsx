@@ -1,66 +1,65 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useMeterReadings } from "../../../hooks/useMeterReadings";
+import React from "react";
+
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import CinematicModal from "../../../components/ui/CinematicModal";
+import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   DocumentChartBarIcon,
   ArrowPathIcon,
   BeakerIcon,
 } from "../../../components/ui/icons/index";
+import type { MeterReadingsValues } from "../../../schemas/forms/meter";
+import type { MeterConfig, MeterReadingItem } from "../../../types/dashboard";
 
-interface MetersModalProps {
+/**
+ * Spec 036 T9b: `MetersModal` es **presentacion pura**.
+ *
+ * Antes el modal guardaba los valores de cada medidor y hacia las
+ * validaciones a mano. Ahora los valores, los errores y los handlers entran
+ * por props (los lleva el hook de dominio).
+ */
+export interface MetersModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
+  /** Cierra el modal. */
   onClose: () => void;
+  /** Valor escrito en cada medidor (por id de medidor). */
+  values: MeterReadingsValues;
+  /** Mensaje de error de un medidor (o `undefined`). */
+  getError: (field: string) => string | undefined;
+  /** Escribe el valor de un medidor. */
+  setValue: (name: string, value: string | undefined) => void;
+  /** Medidores configurados. */
+  meterConfigs: readonly MeterConfig[];
+  /** Lecturas registradas. */
+  readings: readonly MeterReadingItem[];
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Los datos se estan cargando. */
+  isLoading: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
-type ReadingState = { [key: string]: string };
-
-import CinematicModal from "../../../components/ui/CinematicModal";
-import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-
-const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
-  const { readings, isLoadingReadings, addReading, meterConfigs } = useMeterReadings();
-  const [readingValues, setReadingValues] = useState<ReadingState>({});
-  const meterConfigById = useMemo(
-    () => new Map(meterConfigs.map((config) => [config.id, config])),
-    [meterConfigs],
-  );
-
-  useEffect(() => {
-    if (isOpen) {
-      // Reset form when modal opens by creating an object with keys for each meter and empty string values.
-      const initialValues: ReadingState = {};
-      meterConfigs.forEach((config) => {
-        initialValues[config.id] = "";
-      });
-      setReadingValues(initialValues);
-    }
-  }, [isOpen, meterConfigs]);
-
-  const handleInputChange = (meterId: string, value: string) => {
-    setReadingValues((prev) => ({ ...prev, [meterId]: value }));
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const readingsToSave = Object.entries(readingValues)
-      .filter(([, value]) => value.trim() !== "")
-      .map(([meterConfigId, value]) => ({
-        meterConfigId,
-        value,
-      }));
-
-    if (readingsToSave.length === 0) {
-      return;
-    }
-
-    const success = await addReading(readingsToSave);
-    if (success) {
-      onClose();
-    }
-  };
-
-  const isLoading = isLoadingReadings;
+const MetersModalView: React.FC<MetersModalViewProps> = ({
+  isOpen,
+  onClose,
+  values,
+  getError,
+  setValue,
+  meterConfigs,
+  readings,
+  isSubmitting,
+  isLoading,
+  formProps,
+}) => {
+  const meterConfigById = new Map(meterConfigs.map((config) => [config.id, config]));
 
   return (
     <CinematicModal
@@ -93,7 +92,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
             </h3>
           </div>
 
-          <form onSubmit={handleSave} className="space-y-6">
+          <form {...formProps} className="space-y-6">
             {isLoading ? (
               <div className="py-12 flex flex-col items-center justify-center gap-4">
                 <LoadingSpinner size="md" variant="default" />
@@ -105,14 +104,18 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
               <div className="space-y-5">
                 {meterConfigs.map((config) => (
                   <div key={config.id} className="space-y-2 group">
-                    <label className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest ml-4 transition-colors group-focus-within:text-sap-blue italic">
+                    <label
+                      htmlFor={`meter-${config.id}`}
+                      className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest ml-4 transition-colors group-focus-within:text-sap-blue italic"
+                    >
                       {config.name}
                     </label>
                     <Input
                       id={`meter-${config.id}`}
                       type="text"
-                      value={readingValues[config.id] || ""}
-                      onChange={(e) => handleInputChange(config.id, e.target.value)}
+                      value={values[config.id] || ""}
+                      onChange={(e) => setValue(config.id, e.target.value)}
+                      error={getError(config.id)}
                       placeholder="00.00"
                       className="rounded-md! h-12! bg-token-surface-card! border-token-border-technical! text-token-text-primary! focus:ring-4! focus:ring-sap-blue/10! transition-all! font-mono text-center text-lg active:scale-[0.98]"
                       autoComplete="off"
@@ -125,7 +128,7 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
                     variant="primary"
                     size="lg"
                     className="w-full h-12 rounded-md font-black uppercase text-xs tracking-[0.2em]"
-                    disabled={isLoading || meterConfigs.length === 0}
+                    disabled={isLoading || isSubmitting || meterConfigs.length === 0}
                   >
                     Guardar Lectura
                   </Button>
@@ -207,4 +210,4 @@ const MetersModal: React.FC<MetersModalProps> = ({ isOpen, onClose }) => {
   );
 };
 
-export default MetersModal;
+export default MetersModalView;

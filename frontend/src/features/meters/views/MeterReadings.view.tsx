@@ -12,7 +12,7 @@ import {
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
 import MeterConfigPanel from "../components/MeterConfigPanel";
-import MeterForm from "../components/MeterForm";
+import MeterForm from "../components/MeterForm.container";
 import MeterHistory from "../components/MeterHistory";
 import { Z } from "../../../constants/zScale";
 

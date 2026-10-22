@@ -6,7 +6,7 @@ import { MeterReadingsView } from "../../../features/meters/views/MeterReadings.
 vi.mock("../../../features/meters/components/MeterHistory", () => ({
   default: () => <div>METER-HISTORY</div>,
 }));
-vi.mock("../../../features/meters/components/MeterForm", () => ({
+vi.mock("../../../features/meters/components/MeterForm.container", () => ({
   default: () => <div>METER-FORM</div>,
 }));
 vi.mock("../../../features/meters/components/MeterConfigPanel", () => ({

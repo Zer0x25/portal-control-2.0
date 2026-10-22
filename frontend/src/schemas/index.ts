@@ -14,7 +14,11 @@ import { correctionRequestFormSchema, correctionStatusFormSchema } from "./forms
 import { employeeFormFieldsSchema, employeeFormSchema } from "./forms/employee";
 import { holidayFormSchema } from "./forms/holiday";
 import { leaveFormSchema } from "./forms/leave";
-import { meterReadingFormSchema } from "./forms/meter";
+import {
+  meterReadingFormSchema,
+  meterReadingsBaseSchema,
+  singleMeterReadingBaseSchema,
+} from "./forms/meter";
 import { quickNoteFormSchema } from "./forms/note";
 import { seedOptionsFormSchema, seedPhase2FormSchema } from "./forms/seed";
 import { shiftAssignmentFormSchema, shiftPatternFormSchema } from "./forms/shift";
@@ -222,8 +226,29 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "meterReadingForm",
     openApi: "MeterReading",
     schema: meterReadingFormSchema,
-    forms: ["SingleMeterInputModal", "MetersModal"],
+    forms: [],
     divergences: ["authorUsername: lo deduce el servidor de la sesion"],
+  },
+  {
+    id: "singleMeterReadingForm",
+    openApi: "MeterReading",
+    schema: singleMeterReadingBaseSchema,
+    forms: ["SingleMeterInputModal"],
+    transformedFields: ["value"],
+    divergences: [
+      "value: el formulario escribe el texto que teclea el usuario; el hook `useMeterReadings` lo convierte a numero antes de enviarlo",
+      "authorUsername: lo deduce el servidor de la sesion",
+    ],
+  },
+  {
+    id: "meterReadingsForm",
+    openApi: "BulkMeterReading",
+    schema: meterReadingsBaseSchema,
+    forms: ["MeterForm", "MetersModal"],
+    transformedFields: ["value"],
+    divergences: [
+      "value: una entrada por medidor (un `record` dinamico); cada valor es el texto que teclea el usuario y el hook lo convierte a numero",
+    ],
   },
   {
     id: "smtpProfileForm",

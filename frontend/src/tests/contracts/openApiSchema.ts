@@ -242,7 +242,10 @@ const compareProperty = (
     // entero). El frontend mantiene el entero: es lo que el backend aplica
     // en el codigo, y un entero es siempre un numero valido.
     const isIntegerArtifact = frontend.type === "integer" && backend.type === "number";
-    if (!isIntegerArtifact) {
+    // Un campo **transformado** cambia de tipo a proposito (documentado): el
+    // formulario puede trabajar con el texto que escribe el usuario y el
+    // valor viaja convertido (la lectura de un medidor, por ejemplo).
+    if (!isIntegerArtifact && !transformed) {
       push("type", frontend.type, backend.type);
     }
   }
