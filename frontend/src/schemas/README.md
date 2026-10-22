@@ -45,14 +45,30 @@ siguen siendo dos capas distintas.
 
 ## Divergencias declaradas
 
-| Formulario                          | Divergencia                                         | Por que                                                                                                                                                       |
-| ----------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `employeeForm`                      | `rut`: el frontend valida el **digito verificador** | El backend solo exige `min(8)`. La regla es **exclusiva del cliente** y evita mandar un RUT que el backend acepta pero que no existe.                         |
-| `changePasswordForm`                | `password` obligatorio, `passwordConfirm` local     | El backend admite `password` opcional (es un `PATCH` de usuario); el formulario de cambio de contraseña lo exige, y la confirmacion nunca sale del navegador. |
-| `correctionRequestForm`             | `requestedValue` en `YYYY-MM-DDTHH:mm`              | El formulario captura la **hora de Chile**; el controller la convierte a ISO-8601 con offset antes de enviar.                                                 |
-| `shiftPatternForm`                  | `dailySchedules` siempre como array                 | El backend admite tambien un string serializado; el formulario envia la estructura, que es la unica validable.                                                |
-| `quickNoteForm`, `meterReadingForm` | `authorUsername` no lo escribe el formulario        | El backend lo deduce de la sesion.                                                                                                                            |
-| `smtpProfileForm`                   | `fromEmail` puede ir vacio                          | El backend lo admite mientras el perfil no sea el activo (regla condicional que el OpenAPI no expresa).                                                       |
+| Formulario                          | Divergencia                                         | Por que                                                                                                                                                                        |
+| ----------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `employeeForm`                      | `rut`: el frontend valida el **digito verificador** | El backend solo exige `min(8)`. La regla es **exclusiva del cliente** y evita mandar un RUT que el backend acepta pero que no existe.                                          |
+| `changePasswordForm`                | `password` obligatorio, `passwordConfirm` local     | El backend admite `password` opcional (es un `PATCH` de usuario); el formulario de cambio de contraseña lo exige, y la confirmacion nunca sale del navegador.                  |
+| `correctionRequestForm`             | `requestedValue` en `YYYY-MM-DDTHH:mm`              | El formulario captura la **hora de Chile**; el controller la convierte a ISO-8601 con offset antes de enviar.                                                                  |
+| `shiftPatternForm`                  | `dailySchedules` siempre como array                 | El backend admite tambien un string serializado; el formulario envia la estructura, que es la unica validable.                                                                 |
+| `quickNoteForm`, `meterReadingForm` | `authorUsername` no lo escribe el formulario        | El backend lo deduce de la sesion.                                                                                                                                             |
+| `smtpProfileForm`                   | `fromEmail` puede ir vacio                          | El backend lo admite mientras el perfil no sea el activo (regla condicional que el OpenAPI no expresa).                                                                        |
+| `employeeForm`                      | `position` obligatorio                              | El backend lo admite opcional; el formulario de alta/edicion lo exige.                                                                                                         |
+| `employeeForm`                      | `area` y `workdayType` sin declarar en el OpenAPI   | El backend **los acepta y los guarda** (`EmployeeService` los escribe), pero su schema Zod no los declara: es un hueco de documentacion del contrato, no una perdida de datos. |
+| `userForm`                          | `password` obligatoria en el alta                   | El formulario no muestra un campo de contraseña (muestra la temporal que asigna el backend), asi que la regla se declara como divergencia.                                     |
+
+### Como se declara cada tipo de divergencia
+
+El mapa de contratos (`src/schemas/index.ts`) tiene una lista por tipo, para
+que el test de paridad sepa que descartar y que la razon quede escrita:
+
+| Lista                     | Significado                                                               | Ejemplo                                         |
+| ------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------- |
+| `localFields`             | El campo **solo** existe en el formulario: no viaja al backend.           | `passwordConfirm` del cambio de contraseña.     |
+| `openApiUndeclaredFields` | El campo **viaja y el backend lo guarda**, pero su OpenAPI no lo declara. | `area`/`workdayType` del empleado.              |
+| `transformedFields`       | El valor se **transforma** antes de enviarlo (cambia de tipo o formato).  | `requestedValue` de la solicitud de corrección. |
+| `stricterRequired`        | El formulario **exige** un campo que el backend admite opcional.          | `position` del empleado.                        |
+| `divergences`             | Reglas del cliente que el backend no implementa.                          | El digito verificador del RUT.                  |
 
 ## Como se verifica la paridad
 

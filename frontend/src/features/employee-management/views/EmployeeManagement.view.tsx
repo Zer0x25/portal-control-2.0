@@ -11,21 +11,16 @@ import {
   ArrowPathIcon,
   DocumentArrowUpIcon,
 } from "../../../components/ui/icons/index";
-import EmployeeForm from "../components/EmployeeForm";
+import EmployeeForm from "../components/EmployeeForm.container";
 import EmployeeListCard from "../components/EmployeeListCard";
 const ImportModal = React.lazy(() => import("../components/ImportModal"));
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import type { Employee } from "../../../types";
+import type { EmployeeFormFieldsValues } from "../../../schemas/forms/employee";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
-
-type EditableEmployeeData = Partial<
-  Pick<Employee, "name" | "rut" | "position" | "area" | "workdayType" | "email" | "pin">
-> & {
-  createUserAccount?: boolean;
-};
 
 type EmployeeManagementViewMode = "active" | "archived";
 type ExportFormat = "csv" | "excel" | "pdf";
@@ -45,7 +40,6 @@ export interface EmployeeManagementViewProps {
   isFormVisible: boolean;
   editingEmployee: Employee | null;
   employeeToArchive: Employee | null;
-  employeeData: EditableEmployeeData;
   nextId: string;
   searchTermTable: string;
   view: EmployeeManagementViewMode;
@@ -69,12 +63,11 @@ export interface EmployeeManagementViewProps {
   setIsExportMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleEdit: (employee: Employee) => void;
   handleCancel: () => void;
-  handleSave: () => Promise<boolean>;
+  handleSave: (values: EmployeeFormFieldsValues) => Promise<boolean>;
   requestSort: (_key: keyof Employee) => void;
   handleExport: (format: ExportFormat) => void;
   setIsImportModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleImportEmployees: (data: Partial<Employee>[]) => Promise<boolean>;
-  setEmployeeData: React.Dispatch<React.SetStateAction<EditableEmployeeData>>;
   setEmployeeToArchive: React.Dispatch<React.SetStateAction<Employee | null>>;
   handleConfirmArchive: () => Promise<void>;
   setHistoryModalEmployee: React.Dispatch<React.SetStateAction<Employee | null>>;
@@ -94,7 +87,6 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
     isFormVisible,
     editingEmployee,
     employeeToArchive,
-    employeeData,
     nextId,
     searchTermTable,
     view,
@@ -123,7 +115,6 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
     handleExport,
     setIsImportModalOpen,
     handleImportEmployees,
-    setEmployeeData,
     setEmployeeToArchive,
     handleConfirmArchive,
     setHistoryModalEmployee,
@@ -366,12 +357,9 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
         <EmployeeForm
           onSave={handleSave}
           onCancel={handleCancel}
-          employeeData={employeeData}
-          setEmployeeData={setEmployeeData}
-          isEditing={!!editingEmployee}
+          employee={editingEmployee}
           nextEmployeeId={nextId}
           existingEmployees={processedEmployees}
-          employeeIdToEdit={editingEmployee?.id}
           areaList={areaList}
           workdayTypeList={workdayTypeList}
           hasLinkedUser={false}

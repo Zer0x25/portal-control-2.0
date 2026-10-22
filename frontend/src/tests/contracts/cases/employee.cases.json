@@ -1,31 +1,61 @@
 {
   "schemaId": "employeeForm",
   "backendContract": "Employee",
-  "rule": "El digito verificador del RUT se valida en el cliente: el backend solo exige 8 caracteres (`min(8)`), asi que esta es una regla exclusiva del frontend (divergencia declarada).",
+  "rule": "El digito verificador del RUT se valida en el cliente: el backend solo exige 8 caracteres (`min(8)`), asi que esta es una regla exclusiva del frontend (divergencia declarada). El schema del formulario exige ademas `position`, `area` y `workdayType` (divergencias declaradas en el mapa de contratos).",
   "cases": [
     {
       "name": "RUT con digito verificador correcto",
-      "input": { "rut": "11111111-1", "name": "Juan Perez" },
+      "input": {
+        "rut": "11111111-1",
+        "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa"
+      },
       "expected": { "valid": true }
     },
     {
       "name": "RUT con digito verificador incorrecto",
-      "input": { "rut": "11111111-2", "name": "Juan Perez" },
+      "input": {
+        "rut": "11111111-2",
+        "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa"
+      },
       "expected": { "valid": false, "field": "rut" }
     },
     {
       "name": "RUT con digito verificador K",
-      "input": { "rut": "20000001-K", "name": "Juan Perez" },
+      "input": {
+        "rut": "20000001-K",
+        "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa"
+      },
       "expected": { "valid": false, "field": "rut" }
     },
     {
       "name": "RUT mas corto que el minimo del backend",
-      "input": { "rut": "111-1", "name": "Juan Perez" },
+      "input": {
+        "rut": "111-1",
+        "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa"
+      },
       "expected": { "valid": false, "field": "rut" }
     },
     {
       "name": "nombre de un solo caracter",
-      "input": { "rut": "11111111-1", "name": "J" },
+      "input": {
+        "rut": "11111111-1",
+        "name": "J",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa"
+      },
       "expected": { "valid": false, "field": "name" }
     },
     {
@@ -33,13 +63,23 @@
       "input": {
         "rut": "11111111-1",
         "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa",
         "email": "no-es-un-email"
       },
       "expected": { "valid": false, "field": "email" }
     },
     {
       "name": "pin con menos de 4 digitos",
-      "input": { "rut": "11111111-1", "name": "Juan Perez", "pin": "123" },
+      "input": {
+        "rut": "11111111-1",
+        "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa",
+        "pin": "123"
+      },
       "expected": { "valid": false, "field": "pin" }
     },
     {
@@ -47,9 +87,22 @@
       "input": {
         "rut": "11111111-1",
         "name": "Juan Perez",
+        "position": "Operador",
+        "area": "Operaciones",
+        "workdayType": "Completa",
         "hireDate": "01-10-2026"
       },
       "expected": { "valid": false, "field": "hireDate" }
+    },
+    {
+      "name": "cargo ausente (el formulario lo exige; el backend lo admite opcional)",
+      "input": {
+        "rut": "11111111-1",
+        "name": "Juan Perez",
+        "area": "Operaciones",
+        "workdayType": "Completa"
+      },
+      "expected": { "valid": false, "field": "position" }
     }
   ]
 }

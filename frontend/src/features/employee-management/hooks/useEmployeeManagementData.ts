@@ -9,12 +9,7 @@ import { exportService } from "../../../services/exportService";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
-
-type EditableEmployeeData = Partial<
-  Pick<Employee, "name" | "rut" | "position" | "area" | "workdayType" | "email" | "pin">
-> & {
-  createUserAccount?: boolean;
-};
+import type { EmployeeFormFieldsValues } from "../../../schemas/forms/employee";
 
 type SortableEmployeeKey = keyof Employee;
 
@@ -49,9 +44,6 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [employeeToArchive, setEmployeeToArchive] = useState<Employee | null>(null);
-  const [employeeData, setEmployeeData] = useState<EditableEmployeeData>({
-    createUserAccount: true,
-  });
   const [nextId, setNextId] = useState("");
 
   const [searchTermTable, setSearchTermTable] = useState("");
@@ -144,7 +136,6 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
 
   const handleOpenNewForm = () => {
     setEditingEmployee(null);
-    setEmployeeData({ createUserAccount: true });
     setIsFormVisible(true);
   };
 
@@ -172,27 +163,17 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
 
   const handleEdit = (employee: Employee) => {
     setEditingEmployee(employee);
-    setEmployeeData({
-      name: employee.name,
-      rut: employee.rut,
-      position: employee.position,
-      area: employee.area,
-      email: employee.email,
-      workdayType: employee.workdayType,
-      createUserAccount: false,
-    });
     setIsFormVisible(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleCancel = () => {
     setEditingEmployee(null);
-    setEmployeeData({ createUserAccount: true });
     setIsFormVisible(false);
   };
 
-  const handleSave = async (): Promise<boolean> => {
-    const { createUserAccount, ...dataToSave } = employeeData;
+  const handleSave = async (values: EmployeeFormFieldsValues): Promise<boolean> => {
+    const { createUserAccount, ...dataToSave } = values;
 
     let success: boolean;
     if (editingEmployee) {
@@ -310,7 +291,6 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
     isFormVisible,
     editingEmployee,
     employeeToArchive,
-    employeeData,
     nextId,
     searchTermTable,
     view,
@@ -339,7 +319,6 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
     handleExport,
     setIsImportModalOpen,
     handleImportEmployees,
-    setEmployeeData,
     setEmployeeToArchive,
     handleConfirmArchive,
     setHistoryModalEmployee,
