@@ -1,0 +1,35 @@
+{
+  "schemaId": "correctionStatusForm",
+  "backendContract": "UpdateCorrectionStatus",
+  "rule": "Rechazar una solicitud exige `rejectionReason`: el backend lo implementa con un `superRefine` que el OpenAPI no expresa.",
+  "cases": [
+    {
+      "name": "aprobacion sin motivo de rechazo",
+      "input": { "status": "approved", "resolvedBy": "supervisor" },
+      "expected": { "valid": true }
+    },
+    {
+      "name": "rechazo con motivo",
+      "input": {
+        "status": "rejected",
+        "rejectionReason": "El marcaje no coincide con la evidencia",
+        "resolvedBy": "supervisor"
+      },
+      "expected": { "valid": true }
+    },
+    {
+      "name": "rechazo sin motivo",
+      "input": { "status": "rejected", "resolvedBy": "supervisor" },
+      "expected": { "valid": false, "field": "rejectionReason" }
+    },
+    {
+      "name": "rechazo con motivo en blanco",
+      "input": {
+        "status": "rejected",
+        "rejectionReason": "   ",
+        "resolvedBy": "supervisor"
+      },
+      "expected": { "valid": false, "field": "rejectionReason" }
+    }
+  ]
+}
