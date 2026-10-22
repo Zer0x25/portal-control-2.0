@@ -298,15 +298,15 @@ export default defineConfig(({ mode }) => {
           "**/*.spec.{ts,tsx}",
           "src/tests/**",
         ],
-        // Ratchet 2026-10-21 (spec 035 T17): tras la migracion a MSW (T5-T8)
-        // y los spies de T16, la cobertura medida es L 33.57 / F 29.37 /
-        // B 27.16 / S 32.94. Se fija con ~2pts de margen para absorber el
-        // ruido de v8 sin bajar el ratchet.
+        // Ratchet 2026-10-22 (spec 036 T2/T3): la capa de formulario
+        // (`useAppForm`, `errorMessages`) y sus tests suben la cobertura
+        // medida a L 35.76 / F 31.18 / B 28.87 / S 35.61. Se fija con ~1.8pts
+        // de margen para absorber el ruido de v8 sin bajar el ratchet.
         thresholds: {
-          lines: 31,
-          functions: 27,
-          branches: 25,
-          statements: 30,
+          lines: 34,
+          functions: 29,
+          branches: 27,
+          statements: 33,
         },
       },
     },

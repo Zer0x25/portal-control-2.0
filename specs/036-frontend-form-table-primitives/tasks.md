@@ -6,23 +6,23 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 
 ## Fase A — Capa de formulario
 
-- [ ] T1: Añadir `@tanstack/react-form` y `@tanstack/react-table` (runtime) a
+- [x] T1: Añadir `@tanstack/react-form` y `@tanstack/react-table` (runtime) a
       `frontend/package.json`. **No** añadir `@tanstack/form-resolvers`: ese
       paquete **no existe** en npm (404 en el registry) y no hace falta,
       porque `@tanstack/react-form` v1 consume **Standard Schema** y
       `zod ^4.6.5` (ya instalado) es Standard Schema nativo (AC1).
-- [ ] T2: Crear `frontend/src/hooks/useAppForm.ts`: wrapper de TanStack Form
+- [x] T2: Crear `frontend/src/hooks/useAppForm.ts`: wrapper de TanStack Form
       con el schema Zod pasado **directamente** en el campo `validators`
       (soporte Standard Schema), con `mode: "onSubmit"` y revalidación
       `onChange` tras el primer submit, normalización de `values` (`trim`,
       `undefined` → `null` en opcionales) antes del submit, foco al primer
       campo inválido, `isSubmitting` expuesto y helper `withSubmitGuard(ref)`
       con el **ref sincrónico** anti-doble-submit (AC1, AC4).
-- [ ] T3: Crear `frontend/src/utils/errorMessages.ts` con el mapa central de
+- [x] T3: Crear `frontend/src/utils/errorMessages.ts` con el mapa central de
       mensajes de error en español (RUT, contraseña, rango horario, fecha,
       requerido, duplicado) para que el mismo error se exprese igual en todos
       los formularios (AC2).
-- [ ] T4: Arreglar la a11y de error en `components/ui/`. **No** se introduce
+- [x] T4: Arreglar la a11y de error en `components/ui/`. **No** se introduce
       una prop `errorMessage`: `Input.tsx:5`, `Select.tsx:11`, `Textarea.tsx:5`
       y `Checkbox.tsx:5` **ya** aceptan `error?: string` y ya calculan
       `aria-invalid` y `aria-describedby`. El defecto real es que
@@ -33,6 +33,56 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       además no tiene `label` ni `error`), de modo que `id`, `htmlFor` y
       `aria-describedby` quedan garantizados en el 100 % de los casos, sin
       romper ninguna prop existente (AC3).
+
+### Nota de ejecución — Fase A (PR 1 de la spec 036)
+
+**Decisiones que se apartan del plan original (documentadas aquí porque
+afectan a las fases siguientes):**
+
+1. **`undefined` NO se convierte en `null`; `""` sí, y solo en los campos
+   declarados opcionales.** El plan decía "`undefined` → `null` en
+   opcionales", pero eso **cambia el payload**: `JSON.stringify` omite las
+   claves `undefined` y las convierte en `null`, así que el backend recibiría
+   campos que antes no recibía (violando el AC8/T13: "el payload enviado es
+   idéntico"). La normalización implementada es: `trim` de cadenas +
+   `""` → `null` **solo** en los campos listados en `nullableFields`
+   (`useAppForm.ts:normalizeFormValues`). La coerción específica de un
+   campo (`""` → `null`) puede seguir exprésandose en el schema Zod de la
+   Fase B, que es donde corresponde.
+2. **El modo de validación no se implementa con `validationLogic`, sino
+   filtrando la exposición de los errores.** TanStack Form v1 ofrece
+   `revalidateLogic({ mode: "submit", modeAfterSubmission: "change" })`, pero
+   su implementación sigue ejecutando el validador `onChange` antes del
+   primer envío (`@tanstack/form-core/ValidationLogic.js`). El contrato
+   pedido ("nada de errores hasta el primer envío; después, revalidación en
+   vivo") se implementa en `useAppForm` exponiendo los errores solo cuando
+   `submissionAttempts > 0`; la librería sí recalcula en cada cambio.
+3. **`useId()` en las primitivas obliga a matizar el guardrail de la spec 033.** `HOOKED_COMPONENT_BUDGET` (95) contamos componentes que llaman a
+   **cualquier** hook; con el fallback `useId()` de T4 el conteo subía a 98
+   (roto). `useId` no gestiona estado (no hay `useState`, `useEffect` ni
+   re-render), así que el guardrail ahora distingue **hooks con estado** de
+   **hooks puros** (`PURE_HOOK_NAMES = { useId }`) y el budget **baja** de 95
+   a **93** (ratchet monótono, sin subir). El cambio está en
+   `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`, con una sonda
+   propia que verifica la distinción. La lista de vistas (`VIEW_HOOK_BUDGET`)
+   sigue contando cualquier hook: ESLint sigue prohibiendo `useId` en vistas.
+4. **El ratchet de cobertura sube** (spec 003 G-02): la capa de formulario y
+   sus tests suben la cobertura medida de L 33.57 / F 29.37 / B 27.16 /
+   S 32.94 a **L 35.76 / F 31.18 / B 28.87 / S 35.61**; los umbrales de
+   `frontend/vite.config.ts` suben a 34 / 29 / 27 / 33 (nunca bajan).
+
+**Evidencia:**
+
+| Artefacto                       | Ubicación                                                        |
+| ------------------------------- | ---------------------------------------------------------------- |
+| Capa de formulario              | `frontend/src/hooks/useAppForm.ts`                               |
+| Mapa central de mensajes        | `frontend/src/utils/errorMessages.ts`                            |
+| a11y de error de las primitivas | `frontend/src/components/ui/{Input,Textarea,Switch}.tsx`         |
+| Tests de la capa                | `frontend/src/tests/forms/useAppForm.test.tsx` (11 casos)        |
+| Tests del mapa de mensajes      | `frontend/src/tests/forms/errorMessages.test.ts` (10 casos)      |
+| Tests de a11y de las primitivas | `frontend/src/tests/forms/formPrimitivesA11y.test.tsx` (7 casos) |
+| Matiz del guardrail de 033      | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`     |
+| Ratchet de cobertura            | `frontend/vite.config.ts` (34 / 29 / 27 / 33)                    |
 
 ## Fase B — Schemas de formulario
 

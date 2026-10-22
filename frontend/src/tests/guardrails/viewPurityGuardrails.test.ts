@@ -32,8 +32,8 @@ const SRC_ROOT = path.join(FRONTEND_ROOT, "src");
 /** Vistas (`*.view.tsx`) que llaman a un hook. Baseline medido: 5 -> 1 tras T7. */
 export const VIEW_HOOK_BUDGET = 1;
 
-/** Componentes de la capa de componentes que llaman a un hook. */
-export const HOOKED_COMPONENT_BUDGET = 95;
+/** Componentes de la capa de componentes que llaman a un hook **con estado**. */
+export const HOOKED_COMPONENT_BUDGET = 93;
 
 /** Componentes con hooks, >150 líneas y sin container/view gemelo. */
 export const LARGE_HOOKED_COMPONENT_BUDGET = 56;
@@ -65,6 +65,21 @@ export const CONTAINER_INTRINSIC_JSX_BUDGET = 0;
 
 const HOOK_NAME = /^use[A-Z]/;
 
+/**
+ * Hooks **puros**: no gestionan estado, no disparan efectos ni re-renderizan.
+ *
+ * `useId()` genera un identificador estable para asociar `label`,
+ * `aria-describedby` y el mensaje de error de un control: es exactamente lo
+ * que exige el contrato de a11y de error (spec 036 AC3) y lo usan ya
+ * `Select` y `Checkbox`. Contarlo como "componente con estado" sería un falso
+ * positivo: el invariante que este guardrail protege (spec 033 AC2) es que la
+ * capa de componentes **no gestione estado**.
+ *
+ * La exclusión es explícita y acotada: si mañana aparece un hook puro nuevo,
+ * hay que añadirlo aquí (y el conteo sube, que es lo que se quiere ver).
+ */
+const PURE_HOOK_NAMES = new Set(["useId"]);
+
 const listFiles = (dir: string, predicate: (file: string) => boolean): string[] => {
   if (!statSync(dir, { throwIfNoEntry: false })?.isDirectory()) return [];
   const out: string[] = [];
@@ -85,6 +100,10 @@ const parse = (filePath: string): ts.SourceFile =>
     filePath.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
   );
 
+/** Parsea un fragmento de codigo (sondas del propio guardrail). */
+const parseSource = (code: string, fileName = "probe.tsx"): ts.SourceFile =>
+  ts.createSourceFile(fileName, code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+
 const isHookCallee = (callee: ts.Expression): boolean => {
   if (ts.isIdentifier(callee)) return HOOK_NAME.test(callee.text) || callee.text === "use";
   if (
@@ -93,6 +112,19 @@ const isHookCallee = (callee: ts.Expression): boolean => {
     callee.expression.text === "React"
   ) {
     return HOOK_NAME.test(callee.name.text);
+  }
+  return false;
+};
+
+/** `true` si el callee es un hook **puro** (`useId`). */
+const isPureHookCallee = (callee: ts.Expression): boolean => {
+  if (ts.isIdentifier(callee)) return PURE_HOOK_NAMES.has(callee.text);
+  if (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    callee.expression.text === "React"
+  ) {
+    return PURE_HOOK_NAMES.has(callee.name.text);
   }
   return false;
 };
@@ -106,6 +138,24 @@ const hasHookCall = (sourceFile: ts.SourceFile): boolean => {
   let found = false;
   walk(sourceFile, (node) => {
     if (ts.isCallExpression(node) && isHookCallee(node.expression)) found = true;
+  });
+  return found;
+};
+
+/**
+ * `true` si el componente llama a un hook **con estado** (los hooks puros como
+ * `useId` no cuentan: ver `PURE_HOOK_NAMES`).
+ */
+const hasStateHookCall = (sourceFile: ts.SourceFile): boolean => {
+  let found = false;
+  walk(sourceFile, (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      isHookCallee(node.expression) &&
+      !isPureHookCallee(node.expression)
+    ) {
+      found = true;
+    }
   });
   return found;
 };
@@ -316,9 +366,9 @@ describe("Guardrail de pureza de la vista (spec 033 T3-T5, AC1/AC2/AC3/AC6/AC11)
     ).toBeLessThanOrEqual(VIEW_HOOK_BUDGET);
   });
 
-  it("la capa de componentes no crece en numero de componentes con hooks (spec 033 AC2)", () => {
+  it("la capa de componentes no crece en numero de componentes con estado (spec 033 AC2)", () => {
     const offenders = componentLayerFiles()
-      .filter((file) => hasHookCall(parse(file)))
+      .filter((file) => hasStateHookCall(parse(file)))
       .map(relative);
 
     expect(
@@ -327,9 +377,9 @@ describe("Guardrail de pureza de la vista (spec 033 T3-T5, AC1/AC2/AC3/AC6/AC11)
     ).toBeLessThanOrEqual(HOOKED_COMPONENT_BUDGET);
   });
 
-  it("el ratchet de componentes grandes con hooks no sube (spec 033 AC3)", () => {
+  it("el ratchet de componentes grandes con estado no sube (spec 033 AC3)", () => {
     const offenders = componentLayerFiles()
-      .filter((file) => hasHookCall(parse(file)))
+      .filter((file) => hasStateHookCall(parse(file)))
       .filter((file) => {
         if (lineCount(file) <= 150) return false;
         const dir = path.dirname(file);
@@ -426,6 +476,19 @@ describe("Guardrail de pureza de la vista (spec 033 T3-T5, AC1/AC2/AC3/AC6/AC11)
       offenders.length,
       "Un container no emite elementos DOM intrínsecos. Offenders: " + offenders.join(", "),
     ).toBeLessThanOrEqual(CONTAINER_INTRINSIC_JSX_BUDGET);
+  });
+
+  it("un hook puro (useId) no cuenta como componente con estado (spec 036 AC3)", () => {
+    const pure = parseSource(
+      "export const Probe = () => { const id = useId(); return <div>{id}</div>; };",
+    );
+    const stateful = parseSource(
+      "export const Probe = () => { const [a] = useState(0); return <div>{a}</div>; };",
+    );
+
+    expect(hasHookCall(pure)).toBe(true);
+    expect(hasStateHookCall(pure)).toBe(false);
+    expect(hasStateHookCall(stateful)).toBe(true);
   });
 
   it(
