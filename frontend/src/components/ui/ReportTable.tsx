@@ -1,47 +1,36 @@
 import React, { useMemo, memo } from "react";
-import { DailyReportItem, ReportStat, SortableReportKey, ReportDataType } from "../../types/index";
-import { getWeekStartDate, parseDateOnlyUTC } from "../../utils/dateUtils";
-import { formatDecimalHoursToHHMM } from "../../utils/formatters";
+import { DailyReportItem, ReportDataType, ReportStat, SortableReportKey } from "../../types/index";
 import { TableCellsIcon } from "../ui/icons/index";
-import SortableHeader from "./SortableHeader";
+import DataTable from "./DataTable";
+import DataTableHeader, { getDataTableColumnMeta } from "./DataTableHeader";
+import DataTableRow from "./DataTableRow";
 import PaginationControls from "./PaginationControls";
 import ResponsiveView from "./ResponsiveView";
 import ReportTableMobileSummaryCard from "./ReportTableMobileSummaryCard";
 import ReportTableMobileDailyCard from "./ReportTableMobileDailyCard";
 import EmptyState from "./EmptyState";
 import { Z } from "../../constants/zScale";
+import { formatDecimalHoursToHHMM as fmt } from "../../utils/formatters";
+import {
+  reportTableFeatures,
+  useReportTable,
+  isReportSubtotal,
+  type ReportSortConfig,
+} from "../../hooks/useReportTable";
+import { ReportRow, ReportSubtotal } from "../../utils/reportSubtotals";
+import { ColumnDef, FlexRender } from "@tanstack/react-table";
 
-const REPORT_ITEMS_PER_PAGE = 40;
+export type { ReportSubtotal };
 
-interface ReportSubtotal {
-  type: "subtotal" | "total";
-  weekId: string;
-  totals: {
-    scheduledHours: number;
-    colacionMinutes: number;
-    workedHours: number;
-    differenceHours: number;
-  };
-}
-
-type ReportSortConfig = { key: SortableReportKey; direction: "ascending" | "descending" } | null;
-
-type ReportTableProps = {
-  reportData: ReportDataType;
+interface ReportTableProps {
+  reportData: ReportDataType | null;
   isSingleEmployeeReport: boolean;
   sortConfig: ReportSortConfig;
   requestSort: (key: SortableReportKey) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
   justificationStyles: Record<string, string>;
-};
-
-/**
- * `SortableHeader` only ever reads `keyof T`, so any row shape whose keys are the
- * sortable report keys satisfies it. Declaring the type parameter once here lets every
- * header below bind it explicitly instead of casting each prop.
- */
-type ReportHeaderRowShape = Record<SortableReportKey, unknown>;
+}
 
 const ReportTable: React.FC<ReportTableProps> = ({
   reportData,
@@ -52,365 +41,314 @@ const ReportTable: React.FC<ReportTableProps> = ({
   setCurrentPage,
   justificationStyles,
 }) => {
-  const reportRowsWithSubtotals = useMemo(() => {
-    if (!isSingleEmployeeReport || !reportData || reportData.length === 0) {
-      return reportData;
-    }
-
-    const data = reportData as DailyReportItem[];
-    const groupedByWeek: { [weekId: string]: DailyReportItem[] } = {};
-
-    data.forEach((item) => {
-      const dateStr = item.isoDate || item.date;
-      if (!dateStr) return; // Skip if no date field is available
-      const weekId = getWeekStartDate(parseDateOnlyUTC(dateStr)).toISOString();
-      if (!groupedByWeek[weekId]) groupedByWeek[weekId] = [];
-      groupedByWeek[weekId].push(item);
-    });
-
-    const finalRows: (DailyReportItem | ReportSubtotal)[] = [];
-    const sortedWeekIds = Object.keys(groupedByWeek).sort(
-      (a, b) => new Date(a).getTime() - new Date(b).getTime(),
-    );
-
-    sortedWeekIds.forEach((weekId) => {
-      const weekItems = groupedByWeek[weekId];
-      finalRows.push(...weekItems);
-      const subtotal = weekItems.reduce(
-        (acc, curr) => ({
-          scheduledHours: acc.scheduledHours + curr.scheduledHours,
-          colacionMinutes: acc.colacionMinutes + curr.colacionMinutes,
-          workedHours: acc.workedHours + curr.workedHours,
-          differenceHours: acc.differenceHours + curr.differenceHours,
-        }),
-        { scheduledHours: 0, colacionMinutes: 0, workedHours: 0, differenceHours: 0 },
-      );
-      finalRows.push({ type: "subtotal", weekId: weekId, totals: subtotal });
-    });
-
-    if (data.length > 0) {
-      const grandTotal = data.reduce(
-        (acc, curr) => ({
-          scheduledHours: acc.scheduledHours + curr.scheduledHours,
-          colacionMinutes: acc.colacionMinutes + curr.colacionMinutes,
-          workedHours: acc.workedHours + curr.workedHours,
-          differenceHours: acc.differenceHours + curr.differenceHours,
-        }),
-        { scheduledHours: 0, colacionMinutes: 0, workedHours: 0, differenceHours: 0 },
-      );
-
-      finalRows.push({ type: "total", weekId: "grand-total", totals: grandTotal });
-    }
-
-    return finalRows;
-  }, [isSingleEmployeeReport, reportData]);
-
-  const dataToPaginate = isSingleEmployeeReport ? reportRowsWithSubtotals : reportData;
-
-  const totalPages = useMemo(() => {
-    if (!dataToPaginate) return 1;
-    return Math.ceil(dataToPaginate.length / REPORT_ITEMS_PER_PAGE);
-  }, [dataToPaginate]);
-
-  const paginatedData = useMemo(() => {
-    if (!dataToPaginate) return [];
-    const startIndex = (currentPage - 1) * REPORT_ITEMS_PER_PAGE;
-    return dataToPaginate.slice(startIndex, startIndex + REPORT_ITEMS_PER_PAGE);
-  }, [dataToPaginate, currentPage]);
-
-  const renderSummaryTable = () => (
-    <div className="overflow-hidden rounded-lg border border-token-border-technical shadow-sm bg-token-surface-card">
-      <table className="min-w-full">
-        <thead>
-          <tr className="bg-token-surface-header border-b border-token-border-technical">
-            <SortableHeader<ReportHeaderRowShape>
-              title="Nombre"
-              sortKey="name"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Días Prog."
-              sortKey="scheduledDays"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Hrs. Prog."
-              sortKey="totalHoursScheduled"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Días Trab."
-              sortKey="workedDays"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Hrs. Trab."
-              sortKey="totalHoursWorked"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Diferencia"
-              sortKey="differenceHours"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Atrasos"
-              sortKey="tardinessIncidents"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Ausencias"
-              sortKey="absenceDays"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-token-border-subtle">
-          {(paginatedData as ReportStat[]).map((stat) => (
-            <tr
-              key={stat.employeeId}
-              className="group hover:bg-token-surface-hover transition-all duration-150"
+  const summaryColumns = useMemo<ColumnDef<typeof reportTableFeatures, ReportRow>[]>(
+    () => [
+      {
+        id: "name",
+        accessorFn: () => null,
+        header: "Nombre",
+        cell: ({ row }) => (row.original as unknown as ReportStat).name,
+        meta: {
+          headerClassName:
+            "px-8 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-8 py-5 whitespace-nowrap text-sm font-black text-token-text-primary uppercase tracking-tight italic",
+        },
+      },
+      {
+        id: "scheduledDays",
+        accessorFn: () => null,
+        header: "Días Prog.",
+        cell: ({ row }) => (row.original as unknown as ReportStat).scheduledDays,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary tracking-tighter",
+        },
+      },
+      {
+        id: "totalHoursScheduled",
+        accessorFn: () => null,
+        header: "Hrs. Prog.",
+        cell: ({ row }) => fmt((row.original as unknown as ReportStat).totalHoursScheduled),
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
+        },
+      },
+      {
+        id: "workedDays",
+        accessorFn: () => null,
+        header: "Días Trab.",
+        cell: ({ row }) => (row.original as unknown as ReportStat).workedDays,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary tracking-tighter",
+        },
+      },
+      {
+        id: "totalHoursWorked",
+        accessorFn: () => null,
+        header: "Hrs. Trab.",
+        cell: ({ row }) => fmt((row.original as unknown as ReportStat).totalHoursWorked),
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-primary font-mono italic tracking-tighter",
+        },
+      },
+      {
+        id: "differenceHours",
+        accessorFn: () => null,
+        header: "Diferencia",
+        cell: ({ row }) => {
+          const stat = row.original as unknown as ReportStat;
+          return (
+            <span
+              className={
+                stat.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"
+              }
             >
-              <td className="px-8 py-5 whitespace-nowrap text-sm font-black text-token-text-primary uppercase tracking-tight italic">
-                {stat.name}
-              </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary">
-                {stat.scheduledDays}
-              </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
-                {formatDecimalHoursToHHMM(stat.totalHoursScheduled)}
-              </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary">
-                {stat.workedDays}
-              </td>
-              <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
-                {formatDecimalHoursToHHMM(stat.totalHoursWorked)}
-              </td>
-              <td
-                className={`px-6 py-5 whitespace-nowrap text-xs font-black italic ${stat.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
-              >
-                {formatDecimalHoursToHHMM(stat.differenceHours)}
-              </td>
-              <td
-                className={`px-6 py-5 whitespace-nowrap text-xs font-black ${stat.tardinessIncidents > 0 ? "text-token-status-warning" : "text-token-text-tertiary"}`}
-              >
-                {stat.tardinessIncidents}
-              </td>
-              <td
-                className={`px-6 py-5 whitespace-nowrap text-xs font-black ${stat.absenceDays > 0 ? "text-token-status-error" : "text-token-text-tertiary"}`}
-              >
-                {stat.absenceDays}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              {fmt(stat.differenceHours)}
+            </span>
+          );
+        },
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black italic tracking-tighter",
+        },
+      },
+      {
+        id: "tardinessIncidents",
+        accessorFn: () => null,
+        header: "Atrasos",
+        cell: ({ row }) => {
+          const stat = row.original as unknown as ReportStat;
+          return (
+            <span
+              className={
+                stat.tardinessIncidents > 0
+                  ? "text-token-status-warning"
+                  : "text-token-text-tertiary"
+              }
+            >
+              {stat.tardinessIncidents}
+            </span>
+          );
+        },
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black tracking-tighter",
+        },
+      },
+      {
+        id: "absenceDays",
+        accessorFn: () => null,
+        header: "Ausencias",
+        cell: ({ row }) => {
+          const stat = row.original as unknown as ReportStat;
+          return (
+            <span
+              className={
+                stat.absenceDays > 0 ? "text-token-status-error" : "text-token-text-tertiary"
+              }
+            >
+              {stat.absenceDays}
+            </span>
+          );
+        },
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black tracking-tighter",
+        },
+      },
+    ],
+    [],
   );
 
-  const renderDailyTable = () => (
-    <div className="overflow-hidden rounded-lg border border-token-border-technical shadow-sm bg-token-surface-card">
-      <table className="min-w-full">
-        <thead>
-          <tr className="bg-token-surface-header border-b border-token-border-technical">
-            <SortableHeader<ReportHeaderRowShape>
-              title="Fecha"
-              sortKey="isoDate"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Día"
-              sortKey="dayOfWeek"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Turno Prog."
-              sortKey="scheduledShift"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Marcaje Real"
-              sortKey="actualClocks"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Hrs. Prog."
-              sortKey="scheduledHours"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Colación"
-              sortKey="colacionMinutes"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Hrs. Trab."
-              sortKey="workedHours"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Diferencia"
-              sortKey="differenceHours"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-            <SortableHeader<ReportHeaderRowShape>
-              title="Estado"
-              sortKey="justificationType"
-              sortConfig={sortConfig}
-              onSort={requestSort}
-              className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary"
-            />
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-token-border-subtle">
-          {(paginatedData as (DailyReportItem | ReportSubtotal)[]).map((item, index) => {
-            if ("type" in item) {
-              if (item.type === "subtotal")
-                return (
-                  <tr
-                    key={`subtotal-${item.weekId}`}
-                    className="bg-token-surface-active font-black text-xxs uppercase tracking-[0.3em]"
-                  >
-                    <td
-                      colSpan={4}
-                      className="px-8 py-4 text-right text-token-accent-brand italic opacity-90"
-                    >
-                      Resumen Semanal
-                    </td>
-                    <td className="px-6 py-4 text-token-text-secondary font-mono italic">
-                      {formatDecimalHoursToHHMM(item.totals.scheduledHours)}
-                    </td>
-                    <td className="px-6 py-4 text-token-text-secondary font-mono italic">
-                      {formatDecimalHoursToHHMM(item.totals.colacionMinutes / 60)}
-                    </td>
-                    <td className="px-6 py-4 text-token-text-secondary font-mono italic">
-                      {formatDecimalHoursToHHMM(item.totals.workedHours)}
-                    </td>
-                    <td
-                      className={`px-6 py-4 font-black italic ${item.totals.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
-                    >
-                      {formatDecimalHoursToHHMM(item.totals.differenceHours)}
-                    </td>
-                    <td className="px-8 py-4"></td>
-                  </tr>
-                );
-              if (item.type === "total")
-                return (
-                  <tr
-                    key={`total-${item.weekId}`}
-                    className="bg-linear-to-r from-token-accent-brand to-indigo-700 text-token-text-onAccent font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl relative overflow-hidden"
-                  >
-                    <td colSpan={4} className="px-8 py-6 text-right opacity-80 italic">
-                      Corte de Periodo Finalizado
-                    </td>
-                    <td className="px-6 py-6 font-mono italic">
-                      {formatDecimalHoursToHHMM(item.totals.scheduledHours)}
-                    </td>
-                    <td className="px-6 py-6 font-mono italic">
-                      {formatDecimalHoursToHHMM(item.totals.colacionMinutes / 60)}
-                    </td>
-                    <td className="px-6 py-6 font-mono italic">
-                      {formatDecimalHoursToHHMM(item.totals.workedHours)}
-                    </td>
-                    <td
-                      className={`px-6 py-6 font-black italic text-md ${item.totals.differenceHours >= 0 ? "text-green-300" : "text-rose-300"}`}
-                    >
-                      {formatDecimalHoursToHHMM(item.totals.differenceHours)}
-                    </td>
-                    <td className="px-8 py-6"></td>
-                  </tr>
-                );
-              return null;
-            }
-            const dailyItem = item as DailyReportItem;
-            const isJustified = !!dailyItem.justificationType;
-            return (
-              <tr
-                key={String(dailyItem.isoDate) + index}
-                className={`group hover:bg-token-surface-hover transition-all duration-150 ${isJustified ? "bg-token-surface-stripe" : ""}`}
-              >
-                <td className="px-8 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono">
-                  {dailyItem.date}
-                </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-black text-token-text-tertiary uppercase italic">
-                  {dailyItem.dayOfWeek}
-                </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-black text-token-accent-brand uppercase tracking-tighter italic">
-                  {dailyItem.scheduledShift}
-                </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-medium text-token-text-secondary font-mono">
-                  {dailyItem.actualClocks}
-                </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
-                  {formatDecimalHoursToHHMM(dailyItem.scheduledHours)}
-                </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs text-token-text-tertiary font-mono italic">
-                  {dailyItem.colacionMinutes.toFixed(0)}m
-                </td>
-                <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic">
-                  {formatDecimalHoursToHHMM(dailyItem.workedHours)}
-                </td>
-                <td
-                  className={`px-6 py-5 whitespace-nowrap text-xs font-black italic ${dailyItem.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
-                >
-                  {formatDecimalHoursToHHMM(dailyItem.differenceHours)}
-                </td>
-                <td className="px-8 py-5 whitespace-nowrap text-center">
-                  {dailyItem.justificationType ? (
-                    <span
-                      className={`px-3 py-1.5 text-xxs font-black uppercase tracking-tighter rounded-xl shadow-sm ${justificationStyles[dailyItem.justificationType] || ""}`}
-                    >
-                      {dailyItem.justificationType}
-                    </span>
-                  ) : (
-                    <span className="text-token-text-tertiary opacity-40">—</span>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+  const dailyColumns = useMemo<ColumnDef<typeof reportTableFeatures, ReportRow>[]>(
+    () => [
+      {
+        id: "isoDate",
+        accessorFn: () => null,
+        header: "Fecha",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original) ? null : (row.original as unknown as DailyReportItem).date,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-6 py-5 whitespace-nowrap text-sm font-black text-token-text-primary",
+        },
+      },
+      {
+        id: "dayOfWeek",
+        accessorFn: () => null,
+        header: "Día",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original)
+            ? null
+            : (row.original as unknown as DailyReportItem).dayOfWeek,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary",
+        },
+      },
+      {
+        id: "scheduledShift",
+        accessorFn: () => null,
+        header: "Turno Prog.",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original)
+            ? null
+            : (row.original as unknown as DailyReportItem).scheduledShift,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-black text-token-accent-brand uppercase tracking-tighter italic",
+        },
+      },
+      {
+        id: "actualClocks",
+        accessorFn: () => null,
+        header: "Marcaje Real",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original)
+            ? null
+            : (row.original as unknown as DailyReportItem).actualClocks,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-medium text-token-text-secondary font-mono",
+        },
+      },
+      {
+        id: "scheduledHours",
+        accessorFn: () => null,
+        header: "Hrs. Prog.",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original)
+            ? null
+            : fmt((row.original as unknown as DailyReportItem).scheduledHours),
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
+        },
+      },
+      {
+        id: "colacionMinutes",
+        accessorFn: () => null,
+        header: "Colación",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original)
+            ? null
+            : `${(row.original as unknown as DailyReportItem).colacionMinutes.toFixed(0)}m`,
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs text-token-text-tertiary font-mono italic tracking-tighter",
+        },
+      },
+      {
+        id: "workedHours",
+        accessorFn: () => null,
+        header: "Hrs. Trab.",
+        cell: ({ row }) =>
+          isReportSubtotal(row.original)
+            ? null
+            : fmt((row.original as unknown as DailyReportItem).workedHours),
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName:
+            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
+        },
+      },
+      {
+        id: "differenceHours",
+        accessorFn: () => null,
+        header: "Diferencia",
+        cell: ({ row }) => {
+          if (isReportSubtotal(row.original)) return null;
+          const item = row.original as unknown as DailyReportItem;
+          return (
+            <span
+              className={
+                item.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"
+              }
+            >
+              {fmt(item.differenceHours)}
+            </span>
+          );
+        },
+        meta: {
+          headerClassName:
+            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black italic tracking-tighter",
+        },
+      },
+      {
+        id: "justificationType",
+        accessorFn: () => null,
+        header: "Estado",
+        cell: ({ row }) => {
+          if (isReportSubtotal(row.original)) return null;
+          const item = row.original as unknown as DailyReportItem;
+          return item.justificationType ? (
+            <span
+              className={
+                "px-3 py-1.5 text-xxs font-black uppercase tracking-tighter rounded-xl shadow-sm " +
+                (justificationStyles[item.justificationType] || "")
+              }
+            >
+              {item.justificationType}
+            </span>
+          ) : (
+            <span className="text-token-text-tertiary opacity-40">—</span>
+          );
+        },
+        meta: {
+          headerClassName:
+            "px-8 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+          cellClassName: "px-8 py-5 whitespace-nowrap text-center",
+        },
+      },
+    ],
+    [justificationStyles],
   );
+
+  const columns = isSingleEmployeeReport ? dailyColumns : summaryColumns;
+
+  const { table, pageRows, totalPages, rowCount } = useReportTable({
+    reportData,
+    isSingleEmployeeReport,
+    columns,
+    sortConfig,
+    requestSort,
+    currentPage,
+    setCurrentPage,
+  });
 
   const renderMobileView = () => (
     <div className="space-y-6 py-4">
       {isSingleEmployeeReport
-        ? (paginatedData as (DailyReportItem | ReportSubtotal)[]).map((item, index) => {
-            if ("type" in item) {
+        ? pageRows.map((row) => {
+            const item = row.original;
+            if (isReportSubtotal(item)) {
               if (item.type === "subtotal")
                 return (
                   <div
@@ -426,7 +364,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                           Colación
                         </div>
                         <div className="text-sm font-black text-token-text-primary font-mono italic">
-                          {formatDecimalHoursToHHMM(item.totals.colacionMinutes / 60)}
+                          {fmt(item.totals.colacionMinutes / 60)}
                         </div>
                       </div>
                       <div className="text-center bg-token-surface-active/50 p-3 rounded-2xl border border-token-border-subtle">
@@ -436,7 +374,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                         <div
                           className={`text-sm font-black italic ${item.totals.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
                         >
-                          {formatDecimalHoursToHHMM(item.totals.differenceHours)}
+                          {fmt(item.totals.differenceHours)}
                         </div>
                       </div>
                     </div>
@@ -458,7 +396,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                           Horas Ciclo
                         </div>
                         <div className="text-2xl font-black font-mono tracking-tighter italic">
-                          {formatDecimalHoursToHHMM(item.totals.workedHours)}
+                          {fmt(item.totals.workedHours)}
                         </div>
                       </div>
                       <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex justify-between items-center px-8">
@@ -468,7 +406,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                         <div
                           className={`text-2xl font-black font-mono tracking-tighter italic ${item.totals.differenceHours >= 0 ? "text-green-300" : "text-rose-300"}`}
                         >
-                          {formatDecimalHoursToHHMM(item.totals.differenceHours)}
+                          {fmt(item.totals.differenceHours)}
                         </div>
                       </div>
                     </div>
@@ -476,25 +414,126 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 );
               return null;
             }
-            const dailyItem = item as DailyReportItem;
+            const dailyItem = item as unknown as DailyReportItem;
             return (
               <ReportTableMobileDailyCard
-                key={`${dailyItem.isoDate}-${index}`}
+                key={`${dailyItem.isoDate}-${row.index}`}
                 item={dailyItem}
                 justificationStyles={justificationStyles}
               />
             );
           })
-        : (paginatedData as ReportStat[]).map((stat) => (
+        : (pageRows.map((row) => row.original) as unknown as ReportStat[]).map((stat) => (
             <ReportTableMobileSummaryCard key={stat.employeeId} stat={stat} />
           ))}
     </div>
   );
 
+  const renderDesktopRows = () => {
+    if (isSingleEmployeeReport) {
+      return pageRows.map((row) => {
+        const item = row.original;
+        if (isReportSubtotal(item)) {
+          if (item.type === "subtotal")
+            return (
+              <DataTableRow
+                key={`subtotal-${item.weekId}`}
+                rowIndex={row.index}
+                className="bg-token-surface-active font-black text-xxs uppercase tracking-[0.3em]"
+              >
+                <td
+                  colSpan={4}
+                  className="px-8 py-4 text-right text-token-accent-brand italic opacity-90"
+                >
+                  Resumen Semanal
+                </td>
+                <td className="px-6 py-4 text-token-text-secondary font-mono italic">
+                  {fmt(item.totals.scheduledHours)}
+                </td>
+                <td className="px-6 py-4 text-token-text-secondary font-mono italic">
+                  {fmt(item.totals.colacionMinutes / 60)}
+                </td>
+                <td className="px-6 py-4 text-token-text-secondary font-mono italic">
+                  {fmt(item.totals.workedHours)}
+                </td>
+                <td
+                  className={`px-6 py-4 font-black italic ${item.totals.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
+                >
+                  {fmt(item.totals.differenceHours)}
+                </td>
+                <td className="px-8 py-4"></td>
+              </DataTableRow>
+            );
+          if (item.type === "total")
+            return (
+              <DataTableRow
+                key={`total-${item.weekId}`}
+                rowIndex={row.index}
+                className="bg-linear-to-r from-token-accent-brand to-indigo-700 text-token-text-onAccent font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl relative overflow-hidden"
+              >
+                <td colSpan={4} className="px-8 py-6 text-right opacity-80 italic">
+                  Corte de Periodo Finalizado
+                </td>
+                <td className="px-6 py-6 font-mono italic">{fmt(item.totals.scheduledHours)}</td>
+                <td className="px-6 py-6 font-mono italic">
+                  {fmt(item.totals.colacionMinutes / 60)}
+                </td>
+                <td className="px-6 py-6 font-mono italic">{fmt(item.totals.workedHours)}</td>
+                <td
+                  className={`px-6 py-6 font-black italic text-md ${item.totals.differenceHours >= 0 ? "text-green-300" : "text-rose-300"}`}
+                >
+                  {fmt(item.totals.differenceHours)}
+                </td>
+                <td className="px-8 py-6"></td>
+              </DataTableRow>
+            );
+          return null;
+        }
+        const dailyItem = item as unknown as DailyReportItem;
+        const isJustified = !!dailyItem.justificationType;
+        return (
+          <DataTableRow
+            key={String(dailyItem.isoDate) + row.index}
+            rowIndex={row.index}
+            className={`group hover:bg-token-surface-hover transition-all duration-150 ${isJustified ? "bg-token-surface-stripe" : ""}`}
+          >
+            {row.getAllCells().map((cell) => (
+              <td
+                key={cell.id}
+                className={getDataTableColumnMeta(cell.column.columnDef.meta).cellClassName}
+              >
+                <FlexRender cell={cell} />
+              </td>
+            ))}
+          </DataTableRow>
+        );
+      });
+    }
+    return pageRows.map((row) => {
+      const stat = row.original as unknown as ReportStat;
+      return (
+        <DataTableRow
+          key={stat.employeeId}
+          rowIndex={row.index}
+          className="group hover:bg-token-surface-hover transition-all duration-150"
+        >
+          {row.getAllCells().map((cell) => (
+            <td
+              key={cell.id}
+              className={getDataTableColumnMeta(cell.column.columnDef.meta).cellClassName}
+            >
+              <FlexRender cell={cell} />
+            </td>
+          ))}
+        </DataTableRow>
+      );
+    });
+  };
+
   return (
     <div className="space-y-10">
-      {/* Top Pagination Capsule */}
-      <div className="flex justify-center">
+      {/* Top Pagination Capsule (mobile only; desktop uses DataTable's) */}
+      <div className="flex justify-center md:hidden">
         <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
           <PaginationControls
             currentPage={currentPage}
@@ -509,7 +548,30 @@ const ReportTable: React.FC<ReportTableProps> = ({
         desktop={
           <div className="no-scrollbar perspective-1000">
             <div className="animate-in fade-in [--tw-enter-translate-y:30px] [animation-duration:600ms]">
-              {isSingleEmployeeReport ? renderDailyTable() : renderSummaryTable()}
+              <DataTable
+                table={table}
+                ariaLabel={
+                  isSingleEmployeeReport
+                    ? "Reporte diario del empleado"
+                    : "Resumen de reporte por empleado"
+                }
+                rowCount={rowCount}
+                pagination={{
+                  currentPage,
+                  totalPages,
+                  setCurrentPage,
+                  position: "both",
+                  className: "flex justify-center",
+                }}
+                className="space-y-10"
+              >
+                <DataTableHeader
+                  table={table}
+                  rowClassName="bg-token-surface-header border-b border-token-border-technical"
+                  headerClassName=""
+                />
+                <tbody className="divide-y divide-token-border-subtle">{renderDesktopRows()}</tbody>
+              </DataTable>
             </div>
           </div>
         }
@@ -517,12 +579,14 @@ const ReportTable: React.FC<ReportTableProps> = ({
 
       {/* Bottom Pagination & Metadata */}
       <div className="flex flex-col items-center gap-6">
-        <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            setCurrentPage={setCurrentPage}
-          />
+        <div className="flex justify-center md:hidden">
+          <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              setCurrentPage={setCurrentPage}
+            />
+          </div>
         </div>
 
         {!reportData || reportData.length === 0 ? (
@@ -533,7 +597,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
             className="w-full py-20"
           />
         ) : (
-          paginatedData.length === 0 &&
+          pageRows.length === 0 &&
           currentPage > 1 && (
             <div className="text-center py-10 opacity-40">
               <p className="text-[10px] font-black uppercase tracking-[0.5em] text-token-text-tertiary">
@@ -546,4 +610,5 @@ const ReportTable: React.FC<ReportTableProps> = ({
     </div>
   );
 };
+
 export default memo(ReportTable);
