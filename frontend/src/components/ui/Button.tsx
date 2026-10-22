@@ -2,7 +2,8 @@ import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "success" | "warning" | "info" | "ghost" | "none";
-  size?: "xs" | "sm" | "md" | "lg";
+  /** `"none"` no aplica padding ni tipografía: el consumidor hereda del contenedor. */
+  size?: "xs" | "sm" | "md" | "lg" | "none";
   children: React.ReactNode;
   loading?: boolean;
 }
@@ -73,6 +74,9 @@ const Button = React.memo(
           break;
         case "lg":
           sizeStyles = "px-8 py-4 text-xs";
+          break;
+        case "none":
+          sizeStyles = "";
           break;
       }
 
