@@ -13,8 +13,16 @@ interface EditTimestampModalViewProps {
   editingInfo: { record: DailyTimeRecord; field: TimeRecordField } | null;
   value: string;
   setValue: (value: string) => void;
+  /** Mensaje de error del campo (o `undefined`). */
+  error?: string;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
   fieldLabel: string;
-  handleSave: () => Promise<void>;
   isLoading: boolean;
   maxTimeForExit: string | null;
 }
@@ -25,8 +33,9 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
   editingInfo,
   value,
   setValue,
+  error,
+  formProps,
   fieldLabel,
-  handleSave,
   isLoading,
   maxTimeForExit,
 }) => {
@@ -53,7 +62,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
       }
       maxWidth="max-w-md"
     >
-      <div className="space-y-6">
+      <form {...formProps} className="space-y-6">
         <div className="p-5 rounded-md bg-token-surface-card border border-token-border-technical flex items-center gap-4 shadow-sm relative overflow-hidden">
           <IndustrialIndicator height="h-full" color="bg-token-accent-brand/20" className="mr-1" />
           <div className="flex-1 min-w-0">
@@ -79,9 +88,11 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
             Seleccione Nueva Hora
           </p>
           <Input
+            id="edit-timestamp-time"
             type="time"
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            error={error}
             className="h-12 text-sm font-black uppercase tracking-tight rounded-md bg-token-surface-card border-token-border-technical text-token-text-primary"
           />
           {field === "salida" && maxTimeForExit && (
@@ -94,7 +105,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
 
         <div className="pt-2 flex flex-col sm:flex-row-reverse gap-3">
           <Button
-            onClick={handleSave}
+            type="submit"
             disabled={isLoading}
             variant="success"
             className="w-full sm:w-auto h-11 px-8 rounded-md font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/10"
@@ -109,7 +120,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
             cancelar
           </Button>
         </div>
-      </div>
+      </form>
     </CinematicModal>
   );
 };
