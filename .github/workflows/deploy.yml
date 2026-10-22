@@ -100,7 +100,7 @@ jobs:
           E2E_API_URL: http://127.0.0.1:8080/api
           E2E_ADMIN_USERNAME: admin
           E2E_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || '999.666' }}
-        run: npx playwright test
+        run: npx playwright test --project=functional --project=perf
 
       - name: Upload Playwright report on failure
         if: failure()
