@@ -43,15 +43,23 @@ interface HarnessProps {
   nullableFields?: string[];
   /** Desactiva la normalizacion (payload en crudo). */
   normalize?: (values: Values) => Values;
+  onInvalid?: (errors: Record<string, string>) => void;
 }
 
-const Harness = ({ onSubmit, defaultValues, nullableFields, normalize }: HarnessProps) => {
+const Harness = ({
+  onSubmit,
+  defaultValues,
+  nullableFields,
+  normalize,
+  onInvalid,
+}: HarnessProps) => {
   const form = useAppForm<Values>({
     schema,
     defaultValues: defaultValues ?? DEFAULT_VALUES,
     onSubmit,
     nullableFields,
     normalize,
+    onInvalid,
   });
 
   return (
@@ -103,6 +111,27 @@ describe("useAppForm (spec 036 AC1, AC3, AC4)", () => {
 
     expect(await screen.findByText("Formato de email inválido.")).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("onInvalid recibe los errores del intento que acaba de fallar", async () => {
+    // Contrato de `onInvalid` (spec 036 T12): los errores que recibe son los
+    // del intento que acaba de fallar. Si se informara el valor memorizado
+    // llegarian los del intento anterior (vacios en el primero) y el
+    // formulario no sabria que campo senalar.
+    const user = userEvent.setup();
+    const onInvalid = vi.fn();
+    render(<Harness onSubmit={vi.fn()} onInvalid={onInvalid} />);
+
+    await user.type(screen.getByLabelText("EMAIL"), "no-es-un-email");
+    await user.click(screen.getByRole("button", { name: "ENVIAR" }));
+
+    await waitFor(() => expect(onInvalid).toHaveBeenCalledTimes(1));
+    expect(onInvalid).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "El nombre es obligatorio.",
+        email: "Formato de email inválido.",
+      }),
+    );
   });
 
   it("revalida en vivo después del primer intento (onChange)", async () => {

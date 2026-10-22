@@ -11,6 +11,7 @@ import {
   mfaLoginFormSchema,
   mfaSetupFormSchema,
   mfaValidateFormSchema,
+  purgeSessionsFormSchema,
 } from "./forms/auth";
 import {
   correctionRequestBaseSchema,
@@ -208,6 +209,12 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "adminResetPasswordForm",
     openApi: "ResetPassword",
     schema: adminResetPasswordFormSchema,
+    forms: ["SystemMaintenance"],
+  },
+  {
+    id: "purgeSessionsForm",
+    openApi: "PurgeSessions",
+    schema: purgeSessionsFormSchema,
     forms: ["SystemMaintenance"],
   },
   {
@@ -503,6 +510,12 @@ export type MfaSetupPayloadContract = AssertAssignable<
 export type AdminResetPasswordPayloadContract = AssertAssignable<
   z.output<typeof adminResetPasswordFormSchema>,
   components["schemas"]["ResetPassword"]
+>;
+
+/** Payload de la purga de sesiones: debe encajar en `PurgeSessions`. */
+export type PurgeSessionsPayloadContract = AssertAssignable<
+  z.output<typeof purgeSessionsFormSchema>,
+  components["schemas"]["PurgeSessions"]
 >;
 
 /**

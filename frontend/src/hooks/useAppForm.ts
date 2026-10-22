@@ -212,6 +212,24 @@ export const toErrorMessage = (error: unknown): string | undefined => {
 };
 
 /**
+ * Lee los errores **por campo** del estado de TanStack Form.
+ *
+ * Es una funcion pura (no un memorizado del hook) porque `submit()` la usa
+ * para informar `onInvalid` con los errores **del intento que acaba de
+ * fallar**: con el valor memorizado llegarian los del intento anterior
+ * (vacios en el primero) y el consumidor no sabria que campo corregir.
+ */
+const readFieldErrors = (fieldMeta: unknown): AppFormErrors => {
+  const result: AppFormErrors = {};
+  const entries = fieldMeta as Record<string, { errors?: unknown }>;
+  for (const [name, meta] of Object.entries(entries)) {
+    const message = toErrorMessage(meta.errors);
+    if (message) result[name] = message;
+  }
+  return result;
+};
+
+/**
  * Normalización por defecto del payload: `trim` de cadenas y `""` → `null`
  * en los campos declarados como `nullable`.
  *
@@ -329,19 +347,15 @@ export const useAppForm = <TValues extends object, TPayload = TValues>(
   const state = useStore(form.store);
 
   /**
-   * Los errores solo se exponen **después del primer intento de envío**:
-   * antes de eso el usuario ve el formulario limpio (sin el patrón "error
-   * antes de tocar el campo").
+   * Errores expuestos al consumidor.
+   *
+   * Solo se exponen **después del primer intento de envío**: antes de eso el
+   * usuario ve el formulario limpio (sin el patrón "error antes de tocar el
+   * campo"). El detalle por campo lo aporta `readFieldErrors`.
    */
   const errors = useMemo<AppFormErrors>(() => {
     if (state.submissionAttempts === 0) return {};
-    const result: AppFormErrors = {};
-    const fieldMeta = state.fieldMeta as unknown as Record<string, { errors?: unknown }>;
-    for (const [name, meta] of Object.entries(fieldMeta)) {
-      const message = toErrorMessage(meta.errors);
-      if (message) result[name] = message;
-    }
-    return result;
+    return readFieldErrors(state.fieldMeta);
   }, [state.submissionAttempts, state.fieldMeta]);
 
   const formError = useMemo(() => {
@@ -447,11 +461,13 @@ export const useAppForm = <TValues extends object, TPayload = TValues>(
         logger.error("Fallo el envío del formulario", error);
       }
       if (!form.state.isValid) {
-        onInvalid?.(errors);
+        // Errores frescos del intento que acaba de fallar (no los
+        // memorizados, que todavia son los del intento anterior).
+        onInvalid?.(readFieldErrors(form.state.fieldMeta));
         scheduleAfterPaint(focusFirstInvalidField);
       }
     });
-  }, [applyNormalization, errors, focusFirstInvalidField, form, onInvalid]);
+  }, [applyNormalization, focusFirstInvalidField, form, onInvalid]);
 
   const reset = useCallback(
     (values?: TValues): void => {

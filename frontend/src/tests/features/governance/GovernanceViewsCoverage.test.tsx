@@ -68,11 +68,21 @@ describe("Governance Sub-Views Canonical Container Coverage", () => {
         setResetUsername={vi.fn()}
         setNewPassword={vi.fn()}
         setIsBackupListOpen={vi.fn()}
+        purgeFormProps={{
+          id: "purge-sessions-form",
+          noValidate: true,
+          onSubmit: vi.fn(),
+          "data-app-form": "purge-sessions-form",
+        }}
+        resetFormProps={{
+          id: "reset-password-form",
+          noValidate: true,
+          onSubmit: vi.fn(),
+          "data-app-form": "reset-password-form",
+        }}
         handleDiagnose={vi.fn()}
         handleTriggerAutoClose={vi.fn()}
         handleTriggerBackup={vi.fn()}
-        handlePurgeSessions={vi.fn()}
-        handleResetPassword={vi.fn()}
         handleMasterReset={vi.fn()}
         handleTriggerAccountingAutoClose={vi.fn()}
         handleRestartBackend={vi.fn()}

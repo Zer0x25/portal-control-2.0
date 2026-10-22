@@ -135,6 +135,20 @@ export const adminResetPasswordFormSchema = z.object({
   newPassword: requiredTextMin("La nueva contraseña", 6),
 });
 
+/**
+ * Purga de sesiones activas (`SystemMaintenance`).
+ *
+ * Contrato: `PurgeSessions` (`username` opcional de 1+ caracteres).
+ *
+ * El campo es **opcional a proposito**: vacio significa "purgar todas las
+ * sesiones", que es exactamente lo que la pantalla interpreta (la normalizacion
+ * de la capa convierte `""` en `undefined` y el backend recibe el objeto sin
+ * `username`).
+ */
+export const purgeSessionsFormSchema = z.object({
+  username: z.string().trim().min(1, ERROR_MESSAGES.minLength("El usuario", 1)).optional(),
+});
+
 /** Tipo de la entrada del formulario de inicio de sesion. */
 export type LoginFormValues = z.input<typeof loginFormSchema>;
 
@@ -146,3 +160,9 @@ export type MfaSetupFormValues = z.input<typeof mfaSetupFormSchema>;
 
 /** Tipo de la entrada del formulario de cambio de contraseña. */
 export type ChangePasswordFormValues = z.input<typeof changePasswordFormSchema>;
+
+/** Tipo de la entrada del formulario de reseteo de contraseña. */
+export type AdminResetPasswordFormValues = z.input<typeof adminResetPasswordFormSchema>;
+
+/** Tipo de la entrada del formulario de purga de sesiones. */
+export type PurgeSessionsFormValues = z.input<typeof purgeSessionsFormSchema>;
