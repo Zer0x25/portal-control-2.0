@@ -1,5 +1,24 @@
 # Changelog
 
+## [8.34.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.33.0...v8.34.0) (2026-10-22)
+
+
+### Features
+
+* **frontend:** capa de formulario y a11y de error (spec 036 T1-T4) ([#98](https://github.com/Zer0x25/portal-control-2.0/issues/98)) ([14eebc9](https://github.com/Zer0x25/portal-control-2.0/commit/14eebc9270ad5f50fd842f7564cd7e60d1c797dd))
+* **frontend:** migra el inicio de sesion a useAppForm (spec 036 T12a) ([#110](https://github.com/Zer0x25/portal-control-2.0/issues/110)) ([30c7628](https://github.com/Zer0x25/portal-control-2.0/commit/30c762836fb1df5f3baf322dee7397f8d2817c3a))
+* **frontend:** migra la simulacion y el correo de prueba a useAppForm (spec 036 T10b) ([#106](https://github.com/Zer0x25/portal-control-2.0/issues/106)) ([38f8319](https://github.com/Zer0x25/portal-control-2.0/commit/38f83194be61f0937ca6e4a4bd0b51d7bba578bf))
+* **frontend:** migra la solicitud de correccion y la nota rapida a useAppForm (spec 036 T11b) ([#109](https://github.com/Zer0x25/portal-control-2.0/issues/109)) ([28e8bcd](https://github.com/Zer0x25/portal-control-2.0/commit/28e8bcd7bb7fcd66064e7ff355d1ca94f30c8415))
+* **frontend:** migra los formularios de auth a useAppForm (spec 036 T11a) ([#108](https://github.com/Zer0x25/portal-control-2.0/issues/108)) ([82ec240](https://github.com/Zer0x25/portal-control-2.0/commit/82ec240b1846f9a1f915206c990a49e49bc25063))
+* **frontend:** migra los formularios de empleado y usuario a useAppForm (spec 036 T9a) ([#103](https://github.com/Zer0x25/portal-control-2.0/issues/103)) ([b91c411](https://github.com/Zer0x25/portal-control-2.0/commit/b91c411f6826e59b04d998ced90622fbf4e0440f))
+* **frontend:** migra los formularios de libreta y rechazo a useAppForm (spec 036 T10a) ([#105](https://github.com/Zer0x25/portal-control-2.0/issues/105)) ([64d3800](https://github.com/Zer0x25/portal-control-2.0/commit/64d380089bf071430472cefaae3213628ca33d6a))
+* **frontend:** migra los formularios de turnos teoricos a useAppForm (spec 036 T8) ([81e6c18](https://github.com/Zer0x25/portal-control-2.0/commit/81e6c188940d3f0cb10106173b6b9301fc28491b))
+* **frontend:** migra los perfiles SMTP a useAppForm (spec 036 T10c) ([#107](https://github.com/Zer0x25/portal-control-2.0/issues/107)) ([e0e027c](https://github.com/Zer0x25/portal-control-2.0/commit/e0e027cb2e05a0429f3ad86d12bededebef3b0ac))
+* **frontend:** migra los tres formularios de medidores a useAppForm (spec 036 T9b) ([#104](https://github.com/Zer0x25/portal-control-2.0/issues/104)) ([c9ae87e](https://github.com/Zer0x25/portal-control-2.0/commit/c9ae87e9eb1051c5e2659003f547cb21d4e42da5))
+* **frontend:** migra SystemMaintenance a useAppForm (spec 036 T12b) ([#112](https://github.com/Zer0x25/portal-control-2.0/issues/112)) ([393f924](https://github.com/Zer0x25/portal-control-2.0/commit/393f92491ec3f9a24395a02abd07d3fed433a47e))
+* **frontend:** saca el borrador de hora del store en EditTimestampModal (spec 036 T12c) ([#113](https://github.com/Zer0x25/portal-control-2.0/issues/113)) ([4656546](https://github.com/Zer0x25/portal-control-2.0/commit/46565462c6c7ad719ea95056a4bc01f3308a9b15))
+* **frontend:** schemas de formulario con paridad verificada (spec 036 T5-T7) ([#101](https://github.com/Zer0x25/portal-control-2.0/issues/101)) ([85c2c43](https://github.com/Zer0x25/portal-control-2.0/commit/85c2c433c3e7869e9d4d72a26a5c0116f01e1f3f))
+
 ## [8.33.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.32.0...v8.33.0) (2026-10-22)
 
 
