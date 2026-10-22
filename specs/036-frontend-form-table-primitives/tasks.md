@@ -198,6 +198,11 @@ mergeado antes.
       `AddSupplierModal.tsx` (273), `AddNoveltyModal.tsx` (144) y
       `RejectionReasonModal.tsx` (112) a `useAppForm` + schema
       (AC1, AC2, AC3).
+      **Dividido en dos PR** (T10a y T10b): los tres formularios de la
+      libreta y del panel de supervisor son locales (no tienen contraparte
+      en el backend), mientras que los tres de `configuration` hablan con
+      el backend (`EmailConfig`, `SendTestEmail`, seeding) y necesitan sus
+      schemas contractuales.
 - [ ] T11: Migrar `auth`, `worker-portal` y `dashboard`: `MFASetupModal.tsx`
       (161), `MFALoginModal.tsx` (114),
       `auth/hooks/useChangePasswordModalController.ts` (97),
@@ -469,6 +474,70 @@ medidores sin valor (los omite, como antes).
 | Tests de los formularios | `frontend/src/tests/forms/meterReadingsForms.test.tsx` (10 casos) |
 | Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`         |
 | Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`      |
+
+### Nota de ejecución — Fase C, PR 6 (T10a: `logbook` + `supervisor-dashboard`)
+
+**Los tres formularios migrados a `useAppForm` + schema:**
+
+| Formulario            | Hook / controller                                                     | Schema                      |
+| --------------------- | --------------------------------------------------------------------- | --------------------------- |
+| Novedad de la libreta | `features/logbook/hooks/useNoveltyFormController.ts`                  | `localNoveltyFormSchema`    |
+| Acceso vehicular      | `features/logbook/hooks/useSupplierFormController.ts`                 | `localSupplierFormSchema`   |
+| Motivo de rechazo     | `features/supervisor-dashboard/hooks/useRejectionReasonController.ts` | `rejectionReasonFormSchema` |
+
+**Hallazgos (afectan a T10b-T13):**
+
+1. **Los schemas locales describian un formulario que la pantalla nunca
+   mostro**: `localSupplierFormSchema` tenia nombre, RUT, telefono y notas
+   (el formulario de proveedor de otra version del producto) y
+   `localNoveltyFormSchema` tenia tipo, hora de inicio, hora de termino y
+   justificacion. Venian del inventario de la T5 (la spec, no el codigo).
+   Ahora describen el formulario real (la patente, el conductor, los
+   pasajeros, la empresa, el motivo y la hora; la anotacion y su hora).
+2. **Un formulario puede escribir solo una parte del contrato**: el modal de
+   rechazo entrega **solo** el motivo (el estado y el supervisor los pone la
+   pantalla que lo abre). Su schema es el subconjunto
+   `{rejectionReason}` de `UpdateCorrectionStatus`, declarado en el mapa de
+   contratos con `stricterRequired` (el backend lo exige solo cuando el
+   estado es `rejected`).
+3. **La hora de reloj necesita un helper compartido** (`clockTime`, patron
+   `HH:mm`): lo escriben el selector de hora, la novedad y el acceso
+   vehicular. El mensaje vive en el mapa central (`invalidTime`).
+4. **La mascara de la patente se muda al hook** (`formatLicensePlateInput`),
+   como la del RUT del empleado, y el schema acepta los **prefijos** que
+   produce la mascara (`A`, `AB`, `AB-C`): la regla es "no puede seguir
+   siendo una patente incompleta al enviar", no "tiene que tener seis
+   caracteres".
+5. **El boton que se deshabilita con los campos vacios desaparece**: con la
+   capa de formulario el envio siempre esta disponible y los errores se
+   muestran al enviar (es el comportamiento que pide el AC3). El `disabled`
+   que queda es el del envio en vuelo.
+6. **El estado de la pantalla (el selector de hora) vive en el hook**: una
+   vista (`*.view.tsx`) no puede llamar a hooks (spec 033 AC1) y ningun
+   container del repo guarda estado.
+
+**Payload idéntico al anterior (T13, verificado en esta tarea):** la novedad
+sigue entregando anotacion y hora por separado; el acceso vehicular sigue
+entregando sus seis campos (`licensePlate`, `driverName`, `paxCount`,
+`company`, `reason`, `time`); el rechazo sigue entregando **solo** el motivo.
+
+**Guardrails actualizados en el mismo commit:** la whitelist de overlays
+(`modalGuardrails.test.ts`), la lista de modales de dominio
+(`uiLayeringGuardrails.test.ts`) y los archivos certificados del design system
+(`frontend/design-system-certified.json`) apuntan a los `.view.tsx` nuevos.
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                                |
+| ------------------------ | ------------------------------------------------------------------------ |
+| Schemas de formulario    | `frontend/src/schemas/forms/note.ts`, `.../correction.ts`                |
+| Tests de los formularios | `frontend/src/tests/forms/logbookAndSupervisorForms.test.tsx` (13 casos) |
+| Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`                |
+| Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`             |
+
+**Ratchet:** los presupuestos de la spec 033 bajan de **87** a **84** (los
+componentes con estado) y de **52** a **51** (los grandes sin gemelo
+container/view).
 
 ## Verificación final
 

@@ -50,8 +50,26 @@ export const correctionStatusFormSchema = z
     }
   });
 
+/**
+ * Motivo de rechazo (`RejectionReasonModal.tsx`).
+ *
+ * Contrato: `UpdateCorrectionStatus` -> `rejectionReason`
+ * (`backend/src/models/schemas/time-correction.schemas.ts`).
+ *
+ * El modal solo escribe **este** campo: el estado (`rejected`) y el
+ * supervisor que resuelve los pone la pantalla. El backend lo exige cuando el
+ * estado es `rejected` (regla condicional que el OpenAPI no expresa), asi que
+ * aqui es siempre obligatorio.
+ */
+export const rejectionReasonFormSchema = z.object({
+  rejectionReason: requiredText("El motivo del rechazo"),
+});
+
 /** Tipo de la entrada del formulario de solicitud de correccion. */
 export type CorrectionRequestFormValues = z.input<typeof correctionRequestFormSchema>;
 
 /** Tipo de la entrada del formulario de resolucion de correccion. */
 export type CorrectionStatusFormValues = z.input<typeof correctionStatusFormSchema>;
+
+/** Tipo de la entrada del formulario de motivo de rechazo. */
+export type RejectionReasonFormValues = z.input<typeof rejectionReasonFormSchema>;

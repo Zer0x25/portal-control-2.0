@@ -9,7 +9,7 @@ import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import { PlusCircleIcon, EditIcon, DeleteIcon } from "../../../components/ui/icons/index";
 import { idFactory } from "../../../utils/idFactory";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
-import AddSupplierModal from "./AddSupplierModal";
+import AddSupplierModal from "./AddSupplierModal.container";
 
 type ItemToDelete = { id: string; type: "log" | "supplier"; name: string };
 

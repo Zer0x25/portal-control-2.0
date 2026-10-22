@@ -63,6 +63,18 @@ export const optionalNullableText = (): z.ZodOptional<z.ZodNullable<z.ZodString>
 export const businessDate = (label: string): z.ZodString =>
   requiredText(label).regex(ISO_DATE_PATTERN, ERROR_MESSAGES.invalidDate());
 
+/**
+ * Patrón de hora de reloj (`HH:mm`), 24 horas.
+ *
+ * Es el formato que produce `formatTime` (la hora de Chile) y el que
+ * escriben los selectores de hora de la pantalla.
+ */
+export const CLOCK_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Hora de reloj (`HH:mm`), obligatoria. */
+export const clockTime = (label: string): z.ZodString =>
+  requiredText(label).regex(CLOCK_TIME_PATTERN, ERROR_MESSAGES.invalidTime());
+
 /** Fecha de negocio (`YYYY-MM-DD`), opcional. */
 export const optionalBusinessDate = (): z.ZodOptional<z.ZodString> =>
   z.string().trim().regex(ISO_DATE_PATTERN, ERROR_MESSAGES.invalidDate()).optional();
