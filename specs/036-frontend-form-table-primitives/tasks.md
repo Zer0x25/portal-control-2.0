@@ -800,6 +800,60 @@ payload llega en crudo») y en `authSchemaRules.test.ts`.
 **Ratchet:** sin cambios (`LoginPage` vive en `features/auth/pages/`, fuera de
 los directorios que mide la spec 033).
 
+### Nota de ejecución — Fase C, PR 12 (T12b: `SystemMaintenance`)
+
+**Edición aprobada de una vista protegida:** `SystemMaintenance.view.tsx` lleva
+el encabezado `UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL`; el usuario aprobó
+su edición para enlazar el estado del formulario y pintar los errores junto a
+los campos (AC3). El cambio se limita a eso: la maquetación y los textos no se
+tocan.
+
+**El formulario migrado a `useAppForm` + schema:**
+
+| Formulario            | Componente                             | Schema                         |
+| --------------------- | -------------------------------------- | ------------------------------ |
+| Purga de sesiones     | `features/governance/hooks/useSystem…` | `purgeSessionsFormSchema`      |
+| Reseteo de contraseña | `features/governance/hooks/useSystem…` | `adminResetPasswordFormSchema` |
+
+**Hallazgos:**
+
+1. **`onInvalid` informaba los errores del intento anterior** (bug de la capa,
+   no del formulario): `submit()` llamaba al valor memorizado de `errors`,
+   que durante el primer envio todavia esta vacio, asi que el consumidor
+   recibia `{}` y caia al mensaje generico. La lectura por campo pasa a una
+   funcion pura (`readFieldErrors`) y `onInvalid` recibe los errores **del
+   intento que acaba de fallar** (contrato fijado en
+   `useAppForm.test.tsx`).
+2. **La purga sigue pudiendo venir vacia**: `username` es opcional de 1+
+   caracteres (paridad con `PurgeSessions`). La normalizacion convierte `""` en
+   `undefined` y el servicio manda `{}`, que es como se purgaba "todas las
+   sesiones" antes. El schema documenta la regla aunque no pueda fallar en la
+   practica.
+3. **Los flags `isPurgingSessions`/`isResettingPassword` no pasan al
+   formulario**: son estado de **accion**, no de campos. Ademas el
+   `window.confirm` se resuelve antes de marcarlos, y atarlos a
+   `isSubmitting` haria parpadear el boton mientras el navegador espera la
+   confirmacion.
+4. El reseteo conserva la asimetria del contrato: el **usuario se recorta**
+   (`serialize`) y la **contrasena viaja en crudo** (`normalize` desactivado),
+   igual que el login (T12a) y el cambio de contraseña (T11a).
+
+**Payload idéntico al anterior (T13):** purga `{ username? }` (sin `username`
+cuando viene vacio) y reseteo `{ username: <trim>, newPassword: <crudo> }`,
+exactamente lo que `purgeSessions()` y `resetPassword()` recibian antes.
+
+**Evidencia:**
+
+| Artefacto                      | Ubicación                                                      |
+| ------------------------------ | -------------------------------------------------------------- |
+| Schema de la purga             | `frontend/src/schemas/forms/auth.ts`                           |
+| Test del controlador (5 casos) | `frontend/src/tests/features/governance/useSystem…Controller…` |
+| Contrato de `onInvalid`        | `frontend/src/tests/forms/useAppForm.test.tsx`                 |
+| Paridad de los contratos       | `frontend/src/tests/contracts/form-schema-parity.test.ts`      |
+
+**Ratchet:** sin cambios (los dos formularios comparten la vista que ya medía
+la spec 033).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`

@@ -5,9 +5,16 @@ import {
   type AdminStats,
   type AutoCloseDiagnosis,
 } from "../../../services/healthService";
+import { useAppForm } from "../../../hooks/useAppForm";
 import { useStore } from "../../../store/useStore";
 import { useShallow } from "zustand/react/shallow";
 import { queryKeys } from "../../../lib/queryKeys";
+import {
+  adminResetPasswordFormSchema,
+  purgeSessionsFormSchema,
+  type AdminResetPasswordFormValues,
+  type PurgeSessionsFormValues,
+} from "../../../schemas/forms/auth";
 
 export const useSystemMaintenanceController = () => {
   const queryClient = useQueryClient();
@@ -19,9 +26,6 @@ export const useSystemMaintenanceController = () => {
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isResettingDatabase, setIsResettingDatabase] = useState(false);
   const [isTriggeringAccountingAutoClose, setIsTriggeringAccountingAutoClose] = useState(false);
-  const [purgeUsername, setPurgeUsername] = useState("");
-  const [resetUsername, setResetUsername] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [isBackupListOpen, setIsBackupListOpen] = useState(false);
 
   const { addToast } = useStore(
@@ -87,37 +91,73 @@ export const useSystemMaintenanceController = () => {
     }
   };
 
-  const handlePurgeSessions = async () => {
-    if (!window.confirm("Se purgaran sesiones activas. Deseas continuar?")) return;
-    setIsPurgingSessions(true);
-    try {
-      const result = await healthService.purgeSessions(purgeUsername.trim() || undefined);
-      addToast(result.data?.message || "Sesiones purgadas", "success");
-      await fetchStats();
-    } catch (error: unknown) {
-      addToast(error instanceof Error ? error.message : "Error purgando sesiones", "error");
-    } finally {
-      setIsPurgingSessions(false);
-    }
-  };
+  /**
+   * Spec 036 T12 (AC1, AC2): los dos campos de texto del panel de
+   * mantenimiento pasan a `useAppForm`.
+   *
+   * Antes `purgeUsername`, `resetUsername` y `newPassword` eran tres
+   * `useState` y la regla de reseteo era un `if` delante del `fetch`: si
+   * faltaba algo salia un toast generico y ningun campo lo senalaba.
+   * Ahora el estado vive en los formularios y las reglas en los schemas
+   * (`purgeSessionsFormSchema` y `adminResetPasswordFormSchema`).
+   *
+   * Los flags `isPurgingSessions`/`isResettingPassword` siguen siendo estado
+   * de **accion** (no de formulario): el `window.confirm` se resuelve antes
+   * de marcarlos, igual que antes.
+   */
+  const purgeForm = useAppForm<PurgeSessionsFormValues>({
+    schema: purgeSessionsFormSchema,
+    defaultValues: { username: "" },
+    onSubmit: async (values) => {
+      if (!window.confirm("Se purgaran sesiones activas. Deseas continuar?")) return;
+      setIsPurgingSessions(true);
+      try {
+        const result = await healthService.purgeSessions(values.username);
+        addToast(result.data?.message || "Sesiones purgadas", "success");
+        await fetchStats();
+      } catch (error: unknown) {
+        addToast(error instanceof Error ? error.message : "Error purgando sesiones", "error");
+      } finally {
+        setIsPurgingSessions(false);
+      }
+    },
+  });
 
-  const handleResetPassword = async () => {
-    if (!resetUsername.trim() || newPassword.length < 6) {
-      addToast("Usuario y password >= 6 caracteres son obligatorios", "error");
-      return;
-    }
-    setIsResettingPassword(true);
-    try {
-      const result = await healthService.resetPassword(resetUsername.trim(), newPassword);
-      addToast(result.data?.message || "Password actualizado", "success");
-      setNewPassword("");
-      await fetchStats();
-    } catch (error: unknown) {
-      addToast(error instanceof Error ? error.message : "Error reseteando password", "error");
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
+  const resetForm = useAppForm<AdminResetPasswordFormValues>({
+    schema: adminResetPasswordFormSchema,
+    defaultValues: { username: "", newPassword: "" },
+    // La contrasena no se recorta (spec 036 T13); el usuario si, como se
+    // hacia antes (`resetUsername.trim()`), y eso vive en `serialize`.
+    normalize: (values) => values,
+    serialize: (values) => ({
+      username: values.username.trim(),
+      newPassword: values.newPassword,
+    }),
+    // El aviso por toast se conserva (era la señal que existia antes de la
+    // migracion) y ahora lleva el mensaje del schema; la vista pinta ademas
+    // el error al lado de cada campo (spec 036 AC3).
+    onInvalid: (errors) =>
+      addToast(
+        errors.username ??
+          errors.newPassword ??
+          "Usuario y password >= 6 caracteres son obligatorios",
+        "error",
+      ),
+    onSubmit: async (values) => {
+      setIsResettingPassword(true);
+      try {
+        const result = await healthService.resetPassword(values.username, values.newPassword);
+        addToast(result.data?.message || "Password actualizado", "success");
+        // Solo se limpia la contrasena; el usuario se queda como se escribio.
+        resetForm.reset({ username: resetForm.values.username, newPassword: "" });
+        await fetchStats();
+      } catch (error: unknown) {
+        addToast(error instanceof Error ? error.message : "Error reseteando password", "error");
+      } finally {
+        setIsResettingPassword(false);
+      }
+    },
+  });
 
   const handleMasterReset = async () => {
     if (!window.confirm("Esta accion elimina datos del servidor. Continuar?")) return;
@@ -174,19 +214,22 @@ export const useSystemMaintenanceController = () => {
     isResettingPassword,
     isResettingDatabase,
     isTriggeringAccountingAutoClose,
-    purgeUsername,
-    resetUsername,
-    newPassword,
+    purgeUsername: purgeForm.values.username ?? "",
+    resetUsername: resetForm.values.username,
+    newPassword: resetForm.values.newPassword,
+    purgeUsernameError: purgeForm.getError("username"),
+    resetUsernameError: resetForm.getError("username"),
+    newPasswordError: resetForm.getError("newPassword"),
     isBackupListOpen,
-    setPurgeUsername,
-    setResetUsername,
-    setNewPassword,
+    setPurgeUsername: (value: string) => purgeForm.setValue("username", value),
+    setResetUsername: (value: string) => resetForm.setValue("username", value),
+    setNewPassword: (value: string) => resetForm.setValue("newPassword", value),
     setIsBackupListOpen,
+    purgeFormProps: purgeForm.formProps,
+    resetFormProps: resetForm.formProps,
     handleDiagnose,
     handleTriggerAutoClose,
     handleTriggerBackup,
-    handlePurgeSessions,
-    handleResetPassword,
     handleMasterReset,
     handleTriggerAccountingAutoClose,
     handleRestartBackend,

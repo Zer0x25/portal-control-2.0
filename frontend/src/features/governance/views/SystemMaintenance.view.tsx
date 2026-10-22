@@ -1,5 +1,8 @@
 /* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
    Presentational layer for SystemMaintenance.
+   Spec 036 T12: edicion aprobada por el humano (enlace del estado de los dos
+   formularios + errores junto a cada campo, AC3). La maquetacion y los
+   textos no se tocaron.
 */
 
 import React from "react";
@@ -54,18 +57,36 @@ export interface SystemMaintenanceViewProps {
   isResettingDatabase: boolean;
   isTriggeringAccountingAutoClose: boolean;
   purgeUsername: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  purgeUsernameError?: string;
   resetUsername: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  resetUsernameError?: string;
   newPassword: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  newPasswordError?: string;
   isBackupListOpen: boolean;
-  setPurgeUsername: React.Dispatch<React.SetStateAction<string>>;
-  setResetUsername: React.Dispatch<React.SetStateAction<string>>;
-  setNewPassword: React.Dispatch<React.SetStateAction<string>>;
+  setPurgeUsername: (value: string) => void;
+  setResetUsername: (value: string) => void;
+  setNewPassword: (value: string) => void;
   setIsBackupListOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Props del `<form>` de purga (id, `noValidate` y `onSubmit` de la capa). */
+  purgeFormProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
+  /** Props del `<form>` de reseteo (id, `noValidate` y `onSubmit` de la capa). */
+  resetFormProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
   handleDiagnose: () => Promise<void>;
   handleTriggerAutoClose: () => Promise<void>;
   handleTriggerBackup: () => Promise<void>;
-  handlePurgeSessions: () => Promise<void>;
-  handleResetPassword: () => Promise<void>;
   handleMasterReset: () => Promise<void>;
   handleTriggerAccountingAutoClose: () => Promise<void>;
   handleRestartBackend: () => Promise<void>;
@@ -81,18 +102,21 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
   isResettingDatabase,
   isTriggeringAccountingAutoClose,
   purgeUsername,
+  purgeUsernameError,
   resetUsername,
+  resetUsernameError,
   newPassword,
+  newPasswordError,
   isBackupListOpen,
   setPurgeUsername,
   setResetUsername,
   setNewPassword,
   setIsBackupListOpen,
+  purgeFormProps,
+  resetFormProps,
   handleDiagnose,
   handleTriggerAutoClose,
   handleTriggerBackup,
-  handlePurgeSessions,
-  handleResetPassword,
   handleMasterReset,
   handleTriggerAccountingAutoClose,
   handleRestartBackend,
@@ -209,10 +233,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
               </div>
               <div className="space-y-4">
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleResetPassword();
-                  }}
+                  {...resetFormProps}
                   autoComplete="off"
                   className="space-y-3 p-4 bg-token-surface-stripe border border-token-border-subtle rounded-sm"
                 >
@@ -222,23 +243,53 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   <input
                     type="text"
                     name="reset-username"
+                    id="reset-username"
                     autoComplete="off"
                     value={resetUsername}
                     onChange={(e) => setResetUsername(e.target.value)}
                     placeholder="USERNAME"
                     aria-label="Usuario para reset de contraseña"
-                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
+                    aria-invalid={resetUsernameError ? "true" : undefined}
+                    aria-describedby={resetUsernameError ? "reset-username-error" : undefined}
+                    className={`w-full h-9 px-3 rounded-sm bg-token-surface-card border ${
+                      resetUsernameError
+                        ? "border-token-status-error"
+                        : "border-token-border-technical"
+                    } text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30`}
                   />
+                  {resetUsernameError && (
+                    <p
+                      id="reset-username-error"
+                      className="text-[10px] font-bold uppercase tracking-widest text-token-status-error"
+                    >
+                      {resetUsernameError}
+                    </p>
+                  )}
                   <input
                     type="password"
                     name="new-password"
+                    id="new-password"
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="NUEVA PASSWORD"
                     aria-label="Nueva contraseña"
-                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
+                    aria-invalid={newPasswordError ? "true" : undefined}
+                    aria-describedby={newPasswordError ? "new-password-error" : undefined}
+                    className={`w-full h-9 px-3 rounded-sm bg-token-surface-card border ${
+                      newPasswordError
+                        ? "border-token-status-error"
+                        : "border-token-border-technical"
+                    } text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30`}
                   />
+                  {newPasswordError && (
+                    <p
+                      id="new-password-error"
+                      className="text-[10px] font-bold uppercase tracking-widest text-token-status-error"
+                    >
+                      {newPasswordError}
+                    </p>
+                  )}
                   <Button
                     type="submit"
                     variant="secondary"
@@ -260,10 +311,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
               </div>
               <div className="space-y-4">
                 <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handlePurgeSessions();
-                  }}
+                  {...purgeFormProps}
                   autoComplete="off"
                   className="space-y-3 p-4 bg-token-surface-stripe border border-token-border-subtle rounded-sm"
                 >
@@ -273,13 +321,28 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   <input
                     type="text"
                     name="purge-username"
+                    id="purge-username"
                     autoComplete="off"
                     value={purgeUsername}
                     onChange={(e) => setPurgeUsername(e.target.value)}
                     placeholder="USERNAME (VACÍO = GLOBAL)"
                     aria-label="Usuario para purgar sesiones, vacío global"
-                    className="w-full h-9 px-3 rounded-sm bg-token-surface-card border border-token-border-technical text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30"
+                    aria-invalid={purgeUsernameError ? "true" : undefined}
+                    aria-describedby={purgeUsernameError ? "purge-username-error" : undefined}
+                    className={`w-full h-9 px-3 rounded-sm bg-token-surface-card border ${
+                      purgeUsernameError
+                        ? "border-token-status-error"
+                        : "border-token-border-technical"
+                    } text-token-text-primary text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-(--sidebar-text-active)/30`}
                   />
+                  {purgeUsernameError && (
+                    <p
+                      id="purge-username-error"
+                      className="text-[10px] font-bold uppercase tracking-widest text-token-status-error"
+                    >
+                      {purgeUsernameError}
+                    </p>
+                  )}
                   <Button
                     type="submit"
                     variant="secondary"
