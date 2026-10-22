@@ -30,8 +30,8 @@ const SANCTIONED_PRIMITIVE = "components/ui/CinematicModal.tsx";
 const MODAL_OVERLAY_WHITELIST: readonly string[] = [
   // features (11)
   "features/auth/components/ChangePasswordModal.view.tsx",
-  "features/auth/components/MFALoginModal.tsx",
-  "features/auth/components/MFASetupModal.tsx",
+  "features/auth/components/MFALoginModal.view.tsx",
+  "features/auth/components/MFASetupModal.view.tsx",
   "features/governance/components/AuditLogDetailDrawer.tsx",
   "features/logbook/views/Logbook.view.tsx",
   "features/meters/components/MeterConfigPanel.tsx",

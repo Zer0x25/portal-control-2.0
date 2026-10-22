@@ -6,7 +6,7 @@ import { UserManagementView } from "../../../features/user-management/views/User
 vi.mock("../../../features/user-management/components/UserForm", () => ({
   default: () => <div>USER-FORM</div>,
 }));
-vi.mock("../../../features/auth/components/MFASetupModal", () => ({
+vi.mock("../../../features/auth/components/MFASetupModal.container", () => ({
   default: () => <div>MFA-MODAL</div>,
 }));
 vi.mock("../../../components/ui/CinematicModal", () => ({

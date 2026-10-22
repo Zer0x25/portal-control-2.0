@@ -10,6 +10,10 @@ interface PasswordChangeFormProps {
   setNewPassword: (value: string) => void;
   confirmPassword: string;
   setConfirmPassword: (value: string) => void;
+  /** Mensaje de error de la contraseña nueva (o `undefined`). */
+  newPasswordError?: string;
+  /** Mensaje de error de la confirmación (o `undefined`). */
+  confirmPasswordError?: string;
 }
 
 const getPasswordStrength = (password: string): PasswordStrength => {
@@ -50,6 +54,8 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
   setNewPassword,
   confirmPassword,
   setConfirmPassword,
+  newPasswordError,
+  confirmPasswordError,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const strength = getPasswordStrength(newPassword);
@@ -63,7 +69,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
           type={showPassword ? "text" : "password"}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          required
+          error={newPasswordError}
           autoComplete="new-password"
         />
         <Button
@@ -83,7 +89,7 @@ export const PasswordChangeForm: React.FC<PasswordChangeFormProps> = ({
         type="password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        required
+        error={confirmPasswordError}
         disabled={!newPassword}
         autoComplete="new-password"
       />

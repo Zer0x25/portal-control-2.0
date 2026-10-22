@@ -22,12 +22,27 @@ export const loginFormSchema = z.object({
 });
 
 /**
- * Validacion del codigo MFA durante el inicio de sesion (`MFALoginModal.tsx`).
+ * Copia del contrato `MFAValidate`
+ * (`backend/src/models/schemas/auth-user.schemas.ts`).
  *
- * Contrato: `MFAValidate` (`mfaToken` de 1+ caracteres y `code` de 6).
+ * El backend exige el token MFA **y** el codigo. El modal de inicio de sesion
+ * solo escribe el codigo: el token lo aporta la sesion, asi que el formulario
+ * usa el subconjunto `mfaLoginFormSchema`.
  */
-export const mfaCodeFormSchema = z.object({
+export const mfaValidateFormSchema = z.object({
   mfaToken: requiredTextMin("El token MFA", 1),
+  code: requiredTextMin("El codigo", 6).max(6, ERROR_MESSAGES.maxLength("El codigo", 6)),
+});
+
+/**
+ * Codigo MFA del formulario de inicio de sesion (`MFALoginModal.tsx`).
+ *
+ * Contrato: `MFAValidate` -> `code`.
+ *
+ * El modal solo escribe **este** campo. Las reglas de longitud son las del
+ * backend (exactamente 6).
+ */
+export const mfaLoginFormSchema = z.object({
   code: requiredTextMin("El codigo", 6).max(6, ERROR_MESSAGES.maxLength("El codigo", 6)),
 });
 
@@ -39,6 +54,27 @@ export const mfaCodeFormSchema = z.object({
 export const mfaSetupFormSchema = z.object({
   token: requiredTextMin("El token", 1),
 });
+
+/**
+ * Codigo TOTP del alta de MFA (`MFASetupModal.tsx`).
+ *
+ * Contrato: `MFAVerify` -> `token`.
+ *
+ * El formulario exige **6 digitos numericos**: es una regla del cliente (el
+ * backend solo pide 1+ caracteres, porque el TOTP real lo valida la libreria
+ * TOTP del servidor). Como un `pattern` no lo puede expresar el OpenAPI sin
+ * desincronizar la paridad, se declara como `superRefine`, igual que el resto
+ * de reglas exclusivas del frontend.
+ */
+export const buildMfaSetupFormSchema = () =>
+  mfaSetupFormSchema.superRefine((values, ctx) => {
+    if (/^\d{6}$/.test(values.token)) return;
+    ctx.addIssue({
+      code: "custom",
+      message: ERROR_MESSAGES.invalidSixDigitCode(),
+      path: ["token"],
+    });
+  });
 
 /**
  * Cambio de contraseña del propio usuario (`ChangePasswordModal.tsx`).
@@ -77,6 +113,12 @@ export const adminResetPasswordFormSchema = z.object({
 
 /** Tipo de la entrada del formulario de inicio de sesion. */
 export type LoginFormValues = z.input<typeof loginFormSchema>;
+
+/** Tipo de la entrada del formulario de codigo MFA. */
+export type MfaLoginFormValues = z.input<typeof mfaLoginFormSchema>;
+
+/** Tipo de la entrada del formulario de alta de MFA. */
+export type MfaSetupFormValues = z.input<typeof mfaSetupFormSchema>;
 
 /** Tipo de la entrada del formulario de cambio de contraseña. */
 export type ChangePasswordFormValues = z.input<typeof changePasswordFormSchema>;

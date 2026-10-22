@@ -1,9 +1,18 @@
 import React from "react";
+
 import ForceChangePasswordModalView from "./ForceChangePasswordModal.view";
 import { useForceChangePasswordModalController } from "../hooks/useForceChangePasswordModalController";
 
-interface ForceChangePasswordModalProps {
+/**
+ * Spec 036 T11: el container del formulario de cambio de contraseña forzado.
+ *
+ * Es el unico punto donde vive el estado del formulario: instancia el hook de
+ * dominio y se lo pasa a la vista (que es presentacion pura).
+ */
+export interface ForceChangePasswordModalProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
+  /** Cierra el modal. */
   onClose: () => void;
 }
 
@@ -16,12 +25,12 @@ const ForceChangePasswordModalContainer: React.FC<ForceChangePasswordModalProps>
   return (
     <ForceChangePasswordModalView
       isOpen={isOpen}
-      newPassword={controller.newPassword}
-      confirmPassword={controller.confirmPassword}
-      isLoading={controller.isLoading}
-      onSetNewPassword={controller.setNewPassword}
-      onSetConfirmPassword={controller.setConfirmPassword}
-      onSave={controller.handleSave}
+      values={controller.values}
+      getError={controller.getError}
+      onPasswordChange={controller.handlePasswordChange}
+      onPasswordConfirmChange={controller.handlePasswordConfirmChange}
+      isSubmitting={controller.isSubmitting}
+      formProps={controller.formProps}
     />
   );
 };

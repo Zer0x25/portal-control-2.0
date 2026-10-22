@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router";
 import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
 import BrandLogo from "../../../components/ui/BrandLogo";
-import MFALoginModal from "../components/MFALoginModal";
+import MFALoginModal from "../components/MFALoginModal.container";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
 

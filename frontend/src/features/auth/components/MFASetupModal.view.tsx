@@ -1,64 +1,67 @@
-import React, { useState, useEffect } from "react";
-import { authService } from "../../../services/authService";
-import { useToasts } from "../../../hooks/useToasts";
+import React from "react";
+
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { Z } from "../../../constants/zScale";
+import type { MfaSetupStep } from "../hooks/useMfaSetupModalController";
 
-interface MFASetupModalProps {
+/**
+ * Spec 036 T11: `MFASetupModal` es **presentacion pura**.
+ *
+ * Antes el componente guardaba el codigo TOTP en un `useState`, lo filtraba a
+ * digitos en el `onChange` y volvia atras sin explicacion si el codigo no
+ * tenia 6 caracteres. Ahora el valor, el error y los handlers entran por
+ * props (los lleva el hook de dominio) y la maqueta es la misma.
+ */
+export interface MfaSetupModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
+  /** Cierra el modal. */
   onClose: () => void;
-  onSuccess: () => void;
+  /** Paso actual del asistente. */
+  step: MfaSetupStep;
+  /** QR y secreto que devolvio el backend. */
+  mfaData: { qrCode: string; secret: string } | null;
+  /** Valor del codigo TOTP. */
+  token: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  error?: string;
+  /** Escribe el codigo TOTP (solo digitos, maximo 6). */
+  onTokenChange: (value: string) => void;
+  /** Pide el QR al backend. */
+  onStartSetup: () => void;
+  /** Vuelve al paso del QR. */
+  onGoToScanning: () => void;
+  /** Pasa al paso de verificacion. */
+  onGoToVerifying: () => void;
+  /** Se esta pidiendo el QR. */
+  isStarting: boolean;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
-const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [step, setStep] = useState<"initial" | "scanning" | "verifying">("initial");
-  const [mfaData, setMfaData] = useState<{ qrCode: string; secret: string } | null>(null);
-  const [token, setToken] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { addToast } = useToasts();
-
-  const handleStartSetup = async () => {
-    setLoading(true);
-    try {
-      const data = await authService.setupMFA();
-      setMfaData(data);
-      setStep("scanning");
-    } catch (error) {
-      addToast(error instanceof Error ? error.message : "Error al iniciar configuración", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (token.length !== 6) return;
-
-    setLoading(true);
-    try {
-      await authService.verifyMFASetup(token);
-      addToast("MFA configurado y habilitado correctamente", "success");
-      onSuccess();
-      onClose();
-    } catch (error) {
-      addToast(
-        error instanceof Error ? error.message : "Código de verificación incorrecto",
-        "error",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isOpen) {
-      setStep("initial");
-      setMfaData(null);
-      setToken("");
-    }
-  }, [isOpen]);
-
+const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
+  isOpen,
+  onClose,
+  step,
+  mfaData,
+  token,
+  error,
+  onTokenChange,
+  onStartSetup,
+  onGoToScanning,
+  onGoToVerifying,
+  isStarting,
+  isSubmitting,
+  formProps,
+}) => {
   return (
     isOpen && (
       <div
@@ -87,11 +90,11 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
                 Authenticator o Authy.
               </div>
               <Button
-                onClick={handleStartSetup}
-                disabled={loading}
+                onClick={onStartSetup}
+                disabled={isStarting}
                 className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
               >
-                {loading ? "Iniciando..." : "Comenzar Configuración"}
+                {isStarting ? "Iniciando..." : "Comenzar Configuración"}
               </Button>
             </div>
           )}
@@ -110,7 +113,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
                 </code>
               </div>
               <Button
-                onClick={() => setStep("verifying")}
+                onClick={onGoToVerifying}
                 className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
               >
                 Ya escaneé el código
@@ -119,7 +122,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
           )}
 
           {step === "verifying" && (
-            <form onSubmit={handleVerify} data-testid="mfa-setup-form" className="space-y-6">
+            <form {...formProps} data-testid="mfa-setup-form" className="space-y-6">
               <div className="text-center">
                 <p className="text-token-text-secondary text-sm mb-6">
                   Ingrese el código de 6 dígitos para confirmar la vinculación.
@@ -127,7 +130,8 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
                 <Input
                   type="text"
                   value={token}
-                  onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) => onTokenChange(e.target.value)}
+                  error={error}
                   placeholder="000000"
                   className="bg-black/40 border-white/10 text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-indigo-500"
                   autoFocus
@@ -136,7 +140,7 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   type="button"
-                  onClick={() => setStep("scanning")}
+                  onClick={onGoToScanning}
                   variant="secondary"
                   className="h-12 rounded-xl text-token-text-secondary font-bold uppercase tracking-widest text-[10px]"
                 >
@@ -144,10 +148,10 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || token.length !== 6}
+                  disabled={isSubmitting}
                   className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-[10px]"
                 >
-                  {loading ? "Verificando..." : "Habilitar MFA"}
+                  {isSubmitting ? "Verificando..." : "Habilitar MFA"}
                 </Button>
               </div>
             </form>
@@ -158,4 +162,4 @@ const MFASetupModal: React.FC<MFASetupModalProps> = ({ isOpen, onClose, onSucces
   );
 };
 
-export default MFASetupModal;
+export default MfaSetupModalView;

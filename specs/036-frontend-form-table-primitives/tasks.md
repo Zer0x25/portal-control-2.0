@@ -638,6 +638,60 @@ las cadenas vacias tal cual.
 componentes con estado) y de **50** a **49** (los grandes sin gemelo
 container/view).
 
+### Nota de ejecución — Fase C, PR 9 (T11a: `auth`)
+
+**Los formularios migrados a `useAppForm` + schema:**
+
+| Formulario                   | Hook / controller                                     | Schema                          |
+| ---------------------------- | ----------------------------------------------------- | ------------------------------- |
+| Cambio de contraseña propio  | `auth/hooks/useChangePasswordModalController.ts`      | `changePasswordFormSchema`      |
+| Cambio de contraseña forzado | `auth/hooks/useForceChangePasswordModalController.ts` | `forceChangePasswordFormSchema` |
+| Codigo MFA del login         | `auth/hooks/useMfaLoginModalController.ts`            | `mfaLoginFormSchema`            |
+| Alta de MFA                  | `auth/hooks/useMfaSetupModalController.ts`            | `buildMfaSetupFormSchema`       |
+
+**Hallazgos (afectan a T11b-T13):**
+
+1. **El `required` nativo no sobrevive al `noValidate`**: `PasswordChangeForm`
+   (primitiva compartida) marcaba sus dos inputs como `required`, y esa era
+   toda la validacion del cambio de contrasena. Ahora acepta
+   `newPasswordError`/`confirmPasswordError` opcionales (sin romper a sus
+   otros consumidores) y los errores los manda el hook de dominio.
+2. **Un boton deshabilitado es una regla escondida**: los dos modales MFA
+   deshabilitaban el boton mientras el codigo no tuviera 6 caracteres (y el
+   de login ademas avisaba por toast). La regla vive ahora en el schema y el
+   error sale junto al campo (AC3); el boton solo se deshabilita mientras
+   hay un envio en vuelo.
+3. **La contrasena no se recorta**: `normalize: (values) => values`. Un
+   espacio final pegado forma parte de la credencial original; recortarla
+   cambiaria el payload y la contrasena en silencio. `passwordConfirm` no
+   viaja: se arma en el `serialize`.
+4. **Un formulario puede escribir un subconjunto del contrato**: `mfaCodeForm`
+   escribe solo `code` (el `mfaToken` lo aporta la sesion en
+   `validateMFACode`). La copia completa del contrato (`mfaValidateForm`)
+   queda registrada con `forms: []`.
+5. **El formato de 6 digitos no puede ser un `pattern`**: un patron cambiaria
+   el JSON Schema y desincronizaria la paridad (el backend pide 1+
+   caracteres). Se declara como `superRefine`, igual que el resto de reglas
+   exclusivas del cliente.
+
+**Payload identico al anterior (T13, verificado en esta tarea):** los dos
+cambios de contrasena siguen enviando solo `{ password }`; el codigo MFA
+sigue viajando solo (el token lo pone la sesion) y el alta de MFA sigue
+enviando `{ token }`.
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                    |
+| ------------------------ | ------------------------------------------------------------ |
+| Schemas de formulario    | `frontend/src/schemas/forms/auth.ts`                         |
+| Tests de los formularios | `frontend/src/tests/features/auth/` (5 ficheros, 22 casos)   |
+| Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`    |
+| Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts` |
+
+**Ratchet:** los presupuestos de la spec 033 bajan de **82** a **80** (los
+componentes con estado) y de **49** a **48** (los grandes sin gemelo
+container/view).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`

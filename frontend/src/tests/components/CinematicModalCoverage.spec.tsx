@@ -119,12 +119,17 @@ describe("Cobertura del estándar de modal (spec 031 AC2)", () => {
     render(
       <ForceChangePasswordModalView
         isOpen
-        newPassword=""
-        confirmPassword=""
-        isLoading={false}
-        onSetNewPassword={() => undefined}
-        onSetConfirmPassword={() => undefined}
-        onSave={(e) => e.preventDefault()}
+        values={{ password: "", passwordConfirm: "" }}
+        getError={() => undefined}
+        onPasswordChange={() => undefined}
+        onPasswordConfirmChange={() => undefined}
+        isSubmitting={false}
+        formProps={{
+          id: "force-change-password-form",
+          noValidate: true,
+          onSubmit: (e) => e.preventDefault(),
+          "data-app-form": "force-change-password-form",
+        }}
       />,
     );
 
