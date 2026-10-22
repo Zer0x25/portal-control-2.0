@@ -13,6 +13,7 @@ import {
   mfaValidateFormSchema,
 } from "./forms/auth";
 import {
+  correctionRequestBaseSchema,
   correctionRequestFormSchema,
   correctionStatusFormSchema,
   rejectionReasonFormSchema,
@@ -246,7 +247,19 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     transformedFields: ["requestedValue"],
     divergences: [
       "requestedValue: el formulario captura `YYYY-MM-DDTHH:mm` (hora de Chile) y el controller lo convierte a ISO-8601 con offset antes de enviarlo",
+      "el modal solo escribe el valor y el motivo: empleado, marcaje, campo y valor actual los aporta la pantalla que lo abre",
     ],
+  },
+  {
+    id: "correctionRequestBaseForm",
+    openApi: "CorrectionRequest",
+    schema: correctionRequestBaseSchema,
+    // Copia del contrato del backend: el formulario usa el subconjunto
+    // `correctionRequestForm` (solo escribe el valor y el motivo).
+    forms: [],
+    // Igual que el formulario: `requestedValue` se representa en pantalla como
+    // `YYYY-MM-DDTHH:mm` y no como ISO-8601 con offset.
+    transformedFields: ["requestedValue"],
   },
   {
     id: "correctionStatusForm",
@@ -539,7 +552,7 @@ export type QuickNotePayloadContract = AssertAssignable<
 
 /** Payload de la solicitud de correccion: debe encajar en `CorrectionRequest`. */
 export type CorrectionRequestPayloadContract = AssertAssignable<
-  z.output<typeof correctionRequestFormSchema>,
+  z.output<typeof correctionRequestBaseSchema>,
   components["schemas"]["CorrectionRequest"]
 >;
 

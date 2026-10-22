@@ -1,6 +1,11 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+
+import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
 import { useQuickNotes } from "../../../hooks/useQuickNotes";
+import { quickNoteFormSchema, type QuickNoteFormValues } from "../../../schemas/forms/note";
+
+const DEFAULT_NOTE_COLOR = "amber";
 
 export const COLOR_MAP: Record<string, string> = {
   amber: "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800",
@@ -18,23 +23,65 @@ export const INDICATOR_COLOR_MAP: Record<string, string> = {
   indigo: "bg-indigo-400 dark:bg-indigo-600",
 };
 
+/**
+ * Spec 036 T11 (AC1, AC2, AC3): formulario de **nota rapida**
+ * (`QuickNotesModal.tsx`).
+ *
+ * Antes el modal guardaba el texto y el color en dos `useState` y, si el texto
+ * estaba vacio, `handleAddNote` volvia atras **sin decir nada** (el usuario
+ * pulsaba "Guardar Nota" y no pasaba nada). Ahora:
+ *
+ * - el texto y el color viven en `useAppForm` (spec 036 AC1);
+ * - la regla vive en el schema (`quickNoteFormSchema`: el contenido es
+ *   obligatorio) (spec 036 AC2);
+ * - el error sale junto al campo (spec 036 AC3).
+ *
+ * El modal solo escribe `content` y `color`: `authorUsername` lo deduce el
+ * servidor a partir de la sesion (divergencia declarada en `quickNoteForm`).
+ *
+ * El payload no cambia (T13): `addNote` sigue recibiendo los dos valores, con
+ * el contenido recortado por la normalizacion de la capa.
+ */
+
+/**
+ * Controlador del formulario de nota rapida (spec 036 T11).
+ */
 export const useQuickNotesModalController = () => {
   const { notes, isLoadingNotes, addNote, deleteNote } = useQuickNotes();
   const { currentUser } = useAuth();
-  const [newNoteContent, setNewNoteContent] = useState("");
-  const [selectedColor, setSelectedColor] = useState("amber");
 
   const colorOptions = useMemo(() => Object.keys(COLOR_MAP), []);
 
-  const handleAddNote = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newNoteContent.trim()) return;
+  const form = useAppForm<QuickNoteFormValues>({
+    schema: quickNoteFormSchema,
+    defaultValues: { content: "", color: DEFAULT_NOTE_COLOR },
+    onSubmit: async (values) => {
+      const success = await addNote(values.content, values.color ?? DEFAULT_NOTE_COLOR);
+      if (success) {
+        // La nota quedo guardada: el tablero queda listo para la siguiente.
+        // El color elegido se conserva (es el que venia usando el usuario).
+        reset({ content: "", color: values.color ?? DEFAULT_NOTE_COLOR });
+      }
+    },
+  });
 
-    const success = await addNote(newNoteContent, selectedColor);
-    if (success) {
-      setNewNoteContent("");
-    }
-  };
+  const { reset, setValue } = form;
+
+  /** Escribe el texto de la nota. */
+  const handleContentChange = useCallback(
+    (value: string) => {
+      setValue("content", value);
+    },
+    [setValue],
+  );
+
+  /** Escribe el color de la nota. */
+  const handleColorChange = useCallback(
+    (value: string) => {
+      setValue("color", value);
+    },
+    [setValue],
+  );
 
   const canDelete = (authorUsername: string) => {
     return authorUsername === currentUser?.username || currentUser?.role === "Administrador";
@@ -45,12 +92,14 @@ export const useQuickNotesModalController = () => {
     colorOptions,
     currentUser,
     deleteNote,
-    handleAddNote,
+    values: form.values,
+    getError: form.getError,
+    handleContentChange,
+    handleColorChange,
+    isSubmitting: form.isSubmitting,
+    formProps: form.formProps,
+    submit: form.submit,
     isLoadingNotes,
-    newNoteContent,
     notes,
-    selectedColor,
-    setNewNoteContent,
-    setSelectedColor,
   };
 };

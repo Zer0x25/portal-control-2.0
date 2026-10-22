@@ -4,23 +4,56 @@ import { ERROR_MESSAGES } from "../../utils/errorMessages";
 import { optionalText, requiredText } from "./common";
 
 /**
- * Spec 036 T5 (AC2): solicitud de correccion de un marcaje
- * (`CorrectionRequestModal`).
+ * Patrón de fecha-hora de pantalla (`YYYY-MM-DDTHH:mm`), el que escribe el
+ * `<input type="datetime-local">` en hora de Chile.
+ */
+export const DATETIME_LOCAL_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
+/**
+ * Spec 036 T5 (AC2): formularios de solicitud y resolucion de correcciones.
  *
- * Contrato: `CorrectionRequest`
+ * Contratos: `CorrectionRequest` y `UpdateCorrectionStatus`
  * (`backend/src/models/schemas/time-correction.schemas.ts`).
  *
- * `requestedValue` es una fecha-hora ISO **con offset** (`z.iso.datetime`).
- * El backend anade una regla que el OpenAPI no puede expresar: la correccion
- * no puede estar en el futuro. Esa regla esta en el fixture dorado
- * `cases/correction.cases.json`.
+ * `requestedValue` es en el backend una fecha-hora ISO **con offset**
+ * (`z.iso.datetime`) y no puede estar en el futuro: esa ultima regla vive en
+ * un `superRefine` que el OpenAPI no expresa, y el controller la vuelve a
+ * comprobar en el momento de montar el payload (hora de Chile -> ISO).
  */
-export const correctionRequestFormSchema = z.object({
+
+/**
+ * Copia del contrato `CorrectionRequest`
+ * (`backend/src/models/schemas/time-correction.schemas.ts`).
+ *
+ * El formulario de solicitud solo escribe dos campos (`correctionRequestForm`):
+ * el empleado, el marcaje, el campo y el valor actual los aporta la pantalla
+ * que lo abre, y el adjunto es un `File` que se convierte a base64 al enviar.
+ */
+export const correctionRequestBaseSchema = z.object({
   employeeId: requiredText("El empleado"),
   timeRecordId: requiredText("El marcaje"),
   recordField: z.enum(["entrada", "inicioColacion", "finColacion", "salida"]),
   currentValue: optionalText(),
   requestedValue: requiredText("El valor solicitado"),
+  reason: requiredText("El motivo"),
+});
+
+/**
+ * Solicitud de correccion (`CorrectionRequestModal.tsx`).
+ *
+ * Contrato: `CorrectionRequest` -> `requestedValue` + `reason`.
+ *
+ * El modal escribe **estos dos** campos: el empleado, el marcaje, el campo y
+ * el valor actual los aporta la pantalla que lo abre. `requestedValue` se
+ * captura en `YYYY-MM-DDTHH:mm` (hora de Chile) y el controller lo convierte
+ * a ISO-8601 con offset antes de enviarlo (divergencia declarada en el mapa,
+ * con `transformedFields`).
+ */
+export const correctionRequestFormSchema = z.object({
+  requestedValue: requiredText("El valor solicitado").regex(
+    DATETIME_LOCAL_PATTERN,
+    ERROR_MESSAGES.invalidDateTimeLocal(),
+  ),
   reason: requiredText("El motivo"),
 });
 

@@ -85,12 +85,16 @@ describe("Guardrail de la capa UI (spec 031 AC8)", () => {
       "ChangePasswordModal.container.tsx":
         "src/features/auth/components/ChangePasswordModal.container.tsx",
       "ClosedReportsModal.tsx": "src/features/logbook/components/ClosedReportsModal.tsx",
+      "CorrectionRequestModal.container.tsx":
+        "src/features/worker-portal/components/CorrectionRequestModal.container.tsx",
       "ForceChangePasswordModal.container.tsx":
         "src/features/auth/components/ForceChangePasswordModal.container.tsx",
       "MFALoginModal.container.tsx": "src/features/auth/components/MFALoginModal.container.tsx",
       "MFASetupModal.container.tsx": "src/features/auth/components/MFASetupModal.container.tsx",
       "ExportLogsModal.tsx": "src/features/governance/components/ExportLogsModal.tsx",
       "ImportModal.tsx": "src/features/employee-management/components/ImportModal.tsx",
+      "QuickNotesModal.container.tsx":
+        "src/features/dashboard/components/QuickNotesModal.container.tsx",
       "RecordHistoryModal.tsx": "src/features/time-control/components/RecordHistoryModal.tsx",
       "RejectionReasonModal.container.tsx":
         "src/features/supervisor-dashboard/components/RejectionReasonModal.container.tsx",
