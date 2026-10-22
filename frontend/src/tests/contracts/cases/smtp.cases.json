@@ -1,0 +1,59 @@
+{
+  "schemaId": "smtpProfileForm",
+  "backendContract": "SmtpProfileSchema",
+  "rule": "El remitente puede ir vacio (`\"\"`) o ser un correo valido: el backend acepta el vacio mientras el perfil no sea el activo (regla que el OpenAPI no expresa, porque es un `refine`).",
+  "cases": [
+    {
+      "name": "remitente vacio (perfil no activo)",
+      "input": {
+        "host": "smtp.ejemplo.cl",
+        "port": 587,
+        "secure": false,
+        "user": "usuario",
+        "pass": "clave",
+        "fromEmail": "",
+        "fromName": "Portal"
+      },
+      "expected": { "valid": true }
+    },
+    {
+      "name": "remitente con correo valido",
+      "input": {
+        "host": "smtp.ejemplo.cl",
+        "port": 587,
+        "secure": false,
+        "user": "usuario",
+        "pass": "clave",
+        "fromEmail": "portal@ejemplo.cl",
+        "fromName": "Portal"
+      },
+      "expected": { "valid": true }
+    },
+    {
+      "name": "remitente con correo invalido",
+      "input": {
+        "host": "smtp.ejemplo.cl",
+        "port": 587,
+        "secure": false,
+        "user": "usuario",
+        "pass": "clave",
+        "fromEmail": "no-es-un-email",
+        "fromName": "Portal"
+      },
+      "expected": { "valid": false, "field": "fromEmail" }
+    },
+    {
+      "name": "puerto fuera de rango",
+      "input": {
+        "host": "smtp.ejemplo.cl",
+        "port": 70000,
+        "secure": false,
+        "user": "usuario",
+        "pass": "clave",
+        "fromEmail": "portal@ejemplo.cl",
+        "fromName": "Portal"
+      },
+      "expected": { "valid": false, "field": "port" }
+    }
+  ]
+}

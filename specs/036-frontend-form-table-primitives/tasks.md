@@ -86,20 +86,20 @@ afectan a las fases siguientes):**
 
 ## Fase B — Schemas de formulario
 
-- [ ] T5: Crear `frontend/src/schemas/forms/*.ts` con un schema Zod de
+- [x] T5: Crear `frontend/src/schemas/forms/*.ts` con un schema Zod de
       **entrada de usuario** por formulario de negocio, derivado de las
       reglas del backend (`backend/src/models/schemas/*.schemas.ts`,
       re-exportados por `backend/src/models/schemas.ts` — **no**
       `backend/src/modules/**/schemas`, que no existe) y **reutilizando** los
       tipos de `src/types/api-schema.ts` (`components["schemas"]`) en lugar
       de duplicar el contrato (AC2).
-- [ ] T6: Documentar la distinción entre `src/types/schemas.ts` (27 schemas
+- [x] T6: Documentar la distinción entre `src/types/schemas.ts` (27 schemas
       de validación de IndexedDB para la cola offline, **se mantiene**) y los
       nuevos schemas de formulario (entrada de usuario), y registrar la
       **divergencia deliberada** del dígito verificador de RUT: el frontend
       lo valida (`EmployeeForm.tsx:78-97`) y el backend no
       (`employee.schemas.ts:6` solo exige `min(8)`) (AC2).
-- [ ] T7: Crear `frontend/src/tests/contracts/form-schema-parity.test.ts`:
+- [x] T7: Crear `frontend/src/tests/contracts/form-schema-parity.test.ts`:
       por cada schema de formulario, una batería de casos límite (contraseña
       por debajo del mínimo, hora fuera del rango de jornada, fecha en la
       zona horaria del negocio, campo opcional ausente vs cadena vacía)
@@ -113,6 +113,59 @@ afectan a las fases siguientes):**
       Esto mantiene el aislamiento de paquetes: `frontend/tsconfig.json`
       incluye solo `src` y `@asteasolutions/zod-to-openapi` solo está
       instalado en `backend/` (AC2).
+
+### Nota de ejecución — Fase B (PR 2 de la spec 036)
+
+**Cómo se verifica la paridad (decisión de diseño):**
+
+La comparación **no** es "el mismo caso contra dos implementaciones" (el
+backend no se puede importar desde `frontend/`), sino **declarativa y
+exhaustiva**: se genera el JSON Schema del schema Zod con la API pública
+`z.toJSONSchema(schema, { target: "openapi-3.0", io: "input" })` y se
+compara atributo a atributo con `backend/docs/swagger.json`
+(`required`, `minLength`, `maxLength`, `pattern`, `enum`, `minimum`,
+`maximum`, `format`, `nullable`). El test falla si el formulario se salta una
+constraint del backend, si se inventa una, o si escribe un campo que la API
+no conoce. Las **aserciones de tipo** (`z.output<typeof schema>` vs
+`components["schemas"][...]`) cubren la otra mitad: si el backend cambia un
+tipo, el frontend no compila.
+
+**Los fixtures dorados** (`src/tests/contracts/cases/*.json`) cubren las
+reglas que OpenAPI **no puede expresar** (los `.refine()`/`.superRefine()` del
+backend): el dígito verificador del RUT, el remitente SMTP vacío, la regla de
+correo activa sin destinatario y el motivo de rechazo obligatorio. Son el
+registro dorado del comportamiento del backend: si el backend cambia una de
+esas reglas, el fixture falla y obliga a revisar el schema **y** el fixture.
+
+**Divergencias y tolerancias documentadas:**
+
+| Caso                                | Decision                                                                                                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `maxHoursPattern`                   | El frontend exigia `min(0)` y el backend no lo declara: se **quita** (el frontend no puede ser mas estricto que el contrato).                                                                                               |
+| `shiftReportsPerDay`                | El generador OpenAPI del backend pierde el `.int()` (lo deja como `number`); el frontend mantiene el entero, que es lo que el backend exige en el codigo. La comparacion tolera `integer` vs `number` **solo** en ese caso. |
+| `smtpProfileForm`                   | El perfil SMTP es el **item** de `EmailConfig.profiles`, no el objeto: el mapa de contratos declara `openApiPath: "profiles.items"`.                                                                                        |
+| `changePasswordForm`                | `passwordConfirm` es local (`localFields`) y `password` es obligatorio aunque el backend lo admita opcional (`stricterRequired`).                                                                                           |
+| `correctionRequestForm`             | `requestedValue` se transforma antes de enviarlo (el formulario captura `YYYY-MM-DDTHH:mm` y el controller lo pasa a ISO-8601 con offset): `transformedFields`.                                                             |
+| `quickNoteForm`, `meterReadingForm` | `authorUsername` lo deduce el servidor: el payload se comprueba contra `Omit<Contrato, "authorUsername">`.                                                                                                                  |
+| `sendTestEmailForm`                 | `subject`/`message` son opcionales **con valor por defecto** en el backend (`z.string().optional().default("")`); el schema del frontend replica el `.default("")` para que el payload generado tenga los mismos tipos.     |
+
+**Cobertura de los 24 formularios:** 25 schemas de formulario (22 con
+contrapartida OpenAPI, 3 locales sin backend). Los tres locales
+(`localSupplierForm`, `localNoveltyForm`, `localMeterConfigForm`) estan
+listados en `LOCAL_ONLY_FORM_SCHEMA_IDS`: son datos del navegador y no
+tienen schema OpenAPI con el que verificar la paridad.
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                              |
+| ------------------------ | ---------------------------------------------------------------------- |
+| Schemas de formulario    | `frontend/src/schemas/forms/*.ts` (12 ficheros)                        |
+| Mapa de contratos        | `frontend/src/schemas/index.ts` (`FORM_SCHEMA_CONTRACTS`)              |
+| Documentacion del modulo | `frontend/src/schemas/README.md`                                       |
+| Comparador OpenAPI       | `frontend/src/tests/contracts/openApiSchema.ts`                        |
+| Test de paridad          | `frontend/src/tests/contracts/form-schema-parity.test.ts` (27 casos)   |
+| Test de fixtures dorados | `frontend/src/tests/contracts/form-schema-fixtures.test.ts` (21 casos) |
+| Fixtures dorados         | `frontend/src/tests/contracts/cases/*.json` (4 ficheros)               |
 
 ## Fase C — Migración de formularios (5 PR, por riesgo)
 

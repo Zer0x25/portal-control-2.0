@@ -1,0 +1,435 @@
+import { z } from "zod";
+
+import type { components } from "../types/api-schema";
+
+import {
+  adminResetPasswordFormSchema,
+  changePasswordFormSchema,
+  forceChangePasswordFormSchema,
+  loginFormSchema,
+  mfaCodeFormSchema,
+  mfaSetupFormSchema,
+} from "./forms/auth";
+import { correctionRequestFormSchema, correctionStatusFormSchema } from "./forms/correction";
+import { employeeFormSchema } from "./forms/employee";
+import { holidayFormSchema } from "./forms/holiday";
+import { leaveFormSchema } from "./forms/leave";
+import { meterReadingFormSchema } from "./forms/meter";
+import { quickNoteFormSchema } from "./forms/note";
+import { seedOptionsFormSchema, seedPhase2FormSchema } from "./forms/seed";
+import { shiftAssignmentFormSchema, shiftPatternFormSchema } from "./forms/shift";
+import {
+  emailRuleFormSchema,
+  emailRulesFormSchema,
+  sendTestEmailFormSchema,
+  smtpConfigFormSchema,
+  smtpProfileFormSchema,
+  smtpVerifyFormSchema,
+} from "./forms/smtp";
+import { timeRecordWriteFormSchema } from "./forms/timestamp";
+import { userCreateFormSchema, userUpdateFormSchema } from "./forms/user";
+
+export * from "./forms";
+
+/**
+ * Spec 036 T5/T7 (AC2): **mapa de contratos** entre los schemas de formulario
+ * del frontend y los schemas OpenAPI del backend.
+ *
+ * Cada entrada declara:
+ *
+ * - `id`: identificador estable del schema de formulario;
+ * - `openApi`: nombre del schema del backend del que es **copia** (`null`
+ *   cuando el formulario es local y no muta el backend);
+ * - `schema`: el schema Zod;
+ * - `forms`: los componentes de UI que lo consumen;
+ * - `divergences`: las reglas **del cliente** que el backend no implementa
+ *   (declaradas, no ocultas: el test de paridad las conoce).
+ *
+ * El test `src/tests/contracts/form-schema-parity.test.ts` recorre este mapa
+ * y compara, atributo a atributo, el JSON Schema que genera Zod con el
+ * artefacto OpenAPI del backend (`backend/docs/swagger.json`).
+ */
+export interface FormSchemaContract {
+  /** Identificador estable del schema de formulario. */
+  readonly id: string;
+  /** Schema OpenAPI del backend del que es copia (`null` si es local). */
+  readonly openApi: string | null;
+  /**
+   * Ruta dentro del schema OpenAPI donde vive el equivalente del formulario
+   * (`"profiles.items"` para el perfil SMTP, que es un item del array).
+   */
+  readonly openApiPath?: string;
+  /** Schema Zod del formulario. */
+  readonly schema: z.ZodType;
+  /** Componentes de UI que consumen el schema. */
+  readonly forms: readonly string[];
+  /** Campos que solo existen en el formulario (nunca viajan al backend). */
+  readonly localFields?: readonly string[];
+  /** Campos cuyo valor se transforma antes de enviarlo. */
+  readonly transformedFields?: readonly string[];
+  /** Campos que el formulario exige aunque el backend los admita opcionales. */
+  readonly stricterRequired?: readonly string[];
+  /** Reglas del cliente que el backend no implementa. */
+  readonly divergences?: readonly string[];
+}
+
+/** Mapa de contratos de los schemas de formulario. */
+export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
+  {
+    id: "employeeForm",
+    openApi: "Employee",
+    schema: employeeFormSchema,
+    forms: ["EmployeeForm", "ImportModal"],
+    divergences: ["rut: digito verificador (regla exclusiva del cliente)"],
+  },
+  {
+    id: "userCreateForm",
+    openApi: "CreateUser",
+    schema: userCreateFormSchema,
+    forms: ["UserForm"],
+  },
+  {
+    id: "userUpdateForm",
+    openApi: "UpdateUser",
+    schema: userUpdateFormSchema,
+    forms: ["UserForm"],
+  },
+  {
+    id: "loginForm",
+    openApi: "Login",
+    schema: loginFormSchema,
+    forms: ["LoginPage"],
+  },
+  {
+    id: "mfaCodeForm",
+    openApi: "MFAValidate",
+    schema: mfaCodeFormSchema,
+    forms: ["MFALoginModal"],
+  },
+  {
+    id: "mfaSetupForm",
+    openApi: "MFAVerify",
+    schema: mfaSetupFormSchema,
+    forms: ["MFASetupModal"],
+  },
+  {
+    id: "changePasswordForm",
+    openApi: "UpdateUser",
+    schema: changePasswordFormSchema,
+    forms: ["ChangePasswordModal", "ForceChangePasswordModal"],
+    localFields: ["passwordConfirm"],
+    stricterRequired: ["password"],
+    divergences: [
+      "passwordConfirm: confirmacion local, no viaja al backend",
+      "password: el formulario de cambio de contraseña lo exige (el backend lo admite opcional)",
+    ],
+  },
+  {
+    id: "forceChangePasswordForm",
+    openApi: "UpdateUser",
+    schema: forceChangePasswordFormSchema,
+    forms: ["ForceChangePasswordModal"],
+    localFields: ["passwordConfirm"],
+    stricterRequired: ["password"],
+    divergences: [
+      "passwordConfirm: confirmacion local, no viaja al backend",
+      "password: el formulario de cambio de contraseña lo exige (el backend lo admite opcional)",
+    ],
+  },
+  {
+    id: "adminResetPasswordForm",
+    openApi: "ResetPassword",
+    schema: adminResetPasswordFormSchema,
+    forms: ["SystemMaintenance"],
+  },
+  {
+    id: "leaveForm",
+    openApi: "LeaveRecord",
+    schema: leaveFormSchema,
+    forms: ["LeaveManager"],
+  },
+  {
+    id: "holidayForm",
+    openApi: "Holiday",
+    schema: holidayFormSchema,
+    forms: ["HolidayManager"],
+  },
+  {
+    id: "shiftPatternForm",
+    openApi: "ShiftPattern",
+    schema: shiftPatternFormSchema,
+    forms: ["PatternManager"],
+    divergences: ["dailySchedules: el frontend envia el array, no el string serializado"],
+  },
+  {
+    id: "shiftAssignmentForm",
+    openApi: "AssignedShift",
+    schema: shiftAssignmentFormSchema,
+    forms: ["AssignmentManager"],
+  },
+  {
+    id: "quickNoteForm",
+    openApi: "QuickNote",
+    schema: quickNoteFormSchema,
+    forms: ["QuickNotes"],
+    divergences: ["authorUsername: lo deduce el servidor de la sesion"],
+  },
+  {
+    id: "correctionRequestForm",
+    openApi: "CorrectionRequest",
+    schema: correctionRequestFormSchema,
+    forms: ["CorrectionRequestModal"],
+    transformedFields: ["requestedValue"],
+    divergences: [
+      "requestedValue: el formulario captura `YYYY-MM-DDTHH:mm` (hora de Chile) y el controller lo convierte a ISO-8601 con offset antes de enviarlo",
+    ],
+  },
+  {
+    id: "correctionStatusForm",
+    openApi: "UpdateCorrectionStatus",
+    schema: correctionStatusFormSchema,
+    forms: ["RejectionReasonModal"],
+  },
+  {
+    id: "meterReadingForm",
+    openApi: "MeterReading",
+    schema: meterReadingFormSchema,
+    forms: ["SingleMeterInputModal", "MetersModal"],
+    divergences: ["authorUsername: lo deduce el servidor de la sesion"],
+  },
+  {
+    id: "smtpProfileForm",
+    openApi: "EmailConfig",
+    openApiPath: "profiles.items",
+    schema: smtpProfileFormSchema,
+    forms: ["SmtpConfigModal"],
+    divergences: [
+      "fromEmail: el backend admite el remitente vacio mientras el perfil no sea el activo",
+    ],
+  },
+  {
+    id: "smtpConfigForm",
+    openApi: "EmailConfig",
+    schema: smtpConfigFormSchema,
+    forms: ["SmtpConfigModal"],
+  },
+  {
+    id: "smtpVerifyForm",
+    openApi: "EmailVerify",
+    schema: smtpVerifyFormSchema,
+    forms: ["SmtpConfigModal"],
+  },
+  {
+    id: "emailRulesForm",
+    openApi: "EmailRules",
+    schema: emailRulesFormSchema,
+    forms: ["SystemMaintenance"],
+  },
+  {
+    id: "emailRuleForm",
+    openApi: "EmailRules",
+    openApiPath: "autoCloseShift",
+    schema: emailRuleFormSchema,
+    forms: ["SystemMaintenance"],
+    divergences: ["recipient: una regla activa exige destinatario (regla condicional)"],
+  },
+  {
+    id: "sendTestEmailForm",
+    openApi: "SendTestEmail",
+    schema: sendTestEmailFormSchema,
+    forms: ["SystemMaintenance"],
+  },
+  {
+    id: "seedOptionsForm",
+    openApi: "SeedOptions",
+    schema: seedOptionsFormSchema,
+    forms: ["SeedingOptionsModal"],
+  },
+  {
+    id: "seedPhase2Form",
+    openApi: "SeedPhase2Start",
+    schema: seedPhase2FormSchema,
+    forms: ["SeedingProgressModal"],
+  },
+  {
+    id: "timeRecordWriteForm",
+    openApi: "TimeRecordWrite",
+    schema: timeRecordWriteFormSchema,
+    forms: ["EditTimestampModal", "useTimestampEditor"],
+  },
+];
+
+/**
+ * Formularios **locales**: no mutan el backend, asi que no tienen schema
+ * OpenAPI con el que verificar la paridad.
+ */
+export const LOCAL_ONLY_FORM_SCHEMA_IDS = [
+  "localSupplierForm",
+  "localNoveltyForm",
+  "localMeterConfigForm",
+] as const;
+
+/* -------------------------------------------------------------------------- */
+/* Contrato de tipos (spec 036 T5)                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Comprueba **en tiempo de compilacion** que el payload de un formulario es
+ * asignable al contrato OpenAPI generado (`src/types/api-schema.ts`).
+ *
+ * Es la segunda mitad de la paridad: el test de runtime compara las
+ * *restricciones* (`required`, `minLength`, `pattern`...), y estas
+ * aserciones comparan los *tipos*. Si el backend cambia un tipo (un campo que
+ * pasa de `string` a `string | null`), el frontend no compila hasta que el
+ * schema del formulario se actualiza.
+ *
+ * No se duplica el contrato: se reutiliza el generado.
+ */
+type AssertAssignable<TForm extends TContract, TContract> = TForm;
+
+/** Payload del formulario de empleado: debe encajar en `Employee`. */
+export type EmployeePayloadContract = AssertAssignable<
+  z.output<typeof employeeFormSchema>,
+  components["schemas"]["Employee"]
+>;
+
+/** Payload del alta de usuario: debe encajar en `CreateUser`. */
+export type UserCreatePayloadContract = AssertAssignable<
+  z.output<typeof userCreateFormSchema>,
+  components["schemas"]["CreateUser"]
+>;
+
+/** Payload de la edicion de usuario: debe encajar en `UpdateUser`. */
+export type UserUpdatePayloadContract = AssertAssignable<
+  z.output<typeof userUpdateFormSchema>,
+  components["schemas"]["UpdateUser"]
+>;
+
+/** Payload del inicio de sesion: debe encajar en `Login`. */
+export type LoginPayloadContract = AssertAssignable<
+  z.output<typeof loginFormSchema>,
+  components["schemas"]["Login"]
+>;
+
+/** Payload del codigo MFA: debe encajar en `MFAValidate`. */
+export type MfaCodePayloadContract = AssertAssignable<
+  z.output<typeof mfaCodeFormSchema>,
+  components["schemas"]["MFAValidate"]
+>;
+
+/** Payload del alta de MFA: debe encajar en `MFAVerify`. */
+export type MfaSetupPayloadContract = AssertAssignable<
+  z.output<typeof mfaSetupFormSchema>,
+  components["schemas"]["MFAVerify"]
+>;
+
+/** Payload del reseteo de contrasena: debe encajar en `ResetPassword`. */
+export type AdminResetPasswordPayloadContract = AssertAssignable<
+  z.output<typeof adminResetPasswordFormSchema>,
+  components["schemas"]["ResetPassword"]
+>;
+
+/**
+ * Payload del cambio de contrasena: debe encajar en `UpdateUser` una vez
+ * quitado el campo local `passwordConfirm` (nunca viaja al backend).
+ */
+export type ChangePasswordPayloadContract = AssertAssignable<
+  Omit<z.output<typeof changePasswordFormSchema>, "passwordConfirm">,
+  components["schemas"]["UpdateUser"]
+>;
+
+/** Payload del cambio de contrasena forzado: debe encajar en `UpdateUser`. */
+export type ForceChangePasswordPayloadContract = AssertAssignable<
+  Omit<z.output<typeof forceChangePasswordFormSchema>, "passwordConfirm">,
+  components["schemas"]["UpdateUser"]
+>;
+
+/** Payload de la ausencia: debe encajar en `LeaveRecord`. */
+export type LeavePayloadContract = AssertAssignable<
+  z.output<typeof leaveFormSchema>,
+  components["schemas"]["LeaveRecord"]
+>;
+
+/** Payload del feriado: debe encajar en `Holiday`. */
+export type HolidayPayloadContract = AssertAssignable<
+  z.output<typeof holidayFormSchema>,
+  components["schemas"]["Holiday"]
+>;
+
+/** Payload del patron de turno: debe encajar en `ShiftPattern`. */
+export type ShiftPatternPayloadContract = AssertAssignable<
+  z.output<typeof shiftPatternFormSchema>,
+  components["schemas"]["ShiftPattern"]
+>;
+
+/** Payload de la asignacion de turno: debe encajar en `AssignedShift`. */
+export type ShiftAssignmentPayloadContract = AssertAssignable<
+  z.output<typeof shiftAssignmentFormSchema>,
+  components["schemas"]["AssignedShift"]
+>;
+
+/**
+ * Payload de la nota rapida: debe encajar en `QuickNote` sin
+ * `authorUsername` (lo deduce el servidor de la sesion).
+ */
+export type QuickNotePayloadContract = AssertAssignable<
+  z.output<typeof quickNoteFormSchema>,
+  Omit<components["schemas"]["QuickNote"], "authorUsername">
+>;
+
+/** Payload de la solicitud de correccion: debe encajar en `CorrectionRequest`. */
+export type CorrectionRequestPayloadContract = AssertAssignable<
+  z.output<typeof correctionRequestFormSchema>,
+  components["schemas"]["CorrectionRequest"]
+>;
+
+/** Payload de la resolucion de correccion: debe encajar en `UpdateCorrectionStatus`. */
+export type CorrectionStatusPayloadContract = AssertAssignable<
+  z.output<typeof correctionStatusFormSchema>,
+  components["schemas"]["UpdateCorrectionStatus"]
+>;
+
+/**
+ * Payload de la lectura de medidor: debe encajar en `MeterReading` sin
+ * `authorUsername` (lo deduce el servidor de la sesion).
+ */
+export type MeterReadingPayloadContract = AssertAssignable<
+  z.output<typeof meterReadingFormSchema>,
+  Omit<components["schemas"]["MeterReading"], "authorUsername">
+>;
+
+/** Payload del perfil SMTP: debe encajar en un perfil de `EmailConfig`. */
+export type SmtpProfilePayloadContract = AssertAssignable<
+  z.output<typeof smtpProfileFormSchema>,
+  components["schemas"]["EmailConfig"]["profiles"][number]
+>;
+
+/** Payload de la configuracion SMTP: debe encajar en `EmailConfig`. */
+export type SmtpConfigPayloadContract = AssertAssignable<
+  z.output<typeof smtpConfigFormSchema>,
+  components["schemas"]["EmailConfig"]
+>;
+
+/** Payload de las reglas de correo: debe encajar en `EmailRules`. */
+export type EmailRulesPayloadContract = AssertAssignable<
+  z.output<typeof emailRulesFormSchema>,
+  components["schemas"]["EmailRules"]
+>;
+
+/** Payload del correo de prueba: debe encajar en `SendTestEmail`. */
+export type SendTestEmailPayloadContract = AssertAssignable<
+  z.output<typeof sendTestEmailFormSchema>,
+  components["schemas"]["SendTestEmail"]
+>;
+
+/** Payload de las opciones de siembra: debe encajar en `SeedOptions`. */
+export type SeedOptionsPayloadContract = AssertAssignable<
+  z.output<typeof seedOptionsFormSchema>,
+  components["schemas"]["SeedOptions"]
+>;
+
+/** Payload de la edicion de marcaje: debe encajar en `TimeRecordWrite`. */
+export type TimeRecordWritePayloadContract = AssertAssignable<
+  z.output<typeof timeRecordWriteFormSchema>,
+  components["schemas"]["TimeRecordWrite"]
+>;
