@@ -66,13 +66,17 @@ export interface UseAppFormOptions<TValues extends object> {
   /**
    * Normalización del payload antes de enviarlo.
    *
-   * Por defecto: `trim` de las cadenas y `""` → `null` en los campos listados
-   * en `nullableFields`. Un formulario puede desactivarla pasando
+   * Por defecto: `trim` de las cadenas, `""` → `undefined` (el campo se
+   * omite del payload) y `""` → `null` en los campos listados en
+   * `nullableFields`. Un formulario puede desactivarla pasando
    * `normalize: (values) => values` si su payload debe ser byte a byte el de
    * siempre.
+   *
+   * La normalización se aplica **antes de validar**, de modo que el schema
+   * de formulario puede ser una copia exacta del schema del backend.
    */
   readonly normalize?: (values: TValues) => TValues;
-  /** Campos opcionales cuyo `""` se envía como `null`. */
+  /** Campos cuyo `""` se envía como `null` (los que el backend admite como null). */
   readonly nullableFields?: readonly string[];
   /** Identificador del formulario (para el foco y el `data-testid`). */
   readonly formId?: string;
@@ -182,11 +186,13 @@ export const toErrorMessage = (error: unknown): string | undefined => {
 
 /**
  * Normalización por defecto del payload: `trim` de cadenas y `""` → `null`
- * en los campos opcionales declarados.
+ * en los campos declarados como `nullable`.
  *
- * Los `undefined` **se conservan**: `JSON.stringify` los omite y el payload
- * sigue siendo idéntico al que se enviaba antes de la migración (spec 036
- * T13).
+ * Una cadena vacia **no aporta informacion**: se omite del payload
+ * (`undefined` -> `JSON.stringify` no la escribe), de modo que el payload
+ * sigue siendo identico al que se enviaba antes de la migracion (spec 036
+ * T13). Los campos que el backend espera como `null` se convierten
+ * explicitamente.
  */
 export const normalizeFormValues = <TValues extends object>(
   values: TValues,
@@ -198,7 +204,11 @@ export const normalizeFormValues = <TValues extends object>(
   for (const [key, value] of Object.entries(values)) {
     if (typeof value === "string") {
       const trimmed = value.trim();
-      normalized[key] = trimmed === "" && nullable.has(key) ? null : trimmed;
+      if (trimmed !== "") {
+        normalized[key] = trimmed;
+        continue;
+      }
+      normalized[key] = nullable.has(key) ? null : undefined;
       continue;
     }
     normalized[key] = value;
@@ -269,8 +279,9 @@ export const useAppForm = <TValues extends object>(
     // presentación decide *cuándo se ve* (tras el primer intento).
     validators: { onSubmit: schema, onChange: schema },
     onSubmit: async ({ value }) => {
-      const payload = normalize ? normalize(value) : normalizeFormValues(value, nullableFields);
-      await onSubmit(payload);
+      // `value` ya viene normalizado: `submit()` normaliza **antes** de
+      // validar, de modo que la validacion y el payload ven lo mismo.
+      await onSubmit(value);
     },
   });
 
@@ -343,9 +354,41 @@ export const useAppForm = <TValues extends object>(
     invalid?.focus();
   }, [formId]);
 
+  /**
+   * Normaliza los valores y los **escribe en el formulario** antes de
+   * validar.
+   *
+   * Normalizar antes de validar es lo que permite que el schema de formulario
+   * sea una copia **exacta** del schema del backend (`required`, `minLength`,
+   * `pattern`, `enum`...): si la cadena vacia se omitiera despues de
+   * validar, el schema tendria que accepting `""` para todo campo opcional y
+   * dejaria de ser espejo del contrato.
+   */
+  const applyNormalization = useCallback(
+    (values: TValues): TValues => {
+      const normalized = normalize
+        ? normalize(values)
+        : normalizeFormValues(values, nullableFields);
+
+      for (const [key, value] of Object.entries(normalized)) {
+        const current = form.getFieldValue(key as Parameters<typeof form.getFieldValue>[0]);
+        if (Object.is(current, value)) continue;
+        form.setFieldValue(
+          key as Parameters<typeof form.setFieldValue>[0],
+          value as Parameters<typeof form.setFieldValue>[1],
+          { dontValidate: true, dontRunListeners: true },
+        );
+      }
+
+      return normalized;
+    },
+    [form, normalize, nullableFields],
+  );
+
   const submit = useCallback((): void => {
     void withSubmitGuard(submitGuard, async () => {
       try {
+        applyNormalization(form.state.values);
         await form.handleSubmit();
       } catch (error) {
         // El consumidor ya notifica el fallo a la UI; aquí solo se registra
@@ -357,7 +400,7 @@ export const useAppForm = <TValues extends object>(
         scheduleAfterPaint(focusFirstInvalidField);
       }
     });
-  }, [errors, focusFirstInvalidField, form, onInvalid]);
+  }, [applyNormalization, errors, focusFirstInvalidField, form, onInvalid]);
 
   const reset = useCallback((): void => {
     form.reset();

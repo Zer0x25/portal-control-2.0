@@ -23,13 +23,16 @@ import Input from "../../components/ui/Input";
 interface Values {
   name: string;
   email: string;
-  notes: string;
+  notes?: string | null;
 }
 
 const schema = z.object({
-  name: z.string().trim().min(2, "El nombre es obligatorio."),
-  email: z.string().trim().email("Formato de email inválido."),
-  notes: z.string(),
+  name: z
+    .string({ error: "El nombre es obligatorio." })
+    .trim()
+    .min(2, "El nombre debe tener al menos 2 caracteres."),
+  email: z.string({ error: "El email es obligatorio." }).trim().email("Formato de email inválido."),
+  notes: z.string().nullish(),
 });
 
 const DEFAULT_VALUES: Values = { name: "", email: "", notes: "" };
@@ -67,7 +70,7 @@ const Harness = ({ onSubmit, defaultValues, nullableFields }: HarnessProps) => {
       <Input
         id="notes"
         label="NOTAS"
-        value={form.values.notes}
+        value={form.values.notes ?? ""}
         onChange={(event) => form.setValue("notes", event.target.value)}
       />
       <button type="submit">ENVIAR</button>
@@ -188,7 +191,7 @@ describe("withSubmitGuard (spec 036 AC4)", () => {
 });
 
 describe("normalizeFormValues (spec 036 T2)", () => {
-  it("hace trim de las cadenas y conserva los undefined", () => {
+  it("hace trim de las cadenas y convierte '' en null en los campos nullable", () => {
     const result = normalizeFormValues({ name: "  Juan  ", email: "", notes: undefined }, [
       "email",
     ]);
@@ -196,10 +199,16 @@ describe("normalizeFormValues (spec 036 T2)", () => {
     expect(result).toEqual({ name: "Juan", email: null, notes: undefined });
   });
 
-  it("no convierte '' en null si el campo no es opcional", () => {
+  it("omite la cadena vacia cuando el campo no es nullable", () => {
     const result = normalizeFormValues({ name: "", email: "" });
 
-    expect(result).toEqual({ name: "", email: "" });
+    expect(result).toEqual({ name: undefined, email: undefined });
+  });
+
+  it("la cadena vacia se omite del payload (JSON.stringify no la escribe)", () => {
+    const payload = normalizeFormValues({ name: "", email: "" });
+
+    expect(JSON.stringify(payload)).toBe("{}");
   });
 });
 
