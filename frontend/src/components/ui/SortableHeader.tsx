@@ -1,8 +1,15 @@
 import React from "react";
+import Button from "./Button";
 import { ChevronUpIcon, ChevronDownIcon } from "./icons/index";
 
+/**
+ * Cabecera ordenable reutilizada por `DataTableHeader` y consumidores directos
+ * (EmployeeListCard). La interacción se delega en un `<button>` nativo para que
+ * la cabecera sea operable con teclado y exponga `aria-sort` en el
+ * `<th>` contenedor (spec 036 T14, AC5/AC6).
+ */
 interface SortableHeaderProps<T> {
-  title: string;
+  title: React.ReactNode;
   sortKey: keyof T;
   sortConfig: { key: keyof T; direction: "ascending" | "descending" } | null;
   onSort: (key: keyof T) => void;
@@ -10,6 +17,10 @@ interface SortableHeaderProps<T> {
   style?: React.CSSProperties;
   as?: "th" | "div";
 }
+
+const SORT_BUTTON_CLASS =
+  "h-full w-full cursor-pointer justify-start! rounded-none! p-0! shadow-none! active:scale-100! " +
+  "[font-size:inherit]! [font-weight:inherit]! [letter-spacing:inherit]! [text-transform:inherit]!";
 
 const SortableHeader = <T,>({
   title,
@@ -22,10 +33,8 @@ const SortableHeader = <T,>({
 }: SortableHeaderProps<T>) => {
   const isSorted = sortConfig?.key === sortKey;
   const isAscending = isSorted && sortConfig?.direction === "ascending";
-
+  const ariaSort = isSorted ? (isAscending ? "ascending" : "descending") : "none";
   const Component = as;
-
-  const thSortableClass = `px-4 h-[48px] text-left text-[13px] font-bold uppercase tracking-widest cursor-pointer group select-none transition-all duration-150 hover:bg-token-surface-active ${className}`;
 
   const renderSortIndicator = () => {
     if (!isSorted) {
@@ -36,22 +45,36 @@ const SortableHeader = <T,>({
       );
     }
     return (
-      <div className="ml-1.5 w-4 h-4 rounded-sm bg-token-accent-brand flex items-center justify-center shadow-sm transition-all">
+      <div className="ml-1.5 w-3.5 h-3.5 rounded-sm bg-token-surface-active flex items-center justify-center transition-all duration-200">
         {isAscending ? (
-          <ChevronUpIcon className="w-2.5 h-2.5 text-token-text-onAccent" />
+          <ChevronUpIcon className="w-2.5 h-2.5 text-token-text-accent" />
         ) : (
-          <ChevronDownIcon className="w-2.5 h-2.5 text-token-text-onAccent" />
+          <ChevronDownIcon className="w-2.5 h-2.5 text-token-text-accent" />
         )}
       </div>
     );
   };
 
+  const thSortableClass = `px-4 h-[48px] text-left text-[13px] font-bold uppercase tracking-widest cursor-pointer group select-none transition-all duration-150 hover:bg-token-surface-active ${className}`;
+
+  const accessibleName = typeof title === "string" ? `Ordenar por ${title}` : "Ordenar columna";
+
+  const ariaSortProps: React.AriaAttributes =
+    as === "th" ? { "aria-sort": ariaSort as React.AriaAttributes["aria-sort"] } : {};
+
   return (
-    <Component className={thSortableClass} onClick={() => onSort(sortKey)} style={style}>
-      <div className="flex items-center">
+    <Component className={thSortableClass} style={style} {...ariaSortProps}>
+      <Button
+        type="button"
+        variant="none"
+        size="none"
+        onClick={() => onSort(sortKey)}
+        aria-label={accessibleName}
+        className={SORT_BUTTON_CLASS}
+      >
         {title}
-        {renderSortIndicator()}
-      </div>
+        <span aria-hidden="true">{renderSortIndicator()}</span>
+      </Button>
     </Component>
   );
 };

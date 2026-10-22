@@ -55,9 +55,14 @@ describe("SortableHeader in Real Browser (AC5)", () => {
 
     // Initial ascending sort indicator exists
     expect(th.textContent).toContain("Nombre");
+    expect(th).toHaveAttribute("aria-sort", "ascending");
+
+    // The header renders a native button with an accessible name (AC6).
+    const button = screen.getByRole("button", { name: /Ordenar por Nombre/i });
+    expect(button).toBeInTheDocument();
 
     // Click to toggle to descending
-    fireEvent.click(th);
+    fireEvent.click(button);
     expect(handleSort).toHaveBeenCalledWith("name");
   });
 });
