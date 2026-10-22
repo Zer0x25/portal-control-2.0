@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.33.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.32.0...v8.33.0) (2026-10-22)
+
+
+### Features
+
+* **release:** accumulated changes since v8.32.0 (033-035 hardening, holiday enum, perf, a11y) ([7c5da19](https://github.com/Zer0x25/portal-control-2.0/commit/7c5da19f49ccfc315bc8c2abfa2fc9cc2323b12d))
+
 ## [8.32.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.3...v8.32.0) (2026-10-22)
 
 
