@@ -9,3 +9,6 @@
 ## 2026-10-21 - [Staging audit v8.31.2: unique headings and named icon-only controls]
 **Learning:** The full 18-route headless audit (buttons sweep, axe, kiosk walk) surfaced issues axe misses when hidden/off-canvas: Logbook rendered a second `<h1>` for the active shift name (contributing to the known heading-order backlog); 7 icon-only buttons lacked accessible names (meter-readings close slide-over; 6 add/delete controls in GlobalVariablesManager) and the red delete buttons were hover-only visible (opacity-0 group-hover), unreachable by keyboard/touch.
 **Action:** Shift name demoted to `<h2>` under the page h1; explicit aria-labels on all 7 controls; delete buttons gain group-focus-within/focus-visible reveal. Verified on rebuilt staging: logbook 1 h1, 0 unnamed buttons in meter/config, named deletes, suites 17/17.
+## 2023-10-21 - ARIA Label Redundancy on Text Buttons
+**Learning:** Adding `aria-label` to buttons that already have clear, visible text is an accessibility anti-pattern. It overwrites the visible text for screen readers, potentially causing confusion if the label differs or is redundant.
+**Action:** Only apply `aria-label` to strictly icon-only interactive elements or when the visible text is insufficiently descriptive on its own.
