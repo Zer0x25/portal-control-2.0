@@ -1,5 +1,5 @@
 {
-  "schemaId": "smtpProfileForm",
+  "schemaId": "smtpProfileBaseForm",
   "backendContract": "SmtpProfileSchema",
   "rule": "El remitente puede ir vacio (`\"\"`) o ser un correo valido: el backend acepta el vacio mientras el perfil no sea el activo (regla que el OpenAPI no expresa, porque es un `refine`).",
   "cases": [

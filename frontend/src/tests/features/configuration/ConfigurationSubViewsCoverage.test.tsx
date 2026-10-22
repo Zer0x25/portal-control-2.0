@@ -7,7 +7,7 @@ vi.mock("../../../components/ui/DatePickerDialog", () => ({
   default: () => <div data-testid="date-picker-dialog">DATE-PICKER</div>,
 }));
 
-vi.mock("../../../features/configuration/components/SmtpConfigModal", () => ({
+vi.mock("../../../features/configuration/components/SmtpConfigModal.container", () => ({
   default: () => <div data-testid="smtp-config-modal">SMTP-CONFIG-MODAL</div>,
 }));
 

@@ -589,6 +589,55 @@ mismo trio `{to, subject, message}`.
 componentes con estado) y de **51** a **50** (los grandes sin gemelo
 container/view).
 
+### Nota de ejecución — Fase C, PR 8 (T10c: `configuration`, parte 2)
+
+**El formulario migrado a `useAppForm` + schema:**
+
+| Formulario    | Hook / controller                                         | Schema                       |
+| ------------- | --------------------------------------------------------- | ---------------------------- |
+| Perfiles SMTP | `features/configuration/hooks/useSmtpConfigController.ts` | `buildSmtpProfileFormSchema` |
+
+**Hallazgos (afectan a T11-T13):**
+
+1. **Un formulario puede editar una parte de un agregado**: el modal de SMTP
+   edita **uno** de los tres perfiles. El formulario guarda el perfil que se
+   esta editando (plano, para que los errores sean de campo) y el hook
+   conserva los otros dos en su estado; el `serialize` del formulario arma el
+   `MultiSmtpConfig` completo (el perfil del formulario + los otros dos + el
+   indice activo) sin que el payload cambie.
+2. **La normalizacion de la capa se desactiva cuando el payload es byte a
+   byte**: `normalize: (values) => values`. El backend distingue la cadena
+   vacia de un campo ausente, y la capa convierte `""` en `undefined`.
+3. **El `required` nativo del navegador es una regla del cliente**: con
+   `noValidate` desaparece, asi que el host, el usuario, la contrasena, el
+   nombre del remitente y el remitente pasan al schema
+   (`buildSmtpProfileFormSchema`, sobre el `superRefine` del backend). La
+   **copia** del contrato (`smtpProfileBaseForm`) conserva las reglas del
+   backend (el remitente puede ir vacio si el perfil no es el activo) y es la
+   que fijan los fixtures dorados.
+4. **`form.values` es la foto del ultimo render**: cambiar de perfil en el
+   mismo tick que una escritura perderia el cambio. El hook lee el estado
+   vivo (`form.state.values`) cuando cambia de perfil.
+5. Los mensajes de los rangos numericos del SMTP passam de `minLength`/
+   `maxLength` (texto de longitudes) a `minValue`/`maxValue`.
+
+**Payload idéntico al anterior (T13, verificado en esta tarea):** sigue
+viajando el `MultiSmtpConfig` completo (`{profiles, activeProfileIndex}`), con
+las cadenas vacias tal cual.
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                         |
+| ------------------------ | ----------------------------------------------------------------- |
+| Schema de formulario     | `frontend/src/schemas/forms/smtp.ts`                              |
+| Tests de los formularios | `frontend/src/tests/forms/configurationForms.test.tsx` (14 casos) |
+| Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`         |
+| Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`      |
+
+**Ratchet:** los presupuestos de la spec 033 bajan de **83** a **82** (los
+componentes con estado) y de **50** a **49** (los grandes sin gemelo
+container/view).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`

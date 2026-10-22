@@ -30,7 +30,7 @@
     "src/features/governance/components/ExportLogsModal.tsx",
     "src/features/logbook/components/ClosedReportsModal.tsx",
     "src/features/time-control/components/AnomalyResolutionModal.tsx",
-    "src/features/configuration/components/SmtpConfigModal.tsx",
+    "src/features/configuration/components/SmtpConfigModal.view.tsx",
     "src/features/time-control/components/RecordHistoryModal.tsx",
     "src/features/employee-management/components/ImportModal.tsx",
     "src/features/logbook/components/AddSupplierModal.view.tsx",

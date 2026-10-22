@@ -15,7 +15,7 @@ import {
   ShieldIcon,
   DocumentTextIcon,
 } from "../../../components/ui/icons/index";
-import SmtpConfigModal from "../components/SmtpConfigModal";
+import SmtpConfigModal from "../components/SmtpConfigModal.container";
 import Button from "../../../components/ui/Button";
 import type { EmailNotificationRules } from "../../../types";
 import type { SendTestEmailFormValues } from "../../../schemas/forms/smtp";

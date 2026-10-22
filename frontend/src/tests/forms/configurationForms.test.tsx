@@ -3,19 +3,22 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 
 import { useSeedingOptionsController } from "../../features/configuration/hooks/useSeedingOptionsController";
 import { useEmailCenterController } from "../../features/configuration/hooks/useEmailCenterController";
+import { useSmtpConfigController } from "../../features/configuration/hooks/useSmtpConfigController";
 import { emailService } from "../../services/emailService";
 import { useEmailRecipientsListQuery } from "../../hooks/queries/useConfigQuery";
 
 /**
- * Spec 036 T10b (AC1, AC2, AC3, AC4, AC8): los formularios de **simulacion de
- * datos** y de **correo de prueba** migrados a `useAppForm`.
+ * Spec 036 T10b/T10c (AC1, AC2, AC3, AC4, AC8): los formularios de
+ * **simulacion de datos**, **correo de prueba** y **perfiles SMTP** migrados a
+ * `useAppForm`.
  *
  * Lo que se fija aqui es lo que la migracion puede romper en silencio:
  *
  * 1. **El payload** sigue siendo identico al de antes (T13): los siete
- *    numeros de la simulacion y el trio `{to, subject, message}` del correo.
+ *    numeros de la simulacion, el trio `{to, subject, message}` del correo y
+ *    el `MultiSmtpConfig` completo de los perfiles SMTP.
  * 2. **Los errores** son de campo y tienen mensaje (AC2, AC3): los rangos de
- *    la simulacion y los campos obligatorios del correo.
+ *    la simulacion, los campos obligatorios del correo y los del perfil SMTP.
  * 3. **El doble envio** esta bloqueado (AC4).
  */
 
@@ -25,6 +28,9 @@ vi.mock("../../services/emailService", () => ({
     getRules: vi.fn(),
     sendTestEmail: vi.fn(),
     saveRules: vi.fn(),
+    getConfig: vi.fn(),
+    saveConfig: vi.fn(),
+    verifyConnection: vi.fn(),
   },
 }));
 
@@ -208,5 +214,136 @@ describe("useEmailCenterController (spec 036 T10b)", () => {
     });
 
     await waitFor(() => expect(emailService.sendTestEmail).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe("useSmtpConfigController (spec 036 T10c)", () => {
+  beforeEach(() => {
+    vi.mocked(emailService.getConfig).mockResolvedValue(null);
+    vi.mocked(emailService.saveConfig).mockResolvedValue({
+      success: true,
+      message: "Guardado",
+    });
+    vi.mocked(emailService.verifyConnection).mockResolvedValue({
+      success: true,
+      message: "Conexion correcta",
+    });
+  });
+
+  it("entrega el MultiSmtpConfig completo con el perfil editado", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.handleFieldChange("host", "smtp.example.com");
+      result.current.handleFieldChange("user", "user@example.com");
+      result.current.handleFieldChange("pass", "clave-secreta");
+      result.current.handleFieldChange("fromEmail", "noreply@example.com");
+      result.current.submit();
+    });
+
+    await waitFor(() => expect(emailService.saveConfig).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(emailService.saveConfig).mock.calls[0][0];
+    expect(payload.activeProfileIndex).toBe(0);
+    expect(payload.profiles).toHaveLength(3);
+    expect(payload.profiles[0].host).toBe("smtp.example.com");
+    expect(payload.profiles[0].user).toBe("user@example.com");
+    expect(payload.profiles[0].pass).toBe("clave-secreta");
+    expect(payload.profiles[0].fromEmail).toBe("noreply@example.com");
+    expect(payload.profiles[0].secure).toBe(false);
+    // Los otros dos perfiles no se tocan.
+    expect(payload.profiles[1].host).toBe("");
+    expect(payload.profiles[2].host).toBe("");
+  });
+
+  it("exige los campos obligatorios del perfil como error de campo", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.handleFieldChange("fromName", "");
+      result.current.submit();
+    });
+
+    await waitFor(() => expect(result.current.getError("host")).toBeDefined());
+    expect(result.current.getError("user")).toBeDefined();
+    expect(result.current.getError("pass")).toBeDefined();
+    expect(result.current.getError("fromName")).toBeDefined();
+    expect(result.current.getError("fromEmail")).toBeDefined();
+    expect(emailService.saveConfig).not.toHaveBeenCalled();
+  });
+
+  it("conserva lo editado al cambiar de perfil", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.handleFieldChange("host", "smtp.example.com");
+      result.current.selectSlot(1);
+    });
+
+    expect(result.current.currentSlot).toBe(1);
+    expect(result.current.values.host).toBe("");
+
+    await act(async () => {
+      result.current.selectSlot(0);
+    });
+
+    expect(result.current.values.host).toBe("smtp.example.com");
+  });
+
+  it("los presets cambian el servidor del perfil", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.applyPreset("google");
+    });
+
+    expect(result.current.values.host).toBe("smtp.gmail.com");
+    expect(result.current.values.port).toBe(587);
+
+    await act(async () => {
+      result.current.applyPreset("outlook");
+    });
+
+    expect(result.current.values.host).toBe("smtp.office365.com");
+  });
+
+  it("marca el perfil editado como el de salida", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.selectSlot(2);
+    });
+
+    await act(async () => {
+      result.current.handleSetActive();
+    });
+
+    expect(result.current.activeProfileIndex).toBe(2);
+  });
+
+  it("bloquea el doble envio", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.handleFieldChange("host", "smtp.example.com");
+      result.current.handleFieldChange("user", "user@example.com");
+      result.current.handleFieldChange("pass", "clave-secreta");
+      result.current.handleFieldChange("fromEmail", "noreply@example.com");
+      result.current.submit();
+      result.current.submit();
+    });
+
+    await waitFor(() => expect(emailService.saveConfig).toHaveBeenCalledTimes(1));
   });
 });

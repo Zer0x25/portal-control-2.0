@@ -94,7 +94,8 @@ describe("Guardrail de la capa UI (spec 031 AC8)", () => {
       "ShiftHandoverModal.tsx": "src/features/time-control/components/ShiftHandoverModal.tsx",
       "ShiftHistoryModal.tsx": "src/features/employee-management/components/ShiftHistoryModal.tsx",
       "ShiftReportModal.tsx": "src/features/logbook/components/ShiftReportModal.tsx",
-      "SmtpConfigModal.tsx": "src/features/configuration/components/SmtpConfigModal.tsx",
+      "SmtpConfigModal.container.tsx":
+        "src/features/configuration/components/SmtpConfigModal.container.tsx",
     };
 
     for (const [file, relPath] of Object.entries(expected)) {
