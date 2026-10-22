@@ -7,7 +7,6 @@ import {
   TimeRecordField,
   UpcomingEmployeeStatus,
 } from "../../types/index";
-import { formatChileTimeHHmm } from "../../utils/chileClock";
 
 /**
  * Estado de UI puro (spec 032 T5).
@@ -27,7 +26,6 @@ export interface DashboardSlice {
   quickActionRecord: DailyTimeRecord | null;
   isEditTimestampModalOpen: boolean;
   editingRecordInfo: { record: DailyTimeRecord; field: TimeRecordField } | null;
-  newTimestampValue: string;
 
   // Modal Actions
   openReportDetailsModal: (report: ShiftReport) => void;
@@ -44,7 +42,6 @@ export interface DashboardSlice {
   closeResponsibleClockOutConfirmation: () => void;
   openEditTimestampModal: (record: DailyTimeRecord, field: TimeRecordField) => void;
   closeEditTimestampModal: () => void;
-  setNewTimestampValue: (value: string) => void;
 }
 
 export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice> = (set) => ({
@@ -58,7 +55,6 @@ export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice
   quickActionRecord: null,
   isEditTimestampModalOpen: false,
   editingRecordInfo: null,
-  newTimestampValue: "",
 
   // Modal Actions
   openReportDetailsModal: (report) => set({ showReportDetailsModal: report }),
@@ -81,27 +77,19 @@ export const createDashboardSlice: StateCreator<AppState, [], [], DashboardSlice
       showResponsibleUserClockOutConfirmation: false,
       employeeToConfirmClockOut: null,
     }),
+  // El store solo dice **que marcaje** se esta editando; el borrador de hora
+  // (su valor inicial y su estado) vive en el formulario del hook
+  // `useTimestampEditor` (spec 036 T12c), no aqui.
   openEditTimestampModal: (record, field) => {
-    const currentValue = record[field];
-    const initialValue =
-      currentValue && currentValue !== "SIN REGISTRO"
-        ? formatChileTimeHHmm(new Date(currentValue))
-        : formatChileTimeHHmm(new Date());
-
     set({
       isEditTimestampModalOpen: true,
       editingRecordInfo: { record, field },
-      newTimestampValue: initialValue,
     });
   },
   closeEditTimestampModal: () => {
     set({
       isEditTimestampModalOpen: false,
       editingRecordInfo: null,
-      newTimestampValue: "",
     });
-  },
-  setNewTimestampValue: (value) => {
-    set({ newTimestampValue: value });
   },
 });

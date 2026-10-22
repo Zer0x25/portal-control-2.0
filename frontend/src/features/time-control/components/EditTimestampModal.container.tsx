@@ -12,8 +12,9 @@ const EditTimestampModalContainer: React.FC = () => {
       editingInfo={controller.editingInfo}
       value={controller.value}
       setValue={controller.setValue}
+      error={controller.error}
+      formProps={controller.formProps}
       fieldLabel={controller.fieldLabel}
-      handleSave={controller.handleSave}
       isLoading={controller.isLoading}
       maxTimeForExit={controller.maxTimeForExit}
     />

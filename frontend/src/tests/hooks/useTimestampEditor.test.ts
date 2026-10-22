@@ -20,10 +20,12 @@ const { mutateAsyncMock, closeEditTimestampModalMock, addToastMock, storeState }
         },
         field: "entrada" as "entrada" | "salida",
       },
-      newTimestampValue: "08:30",
     },
   }),
 );
+
+/** Evento de envio falso: la vista llama al `onSubmit` que entrega la capa. */
+const SUBMIT_EVENT = { preventDefault: () => {} };
 
 vi.mock("../../hooks/queries/useTimeRecordsQuery", () => ({
   useTimeRecordMutations: () => ({
@@ -44,17 +46,27 @@ vi.mock("../../store/useStore", () => ({
   useStore: (
     selector: (s: {
       editingRecordInfo: typeof storeState.editingRecordInfo;
-      newTimestampValue: string;
       closeEditTimestampModal: typeof closeEditTimestampModalMock;
     }) => unknown,
   ) =>
     selector({
       editingRecordInfo: storeState.editingRecordInfo,
-      newTimestampValue: storeState.newTimestampValue,
       closeEditTimestampModal: closeEditTimestampModalMock,
     }),
 }));
 
+/**
+ * Spec 036 T12c (AC1, AC2, T13): el borrador de hora ya no vive en el store
+ * (`newTimestampValue`): el hook es propietario del formulario. Lo que se fija
+ * aqui es lo que la migracion puede romper:
+ *
+ * 1. **El payload**: sigue construyendose el registro completo con la hora
+ *    convertida a timestamp de Chile (T13).
+ * 2. **La regla `HH:mm`** vive en `editTimestampFormSchema`, no en un regex
+ *    dentro de `handleSave`.
+ * 3. El borrador arranca en la hora del marcaje (el valor inicial que antes
+ *    calculaba `openEditTimestampModal`).
+ */
 describe("useTimestampEditor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,23 +82,54 @@ describe("useTimestampEditor", () => {
       },
       field: "entrada",
     };
-    storeState.newTimestampValue = "08:30";
+  });
+
+  it("arranca con la hora del marcaje (valor inicial del borrador)", () => {
+    const { result } = renderHook(() => useTimestampEditor());
+
+    // La entrada es 08:00 UTC = 05:00 en Chile (UTC-3 en marzo).
+    expect(result.current.value).toBe("05:00");
+    expect(result.current.error).toBeUndefined();
   });
 
   it("keeps the record date fixed and persists exactly once", async () => {
     const { result } = renderHook(() => useTimestampEditor());
 
+    act(() => {
+      result.current.setValue("08:30");
+    });
     await act(async () => {
-      await result.current.handleSave();
+      result.current.formProps.onSubmit(SUBMIT_EVENT);
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    });
     const payload = mutateAsyncMock.mock.calls[0][0] as { entrada: string; date: string };
     expect(payload.date).toBe("2026-03-01");
     expect(payload.entrada).toBe(
       toDate("2026-03-01T08:30:00", { timeZone: "America/Santiago" }).toISOString(),
     );
     expect(closeEditTimestampModalMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("senala la hora vacia y no toca el backend", async () => {
+    const { result } = renderHook(() => useTimestampEditor());
+
+    act(() => {
+      result.current.setValue("");
+    });
+    await act(async () => {
+      result.current.formProps.onSubmit(SUBMIT_EVENT);
+    });
+
+    await vi.waitFor(() => {
+      // `ERROR_MESSAGES.required` es generico en genero (mismo patron que
+      // `businessDate("La fecha")` en todo el producto).
+      expect(result.current.error).toBe("La hora es obligatorio.");
+    });
+    expect(mutateAsyncMock).not.toHaveBeenCalled();
+    expect(closeEditTimestampModalMock).not.toHaveBeenCalled();
   });
 
   it("delegates hard salida validation to backend", async () => {
@@ -101,18 +144,22 @@ describe("useTimestampEditor", () => {
       },
       field: "salida",
     };
-    storeState.newTimestampValue = "21:00";
     mutateAsyncMock.mockRejectedValueOnce(
       new Error("La hora de salida no puede superar 12 horas desde la entrada."),
     );
 
     const { result } = renderHook(() => useTimestampEditor());
 
+    act(() => {
+      result.current.setValue("21:00");
+    });
     await act(async () => {
-      await result.current.handleSave();
+      result.current.formProps.onSubmit(SUBMIT_EVENT);
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    });
     const payload = mutateAsyncMock.mock.calls[0][0] as { salida: string };
     expect(payload.salida).toBe(
       toDate("2026-03-01T21:00:00", { timeZone: "America/Santiago" }).toISOString(),
@@ -133,15 +180,19 @@ describe("useTimestampEditor", () => {
       },
       field: "salida",
     };
-    storeState.newTimestampValue = "08:00";
 
     const { result } = renderHook(() => useTimestampEditor());
 
+    act(() => {
+      result.current.setValue("08:00");
+    });
     await act(async () => {
-      await result.current.handleSave();
+      result.current.formProps.onSubmit(SUBMIT_EVENT);
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    });
     const payload = mutateAsyncMock.mock.calls[0][0] as { salida: string };
     expect(payload.salida).toBe(
       toDate("2026-03-02T08:00:00", { timeZone: "America/Santiago" }).toISOString(),

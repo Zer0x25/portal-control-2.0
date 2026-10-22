@@ -854,6 +854,59 @@ exactamente lo que `purgeSessions()` y `resetPassword()` recibian antes.
 **Ratchet:** sin cambios (los dos formularios comparten la vista que ya medía
 la spec 033).
 
+### Nota de ejecución — Fase C, PR 13 (T12c: `EditTimestampModal`)
+
+**El formulario migrado a `useAppForm` + schema:**
+
+| Formulario        | Componente                                       | Schema                    |
+| ----------------- | ------------------------------------------------ | ------------------------- |
+| Ajuste de marcaje | `hooks/useTimestampEditor.ts` + `EditTimestamp…` | `editTimestampFormSchema` |
+
+**Hallazgos:**
+
+1. **El borrador vivia en el store global**: `newTimestampValue` y
+   `setNewTimestampValue` estaban en `dashboardSlice`, junto a la logica de
+   abrir el modal (que calculaba la hora inicial). El store pasa a decir solo
+   **que marcaje** se esta editando; el valor inicial se deriva en el hook y el
+   estado del formulario es de `useAppForm`.
+2. **La regla del regex se movio al schema**: `handleSave` validaba
+   `/^\d{2}:\d{2}$/` y avisaba con un toast generico ("Formato de hora
+   inválido."). Ahora es `clockTime("La hora")` en `editTimestampFormSchema`
+   (AC2) y el error se pinta junto al input (AC3), con la primitiva `Input`
+   (que ya gestiona `aria-invalid`/`aria-describedby` y el borde de error).
+3. **El vacio dejó de ser un no-op silencioso**: antes `if (!newTimestampValue)
+return;` no hacia nada ni decia nada; ahora el schema senala el campo.
+   Un `<input type="time">` solo puede venir vacio o con `HH:mm`, asi que el
+   formato no puede fallar en la practica: el caso real es el vacio.
+4. **El modal ahora es un `<form>`**: antes el boton llamaba a `handleSave` y
+   no habia `<form>` (Enter no enviaba). El `<div>` contenedor pasa a ser el
+   `<form {...formProps}>`; el boton de confirmar es `type="submit"` y el de
+   cancelar conserva el `type="button"` por defecto del componente `Button`.
+5. **El borrador vuelve al valor inicial al abrir** (efecto con
+   `useLayoutEffect`, sin frame en blanco) y se reabre limpio si el usuario
+   cancela, como hacia `openEditTimestampModal` antes.
+6. `timeRecordWriteFormSchema` **no lo escribe ninguna pantalla**: documenta el
+   contrato del `mutateAsync` (el payload que arma el hook). Su entrada del
+   mapa pasa a `forms: []` para que el mapa no mienta.
+
+**Payload idéntico al anterior (T13):** el registro completo que manda
+`updateRecordMutation` no cambia (la hora se sigue convirtiendo con
+`parseBusinessDateTimeCL` y la correccion de dia siguiente para `salida`);
+solo cambia de donde sale la cadena `HH:mm`.
+
+**Evidencia:**
+
+| Artefacto                      | Ubicación                                                    |
+| ------------------------------ | ------------------------------------------------------------ |
+| Schema del borrador            | `frontend/src/schemas/forms/timestamp.ts`                    |
+| Test del editor (5 casos)      | `frontend/src/tests/hooks/useTimestampEditor.test.ts`        |
+| Test del controlador (3 casos) | `frontend/src/tests/features/time-control/useEditTimestamp…` |
+| Paridad de los contratos       | `frontend/src/tests/contracts/form-schema-parity.test.ts`    |
+
+**Ratchet:** sin cambios (`EditTimestampModal.view.tsx` no es un componente
+enganchado grande; el `editTimestampForm` no tiene contrato OpenAPI que
+comparar).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`

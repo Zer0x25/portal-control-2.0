@@ -43,7 +43,7 @@ import {
   smtpProfileFormSchema,
   smtpVerifyFormSchema,
 } from "./forms/smtp";
-import { timeRecordWriteFormSchema } from "./forms/timestamp";
+import { editTimestampFormSchema, timeRecordWriteFormSchema } from "./forms/timestamp";
 import { buildUserFormSchema, userCreateFormSchema, userUpdateFormSchema } from "./forms/user";
 
 export * from "./forms";
@@ -417,7 +417,15 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "timeRecordWriteForm",
     openApi: "TimeRecordWrite",
     schema: timeRecordWriteFormSchema,
-    forms: ["EditTimestampModal", "useTimestampEditor"],
+    // Documenta el contrato del `mutateAsync` de `useTimestampEditor`; ningun
+    // formulario escribe este shape (la pantalla solo edita la hora).
+    forms: [],
+  },
+  {
+    id: "editTimestampForm",
+    openApi: null,
+    schema: editTimestampFormSchema,
+    forms: ["EditTimestampModal"],
   },
 ];
 
