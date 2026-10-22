@@ -122,6 +122,26 @@ export const ERROR_MESSAGES = {
   /** Valor esperado numérico. */
   invalidNumber: (): string => "Ingrese un valor numérico válido.",
 
+  /** Lectura de medidor: el texto escrito no es un número. */
+  invalidMeterValue: (): string => "El valor ingresado no es un número válido.",
+
+  /** Lectura de medidor: el valor no puede estar vacío. */
+  emptyMeterValue: (): string => "El valor no puede estar vacío.",
+
+  /** Lectura de medidor: una lectura (sin recargar) no puede ser negativa. */
+  negativeMeterValue: (): string => "El valor no puede ser negativo.",
+
+  /** Lectura de medidor: el porcentaje no puede pasar de 100. */
+  meterPercentAboveHundred: (): string => "El porcentaje no puede ser mayor a 100.",
+
+  /** Lectura de medidor: el valor no puede pasar la capacidad del medidor. */
+  meterValueAboveCapacity: (value: number, capacity: number): string =>
+    `El valor (${value}) no puede superar la capacidad máxima (${capacity}).`,
+
+  /** Lectura de medidor: un medidor de consumo no puede bajar. */
+  meterValueBelowPrevious: (value: number, previous: number): string =>
+    `El nuevo valor (${value}) no puede ser menor al anterior (${previous.toFixed(2)}).`,
+
   /** Error de validación de formulario sin un mensaje más específico. */
   generic: (): string => "Revise los datos ingresados e intente nuevamente.",
 } as const;

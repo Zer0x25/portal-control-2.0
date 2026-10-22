@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import KpiDetailsModal from "../../features/supervisor-dashboard/components/KpiDetailsModal";
-import SingleMeterInputModal from "../../features/meters/components/SingleMeterInputModal";
+import SingleMeterInputModal from "../../features/meters/components/SingleMeterInputModal.container";
 import AuditLogDetailDrawer from "../../features/governance/components/AuditLogDetailDrawer";
 import ForceChangePasswordModalView from "../../features/auth/components/ForceChangePasswordModal.view";
 import type { AuditLog, DailyTimeRecord, MeterConfig } from "../../types";

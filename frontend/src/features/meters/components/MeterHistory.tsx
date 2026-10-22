@@ -3,7 +3,7 @@ import { useMeterReadings } from "../../../hooks/useMeterReadings";
 import { MeterReadingItem, METER_CATEGORIES, MeterConfig } from "../../../types";
 import Card from "../../../components/ui/Card";
 import Button from "../../../components/ui/Button";
-import SingleMeterInputModal from "./SingleMeterInputModal";
+import SingleMeterInputModal from "./SingleMeterInputModal.container";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { ChevronRightIcon, ArrowUturnLeftIcon } from "../../../components/ui/icons";

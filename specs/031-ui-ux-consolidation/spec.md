@@ -29,7 +29,7 @@ cambio con mayor riesgo offline):
    heredarlo. En features: 0 focus traps y solo 1 de 6 `role="dialog"` maneja
    Escape (los modales sin garantías:
    [KpiDetailsModal.tsx](file:///frontend/src/features/supervisor-dashboard/components/KpiDetailsModal.tsx):103-125,
-   [SingleMeterInputModal.tsx](file:///frontend/src/features/meters/components/SingleMeterInputModal.tsx):106-111
+   [SingleMeterInputModal.view.tsx](file:///frontend/src/features/meters/components/SingleMeterInputModal.view.tsx):106-111
    — con `role="dialog"` sin `aria-modal` —,
    [ReportsTab.tsx](file:///frontend/src/features/supervisor-dashboard/components/ReportsTab.tsx),
    [AuditLogDetailDrawer.tsx](file:///frontend/src/features/governance/components/AuditLogDetailDrawer.tsx),

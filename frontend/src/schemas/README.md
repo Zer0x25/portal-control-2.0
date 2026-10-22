@@ -56,6 +56,7 @@ siguen siendo dos capas distintas.
 | `employeeForm`                      | `position` obligatorio                              | El backend lo admite opcional; el formulario de alta/edicion lo exige.                                                                                                         |
 | `employeeForm`                      | `area` y `workdayType` sin declarar en el OpenAPI   | El backend **los acepta y los guarda** (`EmployeeService` los escribe), pero su schema Zod no los declara: es un hueco de documentacion del contrato, no una perdida de datos. |
 | `userForm`                          | `password` obligatoria en el alta                   | El formulario no muestra un campo de contraseña (muestra la temporal que asigna el backend), asi que la regla se declara como divergencia.                                     |
+| `singleMeterReadingForm`            | `value` es el texto que teclea el usuario           | El hook `useMeterReadings` lo convierte a numero antes de enviarlo: es un campo **transformado** (el texto puede llevar el prefijo `+` de recarga).                            |
 
 ### Como se declara cada tipo de divergencia
 
@@ -67,8 +68,13 @@ que el test de paridad sepa que descartar y que la razon quede escrita:
 | `localFields`             | El campo **solo** existe en el formulario: no viaja al backend.           | `passwordConfirm` del cambio de contraseña.     |
 | `openApiUndeclaredFields` | El campo **viaja y el backend lo guarda**, pero su OpenAPI no lo declara. | `area`/`workdayType` del empleado.              |
 | `transformedFields`       | El valor se **transforma** antes de enviarlo (cambia de tipo o formato).  | `requestedValue` de la solicitud de corrección. |
-| `stricterRequired`        | El formulario **exige** un campo que el backend admite opcional.          | `position` del empleado.                        |
-| `divergences`             | Reglas del cliente que el backend no implementa.                          | El digito verificador del RUT.                  |
+
+Un campo declarado como `transformedFields` tambien puede **cambiar de tipo**
+(la lectura de un medidor es un texto en el formulario y un numero en la API):
+el comparador de paridad salta la comprobacion de tipo de esos campos (igual
+que ya hacia con el formato y el patron).
+| `stricterRequired` | El formulario **exige** un campo que el backend admite opcional. | `position` del empleado. |
+| `divergences` | Reglas del cliente que el backend no implementa. | El digito verificador del RUT. |
 
 ## Como se verifica la paridad
 
