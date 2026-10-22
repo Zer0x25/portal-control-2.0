@@ -69,6 +69,15 @@ export const ERROR_MESSAGES = {
   /** Fecha con un formato distinto de `YYYY-MM-DD`. */
   invalidDate: (): string => "Formato de fecha inválido (YYYY-MM-DD)",
 
+  /** Hora con un formato distinto de `HH:mm` (24 horas). */
+  invalidTime: (): string => "Formato de hora inválido (HH:mm)",
+
+  /** Patente vehicular que no sigue el formato de la pantalla (`AA-BB-11`). */
+  invalidLicensePlate: (): string => "La patente vehicular no tiene un formato válido (AA-BB-11).",
+
+  /** Número de pasajeros que no es un entero no negativo. */
+  invalidPaxCount: (): string => "El número de pasajeros debe ser un entero mayor o igual a 0.",
+
   /** Rango de fechas invertido (el fin no es posterior al inicio). */
   invalidDateRange: (): string => "La fecha de término debe ser posterior a la fecha de inicio.",
 

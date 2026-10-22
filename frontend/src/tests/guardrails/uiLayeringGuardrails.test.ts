@@ -74,8 +74,10 @@ describe("Guardrail de la capa UI (spec 031 AC8)", () => {
 
   it("los modales de dominio viven en su feature", () => {
     const expected: Record<string, string> = {
-      "AddNoveltyModal.tsx": "src/features/logbook/components/AddNoveltyModal.tsx",
-      "AddSupplierModal.tsx": "src/features/logbook/components/AddSupplierModal.tsx",
+      "AddNoveltyModal.container.tsx":
+        "src/features/logbook/components/AddNoveltyModal.container.tsx",
+      "AddSupplierModal.container.tsx":
+        "src/features/logbook/components/AddSupplierModal.container.tsx",
       "AnomalyResolutionModal.tsx":
         "src/features/time-control/components/AnomalyResolutionModal.tsx",
       "AttachmentViewerModal.tsx":
@@ -84,8 +86,8 @@ describe("Guardrail de la capa UI (spec 031 AC8)", () => {
       "ExportLogsModal.tsx": "src/features/governance/components/ExportLogsModal.tsx",
       "ImportModal.tsx": "src/features/employee-management/components/ImportModal.tsx",
       "RecordHistoryModal.tsx": "src/features/time-control/components/RecordHistoryModal.tsx",
-      "RejectionReasonModal.tsx":
-        "src/features/supervisor-dashboard/components/RejectionReasonModal.tsx",
+      "RejectionReasonModal.container.tsx":
+        "src/features/supervisor-dashboard/components/RejectionReasonModal.container.tsx",
       "SeedingOptionsModal.tsx": "src/features/configuration/components/SeedingOptionsModal.tsx",
       "SeedingProgressModal.tsx": "src/features/configuration/components/SeedingProgressModal.tsx",
       "ShiftHandoverModal.tsx": "src/features/time-control/components/ShiftHandoverModal.tsx",

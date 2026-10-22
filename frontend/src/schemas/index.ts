@@ -10,7 +10,11 @@ import {
   mfaCodeFormSchema,
   mfaSetupFormSchema,
 } from "./forms/auth";
-import { correctionRequestFormSchema, correctionStatusFormSchema } from "./forms/correction";
+import {
+  correctionRequestFormSchema,
+  correctionStatusFormSchema,
+  rejectionReasonFormSchema,
+} from "./forms/correction";
 import { employeeFormFieldsSchema, employeeFormSchema } from "./forms/employee";
 import { holidayFormSchema } from "./forms/holiday";
 import { leaveFormSchema } from "./forms/leave";
@@ -220,7 +224,20 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "correctionStatusForm",
     openApi: "UpdateCorrectionStatus",
     schema: correctionStatusFormSchema,
+    // Copia del contrato del backend: el modal de rechazo usa el subconjunto
+    // `rejectionReasonForm` (solo escribe el motivo).
+    forms: [],
+  },
+  {
+    id: "rejectionReasonForm",
+    openApi: "UpdateCorrectionStatus",
+    schema: rejectionReasonFormSchema,
     forms: ["RejectionReasonModal"],
+    stricterRequired: ["rejectionReason"],
+    divergences: [
+      "rejectionReason: el backend lo exige solo cuando el estado es `rejected`; este formulario siempre rechaza",
+      "el modal solo escribe el motivo: el estado y el supervisor que resuelve los pone la pantalla",
+    ],
   },
   {
     id: "meterReadingForm",

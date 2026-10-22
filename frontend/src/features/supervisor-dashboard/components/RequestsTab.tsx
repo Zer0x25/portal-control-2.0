@@ -7,7 +7,7 @@ import Button from "../../../components/ui/Button";
 import { CorrectionRequest } from "../../../types/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import { CORRECTION_REQUEST_STATUS_TEXT, TIME_RECORD_FIELD_LABELS } from "../../../utils/mappings";
-import RejectionReasonModal from "./RejectionReasonModal";
+import RejectionReasonModal from "./RejectionReasonModal.container";
 import AttachmentViewerModal from "./AttachmentViewerModal";
 import {
   ArrowPathIcon,

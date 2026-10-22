@@ -57,6 +57,7 @@ siguen siendo dos capas distintas.
 | `employeeForm`                      | `area` y `workdayType` sin declarar en el OpenAPI   | El backend **los acepta y los guarda** (`EmployeeService` los escribe), pero su schema Zod no los declara: es un hueco de documentacion del contrato, no una perdida de datos. |
 | `userForm`                          | `password` obligatoria en el alta                   | El formulario no muestra un campo de contraseña (muestra la temporal que asigna el backend), asi que la regla se declara como divergencia.                                     |
 | `singleMeterReadingForm`            | `value` es el texto que teclea el usuario           | El hook `useMeterReadings` lo convierte a numero antes de enviarlo: es un campo **transformado** (el texto puede llevar el prefijo `+` de recarga).                            |
+| `rejectionReasonForm`               | `rejectionReason` obligatorio                       | El backend lo exige solo cuando el estado es `rejected` (regla condicional que el OpenAPI no expresa); este formulario **siempre** rechaza, asi que lo exige siempre.          |
 
 ### Como se declara cada tipo de divergencia
 
@@ -104,3 +105,9 @@ npx vitest run --project jsdom src/tests/contracts
 API: son datos del navegador. No tienen schema OpenAPI con el que verificar la
 paridad, asi que el test los ignora a proposito (estan listados en
 `LOCAL_ONLY_FORM_SCHEMA_IDS`).
+
+Sus campos se corrigieron en la spec 036 T10: describian un formulario que la
+pantalla nunca mostro (el proveedor con nombre, RUT y telefono; la novedad con
+tipo, hora de inicio y justificacion). Ahora describen el formulario real (la
+patente, el conductor, los pasajeros, la empresa, el motivo y la hora; la
+anotacion y su hora), que es el que valida `useAppForm`.

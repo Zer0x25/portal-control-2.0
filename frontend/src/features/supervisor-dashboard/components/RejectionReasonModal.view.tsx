@@ -1,28 +1,51 @@
-import React, { useState } from "react";
+import React from "react";
 import Button from "../../../components/ui/Button";
 import { CloseIcon } from "../../../components/ui/icons/index";
 import { Z } from "../../../constants/zScale";
+import type { RejectionReasonFormValues } from "../../../schemas/forms/correction";
 
-interface RejectionReasonModalProps {
+/**
+ * Spec 036 T10: `RejectionReasonModal` es **presentacion pura**.
+ *
+ * Antes el componente guardaba el motivo en un `useState` y, si venia vacio,
+ * el `onConfirm` no se llamaba: el usuario pulsaba "Confirmar Rechazo" y no
+ * pasaba nada. Ahora los valores, los errores y los handlers entran por props
+ * (los lleva el hook de dominio).
+ */
+export interface RejectionReasonModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
+  /** Cierra el modal. */
   onClose: () => void;
-  onConfirm: (reason: string) => void;
-  isSubmitting?: boolean;
+  /** Valores actuales del formulario. */
+  values: RejectionReasonFormValues;
+  /** Mensaje de error de un campo (o `undefined`). */
+  getError: (field: string) => string | undefined;
+  /** Escribe el motivo del rechazo. */
+  handleReasonChange: (value: string) => void;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
-const RejectionReasonModal: React.FC<RejectionReasonModalProps> = ({
+const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
   isOpen,
   onClose,
-  onConfirm,
-  isSubmitting = false,
+  values,
+  getError,
+  handleReasonChange,
+  isSubmitting,
+  formProps,
 }) => {
-  const [reason, setReason] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reason.trim()) return;
-    onConfirm(reason);
-  };
+  const reasonError = getError("rejectionReason");
+  const reasonErrorId = `${formProps.id}-rejectionReason-error`;
+  const reasonId = `${formProps.id}-rejectionReason`;
 
   return (
     isOpen && (
@@ -63,24 +86,34 @@ const RejectionReasonModal: React.FC<RejectionReasonModalProps> = ({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form {...formProps}>
             <div className="p-6 space-y-4">
               <label
-                htmlFor="rejection-reason"
+                htmlFor={reasonId}
                 className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider block"
               >
                 Justificación Técnica / Observaciones
               </label>
               <textarea
-                id="rejection-reason"
+                id={reasonId}
                 rows={4}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                value={values.rejectionReason}
+                onChange={(e) => handleReasonChange(e.target.value)}
                 disabled={isSubmitting}
-                className="block w-full px-4 py-3 border border-token-border-technical rounded-sm shadow-sm bg-token-surface-stripe text-token-text-primary focus:ring-1 focus:ring-sap-blue focus:border-sap-blue text-[13px] disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all placeholder:text-token-text-tertiary placeholder:opacity-50"
+                aria-invalid={reasonError ? "true" : undefined}
+                aria-describedby={reasonError ? reasonErrorId : undefined}
+                className={`block w-full px-4 py-3 border ${reasonError ? "border-token-status-error" : "border-token-border-technical"} rounded-sm shadow-sm bg-token-surface-stripe text-token-text-primary focus:ring-1 focus:ring-sap-blue focus:border-sap-blue text-[13px] disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all placeholder:text-token-text-tertiary placeholder:opacity-50`}
                 placeholder="Detalle el motivo del rechazo para el registro de auditoría..."
                 required
               />
+              {reasonError && (
+                <p
+                  id={reasonErrorId}
+                  className="text-[10px] font-black uppercase tracking-widest text-token-status-error animate-pulse"
+                >
+                  {reasonError}
+                </p>
+              )}
             </div>
 
             <div className="px-6 py-4 bg-token-surface-stripe flex justify-end gap-3 border-t border-token-border-technical">
@@ -109,4 +142,4 @@ const RejectionReasonModal: React.FC<RejectionReasonModalProps> = ({
   );
 };
 
-export default RejectionReasonModal;
+export default RejectionReasonModalView;
