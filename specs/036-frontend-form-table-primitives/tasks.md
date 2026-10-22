@@ -259,14 +259,14 @@ produccion.
 
 ## Fase D — Capa de data grid (3 PR)
 
-- [ ] T14: Crear `frontend/src/components/ui/DataTable.tsx`,
+- [x] T14: Crear `frontend/src/components/ui/DataTable.tsx`,
       `DataTableHeader.tsx` y `DataTableRow.tsx`: primitivas headless sobre
       TanStack Table, con el diseño actual (tokens `token-*`, tipografía
       `typo-ui-*`, densidad industrial) y **accesibilidad de tabla**:
       `role="grid"`, `aria-rowcount`, `aria-colcount`, cabeceras ordenables
       como `<button>` con `aria-sort` y nombre accesible, navegación por
       teclado (AC5, AC6).
-- [ ] T15: Extraer el cálculo de **subtotales** de `ReportTable.tsx` a una
+- [x] T15: Extraer el cálculo de **subtotales** de `ReportTable.tsx` a una
       función pura `frontend/src/utils/reportSubtotals.ts` y crear
       `frontend/src/hooks/useReportTable.ts` con el estado de sort/paginación;
       escribir el test unitario de la función pura **antes** de migrar el
@@ -275,7 +275,7 @@ produccion.
       `ReportTable.tsx:88` y `:102` intercalan las filas `{ type: "subtotal" }`
       y `{ type: "total" }` entre los días **antes** de paginar y ordenarlas
       después las mezclaría (AC5).
-- [ ] T16: Reescribir `frontend/src/components/ui/ReportTable.tsx` (549
+- [x] T16: Reescribir `frontend/src/components/ui/ReportTable.tsx` (549
       líneas) sobre las primitivas nuevas, **reconstruyendo las dos tablas**
       (`renderSummaryTable()` sobre `ReportStat[]` y `renderDailyTable()` sobre
       `(DailyReportItem | ReportSubtotal)[]`), e integrar
@@ -286,7 +286,7 @@ produccion.
       `src/tests/components/PaginationControls.test.tsx` los cubre); conservar
       la bifurcación desktop/mobile (`ReportTableMobileSummaryCard` +
       `ReportTableMobileDailyCard` vía `ResponsiveView`) (AC5).
-- [ ] T17: **Certificar las primitivas nuevas**: registrar `DataTable.tsx`,
+- [x] T17: **Certificar las primitivas nuevas**: registrar `DataTable.tsx`,
       `DataTableHeader.tsx` y `DataTableRow.tsx` en
       `frontend/design-system-certified.json` **y** en los dos mecanismos de
       paridad de `.agents/rules/design-system-governance.md` §7
@@ -294,11 +294,44 @@ produccion.
       única, y `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`).
       Si `ReportTable.tsx` se renombra o se mueve, actualizar el JSON **en el
       mismo PR** y verificar la paridad con el script auditor (AC5).
-- [ ] T18: Evaluar caso por caso la migración a la primitiva de
+- [x] T18: Evaluar caso por caso la migración a la primitiva de
       `features/time-control/components/TimeRecordRow.tsx` (327),
       `features/governance/components/AuditLogFilterPanel.tsx` (457) y
       `AuditLogsView.tsx` (405), `IntegrityAnomalyTable.tsx`; migrar **solo**
       donde la primitiva encaja y **documentar** las excepciones (AC5, AC7).
+
+**Notas de ejecución (Fase D):**
+
+- `SortableHeader.tsx` se actualizó para renderizar un `<button>` nativo con
+  `aria-sort` en el `<th>` contenedor y nombre accesible, conservando su
+  exportación y API (consumidor: `EmployeeListCard`). `Button` ganó la talla
+  `size="none"` para heredar la tipografía del contenedor.
+- `DataTable.tsx` es tabulable (`tabIndex=0`) y mueve el foco con las flechas
+  entre `tr[data-row-index]` (`ArrowUp`/`ArrowDown`/`Home`/`End`); expone
+  `role="grid"`, `aria-label`, `aria-rowcount` (dataset completo + 1 cabecera)
+  y `aria-colcount`. `aria-rowindex` lo aporta `DataTableRow` (offset +2).
+- `useReportTable.ts` mantiene el sort en el controller (`manualSorting`) y
+  pagina manualmente; los subtotales se calculan sobre los datos ya ordenados
+  (`buildReportRowsWithSubtotals`), antes de paginar.
+- `ReportTable.tsx` se reescribió sobre `DataTable`/`DataTableHeader`/
+  `DataTableRow`; el desktop usa la paginación integrada en `DataTable`, y la
+  rama móvil conserva sus cápsulas propias (lista de tarjetas, no tabla).
+- T18 — excepciones documentadas (no se migró ninguno):
+  - `TimeRecordRow.tsx` (327) + `TimeRecordTableViewDesktop`: tabla
+    virtualizada con filas `<tr>`/`<div>` interactivas (progress bars,
+    tooltips, acciones, edición inline) y virtualización por
+    `useInfiniteVirtualizedList`; la primitiva genérica rompería la
+    virtualización y acoplaría un componente de dominio a columnas genéricas.
+  - `AuditLogsView.tsx` (405): tabla virtualizada con scroll infinito y filas
+    posicionadas absolutamente; el encabezado es una tabla separada; no encaja
+    en el modelo de columnas de TanStack sin rehacer la virtualización.
+  - `AuditLogFilterPanel.tsx` (457): panel de filtros (formulario), no data
+    grid; fuera de alcance de la primitiva.
+  - `IntegrityAnomalyTable.tsx`: tabla de solo lectura con filas de detalle
+    (`colSpan`) y sin sort/paginación; `role="grid"` no aplica y la primitiva
+    no aporta valor; se mantiene como `<table>` semántica.
+- `design-system-certified.json`: +3 (`DataTable.tsx`, `DataTableHeader.tsx`,
+  `DataTableRow.tsx`); auditoría de diseño en 0/0.
 
 ## Fase E — Guardrails
 
