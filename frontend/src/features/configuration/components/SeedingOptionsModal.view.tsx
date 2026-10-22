@@ -1,125 +1,61 @@
-import React, { useState } from "react";
-import { useToasts } from "../../../hooks/useToasts";
+import React from "react";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { CloseIcon, SparklesIcon } from "../../../components/ui/icons/index";
 import { Z } from "../../../constants/zScale";
+import type { SeedingOptionsFormValues } from "../../../schemas/forms/seed";
 
-export interface SeedingOptions {
-  employees: number;
-  days: number;
-  basePatternsCount: number;
-  leaveRatio: number;
-  correctionRequestRatio: number;
-  shiftReportsPerDay: number;
-  quickNotesCount: number;
-}
-
-interface SeedingOptionsModalProps {
+/**
+ * Spec 036 T10b: `SeedingOptionsModal` es **presentacion pura**.
+ *
+ * Antes el componente guardaba los siete numeros en un `useState` y repetia
+ * la comprobacion de rangos en un `toast` que no decia que campo era el
+ * culpable. Ahora los valores, los errores y los handlers entran por props
+ * (los lleva el hook de dominio).
+ */
+export interface SeedingOptionsModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
+  /** Cierra el modal. */
   onClose: () => void;
-  onConfirm: (options: SeedingOptions) => void;
+  /** Valores actuales del formulario. */
+  values: SeedingOptionsFormValues;
+  /** Mensaje de error de un campo (o `undefined`). */
+  getError: (field: string) => string | undefined;
+  /** Escribe un campo numerico. */
+  handleNumberChange: (field: keyof SeedingOptionsFormValues, value: string) => void;
+  /** Aplica el preset "Quick Seed". */
+  applyQuickSeedPreset: () => void;
+  /** Aplica el siguiente nivel del preset incremental. */
+  applyIncrementalPreset: () => void;
+  /** Nivel del preset incremental aplicado. */
+  incrementalLevel: number;
+  /** Numero total de niveles del preset incremental. */
+  maxIncrementalLevel: number;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
-const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
+const SeedingOptionsModalView: React.FC<SeedingOptionsModalViewProps> = ({
   isOpen,
   onClose,
-  onConfirm,
+  values,
+  getError,
+  handleNumberChange,
+  applyQuickSeedPreset,
+  applyIncrementalPreset,
+  incrementalLevel,
+  maxIncrementalLevel,
+  isSubmitting,
+  formProps,
 }) => {
-  const { addToast } = useToasts();
-  const [options, setOptions] = useState<SeedingOptions>({
-    employees: 200,
-    days: 2200,
-    basePatternsCount: 3,
-    leaveRatio: 5,
-    correctionRequestRatio: 2,
-    shiftReportsPerDay: 6,
-    quickNotesCount: 5,
-  });
-  const [incrementalLevel, setIncrementalLevel] = useState(0);
-
-  const incrementalPresets: SeedingOptions[] = [
-    {
-      employees: 15,
-      days: 3,
-      basePatternsCount: 2,
-      leaveRatio: 4,
-      correctionRequestRatio: 1,
-      shiftReportsPerDay: 0,
-      quickNotesCount: 20,
-    },
-    {
-      employees: 30,
-      days: 7,
-      basePatternsCount: 3,
-      leaveRatio: 4,
-      correctionRequestRatio: 1,
-      shiftReportsPerDay: 1,
-      quickNotesCount: 40,
-    },
-    {
-      employees: 60,
-      days: 15,
-      basePatternsCount: 4,
-      leaveRatio: 5,
-      correctionRequestRatio: 2,
-      shiftReportsPerDay: 2,
-      quickNotesCount: 80,
-    },
-    {
-      employees: 120,
-      days: 30,
-      basePatternsCount: 5,
-      leaveRatio: 6,
-      correctionRequestRatio: 2,
-      shiftReportsPerDay: 3,
-      quickNotesCount: 140,
-    },
-  ];
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setOptions((prev) => ({
-      ...prev,
-      [name]: type === "number" || type === "range" ? parseInt(value, 10) || 0 : value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (options.employees <= 0 || options.days <= 0 || options.basePatternsCount < 1) {
-      addToast("Los valores numericos deben ser validos.", "error");
-      return;
-    }
-    onConfirm(options);
-    onClose();
-  };
-
-  const applyQuickSeedPreset = () => {
-    setOptions({
-      employees: 15,
-      days: 3,
-      basePatternsCount: 2,
-      leaveRatio: 4,
-      correctionRequestRatio: 1,
-      shiftReportsPerDay: 0,
-      quickNotesCount: 20,
-    });
-    addToast("Preset Quick Seed aplicado.", "success");
-  };
-
-  const applyIncrementalPreset = () => {
-    const nextLevel = Math.min(incrementalLevel + 1, incrementalPresets.length);
-    const preset = incrementalPresets[nextLevel - 1];
-    if (!preset) return;
-    setOptions(preset);
-    setIncrementalLevel(nextLevel);
-    addToast(
-      `Preset incremental aplicado (nivel ${nextLevel}/${incrementalPresets.length}).`,
-      "success",
-    );
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -148,7 +84,7 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
             <CloseIcon className="w-5 h-5" />
           </Button>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form {...formProps}>
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between p-3 rounded-md border border-token-border-subtle bg-token-surface-stripe">
               <div>
@@ -173,7 +109,12 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                   Sube carga por niveles para stress testing controlado.
                 </p>
               </div>
-              <Button type="button" variant="secondary" onClick={applyIncrementalPreset}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={applyIncrementalPreset}
+                disabled={incrementalLevel >= maxIncrementalLevel}
+              >
                 Nivel +1
               </Button>
             </div>
@@ -183,8 +124,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="N Empleados"
                 type="number"
                 name="employees"
-                value={options.employees}
-                onChange={handleInputChange}
+                value={values.employees}
+                onChange={(e) => handleNumberChange("employees", e.target.value)}
+                error={getError("employees")}
                 min="1"
                 max="3000"
               />
@@ -192,8 +134,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="Dias de Historial"
                 type="number"
                 name="days"
-                value={options.days}
-                onChange={handleInputChange}
+                value={values.days}
+                onChange={(e) => handleNumberChange("days", e.target.value)}
+                error={getError("days")}
                 min="1"
                 max="7300"
               />
@@ -203,8 +146,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="Patrones Base"
                 type="number"
                 name="basePatternsCount"
-                value={options.basePatternsCount}
-                onChange={handleInputChange}
+                value={values.basePatternsCount}
+                onChange={(e) => handleNumberChange("basePatternsCount", e.target.value)}
+                error={getError("basePatternsCount")}
                 min="1"
                 max="12"
               />
@@ -212,8 +156,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="% Ausentismo"
                 type="number"
                 name="leaveRatio"
-                value={options.leaveRatio}
-                onChange={handleInputChange}
+                value={values.leaveRatio}
+                onChange={(e) => handleNumberChange("leaveRatio", e.target.value)}
+                error={getError("leaveRatio")}
                 min="0"
                 max="100"
               />
@@ -221,8 +166,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="% Correcciones"
                 type="number"
                 name="correctionRequestRatio"
-                value={options.correctionRequestRatio}
-                onChange={handleInputChange}
+                value={values.correctionRequestRatio}
+                onChange={(e) => handleNumberChange("correctionRequestRatio", e.target.value)}
+                error={getError("correctionRequestRatio")}
                 min="0"
                 max="100"
               />
@@ -232,8 +178,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="Reportes Turno/dia"
                 type="number"
                 name="shiftReportsPerDay"
-                value={options.shiftReportsPerDay}
-                onChange={handleInputChange}
+                value={values.shiftReportsPerDay}
+                onChange={(e) => handleNumberChange("shiftReportsPerDay", e.target.value)}
+                error={getError("shiftReportsPerDay")}
                 min="0"
                 max="6"
               />
@@ -241,8 +188,9 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
                 label="Quick Notes"
                 type="number"
                 name="quickNotesCount"
-                value={options.quickNotesCount}
-                onChange={handleInputChange}
+                value={values.quickNotesCount}
+                onChange={(e) => handleNumberChange("quickNotesCount", e.target.value)}
+                error={getError("quickNotesCount")}
                 min="0"
                 max="2000"
               />
@@ -262,7 +210,7 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
             <Button type="button" onClick={onClose} variant="secondary">
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
               Iniciar Simulacion
             </Button>
           </div>
@@ -272,4 +220,4 @@ const SeedingOptionsModal: React.FC<SeedingOptionsModalProps> = ({
   );
 };
 
-export default SeedingOptionsModal;
+export default SeedingOptionsModalView;

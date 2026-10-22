@@ -58,6 +58,10 @@ siguen siendo dos capas distintas.
 | `userForm`                          | `password` obligatoria en el alta                   | El formulario no muestra un campo de contraseña (muestra la temporal que asigna el backend), asi que la regla se declara como divergencia.                                     |
 | `singleMeterReadingForm`            | `value` es el texto que teclea el usuario           | El hook `useMeterReadings` lo convierte a numero antes de enviarlo: es un campo **transformado** (el texto puede llevar el prefijo `+` de recarga).                            |
 | `rejectionReasonForm`               | `rejectionReason` obligatorio                       | El backend lo exige solo cuando el estado es `rejected` (regla condicional que el OpenAPI no expresa); este formulario **siempre** rechaza, asi que lo exige siempre.          |
+| `seedingOptionsForm`                | los siete valores, siempre enviados                 | El backend los admite opcionales y aplica sus propios valores por defecto; el formulario siempre los envia.                                                                    |
+| `seedingOptionsForm`                | `employees` y `days` con minimo 1                   | El backend admite 0: una simulacion sin empleados ni dias no simula nada.                                                                                                      |
+| `seedingOptionsForm`                | maximos propios de la pantalla                      | `employees` (3000), `days` (7300), `basePatternsCount` (12) y `quickNotesCount` (2000) son limites de la pantalla: el backend no los acota.                                    |
+| `sendTestEmailForm`                 | `subject` y `message` obligatorios                  | El backend los admite vacios (los pone por defecto); el formulario del centro de correo los exige.                                                                             |
 
 ### Como se declara cada tipo de divergencia
 
@@ -74,8 +78,12 @@ Un campo declarado como `transformedFields` tambien puede **cambiar de tipo**
 (la lectura de un medidor es un texto en el formulario y un numero en la API):
 el comparador de paridad salta la comprobacion de tipo de esos campos (igual
 que ya hacia con el formato y el patron).
-| `stricterRequired` | El formulario **exige** un campo que el backend admite opcional. | `position` del empleado. |
-| `divergences` | Reglas del cliente que el backend no implementa. | El digito verificador del RUT. |
+
+| Lista              | Significado                                                                | Ejemplo                                |
+| ------------------ | -------------------------------------------------------------------------- | -------------------------------------- |
+| `stricterRequired` | El formulario **exige** un campo que el backend admite opcional.           | `position` del empleado.               |
+| `stricterMaximum`  | El formulario acota el **maximo** mas que el backend (limite de pantalla). | `employees` de la simulacion de datos. |
+| `divergences`      | Reglas del cliente que el backend no implementa.                           | El digito verificador del RUT.         |
 
 ## Como se verifica la paridad
 

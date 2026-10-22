@@ -113,6 +113,11 @@ export interface CompareOptions {
   readonly transformedFields?: readonly string[];
   /** Campos que el formulario exige aunque el backend los admita opcionales. */
   readonly stricterRequired?: readonly string[];
+  /**
+   * Campos cuyo **maximo** el formulario estrecha mas que el backend (los
+   * limites de la pantalla): el maximo no se compara, el minimo si.
+   */
+  readonly stricterMaximum?: readonly string[];
 }
 
 /**
@@ -138,6 +143,7 @@ export const compareWithBackend = (
   const frontendProperties = frontend.properties ?? {};
   const backendRequired = new Set(backend.required ?? []);
   const frontendRequired = new Set(frontend.required ?? []);
+  const stricterMaximum = new Set(options.stricterMaximum ?? []);
 
   // 1. Todo campo que el formulario exige, el backend tambien lo exige (salvo
   //    declaracion explicita de divergencia).
@@ -193,6 +199,7 @@ export const compareWithBackend = (
         document,
         field,
         transformedFields.has(field),
+        stricterMaximum.has(field),
       ),
     );
   }
@@ -207,6 +214,7 @@ const compareProperty = (
   document: OpenApiDocument,
   path: string,
   transformed: boolean,
+  stricterMaximum = false,
 ): SchemaMismatch[] => {
   const mismatches: SchemaMismatch[] = [];
   const backend = resolveSchema(backendRaw, document);
@@ -215,7 +223,7 @@ const compareProperty = (
   // `anyOf`: el frontend debe encajar en al menos una rama del backend.
   if (backend.anyOf?.length) {
     const branchMatches = backend.anyOf.map((branch) =>
-      compareProperty(frontend, branch, document, path, transformed),
+      compareProperty(frontend, branch, document, path, transformed, stricterMaximum),
     );
     const best = branchMatches.reduce(
       (fewest, current) => (current.length < fewest.length ? current : fewest),
@@ -283,7 +291,9 @@ const compareProperty = (
   if (backend.maximum !== frontend.maximum) {
     const isSafeIntegerArtifact =
       frontend.maximum === SAFE_INTEGER_MAXIMUM && backend.maximum === undefined;
-    if (!isSafeIntegerArtifact) {
+    // Un campo con maximo **propio** (el limite de la pantalla) no tiene que
+    // coincidir con el del backend: el backend no lo acota.
+    if (!isSafeIntegerArtifact && !stricterMaximum) {
       push("maximum", frontend.maximum, backend.maximum);
     }
   }

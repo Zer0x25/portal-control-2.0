@@ -12,8 +12,9 @@ import {
   SparklesIcon,
 } from "../../../components/ui/icons/index";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
-import SeedingOptionsModal, { SeedingOptions } from "./SeedingOptionsModal";
+import SeedingOptionsModal from "./SeedingOptionsModal.container";
 import SeedingProgressModal from "./SeedingProgressModal";
+import { SeedingOptions } from "../../../schemas/forms/seed";
 import {
   seedPhase1,
   startSeedPhase2,

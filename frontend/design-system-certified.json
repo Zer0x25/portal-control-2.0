@@ -41,7 +41,7 @@
     "src/features/configuration/components/SeedingProgressModal.tsx",
     "src/components/ui/AboutModal.view.tsx",
     "src/features/employee-management/components/ShiftHistoryModal.tsx",
-    "src/features/configuration/components/SeedingOptionsModal.tsx",
+    "src/features/configuration/components/SeedingOptionsModal.view.tsx",
     "src/components/ui/UserManualModal.tsx",
     "src/components/ui/ShiftCalendarDayCell.tsx",
     "src/components/ui/TabNav.tsx",

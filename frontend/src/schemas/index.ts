@@ -24,7 +24,11 @@ import {
   singleMeterReadingBaseSchema,
 } from "./forms/meter";
 import { quickNoteFormSchema } from "./forms/note";
-import { seedOptionsFormSchema, seedPhase2FormSchema } from "./forms/seed";
+import {
+  seedOptionsFormSchema,
+  seedPhase2FormSchema,
+  seedingOptionsFormSchema,
+} from "./forms/seed";
 import { shiftAssignmentFormSchema, shiftPatternFormSchema } from "./forms/shift";
 import {
   emailRuleFormSchema,
@@ -86,6 +90,15 @@ export interface FormSchemaContract {
   readonly transformedFields?: readonly string[];
   /** Campos que el formulario exige aunque el backend los admita opcionales. */
   readonly stricterRequired?: readonly string[];
+  /**
+   * Campos cuyo **maximo** el formulario estrecha mas que el backend.
+   *
+   * Son los limites de la pantalla (el maximo de empleados que se pueden
+   * sembrar, por ejemplo): el backend no los acota, asi que el comparador de
+   * paridad no puede exigir que coincidan. El minimo del backend si se
+   * sigue comparando.
+   */
+  readonly stricterMaximum?: readonly string[];
   /** Reglas del cliente que el backend no implementa. */
   readonly divergences?: readonly string[];
 }
@@ -307,13 +320,40 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "sendTestEmailForm",
     openApi: "SendTestEmail",
     schema: sendTestEmailFormSchema,
-    forms: ["SystemMaintenance"],
+    forms: ["EmailCenter"],
+    stricterRequired: ["subject", "message"],
+    divergences: [
+      "subject/message: el backend los admite vacios (los pone por defecto); el formulario los exige",
+    ],
   },
   {
     id: "seedOptionsForm",
     openApi: "SeedOptions",
     schema: seedOptionsFormSchema,
+    // Copia del contrato del backend: la pantalla usa el subconjunto
+    // `seedingOptionsForm` (los siete numeros que muestra).
+    forms: [],
+  },
+  {
+    id: "seedingOptionsForm",
+    openApi: "SeedOptions",
+    schema: seedingOptionsFormSchema,
     forms: ["SeedingOptionsModal"],
+    stricterRequired: [
+      "employees",
+      "days",
+      "basePatternsCount",
+      "leaveRatio",
+      "correctionRequestRatio",
+      "shiftReportsPerDay",
+      "quickNotesCount",
+    ],
+    stricterMaximum: ["employees", "days", "basePatternsCount", "quickNotesCount"],
+    divergences: [
+      "el formulario siempre envia los siete valores; el backend los admite opcionales y aplica sus propios valores por defecto",
+      "employees/days: el formulario exige al menos 1 (el backend admite 0)",
+      "employees/days/basePatternsCount/quickNotesCount: el maximo es el limite de la pantalla (el backend no los acota)",
+    ],
   },
   {
     id: "seedPhase2Form",

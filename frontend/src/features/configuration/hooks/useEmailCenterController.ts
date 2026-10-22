@@ -3,7 +3,24 @@ import { useToasts } from "../../../hooks/useToasts";
 import { emailService } from "../../../services/emailService";
 import { EmailNotificationRules } from "../../../types";
 import { useEmailRecipientsListQuery } from "../../../hooks/queries/useConfigQuery";
+import { useAppForm } from "../../../hooks/useAppForm";
+import { sendTestEmailFormSchema } from "../../../schemas/forms/smtp";
 
+/**
+ * Spec 036 T10b (AC1, AC2, AC3): el formulario de **correo de prueba** del
+ * centro de correo.
+ *
+ * Antes el borrador vivia en un `useState` y, si faltaba algun campo, se
+ * avisaba con un `toast` ("Todos los campos son requeridos.") que no decia
+ * cual era. Ahora:
+ *
+ * - el estado vive en `useAppForm` (spec 036 AC1);
+ * - las reglas viven en el schema (`sendTestEmailFormSchema`: el destinatario
+ *   es un correo valido y el asunto y el mensaje son obligatorios) (AC2);
+ * - los errores salen junto al campo, con su mensaje en el mapa central (AC3).
+ *
+ * El payload no cambia: `{to, subject, message}` (spec 036 T13).
+ */
 export const useEmailCenterController = () => {
   const { addToast } = useToasts();
   const { data: emailRecipientsList = [], isLoading: isEmailListLoading } =
@@ -14,11 +31,6 @@ export const useEmailCenterController = () => {
     success: boolean;
     message: string;
   }>({ loading: true, success: false, message: "Verificando..." });
-  const [manualEmail, setManualEmail] = useState({
-    to: "",
-    subject: "",
-    message: "",
-  });
   const [isSending, setIsSending] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
@@ -28,6 +40,33 @@ export const useEmailCenterController = () => {
     latenessOver60: { enabled: false, recipient: "" },
   });
   const [isLoadingRules, setIsLoadingRules] = useState(true);
+
+  /** Formulario del correo de prueba. */
+  const manualEmailForm = useAppForm({
+    schema: sendTestEmailFormSchema,
+    defaultValues: { to: "", subject: "", message: "" },
+    onSubmit: async (values) => {
+      setIsSending(true);
+      const result = await emailService.sendTestEmail(values.to, values.subject, values.message);
+      if (result.success) {
+        addToast(result.message, "success");
+        manualEmailForm.reset({ to: "", subject: "", message: "" });
+      } else {
+        addToast(result.message, "error");
+      }
+      setIsSending(false);
+    },
+  });
+
+  const { setValue } = manualEmailForm;
+
+  /** Escribe un campo del correo de prueba. */
+  const handleManualEmailChange = useCallback(
+    (field: "to" | "subject" | "message", value: string) => {
+      setValue(field, value);
+    },
+    [setValue],
+  );
 
   const checkStatus = useCallback(async () => {
     setStatus({ loading: true, success: false, message: "Verificando..." });
@@ -72,26 +111,6 @@ export const useEmailCenterController = () => {
     });
   };
 
-  const handleManualSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSending(true);
-    const { to, subject, message } = manualEmail;
-    if (!to || !subject || !message) {
-      addToast("Todos los campos son requeridos.", "warning");
-      setIsSending(false);
-      return;
-    }
-
-    const result = await emailService.sendTestEmail(to, subject, message);
-    if (result.success) {
-      addToast(result.message, "success");
-      setManualEmail({ to: "", subject: "", message: "" });
-    } else {
-      addToast(result.message, "error");
-    }
-    setIsSending(false);
-  };
-
   const handleSaveRules = async () => {
     const result = await emailService.saveRules(rules);
     if (result.success) {
@@ -110,16 +129,18 @@ export const useEmailCenterController = () => {
     emailRecipientsList,
     isEmailListLoading,
     status,
-    manualEmail,
+    manualEmail: manualEmailForm.values,
+    getManualEmailError: manualEmailForm.getError,
+    handleManualEmailChange,
     isSending,
     isConfigModalOpen,
     rules,
     isLoadingRules,
-    setManualEmail,
     setIsConfigModalOpen,
     checkStatus,
     handleRuleChange,
-    handleManualSend,
+    handleManualSend: manualEmailForm.submit,
+    manualEmailFormProps: manualEmailForm.formProps,
     handleSaveRules,
     handleCloseConfigModal,
   };
