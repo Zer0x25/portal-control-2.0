@@ -4,11 +4,13 @@ import type { components } from "../types/api-schema";
 
 import {
   adminResetPasswordFormSchema,
+  buildMfaSetupFormSchema,
   changePasswordFormSchema,
   forceChangePasswordFormSchema,
   loginFormSchema,
-  mfaCodeFormSchema,
+  mfaLoginFormSchema,
   mfaSetupFormSchema,
+  mfaValidateFormSchema,
 } from "./forms/auth";
 import {
   correctionRequestFormSchema,
@@ -153,14 +155,26 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
   {
     id: "mfaCodeForm",
     openApi: "MFAValidate",
-    schema: mfaCodeFormSchema,
+    schema: mfaLoginFormSchema,
     forms: ["MFALoginModal"],
+    divergences: ["mfaToken: lo aporta la sesion (el modal solo escribe el codigo de 6 digitos)"],
+  },
+  {
+    id: "mfaValidateForm",
+    openApi: "MFAValidate",
+    schema: mfaValidateFormSchema,
+    // Copia del contrato del backend: el formulario de inicio de sesion usa
+    // el subconjunto `mfaCodeForm` (solo escribe el codigo).
+    forms: [],
   },
   {
     id: "mfaSetupForm",
     openApi: "MFAVerify",
-    schema: mfaSetupFormSchema,
+    schema: buildMfaSetupFormSchema(),
     forms: ["MFASetupModal"],
+    divergences: [
+      "token: el formulario exige 6 digitos numericos (el backend acepta 1+ caracteres; el TOTP lo valida el servidor)",
+    ],
   },
   {
     id: "changePasswordForm",
@@ -446,10 +460,21 @@ export type LoginPayloadContract = AssertAssignable<
   components["schemas"]["Login"]
 >;
 
-/** Payload del codigo MFA: debe encajar en `MFAValidate`. */
-export type MfaCodePayloadContract = AssertAssignable<
-  z.output<typeof mfaCodeFormSchema>,
+/**
+ * Payload del codigo MFA (copia del contrato): debe encajar en `MFAValidate`.
+ */
+export type MfaValidatePayloadContract = AssertAssignable<
+  z.output<typeof mfaValidateFormSchema>,
   components["schemas"]["MFAValidate"]
+>;
+
+/**
+ * Payload del codigo MFA del formulario (solo escribe el codigo): el token lo
+ * aporta la sesion, asi que la comparacion se hace sin `mfaToken`.
+ */
+export type MfaLoginPayloadContract = AssertAssignable<
+  z.output<typeof mfaLoginFormSchema>,
+  Omit<components["schemas"]["MFAValidate"], "mfaToken">
 >;
 
 /** Payload del alta de MFA: debe encajar en `MFAVerify`. */

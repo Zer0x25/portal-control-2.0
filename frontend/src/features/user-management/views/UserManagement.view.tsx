@@ -12,7 +12,7 @@ import {
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import UserForm from "../components/UserForm.container";
-import MFASetupModal from "../../../features/auth/components/MFASetupModal";
+import MFASetupModal from "../../../features/auth/components/MFASetupModal.container";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import RoleBadge from "../../../components/ui/RoleBadge";

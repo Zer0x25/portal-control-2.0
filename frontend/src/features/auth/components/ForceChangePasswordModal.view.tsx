@@ -1,27 +1,47 @@
 import React from "react";
+
 import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import { KeyIcon } from "../../../components/ui/icons/index";
 import { PasswordChangeForm } from "../../../components/ui/PasswordChangeForm";
+import type { ChangePasswordFormValues } from "../../../schemas/forms/auth";
 
+/**
+ * Spec 036 T11: `ForceChangePasswordModal` es **presentacion pura**.
+ *
+ * Los valores, los errores y el handler de envio entran por props (los lleva
+ * el hook de dominio) y la maqueta es la misma.
+ */
 interface ForceChangePasswordModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
-  newPassword: string;
-  confirmPassword: string;
-  isLoading: boolean;
-  onSetNewPassword: (value: string) => void;
-  onSetConfirmPassword: (value: string) => void;
-  onSave: (e: React.FormEvent) => void;
+  /** Valores del formulario. */
+  values: ChangePasswordFormValues;
+  /** Mensaje de error de un campo (o `undefined`). */
+  getError: (field: string) => string | undefined;
+  /** Escribe la contraseña nueva. */
+  onPasswordChange: (value: string) => void;
+  /** Escribe la confirmación. */
+  onPasswordConfirmChange: (value: string) => void;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
 const ForceChangePasswordModalView: React.FC<ForceChangePasswordModalViewProps> = ({
   isOpen,
-  newPassword,
-  confirmPassword,
-  isLoading,
-  onSetNewPassword,
-  onSetConfirmPassword,
-  onSave,
+  values,
+  getError,
+  onPasswordChange,
+  onPasswordConfirmChange,
+  isSubmitting,
+  formProps,
 }) => (
   <CinematicModal
     isOpen={isOpen}
@@ -40,16 +60,18 @@ const ForceChangePasswordModalView: React.FC<ForceChangePasswordModalViewProps> 
       </p>
     </div>
 
-    <form onSubmit={onSave} className="space-y-4 mt-6">
+    <form {...formProps} className="space-y-4 mt-6">
       <PasswordChangeForm
-        newPassword={newPassword}
-        setNewPassword={onSetNewPassword}
-        confirmPassword={confirmPassword}
-        setConfirmPassword={onSetConfirmPassword}
+        newPassword={values.password}
+        setNewPassword={onPasswordChange}
+        newPasswordError={getError("password")}
+        confirmPassword={values.passwordConfirm}
+        setConfirmPassword={onPasswordConfirmChange}
+        confirmPasswordError={getError("passwordConfirm")}
       />
       <div className="mt-6">
-        <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
-          {isLoading ? "Guardando..." : "Establecer Nueva Contraseña"}
+        <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? "Guardando..." : "Establecer Nueva Contraseña"}
         </Button>
       </div>
     </form>

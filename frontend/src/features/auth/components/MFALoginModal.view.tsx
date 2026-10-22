@@ -1,41 +1,48 @@
-import React, { useState } from "react";
-import { useAuth } from "../../../hooks/useAuth";
-import { useToasts } from "../../../hooks/useToasts";
+import React from "react";
+
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { Z } from "../../../constants/zScale";
 
-interface MFALoginModalProps {
+/**
+ * Spec 036 T11: `MFALoginModal` es **presentacion pura**.
+ *
+ * Antes el componente guardaba el codigo en un `useState`, lo filtraba a
+ * digitos en el `onChange` y deshabilitaba el boton mientras el codigo no
+ * tuviera 6 caracteres. Ahora el valor, el error y los handlers entran por
+ * props (los lleva el hook de dominio) y la maqueta es la misma.
+ */
+export interface MfaLoginModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
-  onSuccess: () => void;
+  /** Cancela la verificacion. */
   onCancel: () => void;
+  /** Valor del codigo. */
+  code: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  error?: string;
+  /** Escribe el codigo (solo digitos, maximo 6). */
+  onCodeChange: (value: string) => void;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
-const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCancel }) => {
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { validateMFACode } = useAuth();
-  const { addToast } = useToasts();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (code.length !== 6) {
-      addToast("El código debe ser de 6 dígitos", "error");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await validateMFACode(code);
-      addToast("Verificación exitosa", "success");
-      onSuccess();
-    } catch (error) {
-      addToast(error instanceof Error ? error.message : "Código inválido", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const MfaLoginModalView: React.FC<MfaLoginModalViewProps> = ({
+  isOpen,
+  onCancel,
+  code,
+  error,
+  onCodeChange,
+  isSubmitting,
+  formProps,
+}) => {
   return (
     isOpen && (
       <div
@@ -75,12 +82,13 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} data-testid="mfa-login-form" className="space-y-6">
+          <form {...formProps} data-testid="mfa-login-form" className="space-y-6">
             <div className="flex justify-center">
               <Input
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onChange={(e) => onCodeChange(e.target.value)}
+                error={error}
                 placeholder="000000"
                 className="bg-black/40 border-white/10 text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-indigo-500 focus:ring-indigo-500/20"
                 autoFocus
@@ -98,10 +106,10 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
               </Button>
               <Button
                 type="submit"
-                disabled={loading || code.length !== 6}
+                disabled={isSubmitting}
                 className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-[0.2em] text-[10px]"
               >
-                {loading ? "Verificando..." : "Confirmar"}
+                {isSubmitting ? "Verificando..." : "Confirmar"}
               </Button>
             </div>
           </form>
@@ -111,4 +119,4 @@ const MFALoginModal: React.FC<MFALoginModalProps> = ({ isOpen, onSuccess, onCanc
   );
 };
 
-export default MFALoginModal;
+export default MfaLoginModalView;

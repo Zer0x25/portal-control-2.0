@@ -1,14 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+
+import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 import { useUsers } from "../../../hooks/useUsers";
+import {
+  changePasswordFormSchema,
+  type ChangePasswordFormValues,
+} from "../../../schemas/forms/auth";
+
+/**
+ * Spec 036 T11 (AC1, AC2, AC3): formulario de **cambio de contraseña**
+ * (`ChangePasswordModal.tsx`).
+ *
+ * Antes el modal guardaba las dos contraseñas en `useState` y, si no
+ * coincidian o faltaban caracteres, lanzaba un toast: el usuario pulsaba
+ * "Guardar Cambios" y el aviso aparecia lejos del campo. Ahora:
+ *
+ * - las contraseñas viven en `useAppForm` (spec 036 AC1);
+ * - las reglas viven en el schema (`changePasswordFormSchema`: las dos
+ *   contraseñas con 6+ caracteres y que coincidan) (spec 036 AC2);
+ * - los errores salen junto al campo, con su mensaje en el mapa central
+ *   (spec 036 AC3).
+ *
+ * Las reglas de negocio que **no** son de campo (el usuario identificado y el
+ * bloqueo de la cuenta `admin` por defecto) siguen siendo avisos del hook.
+ *
+ * El payload no cambia (T13): sigue viajando solo `{ password }`.
+ * `passwordConfirm` es un campo exclusivamente de cliente.
+ */
 
 interface UseChangePasswordModalControllerParams {
-  isOpen: boolean;
-  onClose: () => void;
-  userIdToUpdate?: string;
+  /** El modal esta abierto. */
+  readonly isOpen: boolean;
+  /** Cierra el modal. */
+  readonly onClose: () => void;
+  /** Usuario cuya contraseña se cambia (ausente = el propio usuario). */
+  readonly userIdToUpdate?: string;
 }
 
+/** Controlador del formulario de cambio de contraseña (spec 036 T11). */
 export const useChangePasswordModalController = ({
   isOpen,
   onClose,
@@ -18,10 +49,6 @@ export const useChangePasswordModalController = ({
   const { getUserById, updateUser, changeOwnPassword } = useUsers();
   const { addToast } = useToasts();
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
   const targetUser = useMemo(() => {
     const targetId = userIdToUpdate || currentUser?.id;
     return targetId ? getUserById(targetId) : null;
@@ -29,13 +56,65 @@ export const useChangePasswordModalController = ({
 
   const isSelfChange = !userIdToUpdate;
 
+  const form = useAppForm<ChangePasswordFormValues, { password: string }>({
+    schema: changePasswordFormSchema,
+    defaultValues: { password: "", passwordConfirm: "" },
+    /**
+     * La contraseña **no** se recorta: viaja byte a byte como se escribio.
+     * Recortarla cambiaria la credencial en silencio (un espacio final
+     * pegado formaria parte de la contraseña original).
+     */
+    normalize: (values) => values,
+    /** `passwordConfirm` es solo de cliente y no viaja al backend. */
+    serialize: (values) => ({ password: values.password }),
+    onSubmit: async (payload) => {
+      if (!targetUser || !currentUser) {
+        addToast("No se pudo identificar al usuario para actualizar.", "error");
+        return;
+      }
+
+      if (targetUser.id === "admin-001" && targetUser.username === "admin") {
+        addToast(
+          "La contraseña del administrador por defecto (admin) no puede ser cambiada.",
+          "error",
+          7000,
+        );
+        return;
+      }
+
+      const success = isSelfChange
+        ? await changeOwnPassword({ newPassword: payload.password })
+        : await updateUser(targetUser.id, { password: payload.password });
+
+      if (success) {
+        addToast(`Contraseña para '${targetUser.username}' actualizada con éxito.`, "success");
+        onClose();
+      }
+    },
+  });
+
+  const { reset, setValue } = form;
+
+  /** Al abrir el modal las dos contraseñas empiezan vacias. */
   useEffect(() => {
-    if (isOpen) {
-      setNewPassword("");
-      setConfirmPassword("");
-      setIsLoading(false);
-    }
-  }, [isOpen]);
+    if (isOpen) reset({ password: "", passwordConfirm: "" });
+  }, [isOpen, reset]);
+
+  /** Escribe la contraseña nueva. */
+  const handlePasswordChange = useCallback(
+    (value: string) => {
+      setValue("password", value);
+    },
+    [setValue],
+  );
+
+  /** Escribe la confirmación. */
+  const handlePasswordConfirmChange = useCallback(
+    (value: string) => {
+      setValue("passwordConfirm", value);
+    },
+    [setValue],
+  );
 
   // Escape cierra el modal. El listener es un efecto del DOM: vive en el
   // controller, no en la vista (spec 033 AC1: sin hooks en *.view.tsx).
@@ -54,57 +133,14 @@ export const useChangePasswordModalController = ({
     ? "Cambiar Mi Contraseña"
     : `Cambiar Contraseña para ${targetUser?.username}`;
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (newPassword !== confirmPassword) {
-      addToast("Las nuevas contraseñas no coinciden.", "error");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      addToast("La nueva contraseña debe tener al menos 6 caracteres.", "warning");
-      return;
-    }
-
-    if (!targetUser || !currentUser) {
-      addToast("No se pudo identificar al usuario para actualizar.", "error");
-      return;
-    }
-
-    if (targetUser.id === "admin-001" && targetUser.username === "admin") {
-      addToast(
-        "La contraseña del administrador por defecto (admin) no puede ser cambiada.",
-        "error",
-        7000,
-      );
-      return;
-    }
-
-    setIsLoading(true);
-    let success: boolean;
-
-    if (isSelfChange) {
-      success = await changeOwnPassword({ newPassword });
-    } else {
-      success = await updateUser(targetUser.id, { password: newPassword });
-    }
-
-    setIsLoading(false);
-
-    if (success) {
-      addToast(`Contraseña para '${targetUser.username}' actualizada con éxito.`, "success");
-      onClose();
-    }
-  };
-
   return {
-    confirmPassword,
-    isLoading,
+    values: form.values,
+    getError: form.getError,
+    handlePasswordChange,
+    handlePasswordConfirmChange,
     modalTitle,
-    newPassword,
-    setConfirmPassword,
-    setNewPassword,
-    handleSave,
+    isSubmitting: form.isSubmitting,
+    formProps: form.formProps,
+    submit: form.submit,
   };
 };

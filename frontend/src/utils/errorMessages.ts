@@ -56,6 +56,9 @@ export const ERROR_MESSAGES = {
   /** PIN de empleado: exactamente 4 dígitos numéricos. */
   invalidPin: (): string => "El PIN debe contener exactamente 4 dígitos numéricos",
 
+  /** Codigo TOTP: exactamente 6 digitos numericos (MFA). */
+  invalidSixDigitCode: (): string => "El código debe contener exactamente 6 dígitos numéricos",
+
   /** Contraseña más corta que el mínimo del backend (`min(6)`). */
   passwordTooShort: (min = 6): string =>
     `La nueva contraseña debe tener al menos ${min} caracteres.`,
