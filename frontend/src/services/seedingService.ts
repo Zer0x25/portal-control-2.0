@@ -1,4 +1,4 @@
-﻿import { SeedingOptions } from "../features/configuration/components/SeedingOptionsModal";
+﻿import { SeedingOptions } from "../schemas/forms/seed";
 import { request as apiRequest } from "./apiClient";
 
 export type SeedPhase2JobStatus =

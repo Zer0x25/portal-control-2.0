@@ -80,6 +80,7 @@ describe("paridad de los schemas de formulario con el backend (spec 036 AC2)", (
         openApiUndeclaredFields: contract.openApiUndeclaredFields,
         transformedFields: contract.transformedFields,
         stricterRequired: contract.stricterRequired,
+        stricterMaximum: contract.stricterMaximum,
       },
     );
 

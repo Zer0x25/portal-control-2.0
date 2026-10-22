@@ -6,7 +6,7 @@ import {
   ExclamationTriangleIcon,
   ArrowPathIcon,
 } from "../../../components/ui/icons/index";
-import { SeedingOptions } from "./SeedingOptionsModal";
+import { SeedingOptions } from "../../../schemas/forms/seed";
 import { getDBInstance } from "../../../utils/indexedDB";
 import { healthService, HealthData } from "../../../services/healthService";
 import { Z } from "../../../constants/zScale";

@@ -18,16 +18,11 @@ import {
 import SmtpConfigModal from "../components/SmtpConfigModal";
 import Button from "../../../components/ui/Button";
 import type { EmailNotificationRules } from "../../../types";
+import type { SendTestEmailFormValues } from "../../../schemas/forms/smtp";
 
 interface EmailServiceStatus {
   loading: boolean;
   success: boolean;
-  message: string;
-}
-
-interface ManualEmailDraft {
-  to: string;
-  subject: string;
   message: string;
 }
 
@@ -109,12 +104,16 @@ export interface EmailCenterViewProps {
   emailRecipientsList: string[];
   isEmailListLoading: boolean;
   status: EmailServiceStatus;
-  manualEmail: ManualEmailDraft;
+  /** Valores del formulario del correo de prueba. */
+  manualEmail: SendTestEmailFormValues;
+  /** Mensaje de error de un campo del correo de prueba. */
+  getManualEmailError: (field: string) => string | undefined;
+  /** Escribe un campo del correo de prueba. */
+  handleManualEmailChange: (field: "to" | "subject" | "message", value: string) => void;
   isSending: boolean;
   isConfigModalOpen: boolean;
   rules: EmailNotificationRules;
   isLoadingRules: boolean;
-  setManualEmail: React.Dispatch<React.SetStateAction<ManualEmailDraft>>;
   setIsConfigModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   checkStatus: () => Promise<void>;
   handleRuleChange: (
@@ -122,7 +121,13 @@ export interface EmailCenterViewProps {
     field: "enabled" | "recipient",
     value: boolean | string,
   ) => void;
-  handleManualSend: (e: React.FormEvent) => Promise<void>;
+  /** Props del `<form>` del correo de prueba (id, `noValidate` y `onSubmit`). */
+  manualEmailFormProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
   handleSaveRules: () => Promise<void>;
   handleCloseConfigModal: () => void;
 }
@@ -132,18 +137,23 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
   isEmailListLoading,
   status,
   manualEmail,
+  getManualEmailError,
+  handleManualEmailChange,
   isSending,
   isConfigModalOpen,
   rules,
   isLoadingRules,
-  setManualEmail,
   setIsConfigModalOpen,
   checkStatus,
   handleRuleChange,
-  handleManualSend,
+  manualEmailFormProps,
   handleSaveRules,
   handleCloseConfigModal,
 }) => {
+  const toError = getManualEmailError("to");
+  const subjectError = getManualEmailError("subject");
+  const messageError = getManualEmailError("message");
+
   return (
     <Container variant="standard" noPadding data-ui-protected className="space-y-6">
       <div className="flex justify-end gap-2 mb-4">
@@ -235,23 +245,33 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
             </div>
           </div>
 
-          <form
-            onSubmit={handleManualSend}
-            className="flex flex-col h-full bg-token-surface-stripe"
-          >
+          <form {...manualEmailFormProps} className="flex flex-col h-full bg-token-surface-stripe">
             <div className="px-8 py-4 border-b border-token-border-technical flex items-center group/field hover:bg-token-surface-active transition-colors">
               <label className="w-24 text-[10px] font-bold uppercase tracking-widest text-token-text-tertiary">
                 Para:
               </label>
-              <input
-                type="email"
-                value={manualEmail.to}
-                onChange={(e) => setManualEmail((p) => ({ ...p, to: e.target.value }))}
-                required
-                placeholder="DESTINATARIO@DOMINIO.COM"
-                aria-label="Para, destinatario del correo"
-                className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
-              />
+              <div className="flex-1">
+                <input
+                  id={`${manualEmailFormProps.id}-to`}
+                  type="email"
+                  value={manualEmail.to}
+                  onChange={(e) => handleManualEmailChange("to", e.target.value)}
+                  required
+                  placeholder="DESTINATARIO@DOMINIO.COM"
+                  aria-label="Para, destinatario del correo"
+                  aria-invalid={toError ? "true" : undefined}
+                  aria-describedby={toError ? `${manualEmailFormProps.id}-to-error` : undefined}
+                  className="w-full bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
+                />
+                {toError && (
+                  <p
+                    id={`${manualEmailFormProps.id}-to-error`}
+                    className="text-[10px] font-black uppercase tracking-widest text-token-status-error"
+                  >
+                    {toError}
+                  </p>
+                )}
+              </div>
               <EnvelopeIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-(--sidebar-text-active) transition-colors" />
             </div>
 
@@ -259,27 +279,55 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
               <label className="w-24 text-[10px] font-bold uppercase tracking-widest text-token-text-tertiary">
                 Asunto:
               </label>
-              <input
-                type="text"
-                value={manualEmail.subject}
-                onChange={(e) => setManualEmail((p) => ({ ...p, subject: e.target.value }))}
-                required
-                placeholder="TÍTULO DE LA COMUNICACIÓN"
-                aria-label="Asunto de la comunicación"
-                className="flex-1 bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
-              />
+              <div className="flex-1">
+                <input
+                  id={`${manualEmailFormProps.id}-subject`}
+                  type="text"
+                  value={manualEmail.subject}
+                  onChange={(e) => handleManualEmailChange("subject", e.target.value)}
+                  required
+                  placeholder="TÍTULO DE LA COMUNICACIÓN"
+                  aria-label="Asunto de la comunicación"
+                  aria-invalid={subjectError ? "true" : undefined}
+                  aria-describedby={
+                    subjectError ? `${manualEmailFormProps.id}-subject-error` : undefined
+                  }
+                  className="w-full bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
+                />
+                {subjectError && (
+                  <p
+                    id={`${manualEmailFormProps.id}-subject-error`}
+                    className="text-[10px] font-black uppercase tracking-widest text-token-status-error"
+                  >
+                    {subjectError}
+                  </p>
+                )}
+              </div>
               <DocumentTextIcon className="w-4 h-4 text-token-text-tertiary group-hover/field:text-(--sidebar-text-active) transition-colors" />
             </div>
 
             <div className="flex-1 min-h-[300px] p-8 bg-token-surface-card">
               <textarea
+                id={`${manualEmailFormProps.id}-message`}
                 value={manualEmail.message}
-                onChange={(e) => setManualEmail((p) => ({ ...p, message: e.target.value }))}
+                onChange={(e) => handleManualEmailChange("message", e.target.value)}
                 required
                 placeholder="ESCRIBA SU MENSAJE AQUÍ..."
                 aria-label="Mensaje de la comunicación"
+                aria-invalid={messageError ? "true" : undefined}
+                aria-describedby={
+                  messageError ? `${manualEmailFormProps.id}-message-error` : undefined
+                }
                 className="w-full h-full bg-transparent border-none outline-none text-[13px] font-bold uppercase tracking-tight leading-relaxed text-token-text-secondary placeholder:text-token-text-tertiary/40 focus:ring-0 resize-none"
               />
+              {messageError && (
+                <p
+                  id={`${manualEmailFormProps.id}-message-error`}
+                  className="text-[10px] font-black uppercase tracking-widest text-token-status-error"
+                >
+                  {messageError}
+                </p>
+              )}
             </div>
 
             <div className="px-8 py-6 bg-token-surface-header border-t border-token-border-technical flex items-center justify-between">

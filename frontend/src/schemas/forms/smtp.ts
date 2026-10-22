@@ -103,21 +103,28 @@ export const emailRulesFormSchema = z.object({
 });
 
 /**
- * Envio de un correo de prueba (`SystemMaintenance`).
+ * Envio de un correo de prueba (`EmailCenter`).
  *
  * Contrato: `SendTestEmail` (`backend/src/models/schemas/email.schemas.ts`).
+ *
+ * El backend admite `subject` y `message` **vacios** (los pone por defecto);
+ * el formulario del centro de correo los exige (divergencia declarada en el
+ * mapa de contratos).
  */
 export const sendTestEmailFormSchema = z.object({
   to: z
     .string({ error: ERROR_MESSAGES.required("El destinatario") })
     .trim()
     .email(ERROR_MESSAGES.invalidEmail()),
-  subject: z.string().trim().default(""),
-  message: z.string().trim().default(""),
+  subject: requiredText("El asunto"),
+  message: requiredText("El mensaje"),
 });
 
 /** Tipo de la entrada del formulario de perfil SMTP. */
 export type SmtpProfileFormValues = z.input<typeof smtpProfileFormSchema>;
+
+/** Tipo de la entrada del formulario de correo de prueba. */
+export type SendTestEmailFormValues = z.input<typeof sendTestEmailFormSchema>;
 
 /** Tipo de la entrada del formulario de reglas de correo. */
 export type EmailRulesFormValues = z.input<typeof emailRulesFormSchema>;

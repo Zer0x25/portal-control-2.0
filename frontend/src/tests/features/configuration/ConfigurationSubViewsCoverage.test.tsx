@@ -57,11 +57,17 @@ describe("Configuration SubViews Coverage (Tanda 5)", () => {
           } as never
         }
         isLoadingRules={false}
-        setManualEmail={vi.fn()}
+        getManualEmailError={vi.fn()}
+        handleManualEmailChange={vi.fn()}
         setIsConfigModalOpen={vi.fn()}
         checkStatus={checkStatus}
         handleRuleChange={vi.fn()}
-        handleManualSend={vi.fn()}
+        manualEmailFormProps={{
+          id: "app-form-email",
+          noValidate: true,
+          onSubmit: vi.fn(),
+          "data-app-form": "app-form-email",
+        }}
         handleSaveRules={vi.fn()}
         handleCloseConfigModal={vi.fn()}
       />,

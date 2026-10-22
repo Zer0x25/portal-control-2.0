@@ -51,7 +51,7 @@ const MODAL_OVERLAY_WHITELIST: readonly string[] = [
   "components/ui/LoadingSpinner.tsx",
   "features/time-control/components/RecordHistoryModal.tsx",
   "features/supervisor-dashboard/components/RejectionReasonModal.view.tsx",
-  "features/configuration/components/SeedingOptionsModal.tsx",
+  "features/configuration/components/SeedingOptionsModal.view.tsx",
   "features/configuration/components/SeedingProgressModal.tsx",
   "components/ui/SessionExpiredOverlay.tsx",
   "features/time-control/components/ShiftHandoverModal.tsx",

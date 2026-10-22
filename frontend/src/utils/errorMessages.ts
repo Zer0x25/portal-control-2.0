@@ -131,6 +131,12 @@ export const ERROR_MESSAGES = {
   /** Valor esperado numérico. */
   invalidNumber: (): string => "Ingrese un valor numérico válido.",
 
+  /** Valor numérico por debajo del minimo que exige el formulario. */
+  minValue: (field: string, min: number): string => `${field} debe ser mayor o igual a ${min}.`,
+
+  /** Valor numérico por encima del maximo que admite el formulario. */
+  maxValue: (field: string, max: number): string => `${field} no puede ser mayor a ${max}.`,
+
   /** Lectura de medidor: el texto escrito no es un número. */
   invalidMeterValue: (): string => "El valor ingresado no es un número válido.",
 

@@ -539,6 +539,56 @@ entregando sus seis campos (`licensePlate`, `driverName`, `paxCount`,
 componentes con estado) y de **52** a **51** (los grandes sin gemelo
 container/view).
 
+### Nota de ejecución — Fase C, PR 7 (T10b: `configuration`, parte 1)
+
+**Los dos formularios migrados a `useAppForm` + schema:**
+
+| Formulario                          | Hook / controller                                             | Schema                     |
+| ----------------------------------- | ------------------------------------------------------------- | -------------------------- |
+| Simulacion de datos                 | `features/configuration/hooks/useSeedingOptionsController.ts` | `seedingOptionsFormSchema` |
+| Correo de prueba (centro de correo) | `features/configuration/hooks/useEmailCenterController.ts`    | `sendTestEmailFormSchema`  |
+
+**Hallazgos (afectan a T10c-T13):**
+
+1. **Un tipo que vive en un componente no puede consumirlo un service**: el
+   tipo `SeedingOptions` estaba exportado por `SeedingOptionsModal.tsx` y lo
+   importaban el `seedingService` y el modal de progreso (una inversion de
+   capas). Ahora vive en la capa de schemas (`schemas/forms/seed.ts`).
+2. **La validacion nativa del navegador se pierde con la capa de formulario**
+   (`noValidate`): los limites de la pantalla (el maximo de empleados que se
+   pueden sembrar, por ejemplo) solo estaban en los atributos `min`/`max` del
+   `<input>`. Pasan al schema, y como el backend **no** acota esos campos, el
+   mapa de contratos suma `stricterMaximum`: el comparador de paridad exige
+   que el maximo del formulario no exceda al del backend, pero no que coincida
+   (el minimo del backend si se sigue comparando).
+3. **Un preset es un reinicio del formulario**, no un caso especial del
+   envio: `reset(preset)` deja el formulario con los valores del preset (y
+   el nivel incremental sigue siendo estado de la pantalla, no del
+   formulario).
+4. **El `sendTestEmailFormSchema` admitia `subject` y `message` vacios**
+   (los `default("")` del backend) y el formulario los exige: se declaran con
+   `stricterRequired` (el mismo mecanismo que el `position` del empleado).
+5. **El centro de correo es una vista `UI-PROTECTED`**: el cambio es
+   minimo (los enlaces al formulario y el mensaje de error de cada campo) y
+   se señala en la descripcion del PR para que la revision lo vea.
+
+**Payload idéntico al anterior (T13, verificado en esta tarea):** la
+simulacion sigue enviando los mismos siete numeros y el correo de prueba el
+mismo trio `{to, subject, message}`.
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                        |
+| ------------------------ | ---------------------------------------------------------------- |
+| Schemas de formulario    | `frontend/src/schemas/forms/seed.ts`, `.../smtp.ts`              |
+| Tests de los formularios | `frontend/src/tests/forms/configurationForms.test.tsx` (8 casos) |
+| Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`        |
+| Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`     |
+
+**Ratchet:** los presupuestos de la spec 033 bajan de **84** a **83** (los
+componentes con estado) y de **51** a **50** (los grandes sin gemelo
+container/view).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`
