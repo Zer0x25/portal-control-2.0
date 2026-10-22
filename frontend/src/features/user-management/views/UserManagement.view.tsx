@@ -11,20 +11,14 @@ import {
 } from "../../../components/ui/icons/index";
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
-import UserForm from "../components/UserForm";
+import UserForm from "../components/UserForm.container";
 import MFASetupModal from "../../../features/auth/components/MFASetupModal";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import RoleBadge from "../../../components/ui/RoleBadge";
-import type { Employee, User, UserRole } from "../../../types";
+import type { Employee, User } from "../../../types";
+import type { UserFormValues } from "../../../schemas/forms/user";
 import { Z } from "../../../constants/zScale";
-
-interface UserFormData {
-  username: string;
-  password?: string;
-  role: UserRole;
-  employeeId?: string;
-}
 
 export interface UserManagementViewProps {
   isEmbedded?: boolean;
@@ -47,7 +41,7 @@ export interface UserManagementViewProps {
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   handleOpenNewForm: () => void;
   handleEditUser: (user: User) => void;
-  handleSaveUser: (data: UserFormData) => Promise<void>;
+  handleSaveUser: (data: UserFormValues) => Promise<void>;
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMFASetupOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setUserToDelete: React.Dispatch<React.SetStateAction<User | null>>;

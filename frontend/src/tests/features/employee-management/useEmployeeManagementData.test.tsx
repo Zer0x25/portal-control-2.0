@@ -162,8 +162,8 @@ describe("useEmployeeManagementData", () => {
 
     const { result } = renderHook(() => useEmployeeManagementData(), { wrapper: createWrapper() });
 
-    act(() => {
-      result.current.setEmployeeData({
+    await act(async () => {
+      await result.current.handleSave({
         name: "Luis",
         rut: "2-7",
         position: "Supervisor",
@@ -171,10 +171,6 @@ describe("useEmployeeManagementData", () => {
         workdayType: "Full",
         createUserAccount: true,
       });
-    });
-
-    await act(async () => {
-      await result.current.handleSave();
     });
 
     expect(addEmployeeMock).toHaveBeenCalledWith(

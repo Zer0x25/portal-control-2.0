@@ -32,6 +32,12 @@ import { logger } from "../utils/logger";
 /** Errores por campo: la clave es el nombre del campo y el valor el mensaje. */
 export type AppFormErrors = Record<string, string>;
 
+/**
+ * Clave con la que el estado de TanStack Form guarda el error de formulario
+ * (los issues de un `superRefine` que no apuntan a ningun campo).
+ */
+const FORM_LEVEL_ERROR_KEY = "";
+
 /** Ref sincrónico que bloquea un segundo envío mientras hay uno en vuelo. */
 export type SubmitGuard = { current: boolean };
 
@@ -340,8 +346,13 @@ export const useAppForm = <TValues extends object, TPayload = TValues>(
 
   const formError = useMemo(() => {
     if (state.submissionAttempts === 0) return undefined;
+    // Las reglas que **no pertenecen a un campo** (un `superRefine` sin
+    // `path`) llegan al estado del formulario con la clave vacia: son el error
+    // de formulario y no el de ningun input.
+    const formLevelError = errors[FORM_LEVEL_ERROR_KEY];
+    if (formLevelError) return formLevelError;
     return toErrorMessage(state.errorMap?.onSubmit ?? state.errors);
-  }, [state.submissionAttempts, state.errorMap, state.errors]);
+  }, [state.submissionAttempts, state.errorMap, state.errors, errors]);
 
   const getError = useCallback((field: string): string | undefined => errors[field], [errors]);
 

@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { EmployeeManagementView } from "../../../features/employee-management/views/EmployeeManagement.view";
 
-vi.mock("../../../features/employee-management/components/EmployeeForm", () => ({
+vi.mock("../../../features/employee-management/components/EmployeeForm.container", () => ({
   default: () => <div>EMPLOYEE-FORM</div>,
 }));
 vi.mock("../../../features/employee-management/components/EmployeeListCard", () => ({

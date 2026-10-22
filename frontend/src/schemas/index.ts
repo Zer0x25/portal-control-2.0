@@ -11,7 +11,7 @@ import {
   mfaSetupFormSchema,
 } from "./forms/auth";
 import { correctionRequestFormSchema, correctionStatusFormSchema } from "./forms/correction";
-import { employeeFormSchema } from "./forms/employee";
+import { employeeFormFieldsSchema, employeeFormSchema } from "./forms/employee";
 import { holidayFormSchema } from "./forms/holiday";
 import { leaveFormSchema } from "./forms/leave";
 import { meterReadingFormSchema } from "./forms/meter";
@@ -27,7 +27,7 @@ import {
   smtpVerifyFormSchema,
 } from "./forms/smtp";
 import { timeRecordWriteFormSchema } from "./forms/timestamp";
-import { userCreateFormSchema, userUpdateFormSchema } from "./forms/user";
+import { buildUserFormSchema, userCreateFormSchema, userUpdateFormSchema } from "./forms/user";
 
 export * from "./forms";
 
@@ -65,6 +65,15 @@ export interface FormSchemaContract {
   readonly forms: readonly string[];
   /** Campos que solo existen en el formulario (nunca viajan al backend). */
   readonly localFields?: readonly string[];
+  /**
+   * Campos que el formulario escribe y que el backend **acepta y guarda**,
+   * pero que su schema OpenAPI **no declara**.
+   *
+   * No son campos locales (si viajan) ni una perdida silenciosa (el backend
+   * los persiste): son un **hueco de documentacion** del contrato, que se
+   * declara para que el test de paridad no lo confunda con un error.
+   */
+  readonly openApiUndeclaredFields?: readonly string[];
   /** Campos cuyo valor se transforma antes de enviarlo. */
   readonly transformedFields?: readonly string[];
   /** Campos que el formulario exige aunque el backend los admita opcionales. */
@@ -78,21 +87,40 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
   {
     id: "employeeForm",
     openApi: "Employee",
-    schema: employeeFormSchema,
+    schema: employeeFormFieldsSchema,
     forms: ["EmployeeForm", "ImportModal"],
-    divergences: ["rut: digito verificador (regla exclusiva del cliente)"],
+    openApiUndeclaredFields: ["area", "workdayType"],
+    stricterRequired: ["position"],
+    divergences: [
+      "rut: digito verificador (regla exclusiva del cliente)",
+      "position: el formulario lo exige; el backend lo admite opcional",
+      "area/workdayType: el backend los acepta y los guarda, pero su schema OpenAPI no los declara",
+    ],
   },
   {
     id: "userCreateForm",
     openApi: "CreateUser",
     schema: userCreateFormSchema,
-    forms: ["UserForm"],
+    // Copia del contrato del backend: la usa el formulario a traves del schema
+    // unico de la pantalla (`userForm`), que reune las reglas del alta y la
+    // edicion.
+    forms: [],
   },
   {
     id: "userUpdateForm",
     openApi: "UpdateUser",
     schema: userUpdateFormSchema,
+    forms: [],
+  },
+  {
+    id: "userForm",
+    openApi: "UpdateUser",
+    schema: buildUserFormSchema({ isEditing: true }),
     forms: ["UserForm"],
+    stricterRequired: ["username", "role"],
+    divergences: [
+      "password: en el alta el formulario exige la contraseña (6 caracteres), como hace CreateUser",
+    ],
   },
   {
     id: "loginForm",
@@ -290,6 +318,16 @@ type AssertAssignable<TForm extends TContract, TContract> = TForm;
 /** Payload del formulario de empleado: debe encajar en `Employee`. */
 export type EmployeePayloadContract = AssertAssignable<
   z.output<typeof employeeFormSchema>,
+  components["schemas"]["Employee"]
+>;
+
+/**
+ * Payload del formulario de empleado (el que usa el formulario de la spec 036
+ * T9): los campos que el backend acepta y su OpenAPI no declara quedan fuera
+ * de la comparacion.
+ */
+export type EmployeeFormPayloadContract = AssertAssignable<
+  Omit<z.output<typeof employeeFormFieldsSchema>, "area" | "workdayType">,
   components["schemas"]["Employee"]
 >;
 

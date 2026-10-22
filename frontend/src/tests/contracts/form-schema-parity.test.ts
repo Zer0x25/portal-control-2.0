@@ -77,6 +77,7 @@ describe("paridad de los schemas de formulario con el backend (spec 036 AC2)", (
       swagger,
       {
         localFields: contract.localFields,
+        openApiUndeclaredFields: contract.openApiUndeclaredFields,
         transformedFields: contract.transformedFields,
         stricterRequired: contract.stricterRequired,
       },

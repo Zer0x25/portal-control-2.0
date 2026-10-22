@@ -67,11 +67,19 @@ export const businessDate = (label: string): z.ZodString =>
 export const optionalBusinessDate = (): z.ZodOptional<z.ZodString> =>
   z.string().trim().regex(ISO_DATE_PATTERN, ERROR_MESSAGES.invalidDate()).optional();
 
-/** Correo electronico (mismo `format: email` que el backend). */
-export const emailField = (label: string, optional = false): z.ZodType<string, unknown> =>
-  optional
-    ? z.string().trim().email(ERROR_MESSAGES.invalidEmail()).optional()
-    : z
-        .string({ error: ERROR_MESSAGES.required(label) })
-        .trim()
-        .email(ERROR_MESSAGES.invalidEmail());
+/**
+ * Correo electronico obligatorio (mismo `format: email` que el backend).
+ *
+ * El tipo de retorno es **concreto** (`z.ZodString`) y no `z.ZodType<string,
+ * unknown>`: con el tipo laxo, `z.input<typeof schema>` degrada a `unknown` y
+ * el formulario deja de poder tipar el valor del campo.
+ */
+export const emailField = (label: string): z.ZodString =>
+  z
+    .string({ error: ERROR_MESSAGES.required(label) })
+    .trim()
+    .email(ERROR_MESSAGES.invalidEmail());
+
+/** Correo electronico opcional (mismo `format: email` que el backend). */
+export const optionalEmailField = (): z.ZodOptional<z.ZodString> =>
+  z.string().trim().email(ERROR_MESSAGES.invalidEmail()).optional();

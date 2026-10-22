@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { User, UserRole } from "../../../types/index";
+import { User } from "../../../types/index";
 import { useUsers } from "../../../hooks/useUsers";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useAuth } from "../../../hooks/useAuth";
@@ -7,13 +7,7 @@ import { useToasts } from "../../../hooks/useToasts";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
-
-interface UserFormData {
-  username: string;
-  password?: string;
-  role: UserRole;
-  employeeId?: string;
-}
+import type { UserFormValues } from "../../../schemas/forms/user";
 
 interface UseUserManagementDataParams {
   isEmbedded?: boolean;
@@ -107,7 +101,7 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
     setIsFormVisible(true);
   };
 
-  const handleSaveUser = async (data: UserFormData) => {
+  const handleSaveUser = async (data: UserFormValues) => {
     if (!currentUser) return;
     if (editingUser) {
       await updateUser(editingUser.id, { role: data.role, employeeId: data.employeeId });

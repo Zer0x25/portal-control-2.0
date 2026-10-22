@@ -104,6 +104,11 @@ const sameEnum = (left: unknown[], right: unknown[]): boolean => {
 export interface CompareOptions {
   /** Campos que solo existen en el formulario (no se comparan). */
   readonly localFields?: readonly string[];
+  /**
+   * Campos que el backend acepta y guarda, pero que su schema OpenAPI no
+   * declara (no se comparan: son un hueco de documentacion, no una perdida).
+   */
+  readonly openApiUndeclaredFields?: readonly string[];
   /** Campos cuyo valor se transforma antes de enviarlo. */
   readonly transformedFields?: readonly string[];
   /** Campos que el formulario exige aunque el backend los admita opcionales. */
@@ -124,6 +129,7 @@ export const compareWithBackend = (
 ): SchemaMismatch[] => {
   const backend = resolveSchema(backendRaw, document);
   const localFields = new Set(options.localFields ?? []);
+  const openApiUndeclaredFields = new Set(options.openApiUndeclaredFields ?? []);
   const transformedFields = new Set(options.transformedFields ?? []);
   const stricterRequired = new Set(options.stricterRequired ?? []);
   const mismatches: SchemaMismatch[] = [];
@@ -136,7 +142,13 @@ export const compareWithBackend = (
   // 1. Todo campo que el formulario exige, el backend tambien lo exige (salvo
   //    declaracion explicita de divergencia).
   for (const field of frontendRequired) {
-    if (localFields.has(field) || transformedFields.has(field)) continue;
+    if (
+      localFields.has(field) ||
+      openApiUndeclaredFields.has(field) ||
+      transformedFields.has(field)
+    ) {
+      continue;
+    }
     if (!backendRequired.has(field) && !stricterRequired.has(field)) {
       mismatches.push({
         path: field,
@@ -163,7 +175,7 @@ export const compareWithBackend = (
 
   // 3. Campos: el formulario no puede escribir campos que el backend ignora.
   for (const [field, frontendProperty] of Object.entries(frontendProperties)) {
-    if (localFields.has(field)) continue;
+    if (localFields.has(field) || openApiUndeclaredFields.has(field)) continue;
     const backendProperty = backendProperties[field];
     if (!backendProperty) {
       mismatches.push({

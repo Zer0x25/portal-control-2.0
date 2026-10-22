@@ -189,6 +189,9 @@ mergeado antes.
       schema. Los 5 se parten en `.container.tsx` + `.view.tsx` + hook de
       dominio, lo que además **decrementa el
       `LARGE_HOOKED_COMPONENT_BUDGET` de la spec 033** (AC1, AC2, AC3).
+      **Dividido en dos PR** (T9a y T9b) por el riesgo que acumulan: los tres
+      formularios de `meters` comparten un schema **dinámico** (una lectura por
+      medidor) que no se parece en nada a los otros cuatro.
 - [ ] T10: Migrar `configuration`, `logbook` y `supervisor-dashboard`:
       `SmtpConfigModal.tsx` (427), `SeedingOptionsModal.tsx` (275),
       `configuration/hooks/useEmailCenterController.ts` (126),
@@ -356,6 +359,65 @@ permitir que se rompa en silencio.
 | Tests de la capa (serialización) | `frontend/src/tests/forms/useAppForm.test.tsx` (16 casos)            |
 | Ratchet de la spec 033           | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`         |
 | Mock global de IndexedDB         | `frontend/src/tests/setup.ts` (`idbGetAll` y familia)                |
+
+### Nota de ejecución — Fase C, PR 4 (T9a: `employee-management` + `user-management`)
+
+**Los dos formularios migrados a `useAppForm` + schema:**
+
+| Formulario               | Hook / controller                                                 | Schema con contexto       |
+| ------------------------ | ----------------------------------------------------------------- | ------------------------- |
+| Alta/edición de empleado | `features/employee-management/hooks/useEmployeeFormController.ts` | `buildEmployeeFormSchema` |
+| Alta/edición de usuario  | `features/user-management/hooks/useUserFormController.ts`         | `buildUserFormSchema`     |
+
+**Hallazgos que obligan a cambiar el patrón (afectan a T9b y T10-T13):**
+
+1. **El schema del formulario y el del contrato no siempre son el mismo
+   objeto.** El formulario de empleado escribe `area` y `workdayType`, que el
+   backend **acepta y guarda** (`EmployeeService` los escribe) pero que su
+   schema Zod **no declara**: no son campos locales (si viajan) ni una perdida
+   silenciosa. El mapa de contratos suma una lista para ese caso
+   (`openApiUndeclaredFields`: "el backend lo acepta y lo guarda, pero su
+   OpenAPI no lo declara") y el comparador de paridad la respeta. El resto de
+   las divergencias (`position` obligatorio, el digito verificador del RUT)
+   siguen declaradas como hasta ahora.
+2. **Un error sin `path` es un error de formulario, no de campo**: la capa lo
+   expone como `formError` (la clave `""` del estado de TanStack Form), no
+   como el error de un input. El formulario de usuario lo necesita porque la
+   regla de la contraseña del alta no tiene campo (la pantalla muestra la
+   temporal que asigna el backend, no un input). La capa se corrige para que
+   `formError` lea esa clave.
+3. **El formulario de usuario no tiene campo de contraseña** (preexistente):
+   el alta exige la contraseña desde siempre, pero el componente nunca la
+   pidio, asi que el flujo de alta de usuario esta roto en la aplicacion (el
+   padre avisaba por `toast` y no creaba nada). La migracion **no arregla el
+   producto**: reproduce el comportamiento (el envio se bloquea) y el error
+   pasa a ser de formulario. Arreglarlo (un input de contraseña o una
+   contraseña temporal que se envie) es una decision de producto.
+4. **El estado del formulario y el payload no son lo mismo**: la normalizacion
+   deja las claves vacias con valor `undefined` (las omite el `JSON.stringify`).
+   Los tests comparan el **JSON** del payload, no el objeto, que es lo que
+   viaja (T13).
+5. **Ratchet de la spec 033:** `EmployeeForm.tsx` y `UserForm.tsx` pasan a ser
+   presentacion pura (el estado vive en sus hooks de dominio), asi que
+   `HOOKED_COMPONENT_BUDGET` **baja de 92 a 90** y
+   `LARGE_HOOKED_COMPONENT_BUDGET` **baja de 56 a 54**
+   (`frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`).
+
+**Payload idéntico al anterior (T13, verificado en esta tarea):** el alta de
+empleado viaja con `{name, rut, position, area, workdayType, createUserAccount}`
+(el email vacio no viaja) y la edicion con los mismos campos sobre el empleado
+completo; el alta de usuario viaja con `{username, password, role, employeeId}`
+y la edicion con `{role, employeeId}`.
+
+**Evidencia:**
+
+| Artefacto                     | Ubicación                                                           |
+| ----------------------------- | ------------------------------------------------------------------- |
+| Schemas con contexto          | `frontend/src/schemas/forms/{employee,user}.ts`                     |
+| Tests de los dos formularios  | `frontend/src/tests/forms/employeeAndUserForms.test.tsx` (10 casos) |
+| Fixtures dorados del empleado | `frontend/src/tests/contracts/cases/employee.cases.json` (+1 caso)  |
+| Paridad de los contratos      | `frontend/src/tests/contracts/form-schema-parity.test.ts`           |
+| Ratchet de la spec 033        | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`        |
 
 ## Verificación final
 
