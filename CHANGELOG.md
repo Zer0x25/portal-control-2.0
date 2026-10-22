@@ -1,5 +1,32 @@
 # Changelog
 
+## [8.32.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.3...v8.32.0) (2026-10-22)
+
+
+### Features
+
+* **frontend:** blinda la frontera de capas del frontend (spec 033 Fase A) ([9d93e02](https://github.com/Zer0x25/portal-control-2.0/commit/9d93e02f688c259af68afc0c019f21713320a8a8))
+* **frontend:** blinda la frontera de capas del frontend (spec 033 Fase A) ([304c960](https://github.com/Zer0x25/portal-control-2.0/commit/304c96087f089a45888d24d30867c3f5e0156c58))
+* **frontend:** consolida el cliente HTTP y corrige los 3 P0 de cache (spec 034) ([96bd954](https://github.com/Zer0x25/portal-control-2.0/commit/96bd9548a5fa23cbfa8a69eb6dff35b783ab96f7))
+* **frontend:** consolida el cliente HTTP y la politica de red (spec 034 Fase A) ([811f52e](https://github.com/Zer0x25/portal-control-2.0/commit/811f52ea02830a04312d588cc0f50f5fcb5ff001))
+* **frontend:** migra authService al cliente unico (spec 034 T14) ([5515069](https://github.com/Zer0x25/portal-control-2.0/commit/5515069b50ff61cd01425fc3f0580a8403753822))
+* **frontend:** migra los lotes 1 y 2 de services a apiClient (spec 034 T9-T10) ([09adb30](https://github.com/Zer0x25/portal-control-2.0/commit/09adb3053b00ab9bc9ef200d76c4b0666c051e59))
+* **frontend:** migra los lotes 3 y 4 de services y los hooks de governance (spec 034 T11-T13) ([e370fd2](https://github.com/Zer0x25/portal-control-2.0/commit/e370fd2b994ac58d90b2243986e77868f9e3daf0))
+* **frontend:** tabla canonica de claves de query y correccion de los 3 P0 (spec 034 T17-T25) ([0b286ae](https://github.com/Zer0x25/portal-control-2.0/commit/0b286ae0cc40275b86e1c33a98f5c8df92dbd3b0))
+* **ui:** add aria-label to sidebar theme and about buttons ([e15a815](https://github.com/Zer0x25/portal-control-2.0/commit/e15a8153d0de56579a39a0848770b0377fb2406a))
+* **ui:** add aria-labels to sidebar icon buttons ([6562fbe](https://github.com/Zer0x25/portal-control-2.0/commit/6562fbe41a7c50f508625a67a2d33a2e41c84894))
+
+
+### Bug Fixes
+
+* **backend:** alinea enum de tipo de feriado con el frontend (Nacional/Regional/Especifico) ([5158bdf](https://github.com/Zer0x25/portal-control-2.0/commit/5158bdffddde454ec95ffef0f52f6200c2018cdb))
+
+
+### Performance Improvements
+
+* **core:** chunk record enrichment to prevent event loop blocking ([cfd091f](https://github.com/Zer0x25/portal-control-2.0/commit/cfd091fb0858f86ab9b821ef1bd0b92d139a40d3))
+* **core:** chunk record enrichment to prevent event loop blocking ([386b450](https://github.com/Zer0x25/portal-control-2.0/commit/386b450bf947d3882ea532ff064f7320661b5d8f))
+
 ## [8.31.3](https://github.com/Zer0x25/portal-control-2.0/compare/v8.31.2...v8.31.3) (2026-10-21)
 
 
