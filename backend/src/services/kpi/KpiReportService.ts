@@ -187,34 +187,48 @@ export class KpiReportService {
       todayStr,
     );
 
-    const employeeStatuses = await Promise.all(
-      activeEmployees.map(async (emp) => {
-        const record = latestByEmployee.get(emp.id);
-        let status = this.kpiFormattingService.getEmployeeClockingStatus(record);
+    // ⚡ Bolt Optimization: Chunked evaluation of employee statuses
+    // Why: Unchunked `Promise.all` over active employees blocked the event loop.
+    // Impact: Prevents event loop starvation and timeouts during large data set evaluation.
+    const employeeStatuses: Array<{
+      employee: Employee;
+      status: string;
+      lastRecord: ReturnType<typeof this.kpiFormattingService.enrichRecord> | null;
+    }> = [];
+    const STATUS_BATCH_SIZE = 50;
+    for (let i = 0; i < activeEmployees.length; i += STATUS_BATCH_SIZE) {
+      const batch = activeEmployees.slice(i, i + STATUS_BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map(async (emp) => {
+          const record = latestByEmployee.get(emp.id);
+          let status = this.kpiFormattingService.getEmployeeClockingStatus(record);
 
-        if (status === "fuera") {
-          const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
-            emp.id,
-            today,
-            schedulingContext,
-            emp,
-          );
-          if (!schedule || !schedule.isWorkDay) {
-            status = "no_programado";
-          } else if (schedule.startTime && record?.status === "Ausente") {
-            status = "ausente";
-          } else {
-            status = "por_iniciar";
+          if (status === "fuera") {
+            const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
+              emp.id,
+              today,
+              schedulingContext,
+              emp,
+            );
+            if (!schedule || !schedule.isWorkDay) {
+              status = "no_programado";
+            } else if (schedule.startTime && record?.status === "Ausente") {
+              status = "ausente";
+            } else {
+              status = "por_iniciar";
+            }
           }
-        }
 
-        return {
-          employee: emp,
-          status,
-          lastRecord: record ? this.kpiFormattingService.enrichRecord(record) : null,
-        };
-      }),
-    );
+          return {
+            employee: emp,
+            status,
+            lastRecord: record ? this.kpiFormattingService.enrichRecord(record) : null,
+          };
+        }),
+      );
+      employeeStatuses.push(...batchResults);
+      await new Promise((resolve) => setImmediate(resolve));
+    }
 
     const presentRecords = employeeStatuses
       .filter((s) => ["en_jornada", "en_colacion", "en_jornada_post_colacion"].includes(s.status))
@@ -224,23 +238,32 @@ export class KpiReportService {
     // Build anomalies list
     const anomalies: AnomalyRecord[] = [];
 
-    // ⚡ Bolt Optimization: Parallelize schedule lookups for missing marks
-    // Why: The previous sequential `for...of` loop awaited each promise individually, blocking the event loop (N+1 delay).
-    // Impact: Reduces total latency of missing marks check from O(N) to O(1) concurrent requests.
     const missingYesterdayCandidates = employeeStatuses.filter(
       (s) => !yesterdayEmployees.has(s.employee.id),
     );
 
-    const yesterdaySchedules = await Promise.all(
-      missingYesterdayCandidates.map((s) =>
-        schedulingService.getEmployeeDailyScheduleInfo(
-          s.employee.id,
-          new Date(parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000),
-          schedulingContext,
-          s.employee,
+    // ⚡ Bolt Optimization: Chunked schedule lookups for missing marks
+    // Why: Unchunked `Promise.all` can block the event loop for a large number of candidates.
+    // Impact: Reduces total latency while preventing event loop starvation.
+    const yesterdaySchedules: Array<
+      Awaited<ReturnType<typeof schedulingService.getEmployeeDailyScheduleInfo>>
+    > = [];
+    const YESTERDAY_BATCH_SIZE = 50;
+    for (let i = 0; i < missingYesterdayCandidates.length; i += YESTERDAY_BATCH_SIZE) {
+      const batch = missingYesterdayCandidates.slice(i, i + YESTERDAY_BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map((s) =>
+          schedulingService.getEmployeeDailyScheduleInfo(
+            s.employee.id,
+            new Date(parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000),
+            schedulingContext,
+            s.employee,
+          ),
         ),
-      ),
-    );
+      );
+      yesterdaySchedules.push(...batchResults);
+      await new Promise((resolve) => setImmediate(resolve));
+    }
 
     const missingYesterdaySchedulesMap = new Map(
       missingYesterdayCandidates.map((s, idx) => [s.employee.id, yesterdaySchedules[idx]]),
@@ -327,14 +350,23 @@ export class KpiReportService {
       activeCount: activeEmployees.length,
     };
 
-    // ⚡ Bolt Optimization: Parallelize schedule lookups
-    // Why: The previous sequential `for...of` loop awaited each promise individually, blocking the event loop (N+1 delay).
-    // Impact: Reduces total latency of schedule lookup from O(N) to O(1) concurrent requests.
-    const scheduleInfos = await Promise.all(
-      activeEmployees.map((emp) =>
-        schedulingService.getEmployeeDailyScheduleInfo(emp.id, today, schedulingContext, emp),
-      ),
-    );
+    // ⚡ Bolt Optimization: Chunked parallelization for schedule lookups
+    // Why: Unchunked `Promise.all` blocked the event loop for a large number of employees.
+    // Impact: Reduces total latency of schedule lookup while preventing event loop starvation.
+    const scheduleInfos: Array<
+      Awaited<ReturnType<typeof schedulingService.getEmployeeDailyScheduleInfo>>
+    > = [];
+    const SCHEDULE_BATCH_SIZE = 50;
+    for (let i = 0; i < activeEmployees.length; i += SCHEDULE_BATCH_SIZE) {
+      const batch = activeEmployees.slice(i, i + SCHEDULE_BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map((emp) =>
+          schedulingService.getEmployeeDailyScheduleInfo(emp.id, today, schedulingContext, emp),
+        ),
+      );
+      scheduleInfos.push(...batchResults);
+      await new Promise((resolve) => setImmediate(resolve));
+    }
 
     for (const scheduleInfo of scheduleInfos) {
       if (!scheduleInfo) continue;
