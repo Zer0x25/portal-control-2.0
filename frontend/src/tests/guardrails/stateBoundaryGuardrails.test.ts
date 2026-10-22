@@ -90,4 +90,21 @@ describe("Guardrail de frontera de estado (spec 032 T6, AC1)", () => {
 
     expect(orphaned, "Mutaciones sin invalidacion de cache: " + orphaned.join(", ")).toEqual([]);
   });
+
+  it("el store global no expone flags de apertura de modales", () => {
+    const modalOpenFlag = /\b(?:is[A-Z][A-Za-z0-9]*(?:Modal)?Open|show[A-Z][A-Za-z0-9]*Modal)\b/;
+    const offenders = listSliceFiles().flatMap((file) => {
+      const source = readFileSync(path.join(slicesDir, file), "utf8");
+      return source
+        .split("\n")
+        .map((line, index) => ({ file, line: index + 1, text: line.trim() }))
+        .filter(({ text }) => modalOpenFlag.test(text))
+        .map(({ file: offenderFile, line, text }) => `${offenderFile}:${line}: ${text}`);
+    });
+
+    expect(
+      offenders,
+      "Los flags de modales deben vivir en su feature: " + offenders.join("; "),
+    ).toEqual([]);
+  });
 });

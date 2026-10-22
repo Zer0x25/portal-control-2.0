@@ -5,14 +5,14 @@ import { AugmentedTimeRecord } from "../../../types";
 
 const {
   useToastsMock,
-  useLogsMock,
+  useAuditLogsInfiniteMock,
   useCorrectionRequestsMock,
   exportToPDFMock,
   addToastMock,
   onExportStreamingMock,
 } = vi.hoisted(() => ({
   useToastsMock: vi.fn(),
-  useLogsMock: vi.fn(),
+  useAuditLogsInfiniteMock: vi.fn(),
   useCorrectionRequestsMock: vi.fn(),
   exportToPDFMock: vi.fn(),
   addToastMock: vi.fn(),
@@ -23,8 +23,8 @@ vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => useToastsMock(),
 }));
 
-vi.mock("../../../hooks/useLogs", () => ({
-  useLogs: () => useLogsMock(),
+vi.mock("../../../hooks/queries/useAuditLogsInfinite", () => ({
+  useAuditLogsInfinite: (...args: unknown[]) => useAuditLogsInfiniteMock(...args),
 }));
 
 vi.mock("../../../hooks/useCorrectionRequests", () => ({
@@ -38,12 +38,16 @@ vi.mock("../../../utils/export/index", () => ({
 describe("useTimeRecordTableController", () => {
   it("builds pendingRequestsMap and editsMapAll from external data", () => {
     useToastsMock.mockReturnValue({ addToast: addToastMock });
-    useLogsMock.mockReturnValue({
-      logsPage: {
-        data: [
+    useAuditLogsInfiniteMock.mockReturnValue({
+      data: {
+        pages: [
           {
-            action: "Time Record Edited",
-            details: { recordId: "r1" },
+            data: [
+              {
+                action: "Time Record Edited",
+                details: { recordId: "r1" },
+              },
+            ],
           },
         ],
       },
@@ -69,7 +73,7 @@ describe("useTimeRecordTableController", () => {
 
   it("exports csv through streaming callback", async () => {
     useToastsMock.mockReturnValue({ addToast: addToastMock });
-    useLogsMock.mockReturnValue({ logsPage: { data: [] } });
+    useAuditLogsInfiniteMock.mockReturnValue({ data: { pages: [{ data: [] }] } });
     useCorrectionRequestsMock.mockReturnValue({ requests: [] });
 
     const { result } = renderHook(() =>

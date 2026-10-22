@@ -13,9 +13,9 @@ import LazySectionFallback from "../../../components/ui/LazySectionFallback";
 import TabNav from "../../../components/ui/TabNav";
 
 const IntegritySummaryView = React.lazy(() => import("../components/IntegritySummaryView"));
-const SecurityInsightsView = React.lazy(() => import("../components/SecurityInsightsView"));
-const AuditLogsView = React.lazy(() => import("../components/AuditLogsView"));
-const SystemMaintenanceView = React.lazy(() => import("../components/SystemMaintenanceView"));
+const SecurityInsightsView = React.lazy(() => import("../containers/SecurityInsights.container"));
+const AuditLogsView = React.lazy(() => import("../containers/AuditLogsView.container"));
+const SystemMaintenanceView = React.lazy(() => import("../containers/SystemMaintenance.container"));
 const HealthStatusView = React.lazy(() => import("../components/HealthStatusView"));
 
 export type GovernanceHubTabId = "integrity" | "security" | "audit" | "system" | "health";

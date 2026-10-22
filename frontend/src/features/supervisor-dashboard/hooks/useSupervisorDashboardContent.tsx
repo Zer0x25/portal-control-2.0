@@ -5,7 +5,9 @@ import { SupervisorActiveTab } from "./useSupervisorDashboardTabs";
 
 const KpisTab = withSupervisorDashboardLazy(() => import("../components/KpisTab"));
 const ReportsTab = withSupervisorDashboardLazy(() => import("../components/ReportsTab"));
-const RequestsTab = withSupervisorDashboardLazy(() => import("../components/RequestsTab"));
+const RequestsTab = withSupervisorDashboardLazy(
+  () => import("../containers/RequestsTab.container"),
+);
 const AccountingClosureTab = withSupervisorDashboardLazy(
   () => import("../components/AccountingClosureTab"),
 );

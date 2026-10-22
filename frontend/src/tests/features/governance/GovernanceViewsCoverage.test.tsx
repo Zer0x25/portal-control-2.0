@@ -9,7 +9,7 @@ vi.mock("../../../components/layout/HealthDashboard", () => ({
   default: () => <div data-testid="mock-health-dashboard">HealthDashboard</div>,
 }));
 
-vi.mock("../../../features/governance/components/BackupListModal", () => ({
+vi.mock("../../../features/governance/containers/BackupListModal.container", () => ({
   default: () => <div data-testid="mock-backup-list-modal">BackupListModal</div>,
 }));
 

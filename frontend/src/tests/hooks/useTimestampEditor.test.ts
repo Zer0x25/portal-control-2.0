@@ -1,6 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { toDate } from "date-fns-tz";
+import type { DailyTimeRecord, TimeRecordField } from "../../types";
 import { useTimestampEditor } from "../../hooks/useTimestampEditor";
 
 const { mutateAsyncMock, closeEditTimestampModalMock, addToastMock, storeState } = vi.hoisted(
@@ -42,18 +43,16 @@ vi.mock("../../hooks/useToasts", () => ({
   }),
 }));
 
-vi.mock("../../store/useStore", () => ({
-  useStore: (
-    selector: (s: {
-      editingRecordInfo: typeof storeState.editingRecordInfo;
-      closeEditTimestampModal: typeof closeEditTimestampModalMock;
-    }) => unknown,
-  ) =>
-    selector({
-      editingRecordInfo: storeState.editingRecordInfo,
-      closeEditTimestampModal: closeEditTimestampModalMock,
-    }),
-}));
+const renderTimestampEditor = () =>
+  renderHook(() =>
+    useTimestampEditor(
+      storeState.editingRecordInfo as unknown as {
+        record: DailyTimeRecord;
+        field: TimeRecordField;
+      },
+      closeEditTimestampModalMock,
+    ),
+  );
 
 /**
  * Spec 036 T12c (AC1, AC2, T13): el borrador de hora ya no vive en el store
@@ -85,7 +84,7 @@ describe("useTimestampEditor", () => {
   });
 
   it("arranca con la hora del marcaje (valor inicial del borrador)", () => {
-    const { result } = renderHook(() => useTimestampEditor());
+    const { result } = renderTimestampEditor();
 
     // La entrada es 08:00 UTC = 05:00 en Chile (UTC-3 en marzo).
     expect(result.current.value).toBe("05:00");
@@ -93,7 +92,7 @@ describe("useTimestampEditor", () => {
   });
 
   it("keeps the record date fixed and persists exactly once", async () => {
-    const { result } = renderHook(() => useTimestampEditor());
+    const { result } = renderTimestampEditor();
 
     act(() => {
       result.current.setValue("08:30");
@@ -114,7 +113,7 @@ describe("useTimestampEditor", () => {
   });
 
   it("senala la hora vacia y no toca el backend", async () => {
-    const { result } = renderHook(() => useTimestampEditor());
+    const { result } = renderTimestampEditor();
 
     act(() => {
       result.current.setValue("");
@@ -148,7 +147,7 @@ describe("useTimestampEditor", () => {
       new Error("La hora de salida no puede superar 12 horas desde la entrada."),
     );
 
-    const { result } = renderHook(() => useTimestampEditor());
+    const { result } = renderTimestampEditor();
 
     act(() => {
       result.current.setValue("21:00");
@@ -181,7 +180,7 @@ describe("useTimestampEditor", () => {
       field: "salida",
     };
 
-    const { result } = renderHook(() => useTimestampEditor());
+    const { result } = renderTimestampEditor();
 
     act(() => {
       result.current.setValue("08:00");

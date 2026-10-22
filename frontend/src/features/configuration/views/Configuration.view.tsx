@@ -12,8 +12,8 @@ import Container from "../../../components/ui/Container";
 import TabNav from "../../../components/ui/TabNav";
 
 const GlobalVariablesView = React.lazy(() => import("../components/GlobalVariablesView"));
-const EmailCenterView = React.lazy(() => import("../components/EmailCenterView"));
-const MasterDataExportView = React.lazy(() => import("../components/MasterDataExportView"));
+const EmailCenterView = React.lazy(() => import("../containers/EmailCenter.container"));
+const MasterDataExportView = React.lazy(() => import("../containers/MasterDataExport.container"));
 
 export type ConfigurationTabId = "variables" | "email" | "master-data";
 

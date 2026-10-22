@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { MeterReadingsView } from "../../../features/meters/views/MeterReadings.view";
 
-vi.mock("../../../features/meters/components/MeterHistory", () => ({
+vi.mock("../../../features/meters/containers/MeterHistory.container", () => ({
   default: () => <div>METER-HISTORY</div>,
 }));
 vi.mock("../../../features/meters/components/MeterForm.container", () => ({

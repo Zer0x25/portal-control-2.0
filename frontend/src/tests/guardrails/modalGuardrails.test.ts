@@ -43,7 +43,7 @@ const MODAL_OVERLAY_WHITELIST: readonly string[] = [
   // components/ui (18): modales de dominio reubicables en T15 (AC8)
   "features/supervisor-dashboard/components/AttachmentViewerModal.tsx",
   "components/ui/DatePickerDialog.tsx",
-  "features/configuration/components/DeveloperPanel.tsx",
+  "features/configuration/views/DeveloperPanel.view.tsx",
   "features/governance/components/ExportLogsModal.tsx",
   "features/employee-management/components/ImportModal.tsx",
   "components/ui/InitialSyncOverlay.tsx",

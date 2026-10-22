@@ -8,12 +8,12 @@ import {
 } from "../../../components/ui/icons/index";
 import KpiDetailsModal from "./KpiDetailsModal";
 import LoadingOverlay from "../../../components/ui/LoadingOverlay";
-import { useKpisLogic } from "../hooks/useKpisLogic";
+import { useKpisController } from "../hooks/useKpisController";
 
 /**
  * 📈 KpisTab: Análisis Operativo de Alto Nivel
  * Refactored for Industrial-Elegant "DIV clean" interface.
- * Logic/UI separation: Pure UI component using useKpisLogic hook.
+ * Logic/UI separation: Pure UI component using useKpisController hook.
  * Optimizado con memoización para mejor performance
  */
 const KpisTab: React.FC = React.memo(() => {
@@ -29,7 +29,7 @@ const KpisTab: React.FC = React.memo(() => {
     handleFiltersChange,
     handleKpiClick,
     closeModal,
-  } = useKpisLogic();
+  } = useKpisController();
 
   return (
     <div className="space-y-8 relative min-h-[500px] pt-4">

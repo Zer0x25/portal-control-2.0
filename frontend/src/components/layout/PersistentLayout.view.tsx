@@ -1,15 +1,12 @@
 import React, { Suspense } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-const DeveloperPanel = React.lazy(() =>
-  import("../../features/configuration/components/DeveloperPanel").then((m) => ({
-    default: m.DeveloperPanel,
-  })),
+const DeveloperPanel = React.lazy(
+  () => import("../../features/configuration/containers/DeveloperPanel.container"),
 );
 const ShiftHandoverModal = React.lazy(
   () => import("../../features/time-control/components/ShiftHandoverModal"),
 );
-import ScreenSizeIndicator from "../ui/ScreenSizeIndicator";
 import { HomeIcon } from "../ui/icons/index";
 import type { ShiftHandoverData } from "../../types";
 import LoadingSpinner from "../ui/LoadingSpinner";
@@ -135,8 +132,6 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
               </button>
             </div>
           )}
-
-          <ScreenSizeIndicator />
         </div>
       </div>
 

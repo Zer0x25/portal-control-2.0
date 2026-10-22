@@ -96,6 +96,23 @@ export type SupervisorAction =
   | "configure_system"
   | "access_audit";
 
+export const SUPERVISOR_ACTION_PERMISSION_MAP: Record<
+  SupervisorAction,
+  keyof SupervisorPermissions
+> = {
+  view_dashboard: "canViewAnalytics",
+  view_analytics: "canViewAnalytics",
+  view_kpis: "canViewKPIs",
+  view_reports: "canViewReports",
+  edit_time_record: "canEditTimeRecords",
+  approve_correction: "canApproveCorrections",
+  block_employee: "canBlockEmployees",
+  manage_shift: "canManageShifts",
+  manage_user: "canManageUsers",
+  configure_system: "canConfigureSystem",
+  access_audit: "canAccessAuditLogs",
+};
+
 export interface SupervisorActionResult<T = unknown> {
   success: boolean;
   data?: T;

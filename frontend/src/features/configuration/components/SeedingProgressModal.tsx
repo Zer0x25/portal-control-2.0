@@ -8,8 +8,8 @@ import {
 } from "../../../components/ui/icons/index";
 import { SeedingOptions } from "../../../schemas/forms/seed";
 import { getDBInstance } from "../../../utils/indexedDB";
-import { healthService, HealthData } from "../../../services/healthService";
 import { Z } from "../../../constants/zScale";
+import { useSeedingProgressHealth } from "../hooks/useSeedingProgressHealth";
 
 interface SeedingProgressModalProps {
   isOpen: boolean;
@@ -41,7 +41,6 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
   onStopPhase2,
 }) => {
   const [seconds, setSeconds] = React.useState(0);
-  const [healthData, setHealthData] = React.useState<HealthData | null>(null);
   const timerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const logContainerRef = React.useRef<HTMLDivElement | null>(null);
   const logEndRef = React.useRef<HTMLDivElement | null>(null);
@@ -57,6 +56,7 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
 
   // Phase 1 done and Phase 2 waiting to be started
   const isPhase1DonePhase2Pending = isFinished && !isPhase2Active;
+  const healthData = useSeedingProgressHealth(isOpen, effectiveIsFinished);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -76,25 +76,6 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isOpen, effectiveIsFinished]);
-
-  React.useEffect(() => {
-    if (!isOpen || effectiveIsFinished) return;
-    let cancelled = false;
-    const loadHealth = async () => {
-      try {
-        const data = await healthService.getHealth();
-        if (!cancelled) setHealthData(data);
-      } catch {
-        // Keep seeding UI running even if health probe fails intermittently
-      }
-    };
-    void loadHealth();
-    const interval = setInterval(loadHealth, 5000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
     };
   }, [isOpen, effectiveIsFinished]);
 

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { useToasts } from "../../../hooks/useToasts";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
 import Button from "../../../components/ui/Button";
 import {
   CloseIcon,
@@ -12,6 +10,7 @@ import DatePicker from "../../../components/ui/DatePicker";
 import { compareBusinessDate, toBusinessDateChile } from "../../../utils/dateUtils";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { Z } from "../../../constants/zScale";
+import { useAuditLogDownload, type AuditLogExportFormat } from "../hooks/useAuditLogDownload";
 
 interface ExportLogsModalProps {
   isOpen: boolean;
@@ -22,11 +21,12 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
   const { addToast } = useToasts();
   const businessNow = useBusinessNow({ tickMs: null });
   const today = toBusinessDateChile(businessNow);
+  const startDownload = useAuditLogDownload();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState(today);
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async (format: "csv" | "xml") => {
+  const handleExport = async (format: AuditLogExportFormat) => {
     if (!startDate || !endDate) {
       addToast("Por favor, seleccione un rango de fechas completo.", "warning");
       return;
@@ -53,17 +53,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
     addToast(`Iniciando exportación a ${format.toUpperCase()}...`, "info");
 
     try {
-      const token = authService.getToken();
-      const query = new URLSearchParams();
-      query.set("startDate", startDate);
-      query.set("endDate", endDate);
-      query.set("format", format);
-      query.set("token", token || "");
-
-      const downloadUrl = `${API_BASE_URL}/audit-logs/export?${query.toString()}`;
-
-      // Iniciamos la descarga directa
-      window.location.href = downloadUrl;
+      startDownload(startDate, endDate, format);
 
       addToast(`Descarga de ${format.toUpperCase()} iniciada.`, "success");
       onClose();

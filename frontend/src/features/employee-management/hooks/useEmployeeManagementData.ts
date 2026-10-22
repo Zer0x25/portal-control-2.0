@@ -8,6 +8,7 @@ import { exportToCSV, exportToPDF } from "../../../utils/export/index";
 import { exportService } from "../../../services/exportService";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
+import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 import type { EmployeeFormFieldsValues } from "../../../schemas/forms/employee";
 
@@ -54,7 +55,7 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const [historyModalEmployee, setHistoryModalEmployee] = useState<Employee | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const [hasOpenRecord, setHasOpenRecord] = useState(false);
 
   const pageSize = isMobile ? 20 : 50;
@@ -95,14 +96,6 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   useEffect(() => {
     setVisibleCount(pageSize);
   }, [view, debouncedSearchTerm, pageSize]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const handleImportEmployees = async (data: Partial<Employee>[]) => {
     try {

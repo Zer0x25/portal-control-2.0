@@ -6,15 +6,15 @@ vi.mock("../../../features/governance/components/IntegritySummaryView", () => ({
   default: () => <div>INTEGRITY-CONTENT</div>,
 }));
 
-vi.mock("../../../features/governance/components/SecurityInsightsView", () => ({
+vi.mock("../../../features/governance/containers/SecurityInsights.container", () => ({
   default: () => <div>SECURITY-CONTENT</div>,
 }));
 
-vi.mock("../../../features/governance/components/AuditLogsView", () => ({
+vi.mock("../../../features/governance/containers/AuditLogsView.container", () => ({
   default: () => <div>AUDIT-CONTENT</div>,
 }));
 
-vi.mock("../../../features/governance/components/SystemMaintenanceView", () => ({
+vi.mock("../../../features/governance/containers/SystemMaintenance.container", () => ({
   default: () => <div>SYSTEM-CONTENT</div>,
 }));
 

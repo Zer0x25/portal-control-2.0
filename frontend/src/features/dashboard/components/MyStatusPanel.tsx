@@ -1,10 +1,10 @@
 import React from "react";
 import { WidgetContainer } from "./ui/WidgetContainer";
 import { StatusCard, ShiftStatusCard } from "./ui/StatusCard";
-import { useMyStatusLogic } from "../hooks/useMyStatusLogic";
+import { useMyStatusData } from "../hooks/useMyStatusData";
 
 export const MyStatusPanel: React.FC = () => {
-  const { currentStatus, timeText, showActiveShift, responsibleName } = useMyStatusLogic();
+  const { currentStatus, timeText, showActiveShift, responsibleName } = useMyStatusData();
 
   return (
     <WidgetContainer title="Mi Jornada">

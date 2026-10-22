@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import Card from "../../../components/ui/Card";
 import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
@@ -13,16 +12,18 @@ import {
   CircleStackIcon,
   ClockIcon,
 } from "../../../components/ui/icons/index";
-import { useIntegrityStatus } from "../../../hooks/queries/useIntegrityStatus";
+import {
+  useIntegrityStatus,
+  useRefreshIntegrityStatus,
+} from "../../../hooks/queries/useIntegrityStatus";
 import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
 import { useAuditLogMutations } from "../../../hooks/useAuditLogMutations";
 import IntegrityAnomalyTable from "./IntegrityAnomalyTable";
-import { queryKeys } from "../../../lib/queryKeys";
 
 const IntegritySummaryView: React.FC = () => {
   const tableRef = React.useRef<HTMLDivElement>(null);
-  const queryClient = useQueryClient();
   const { data: status } = useIntegrityStatus();
+  const refreshIntegrityStatus = useRefreshIntegrityStatus();
   const { verifyIntegrity } = useAuditLogMutations();
 
   // Fetch critical integrity logs
@@ -50,7 +51,7 @@ const IntegritySummaryView: React.FC = () => {
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.integrityStatus() });
+    void refreshIntegrityStatus();
   };
 
   return (

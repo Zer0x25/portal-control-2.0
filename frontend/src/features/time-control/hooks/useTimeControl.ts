@@ -1,10 +1,8 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { AttendanceRecord, DailyTimeRecord } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useScheduling } from "../../../hooks/useScheduling";
-import { useStore } from "../../../store/useStore";
-import { useShallow } from "zustand/react/shallow";
 import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
 import { useDebounce } from "../../../hooks/useDebounce";
@@ -31,14 +29,17 @@ export const useTimeControl = () => {
 
   // Decomposed hooks
   const filters = useTimeRecordFilters();
-  const modals = useTimeControlModals();
+  const [quickActionRecord, setQuickActionRecord] = useState<DailyTimeRecord | null>(null);
+  const closeQuickActionModal = useCallback(() => setQuickActionRecord(null), []);
+  const quickActionClockStatus = useMemo(
+    () => getContractClockingStatus(quickActionRecord as AttendanceRecord, () => "fuera"),
+    [quickActionRecord],
+  );
+  const modals = useTimeControlModals({ closeQuickActionModal });
 
   const isActionDisabledForRole =
     currentUser?.role === "Supervisor" || currentUser?.role === "Fiscalizador";
   const roleBasedTooltip = isActionDisabledForRole ? "Acciones deshabilitadas para este rol." : "";
-
-  // Centralized modal state from global store
-  const openQuickActionModal = useStore((s) => s.openQuickActionModal);
 
   const filtersKey = useMemo(() => {
     return JSON.stringify({ ...filters.appliedDateFilters, ...filters.clientFilters });
@@ -134,21 +135,12 @@ export const useTimeControl = () => {
     },
     filteredRecords: enrichedRecords, // Renamed for component compatibility
     totalRecords: infiniteData?.pages[0]?.total || 0,
-    // Keep quick action modal logic from modals hook (useShallow: fresh
-    // object per snapshot would loop under rapid store writes).
-    ...useStore(
-      useShallow((s) => ({
-        quickActionRecord: s.quickActionRecord,
-        closeQuickActionModal: s.closeQuickActionModal,
-        quickActionClockStatus: getContractClockingStatus(
-          s.quickActionRecord as AttendanceRecord,
-          () => "fuera",
-        ),
-      })),
-    ),
+    quickActionRecord,
+    closeQuickActionModal,
+    quickActionClockStatus,
     handleRowDoubleClick: useCallback(
-      (record: DailyTimeRecord) => openQuickActionModal(record),
-      [openQuickActionModal],
+      (record: DailyTimeRecord) => setQuickActionRecord(record),
+      [],
     ),
   };
 };

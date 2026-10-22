@@ -2,10 +2,10 @@ import React from "react";
 import WeatherDisplay from "../../../components/ui/WeatherDisplay";
 import ServerClock from "../../../components/ui/ServerClock";
 import { WelcomeWidgetContainer } from "./ui/WidgetContainer";
-import { useWelcomeLogic } from "../hooks/useWelcomeLogic";
+import { useWelcomeController } from "../hooks/useWelcomeController";
 
 const WelcomePanel: React.FC = () => {
-  const { weather, isLoadingWeather, welcomeName, greeting } = useWelcomeLogic();
+  const { weather, isLoadingWeather, welcomeName, greeting } = useWelcomeController();
 
   return (
     <WelcomeWidgetContainer>

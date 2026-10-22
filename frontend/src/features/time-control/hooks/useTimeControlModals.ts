@@ -4,12 +4,15 @@ import { AugmentedTimeRecord } from "../../../types/derived";
 import { useToasts } from "../../../hooks/useToasts";
 import { useAuth } from "../../../hooks/useAuth";
 import { formatDisplayDateTime } from "../../../utils/formatters";
-import { useStore } from "../../../store/useStore";
 import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useAccountingLockDateQuery } from "../../../hooks/queries/useConfigQuery";
 import { useReportsQuery } from "../../../hooks/queries/useReportsQuery";
 
-export const useTimeControlModals = () => {
+interface UseTimeControlModalsOptions {
+  closeQuickActionModal: () => void;
+}
+
+export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlModalsOptions) => {
   const { addToast } = useToasts();
   const { currentUser } = useAuth();
   const actorUsername = currentUser?.username || "System";
@@ -19,12 +22,14 @@ export const useTimeControlModals = () => {
 
   const { data: accountingLockDate } = useAccountingLockDateQuery();
   // const deleteRecordById = useStore(s => s.deleteRecordById); // REMOVED
-  const openEditTimestampModal = useStore((s) => s.openEditTimestampModal);
-  const closeQuickActionModal = useStore((s) => s.closeQuickActionModal);
   // const dailyRecords = useStore(s => s.timeRecordsPage.data); // REMOVED
   const { data: shiftReports = [] } = useReportsQuery({ status: "open" });
 
   const [modalState, setModalState] = useState<ModalState>({ type: "none" });
+  const [editingRecordInfo, setEditingRecordInfo] = useState<{
+    record: DailyTimeRecord;
+    field: TimeRecordField;
+  } | null>(null);
   const [isAddNoveltyModalOpen, setIsAddNoveltyModalOpen] = useState(false);
   const [noveltyInitialText, setNoveltyInitialText] = useState("");
   const [activeShiftForNovelty, setActiveShiftForNovelty] = useState<ShiftReport | null>(null);
@@ -101,11 +106,13 @@ export const useTimeControlModals = () => {
   const handleEditClick = useCallback(
     (record: DailyTimeRecord, field: TimeRecordField) => {
       if (!record) return;
-      openEditTimestampModal(record, field);
+      setEditingRecordInfo({ record, field });
       closeQuickActionModal();
     },
-    [openEditTimestampModal, closeQuickActionModal],
+    [closeQuickActionModal],
   );
+
+  const closeEditTimestampModal = useCallback(() => setEditingRecordInfo(null), []);
 
   const handleViewHistory = useCallback(
     (record: DailyTimeRecord) => {
@@ -147,6 +154,8 @@ export const useTimeControlModals = () => {
   return {
     modalState,
     setModalState,
+    editingRecordInfo,
+    closeEditTimestampModal,
     isAddNoveltyModalOpen,
     setIsAddNoveltyModalOpen,
     noveltyInitialText,

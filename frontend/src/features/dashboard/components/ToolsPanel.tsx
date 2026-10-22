@@ -1,10 +1,15 @@
 import React from "react";
 import { WidgetContainer } from "./ui/WidgetContainer";
 import { ActionButton } from "./ui/ActionButton";
-import { useToolsLogic } from "../hooks/useToolsLogic";
+import { useToolsController } from "../hooks/useToolsController";
 
-const ToolsPanel: React.FC = () => {
-  const { tools } = useToolsLogic();
+interface ToolsPanelProps {
+  onOpenQuickNotes: () => void;
+  hasUnreadNotes: boolean;
+}
+
+const ToolsPanel: React.FC<ToolsPanelProps> = ({ onOpenQuickNotes, hasUnreadNotes }) => {
+  const { tools } = useToolsController(onOpenQuickNotes, hasUnreadNotes);
 
   return (
     <WidgetContainer title="Recursos del Sistema">

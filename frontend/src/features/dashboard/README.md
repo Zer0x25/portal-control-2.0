@@ -10,7 +10,7 @@
 
 ### 2. **Hooks Optimizados**
 
-- `useWelcomeLogic`: useCallback para funciones, useMemo para objetos de retorno
+- `useWelcomeController`: useCallback para funciones, useMemo para objetos de retorno
 - `useActionButtonProps`: useMemo para props calculadas
 - `useToolButtonProps`: useCallback para acciones, useMemo para props
 

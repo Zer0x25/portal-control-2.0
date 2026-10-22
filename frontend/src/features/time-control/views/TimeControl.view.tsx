@@ -3,7 +3,12 @@
 */
 
 import React from "react";
-import { DailyTimeRecord, AugmentedTimeRecord, ClockingStatus } from "../../../types/index";
+import {
+  DailyTimeRecord,
+  AugmentedTimeRecord,
+  ClockingStatus,
+  TimeRecordField,
+} from "../../../types/index";
 import { ModalState } from "../../../types/ui";
 import { QuickFilterMode } from "../hooks/useTimeRecordFilters";
 import { ClockIcon } from "../../../components/ui/icons";
@@ -61,6 +66,8 @@ export interface TimeControlViewProps {
   modalState: ModalState;
   setModalState: (s: ModalState) => void;
   handleConfirmDelete: (r: DailyTimeRecord) => void;
+  editingRecordInfo: { record: DailyTimeRecord; field: TimeRecordField } | null;
+  closeEditTimestampModal: () => void;
   quickActionRecord?: DailyTimeRecord | null;
   closeQuickActionModal: () => void;
   quickActionClockStatus?: ClockingStatus | null;
@@ -265,7 +272,11 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
       )}
 
       <React.Suspense fallback={null}>
-        <EditTimestampModal />
+        <EditTimestampModal
+          isOpen={Boolean(props.editingRecordInfo)}
+          onClose={props.closeEditTimestampModal}
+          editingInfo={props.editingRecordInfo}
+        />
       </React.Suspense>
     </Container>
   );

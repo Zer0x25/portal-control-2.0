@@ -11,7 +11,6 @@ export * from "./reports";
 export * from "./kpi";
 export * from "./kpi-api";
 export * from "./derived";
-export * from "./contexts";
 export * from "./notifications";
 export * from "./supervisor";
 

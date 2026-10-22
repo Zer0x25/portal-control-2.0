@@ -8,19 +8,13 @@ import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import { QuickNotesModal } from "..";
 import ShiftReportModal from "../../logbook/components/ShiftReportModal";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
-import { EditTimestampModal, QuickActionModal } from "../../time-control";
 import EmptyState from "../../../components/ui/EmptyState";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import WelcomePanel from "../components/WelcomePanel";
 import Container from "../../../components/ui/Container";
 import AmbientReminderManager from "../../../notifications/components/AmbientReminderManager";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-import {
-  DailyTimeRecord,
-  ClockingStatus,
-  DashboardWidget,
-  ShiftReport,
-} from "../../../types/index";
+import { DailyTimeRecord, DashboardWidget, ShiftReport } from "../../../types/index";
 
 interface DashboardModalsState {
   showReportDetailsModal: ShiftReport | null;
@@ -34,8 +28,6 @@ interface DashboardActionsState {
   closeReportDetailsModal: () => void;
   closeResponsibleClockOutConfirmation: () => void;
   confirmResponsibleClockOut: () => Promise<boolean>;
-  closeQuickActionModal: () => void;
-  openEditTimestampModal: (record: DailyTimeRecord, field: string) => void;
   closeAnomaliesModal: () => void;
   closePresentModal: () => void;
 }
@@ -57,11 +49,8 @@ interface DashboardViewProps {
   unscheduledPresent: unknown[];
   visibleWidgets: DashboardWidget[];
   widgetProps: Record<string, Record<string, unknown>>;
-  quickActionClockStatus: ClockingStatus;
-  handleClockOutFromQuickAction: () => Promise<void>;
-  handleStartBreakFromQuickAction: () => Promise<void>;
-  handleEndBreakFromQuickAction: () => Promise<void>;
-  handleEditClick: () => void;
+  quickActionModal: React.ReactNode;
+  editTimestampModal: React.ReactNode;
   handlePresentEmployeeDoubleClick: (r: DailyTimeRecord) => void;
   handleAnomalyRecordDoubleClick: (r: DailyTimeRecord) => void;
 }
@@ -76,10 +65,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   isLoadingOverview,
   visibleWidgets,
   widgetProps,
-  quickActionClockStatus,
-  handleClockOutFromQuickAction,
-  handleStartBreakFromQuickAction,
-  handleEndBreakFromQuickAction,
+  quickActionModal,
+  editTimestampModal,
 }) => {
   if ((isLoadingReports && shiftReports.length === 0) || isLoadingOverview) {
     return (
@@ -150,24 +137,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         cancelText="Cancelar"
       />
 
-      <QuickActionModal
-        isOpen={!!modals.quickActionRecord}
-        onClose={actions.closeQuickActionModal}
-        record={modals.quickActionRecord}
-        clockStatus={quickActionClockStatus}
-        onStartBreak={() => {
-          void handleStartBreakFromQuickAction();
-        }}
-        onEndBreak={() => {
-          void handleEndBreakFromQuickAction();
-        }}
-        onClockOut={handleClockOutFromQuickAction}
-        onEdit={(record, field) => actions.openEditTimestampModal(record, field)}
-        isActionDisabled={false}
-        disabledTooltip=""
-      />
-
-      <EditTimestampModal />
+      {quickActionModal}
+      {editTimestampModal}
 
       <CinematicModal
         isOpen={modals.isAnomaliesModalOpen}

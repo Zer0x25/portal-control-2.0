@@ -9,8 +9,7 @@ export const useAuth = () => {
   const login = useStore((state) => state.login);
   const logout = useStore((state) => state.logout);
   const validateMFACode = useStore((state) => state.validateMFACode);
-  const isForcePasswordChangeModalOpen = useStore((state) => state.isForcePasswordChangeModalOpen);
-  const closeForcePasswordChangeModal = useStore((state) => state.closeForcePasswordChangeModal);
+  const clearMustChangePassword = useStore((state) => state.clearMustChangePassword);
 
   return {
     currentUser,
@@ -21,7 +20,7 @@ export const useAuth = () => {
     login,
     logout,
     validateMFACode,
-    isForcePasswordChangeModalOpen: isForcePasswordChangeModalOpen as boolean,
-    closeForcePasswordChangeModal,
+    isForcePasswordChangeModalOpen: currentUser?.mustChangePassword === true,
+    clearMustChangePassword,
   };
 };

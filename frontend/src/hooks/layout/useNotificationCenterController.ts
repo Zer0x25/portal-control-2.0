@@ -4,7 +4,7 @@ import { ROUTES } from "../../constants";
 import { useNotifications } from "../useNotifications";
 
 export const useNotificationCenterController = () => {
-  const { notifications, unreadCount, markCommunicationsAsRead } = useNotifications();
+  const { notifications, unreadCount } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -24,12 +24,8 @@ export const useNotificationCenterController = () => {
   }, []);
 
   const handleNotificationClick = useCallback(
-    (id: string, link: string, type: "request" | "communication" | "alert") => {
+    (id: string, link: string, _type: "request" | "communication" | "alert") => {
       setIsOpen(false);
-
-      if (type === "communication") {
-        markCommunicationsAsRead();
-      }
 
       if (id === "pending-corrections-notif" || link === ROUTES.SUPERVISOR_DASHBOARD) {
         navigate(ROUTES.SUPERVISOR_DASHBOARD, { state: { openRequestsTab: true } });
@@ -39,7 +35,7 @@ export const useNotificationCenterController = () => {
         navigate(link);
       }
     },
-    [markCommunicationsAsRead, navigate],
+    [navigate],
   );
 
   return {

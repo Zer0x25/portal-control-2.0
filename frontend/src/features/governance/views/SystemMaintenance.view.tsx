@@ -21,7 +21,7 @@ import {
   ActivityIcon,
 } from "../../../components/ui/icons/index";
 import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
-import BackupListModal from "../components/BackupListModal";
+import BackupListModal from "../containers/BackupListModal.container";
 import { Z } from "../../../constants/zScale";
 
 interface MaintenanceStats {

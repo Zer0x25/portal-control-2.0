@@ -1,21 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
+import type { DailyTimeRecord, TimeRecordField } from "../../../types";
 import { useEditTimestampModalController } from "../../../features/time-control/hooks/useEditTimestampModalController";
 
-const {
-  useStoreMock,
-  useTimestampEditorMock,
-  storeState,
-  editorState,
-  closeEditTimestampModalMock,
-} = vi.hoisted(() => ({
-  useStoreMock: vi.fn(),
+const { useTimestampEditorMock, editorState, closeEditTimestampModalMock } = vi.hoisted(() => ({
   useTimestampEditorMock: vi.fn(),
   closeEditTimestampModalMock: vi.fn(),
-  storeState: {
-    isEditTimestampModalOpen: true,
-    editingRecordInfo: { field: "entrada" },
-  },
   editorState: {
     value: "08:30",
     setValue: vi.fn(),
@@ -31,26 +21,29 @@ const {
   },
 }));
 
-vi.mock("../../../store/useStore", () => ({
-  useStore: (selector: (s: unknown) => unknown) =>
-    useStoreMock(
-      selector({
-        ...storeState,
-        closeEditTimestampModal: closeEditTimestampModalMock,
-      }),
-    ),
+vi.mock("../../../hooks/useTimestampEditor", () => ({
+  useTimestampEditor: (...args: unknown[]) => useTimestampEditorMock(...args),
 }));
 
-vi.mock("../../../hooks/useTimestampEditor", () => ({
-  useTimestampEditor: () => useTimestampEditorMock(),
-}));
+const controllerProps = {
+  isOpen: true,
+  onClose: closeEditTimestampModalMock,
+  editingInfo: {
+    record: {
+      id: "r1",
+      employeeName: "Ana",
+      date: "2026-03-01",
+      entrada: "2026-03-01T08:00:00.000Z",
+    } as DailyTimeRecord,
+    field: "entrada" as TimeRecordField,
+  },
+};
 
 describe("useEditTimestampModalController", () => {
-  it("maps store and editor state into the controller shape", () => {
-    useStoreMock.mockImplementation((result) => result);
+  it("maps controlled modal props and editor state into the controller shape", () => {
     useTimestampEditorMock.mockReturnValue(editorState);
 
-    const { result } = renderHook(() => useEditTimestampModalController());
+    const { result } = renderHook(() => useEditTimestampModalController(controllerProps));
 
     expect(result.current.isOpen).toBe(true);
     expect(result.current.value).toBe("08:30");
@@ -60,20 +53,21 @@ describe("useEditTimestampModalController", () => {
   });
 
   it("exposes the field error so the view can paint it next to the input", () => {
-    useStoreMock.mockImplementation((result) => result);
     useTimestampEditorMock.mockReturnValue({ ...editorState, error: "La hora es obligatoria." });
 
-    const { result } = renderHook(() => useEditTimestampModalController());
+    const { result } = renderHook(() => useEditTimestampModalController(controllerProps));
 
     expect(result.current.error).toBe("La hora es obligatoria.");
   });
 
   it("falls back to generic label when field is unknown", () => {
-    useStoreMock.mockImplementation((result) => result);
     useTimestampEditorMock.mockReturnValue(editorState);
-    storeState.editingRecordInfo = { field: "unknown" };
+    const unknownFieldProps = {
+      ...controllerProps,
+      editingInfo: { ...controllerProps.editingInfo, field: "unknown" as TimeRecordField },
+    };
 
-    const { result } = renderHook(() => useEditTimestampModalController());
+    const { result } = renderHook(() => useEditTimestampModalController(unknownFieldProps));
 
     expect(result.current.fieldLabel).toBe("Marcaje");
   });

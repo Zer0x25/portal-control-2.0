@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToasts } from "../../../hooks/useToasts";
-import { useLogs } from "../../../hooks/useLogs";
+import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
 import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
 import { exportToPDF } from "../../../utils/export/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
@@ -18,7 +18,13 @@ export const useTimeRecordTableController = ({
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
   const { addToast } = useToasts();
-  const { logsPage } = useLogs();
+  const { data: logsData } = useAuditLogsInfinite({
+    pageSize: 20,
+    filters: {},
+    sortBy: "timestamp",
+    sortOrder: "desc",
+  });
+  const logsPage = logsData?.pages[0] || { data: [], total: 0 };
   const { requests: correctionRequests } = useCorrectionRequests();
 
   const editsMapAll = useMemo(() => {

@@ -1,10 +1,10 @@
 import React from "react";
 import { WidgetContainer } from "./ui/WidgetContainer";
 import { ActionButton } from "./ui/ActionButton";
-import { useQuickActionsLogic } from "../hooks/useQuickActionsLogic";
+import { useQuickActionsController } from "../hooks/useQuickActionsController";
 
 const QuickActionsPanel: React.FC = () => {
-  const { actions, handleNavigate } = useQuickActionsLogic();
+  const { actions, handleNavigate } = useQuickActionsController();
 
   return (
     <WidgetContainer title="Accesos Rápidos">

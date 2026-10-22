@@ -18,7 +18,7 @@ types/
 
 #### `WelcomeData`
 
-Interface que define los datos retornados por `useWelcomeLogic`:
+Interface que define los datos retornados por `useWelcomeController`:
 
 ```typescript
 interface WelcomeData {
@@ -96,7 +96,7 @@ Tipos para configuración y gestión de widgets del dashboard.
 import { WelcomeData, ActionConfig, ColorTheme } from '../types';
 
 // En hooks
-export const useWelcomeLogic = (): WelcomeData => { ... }
+export const useWelcomeController = (): WelcomeData => { ... }
 
 // En componentes
 interface MyComponentProps {

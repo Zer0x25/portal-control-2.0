@@ -1,86 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
-import DOMPurify from "../../utils/domPurify";
 import Button from "./Button";
 import { CloseIcon, BookOpenIcon } from "./icons/index";
 import LoadingSpinner from "./LoadingSpinner";
 import { Z } from "../../constants/zScale";
+import { useUserManual } from "../../hooks/useUserManual";
 
 interface UserManualModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const parseMarkdown = (text: string): string => {
-  return (
-    text
-      .split("\n")
-      .map((line) => {
-        // Headings
-        if (line.startsWith("### ")) return `<h3>${line.substring(4)}</h3>`;
-        if (line.startsWith("## ")) return `<h2>${line.substring(3)}</h2>`;
-        if (line.startsWith("# ")) return `<h1>${line.substring(2)}</h1>`;
-
-        // Images - Updated to use a valid image from the project
-        line = line.replace(
-          /!\[(.*?)\]\((.*?)\)/g,
-          '<img alt="$1" src="imagens/Mini_Zer0x.jpg" loading="lazy" decoding="async" class="mx-auto my-4 rounded shadow-md dark:shadow-lg dark:shadow-black/50" style="max-width: 80%;" />',
-        );
-
-        // Bold and Italic
-        line = line.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-        line = line.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
-        // List items
-        if (line.startsWith("- ")) return `<li>${line.substring(2)}</li>`;
-
-        // Inline code
-        line = line.replace(
-          /`(.*?)`/g,
-          '<code class="bg-token-surface-technical text-token-text-primary px-1 py-0.5 rounded text-sm">$1</code>',
-        );
-
-        // Paragraphs
-        if (line.trim() !== "" && !line.startsWith("<")) return `<p>${line}</p>`;
-
-        return line;
-      })
-      .join("")
-      // Basic list handling
-      .replace(/<p><\/p>/g, "")
-      .replace(/<\/li><li>/g, "</li><li>")
-      .replace(/(<li>.*<\/li>)/g, "<ul>$1</ul>")
-      .replace(/<\/ul><ul>/g, "")
-  );
-};
-
 const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) => {
-  const [manualContent, setManualContent] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsLoading(true);
-      fetch("/ManualRelojControl.md")
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.text();
-        })
-        .then((text) => {
-          const parsed = parseMarkdown(text);
-          const sanitized = DOMPurify.sanitize(parsed, { USE_PROFILES: { html: true } });
-          setManualContent(sanitized);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching user manual:", error);
-          setManualContent("Error al cargar el manual.");
-          setIsLoading(false);
-        });
-    }
-  }, [isOpen]);
+  const { manualContent, isLoading, hasLoadError } = useUserManual(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -144,7 +76,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
               </div>
             ) : (
               <div className="animate-in fade-in slide-in-from-top-2">
-                {manualContent === "Error al cargar el manual." ? (
+                {hasLoadError ? (
                   <p className="text-red-500">{manualContent}</p>
                 ) : (
                   <div

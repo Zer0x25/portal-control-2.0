@@ -1,5 +1,5 @@
 import React from "react";
-import { GlobalVariablesManager } from "./GlobalVariablesManager";
+import GlobalVariablesManager from "../containers/GlobalVariablesManager.container";
 import { ShieldIcon } from "../../../components/ui/icons/index";
 
 const GlobalVariablesView: React.FC = () => {

@@ -41,8 +41,8 @@ export const HTTP_CLIENT_WHITELIST: readonly string[] = [
   "src/services/apiClient.ts",
   // API **externa** (Open-Meteo): no es el backend del portal.
   "src/hooks/useWeather.ts",
-  // Asset estatico del manual de usuario (`/ManualRelojControl.md`).
-  "src/components/ui/UserManualModal.tsx",
+  // Asset estático del manual de usuario (`/ManualRelojControl.md`), cargado por su hook.
+  "src/hooks/useUserManual.ts",
 ] as const;
 
 /* -------------------------------------------------------------------------- */
@@ -201,7 +201,7 @@ describe("Guardrail HTTP: un solo cliente (spec 034 T24, AC9)", () => {
     expect(HTTP_CLIENT_WHITELIST).toEqual([
       "src/services/apiClient.ts",
       "src/hooks/useWeather.ts",
-      "src/components/ui/UserManualModal.tsx",
+      "src/hooks/useUserManual.ts",
     ]);
   });
 

@@ -5,6 +5,7 @@ import {
   SupervisorPermissions,
   SupervisorAction,
   SUPERVISOR_PERMISSIONS_BY_ROLE,
+  SUPERVISOR_ACTION_PERMISSION_MAP,
   isSupervisorRole,
   canSupervisorPerformAction,
   SupervisorError,
@@ -41,21 +42,7 @@ export const useSupervisorPermissions = () => {
         }
 
         // Map actions to permissions
-        const actionPermissionMap: Record<SupervisorAction, keyof SupervisorPermissions> = {
-          view_dashboard: "canViewAnalytics",
-          view_analytics: "canViewAnalytics",
-          view_kpis: "canViewKPIs",
-          view_reports: "canViewReports",
-          edit_time_record: "canEditTimeRecords",
-          approve_correction: "canApproveCorrections",
-          block_employee: "canBlockEmployees",
-          manage_shift: "canManageShifts",
-          manage_user: "canManageUsers",
-          configure_system: "canConfigureSystem",
-          access_audit: "canAccessAuditLogs",
-        };
-
-        const requiredPermission = actionPermissionMap[action];
+        const requiredPermission = SUPERVISOR_ACTION_PERMISSION_MAP[action];
         return requiredPermission ? permissions[requiredPermission] : false;
       },
       hasPermission: (permission: keyof SupervisorPermissions): boolean => {
