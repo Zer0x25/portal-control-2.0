@@ -3,18 +3,31 @@ import { Employee, LeaveRecord } from "../../../types";
 import { useLeavesInfiniteQuery } from "../../../hooks/queries/useLeavesInfiniteQuery";
 import { useLeaveMutations } from "../../../hooks/useLeaveMutations";
 import { useEmployees } from "../../../hooks/useEmployees";
-import { useToasts } from "../../../hooks/useToasts";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { normalizeString } from "../../../utils/stringUtils";
-import {
-  addBusinessDaysChile,
-  compareBusinessDate,
-  toBusinessDateChile,
-} from "../../../utils/dateUtils";
+import { addBusinessDaysChile, toBusinessDateChile } from "../../../utils/dateUtils";
+import { useAppForm } from "../../../hooks/useAppForm";
+import { buildLeaveFormSchema, type LeaveFormValues } from "../../../schemas/forms";
 
 type ProcessedLeave = LeaveRecord & { employeeName: string };
-type LeaveTypeFilter = LeaveRecord["type"] | "";
 
+/**
+ * Spec 036 T8 (AC1, AC2, AC3, AC4): formulario de **ausencias**.
+ *
+ * Antes de la migracion el controller llevaba a mano el estado de cinco
+ * campos (`employeeId`, `type`, `startDate`, `endDate`, `notes`), cinco
+ * `useState` sueltos y cinco validaciones hechas con `addToast`. Ahora:
+ *
+ * - el estado vive en `useAppForm` (spec 036 AC1);
+ * - las reglas viven en el schema (`buildLeaveFormSchema`): rango de fechas,
+ *   antiguedad de 7 dias, fecha de termino en pasado al editar y solapamiento
+ *   con otra ausencia del mismo empleado (spec 036 AC2);
+ * - los errores salen junto al campo, con su mensaje en el mapa central
+ *   (spec 036 AC3).
+ *
+ * El `searchTerm` **no** es un campo del formulario: es el buscador que
+ * permite elegir el empleado, asi que sigue siendo estado de la pantalla.
+ */
 export const useLeaveManagerController = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [filterEmployeeId, setFilterEmployeeId] = useState("");
@@ -40,23 +53,37 @@ export const useLeaveManagerController = () => {
   const { createLeave, deleteLeave } = useLeaveMutations();
   const { justifyRecordsForLeave } = useTimeRecords();
   const { activeEmployees, getEmployeeById } = useEmployees();
-  const { addToast } = useToasts();
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
   const [leaveToDelete, setLeaveToDelete] = useState<ProcessedLeave | null>(null);
 
-  const [employeeId, setEmployeeId] = useState("");
-  const [type, setType] = useState<LeaveTypeFilter>("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
-  const [notes, setNotes] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  /** Fecha de hoy del negocio (`YYYY-MM-DD`). */
+  const todayStr = toBusinessDateChile();
+  /** No se pueden registrar ausencias con mas de 7 dias de antiguedad. */
+  const oldestAllowedStartDate = addBusinessDaysChile(todayStr, -7);
+
+  /**
+   * Schema con las reglas que dependen del contexto (solapamiento con otras
+   * ausencias del empleado).
+   */
+  const schema = useMemo(
+    () =>
+      buildLeaveFormSchema({
+        existingLeaves: leaves,
+        editingLeaveId: editingLeave?.id,
+        oldestAllowedStartDate,
+        today: todayStr,
+      }),
+    [leaves, editingLeave?.id, oldestAllowedStartDate, todayStr],
+  );
 
   const processedLeaves = useMemo(() => {
     const lowerCaseFilter = normalizeString(filterEmployeeName).toLowerCase();
@@ -75,115 +102,63 @@ export const useLeaveManagerController = () => {
     );
   }, [leaves, filterEmployeeName, filterType, getEmployeeById]);
 
+  const form = useAppForm<LeaveFormValues>({
+    schema,
+    defaultValues: { employeeId: "", type: "", startDate: "", endDate: "", notes: "" },
+    /**
+     * El payload es identico al de antes de la migracion (spec 036 T13): las
+     * notas viajan como cadena vacia cuando no hay, no como `undefined`.
+     */
+    serialize: (values) => ({ ...values, notes: values.notes ?? "" }),
+    onSubmit: async (values) => {
+      const leaveData = {
+        employeeId: values.employeeId,
+        // El backend acepta cualquier texto (el schema es una copia del
+        // contrato), pero la pantalla solo ofrece los tipos de `LEAVE_TYPES`.
+        type: values.type as LeaveRecord["type"],
+        startDate: values.startDate,
+        endDate: values.endDate,
+        notes: values.notes ?? "",
+      };
+
+      const savedLeave = editingLeave
+        ? await createLeave({ ...leaveData, id: editingLeave.id })
+        : await createLeave(leaveData);
+
+      if (!savedLeave) return;
+
+      await justifyRecordsForLeave(
+        savedLeave.employeeId,
+        savedLeave.startDate,
+        savedLeave.endDate,
+        { type: savedLeave.type, leaveId: savedLeave.id },
+      );
+      setIsFormVisible(false);
+      resetForm();
+    },
+  });
+
+  const { setValue, reset } = form;
+
   const resetForm = useCallback(() => {
-    setEmployeeId("");
-    setType("");
-    setStartDate("");
-    setEndDate("");
-    setNotes("");
     setEditingLeave(null);
     setSearchTerm("");
-  }, []);
+    reset({ employeeId: "", type: "", startDate: "", endDate: "", notes: "" });
+  }, [reset]);
 
   const handleEditClick = useCallback(
     (leave: LeaveRecord) => {
       setEditingLeave(leave);
-      setEmployeeId(leave.employeeId);
-      setType(leave.type);
-      setStartDate(leave.startDate);
-      setEndDate(leave.endDate);
-      setNotes(leave.notes || "");
+      setValue("employeeId", leave.employeeId);
+      setValue("type", leave.type);
+      setValue("startDate", leave.startDate);
+      setValue("endDate", leave.endDate);
+      setValue("notes", leave.notes || "");
       setSearchTerm(getEmployeeById(leave.employeeId)?.name || "");
       setIsFormVisible(true);
       document.getElementById("leave-manager-section")?.scrollIntoView({ behavior: "smooth" });
     },
-    [getEmployeeById],
-  );
-
-  const handleSave = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!employeeId || !type || !startDate || !endDate) {
-        addToast("Empleado, tipo, fecha de inicio y fin son requeridos.", "warning");
-        return;
-      }
-      if (startDate > endDate) {
-        addToast("La fecha de fin no puede ser anterior a la de inicio.", "error");
-        return;
-      }
-
-      const todayStr = toBusinessDateChile();
-      const limitDate = addBusinessDaysChile(todayStr, -7);
-      if (!editingLeave && compareBusinessDate(startDate, limitDate) < 0) {
-        addToast("No se pueden registrar ausencias con más de 7 días de antigüedad.", "error");
-        return;
-      }
-
-      if (editingLeave && compareBusinessDate(endDate, todayStr) < 0) {
-        addToast("La fecha de término no puede ser anterior al día de hoy.", "error");
-        return;
-      }
-
-      const conflict = leaves.find(
-        (l) =>
-          l.id !== editingLeave?.id &&
-          l.employeeId === employeeId &&
-          !(endDate < l.startDate || startDate > l.endDate),
-      );
-
-      if (conflict) {
-        addToast("Conflicto: El empleado ya tiene una ausencia en este período.", "error");
-        return;
-      }
-
-      const leaveData = { employeeId, type, startDate, endDate, notes };
-
-      try {
-        if (editingLeave) {
-          const fullUpdatedLeave = await createLeave({
-            ...leaveData,
-            id: editingLeave.id,
-          });
-          if (fullUpdatedLeave) {
-            await justifyRecordsForLeave(
-              fullUpdatedLeave.employeeId,
-              fullUpdatedLeave.startDate,
-              fullUpdatedLeave.endDate,
-              { type: fullUpdatedLeave.type, leaveId: fullUpdatedLeave.id },
-            );
-            setIsFormVisible(false);
-            resetForm();
-          }
-        } else {
-          const newLeave = await createLeave(leaveData);
-          if (newLeave) {
-            await justifyRecordsForLeave(
-              newLeave.employeeId,
-              newLeave.startDate,
-              newLeave.endDate,
-              { type: newLeave.type, leaveId: newLeave.id },
-            );
-            setIsFormVisible(false);
-            resetForm();
-          }
-        }
-      } catch {
-        // Error handled by mutation
-      }
-    },
-    [
-      employeeId,
-      type,
-      startDate,
-      endDate,
-      notes,
-      addToast,
-      editingLeave,
-      leaves,
-      createLeave,
-      justifyRecordsForLeave,
-      resetForm,
-    ],
+    [getEmployeeById, setValue],
   );
 
   const filteredEmployeesForSearch = useMemo(() => {
@@ -196,12 +171,12 @@ export const useLeaveManagerController = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setEmployeeId("");
+    setValue("employeeId", "");
     setIsDropdownOpen(true);
   };
 
   const handleSelectEmployee = (employee: Employee) => {
-    setEmployeeId(employee.id);
+    setValue("employeeId", employee.id);
     setSearchTerm(employee.name);
     setIsDropdownOpen(false);
   };
@@ -245,32 +220,29 @@ export const useLeaveManagerController = () => {
     isFormVisible,
     editingLeave,
     leaveToDelete,
-    employeeId,
-    type,
-    startDate,
-    endDate,
+    formValues: form.values,
+    formErrors: form.errors,
+    getError: form.getError,
+    setValue,
     isStartDatePickerOpen,
     isEndDatePickerOpen,
-    notes,
     searchTerm,
     isDropdownOpen,
     searchContainerRef,
     filteredEmployeesForSearch,
+    isSubmitting: form.isSubmitting,
+    submit: form.submit,
+    formProps: form.formProps,
     setShowArchived,
     setFilterType,
     setFilterEmployeeName,
     setIsFormVisible,
     setLeaveToDelete,
-    setType,
-    setStartDate,
-    setEndDate,
     setIsStartDatePickerOpen,
     setIsEndDatePickerOpen,
-    setNotes,
     setIsDropdownOpen,
     resetForm,
     handleEditClick,
-    handleSave,
     handleSearchChange,
     handleSelectEmployee,
     handleClearFilter,

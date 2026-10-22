@@ -54,13 +54,16 @@ export interface AppFormFieldBinding<TValue> {
 }
 
 /** Opciones de `useAppForm`. */
-export interface UseAppFormOptions<TValues extends object> {
+export interface UseAppFormOptions<TValues extends object, TPayload = TValues> {
   /** Schema Zod v4 de **entrada de usuario** (Standard Schema nativo). */
   readonly schema: StandardSchemaV1<TValues, unknown>;
   /** Valores iniciales del formulario. */
   readonly defaultValues: TValues;
-  /** Callback de envío: recibe los valores ya normalizados. */
-  readonly onSubmit: (values: TValues) => void | Promise<void>;
+  /**
+   * Callback de envío: recibe el payload (los valores ya normalizados y, si
+   * hay `serialize`, ya serializados).
+   */
+  readonly onSubmit: (values: TPayload) => void | Promise<void>;
   /** Callback cuando el envío no pasa la validación. */
   readonly onInvalid?: (errors: AppFormErrors) => void;
   /**
@@ -76,6 +79,24 @@ export interface UseAppFormOptions<TValues extends object> {
    * de formulario puede ser una copia exacta del schema del backend.
    */
   readonly normalize?: (values: TValues) => TValues;
+  /**
+   * Serializacion del payload final (despues de validar).
+   *
+   * Algunos formularios tienen campos **derivados** que viven en el estado
+   * pero no viajan al backend (las horas calculadas de cada dia de un patron
+   * de turno, por ejemplo). `normalize` no sirve para eso: se aplica **antes**
+   * de validar y se escribe en el formulario, asi que borraria el valor
+   * derivado de la pantalla.
+   *
+   * `serialize` actua **despues** de validar y **solo** sobre el payload: el
+   * estado del formulario no cambia, la pantalla sigue mostrando el campo
+   * derivado y el backend recibe el payload de siempre (spec 036 T13).
+   *
+   * El payload puede tener un **tipo propio** (`TPayload`): un formulario que
+   * muestra mas campos de los que viaja puede tipar el payload aparte, sin
+   * repartir casts por todo el hook.
+   */
+  readonly serialize?: (values: TValues) => TPayload;
   /** Campos cuyo `""` se envía como `null` (los que el backend admite como null). */
   readonly nullableFields?: readonly string[];
   /** Identificador del formulario (para el foco y el `data-testid`). */
@@ -119,8 +140,8 @@ export interface UseAppFormResult<TValues extends object> {
     onSubmit: (event: { preventDefault: () => void }) => void;
     "data-app-form": string;
   };
-  /** Reinicia el formulario a los valores iniciales. */
-  readonly reset: () => void;
+  /** Reinicia el formulario a los valores iniciales (o a los que se indiquen). */
+  readonly reset: (values?: TValues) => void;
 }
 
 /** API de TanStack Form con los validadores de esta capa. */
@@ -241,8 +262,8 @@ const scheduleAfterPaint = (fn: () => void): void => {
  * <Input id="name" value={form.values.name} onChange={...} error={form.getError("name")} />
  * ```
  */
-export const useAppForm = <TValues extends object>(
-  options: UseAppFormOptions<TValues>,
+export const useAppForm = <TValues extends object, TPayload = TValues>(
+  options: UseAppFormOptions<TValues, TPayload>,
 ): UseAppFormResult<TValues> => {
   const {
     schema,
@@ -250,6 +271,7 @@ export const useAppForm = <TValues extends object>(
     onSubmit,
     onInvalid,
     normalize,
+    serialize,
     nullableFields = [],
     formId: providedFormId,
   } = options;
@@ -257,6 +279,15 @@ export const useAppForm = <TValues extends object>(
   const generatedId = useId();
   const formId = providedFormId ?? `app-form-${generatedId}`;
   const submitGuard = useRef<boolean>(false);
+  /**
+   * Valores por defecto **vivos**.
+   *
+   * TanStack Form vuelve a aplicar `defaultValues` en cada actualizacion de
+   * opciones si el formulario no esta "tocado": un `reset(valores)` que no
+   * actualiza esta referencia se deshace en el siguiente render. Por eso el
+   * `reset` de la capa actualiza la referencia y el formulario a la vez.
+   */
+  const defaultValuesRef = useRef<TValues>(defaultValues);
 
   const form = useForm<
     TValues,
@@ -273,7 +304,7 @@ export const useAppForm = <TValues extends object>(
     never
   >({
     formId,
-    defaultValues,
+    defaultValues: defaultValuesRef.current,
     // El mismo schema en `onSubmit` y `onChange`: el error se calcula al
     // enviar y se recalcula en vivo mientras el usuario escribe. La capa de
     // presentación decide *cuándo se ve* (tras el primer intento).
@@ -281,7 +312,11 @@ export const useAppForm = <TValues extends object>(
     onSubmit: async ({ value }) => {
       // `value` ya viene normalizado: `submit()` normaliza **antes** de
       // validar, de modo que la validacion y el payload ven lo mismo.
-      await onSubmit(value);
+      // `serialize` actua **despues** de validar y solo sobre el payload.
+      // Sin `serialize`, el payload **es** el estado del formulario (el
+      // generico `TPayload` solo se aparta cuando hay serializacion).
+      const payload = serialize ? serialize(value) : (value as unknown as TPayload);
+      await onSubmit(payload);
     },
   });
 
@@ -379,7 +414,6 @@ export const useAppForm = <TValues extends object>(
           { dontValidate: true, dontRunListeners: true },
         );
       }
-
       return normalized;
     },
     [form, normalize, nullableFields],
@@ -389,6 +423,12 @@ export const useAppForm = <TValues extends object>(
     void withSubmitGuard(submitGuard, async () => {
       try {
         applyNormalization(form.state.values);
+        // La normalización escribe valores **después** de la última validación
+        // en vivo: un campo opcional vacío (p. ej. una fecha sin fin) queda
+        // marcado como inválido en la validación anterior. Sin refrescar,
+        // TanStack conservaría ese error obsoleto y bloquearía el envío de un
+        // formulario que ya es correcto.
+        await form.validate("change");
         await form.handleSubmit();
       } catch (error) {
         // El consumidor ya notifica el fallo a la UI; aquí solo se registra
@@ -402,9 +442,13 @@ export const useAppForm = <TValues extends object>(
     });
   }, [applyNormalization, errors, focusFirstInvalidField, form, onInvalid]);
 
-  const reset = useCallback((): void => {
-    form.reset();
-  }, [form]);
+  const reset = useCallback(
+    (values?: TValues): void => {
+      if (values) defaultValuesRef.current = values;
+      form.reset(values);
+    },
+    [form],
+  );
 
   const formProps = useMemo(
     () => ({

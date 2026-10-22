@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { ERROR_MESSAGES } from "../../utils/errorMessages";
 import { businessDate, requiredTextMin } from "./common";
 
 /**
@@ -17,3 +18,29 @@ export const holidayFormSchema = z.object({
 
 /** Tipo de la entrada del formulario de feriado. */
 export type HolidayFormValues = z.input<typeof holidayFormSchema>;
+
+/**
+ * Contexto que la validacion del **feriado** necesita del exterior.
+ *
+ * El backend no comprueba que no haya dos feriados el mismo dia: lo decide la
+ * pantalla, que conoce los feriados ya guardados.
+ */
+export interface HolidayValidationContext {
+  /** Fechas ya ocupadas por otros feriados (`YYYY-MM-DD`). */
+  readonly existingDates: readonly string[];
+}
+
+/**
+ * Schema del feriado **con las reglas que dependen del contexto**: no puede
+ * haber dos feriados en la misma fecha.
+ */
+export const buildHolidayFormSchema = (context: HolidayValidationContext) =>
+  holidayFormSchema.superRefine((values, ctx) => {
+    if (context.existingDates.includes(values.date)) {
+      ctx.addIssue({
+        code: "custom",
+        message: ERROR_MESSAGES.duplicateHolidayDate(),
+        path: ["date"],
+      });
+    }
+  });

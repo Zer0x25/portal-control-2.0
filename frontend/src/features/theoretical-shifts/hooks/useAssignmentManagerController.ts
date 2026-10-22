@@ -25,7 +25,6 @@ export const useAssignmentManagerController = () => {
   const { data: shiftPatterns = [] } = useShiftPatternsQuery();
   const { deleteAssignment, updateAssignment } = useShiftMutations();
   const { activeEmployees } = useEmployees();
-  const assignmentForm = useShiftAssignmentForm();
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -94,6 +93,17 @@ export const useAssignmentManagerController = () => {
   const [isEmployeeDropdownOpen, setIsEmployeeDropdownOpen] = useState(false);
   const employeeSearchRef = useRef<HTMLDivElement>(null);
 
+  /**
+   * Spec 036 T8: el formulario se envia desde su propio `<form>`; el cierre
+   * y la limpieza de la busqueda los cuenta el hook de asignaciones.
+   */
+  const assignmentForm = useShiftAssignmentForm({
+    onSaved: () => {
+      setEmployeeSearchTerm("");
+      setIsFormVisible(false);
+    },
+  });
+
   const filteredEmployeesForSearch = useMemo(() => {
     if (!employeeSearchTerm) return [];
     const lower = normalizeString(employeeSearchTerm).toLowerCase();
@@ -126,13 +136,6 @@ export const useAssignmentManagerController = () => {
     assignmentForm.clearForm();
     setEmployeeSearchTerm("");
     setIsFormVisible(false);
-  };
-
-  const handleSaveForm = async () => {
-    if (await assignmentForm.handleSaveAssignment()) {
-      setEmployeeSearchTerm("");
-      setIsFormVisible(false);
-    }
   };
 
   const handleEditAssignment = (assignment: AssignedShift) => {
@@ -230,7 +233,6 @@ export const useAssignmentManagerController = () => {
     setIsEmployeeDropdownOpen,
     handleOpenNewForm,
     handleCancelForm,
-    handleSaveForm,
     handleEditAssignment,
     handleDeleteClick,
     handleConfirmDelete,

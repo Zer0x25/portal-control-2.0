@@ -13,6 +13,7 @@ import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import AssignmentListDesktop from "../components/AssignmentListDesktop";
 import AssignmentListMobile from "../components/AssignmentListMobile";
 import type { Employee, TheoreticalShiftPattern } from "../../../types";
+import type { ShiftAssignmentFormValues } from "../../../schemas/forms";
 import { Z } from "../../../constants/zScale";
 
 type ProcessedAssignment = AssignedShift & {
@@ -21,24 +22,36 @@ type ProcessedAssignment = AssignedShift & {
   shiftPatternName: string;
 };
 
+/**
+ * Estado del formulario de asignacion de turno que expone el hook de
+ * dominio.
+ *
+ * Spec 036 T8: los valores y los errores los lleva la capa de formulario
+ * (`useAppForm`), no un `useState` por campo.
+ */
 interface ShiftAssignmentFormState {
   editingAssignment: AssignedShift | null;
   setEditingAssignment: React.Dispatch<React.SetStateAction<AssignedShift | null>>;
-  selectedEmployeeId: string;
-  setSelectedEmployeeId: React.Dispatch<React.SetStateAction<string>>;
-  selectedPatternId: string;
-  setSelectedPatternId: React.Dispatch<React.SetStateAction<string>>;
-  assignmentStartDate: string;
-  setAssignmentStartDate: React.Dispatch<React.SetStateAction<string>>;
-  assignmentEndDate: string;
-  setAssignmentEndDate: React.Dispatch<React.SetStateAction<string>>;
-  handleSaveAssignment: () => Promise<boolean>;
+  values: ShiftAssignmentFormValues;
+  errors: Record<string, string>;
+  getError: (field: string) => string | undefined;
+  setValue: <K extends keyof ShiftAssignmentFormValues & string>(
+    name: K,
+    value: ShiftAssignmentFormValues[K],
+  ) => void;
   clearForm: () => void;
   isConflictModalOpen: boolean;
   setIsConflictModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   proceedWithSave: () => Promise<boolean>;
   resolutionMode: "OVERLAP" | "SMART_TERMINATE";
   conflictingAssignment: AssignedShift | null;
+  isSubmitting: boolean;
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
 export interface AssignmentManagerViewProps {
@@ -76,7 +89,6 @@ export interface AssignmentManagerViewProps {
   setIsEmployeeDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleOpenNewForm: () => void;
   handleCancelForm: () => void;
-  handleSaveForm: () => Promise<void>;
   handleEditAssignment: (assignment: AssignedShift) => void;
   handleDeleteClick: (id: string) => void;
   handleConfirmDelete: () => Promise<void>;
@@ -121,7 +133,6 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
   setIsEmployeeDropdownOpen,
   handleOpenNewForm,
   handleCancelForm,
-  handleSaveForm,
   handleEditAssignment,
   handleDeleteClick,
   handleConfirmDelete,
@@ -163,7 +174,10 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
         className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ${isFormVisible ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"}`}
       >
         <div className="overflow-hidden">
-          <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm mb-6">
+          <form
+            {...assignmentForm.formProps}
+            className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm mb-6"
+          >
             <h3 className="typo-ui-title mb-6 text-token-text-primary flex items-center gap-2">
               <div className="w-1.5 h-5 bg-token-accent-brand rounded-full"></div>
               {assignmentForm.editingAssignment ? "Modificar Asignación" : "Nueva Asignación"}
@@ -172,21 +186,31 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               <div className="space-y-6">
                 <div ref={employeeSearchRef} className="relative">
-                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                  <label
+                    htmlFor="assignment-employee-search"
+                    className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
+                  >
                     Empleado
                   </label>
                   <div className="relative group">
                     <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
                     <input
+                      id="assignment-employee-search"
                       type="text"
                       value={employeeSearchTerm}
                       onChange={(e) => {
                         setEmployeeSearchTerm(e.target.value);
-                        assignmentForm.setSelectedEmployeeId("");
+                        assignmentForm.setValue("employeeId", "");
                         setIsEmployeeDropdownOpen(true);
                       }}
                       onFocus={() => setIsEmployeeDropdownOpen(true)}
                       placeholder="Buscar colaborador..."
+                      aria-invalid={assignmentForm.getError("employeeId") ? "true" : undefined}
+                      aria-describedby={
+                        assignmentForm.getError("employeeId")
+                          ? "assignment-employee-error"
+                          : undefined
+                      }
                       className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical text-token-text-primary rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all placeholder:text-token-text-tertiary"
                     />
                     {isEmployeeDropdownOpen && filteredEmployeesForSearch.length > 0 && (
@@ -198,7 +222,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                             key={e.id}
                             type="button"
                             onClick={() => {
-                              assignmentForm.setSelectedEmployeeId(e.id);
+                              assignmentForm.setValue("employeeId", e.id);
                               setEmployeeSearchTerm(e.name);
                               setIsEmployeeDropdownOpen(false);
                             }}
@@ -215,14 +239,32 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                       </div>
                     )}
                   </div>
+                  {assignmentForm.getError("employeeId") && (
+                    <p
+                      id="assignment-employee-error"
+                      className="mt-2 pl-1 text-xs font-semibold text-token-status-error"
+                    >
+                      {assignmentForm.getError("employeeId")}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
+                  <label
+                    htmlFor="assignment-pattern"
+                    className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2"
+                  >
                     Patrón
                   </label>
                   <select
-                    value={assignmentForm.selectedPatternId}
-                    onChange={(e) => assignmentForm.setSelectedPatternId(e.target.value)}
+                    id="assignment-pattern"
+                    value={assignmentForm.values.shiftPatternId}
+                    onChange={(e) => assignmentForm.setValue("shiftPatternId", e.target.value)}
+                    aria-invalid={assignmentForm.getError("shiftPatternId") ? "true" : undefined}
+                    aria-describedby={
+                      assignmentForm.getError("shiftPatternId")
+                        ? "assignment-pattern-error"
+                        : undefined
+                    }
                     className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
                   >
                     <option value="">-- Seleccionar --</option>
@@ -232,56 +274,100 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                       </option>
                     ))}
                   </select>
+                  {assignmentForm.getError("shiftPatternId") && (
+                    <p
+                      id="assignment-pattern-error"
+                      className="mt-2 text-xs font-semibold text-token-status-error"
+                    >
+                      {assignmentForm.getError("shiftPatternId")}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
+                  <label
+                    htmlFor="assignment-start-date"
+                    className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2"
+                  >
                     Inicio
                   </label>
                   <button
+                    id="assignment-start-date"
                     type="button"
                     onClick={() => setIsStartDatePickerOpen(true)}
+                    aria-invalid={assignmentForm.getError("startDate") ? "true" : undefined}
+                    aria-describedby={
+                      assignmentForm.getError("startDate")
+                        ? "assignment-start-date-error"
+                        : undefined
+                    }
                     className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
                   >
-                    {assignmentForm.assignmentStartDate || "Seleccionar"}
+                    {assignmentForm.values.startDate || "Seleccionar"}
                   </button>
                   <DatePickerDialog
                     isOpen={isStartDatePickerOpen}
                     onClose={() => setIsStartDatePickerOpen(false)}
-                    onSelect={assignmentForm.setAssignmentStartDate}
-                    initialDate={assignmentForm.assignmentStartDate}
+                    onSelect={(date) => assignmentForm.setValue("startDate", date)}
+                    initialDate={assignmentForm.values.startDate}
                   />
+                  {assignmentForm.getError("startDate") && (
+                    <p
+                      id="assignment-start-date-error"
+                      className="mt-2 text-xs font-semibold text-token-status-error"
+                    >
+                      {assignmentForm.getError("startDate")}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2">
+                  <label
+                    htmlFor="assignment-end-date"
+                    className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2"
+                  >
                     Fin
                   </label>
                   <button
+                    id="assignment-end-date"
                     type="button"
                     onClick={() => setIsEndDatePickerOpen(true)}
+                    aria-invalid={assignmentForm.getError("endDate") ? "true" : undefined}
+                    aria-describedby={
+                      assignmentForm.getError("endDate") ? "assignment-end-date-error" : undefined
+                    }
                     className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary text-left cursor-pointer hover:border-token-border-focus"
                   >
-                    {assignmentForm.assignmentEndDate || "Indefinido"}
+                    {assignmentForm.values.endDate || "Indefinido"}
                   </button>
                   <DatePickerDialog
                     isOpen={isEndDatePickerOpen}
                     onClose={() => setIsEndDatePickerOpen(false)}
-                    onSelect={assignmentForm.setAssignmentEndDate}
-                    initialDate={assignmentForm.assignmentEndDate}
+                    onSelect={(date) => assignmentForm.setValue("endDate", date)}
+                    initialDate={assignmentForm.values.endDate ?? ""}
                   />
+                  {assignmentForm.getError("endDate") && (
+                    <p
+                      id="assignment-end-date-error"
+                      className="mt-2 text-xs font-semibold text-token-status-error"
+                    >
+                      {assignmentForm.getError("endDate")}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <Button onClick={handleSaveForm}>Confirmar</Button>
-              <Button variant="secondary" onClick={handleCancelForm}>
+              <Button type="submit" disabled={assignmentForm.isSubmitting}>
+                Confirmar
+              </Button>
+              <Button type="button" variant="secondary" onClick={handleCancelForm}>
                 Cancelar
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
 
@@ -375,7 +461,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                           Cerrar asignación actual:{" "}
                           <strong>
                             {formatBusinessDate(
-                              addBusinessDaysChile(assignmentForm.assignmentStartDate, -1),
+                              addBusinessDaysChile(assignmentForm.values.startDate, -1),
                               { weekday: "long", year: "numeric", month: "long", day: "numeric" },
                             )}
                           </strong>
@@ -383,7 +469,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                         <li>
                           Iniciar nueva asignación:{" "}
                           <strong>
-                            {formatBusinessDate(assignmentForm.assignmentStartDate, {
+                            {formatBusinessDate(assignmentForm.values.startDate, {
                               weekday: "long",
                               year: "numeric",
                               month: "long",

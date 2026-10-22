@@ -17,6 +17,7 @@ import HolidayListDesktop from "../components/HolidayListDesktop";
 import HolidayListMobile from "../components/HolidayListMobile";
 import HolidayForm from "../components/HolidayForm";
 import type { Holiday } from "../../../types";
+import type { HolidayFormValues } from "../../../schemas/forms";
 
 export interface HolidayManagerViewProps {
   showArchived: boolean;
@@ -30,14 +31,31 @@ export interface HolidayManagerViewProps {
   editingHoliday: Holiday | null;
   holidayToDelete: Holiday | null;
   sortedHolidays: Holiday[];
-  existingDates: string[];
   holidays: Holiday[];
+  /**
+   * Estado del formulario de feriado (spec 036 T8): lo lleva la capa de
+   * formulario desde el hook de dominio.
+   */
+  formValues: HolidayFormValues;
+  getError: (field: string) => string | undefined;
+  setValue: <K extends keyof HolidayFormValues & string>(
+    name: K,
+    value: HolidayFormValues[K],
+  ) => void;
+  isDatePickerOpen: boolean;
+  isSubmitting: boolean;
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
   setShowArchived: React.Dispatch<React.SetStateAction<boolean>>;
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setHolidayToDelete: React.Dispatch<React.SetStateAction<Holiday | null>>;
+  setIsDatePickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleCancelForm: () => void;
   handleEditClick: (holiday: Holiday) => void;
-  handleSaveWrapper: (data: { name: string; date: string; type: Holiday["type"] }) => Promise<void>;
   handleLoadHolidays: () => Promise<void>;
   handleConfirmDeleteHoliday: () => Promise<void>;
 }
@@ -54,14 +72,19 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
   editingHoliday,
   holidayToDelete,
   sortedHolidays,
-  existingDates,
   holidays,
+  formValues,
+  getError,
+  setValue,
+  isDatePickerOpen,
+  isSubmitting,
+  formProps,
   setShowArchived,
   setIsFormVisible,
   setHolidayToDelete,
+  setIsDatePickerOpen,
   handleCancelForm,
   handleEditClick,
-  handleSaveWrapper,
   handleLoadHolidays,
   handleConfirmDeleteHoliday,
 }) => {
@@ -112,9 +135,15 @@ export const HolidayManagerView: React.FC<HolidayManagerViewProps> = ({
           <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm">
             <HolidayForm
               initialData={editingHoliday}
-              onSave={handleSaveWrapper}
+              values={formValues}
+              getError={getError}
+              setValue={setValue}
+              formProps={formProps}
+              isSubmitting={isSubmitting}
+              isDatePickerOpen={isDatePickerOpen}
+              onOpenDatePicker={() => setIsDatePickerOpen(true)}
+              onCloseDatePicker={() => setIsDatePickerOpen(false)}
               onCancel={handleCancelForm}
-              existingDates={existingDates}
             />
           </div>
         </div>

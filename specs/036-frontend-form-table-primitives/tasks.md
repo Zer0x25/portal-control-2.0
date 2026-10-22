@@ -177,7 +177,7 @@ spec 033 parte en su Fase C (`SmtpConfigModal`, `SeedingProgressModal`,
 `MFASetupModal`, `ImportModal`, `ShiftHistoryModal`) exigen su PR de 033
 mergeado antes.
 
-- [ ] T8: Migrar `theoretical-shifts`: `src/hooks/useShiftPatternForm.ts`
+- [x] T8: Migrar `theoretical-shifts`: `src/hooks/useShiftPatternForm.ts`
       (450 líneas), `src/hooks/useShiftAssignmentForm.ts` (233),
       `features/theoretical-shifts/hooks/useLeaveManagerController.ts` (279)
       y `features/theoretical-shifts/components/HolidayForm.tsx` (130) a
@@ -281,6 +281,81 @@ mergeado antes.
       los 3 estados y navegación por teclado operativa (AC6).
 - [ ] T21: Extender `frontend/e2e/a11y.spec.ts` con la tabla de reportes en
       claro y oscuro (AC6).
+
+### Nota de ejecución — Fase C, PR 3 (T8: `theoretical-shifts`)
+
+**Los cuatro formularios migrados a `useAppForm` + schema:**
+
+| Formulario          | Hook / controller                                   | Schema con contexto          |
+| ------------------- | --------------------------------------------------- | ---------------------------- |
+| Patrón de turno     | `src/hooks/useShiftPatternForm.ts`                  | `buildShiftPatternSchema`    |
+| Asignación de turno | `src/hooks/useShiftAssignmentForm.ts`               | `buildShiftAssignmentSchema` |
+| Ausencia            | `features/.../hooks/useLeaveManagerController.ts`   | `buildLeaveFormSchema`       |
+| Feriado             | `features/.../hooks/useHolidayManagerController.ts` | `buildHolidayFormSchema`     |
+
+**Hallazgos que obligan a cambiar el patrón (afectan a T9-T13):**
+
+1. **Las reglas que dependen del contexto NO pueden vivir en un schema
+   estático**: el nombre único, el máximo legal de horas, el solapamiento de
+   ausencias y la fecha de feriado ocupada dependen de datos que solo conoce
+   la aplicación. La solución es un **constructor de schema**
+   (`build*Schema(context)`) que mete el contexto en un `superRefine`, alimentado
+   con `useMemo` para que el schema solo se reconstruya cuando cambia el
+   contexto. El error sale como error de campo (AC2, AC3) y no como `toast`.
+2. **La capa necesita tres cosas que no tenía (T8)**: `serialize` (el payload
+   final puede ser distinto del estado: el patrón viaja sin las horas
+   derivadas y con las cadenas vacías restauradas), `reset(values)` (el
+   formulario se reinicia con valores concretos) y un genérico `TPayload` (el
+   payload tiene su propio tipo cuando hay serialización). `reset` actualiza
+   además la referencia viva de `defaultValues`: TanStack Form re-aplica
+   `defaultValues` en cada actualización de opciones si el formulario no está
+   "tocado", así que un `reset` que no la actualiza se deshace en el siguiente
+   render.
+3. **Bug de la capa (corregido aquí): la normalización dejaba errores
+   obsoletos.** La normalización ocurre **después** de la última validación en
+   vivo, y escribe los valores con `dontValidate`. Un campo opcional vacío
+   (una fecha sin fin) es inválido para el schema (`YYYY-MM-DD`) pero válido
+   una vez normalizado (`undefined`): TanStack conservaba el error viejo y
+   **bloqueaba el envío de un formulario correcto** (`isFieldsValid` es falso
+   → `handleSubmit` no llama a `onSubmit`). El fix es refrescar la validación
+   tras normalizar (`form.validate("change")` en `useAppForm.submit`), que
+   además es lo que mantiene vivo el error en vivo del resto de campos.
+4. **Bug de los hooks (corregido aquí): `reset`/`form` en las dependencias de
+   un `useEffect`provocaba un bucle de render.** El objeto que devuelve
+   `useAppForm` es nuevo en cada render, así que un `useEffect` que dependía de
+   él se re-ejecutaba en bucle (`Maximum update depth exceeded`). La solución
+   es depender del `reset` **desestructurado** (estable) y no del objeto.
+5. **Una regla del código anterior era código muerto**: la comprobación de que
+   la hora de fin fuese posterior a la de inicio nunca rechazaba nada, porque
+   `calculateHoursBetween` **nunca devuelve un valor negativo** (trunca a 0 y
+   suma un día al final, para admitir turnos que cruzan la medianoche). La
+   migración **preserva el comportamiento** (no inventa un rechazo nuevo) y
+   lo documenta en el schema.
+6. **El conflicto de solapamiento de asignaciones NO es una regla de
+   validación**: abre un modal que pregunta cómo resolverlo, así que lo
+   decide el hook, no el schema (lo mismo con la copia/pega de jornadas).
+7. **Ratchet de la spec 033:** `HolidayForm.tsx` pasa a ser presentación pura
+   (el estado vive en `useHolidayManagerController`), así que
+   `HOOKED_COMPONENT_BUDGET` **baja de 93 a 92**
+   (`frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`).
+   `LARGE_HOOKED_COMPONENT_BUDGET` sigue en 56.
+
+**Payload idéntico al anterior (T13, verificado en esta tarea):** los tests
+comprueban el cuerpo de la petición (mismos nombres de campo, mismos valores,
+las horas derivadas fuera, `endDate` omitido cuando el turno es indefinido y
+las notas como cadena vacía), que es el invariante que la spec 036 no puede
+permitir que se rompa en silencio.
+
+**Evidencia:**
+
+| Artefacto                        | Ubicación                                                            |
+| -------------------------------- | -------------------------------------------------------------------- |
+| Schemas con contexto             | `frontend/src/schemas/forms/{shift,leave,holiday}.ts`                |
+| Tests de reglas contextuales     | `frontend/src/tests/forms/contextualSchemas.test.ts` (22 casos)      |
+| Tests de los cuatro formularios  | `frontend/src/tests/forms/theoreticalShiftsForms.test.tsx` (8 casos) |
+| Tests de la capa (serialización) | `frontend/src/tests/forms/useAppForm.test.tsx` (16 casos)            |
+| Ratchet de la spec 033           | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`         |
+| Mock global de IndexedDB         | `frontend/src/tests/setup.ts` (`idbGetAll` y familia)                |
 
 ## Verificación final
 
