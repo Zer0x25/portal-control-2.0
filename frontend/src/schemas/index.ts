@@ -31,6 +31,7 @@ import {
 } from "./forms/seed";
 import { shiftAssignmentFormSchema, shiftPatternFormSchema } from "./forms/shift";
 import {
+  buildSmtpProfileFormSchema,
   emailRuleFormSchema,
   emailRulesFormSchema,
   sendTestEmailFormSchema,
@@ -284,8 +285,20 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "smtpProfileForm",
     openApi: "EmailConfig",
     openApiPath: "profiles.items",
-    schema: smtpProfileFormSchema,
+    schema: buildSmtpProfileFormSchema(),
     forms: ["SmtpConfigModal"],
+    divergences: [
+      "host/user/pass/fromName/fromEmail: el formulario los exige con contenido (el backend admite la cadena vacia)",
+    ],
+  },
+  {
+    id: "smtpProfileBaseForm",
+    openApi: "EmailConfig",
+    openApiPath: "profiles.items",
+    schema: smtpProfileFormSchema,
+    // Copia del contrato del backend: es la que fija las reglas que OpenAPI
+    // no expresa (el remitente puede ir vacio si el perfil no es el activo).
+    forms: [],
     divergences: [
       "fromEmail: el backend admite el remitente vacio mientras el perfil no sea el activo",
     ],
@@ -294,7 +307,9 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     id: "smtpConfigForm",
     openApi: "EmailConfig",
     schema: smtpConfigFormSchema,
-    forms: ["SmtpConfigModal"],
+    // Copia del contrato del backend: el modal valida el perfil que se esta
+    // editando (`smtpProfileForm`) y arma el payload completo con los tres.
+    forms: [],
   },
   {
     id: "smtpVerifyForm",

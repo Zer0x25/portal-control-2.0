@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useToasts } from "../../../hooks/useToasts";
-import { emailService } from "../../../services/emailService";
-import { SmtpConfig, MultiSmtpConfig } from "../../../types/index";
-import Input from "../../../components/ui/Input";
+import React from "react";
 import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
 import {
   CloseIcon,
   ArrowPathIcon,
@@ -13,127 +10,74 @@ import {
   CheckCircleIcon,
 } from "../../../components/ui/icons/index";
 import { Z } from "../../../constants/zScale";
+import type { SmtpProfileFormValues } from "../../../schemas/forms/smtp";
 
-interface SmtpConfigModalProps {
+/**
+ * Spec 036 T10c: `SmtpConfigModal` es **presentacion pura**.
+ *
+ * Antes el componente guardaba los tres perfiles en un `useState` y escribia
+ * en ellos con un `handleInputChange` que repartia el tipo segun el `type` del
+ * `<input>`. Ahora los valores, los errores y los handlers entran por props
+ * (los lleva el hook de dominio) y la maqueta es la misma.
+ */
+export interface SmtpConfigModalViewProps {
+  /** El modal esta abierto. */
   isOpen: boolean;
+  /** Cierra el modal. */
   onClose: () => void;
+  /** Valores del perfil que se esta editando. */
+  values: SmtpProfileFormValues;
+  /** Mensaje de error de un campo (o `undefined`). */
+  getError: (field: string) => string | undefined;
+  /** Escribe un campo del perfil. */
+  handleFieldChange: <K extends keyof SmtpProfileFormValues>(
+    field: K,
+    value: SmtpProfileFormValues[K],
+  ) => void;
+  /** Aplica un preset de servidor. */
+  applyPreset: (type: "google" | "outlook") => void;
+  /** Prueba la conexion SMTP. */
+  handleTestConnection: () => Promise<void>;
+  /** Marca el perfil actual como el de salida. */
+  handleSetActive: () => void;
+  /** Cambia de perfil. */
+  selectSlot: (index: number) => void;
+  /** El perfil que se esta editando. */
+  currentSlot: number;
+  /** El perfil de salida configurado. */
+  activeProfileIndex: number;
+  /** Se esta cargando la configuracion guardada. */
+  isLoading: boolean;
+  /** Se esta probando la conexion. */
+  isVerifying: boolean;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
-const initialProfile: SmtpConfig = {
-  host: "",
-  port: 587,
-  secure: false,
-  user: "",
-  pass: "",
-  fromName: "Portal Control Interno",
-  fromEmail: "",
-};
-
-const initialMultiConfig: MultiSmtpConfig = {
-  profiles: [{ ...initialProfile }, { ...initialProfile }, { ...initialProfile }],
-  activeProfileIndex: 0,
-};
-
-const PRESETS = {
-  google: {
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // Gmail uses STARTTLS on 587
-  },
-  outlook: {
-    host: "smtp.office365.com",
-    port: 587,
-    secure: false, // Outlook uses STARTTLS on 587
-  },
-};
-
-const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) => {
-  const { addToast } = useToasts();
-  const [multiConfig, setMultiConfig] = useState<MultiSmtpConfig>(initialMultiConfig);
-  const [currentSlot, setCurrentSlot] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsLoading(true);
-      emailService
-        .getConfig()
-        .then((stored) => {
-          if (stored) {
-            setMultiConfig(stored);
-            setCurrentSlot(stored.activeProfileIndex);
-          }
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [isOpen]);
-
-  const currentProfile = multiConfig.profiles[currentSlot];
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const isCheckbox = type === "checkbox";
-    const isNumber = type === "number";
-
-    const updatedProfile = {
-      ...currentProfile,
-      [name]: isCheckbox
-        ? (e.target as HTMLInputElement).checked
-        : isNumber
-          ? parseInt(value, 10) || 0
-          : value,
-    };
-
-    const newProfiles = [...multiConfig.profiles];
-    newProfiles[currentSlot] = updatedProfile;
-
-    setMultiConfig((prev) => ({ ...prev, profiles: newProfiles }));
-  };
-
-  const applyPreset = (type: "google" | "outlook") => {
-    const preset = PRESETS[type];
-    const updatedProfile = { ...currentProfile, ...preset };
-    const newProfiles = [...multiConfig.profiles];
-    newProfiles[currentSlot] = updatedProfile;
-    setMultiConfig((prev) => ({ ...prev, profiles: newProfiles }));
-    addToast(
-      `Valores de ${type === "google" ? "Gmail" : "Outlook"} aplicados al Perfil ${currentSlot + 1}`,
-      "success",
-    );
-  };
-
-  const handleTestConnection = async () => {
-    if (!currentProfile.host || !currentProfile.user || !currentProfile.pass) {
-      addToast("Complete el host, usuario y contraseña para probar.", "warning");
-      return;
-    }
-    setIsVerifying(true);
-    const result = await emailService.verifyConnection(currentProfile);
-    if (result.success) {
-      addToast(result.message, "success");
-    } else {
-      addToast(result.message, "error");
-    }
-    setIsVerifying(false);
-  };
-
-  const handleSetActive = () => {
-    setMultiConfig((prev) => ({ ...prev, activeProfileIndex: currentSlot }));
-    addToast(`Perfil ${currentSlot + 1} marcado como activo`, "info");
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await emailService.saveConfig(multiConfig);
-    if (result.success) {
-      addToast("Configuraciones SMTP guardadas correctamente.", "success");
-      onClose();
-    } else {
-      addToast(result.message, "error");
-    }
-  };
-
+const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
+  isOpen,
+  onClose,
+  values,
+  getError,
+  handleFieldChange,
+  applyPreset,
+  handleTestConnection,
+  handleSetActive,
+  selectSlot,
+  currentSlot,
+  activeProfileIndex,
+  isLoading,
+  isVerifying,
+  isSubmitting,
+  formProps,
+}) => {
   return (
     isOpen && (
       <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}>
@@ -178,7 +122,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSave}>
+            <form {...formProps}>
               {/* Profile Selector Tabs */}
               <div className="px-8 pt-6 flex gap-2">
                 {[0, 1, 2].map((idx) => (
@@ -186,7 +130,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     key={idx}
                     variant="none"
                     type="button"
-                    onClick={() => setCurrentSlot(idx)}
+                    onClick={() => selectSlot(idx)}
                     className={`flex-1 flex flex-col items-center justify-center py-3 rounded-md border transition-all duration-300 relative shadow-none ${
                       currentSlot === idx
                         ? "bg-token-accent-brand text-token-text-onAccent border-token-accent-brand shadow-sm"
@@ -197,7 +141,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       Perfil
                     </span>
                     <span className="text-lg font-black">{idx + 1}</span>
-                    {multiConfig.activeProfileIndex === idx && (
+                    {activeProfileIndex === idx && (
                       <div className="absolute top-2 right-4">
                         <CheckCircleIcon className="w-4 h-4 text-token-text-onAccent" />
                       </div>
@@ -248,9 +192,9 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     <Input
                       label="Host de Salida"
                       name="host"
-                      value={currentProfile.host}
-                      onChange={handleInputChange}
-                      required
+                      value={values.host}
+                      onChange={(e) => handleFieldChange("host", e.target.value)}
+                      error={getError("host")}
                       placeholder="smtp.office365.com"
                       className="rounded-md"
                     />
@@ -260,9 +204,11 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       label="Puerto"
                       type="number"
                       name="port"
-                      value={currentProfile.port}
-                      onChange={handleInputChange}
-                      required
+                      value={values.port}
+                      onChange={(e) =>
+                        handleFieldChange("port", Number.parseInt(e.target.value, 10) || 0)
+                      }
+                      error={getError("port")}
                       className="rounded-md"
                     />
                   </div>
@@ -283,8 +229,8 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                       type="checkbox"
                       name="secure"
                       className="sr-only peer"
-                      checked={currentProfile.secure}
-                      onChange={handleInputChange}
+                      checked={values.secure}
+                      onChange={(e) => handleFieldChange("secure", e.target.checked)}
                     />
                     <div className="w-11 h-6 bg-token-surface-technical peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-token-border-technical after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-token-accent-brand"></div>
                   </label>
@@ -302,9 +248,9 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     label="Email de Usuario"
                     type="email"
                     name="user"
-                    value={currentProfile.user}
-                    onChange={handleInputChange}
-                    required
+                    value={values.user}
+                    onChange={(e) => handleFieldChange("user", e.target.value)}
+                    error={getError("user")}
                     placeholder="user@organization.com"
                     className="rounded-md"
                   />
@@ -312,9 +258,9 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     label="Contraseña o App Key"
                     type="password"
                     name="pass"
-                    value={currentProfile.pass}
-                    onChange={handleInputChange}
-                    required
+                    value={values.pass}
+                    onChange={(e) => handleFieldChange("pass", e.target.value)}
+                    error={getError("pass")}
                     placeholder="Contraseña nueva si cambias servidor o usuario"
                     className="rounded-md"
                   />
@@ -332,18 +278,18 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     <Input
                       label="Nombre Visible"
                       name="fromName"
-                      value={currentProfile.fromName}
-                      onChange={handleInputChange}
-                      required
+                      value={values.fromName}
+                      onChange={(e) => handleFieldChange("fromName", e.target.value)}
+                      error={getError("fromName")}
                       className="rounded-md"
                     />
                     <Input
                       label="Email de Respuesta"
                       type="email"
                       name="fromEmail"
-                      value={currentProfile.fromEmail}
-                      onChange={handleInputChange}
-                      required
+                      value={values.fromEmail}
+                      onChange={(e) => handleFieldChange("fromEmail", e.target.value)}
+                      error={getError("fromEmail")}
                       className="rounded-md"
                     />
                   </div>
@@ -355,14 +301,14 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                     variant="none"
                     type="button"
                     onClick={handleSetActive}
-                    disabled={multiConfig.activeProfileIndex === currentSlot}
+                    disabled={activeProfileIndex === currentSlot}
                     className={`w-full flex items-center justify-center gap-3 p-4 rounded-md border transition-all shadow-none ${
-                      multiConfig.activeProfileIndex === currentSlot
+                      activeProfileIndex === currentSlot
                         ? "bg-token-status-success/10 border-token-status-success/30 text-token-status-success cursor-default"
                         : "bg-token-surface-card border-token-border-subtle hover:border-token-accent-brand text-token-text-secondary"
                     }`}
                   >
-                    {multiConfig.activeProfileIndex === currentSlot ? (
+                    {activeProfileIndex === currentSlot ? (
                       <>
                         <CheckCircleIcon className="w-5 h-5" />
                         <span className="text-[10px] font-black uppercase tracking-widest">
@@ -386,7 +332,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                 <Button
                   variant="secondary"
                   type="button"
-                  onClick={handleTestConnection}
+                  onClick={() => void handleTestConnection()}
                   disabled={isVerifying}
                   className="flex items-center gap-2 px-6 h-12 rounded-md border-token-border-technical text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:bg-token-surface-hover shadow-sm"
                 >
@@ -410,6 +356,7 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
                   <Button
                     variant="primary"
                     type="submit"
+                    disabled={isSubmitting}
                     className="px-8 h-12 rounded-md text-[10px] font-black uppercase tracking-widest"
                   >
                     Guardar Todo
@@ -424,4 +371,4 @@ const SmtpConfigModal: React.FC<SmtpConfigModalProps> = ({ isOpen, onClose }) =>
   );
 };
 
-export default SmtpConfigModal;
+export default SmtpConfigModalView;

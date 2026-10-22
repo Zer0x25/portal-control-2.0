@@ -55,7 +55,7 @@ const MODAL_OVERLAY_WHITELIST: readonly string[] = [
   "features/configuration/components/SeedingProgressModal.tsx",
   "components/ui/SessionExpiredOverlay.tsx",
   "features/time-control/components/ShiftHandoverModal.tsx",
-  "features/configuration/components/SmtpConfigModal.tsx",
+  "features/configuration/components/SmtpConfigModal.view.tsx",
   "components/ui/TimePickerDialog.tsx",
   "components/ui/UserManualModal.tsx",
 ];

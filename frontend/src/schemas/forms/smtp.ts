@@ -18,8 +18,8 @@ export const smtpProfileFormSchema = z.object({
   port: z
     .number({ error: ERROR_MESSAGES.required("El puerto") })
     .int(ERROR_MESSAGES.invalidNumber())
-    .min(1, ERROR_MESSAGES.minLength("El puerto", 1))
-    .max(65535, ERROR_MESSAGES.maxLength("El puerto", 65535)),
+    .min(1, ERROR_MESSAGES.minValue("El puerto", 1))
+    .max(65535, ERROR_MESSAGES.maxValue("El puerto", 65535)),
   secure: z.boolean(),
   user: requiredText("El usuario"),
   pass: requiredText("La contraseña"),
@@ -34,6 +34,42 @@ export const smtpProfileFormSchema = z.object({
 });
 
 /**
+ * Spec 036 T10c (AC2): perfil SMTP del **formulario** (`SmtpConfigModal.tsx`).
+ *
+ * Contrato: `EmailConfig` -> `profiles[]` (`backend/src/models/schemas/smtpProfile.schemas.ts`).
+ *
+ * El formulario es **mas estricto** que el backend en los campos que la
+ * pantalla marca como obligatorios (el `required` del `<input>`): el host, el
+ * usuario, la contraseña, el nombre del remitente y el propio remitente (que
+ * ademas tiene que ser un correo valido). El backend admite la cadena vacia
+ * en esos campos, asi que la regla se declara como divergencia en el mapa de
+ * contratos y no se esconde en el schema.
+ *
+ * El JSON Schema no cambia (las reglas del cliente no son expresables en
+ * OpenAPI), asi que la paridad con el backend se mantiene.
+ */
+export const buildSmtpProfileFormSchema = () =>
+  smtpProfileFormSchema.superRefine((values, ctx) => {
+    const required = (
+      field: "host" | "user" | "pass" | "fromName" | "fromEmail",
+      label: string,
+    ) => {
+      if (values[field].trim() !== "") return;
+      ctx.addIssue({
+        code: "custom",
+        message: ERROR_MESSAGES.required(label),
+        path: [field],
+      });
+    };
+
+    required("host", "El servidor");
+    required("user", "El usuario");
+    required("pass", "La contraseña");
+    required("fromName", "El nombre del remitente");
+    required("fromEmail", "El remitente");
+  });
+
+/**
  * Configuracion multi-perfil SMTP (`SmtpConfigModal.tsx`).
  *
  * Contrato: `EmailConfig` (`backend/src/models/schemas/smtpProfile.schemas.ts`):
@@ -44,8 +80,8 @@ export const smtpConfigFormSchema = z.object({
   activeProfileIndex: z
     .number({ error: ERROR_MESSAGES.required("El perfil activo") })
     .int(ERROR_MESSAGES.invalidNumber())
-    .min(0, ERROR_MESSAGES.minLength("El perfil activo", 0))
-    .max(2, ERROR_MESSAGES.maxLength("El perfil activo", 2)),
+    .min(0, ERROR_MESSAGES.minValue("El perfil activo", 0))
+    .max(2, ERROR_MESSAGES.maxValue("El perfil activo", 2)),
 });
 
 /**
@@ -60,8 +96,8 @@ export const smtpVerifyFormSchema = z.object({
   port: z
     .number({ error: ERROR_MESSAGES.required("El puerto") })
     .int(ERROR_MESSAGES.invalidNumber())
-    .min(1, ERROR_MESSAGES.minLength("El puerto", 1))
-    .max(65535, ERROR_MESSAGES.maxLength("El puerto", 65535)),
+    .min(1, ERROR_MESSAGES.minValue("El puerto", 1))
+    .max(65535, ERROR_MESSAGES.maxValue("El puerto", 65535)),
   secure: z.boolean(),
   user: requiredText("El usuario"),
   pass: requiredText("La contraseña"),
