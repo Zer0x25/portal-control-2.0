@@ -130,6 +130,24 @@ vi.mock("../utils/indexedDB.ts", () => ({
     put: vi.fn().mockResolvedValue(undefined),
     clear: vi.fn().mockResolvedValue(undefined),
   },
+  /**
+   * Lectura y escritura de stores.
+   *
+   * Los hooks que leen del almacen local (`useTimeRecordsQuery`) usan
+   * `idbGetAll` en un `useEffect`: sin este export el mock revienta el test
+   * con "No `idbGetAll` export is defined" y ese hook queda sin cobertura.
+   */
+  idbGetAll: vi.fn().mockResolvedValue([]),
+  idbGetAllBy: vi.fn().mockResolvedValue([]),
+  idbGetRecordsByDateRange: vi.fn().mockResolvedValue([]),
+  idbIsStoreEmpty: vi.fn().mockResolvedValue(true),
+  idbGet: vi.fn().mockResolvedValue(undefined),
+  idbPut: vi.fn().mockResolvedValue(undefined),
+  idbPutBulk: vi.fn().mockResolvedValue(undefined),
+  idbDelete: vi.fn().mockResolvedValue(undefined),
+  idbClear: vi.fn().mockResolvedValue(undefined),
+  idbGetPagedAndFiltered: vi.fn().mockResolvedValue({ items: [], total: 0 }),
+  wipeAllData: vi.fn().mockResolvedValue(undefined),
   authStore: {
     get: vi.fn().mockResolvedValue(null),
     put: vi.fn().mockResolvedValue(undefined),

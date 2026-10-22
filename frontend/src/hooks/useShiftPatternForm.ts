@@ -1,10 +1,31 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { TheoreticalShiftPattern, DayInCycleSchedule } from "../types/index";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { TheoreticalShiftPattern } from "../types/index";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
 import { useGlobalMaxWeeklyHoursQuery } from "./queries/useConfigQuery";
 import { useShiftMutations } from "./useShiftMutations";
 import { useToasts } from "./useToasts";
 import { calculateHoursBetween } from "../utils/calculations";
+import { useAppForm } from "./useAppForm";
+import {
+  buildShiftPatternSchema,
+  type ShiftPatternDayValues,
+  type ShiftPatternFormValues,
+} from "../schemas/forms";
+
+/**
+ * Spec 036 T8 (AC1, AC2, AC3, AC4): formulario de **patron de turno**.
+ *
+ * Antes de la migracion este hook eran 450 lineas de maquina de formulario
+ * escrita a mano: nueve `useState`, validaciones con `addToast` y un payload
+ * montado a mano. Ahora:
+ *
+ * - el estado de los campos vive en `useAppForm` (spec 036 AC1);
+ * - las reglas viven en el schema (las del backend en la T5, las que dependen
+ *   del contexto en `buildShiftPatternSchema`) y salen como error de campo,
+ *   con su mensaje en el mapa central (spec 036 AC2, AC3);
+ * - el envio esta protegido contra el doble envio por la propia capa
+ *   (spec 036 AC4).
+ */
 
 const PRESET_COLORS = [
   "#F44336",
@@ -28,7 +49,7 @@ const PRESET_COLORS = [
   "#607D8B",
 ];
 
-const createInitialDailySchedules = (cycleLength: number): DayInCycleSchedule[] => {
+const createInitialDailySchedules = (cycleLength: number): ShiftPatternDayValues[] => {
   return Array.from({ length: cycleLength }, (_, i) => ({
     dayIndex: i,
     startTime: "",
@@ -41,29 +62,33 @@ const createInitialDailySchedules = (cycleLength: number): DayInCycleSchedule[] 
 };
 
 // `hours` is always derived: it is recomputed from startTime/endTime/colacionMinutes, so it is
-// never persisted nor carried over from a copy. Building the omission explicitly (instead of
-// rest-destructuring) keeps the exact same output object without introducing unused bindings.
+// never persisted nor carried over from a copy.
 // `dayIndex` is positional and therefore also dropped when copying onto another day.
-const omitHours = (schedule: DayInCycleSchedule): Omit<DayInCycleSchedule, "hours"> => ({
+
+/**
+ * Payload de un dia del ciclo: identico al que se enviaba antes de la
+ * migracion (spec 036 T13).
+ *
+ * La capa normaliza la cadena vacia a `undefined` **antes** de validar (para
+ * que el schema sea una copia exacta del del backend), asi que aqui se
+ * devuelve a `""`: el backend recibe exactamente los mismos campos.
+ */
+const toPayloadDay = (schedule: ShiftPatternDayValues): Omit<ShiftPatternDayValues, "hours"> => ({
   dayIndex: schedule.dayIndex,
-  startTime: schedule.startTime,
-  endTime: schedule.endTime,
+  startTime: schedule.startTime ?? "",
+  endTime: schedule.endTime ?? "",
   isOffDay: schedule.isOffDay,
-  hasColacion: schedule.hasColacion,
-  colacionMinutes: schedule.colacionMinutes,
+  hasColacion: schedule.hasColacion ?? false,
+  colacionMinutes: schedule.colacionMinutes ?? 0,
 });
 
-const omitHoursAndDayIndex = (
-  schedule: DayInCycleSchedule,
-): Omit<DayInCycleSchedule, "dayIndex" | "hours"> => ({
-  startTime: schedule.startTime,
-  endTime: schedule.endTime,
-  isOffDay: schedule.isOffDay,
-  hasColacion: schedule.hasColacion,
-  colacionMinutes: schedule.colacionMinutes,
-});
+/** Opciones del hook del patron de turno. */
+export interface UseShiftPatternFormOptions {
+  /** Callback que se ejecuta cuando el patron se guardo correctamente. */
+  readonly onSaved?: () => void;
+}
 
-export const useShiftPatternForm = () => {
+export const useShiftPatternForm = (options?: UseShiftPatternFormOptions) => {
   const { data: shiftPatterns = [] } = useShiftPatternsQuery();
   const { createPattern, updatePattern } = useShiftMutations();
   const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery();
@@ -71,17 +96,8 @@ export const useShiftPatternForm = () => {
   const { addToast } = useToasts();
 
   const [editingPattern, setEditingPattern] = useState<TheoreticalShiftPattern | null>(null);
-  const [patternName, setPatternName] = useState("");
-  const [patternCycleLength, setPatternCycleLengthState] = useState(7);
-  const [startDayOfWeek, setStartDayOfWeek] = useState(1); // 1 for Monday
-  const [patternDailySchedules, setPatternDailySchedules] = useState<DayInCycleSchedule[]>(
-    createInitialDailySchedules(7),
-  );
-  const [patternColor, setPatternColor] = useState(PRESET_COLORS[0]);
-  const [patternMaxHoursInput, setPatternMaxHoursInput] = useState<number>(globalMaxWeeklyHours);
-  const [patternWorksOnHolidays, setPatternWorksOnHolidays] = useState(false);
   const [copiedDailySchedule, setCopiedDailySchedule] = useState<Omit<
-    DayInCycleSchedule,
+    ShiftPatternDayValues,
     "dayIndex" | "hours"
   > | null>(null);
 
@@ -98,40 +114,126 @@ export const useShiftPatternForm = () => {
     }
   }, [shiftPatterns]);
 
-  const handleSetPatternCycleLength = useCallback(
-    (value: number) => {
-      let cycleValue = value;
-      if (cycleValue > 99) {
-        cycleValue = 99;
-        addToast("El ciclo no puede exceder los 99 días.", "warning");
-      }
-      setPatternCycleLengthState(cycleValue);
-    },
-    [addToast],
+  /**
+   * Schema con las reglas que dependen del contexto (nombre unico, maximo
+   * legal de horas y reglas de cada dia del ciclo).
+   */
+  const schema = useMemo(
+    () =>
+      buildShiftPatternSchema({
+        existingPatterns: shiftPatterns,
+        editingPatternId: editingPattern?.id,
+        maxWeeklyHours: globalMaxWeeklyHours,
+      }),
+    [shiftPatterns, editingPattern?.id, globalMaxWeeklyHours],
   );
+
+  const defaultValues = useMemo<ShiftPatternFormValues>(
+    () => ({
+      name: "",
+      cycleLengthDays: 7,
+      startDayOfWeek: 1,
+      dailySchedules: createInitialDailySchedules(7),
+      color: PRESET_COLORS[0],
+      maxHoursPattern: globalMaxWeeklyHours,
+      worksOnHolidays: false,
+    }),
+    // Los valores por defecto se capturan una vez (como hacia `useState`).
+    [],
+  );
+
+  const form = useAppForm<ShiftPatternFormValues>({
+    schema,
+    defaultValues,
+    /**
+     * El payload viaja **sin** las horas calculadas (las deriva la pantalla),
+     * y con las cadenas vacias tal como las recibia el backend: el payload es
+     * identico al de antes de la migracion (spec 036 T13).
+     */
+    serialize: (values) => ({
+      ...values,
+      dailySchedules: values.dailySchedules.map(toPayloadDay),
+    }),
+    onSubmit: async (values) => {
+      const patternPayload = {
+        name: values.name,
+        cycleLengthDays: values.cycleLengthDays,
+        dailySchedules: values.dailySchedules.map(toPayloadDay),
+        color: values.color,
+        maxHoursPattern: values.maxHoursPattern,
+        startDayOfWeek: values.startDayOfWeek,
+        worksOnHolidays: values.worksOnHolidays,
+      };
+
+      if (editingPattern) {
+        await updatePattern({
+          ...patternPayload,
+          id: editingPattern.id,
+          lastModified: Date.now(),
+          syncStatus: "synced",
+          isDeleted: false,
+        } as TheoreticalShiftPattern);
+      } else {
+        await createPattern({
+          ...patternPayload,
+          id: crypto.randomUUID(),
+          lastModified: Date.now(),
+          syncStatus: "synced",
+          isDeleted: false,
+        } as TheoreticalShiftPattern);
+      }
+
+      clearForm();
+      options?.onSaved?.();
+    },
+  });
+
+  const { setValue, values, reset } = form;
 
   const clearForm = useCallback(() => {
     setEditingPattern(null);
-    setPatternName("");
-    handleSetPatternCycleLength(7);
-    setPatternColor(getRandomColor());
-    setPatternMaxHoursInput(globalMaxWeeklyHours);
-    setPatternWorksOnHolidays(false);
-    setPatternDailySchedules(createInitialDailySchedules(7));
-    setStartDayOfWeek(1);
-  }, [globalMaxWeeklyHours, handleSetPatternCycleLength, getRandomColor]);
+    reset({
+      name: "",
+      cycleLengthDays: 7,
+      startDayOfWeek: 1,
+      dailySchedules: createInitialDailySchedules(7),
+      color: getRandomColor(),
+      maxHoursPattern: globalMaxWeeklyHours,
+      worksOnHolidays: false,
+    });
+  }, [reset, globalMaxWeeklyHours, getRandomColor]);
 
-  const startCopyOfPattern = useCallback(
-    (patternToCopy: TheoreticalShiftPattern) => {
-      setEditingPattern(null); // Ensure we're in "create" mode, not "edit"
-      setPatternName(`${patternToCopy.name} - copia`);
-      handleSetPatternCycleLength(patternToCopy.cycleLengthDays);
-      setStartDayOfWeek(patternToCopy.startDayOfWeek || 1);
-      setPatternColor(patternToCopy.color || PRESET_COLORS[0]);
-      setPatternMaxHoursInput(patternToCopy.maxHoursPattern || globalMaxWeeklyHours);
-      setPatternWorksOnHolidays(patternToCopy.worksOnHolidays || false);
+  /**
+   * El largo del ciclo no puede pasar de 99 dias (regla de la pantalla, no
+   * del backend): se recorta y se avisa, como antes de la migracion.
+   */
+  const setCycleLength = useCallback(
+    (value: number) => {
+      if (value > 99) {
+        addToast("El ciclo no puede exceder los 99 días.", "warning");
+        setValue("cycleLengthDays", 99);
+        return;
+      }
+      setValue("cycleLengthDays", value);
+    },
+    [addToast, setValue],
+  );
 
-      const copiedSchedules = patternToCopy.dailySchedules.map((s) => ({
+  /**
+   * Al editar un patron, el formulario se rellena con sus valores.
+   */
+  useEffect(() => {
+    if (!editingPattern) return;
+
+    setValue("name", editingPattern.name);
+    setValue("cycleLengthDays", editingPattern.cycleLengthDays);
+    setValue("startDayOfWeek", editingPattern.startDayOfWeek || 1);
+    setValue("color", editingPattern.color || PRESET_COLORS[0]);
+    setValue("maxHoursPattern", editingPattern.maxHoursPattern || globalMaxWeeklyHours);
+    setValue("worksOnHolidays", editingPattern.worksOnHolidays || false);
+    setValue(
+      "dailySchedules",
+      editingPattern.dailySchedules.map((s) => ({
         dayIndex: s.dayIndex,
         startTime: s.startTime || "",
         endTime: s.endTime || "",
@@ -146,24 +248,137 @@ export const useShiftPatternForm = () => {
                 s.endTime,
                 s.hasColacion || false ? s.colacionMinutes || 0 : 0,
               ),
-      }));
-      setPatternDailySchedules(copiedSchedules);
+      })),
+    );
+  }, [editingPattern, globalMaxWeeklyHours, setValue]);
 
-      addToast(`Copiando patrón "${patternToCopy.name}". Modifique y guarde.`, "info");
+  /**
+   * El largo del ciclo define cuantos dias tiene el patron: al cambiar, la
+   * lista de jornadas se ajusta conservando las que ya existian.
+   */
+  useEffect(() => {
+    const newLength = Math.max(1, values.cycleLengthDays);
+    const current = form.values.dailySchedules;
+
+    if (current.length === newLength && current.every((s, i) => s.dayIndex === i)) {
+      return;
+    }
+
+    const next: ShiftPatternDayValues[] = [];
+    for (let i = 0; i < newLength; i++) {
+      const existingSchedule = current.find((s) => s.dayIndex === i);
+      if (existingSchedule) {
+        next.push({ ...existingSchedule, dayIndex: i });
+      } else {
+        next.push({
+          dayIndex: i,
+          startTime: "",
+          endTime: "",
+          isOffDay: false,
+          hasColacion: false,
+          colacionMinutes: 0,
+          hours: 0,
+        });
+      }
+    }
+
+    setValue("dailySchedules", next);
+  }, [values.cycleLengthDays, form.values.dailySchedules, setValue]);
+
+  const handleDailyScheduleChange = useCallback(
+    (index: number, field: keyof ShiftPatternDayValues, value: string | boolean | number) => {
+      const next = form.values.dailySchedules.map((schedule, i) => {
+        if (i !== index) return schedule;
+
+        const updatedSchedule = { ...schedule, [field]: value };
+
+        if (field === "hasColacion") {
+          updatedSchedule.colacionMinutes = value === true ? 30 : 0;
+        }
+
+        if (field === "isOffDay" && value === true) {
+          updatedSchedule.startTime = "";
+          updatedSchedule.endTime = "";
+          updatedSchedule.hasColacion = false;
+          updatedSchedule.colacionMinutes = 0;
+        }
+
+        updatedSchedule.hours = updatedSchedule.isOffDay
+          ? 0
+          : calculateHoursBetween(
+              updatedSchedule.startTime ?? undefined,
+              updatedSchedule.endTime ?? undefined,
+              updatedSchedule.hasColacion ? (updatedSchedule.colacionMinutes ?? 0) : 0,
+            );
+        return updatedSchedule;
+      });
+
+      setValue("dailySchedules", next);
     },
-    [handleSetPatternCycleLength, globalMaxWeeklyHours, calculateHoursBetween, addToast],
+    [form.values.dailySchedules, setValue],
   );
 
-  useEffect(() => {
-    if (editingPattern) {
-      setPatternName(editingPattern.name);
-      handleSetPatternCycleLength(editingPattern.cycleLengthDays);
-      setStartDayOfWeek(editingPattern.startDayOfWeek || 1);
-      setPatternColor(editingPattern.color || PRESET_COLORS[0]);
-      setPatternMaxHoursInput(editingPattern.maxHoursPattern || globalMaxWeeklyHours);
-      setPatternWorksOnHolidays(editingPattern.worksOnHolidays || false);
-      setPatternDailySchedules(
-        editingPattern.dailySchedules.map((s) => ({
+  const handleCopyDailySchedule = useCallback(
+    (dayIndex: number) => {
+      const scheduleToCopy = form.values.dailySchedules.find((s) => s.dayIndex === dayIndex);
+      if (scheduleToCopy) {
+        setCopiedDailySchedule({
+          startTime: scheduleToCopy.startTime,
+          endTime: scheduleToCopy.endTime,
+          isOffDay: scheduleToCopy.isOffDay,
+          hasColacion: scheduleToCopy.hasColacion,
+          colacionMinutes: scheduleToCopy.colacionMinutes,
+        });
+        addToast(`Horario del Día ${dayIndex + 1} copiado.`, "success");
+      }
+    },
+    [addToast, form.values.dailySchedules],
+  );
+
+  const handlePasteDailySchedule = useCallback(
+    (targetDayIndex: number) => {
+      if (!copiedDailySchedule) {
+        addToast("No hay horario copiado para pegar.", "info");
+        return;
+      }
+      const next = form.values.dailySchedules.map((schedule, i) => {
+        if (i !== targetDayIndex) return schedule;
+
+        const newScheduleData = { ...schedule, ...copiedDailySchedule };
+        if (newScheduleData.isOffDay) {
+          newScheduleData.startTime = "";
+          newScheduleData.endTime = "";
+          newScheduleData.hasColacion = false;
+          newScheduleData.colacionMinutes = 0;
+        }
+        newScheduleData.hours = newScheduleData.isOffDay
+          ? 0
+          : calculateHoursBetween(
+              newScheduleData.startTime ?? undefined,
+              newScheduleData.endTime ?? undefined,
+              newScheduleData.hasColacion ? (newScheduleData.colacionMinutes ?? 0) : 0,
+            );
+        return newScheduleData;
+      });
+      setValue("dailySchedules", next);
+      addToast(`Horario pegado en Día ${targetDayIndex + 1}.`, "success");
+    },
+    [addToast, copiedDailySchedule, form.values.dailySchedules, setValue],
+  );
+
+  const startCopyOfPattern = useCallback(
+    (patternToCopy: TheoreticalShiftPattern) => {
+      setEditingPattern(null); // Ensure we're in "create" mode, not "edit"
+      setValue("name", `${patternToCopy.name} - copia`);
+      setValue("cycleLengthDays", patternToCopy.cycleLengthDays);
+      setValue("startDayOfWeek", patternToCopy.startDayOfWeek || 1);
+      setValue("color", patternToCopy.color || PRESET_COLORS[0]);
+      setValue("maxHoursPattern", patternToCopy.maxHoursPattern || globalMaxWeeklyHours);
+      setValue("worksOnHolidays", patternToCopy.worksOnHolidays || false);
+
+      setValue(
+        "dailySchedules",
+        patternToCopy.dailySchedules.map((s) => ({
           dayIndex: s.dayIndex,
           startTime: s.startTime || "",
           endTime: s.endTime || "",
@@ -180,271 +395,41 @@ export const useShiftPatternForm = () => {
                 ),
         })),
       );
-    } else {
-      // clearForm(); // Don't clear if a copy operation is in progress
-    }
-  }, [editingPattern, calculateHoursBetween, globalMaxWeeklyHours, handleSetPatternCycleLength]);
 
-  useEffect(() => {
-    const newLength = Math.max(1, patternCycleLength);
-    setPatternDailySchedules((prevSchedules) => {
-      if (prevSchedules.length === newLength && prevSchedules.every((s, i) => s.dayIndex === i)) {
-        return prevSchedules;
-      }
-      const newArr: DayInCycleSchedule[] = [];
-      for (let i = 0; i < newLength; i++) {
-        const existingSchedule = prevSchedules.find((s) => s.dayIndex === i);
-        if (existingSchedule) {
-          newArr.push({ ...existingSchedule, dayIndex: i });
-        } else {
-          newArr.push({
-            dayIndex: i,
-            startTime: "",
-            endTime: "",
-            isOffDay: false,
-            hasColacion: false,
-            colacionMinutes: 0,
-            hours: 0,
-          });
-        }
-      }
-      return newArr;
-    });
-  }, [patternCycleLength]);
-
-  const handleDailyScheduleChange = useCallback(
-    (index: number, field: keyof DayInCycleSchedule, value: string | boolean | number) => {
-      setPatternDailySchedules((prev) =>
-        prev.map((schedule, i) => {
-          if (i === index) {
-            const updatedSchedule = { ...schedule, [field]: value };
-
-            if (field === "hasColacion") {
-              if (value === true) {
-                updatedSchedule.colacionMinutes = 30; // Default to 30 when checked
-              } else {
-                updatedSchedule.colacionMinutes = 0; // Reset to 0 when unchecked
-              }
-            }
-
-            if (field === "isOffDay" && value === true) {
-              updatedSchedule.startTime = "";
-              updatedSchedule.endTime = "";
-              updatedSchedule.hasColacion = false;
-              updatedSchedule.colacionMinutes = 0;
-            }
-
-            updatedSchedule.hours = updatedSchedule.isOffDay
-              ? 0
-              : calculateHoursBetween(
-                  updatedSchedule.startTime,
-                  updatedSchedule.endTime,
-                  updatedSchedule.hasColacion ? updatedSchedule.colacionMinutes : 0,
-                );
-            return updatedSchedule;
-          }
-          return schedule;
-        }),
-      );
+      addToast(`Copiando patrón "${patternToCopy.name}". Modifique y guarde.`, "info");
     },
-    [calculateHoursBetween],
+    [addToast, globalMaxWeeklyHours, setValue],
   );
-
-  const handleCopyDailySchedule = useCallback(
-    (dayIndex: number) => {
-      const scheduleToCopy = patternDailySchedules.find((s) => s.dayIndex === dayIndex);
-      if (scheduleToCopy) {
-        setCopiedDailySchedule(omitHoursAndDayIndex(scheduleToCopy));
-        addToast(`Horario del Día ${dayIndex + 1} copiado.`, "success");
-      }
-    },
-    [patternDailySchedules, addToast],
-  );
-
-  const handlePasteDailySchedule = useCallback(
-    (targetDayIndex: number) => {
-      if (!copiedDailySchedule) {
-        addToast("No hay horario copiado para pegar.", "info");
-        return;
-      }
-      setPatternDailySchedules((prev) =>
-        prev.map((schedule, i) => {
-          if (i === targetDayIndex) {
-            const newScheduleData = { ...schedule, ...copiedDailySchedule };
-            if (newScheduleData.isOffDay) {
-              newScheduleData.startTime = "";
-              newScheduleData.endTime = "";
-              newScheduleData.hasColacion = false;
-              newScheduleData.colacionMinutes = 0;
-            }
-            newScheduleData.hours = newScheduleData.isOffDay
-              ? 0
-              : calculateHoursBetween(
-                  newScheduleData.startTime,
-                  newScheduleData.endTime,
-                  newScheduleData.hasColacion ? newScheduleData.colacionMinutes : 0,
-                );
-            return newScheduleData;
-          }
-          return schedule;
-        }),
-      );
-      addToast(`Horario pegado en Día ${targetDayIndex + 1}.`, "success");
-    },
-    [copiedDailySchedule, addToast, calculateHoursBetween],
-  );
-
-  const handleSavePattern = async (): Promise<boolean> => {
-    if (!patternName.trim() || patternCycleLength <= 0) {
-      addToast("Nombre del patrón y duración del ciclo (mayor a 0) son requeridos.", "warning");
-      return false;
-    }
-    if (patternMaxHoursInput <= 0) {
-      addToast("Max Hrs Semanales del Patrón debe ser un número positivo.", "warning");
-      return false;
-    }
-    if (patternMaxHoursInput > globalMaxWeeklyHours) {
-      addToast(
-        `Las horas del patrón (${patternMaxHoursInput}) no pueden superar el máximo legal de ${globalMaxWeeklyHours} horas.`,
-        "error",
-        6000,
-      );
-      return false;
-    }
-
-    const trimmedNewName = patternName.trim().toLowerCase();
-    const isDuplicate = shiftPatterns.some(
-      (p) => p.name.trim().toLowerCase() === trimmedNewName && p.id !== editingPattern?.id,
-    );
-
-    if (isDuplicate) {
-      addToast(`El nombre de patrón "${patternName.trim()}" ya existe.`, "error");
-      return false;
-    }
-
-    const dataForContext = patternDailySchedules.map(omitHours);
-
-    for (const schedule of dataForContext) {
-      if (!schedule.isOffDay && (!schedule.startTime || !schedule.endTime)) {
-        addToast(
-          `Día ${schedule.dayIndex + 1}: Hora de inicio y fin son requeridas si no es día libre.`,
-          "warning",
-        );
-        return false;
-      }
-      if (schedule.hasColacion && schedule.colacionMinutes <= 0) {
-        addToast(
-          `Día ${schedule.dayIndex + 1}: Minutos de colación deben ser mayor a 0 si 'Incluir Colación' está marcado.`,
-          "warning",
-        );
-        return false;
-      }
-      if (!schedule.isOffDay && schedule.startTime && schedule.endTime) {
-        const dailyHoursNet = calculateHoursBetween(
-          schedule.startTime,
-          schedule.endTime,
-          schedule.hasColacion ? schedule.colacionMinutes : 0,
-        );
-        if (dailyHoursNet < 0) {
-          addToast(
-            `En el Día ${schedule.dayIndex + 1}, la hora de fin debe ser posterior a la hora de inicio (considerando colación). Un turno de 24hrs no es posible (00:00 a 00:00).`,
-            "error",
-          );
-          return false;
-        }
-        if (schedule.hasColacion) {
-          const grossShiftDuration = calculateHoursBetween(schedule.startTime, schedule.endTime, 0);
-          if (schedule.colacionMinutes / 60 > grossShiftDuration) {
-            addToast(
-              `Día ${schedule.dayIndex + 1}: Los minutos de colación no pueden exceder la duración total del turno.`,
-              "error",
-            );
-            return false;
-          }
-        }
-      }
-    }
-
-    const patternPayload = {
-      name: patternName,
-      cycleLengthDays: patternCycleLength,
-      dailySchedules: dataForContext,
-      color: patternColor,
-      maxHoursPattern: patternMaxHoursInput,
-      startDayOfWeek: startDayOfWeek,
-      worksOnHolidays: patternWorksOnHolidays,
-    };
-
-    let success: boolean;
-    try {
-      if (editingPattern) {
-        const payloadWithId: TheoreticalShiftPattern = {
-          ...patternPayload,
-          id: editingPattern.id,
-          dailySchedules: patternPayload.dailySchedules as DayInCycleSchedule[],
-          lastModified: Date.now(),
-          syncStatus: "synced",
-          isDeleted: false,
-        } as TheoreticalShiftPattern;
-        await updatePattern(payloadWithId);
-        success = true;
-      } else {
-        const payloadWithoutId: TheoreticalShiftPattern = {
-          ...patternPayload,
-          id: crypto.randomUUID(),
-          dailySchedules: patternPayload.dailySchedules as DayInCycleSchedule[],
-          lastModified: Date.now(),
-          syncStatus: "synced",
-          isDeleted: false,
-        } as TheoreticalShiftPattern;
-        await createPattern(payloadWithoutId);
-        success = true;
-      }
-    } catch {
-      success = false;
-    }
-
-    if (success) {
-      clearForm();
-    }
-    return success;
-  };
 
   const calculatedPatternWeeklyHours = useMemo(() => {
-    if (patternCycleLength <= 0) return 0;
+    if (values.cycleLengthDays <= 0) return 0;
     let totalHoursInCycle = 0;
-    patternDailySchedules.forEach((ds) => {
+    values.dailySchedules.forEach((ds) => {
       if (!ds.isOffDay && ds.hours) {
         totalHoursInCycle += ds.hours;
       }
     });
-    return parseFloat(((totalHoursInCycle / patternCycleLength) * 7).toFixed(2));
-  }, [patternDailySchedules, patternCycleLength]);
+    return parseFloat(((totalHoursInCycle / values.cycleLengthDays) * 7).toFixed(2));
+  }, [values.cycleLengthDays, values.dailySchedules]);
 
   return {
     editingPattern,
     setEditingPattern,
-    patternName,
-    setPatternName,
-    patternCycleLength,
-    setPatternCycleLength: handleSetPatternCycleLength,
-    startDayOfWeek,
-    setStartDayOfWeek,
-    patternDailySchedules,
+    values,
+    errors: form.errors,
+    getError: form.getError,
+    setValue,
+    setCycleLength,
     handleDailyScheduleChange,
-    patternColor,
-    setPatternColor,
-    patternMaxHoursInput,
-    setPatternMaxHoursInput,
-    patternWorksOnHolidays,
-    setPatternWorksOnHolidays,
     copiedDailySchedule,
     handleCopyDailySchedule,
     handlePasteDailySchedule,
     startCopyOfPattern,
-    handleSavePattern,
     clearForm,
     calculatedPatternWeeklyHours,
     globalMaxWeeklyHours,
+    isSubmitting: form.isSubmitting,
+    submit: form.submit,
+    formProps: form.formProps,
   };
 };

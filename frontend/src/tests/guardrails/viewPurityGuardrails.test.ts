@@ -33,7 +33,7 @@ const SRC_ROOT = path.join(FRONTEND_ROOT, "src");
 export const VIEW_HOOK_BUDGET = 1;
 
 /** Componentes de la capa de componentes que llaman a un hook **con estado**. */
-export const HOOKED_COMPONENT_BUDGET = 93;
+export const HOOKED_COMPONENT_BUDGET = 92;
 
 /** Componentes con hooks, >150 líneas y sin container/view gemelo. */
 export const LARGE_HOOKED_COMPONENT_BUDGET = 56;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Holiday } from "../../../types/index";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
@@ -6,66 +6,64 @@ import Select from "../../../components/ui/Select";
 import { PlusCircleIcon, EditIcon, ChevronRightIcon } from "../../../components/ui/icons/index";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { HOLIDAY_TYPES } from "../../../utils/mappings";
-import { useToasts } from "../../../hooks/useToasts";
+import type { HolidayFormValues } from "../../../schemas/forms";
 
+/**
+ * Spec 036 T8: `HolidayForm` es **presentacion pura**.
+ *
+ * Antes este componente tenia cuatro `useState` y un `useEffect` (la capa de
+ * componentes gestionaba estado, lo que la spec 033 prohibe). Ahora el estado
+ * y las reglas viven en el hook de dominio (`useHolidayManagerController`) y
+ * el componente solo pinta: valores, errores y handlers entran por props.
+ */
 interface HolidayFormProps {
+  /** Feriado en edicion (`null` cuando se crea uno nuevo). */
   initialData?: Holiday | null;
-  onSave: (holiday: { name: string; date: string; type: Holiday["type"] }) => Promise<void>;
+  /** Valores actuales del formulario. */
+  values: HolidayFormValues;
+  /** Mensaje de error de un campo (o `undefined`). */
+  getError: (field: string) => string | undefined;
+  /** Escribe el valor de un campo. */
+  setValue: <K extends keyof HolidayFormValues & string>(
+    name: K,
+    value: HolidayFormValues[K],
+  ) => void;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** El selector de fecha esta abierto. */
+  isDatePickerOpen: boolean;
+  /** Abre el selector de fecha. */
+  onOpenDatePicker: () => void;
+  /** Cierra el selector de fecha. */
+  onCloseDatePicker: () => void;
+  /** Cancela la edicion. */
   onCancel: () => void;
-  existingDates: string[];
 }
 
 const HolidayForm: React.FC<HolidayFormProps> = ({
   initialData,
-  onSave,
+  values,
+  getError,
+  setValue,
+  formProps,
+  isSubmitting,
+  isDatePickerOpen,
+  onOpenDatePicker,
+  onCloseDatePicker,
   onCancel,
-  existingDates,
 }) => {
-  const [name, setName] = useState("");
-  const [date, setDate] = useState("");
-  const [type, setType] = useState<Holiday["type"]>("Nacional");
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const { addToast } = useToasts();
-
-  useEffect(() => {
-    if (initialData) {
-      setName(initialData.name);
-      setDate(initialData.date);
-      setType(initialData.type);
-    } else {
-      setName("");
-      setDate("");
-      setType("Nacional");
-    }
-  }, [initialData]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !date) {
-      addToast("Nombre y fecha son requeridos.", "warning");
-      return;
-    }
-
-    if (existingDates.includes(date) && (!initialData || initialData.date !== date)) {
-      addToast("Ya existe un feriado en esta fecha.", "error");
-      return;
-    }
-
-    try {
-      await onSave({ name, date, type });
-      // Reset form if success (though typically parent closes/resets)
-      if (!initialData) {
-        setName("");
-        setDate("");
-        setType("Nacional");
-      }
-    } catch {
-      // Error handling by parent usually
-    }
-  };
+  const dateError = getError("date");
+  const nameError = getError("name");
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form {...formProps} className="space-y-8">
       <h3 className="text-lg font-bold text-token-text-primary flex items-center gap-2">
         <div className="w-2 h-6 bg-token-accent-brand rounded-full"></div>
         {initialData ? "Actualizar Feriado" : "Nuevo Feriado"}
@@ -74,33 +72,50 @@ const HolidayForm: React.FC<HolidayFormProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
         {/* Date Picker */}
         <div className="relative group">
-          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 pl-1">
+          <label
+            htmlFor="holiday-date"
+            className="block text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 pl-1"
+          >
             Fecha
           </label>
           <Button
+            id="holiday-date"
             type="button"
             variant="secondary"
-            onClick={() => setIsDatePickerOpen(true)}
+            onClick={onOpenDatePicker}
+            aria-invalid={dateError ? "true" : undefined}
+            aria-describedby={dateError ? "holiday-date-error" : undefined}
             className="w-full px-4 py-3 justify-between text-token-text-primary text-left font-normal"
           >
             <span>
-              {date ? new Date(date + "T12:00:00").toLocaleDateString("es-CL") : "Seleccionar"}
+              {values.date
+                ? new Date(values.date + "T12:00:00").toLocaleDateString("es-CL")
+                : "Seleccionar"}
             </span>
             <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-60" />
           </Button>
           <DatePickerDialog
             isOpen={isDatePickerOpen}
-            onClose={() => setIsDatePickerOpen(false)}
-            onSelect={(selectedDate) => setDate(selectedDate)}
-            initialDate={date}
+            onClose={onCloseDatePicker}
+            onSelect={(selectedDate) => setValue("date", selectedDate)}
+            initialDate={values.date}
           />
+          {dateError && (
+            <p
+              id="holiday-date-error"
+              className="mt-2 text-[10px] font-black uppercase tracking-widest text-token-status-error"
+            >
+              {dateError}
+            </p>
+          )}
         </div>
 
         {/* Name Input */}
         <Input
           label="Nombre del Feriado"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={values.name}
+          onChange={(e) => setValue("name", e.target.value)}
+          error={nameError}
           required
           placeholder="Ej: Año Nuevo"
         />
@@ -108,14 +123,14 @@ const HolidayForm: React.FC<HolidayFormProps> = ({
         {/* Type Select */}
         <Select
           label="Tipo"
-          value={type}
-          onChange={(e) => setType(e.target.value as Holiday["type"])}
+          value={values.type}
+          onChange={(e) => setValue("type", e.target.value as Holiday["type"])}
           options={HOLIDAY_TYPES.map((t) => ({ value: t, label: t }))}
         />
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" className="px-8 flex items-center gap-2">
+        <Button type="submit" disabled={isSubmitting} className="px-8 flex items-center gap-2">
           {initialData ? <EditIcon className="w-5 h-5" /> : <PlusCircleIcon className="w-5 h-5" />}
           {initialData ? "Actualizar" : "Guardar"}
         </Button>

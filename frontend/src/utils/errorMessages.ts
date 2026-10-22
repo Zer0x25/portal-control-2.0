@@ -72,8 +72,52 @@ export const ERROR_MESSAGES = {
   /** Rango de fechas invertido (el fin no es posterior al inicio). */
   invalidDateRange: (): string => "La fecha de término debe ser posterior a la fecha de inicio.",
 
+  /** Fecha de término anterior al día de hoy (edición de un registro). */
+  endDateInPast: (): string => "La fecha de término no puede ser anterior al día de hoy.",
+
   /** Valor duplicado en un campo único. */
   duplicate: (field: string): string => `${field} ya está registrado.`,
+
+  /**
+   * Nombre duplicado (patrones de turno).
+   *
+   * @param name nombre que choca con uno ya guardado.
+   */
+  duplicateName: (name: string): string => `El nombre "${name}" ya existe.`,
+
+  /**
+   * Regla de un día del ciclo de un patrón de turno.
+   *
+   * @param day número de día del ciclo (1 = primer día).
+   * @param rule descripción de la regla incumplida.
+   */
+  shiftDayRule: (day: number, rule: string): string => `Día ${day}: ${rule}`,
+
+  /**
+   * Horas del patrón por encima del máximo legal configurado.
+   *
+   * @param hours horas semanales del patrón.
+   * @param max máximo legal configurado.
+   */
+  maxWeeklyHoursExceeded: (hours: number, max: number): string =>
+    `Las horas del patrón (${hours}) no pueden superar el máximo legal de ${max} horas.`,
+
+  /** Ausencia o asignación con más de 7 días de antigüedad. */
+  tooOldRecord: (): string => "No se pueden registrar con más de 7 días de antigüedad.",
+
+  /** El empleado ya tiene una ausencia en el período indicado. */
+  overlappingLeave: (): string => "El empleado ya tiene una ausencia en este período.",
+
+  /** Ya existe un feriado en la fecha indicada. */
+  duplicateHolidayDate: (): string => "Ya existe un feriado en esta fecha.",
+
+  /** Patrón mensual: la fecha de inicio debe ser el día 1 del mes. */
+  monthlyPatternStartDate: (): string =>
+    "Para patrones mensuales (28-31 días), la fecha de inicio debe ser el día 1 del mes.",
+
+  /** Patrón mensual: hace falta la fecha de término. */
+  monthlyPatternEndDate: (): string =>
+    "Para patrones mensuales (28-31 días), se requiere una fecha de término.",
 
   /** Valor esperado numérico. */
   invalidNumber: (): string => "Ingrese un valor numérico válido.",

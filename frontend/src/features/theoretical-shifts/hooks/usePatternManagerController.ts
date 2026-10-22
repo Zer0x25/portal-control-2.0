@@ -19,11 +19,21 @@ export const usePatternManagerController = () => {
     });
   const { data: assignedShifts = [] } = useAssignedShiftsQuery();
   const { deletePattern } = useShiftMutations();
-  const patternForm = useShiftPatternForm();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [patternToDelete, setPatternToDelete] = useState<string | null>(null);
   const { addToast } = useToasts();
   const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery();
+
+  /**
+   * Spec 036 T8: el formulario se envia solo (su `<form>` lleva el
+   * `onSubmit` de la capa). Del exito se encarga el hook del patron.
+   */
+  const patternForm = useShiftPatternForm({
+    onSaved: () => {
+      setIsFormVisible(false);
+      addToast("Patrón guardado exitosamente", "success");
+    },
+  });
 
   const affectedAssignments = useMemo(() => {
     if (!patternToDelete) return [];
@@ -43,21 +53,6 @@ export const usePatternManagerController = () => {
   const handleCancelForm = () => {
     patternForm.clearForm();
     setIsFormVisible(false);
-  };
-
-  const handleSaveForm = async (): Promise<boolean> => {
-    try {
-      const success = await patternForm.handleSavePattern();
-      if (success) {
-        setIsFormVisible(false);
-        addToast("Patrón guardado exitosamente", "success");
-      }
-      return success;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Error al guardar el patrón";
-      addToast(message, "error");
-      return false;
-    }
   };
 
   const handleConfirmDelete = async () => {
@@ -102,7 +97,6 @@ export const usePatternManagerController = () => {
     setPatternToDelete,
     handleOpenNewForm,
     handleCancelForm,
-    handleSaveForm,
     handleConfirmDelete,
     handleEditPattern,
     handleCopyPattern,

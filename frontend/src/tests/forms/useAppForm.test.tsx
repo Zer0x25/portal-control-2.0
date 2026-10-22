@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, renderHook, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { z } from "zod";
 
@@ -159,6 +159,143 @@ describe("useAppForm (spec 036 AC1, AC3, AC4)", () => {
       email: "persona@dominio.com",
       notes: null,
     });
+  });
+});
+
+describe("useAppForm: serializacion del payload (spec 036 T8)", () => {
+  interface DerivedValues {
+    name: string;
+    hours: number;
+  }
+
+  const derivedSchema = z.object({
+    name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres."),
+    hours: z.number(),
+  });
+
+  const DerivedHarness = ({
+    onSubmit,
+    serialize,
+  }: {
+    onSubmit: (values: DerivedValues) => void;
+    serialize?: (values: DerivedValues) => DerivedValues;
+  }) => {
+    const form = useAppForm<DerivedValues>({
+      schema: derivedSchema,
+      defaultValues: { name: "", hours: 8 },
+      onSubmit,
+      serialize,
+    });
+
+    return (
+      <form {...form.formProps}>
+        <Input
+          id="name"
+          label="NOMBRE"
+          value={form.values.name}
+          onChange={(event) => form.setValue("name", event.target.value)}
+        />
+        <span data-testid="horas">{String(form.values.hours)}</span>
+        <button type="submit">ENVIAR</button>
+      </form>
+    );
+  };
+
+  it("transforma el payload sin tocar el estado del formulario", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <DerivedHarness
+        onSubmit={onSubmit}
+        serialize={(values) => ({ name: values.name, hours: values.hours ?? 0 })}
+      />,
+    );
+
+    await user.type(screen.getByLabelText("NOMBRE"), "Turno manana");
+    await user.click(screen.getByRole("button", { name: "ENVIAR" }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toEqual({ name: "Turno manana", hours: 8 });
+    // El valor derivado sigue en el estado (la pantalla lo muestra).
+    expect(screen.getByTestId("horas")).toHaveTextContent("8");
+  });
+
+  it("omite del payload el campo que la serializacion quita", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <DerivedHarness
+        onSubmit={onSubmit}
+        serialize={(values) => ({ name: values.name }) as DerivedValues}
+      />,
+    );
+
+    await user.type(screen.getByLabelText("NOMBRE"), "Turno manana");
+    await user.click(screen.getByRole("button", { name: "ENVIAR" }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toEqual({ name: "Turno manana" });
+    expect(Object.keys(onSubmit.mock.calls[0][0])).toHaveLength(1);
+  });
+
+  it("reset(values) reinicia el formulario con los valores indicados", async () => {
+    const onSubmit = vi.fn();
+    const { result } = renderHook(() =>
+      useAppForm<DerivedValues>({
+        schema: derivedSchema,
+        defaultValues: { name: "", hours: 8 },
+        onSubmit,
+      }),
+    );
+
+    act(() => {
+      result.current.setValue("name", "Turno manana");
+    });
+    expect(result.current.values.name).toBe("Turno manana");
+
+    act(() => {
+      result.current.reset({ name: "Otro", hours: 4 });
+    });
+
+    expect(result.current.values).toEqual({ name: "Otro", hours: 4 });
+  });
+});
+
+describe("useAppForm: la normalizacion no deja errores obsoletos (spec 036 T8)", () => {
+  /**
+   * Una fecha opcional vacia es **invalida** para el schema (que exige el
+   * formato `YYYY-MM-DD`) pero **valida** una vez normalizada (`undefined`).
+   *
+   * Sin refrescar la validacion, TanStack conserva el error de la validacion
+   * en vivo (que corrio contra el valor sin normalizar) y bloquea el envio de
+   * un formulario que ya es correcto.
+   */
+  const dateSchema = z.object({
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha invalido."),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha invalido.")
+      .optional(),
+  });
+
+  it("envia aunque un campo opcional siga vacio", async () => {
+    const onSubmit = vi.fn();
+    const { result } = renderHook(() =>
+      useAppForm<{ startDate: string; endDate?: string }>({
+        schema: dateSchema,
+        defaultValues: { startDate: "", endDate: "" },
+        onSubmit,
+      }),
+    );
+
+    await act(async () => {
+      result.current.setValue("startDate", "2026-10-20");
+      result.current.submit();
+    });
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toEqual({ startDate: "2026-10-20" });
+    expect(result.current.getError("endDate")).toBeUndefined();
   });
 });
 

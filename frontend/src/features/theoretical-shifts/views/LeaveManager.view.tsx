@@ -25,6 +25,7 @@ import EmptyState from "../../../components/ui/EmptyState";
 import LeaveListDesktop from "../components/LeaveListDesktop";
 import LeaveListMobile from "../components/LeaveListMobile";
 import { formatBusinessDate } from "../../../utils/dateUtils";
+import type { LeaveFormValues } from "../../../schemas/forms";
 import { Z } from "../../../constants/zScale";
 
 type ProcessedLeave = LeaveRecord & { employeeName: string };
@@ -44,31 +45,36 @@ export interface LeaveManagerViewProps {
   isFormVisible: boolean;
   editingLeave: LeaveRecord | null;
   leaveToDelete: ProcessedLeave | null;
-  type: LeaveRecord["type"] | "";
-  startDate: string;
-  endDate: string;
+  /**
+   * Estado del formulario de ausencia (spec 036 T8): lo lleva la capa de
+   * formulario, no un `useState` por campo.
+   */
+  formValues: LeaveFormValues;
+  getError: (field: string) => string | undefined;
+  setValue: <K extends keyof LeaveFormValues & string>(name: K, value: LeaveFormValues[K]) => void;
   isStartDatePickerOpen: boolean;
   isEndDatePickerOpen: boolean;
-  notes: string;
   searchTerm: string;
   isDropdownOpen: boolean;
   searchContainerRef: React.RefObject<HTMLDivElement | null>;
   filteredEmployeesForSearch: Employee[];
+  isSubmitting: boolean;
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
   setShowArchived: React.Dispatch<React.SetStateAction<boolean>>;
   setFilterType: React.Dispatch<React.SetStateAction<string>>;
   setFilterEmployeeName: React.Dispatch<React.SetStateAction<string>>;
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
   setLeaveToDelete: React.Dispatch<React.SetStateAction<ProcessedLeave | null>>;
-  setType: React.Dispatch<React.SetStateAction<LeaveRecord["type"] | "">>;
-  setStartDate: React.Dispatch<React.SetStateAction<string>>;
-  setEndDate: React.Dispatch<React.SetStateAction<string>>;
   setIsStartDatePickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsEndDatePickerOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setNotes: React.Dispatch<React.SetStateAction<string>>;
   setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   resetForm: () => void;
   handleEditClick: (leave: LeaveRecord) => void;
-  handleSave: (e: React.FormEvent) => Promise<void>;
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelectEmployee: (employee: Employee) => void;
   handleClearFilter: () => void;
@@ -90,31 +96,27 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
   isFormVisible,
   editingLeave,
   leaveToDelete,
-  type,
-  startDate,
-  endDate,
+  formValues,
+  getError,
+  setValue,
   isStartDatePickerOpen,
   isEndDatePickerOpen,
-  notes,
   searchTerm,
   isDropdownOpen,
   searchContainerRef,
   filteredEmployeesForSearch,
+  isSubmitting,
+  formProps,
   setShowArchived,
   setFilterType,
   setFilterEmployeeName,
   setIsFormVisible,
   setLeaveToDelete,
-  setType,
-  setStartDate,
-  setEndDate,
   setIsStartDatePickerOpen,
   setIsEndDatePickerOpen,
-  setNotes,
   setIsDropdownOpen,
   resetForm,
   handleEditClick,
-  handleSave,
   handleSearchChange,
   handleSelectEmployee,
   handleClearFilter,
@@ -154,7 +156,7 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
       >
         <div className="overflow-hidden">
           <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm">
-            <form onSubmit={handleSave} className="space-y-8">
+            <form {...formProps} className="space-y-8">
               <h3 className="typo-ui-title text-token-text-primary flex items-center gap-2">
                 <div className="w-1.5 h-5 bg-token-accent-brand rounded-full"></div>
                 {editingLeave ? "Actualizar Ausencia" : "Nueva Solicitud"}
@@ -163,12 +165,16 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div ref={searchContainerRef} className="relative">
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                    <label
+                      htmlFor="leave-employee-search"
+                      className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
+                    >
                       Colaborador
                     </label>
                     <div className="relative group">
                       <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
                       <input
+                        id="leave-employee-search"
                         type="text"
                         value={searchTerm}
                         onChange={handleSearchChange}
@@ -178,6 +184,10 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                         autoComplete="off"
                         required
                         disabled={!!editingLeave}
+                        aria-invalid={getError("employeeId") ? "true" : undefined}
+                        aria-describedby={
+                          getError("employeeId") ? "leave-employee-error" : undefined
+                        }
                         onKeyDown={(e) => {
                           if (e.key === "Enter") e.preventDefault();
                         }}
@@ -204,16 +214,30 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                         )}
                       </ul>
                     )}
+                    {getError("employeeId") && (
+                      <p
+                        id="leave-employee-error"
+                        className="mt-2 pl-1 text-xs font-semibold text-token-status-error"
+                      >
+                        {getError("employeeId")}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                    <label
+                      htmlFor="leave-type"
+                      className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
+                    >
                       Tipo
                     </label>
                     <select
-                      value={type}
-                      onChange={(e) => setType(e.target.value as LeaveRecord["type"])}
+                      id="leave-type"
+                      value={formValues.type}
+                      onChange={(e) => setValue("type", e.target.value)}
                       disabled={!!editingLeave}
+                      aria-invalid={getError("type") ? "true" : undefined}
+                      aria-describedby={getError("type") ? "leave-type-error" : undefined}
                       className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary appearance-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option
@@ -233,68 +257,132 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
                         </option>
                       ))}
                     </select>
+                    {getError("type") && (
+                      <p
+                        id="leave-type-error"
+                        className="mt-2 pl-1 text-xs font-semibold text-token-status-error"
+                      >
+                        {getError("type")}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                    <label
+                      htmlFor="leave-start-date"
+                      className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
+                    >
                       Inicio
                     </label>
                     <button
+                      id="leave-start-date"
                       type="button"
                       onClick={() => setIsStartDatePickerOpen(true)}
                       disabled={!!editingLeave}
+                      aria-invalid={getError("startDate") ? "true" : undefined}
+                      aria-describedby={
+                        getError("startDate") ? "leave-start-date-error" : undefined
+                      }
                       className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <span>{startDate ? formatBusinessDate(startDate) : "Seleccionar"}</span>
+                      <span>
+                        {formValues.startDate
+                          ? formatBusinessDate(formValues.startDate)
+                          : "Seleccionar"}
+                      </span>
                       <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-60" />
                     </button>
                     <DatePickerDialog
                       isOpen={isStartDatePickerOpen}
                       onClose={() => setIsStartDatePickerOpen(false)}
-                      onSelect={(date) => setStartDate(date)}
-                      initialDate={startDate}
+                      onSelect={(date) => setValue("startDate", date)}
+                      initialDate={formValues.startDate}
                     />
+                    {getError("startDate") && (
+                      <p
+                        id="leave-start-date-error"
+                        className="mt-2 text-xs font-semibold text-token-status-error"
+                      >
+                        {getError("startDate")}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                    <label
+                      htmlFor="leave-end-date"
+                      className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
+                    >
                       Fin
                     </label>
                     <button
+                      id="leave-end-date"
                       type="button"
                       onClick={() => setIsEndDatePickerOpen(true)}
+                      aria-invalid={getError("endDate") ? "true" : undefined}
+                      aria-describedby={getError("endDate") ? "leave-end-date-error" : undefined}
                       className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer"
                     >
-                      <span>{endDate ? formatBusinessDate(endDate) : "Seleccionar"}</span>
+                      <span>
+                        {formValues.endDate
+                          ? formatBusinessDate(formValues.endDate)
+                          : "Seleccionar"}
+                      </span>
                       <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-60" />
                     </button>
                     <DatePickerDialog
                       isOpen={isEndDatePickerOpen}
                       onClose={() => setIsEndDatePickerOpen(false)}
-                      onSelect={(date) => setEndDate(date)}
-                      initialDate={endDate}
+                      onSelect={(date) => setValue("endDate", date)}
+                      initialDate={formValues.endDate}
                     />
+                    {getError("endDate") && (
+                      <p
+                        id="leave-end-date-error"
+                        className="mt-2 text-xs font-semibold text-token-status-error"
+                      >
+                        {getError("endDate")}
+                      </p>
+                    )}
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1">
+                    <label
+                      htmlFor="leave-notes"
+                      className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2 pl-1"
+                    >
                       Notas
                     </label>
                     <div className="relative group">
                       <DocumentTextIcon className="absolute left-4 top-4 w-5 h-5 text-token-text-tertiary group-focus-within:text-token-accent-brand transition-colors" />
                       <textarea
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
+                        id="leave-notes"
+                        value={formValues.notes ?? ""}
+                        onChange={(e) => setValue("notes", e.target.value)}
+                        aria-invalid={getError("notes") ? "true" : undefined}
+                        aria-describedby={getError("notes") ? "leave-notes-error" : undefined}
                         className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-technical rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary min-h-[80px] text-sm"
                         placeholder="Observaciones..."
                       />
                     </div>
+                    {getError("notes") && (
+                      <p
+                        id="leave-notes-error"
+                        className="mt-2 pl-1 text-xs font-semibold text-token-status-error"
+                      >
+                        {getError("notes")}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-3 mt-4">
-                <Button type="submit" className="px-8 flex items-center gap-2 rounded-xl">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 flex items-center gap-2 rounded-xl"
+                >
                   {editingLeave ? (
                     <EditIcon className="w-5 h-5" />
                   ) : (

@@ -6,46 +6,15 @@ import React from "react";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import Container from "../../../components/ui/Container";
-import PatternForm from "../components/PatternForm";
+import PatternForm, { type ShiftPatternFormState } from "../components/PatternForm";
 import { PlusCircleIcon, EyeIcon } from "../../../components/ui/icons/index";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
 import EmptyState from "../../../components/ui/EmptyState";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import PatternListDesktop from "../components/PatternListDesktop";
 import PatternListMobile from "../components/PatternListMobile";
-import type { TheoreticalShiftPattern, DayInCycleSchedule } from "../../../types";
+import type { TheoreticalShiftPattern } from "../../../types";
 import { Z } from "../../../constants/zScale";
-
-interface ShiftPatternFormState {
-  editingPattern: TheoreticalShiftPattern | null;
-  setEditingPattern: React.Dispatch<React.SetStateAction<TheoreticalShiftPattern | null>>;
-  patternName: string;
-  setPatternName: React.Dispatch<React.SetStateAction<string>>;
-  patternCycleLength: number;
-  setPatternCycleLength: (value: number) => void;
-  startDayOfWeek: number;
-  setStartDayOfWeek: React.Dispatch<React.SetStateAction<number>>;
-  patternDailySchedules: DayInCycleSchedule[];
-  handleDailyScheduleChange: (
-    index: number,
-    field: keyof DayInCycleSchedule,
-    value: string | boolean | number,
-  ) => void;
-  patternColor: string;
-  setPatternColor: React.Dispatch<React.SetStateAction<string>>;
-  patternMaxHoursInput: number;
-  setPatternMaxHoursInput: React.Dispatch<React.SetStateAction<number>>;
-  patternWorksOnHolidays: boolean;
-  setPatternWorksOnHolidays: React.Dispatch<React.SetStateAction<boolean>>;
-  copiedDailySchedule: Omit<DayInCycleSchedule, "dayIndex" | "hours"> | null;
-  handleCopyDailySchedule: (dayIndex: number) => void;
-  handlePasteDailySchedule: (targetDayIndex: number) => void;
-  startCopyOfPattern: (patternToCopy: TheoreticalShiftPattern) => void;
-  handleSavePattern: () => Promise<boolean>;
-  clearForm: () => void;
-  calculatedPatternWeeklyHours: number;
-  globalMaxWeeklyHours: number;
-}
 
 export interface PatternManagerViewProps {
   searchTerm: string;
@@ -64,7 +33,6 @@ export interface PatternManagerViewProps {
   setPatternToDelete: React.Dispatch<React.SetStateAction<string | null>>;
   handleOpenNewForm: () => void;
   handleCancelForm: () => void;
-  handleSaveForm: () => Promise<boolean>;
   handleConfirmDelete: () => Promise<void>;
   handleEditPattern: (pattern: TheoreticalShiftPattern) => void;
   handleCopyPattern: (pattern: TheoreticalShiftPattern) => void;
@@ -87,7 +55,6 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
   setPatternToDelete,
   handleOpenNewForm,
   handleCancelForm,
-  handleSaveForm,
   handleConfirmDelete,
   handleEditPattern,
   handleCopyPattern,
@@ -126,11 +93,7 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
       >
         <div className="overflow-hidden">
           <div className="bg-token-surface-card rounded-lg border border-token-border-technical p-6 shadow-sm">
-            <PatternForm
-              onCancel={handleCancelForm}
-              onSave={handleSaveForm}
-              patternForm={patternForm}
-            />
+            <PatternForm onCancel={handleCancelForm} patternForm={patternForm} />
           </div>
         </div>
       </div>
