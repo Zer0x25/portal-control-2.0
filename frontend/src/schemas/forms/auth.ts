@@ -15,11 +15,35 @@ import { requiredText, requiredTextMin } from "./common";
  *
  * Contrato: `Login` (el backend exige `username` y `password`, sin reglas de
  * formato: el mensaje de credenciales invalidas lo da la API).
+ *
+ * **Regla estricta del cliente**: el formulario **no normaliza** (la
+ * credencial viaja tal cual la escribe el usuario, spec 036 T13), asi que sin
+ * esto un campo vacio llegaria a la API. Antes lo bloqueaba el `required`
+ * nativo del `<form>`; ahora el error sale junto al campo (spec 036 AC3). Un
+ * `superRefine` no aparece en el JSON Schema que compara la paridad, asi que
+ * el contrato `Login` no cambia.
  */
-export const loginFormSchema = z.object({
-  username: requiredText("El usuario"),
-  password: requiredText("La contraseña"),
-});
+export const loginFormSchema = z
+  .object({
+    username: requiredText("El usuario"),
+    password: requiredText("La contraseña"),
+  })
+  .superRefine((values, ctx) => {
+    if (!values.username) {
+      ctx.addIssue({
+        code: "custom",
+        message: ERROR_MESSAGES.required("El usuario"),
+        path: ["username"],
+      });
+    }
+    if (!values.password) {
+      ctx.addIssue({
+        code: "custom",
+        message: ERROR_MESSAGES.required("La contraseña"),
+        path: ["password"],
+      });
+    }
+  });
 
 /**
  * Copia del contrato `MFAValidate`

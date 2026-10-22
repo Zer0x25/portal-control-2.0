@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { User } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useControlInternoEnabledQuery } from "../../../hooks/queries/useConfigQuery";
 import { useToasts } from "../../../hooks/useToasts";
+import { useAppForm } from "../../../hooks/useAppForm";
+import { loginFormSchema, type LoginFormValues } from "../../../schemas/forms/auth";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import Card from "../../../components/ui/Card";
@@ -11,15 +13,13 @@ import { APP_TITLE, ROUTES } from "../../../constants";
 import { Link, useNavigate } from "react-router";
 import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
+import { logger } from "../../../utils/logger";
 import BrandLogo from "../../../components/ui/BrandLogo";
 import MFALoginModal from "../components/MFALoginModal.container";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const { login, isAuthenticated, currentUser, mfaRequired, logout } = useAuth();
   const { data: isControlInternoEnabled = true } = useControlInternoEnabledQuery();
   const { addToast } = useToasts();
@@ -33,26 +33,54 @@ const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, currentUser, navigate, isControlInternoEnabled]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await login(username, password);
-      if (response && !("mfaRequired" in response && response.mfaRequired)) {
-        const user = response as User;
-        const redirectPath = getDefaultRouteForRole(user.role, isControlInternoEnabled);
-        addToast(`¡Bienvenido, ${user.username}!`, "success");
-        navigate(redirectPath, { replace: true });
+  /**
+   * Spec 036 T12 (AC1, AC2, AC3): el formulario de inicio de sesion pasa a
+   * `useAppForm`.
+   *
+   * Antes usuario y contrasena vivian en `useState` y la unica regla era el
+   * `required` nativo del `<form>` (sin `noValidate`, el navegador bloqueaba
+   * el envio vacio). Ahora:
+   *
+   * - los dos campos viven en el formulario (spec 036 AC1);
+   * - la regla de no-vacio esta en `loginFormSchema` (spec 036 AC2, un
+   *   `superRefine` declarado como divergencia en el mapa de contratos);
+   * - el error sale junto a cada campo (spec 036 AC3).
+   *
+   * La credencial **no se recorta** (spec 036 T13): `normalize` queda
+   * desactivado, asi que el payload sigue siendo `username`/`password` en
+   * crudo, igual que antes de la migracion.
+   */
+  const form = useAppForm<LoginFormValues>({
+    schema: loginFormSchema,
+    defaultValues: { username: "", password: "" },
+    normalize: (values) => values,
+    onSubmit: async (values) => {
+      try {
+        const response = await login(values.username, values.password);
+        if (response && !("mfaRequired" in response && response.mfaRequired)) {
+          const user = response as User;
+          const redirectPath = getDefaultRouteForRole(user.role, isControlInternoEnabled);
+          addToast(`¡Bienvenido, ${user.username}!`, "success");
+          navigate(redirectPath, { replace: true });
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Error de conexión con el servidor";
+        addToast(errorMessage, "error");
+        logger.error("Login error:", error);
       }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Error de conexión con el servidor";
-      addToast(errorMessage, "error");
-      console.error("Login error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
+
+  const { values, getError, isSubmitting, formProps } = form;
+  const usernameError = getError("username");
+  const passwordError = getError("password");
+
+  /** Escribe el usuario. */
+  const handleUsernameChange = (value: string) => form.setValue("username", value);
+
+  /** Escribe la contrasena. */
+  const handlePasswordChange = (value: string) => form.setValue("password", value);
 
   const handleMFASuccess = () => {
     if (currentUser) {
@@ -123,11 +151,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             {/* Form Section */}
-            <form
-              onSubmit={handleSubmit}
-              data-testid="login-form"
-              className="space-y-6 sm:space-y-5"
-            >
+            <form {...formProps} data-testid="login-form" className="space-y-6 sm:space-y-5">
               <div className="space-y-4 animate-in fade-in [animation-duration:800ms] [animation-delay:500ms]">
                 <div className="group/input relative">
                   <label htmlFor="username" className="sr-only">
@@ -136,15 +160,24 @@ const LoginPage: React.FC = () => {
                   <Input
                     id="username"
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
+                    value={values.username}
+                    onChange={(e) => handleUsernameChange(e.target.value)}
                     placeholder="USUARIO"
                     autoComplete="username"
+                    aria-invalid={usernameError ? "true" : undefined}
+                    aria-describedby={usernameError ? "username-error" : undefined}
                     className="bg-token-surface-stripe border-token-border-subtle text-token-text-primary placeholder:text-token-text-tertiary rounded-xl px-4 py-3.5 focus:border-sap-blue focus:bg-token-surface-active focus:ring-1 focus:ring-sap-blue/20 transition-all font-bold text-sm tracking-wide"
                   />
                   <div className="absolute inset-0 rounded-xl border border-token-border-subtle pointer-events-none"></div>
                 </div>
+                {usernameError && (
+                  <p
+                    id="username-error"
+                    className="ml-1 text-[10px] font-black uppercase tracking-widest text-token-status-error"
+                  >
+                    {usernameError}
+                  </p>
+                )}
 
                 <div className="group/input relative">
                   <label htmlFor="password" className="sr-only">
@@ -153,15 +186,24 @@ const LoginPage: React.FC = () => {
                   <Input
                     id="password"
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    value={values.password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                     placeholder="CONTRASEÑA"
                     autoComplete="current-password"
+                    aria-invalid={passwordError ? "true" : undefined}
+                    aria-describedby={passwordError ? "password-error" : undefined}
                     className="bg-token-surface-stripe border-token-border-subtle text-token-text-primary placeholder:text-token-text-tertiary rounded-xl px-4 py-3.5 focus:border-sap-blue focus:bg-token-surface-active focus:ring-1 focus:ring-sap-blue/20 transition-all font-bold text-sm tracking-wide"
                   />
                   <div className="absolute inset-0 rounded-xl border border-token-border-subtle pointer-events-none"></div>
                 </div>
+                {passwordError && (
+                  <p
+                    id="password-error"
+                    className="ml-1 text-[10px] font-black uppercase tracking-widest text-token-status-error"
+                  >
+                    {passwordError}
+                  </p>
+                )}
               </div>
 
               <div className="animate-in fade-in slide-in-from-bottom-4 [animation-duration:600ms] [animation-delay:600ms]">
@@ -170,11 +212,11 @@ const LoginPage: React.FC = () => {
                   variant="primary"
                   data-testid="login-submit"
                   className="w-full h-12 rounded-xl bg-sap-blue text-token-text-onAccent hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition duration-300"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 >
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
 
-                  {loading ? (
+                  {isSubmitting ? (
                     <div className="flex items-center gap-3">
                       <LoadingSpinner size="xs" variant="onAccent" />
                       <span className="opacity-80 font-black uppercase tracking-widest text-[10px] text-token-text-onAccent">

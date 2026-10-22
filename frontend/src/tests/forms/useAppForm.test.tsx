@@ -41,14 +41,17 @@ interface HarnessProps {
   onSubmit: (values: Values) => void | Promise<void>;
   defaultValues?: Values;
   nullableFields?: string[];
+  /** Desactiva la normalizacion (payload en crudo). */
+  normalize?: (values: Values) => Values;
 }
 
-const Harness = ({ onSubmit, defaultValues, nullableFields }: HarnessProps) => {
+const Harness = ({ onSubmit, defaultValues, nullableFields, normalize }: HarnessProps) => {
   const form = useAppForm<Values>({
     schema,
     defaultValues: defaultValues ?? DEFAULT_VALUES,
     onSubmit,
     nullableFields,
+    normalize,
   });
 
   return (
@@ -158,6 +161,25 @@ describe("useAppForm (spec 036 AC1, AC3, AC4)", () => {
       name: "Juan Pérez",
       email: "persona@dominio.com",
       notes: null,
+    });
+  });
+
+  it("con normalize desactivado el payload llega en crudo (spec 036 T11/T12)", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    // Los formularios de credenciales (inicio de sesion, cambio de contrasena)
+    // desactivan la normalizacion: la validacion puede recortar, el payload no.
+    render(<Harness onSubmit={onSubmit} normalize={(values) => values} />);
+
+    await user.type(screen.getByLabelText("NOMBRE"), "  Juan Pérez  ");
+    await user.type(screen.getByLabelText("EMAIL"), "  persona@dominio.com  ");
+    await user.click(screen.getByRole("button", { name: "ENVIAR" }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toEqual({
+      name: "  Juan Pérez  ",
+      email: "  persona@dominio.com  ",
+      notes: "",
     });
   });
 });

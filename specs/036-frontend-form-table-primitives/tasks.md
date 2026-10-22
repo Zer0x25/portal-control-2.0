@@ -751,6 +751,55 @@ de `normalizeFormValues`, documentado en el README de `schemas/`.
 **Ratchet:** sin cambios (**80** componentes con estado y **48** grandes sin
 gemelo container/view: los dos modales ya tenian su par container/view).
 
+### Nota de ejecución — Fase C, PR 11 (T12a: `LoginPage`)
+
+**El formulario migrado a `useAppForm` + schema:**
+
+| Formulario       | Componente                 | Schema            |
+| ---------------- | -------------------------- | ----------------- |
+| Inicio de sesión | `auth/pages/LoginPage.tsx` | `loginFormSchema` |
+
+**Hallazgos (afectan a T12b/T12c y a T13):**
+
+1. **Un formulario de credenciales no normaliza** (mismo criterio que el cambio
+   de contraseña en T11a): `normalize: (values) => values` para que la
+   contraseña viaje sin recortar. Pero `requiredText` **no** tiene `.min()`,
+   asi que quien vaciaba el campo era la normalización (`""` -> `undefined`).
+   Sin ella el vacio viajaria a la API: la regla pasa a un `superRefine` del
+   schema (los dos campos) con mensaje de `ERROR_MESSAGES.required`. Un
+   `superRefine` no aparece en el JSON Schema que compara la paridad, asi que
+   el contrato `Login` no cambia (divergencia declarada en el mapa y en el
+   README).
+2. **El `<form>` viejo no llevaba `noValidate`**: el `required` nativo del
+   navegador **si** bloqueaba el envio vacio. Al pasar a `formProps` (que trae
+   `noValidate: true`) la regla del schema deja de ser opcional: sin ella habria
+   una llamada a la API por cada intento vacio, con peor mensaje que el burbuja
+   nativa.
+3. **El error no puede ir en la primitiva `Input` aqui**: la pagina envuelve
+   cada input en `.group/input relative` con un borde decorativo
+   `absolute inset-0`; un mensaje dentro del `Input` creceria ese recuadro. El
+   error se pinta fuera del wrapper, con `aria-invalid`/`aria-describedby`
+   apuntando a un `id` fijo (`username-error` / `password-error`).
+4. Higiene: el `console.error` del `catch` pasa a `logger.error` (invariante de
+   loggers estructurados; la salida es la misma, `logger` es un passthrough).
+
+**Payload idéntico al anterior (T13):** `{ username, password }` en crudo, sin
+trim, exactamente lo que `login()` recibia antes. Fijado en
+`frontend/src/tests/forms/useAppForm.test.tsx` («con normalize desactivado el
+payload llega en crudo») y en `authSchemaRules.test.ts`.
+
+**Evidencia:**
+
+| Artefacto                     | Ubicación                                                 |
+| ----------------------------- | --------------------------------------------------------- |
+| Regla de no-vacio del schema  | `frontend/src/schemas/forms/auth.ts`                      |
+| Tests de la regla             | `frontend/src/tests/forms/authSchemaRules.test.ts`        |
+| Contrato del payload en crudo | `frontend/src/tests/forms/useAppForm.test.tsx`            |
+| Paridad de los contratos      | `frontend/src/tests/contracts/form-schema-parity.test.ts` |
+
+**Ratchet:** sin cambios (`LoginPage` vive en `features/auth/pages/`, fuera de
+los directorios que mide la spec 033).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`
