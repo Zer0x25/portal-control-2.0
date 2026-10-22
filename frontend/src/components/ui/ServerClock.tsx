@@ -22,7 +22,7 @@ const ServerClock: React.FC<ServerClockProps> = ({
   const currentDateTime = useServerTime();
 
   return (
-    <div className={containerClassName}>
+    <div data-testid="server-clock" className={containerClassName}>
       {showDate && (
         <div className={dateClassName}>
           {currentDateTime.toLocaleDateString("es-CL", {

@@ -53,3 +53,70 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
   (`rut_input|employee_list|pin_input|actions|success|change_pin`), `kiosk-display`,
   `kiosk-keypad`, `kiosk-key-<1..9,K,0>`, `kiosk-key-delete`, `kiosk-key-confirm`,
   `kiosk-exit-button`, `kiosk-rut-error`, `kiosk-pin-error`.
+
+## Regresión visual (spec 035, AC4)
+
+Suite curada de 6 rutas (`visual-targets.ts` es el **único** fichero que
+declara el conjunto), en tema claro y oscuro. Vive en el proyecto `visual` de
+`playwright.config.ts` y corre **después** de los funcionales y **antes** de
+`perf`.
+
+```bash
+# Ejecutar la suite visual contra el staging (el proyecto `visual` arrastra
+# la dependencia `functional`, así que corre todo el e2e):
+E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api \
+  npx playwright test --project visual
+
+# Solo el spec visual, sin arrastrar los funcionales:
+E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api \
+  npx playwright test --project visual --no-deps
+```
+
+### Baselines: operación explícita y separada
+
+Los baselines versionados están en
+`frontend/e2e/visual-regression.spec.ts-snapshots/`. **Actualizarlos nunca
+ocurre dentro de un PR de código**: es un PR dedicado, solo con los PNG, cuyo
+diff de imágenes _es_ la revisión.
+
+```bash
+# 1) Rebuild del staging con el código candidato
+docker compose --env-file .env.staging -f compose.staging.yaml up --build -d
+
+# 2) Regenerar los baselines
+E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api \
+  npx playwright test --project visual --no-deps --update-snapshots
+
+# 3) Verificar que son estables (segunda corrida, sin actualizar)
+E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api \
+  npx playwright test --project visual --no-deps
+
+# 4) PR dedicado con los PNG regenerados
+```
+
+Reglas:
+
+- El staging debe servir **el código que se quiere capturar**. Un baseline
+  generado contra un build viejo congela la UI vieja.
+- Si un baseline cambia por motivos de **datos** (no de diseño), el arreglo
+  es enmascarar la región (`volatileSelectors` / `volatileCards` en
+  `visual-targets.ts`), **no** subir la tolerancia.
+- Los baselines son específicos de plataforma (el sufijo `-linux.png` lo
+  decide Playwright). El CI corre en `ubuntu-latest` con el mismo Chromium y
+  las fuentes embebidas (Inter / Roboto Mono), así que el mismo baseline sirve
+  para local y CI.
+
+### Qué se compara y qué no
+
+El staging **muta en cada corrida e2e** (empleados `E2E Kiosk ...`, auditorías,
+conteos de plantilla). Comparar ese contenido produce un baseline que se
+rompe en cada ejecución: un test que miente. Por eso:
+
+| Palanca           | Dónde                                  | Qué resuelve                                  |
+| ----------------- | -------------------------------------- | --------------------------------------------- |
+| Reloj fijo        | `page.clock.setFixedTime` en el spec   | saludo por hora, fechas, "hoy"                |
+| Zona horaria fija | `timezoneId` en `playwright.config.ts` | misma hora local en runner y CI               |
+| Enmascarado       | `volatileSelectors` / `volatileCards`  | clima, reloj del servidor, conteos, auditoría |
+
+El resto de la página (jerarquía, tipografía, color, espaciado, estados vacíos)
+**sí** se compara: es lo que la regresión visual debe proteger.

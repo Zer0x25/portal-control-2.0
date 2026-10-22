@@ -33,19 +33,30 @@ export default defineConfig({
       testIgnore: ["**/performance.spec.ts", "**/visual-regression.spec.ts"],
       use: { ...devices["Desktop Chrome"] },
     },
-    {
-      name: "perf",
-      testMatch: "**/performance.spec.ts",
-      dependencies: ["functional"],
-      use: { ...devices["Desktop Chrome"] },
-    },
     // Regresion visual (spec 035 T15): corre despues de los funcionales
     // (incluido axe-core) y antes de `perf`, que necesita serie sin carga
     // concurrente. Solo sobre el conjunto curado de visual-targets.ts.
+    //
+    // `timezoneId` fija la zona de negocio de la app (America/Santiago): sin
+    // ella, el runner y el CI renderizan horas distintas y el baseline nunca
+    // coincide consigo mismo (spec 035 T14).
     {
       name: "visual",
       testMatch: "**/visual-regression.spec.ts",
       dependencies: ["functional"],
+      use: {
+        ...devices["Desktop Chrome"],
+        timezoneId: "America/Santiago",
+        colorScheme: "light",
+      },
+    },
+    // `perf` depende de `visual` para forzar el orden funcional -> visual ->
+    // perf: las mediciones de render no se contaminan con la carga de la
+    // regresion visual (spec 035 T15).
+    {
+      name: "perf",
+      testMatch: "**/performance.spec.ts",
+      dependencies: ["functional", "visual"],
       use: { ...devices["Desktop Chrome"] },
     },
   ],

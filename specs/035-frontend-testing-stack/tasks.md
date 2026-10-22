@@ -147,6 +147,37 @@ branches: 13, statements: 16}` al valor medido y sostenido (objetivo
 
 ## Notas de ejecucion (2026-10-21)
 
+- **T14 (hecho, 2026-10-22)**: los 12 baselines (6 rutas x 2 temas) quedan
+  versionados en `frontend/e2e/visual-regression.spec.ts-snapshots/`. Un
+  snapshot contra un staging vivo es fragil por definicion, asi que la suite
+  se hizo determinista con tres palancas:
+  1. **Reloj fijo** (`page.clock.setFixedTime` en
+     `frontend/e2e/visual-regression.spec.ts`): congela `Date.now()` y
+     `new Date()` en el navegador (saludo por hora, fechas, "hoy").
+  2. **Zona horaria fija** (`timezoneId: "America/Santiago"` en
+     `frontend/playwright.config.ts`): misma hora local en runner y CI.
+  3. **Enmascarado explicito de datos vivos** (`volatileSelectors` /
+     `volatileCards` en `frontend/e2e/visual-targets.ts`): clima (API
+     externa), reloj del servidor, conteos de la plantilla, alertas de
+     integridad, nombre e id del worker de la factoria e2e y el usuario de la
+     cabecera. El staging muta en cada corrida e2e; sin enmascarar el baseline
+     se rompe en cada ejecucion y el test miente.
+     Mas `data-testid` de contrato DOM (`weather-display`, `server-clock`,
+     `app-header-user`, `worker-identity`, `worker-identity-code`,
+     `governance-integrity-table`, `skeleton`) y una espera explicita a que
+     desaparezcan los esqueletos de carga (`expect.poll` sobre
+     `[data-testid="skeleton"]:visible`), porque capturar el fallback de carga
+     produce un baseline que depende de la latencia y no del diseno.
+     La tabla de alertas de integridad se acota a un alto fijo
+     (`style` en `visual-targets.ts`) porque su alto depende del historial de
+     auditoria del entorno (0 filas en una base recién sembrada, N en un staging
+     de larga vida): asi la region enmascarada tiene siempre la misma geometria.
+     Evidencia: 12/12 estables entre corridas, **66/66** contra un staging con
+     base recién sembrada (equivalente al pipeline de release) y **68/68** con la
+     cadena completa `functional -> visual -> perf`.
+     La operacion de actualizar baselines queda documentada como **explicita y
+     separada** (PR dedicado con el diff de imagenes) en
+     `frontend/e2e/README.md` y `.agents/rules/frontend-testing.md`.
 - **T19 (parcial)**: `validate:ci`, `guardrails`, `spec:check`, `docs:check`,
   `lint:budget` en verde; `e2e:staging` functional 54/54. Visual baselines
   pendientes (staging desactualizado).
@@ -198,18 +229,16 @@ revisados y adaptados a `main`):
   `src/tests/setup.browser.ts` (sin MSW, que es node-only).
 - **T13-T15 (hecho)**: `frontend/e2e/visual-targets.ts` + `visual-regression.spec.ts`
   (`toHaveScreenshot` claro/oscuro) y proyecto `visual` en `playwright.config.ts`.
-  Baselines pendientes de generar con `--update-snapshots`.
+  Baselines generados con `--update-snapshots` (ver nota de T14 mas arriba).
 
 Verificacion final (T19):
 
-- **T19 (hecho parcial)**: `validate:ci` (frontend + backend), `guardrails`,
+- **T19 (hecho)**: `validate:ci` (frontend + backend), `guardrails`,
   `spec:check`, `docs:check` y `lint:budget` en verde. `e2e:staging`
-  (proyecto `functional`): **54/54 pasan** contra el staging levantado.
-  La regresion visual (`--project visual`) no se ejecuto: el staging sirve
-  un build anterior y el helper de login no alcanza el formulario; los
-  baselines se generan en un PR dedicado tras rebuild del staging. El
-  proyecto `visual` queda configurado y el spec es valido (compila y es
-  recogido por playwright).
+  (proyecto `functional`): **54/54 pasan** contra el staging levantado. La
+  regresion visual (`--project visual`): **12/12** con los baselines
+  versionados, **66/66** contra un staging con base recien sembrada y
+  **68/68** con la cadena `functional -> visual -> perf` (ver nota de T14).
 
 Completados en este ciclo (T9):
 

@@ -71,7 +71,10 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
   };
 
   return (
-    <div className="overflow-x-auto rounded-sm border token-border-technical">
+    <div
+      data-testid="governance-integrity-table"
+      className="overflow-x-auto rounded-sm border token-border-technical"
+    >
       <table className="w-full text-left border-collapse bg-token-surface-card">
         <thead>
           <tr className="bg-token-surface-stripe border-b token-border-technical">
