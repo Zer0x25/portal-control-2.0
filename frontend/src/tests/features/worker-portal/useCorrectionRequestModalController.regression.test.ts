@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { useCorrectionRequestModalController } from "../../../features/worker-portal/hooks/useCorrectionRequestModalController";
 
 const { addToastMock, addCorrectionRequestMock, onCloseMock, fileToBase64Mock } = vi.hoisted(
@@ -40,7 +40,7 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
     vi.clearAllMocks();
   });
 
-  it("rechaza datetime con formato inválido sin llamar al backend", async () => {
+  it("rechaza datetime con formato inválido junto al campo, sin llamar al backend", async () => {
     const { result } = renderHook(() =>
       useCorrectionRequestModalController({
         isOpen: true,
@@ -51,18 +51,19 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
     );
 
     act(() => {
-      result.current.setReason("Motivo válido");
-      result.current.setRequestedValue("no-es-fecha");
+      result.current.handleReasonChange("Motivo válido");
+      result.current.handleRequestedValueChange("no-es-fecha");
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+      result.current.submit();
     });
 
-    expect(addToastMock).toHaveBeenCalledWith(
-      "La fecha y hora solicitadas no tienen un formato válido.",
-      "warning",
-    );
+    await waitFor(() => {
+      expect(result.current.getError("requestedValue")).toBe(
+        "Formato de fecha y hora inválido (YYYY-MM-DDTHH:mm)",
+      );
+    });
     expect(addCorrectionRequestMock).not.toHaveBeenCalled();
   });
 
@@ -112,15 +113,17 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
     });
 
     act(() => {
-      result.current.setReason("Motivo válido");
-      result.current.setRequestedValue("2026-03-05T09:00");
+      result.current.handleReasonChange("Motivo válido");
+      result.current.handleRequestedValueChange("2026-03-05T09:00");
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+      result.current.submit();
     });
 
-    expect(addToastMock).toHaveBeenCalledWith("Error al procesar el archivo adjunto.", "error");
+    await waitFor(() => {
+      expect(addToastMock).toHaveBeenCalledWith("Error al procesar el archivo adjunto.", "error");
+    });
     expect(addCorrectionRequestMock).not.toHaveBeenCalled();
     expect(onCloseMock).not.toHaveBeenCalled();
   });
@@ -137,18 +140,20 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
 
     // businessNow mockeado: 2026-03-06T15:45Z → pedir 2026-03-07 es futuro.
     act(() => {
-      result.current.setReason("Motivo válido");
-      result.current.setRequestedValue("2026-03-07T09:00");
+      result.current.handleReasonChange("Motivo válido");
+      result.current.handleRequestedValueChange("2026-03-07T09:00");
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as React.FormEvent);
+      result.current.submit();
     });
 
-    expect(addToastMock).toHaveBeenCalledWith(
-      "No se puede solicitar una corrección con fecha futura.",
-      "warning",
-    );
+    await waitFor(() => {
+      expect(addToastMock).toHaveBeenCalledWith(
+        "No se puede solicitar una corrección con fecha futura.",
+        "warning",
+      );
+    });
     expect(addCorrectionRequestMock).not.toHaveBeenCalled();
   });
 

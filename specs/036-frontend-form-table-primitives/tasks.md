@@ -692,6 +692,65 @@ enviando `{ token }`.
 componentes con estado) y de **49** a **48** (los grandes sin gemelo
 container/view).
 
+### Nota de ejecución — Fase C, PR 10 (T11b: `worker-portal` + `dashboard`)
+
+**Los formularios migrados a `useAppForm` + schema:**
+
+| Formulario              | Hook / controller                                            | Schema                        |
+| ----------------------- | ------------------------------------------------------------ | ----------------------------- |
+| Solicitud de corrección | `worker-portal/hooks/useCorrectionRequestModalController.ts` | `correctionRequestFormSchema` |
+| Nota rápida             | `dashboard/hooks/useQuickNotesModalController.ts`            | `quickNoteFormSchema`         |
+
+**Hallazgos (afectan a T12-T13):**
+
+1. **Un formulario puede escribir un subconjunto del contrato** (el mismo
+   patrón que `rejectionReasonForm` en T10a): `CorrectionRequestModal` solo
+   escribe `requestedValue` y `reason`; el empleado, el marcaje, el campo y
+   el valor actual los aporta la pantalla que lo abre, y el adjunto es un
+   `File` que se convierte a base64 al enviar. La copia completa del contrato
+   queda registrada como `correctionRequestBaseForm` (`forms: []`).
+2. **La copia base tambien declara `transformedFields`**: el comparador de
+   paridad salta `type`/`format`/`pattern` de los campos transformados
+   **por entrada**, asi que la representacion de pantalla (`YYYY-MM-DDTHH:mm`
+   en vez de ISO-8601 con offset) tiene que estar declarada en la copia y no
+   solo en la del formulario. Sin eso, la paridad falla con
+   `requestedValue.format: formulario=undefined backend="date-time"`.
+3. **Una regla de formato puede vivir en el schema** gracias a eso:
+   `requestedValue` lleva el `pattern` de `YYYY-MM-DDTHH:mm` (antes era un
+   toast) y la paridad no se rompe porque el campo esta declarado
+   transformado.
+4. **Tres reglas siguen en el payload**, porque necesitan el valor ya
+   convertido: la conversion a ISO-8601 con offset, que la correccion no este
+   en el futuro y la conversion del adjunto a base64. Las tres siguen
+   avisando por toast, como antes.
+5. **El boton deshabilitado por texto vacio** (notas rapidas) escondia la
+   regla (`disabled={!newNoteContent.trim()}`): ahora el contenido vacio es
+   un error de campo junto al `Textarea` y el boton solo se deshabilita
+   durante el envio.
+6. **El `<textarea>` del motivo es HTML critico** (no usa la primitiva
+   `Textarea`, que cambiaria la maqueta): el error se pinta a mano con
+   `aria-invalid`/`aria-describedby`, igual que hacen las primitivas.
+
+**Payload identico al anterior (T13):** verificado en los tests de los dos
+controllers. La solicitud sigue enviando
+`{ employeeId, timeRecordId, recordField, originalValue, requestedValue,
+reason, attachment }` (con `requestedValue` convertido a ISO) y la nota
+sigue pasando `content` y `color` a `addNote`. La unica diferencia de bytes
+es el `trim` de la capa (`reason`/`content`): es el comportamiento estandar
+de `normalizeFormValues`, documentado en el README de `schemas/`.
+
+**Evidencia:**
+
+| Artefacto                | Ubicación                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| Schemas de formulario    | `frontend/src/schemas/forms/correction.ts` y `forms/note.ts`                             |
+| Tests de los formularios | `frontend/src/tests/features/worker-portal/` (2 ficheros) y `.../dashboard/` (1 fichero) |
+| Paridad de los contratos | `frontend/src/tests/contracts/form-schema-parity.test.ts`                                |
+| Ratchet de la spec 033   | `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts`                             |
+
+**Ratchet:** sin cambios (**80** componentes con estado y **48** grandes sin
+gemelo container/view: los dos modales ya tenian su par container/view).
+
 ## Verificación final
 
 - [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`

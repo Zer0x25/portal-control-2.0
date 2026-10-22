@@ -75,6 +75,9 @@ export const ERROR_MESSAGES = {
   /** Hora con un formato distinto de `HH:mm` (24 horas). */
   invalidTime: (): string => "Formato de hora inválido (HH:mm)",
 
+  /** Fecha-hora de pantalla con un formato distinto de `YYYY-MM-DDTHH:mm`. */
+  invalidDateTimeLocal: (): string => "Formato de fecha y hora inválido (YYYY-MM-DDTHH:mm)",
+
   /** Patente vehicular que no sigue el formato de la pantalla (`AA-BB-11`). */
   invalidLicensePlate: (): string => "La patente vehicular no tiene un formato válido (AA-BB-11).",
 

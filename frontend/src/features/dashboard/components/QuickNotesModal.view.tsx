@@ -14,19 +14,35 @@ import Textarea from "../../../components/ui/Textarea";
 import { QuickNote } from "../../../types";
 import { COLOR_MAP, INDICATOR_COLOR_MAP } from "../hooks/useQuickNotesModalController";
 
+/**
+ * Spec 036 T11: `QuickNotesModal` es **presentacion pura**.
+ *
+ * El texto y el color de la nota nueva, sus errores y el handler de envio
+ * entran por props (los lleva el hook de dominio) y la maqueta es la misma.
+ */
 interface QuickNotesModalViewProps {
   isOpen: boolean;
   onClose: () => void;
   notes: QuickNote[];
   isLoadingNotes: boolean;
-  newNoteContent: string;
+  noteContent: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  contentError?: string;
   selectedColor: string;
   colorOptions: string[];
-  onSetSelectedColor: (color: string) => void;
-  onSetNewNoteContent: (value: string) => void;
-  onAddNote: (e: React.FormEvent) => void;
+  onColorChange: (color: string) => void;
+  onContentChange: (value: string) => void;
   onDeleteNote: (id: string) => void;
   canDelete: (authorUsername: string) => boolean;
+  /** Hay un envio en vuelo. */
+  isSubmitting: boolean;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
 const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
@@ -34,14 +50,16 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
   onClose,
   notes,
   isLoadingNotes,
-  newNoteContent,
+  noteContent,
+  contentError,
   selectedColor,
   colorOptions,
-  onSetSelectedColor,
-  onSetNewNoteContent,
-  onAddNote,
+  onColorChange,
+  onContentChange,
   onDeleteNote,
   canDelete,
+  isSubmitting,
+  formProps,
 }) => {
   if (!isOpen) {
     return null;
@@ -67,14 +85,14 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
       maxWidth="max-w-lg"
     >
       <div className="space-y-6">
-        <form onSubmit={onAddNote} className="space-y-4">
+        <form {...formProps} className="space-y-4">
           <div className="flex gap-2">
             {colorOptions.map((color) => (
               <Button
                 key={color}
                 type="button"
                 variant="none"
-                onClick={() => onSetSelectedColor(color)}
+                onClick={() => onColorChange(color)}
                 className={`w-5 h-5 rounded-full border-2 transition-all cursor-pointer ${
                   selectedColor === color
                     ? "scale-110 border-indigo-500 shadow-sm"
@@ -89,8 +107,9 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
 
           <Textarea
             id="new-note-content"
-            value={newNoteContent}
-            onChange={(e) => onSetNewNoteContent(e.target.value)}
+            value={noteContent}
+            onChange={(e) => onContentChange(e.target.value)}
+            error={contentError}
             placeholder="Escribir una nueva nota técnica..."
             className="text-sm"
             autoComplete="off"
@@ -98,11 +117,7 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
           />
 
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={!newNoteContent.trim() || isLoadingNotes}
-              className="px-6 h-10"
-            >
+            <Button type="submit" disabled={isSubmitting || isLoadingNotes} className="px-6 h-10">
               Fijar Nota
             </Button>
           </div>

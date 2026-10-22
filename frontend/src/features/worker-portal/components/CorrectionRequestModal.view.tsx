@@ -12,22 +12,38 @@ import {
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import { Z } from "../../../constants/zScale";
 
+/**
+ * Spec 036 T11: `CorrectionRequestModal` es **presentacion pura**.
+ *
+ * Los valores, los errores y el handler de envio entran por props (los lleva
+ * el hook de dominio) y la maqueta es la misma.
+ */
 interface CorrectionRequestModalViewProps {
   isOpen: boolean;
   onClose: () => void;
   record: DailyTimeRecord;
   field: TimeRecordField;
   requestedValue: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  requestedValueError?: string;
   maxRequestedValue: string;
   reason: string;
+  /** Mensaje de error del campo (o `undefined`). */
+  reasonError?: string;
   attachment: File | null;
   attachmentLabel: string;
   isSubmitting: boolean;
   originalValue: string;
-  onSetRequestedValue: (value: string) => void;
-  onSetReason: (value: string) => void;
+  onRequestedValueChange: (value: string) => void;
+  onReasonChange: (value: string) => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
+  formProps: {
+    id: string;
+    noValidate: true;
+    onSubmit: (event: { preventDefault: () => void }) => void;
+    "data-app-form": string;
+  };
 }
 
 const FIELD_LABELS: Record<TimeRecordField, string> = {
@@ -42,16 +58,18 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
   onClose,
   field,
   requestedValue,
+  requestedValueError,
   maxRequestedValue,
   reason,
+  reasonError,
   attachment,
   attachmentLabel,
   isSubmitting,
   originalValue,
-  onSetRequestedValue,
-  onSetReason,
+  onRequestedValueChange,
+  onReasonChange,
   onFileChange,
-  onSubmit,
+  formProps,
 }) => {
   if (!isOpen) {
     return null;
@@ -93,7 +111,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
           </Button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-8 pt-4 space-y-6">
+        <form {...formProps} className="p-8 pt-4 space-y-6">
           <div className="p-5 rounded-2xl bg-sap-blue/5 border border-sap-blue/10">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-black text-sap-blue uppercase tracking-widest">
@@ -119,23 +137,38 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
               type="datetime-local"
               value={requestedValue}
               max={maxRequestedValue}
-              onChange={(e) => onSetRequestedValue(e.target.value)}
-              required
+              onChange={(e) => onRequestedValueChange(e.target.value)}
+              error={requestedValueError}
               className="rounded-md border-token-border-technical focus:ring-sap-blue"
             />
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest pl-1">
+              <label
+                htmlFor="correction-reason"
+                className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest pl-1"
+              >
                 Motivo de la Solicitud
               </label>
               <textarea
+                id="correction-reason"
                 value={reason}
-                onChange={(e) => onSetReason(e.target.value)}
+                onChange={(e) => onReasonChange(e.target.value)}
                 rows={3}
-                className="w-full p-4 rounded-md bg-token-surface-stripe border border-token-border-technical text-sm font-medium focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary"
+                aria-invalid={reasonError ? "true" : undefined}
+                aria-describedby={reasonError ? "correction-reason-error" : undefined}
+                className={`w-full p-4 rounded-md bg-token-surface-stripe text-sm font-medium focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary border ${
+                  reasonError ? "border-token-status-error" : "border-token-border-technical"
+                }`}
                 placeholder="Explique brevemente por qué requiere este cambio..."
-                required
               />
+              {reasonError && (
+                <p
+                  id="correction-reason-error"
+                  className="ml-1 text-[10px] font-black uppercase tracking-widest text-token-status-error"
+                >
+                  {reasonError}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">

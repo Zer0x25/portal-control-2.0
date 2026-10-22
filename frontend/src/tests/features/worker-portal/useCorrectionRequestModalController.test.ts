@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { toDate } from "date-fns-tz";
 import { useCorrectionRequestModalController } from "../../../features/worker-portal/hooks/useCorrectionRequestModalController";
 
@@ -35,8 +35,18 @@ vi.mock("../../../hooks/useBusinessNow", () => ({
   getBusinessNow: () => new Date("2026-03-06T15:45:00.000Z"),
 }));
 
+/**
+ * Spec 036 T11 (AC1, AC2, AC3, T13): el formulario de solicitud de
+ * correccion vive en `useAppForm`. Lo que se fija aqui es lo que la
+ * migracion puede romper:
+ *
+ * 1. **El motivo** ahora es error de campo (AC3), no un toast lejano.
+ * 2. **El payload** conserva exactamente los mismos campos (T13), con
+ *    `requestedValue` convertido a ISO-8601 con offset.
+ * 3. El valor inicial sigue saliendo del registro (o de la hora de negocio).
+ */
 describe("useCorrectionRequestModalController", () => {
-  it("blocks submission when reason is empty", async () => {
+  it("marca el motivo vacio como error de campo", async () => {
     useToastsMock.mockReturnValue({ addToast: addToastMock });
     useSchedulingMock.mockReturnValue({ addCorrectionRequest: addCorrectionRequestMock });
 
@@ -48,16 +58,18 @@ describe("useCorrectionRequestModalController", () => {
           id: "r1",
           employeeId: "e1",
           entrada: "2026-03-05T08:00:00.000Z",
-        } as any,
+        } as unknown as import("../../../types").DailyTimeRecord,
         field: "entrada",
       }),
     );
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+      result.current.submit();
     });
 
-    expect(addToastMock).toHaveBeenCalledWith("El motivo de la solicitud es requerido.", "warning");
+    await waitFor(() => {
+      expect(result.current.getError("reason")).toBe("El motivo es obligatorio.");
+    });
     expect(addCorrectionRequestMock).not.toHaveBeenCalled();
   });
 
@@ -75,28 +87,35 @@ describe("useCorrectionRequestModalController", () => {
           id: "r1",
           employeeId: "e1",
           entrada: "2026-03-05T08:00:00.000Z",
-        } as any,
+        } as unknown as import("../../../types").DailyTimeRecord,
         field: "entrada",
       }),
     );
 
     act(() => {
-      result.current.setReason("Olvide marcar correctamente");
-      result.current.setRequestedValue("2026-03-05T09:00");
+      result.current.handleReasonChange("Olvide marcar correctamente");
+      result.current.handleRequestedValueChange("2026-03-05T09:00");
     });
 
     await act(async () => {
-      await result.current.handleSubmit({ preventDefault: vi.fn() } as any);
+      result.current.submit();
     });
 
-    expect(addCorrectionRequestMock).toHaveBeenCalledTimes(1);
-    expect(addCorrectionRequestMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        requestedValue: toDate("2026-03-05T09:00:00", {
-          timeZone: "America/Santiago",
-        }).toISOString(),
-      }),
-    );
+    await waitFor(() => {
+      expect(addCorrectionRequestMock).toHaveBeenCalledTimes(1);
+    });
+    // T13: mismo shape y mismos nombres de campo que antes de la migracion.
+    expect(addCorrectionRequestMock).toHaveBeenCalledWith({
+      employeeId: "e1",
+      timeRecordId: "r1",
+      recordField: "entrada",
+      originalValue: "2026-03-05T08:00:00.000Z",
+      requestedValue: toDate("2026-03-05T09:00:00", {
+        timeZone: "America/Santiago",
+      }).toISOString(),
+      reason: "Olvide marcar correctamente",
+      attachment: undefined,
+    });
     expect(onCloseMock).toHaveBeenCalled();
   });
 
@@ -112,11 +131,11 @@ describe("useCorrectionRequestModalController", () => {
           id: "r1",
           employeeId: "e1",
           entrada: undefined,
-        } as any,
+        } as unknown as import("../../../types").DailyTimeRecord,
         field: "entrada",
       }),
     );
 
-    expect(result.current.requestedValue).toBe("2026-03-06T12:45");
+    expect(result.current.values.requestedValue).toBe("2026-03-06T12:45");
   });
 });

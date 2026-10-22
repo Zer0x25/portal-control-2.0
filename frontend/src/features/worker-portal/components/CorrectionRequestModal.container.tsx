@@ -29,17 +29,19 @@ const CorrectionRequestModalContainer: React.FC<CorrectionRequestModalProps> = (
       onClose={onClose}
       record={record}
       field={field}
-      requestedValue={controller.requestedValue}
+      requestedValue={controller.values.requestedValue}
+      requestedValueError={controller.getError("requestedValue")}
       maxRequestedValue={controller.maxRequestedValue}
-      reason={controller.reason}
+      reason={controller.values.reason}
+      reasonError={controller.getError("reason")}
       attachment={controller.attachment}
       attachmentLabel={controller.attachmentLabel}
       isSubmitting={controller.isSubmitting}
       originalValue={controller.originalValue}
-      onSetRequestedValue={controller.setRequestedValue}
-      onSetReason={controller.setReason}
+      onRequestedValueChange={controller.handleRequestedValueChange}
+      onReasonChange={controller.handleReasonChange}
       onFileChange={controller.handleFileChange}
-      onSubmit={controller.handleSubmit}
+      formProps={controller.formProps}
     />
   );
 };
