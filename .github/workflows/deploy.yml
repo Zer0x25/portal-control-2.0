@@ -100,7 +100,11 @@ jobs:
           E2E_API_URL: http://127.0.0.1:8080/api
           E2E_ADMIN_USERNAME: admin
           E2E_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || '999.666' }}
-        run: npx playwright test --project=functional --project=perf
+        # Orden de los proyectos (spec 035 T15): `functional` -> `visual` ->
+        # `perf`. `perf` depende de `visual` en `playwright.config.ts`, asi que
+        # las mediciones de render no se contaminan con la carga de la
+        # regresion visual.
+        run: npx playwright test --project=functional --project=visual --project=perf
 
       - name: Upload Playwright report on failure
         if: failure()
