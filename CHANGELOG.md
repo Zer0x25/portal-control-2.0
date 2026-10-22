@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.35.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.34.0...v8.35.0) (2026-10-22)
+
+
+### Features
+
+* **frontend:** primitiva DataTable headless sobre TanStack Table (spec 036 T14, T17) ([#115](https://github.com/Zer0x25/portal-control-2.0/issues/115)) ([a55fee4](https://github.com/Zer0x25/portal-control-2.0/commit/a55fee4d5eed3a7f2d085193c1aa237024998736))
+
 ## [8.34.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.33.0...v8.34.0) (2026-10-22)
 
 
