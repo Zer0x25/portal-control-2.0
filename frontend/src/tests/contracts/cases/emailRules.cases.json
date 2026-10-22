@@ -1,0 +1,27 @@
+{
+  "schemaId": "emailRuleForm",
+  "backendContract": "EmailRuleSchema",
+  "rule": "Una regla activa exige destinatario: el backend lo implementa con un `refine` que el OpenAPI no expresa.",
+  "cases": [
+    {
+      "name": "regla activa con destinatario",
+      "input": { "enabled": true, "recipient": "supervisor@ejemplo.cl" },
+      "expected": { "valid": true }
+    },
+    {
+      "name": "regla activa sin destinatario",
+      "input": { "enabled": true, "recipient": "" },
+      "expected": { "valid": false, "field": "recipient" }
+    },
+    {
+      "name": "regla inactiva sin destinatario",
+      "input": { "enabled": false, "recipient": "" },
+      "expected": { "valid": true }
+    },
+    {
+      "name": "regla inactiva con destinatario invalido",
+      "input": { "enabled": false, "recipient": "no-es-un-email" },
+      "expected": { "valid": false, "field": "recipient" }
+    }
+  ]
+}
