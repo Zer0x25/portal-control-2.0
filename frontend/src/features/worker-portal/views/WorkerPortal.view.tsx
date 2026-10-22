@@ -216,7 +216,10 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               <p className="text-[10px] font-black text-sap-blue uppercase tracking-[0.4em] mb-1">
                 Identidad Digital
               </p>
-              <h2 className="text-3xl font-black text-token-text-primary uppercase italic tracking-tighter">
+              <h2
+                data-testid="worker-identity"
+                className="text-3xl font-black text-token-text-primary uppercase italic tracking-tighter"
+              >
                 {employee?.name}
               </h2>
               <div className="flex items-center gap-3 mt-3">
@@ -226,7 +229,10 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   />
                   {statusLabels[status]}
                 </div>
-                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest italic">
+                <span
+                  data-testid="worker-identity-code"
+                  className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest italic"
+                >
                   # {employee?.id.slice(-8).toUpperCase()}
                 </span>
               </div>

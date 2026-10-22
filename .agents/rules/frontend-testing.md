@@ -37,6 +37,29 @@ spec 034 corrigio (raiz `["reports"]` vs `["shiftReports"]`).
 - La regresion visual corre en Playwright (proyecto `visual`) solo sobre el
   conjunto curado de rutas, despues de los funcionales.
 
+## Regresion visual: baselines versionados
+
+- Los baselines viven en el repo
+  (`frontend/e2e/visual-regression.spec.ts-snapshots/`) y son **la referencia
+  de la UI**. No hay servicio externo de imagenes.
+- **Actualizar un baseline es una operacion explicita y separada**: nunca
+  dentro de un PR de codigo. El flujo es (1) rebuild del staging con el
+  codigo candidato, (2) `npx playwright test --project visual
+--update-snapshots`, (3) PR dedicado con los PNG regenerados (el diff de
+  imagenes es la revision; si el pipeline aun no exigia los baselines, la
+  activacion del proyecto `visual` viaja en ese mismo PR), (4) merge. Un PR
+  de codigo que cambia la UI legitimamente llega con su baseline regenerado
+  en el PR siguiente.
+- Un snapshot que se regenera sin revisar el diff **oculta la regresion que
+  pretendia detectar**: por eso el PR de baselines es obligatorio y separado.
+- Determinismo: reloj fijo (`page.clock.setFixedTime`), zona horaria fija
+  (`America/Santiago`) y enmascarado explicito de las regiones con datos
+  vivos (`volatileSelectors` / `volatileCards` en `e2e/visual-targets.ts`).
+  El staging muta en cada corrida e2e: sin el enmascarado, el baseline se
+  rompe en cada ejecucion y el test miente.
+- `maxDiffPixelRatio` explicito y bajo (`0.02`): absorbe el antialiasing
+  entre plataformas sin tolerar un cambio de diseno real.
+
 ## Como ejecutar cada modo
 
 - `npm run test` / `npm run test:run`: suite JSDOM.

@@ -116,7 +116,10 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                     <UserCircleIcon className="w-6 h-6 text-token-text-tertiary group-hover:text-token-accent-brand transition-colors" />
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-xs font-bold text-token-text-primary uppercase tracking-tight leading-none">
+                    <p
+                      data-testid="app-header-user"
+                      className="text-xs font-bold text-token-text-primary uppercase tracking-tight leading-none"
+                    >
                       {welcomeName}
                     </p>
                     <p className="typo-ui-badge text-token-text-tertiary uppercase mt-1.5">

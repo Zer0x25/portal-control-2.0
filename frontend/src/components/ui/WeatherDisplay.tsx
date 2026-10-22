@@ -46,7 +46,10 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
 
   if (isLoading || !weather) {
     return (
-      <div className="flex items-center justify-center h-[60px] min-w-[100px] sm:w-[150px]">
+      <div
+        data-testid="weather-display"
+        className="flex items-center justify-center h-[60px] min-w-[100px] sm:w-[150px]"
+      >
         <div className="text-[10px] sm:text-xs text-token-text-tertiary">Cargando...</div>
       </div>
     );
@@ -55,7 +58,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
   const uvInfo = getUvInfo(weather.uvIndex);
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3">
+    <div data-testid="weather-display" className="flex items-center gap-2 sm:gap-3">
       <div className="shrink-0">
         <WeatherIcon
           condition={weather.condition}

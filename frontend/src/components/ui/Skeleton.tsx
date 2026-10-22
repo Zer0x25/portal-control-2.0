@@ -14,6 +14,7 @@ const Skeleton: React.FC<SkeletonProps> = ({ className = "", width, height, circ
 
   return (
     <div
+      data-testid="skeleton"
       className={`
         animate-pulse bg-token-surface-technical 
         ${circle ? "rounded-full" : "rounded-md"}
