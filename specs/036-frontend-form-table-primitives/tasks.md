@@ -183,7 +183,7 @@ mergeado antes.
       y `features/theoretical-shifts/components/HolidayForm.tsx` (130) a
       `useAppForm` + schema. Es el PR que descubre los problemas del patrón
       antes de aplicarlo a los demás (AC1, AC2, AC3).
-- [ ] T9: Migrar `employee-management`, `meters` y `user-management`:
+- [x] T9: Migrar `employee-management`, `meters` y `user-management`:
       `EmployeeForm.tsx` (321), `MeterForm.tsx` (189), `MetersModal.tsx` (210),
       `SingleMeterInputModal.tsx` (134) y `UserForm.tsx` (170) a `useAppForm` +
       schema. Los 5 se parten en `.container.tsx` + `.view.tsx` + hook de
@@ -192,7 +192,7 @@ mergeado antes.
       **Dividido en dos PR** (T9a y T9b) por el riesgo que acumulan: los tres
       formularios de `meters` comparten un schema **dinámico** (una lectura por
       medidor) que no se parece en nada a los otros cuatro.
-- [ ] T10: Migrar `configuration`, `logbook` y `supervisor-dashboard`:
+- [x] T10: Migrar `configuration`, `logbook` y `supervisor-dashboard`:
       `SmtpConfigModal.tsx` (427), `SeedingOptionsModal.tsx` (275),
       `configuration/hooks/useEmailCenterController.ts` (126),
       `AddSupplierModal.tsx` (273), `AddNoveltyModal.tsx` (144) y
@@ -203,20 +203,59 @@ mergeado antes.
       en el backend), mientras que los tres de `configuration` hablan con
       el backend (`EmailConfig`, `SendTestEmail`, seeding) y necesitan sus
       schemas contractuales.
-- [ ] T11: Migrar `auth`, `worker-portal` y `dashboard`: `MFASetupModal.tsx`
+- [x] T11: Migrar `auth`, `worker-portal` y `dashboard`: `MFASetupModal.tsx`
       (161), `MFALoginModal.tsx` (114),
       `auth/hooks/useChangePasswordModalController.ts` (97),
       `auth/hooks/useForceChangePasswordModalController.ts` (60),
       `worker-portal/hooks/useCorrectionRequestModalController.ts` (144) y
       `dashboard/hooks/useQuickNotesModalController.ts` (56) a `useAppForm` +
       schema (AC1, AC2, AC3).
-- [ ] T12: Migrar `auth/pages/LoginPage.tsx` (241),
+- [x] T12: Migrar `auth/pages/LoginPage.tsx` (241),
       `governance/hooks/useSystemMaintenanceController.ts` (288) y
       `src/hooks/useTimestampEditor.ts` (110, cuyo estado vive hoy en el
       store) a `useAppForm` + schema (AC1, AC2, AC3).
-- [ ] T13: Verificar en cada migración que el **payload enviado al backend es
+- [x] T13: Verificar en cada migración que el **payload enviado al backend es
       idéntico** al anterior (mismo shape, mismos nombres de campo) y que el
       e2e del flujo correspondiente queda en verde (AC8).
+
+### Nota de ejecución — Fase C, T13 (verificación consolidada de payload)
+
+La T13 no es un PR de codigo: es la verificacion que se hizo **en cada
+migracion** y que queda resumida aqui. El payload es identico al anterior en
+los 21 formularios de la fase; lo que garantiza cada caso vive en el test del
+formulario y en la nota de su PR (T9a a T12c).
+
+**Los tres mecanismos que la capa ofrece y como se usaron:**
+
+| Mecanismo                 | Regla                                            | Formularios                                                 |
+| ------------------------- | ------------------------------------------------ | ----------------------------------------------------------- |
+| Normalizacion por defecto | `trim` y `""` -> `undefined` (omite del payload) | Todos salvo los de credenciales                             |
+| `normalize` desactivado   | La credencial viaja **en crudo** (sin recortar)  | `loginForm`, `adminResetPasswordForm`, `changePasswordForm` |
+| `serialize`               | Transforma antes de enviar, sin tocar el estado  | `adminResetPasswordForm` (recorta el usuario), correcciones |
+
+**Evidencia por formulario** (test que fija el payload):
+
+| Pantalla                    | PR     | Garantia                                                            |
+| --------------------------- | ------ | ------------------------------------------------------------------- |
+| `EmployeeForm` / `UserForm` | #103   | `employeeForm`/`userForm`: shape de `Employee`/`CreateUser` (tipos) |
+| `meters` (3 formularios)    | #104   | lectura convertida a numero al enviar (texto -> `value`)            |
+| SMTP y simulacion de datos  | #105   | perfiles y opciones: campos siempre presentes                       |
+| Libreta, panel, correo      | #106-7 | locales (no mutan) y `SendTestEmail`                                |
+| MFA y cambio de clave       | #108   | credencial sin recortar; `mfaToken` lo deduce el backend            |
+| Correccion y nota rapida    | #109   | `requestedValue` convertido a ISO-8601 con offset                   |
+| Inicio de sesion            | #110   | `{ username, password }` en crudo (`useAppForm.test.tsx`)           |
+| Mantenimiento (2 forms)     | #112   | purga `{ username? }` y reseteo `{ username: trim, clave: crudo }`  |
+| Ajuste de marcaje           | #113   | registro completo sin cambios (solo cambia de donde sale la hora)   |
+
+**e2e:** los 68 tests de staging pasaron en verde en **cada** PR de la fase
+(smoke de login, alta/edicion de empleados, lecturas, SMTP, cambio de clave y
+MFA incluidos).
+
+**Capa (`useAppForm`):** los contratos de la normalizacion y de la
+serializacion estan fijados en `frontend/src/tests/forms/useAppForm.test.tsx`
+(normalizacion por defecto, `normalize` desactivado, `serialize` y el caso de
+los opcionales), de modo que una regresion de payload se cae ahi antes que en
+produccion.
 
 ## Fase D — Capa de data grid (3 PR)
 
