@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.36.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.36.0...v8.36.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **frontend:** pinta las filas del visor de auditoría con React Compiler ([#125](https://github.com/Zer0x25/portal-control-2.0/issues/125)) ([a6207e1](https://github.com/Zer0x25/portal-control-2.0/commit/a6207e1b15db36ca178883853a0e5510df495738))
+
 ## [8.36.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.35.0...v8.36.0) (2026-10-23)
 
 
