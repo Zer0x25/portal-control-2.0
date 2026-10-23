@@ -3,6 +3,7 @@ import type { Query } from "@tanstack/react-query";
 import { openDB, type IDBPDatabase } from "idb";
 
 import { BUILD_VERSION } from "./buildVersion";
+import { logger } from "../utils/logger";
 
 /**
  * Persistencia del cache de TanStack Query (spec 032, AC2).
@@ -142,7 +143,7 @@ export const purgePersistedQueryCache = async (): Promise<void> => {
   const failures = results.filter((result) => result.status === "rejected");
   if (failures.length > 0) {
     // No relanzamos: el purge corre en logout y nunca debe bloquear la salida.
-    console.warn("[QueryCache] Purge incompleto", failures);
+    logger.warn("[QueryCache] Purge incompleto", failures);
   }
 };
 

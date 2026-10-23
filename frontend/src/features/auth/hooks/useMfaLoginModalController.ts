@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
@@ -66,12 +66,9 @@ export const useMfaLoginModalController = ({
   }, [isOpen, reset]);
 
   /** Escribe el codigo: solo digitos, como maximo 6. */
-  const handleCodeChange = useCallback(
-    (raw: string) => {
-      setValue("code", raw.replace(/\D/g, "").slice(0, 6));
-    },
-    [setValue],
-  );
+  const handleCodeChange = (raw: string) => {
+    setValue("code", raw.replace(/\D/g, "").slice(0, 6));
+  };
 
   return {
     values: form.values,

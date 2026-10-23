@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "units": "bytes",
+  "measuredAt": "2026-10-22T00:00:00.000Z",
+  "updateReason": "Initial monotonic limits: react-core and charts allow margin over measured compiler build; precache remains below the 2 MiB cap.",
+  "limits": {
+    "reactCoreBytes": 266240,
+    "chartsBytes": 184320,
+    "precacheBytes": 2097152
+  }
+}

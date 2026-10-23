@@ -1,11 +1,10 @@
-import React, { useMemo, memo } from "react";
+import React from "react";
 import { DailyReportItem, ReportDataType, ReportStat, SortableReportKey } from "../../types/index";
 import { TableCellsIcon } from "../ui/icons/index";
 import DataTable from "./DataTable";
 import DataTableHeader, { getDataTableColumnMeta } from "./DataTableHeader";
 import DataTableRow from "./DataTableRow";
 import PaginationControls from "./PaginationControls";
-import ResponsiveView from "./ResponsiveView";
 import ReportTableMobileSummaryCard from "./ReportTableMobileSummaryCard";
 import ReportTableMobileDailyCard from "./ReportTableMobileDailyCard";
 import EmptyState from "./EmptyState";
@@ -41,295 +40,287 @@ const ReportTable: React.FC<ReportTableProps> = ({
   setCurrentPage,
   justificationStyles,
 }) => {
-  const summaryColumns = useMemo<ColumnDef<typeof reportTableFeatures, ReportRow>[]>(
-    () => [
-      {
-        id: "name",
-        accessorFn: () => null,
-        header: "Nombre",
-        cell: ({ row }) => (row.original as unknown as ReportStat).name,
-        meta: {
-          headerClassName:
-            "px-8 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-8 py-5 whitespace-nowrap text-sm font-black text-token-text-primary uppercase tracking-tight italic",
-        },
+  const summaryColumns = [
+    {
+      id: "name",
+      accessorFn: () => null,
+      header: "Nombre",
+      cell: ({ row }) => (row.original as unknown as ReportStat).name,
+      meta: {
+        headerClassName:
+          "px-8 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-8 py-5 whitespace-nowrap text-sm font-black text-token-text-primary uppercase tracking-tight italic",
       },
-      {
-        id: "scheduledDays",
-        accessorFn: () => null,
-        header: "Días Prog.",
-        cell: ({ row }) => (row.original as unknown as ReportStat).scheduledDays,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary tracking-tighter",
-        },
+    },
+    {
+      id: "scheduledDays",
+      accessorFn: () => null,
+      header: "Días Prog.",
+      cell: ({ row }) => (row.original as unknown as ReportStat).scheduledDays,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary tracking-tighter",
       },
-      {
-        id: "totalHoursScheduled",
-        accessorFn: () => null,
-        header: "Hrs. Prog.",
-        cell: ({ row }) => fmt((row.original as unknown as ReportStat).totalHoursScheduled),
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
-        },
+    },
+    {
+      id: "totalHoursScheduled",
+      accessorFn: () => null,
+      header: "Hrs. Prog.",
+      cell: ({ row }) => fmt((row.original as unknown as ReportStat).totalHoursScheduled),
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
       },
-      {
-        id: "workedDays",
-        accessorFn: () => null,
-        header: "Días Trab.",
-        cell: ({ row }) => (row.original as unknown as ReportStat).workedDays,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary tracking-tighter",
-        },
+    },
+    {
+      id: "workedDays",
+      accessorFn: () => null,
+      header: "Días Trab.",
+      cell: ({ row }) => (row.original as unknown as ReportStat).workedDays,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary tracking-tighter",
       },
-      {
-        id: "totalHoursWorked",
-        accessorFn: () => null,
-        header: "Hrs. Trab.",
-        cell: ({ row }) => fmt((row.original as unknown as ReportStat).totalHoursWorked),
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-primary font-mono italic tracking-tighter",
-        },
+    },
+    {
+      id: "totalHoursWorked",
+      accessorFn: () => null,
+      header: "Hrs. Trab.",
+      cell: ({ row }) => fmt((row.original as unknown as ReportStat).totalHoursWorked),
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-primary font-mono italic tracking-tighter",
       },
-      {
-        id: "differenceHours",
-        accessorFn: () => null,
-        header: "Diferencia",
-        cell: ({ row }) => {
-          const stat = row.original as unknown as ReportStat;
-          return (
-            <span
-              className={
-                stat.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"
-              }
-            >
-              {fmt(stat.differenceHours)}
-            </span>
-          );
-        },
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black italic tracking-tighter",
-        },
+    },
+    {
+      id: "differenceHours",
+      accessorFn: () => null,
+      header: "Diferencia",
+      cell: ({ row }) => {
+        const stat = row.original as unknown as ReportStat;
+        return (
+          <span
+            className={
+              stat.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"
+            }
+          >
+            {fmt(stat.differenceHours)}
+          </span>
+        );
       },
-      {
-        id: "tardinessIncidents",
-        accessorFn: () => null,
-        header: "Atrasos",
-        cell: ({ row }) => {
-          const stat = row.original as unknown as ReportStat;
-          return (
-            <span
-              className={
-                stat.tardinessIncidents > 0
-                  ? "text-token-status-warning"
-                  : "text-token-text-tertiary"
-              }
-            >
-              {stat.tardinessIncidents}
-            </span>
-          );
-        },
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black tracking-tighter",
-        },
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black italic tracking-tighter",
       },
-      {
-        id: "absenceDays",
-        accessorFn: () => null,
-        header: "Ausencias",
-        cell: ({ row }) => {
-          const stat = row.original as unknown as ReportStat;
-          return (
-            <span
-              className={
-                stat.absenceDays > 0 ? "text-token-status-error" : "text-token-text-tertiary"
-              }
-            >
-              {stat.absenceDays}
-            </span>
-          );
-        },
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black tracking-tighter",
-        },
+    },
+    {
+      id: "tardinessIncidents",
+      accessorFn: () => null,
+      header: "Atrasos",
+      cell: ({ row }) => {
+        const stat = row.original as unknown as ReportStat;
+        return (
+          <span
+            className={
+              stat.tardinessIncidents > 0 ? "text-token-status-warning" : "text-token-text-tertiary"
+            }
+          >
+            {stat.tardinessIncidents}
+          </span>
+        );
       },
-    ],
-    [],
-  );
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black tracking-tighter",
+      },
+    },
+    {
+      id: "absenceDays",
+      accessorFn: () => null,
+      header: "Ausencias",
+      cell: ({ row }) => {
+        const stat = row.original as unknown as ReportStat;
+        return (
+          <span
+            className={
+              stat.absenceDays > 0 ? "text-token-status-error" : "text-token-text-tertiary"
+            }
+          >
+            {stat.absenceDays}
+          </span>
+        );
+      },
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black tracking-tighter",
+      },
+    },
+  ] as ColumnDef<typeof reportTableFeatures, ReportRow>[];
 
-  const dailyColumns = useMemo<ColumnDef<typeof reportTableFeatures, ReportRow>[]>(
-    () => [
-      {
-        id: "isoDate",
-        accessorFn: () => null,
-        header: "Fecha",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original) ? null : (row.original as unknown as DailyReportItem).date,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-6 py-5 whitespace-nowrap text-sm font-black text-token-text-primary",
-        },
+  const dailyColumns = [
+    {
+      id: "isoDate",
+      accessorFn: () => null,
+      header: "Fecha",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original) ? null : (row.original as unknown as DailyReportItem).date,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-6 py-5 whitespace-nowrap text-sm font-black text-token-text-primary",
       },
-      {
-        id: "dayOfWeek",
-        accessorFn: () => null,
-        header: "Día",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original)
-            ? null
-            : (row.original as unknown as DailyReportItem).dayOfWeek,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary",
-        },
+    },
+    {
+      id: "dayOfWeek",
+      accessorFn: () => null,
+      header: "Día",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original)
+          ? null
+          : (row.original as unknown as DailyReportItem).dayOfWeek,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary",
       },
-      {
-        id: "scheduledShift",
-        accessorFn: () => null,
-        header: "Turno Prog.",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original)
-            ? null
-            : (row.original as unknown as DailyReportItem).scheduledShift,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-black text-token-accent-brand uppercase tracking-tighter italic",
-        },
+    },
+    {
+      id: "scheduledShift",
+      accessorFn: () => null,
+      header: "Turno Prog.",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original)
+          ? null
+          : (row.original as unknown as DailyReportItem).scheduledShift,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-black text-token-accent-brand uppercase tracking-tighter italic",
       },
-      {
-        id: "actualClocks",
-        accessorFn: () => null,
-        header: "Marcaje Real",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original)
-            ? null
-            : (row.original as unknown as DailyReportItem).actualClocks,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-medium text-token-text-secondary font-mono",
-        },
+    },
+    {
+      id: "actualClocks",
+      accessorFn: () => null,
+      header: "Marcaje Real",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original)
+          ? null
+          : (row.original as unknown as DailyReportItem).actualClocks,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-medium text-token-text-secondary font-mono",
       },
-      {
-        id: "scheduledHours",
-        accessorFn: () => null,
-        header: "Hrs. Prog.",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original)
-            ? null
-            : fmt((row.original as unknown as DailyReportItem).scheduledHours),
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
-        },
+    },
+    {
+      id: "scheduledHours",
+      accessorFn: () => null,
+      header: "Hrs. Prog.",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original)
+          ? null
+          : fmt((row.original as unknown as DailyReportItem).scheduledHours),
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
       },
-      {
-        id: "colacionMinutes",
-        accessorFn: () => null,
-        header: "Colación",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original)
-            ? null
-            : `${(row.original as unknown as DailyReportItem).colacionMinutes.toFixed(0)}m`,
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs text-token-text-tertiary font-mono italic tracking-tighter",
-        },
+    },
+    {
+      id: "colacionMinutes",
+      accessorFn: () => null,
+      header: "Colación",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original)
+          ? null
+          : `${(row.original as unknown as DailyReportItem).colacionMinutes.toFixed(0)}m`,
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs text-token-text-tertiary font-mono italic tracking-tighter",
       },
-      {
-        id: "workedHours",
-        accessorFn: () => null,
-        header: "Hrs. Trab.",
-        cell: ({ row }) =>
-          isReportSubtotal(row.original)
-            ? null
-            : fmt((row.original as unknown as DailyReportItem).workedHours),
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName:
-            "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
-        },
+    },
+    {
+      id: "workedHours",
+      accessorFn: () => null,
+      header: "Hrs. Trab.",
+      cell: ({ row }) =>
+        isReportSubtotal(row.original)
+          ? null
+          : fmt((row.original as unknown as DailyReportItem).workedHours),
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName:
+          "px-6 py-5 whitespace-nowrap text-xs font-bold text-token-text-secondary font-mono italic tracking-tighter",
       },
-      {
-        id: "differenceHours",
-        accessorFn: () => null,
-        header: "Diferencia",
-        cell: ({ row }) => {
-          if (isReportSubtotal(row.original)) return null;
-          const item = row.original as unknown as DailyReportItem;
-          return (
-            <span
-              className={
-                item.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"
-              }
-            >
-              {fmt(item.differenceHours)}
-            </span>
-          );
-        },
-        meta: {
-          headerClassName:
-            "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black italic tracking-tighter",
-        },
+    },
+    {
+      id: "differenceHours",
+      accessorFn: () => null,
+      header: "Diferencia",
+      cell: ({ row }) => {
+        if (isReportSubtotal(row.original)) return null;
+        const item = row.original as unknown as DailyReportItem;
+        return (
+          <span
+            className={
+              item.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"
+            }
+          >
+            {fmt(item.differenceHours)}
+          </span>
+        );
       },
-      {
-        id: "justificationType",
-        accessorFn: () => null,
-        header: "Estado",
-        cell: ({ row }) => {
-          if (isReportSubtotal(row.original)) return null;
-          const item = row.original as unknown as DailyReportItem;
-          return item.justificationType ? (
-            <span
-              className={
-                "px-3 py-1.5 text-xxs font-black uppercase tracking-tighter rounded-xl shadow-sm " +
-                (justificationStyles[item.justificationType] || "")
-              }
-            >
-              {item.justificationType}
-            </span>
-          ) : (
-            <span className="text-token-text-tertiary opacity-40">—</span>
-          );
-        },
-        meta: {
-          headerClassName:
-            "px-8 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
-          cellClassName: "px-8 py-5 whitespace-nowrap text-center",
-        },
+      meta: {
+        headerClassName:
+          "px-6 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-6 py-5 whitespace-nowrap text-xs font-black italic tracking-tighter",
       },
-    ],
-    [justificationStyles],
-  );
+    },
+    {
+      id: "justificationType",
+      accessorFn: () => null,
+      header: "Estado",
+      cell: ({ row }) => {
+        if (isReportSubtotal(row.original)) return null;
+        const item = row.original as unknown as DailyReportItem;
+        return item.justificationType ? (
+          <span
+            className={
+              "px-3 py-1.5 text-xxs font-black uppercase tracking-tighter rounded-xl shadow-sm " +
+              (justificationStyles[item.justificationType] || "")
+            }
+          >
+            {item.justificationType}
+          </span>
+        ) : (
+          <span className="text-token-text-tertiary opacity-40">—</span>
+        );
+      },
+      meta: {
+        headerClassName:
+          "px-8 py-5 text-xxs font-black uppercase tracking-[0.2em] text-token-text-tertiary",
+        cellClassName: "px-8 py-5 whitespace-nowrap text-center",
+      },
+    },
+  ] as ColumnDef<typeof reportTableFeatures, ReportRow>[];
 
   const columns = isSingleEmployeeReport ? dailyColumns : summaryColumns;
 
@@ -531,9 +522,9 @@ const ReportTable: React.FC<ReportTableProps> = ({
   };
 
   return (
-    <div className="space-y-10">
+    <div className="@container space-y-10">
       {/* Top Pagination Capsule (mobile only; desktop uses DataTable's) */}
-      <div className="flex justify-center md:hidden">
+      <div className="flex justify-center @2xl:hidden">
         <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
           <PaginationControls
             currentPage={currentPage}
@@ -543,43 +534,39 @@ const ReportTable: React.FC<ReportTableProps> = ({
         </div>
       </div>
 
-      <ResponsiveView
-        mobile={renderMobileView()}
-        desktop={
-          <div className="no-scrollbar perspective-1000">
-            <div className="animate-in fade-in [--tw-enter-translate-y:30px] [animation-duration:600ms]">
-              <DataTable
-                table={table}
-                ariaLabel={
-                  isSingleEmployeeReport
-                    ? "Reporte diario del empleado"
-                    : "Resumen de reporte por empleado"
-                }
-                rowCount={rowCount}
-                pagination={{
-                  currentPage,
-                  totalPages,
-                  setCurrentPage,
-                  position: "both",
-                  className: "flex justify-center",
-                }}
-                className="space-y-10"
-              >
-                <DataTableHeader
-                  table={table}
-                  rowClassName="bg-token-surface-header border-b border-token-border-technical"
-                  headerClassName=""
-                />
-                <tbody className="divide-y divide-token-border-subtle">{renderDesktopRows()}</tbody>
-              </DataTable>
-            </div>
-          </div>
-        }
-      />
+      <div className="@2xl:hidden">{renderMobileView()}</div>
+      <div className="hidden @2xl:block no-scrollbar perspective-1000">
+        <div className="animate-in fade-in [--tw-enter-translate-y:30px] [animation-duration:600ms]">
+          <DataTable
+            table={table}
+            ariaLabel={
+              isSingleEmployeeReport
+                ? "Reporte diario del empleado"
+                : "Resumen de reporte por empleado"
+            }
+            rowCount={rowCount}
+            pagination={{
+              currentPage,
+              totalPages,
+              setCurrentPage,
+              position: "both",
+              className: "flex justify-center",
+            }}
+            className="space-y-10"
+          >
+            <DataTableHeader
+              table={table}
+              rowClassName="bg-token-surface-header border-b border-token-border-technical"
+              headerClassName=""
+            />
+            <tbody className="divide-y divide-token-border-subtle">{renderDesktopRows()}</tbody>
+          </DataTable>
+        </div>
+      </div>
 
       {/* Bottom Pagination & Metadata */}
       <div className="flex flex-col items-center gap-6">
-        <div className="flex justify-center md:hidden">
+        <div className="flex justify-center @2xl:hidden">
           <div className="bg-token-surface-card rounded-full border border-token-border-technical p-1 shadow-sm px-6">
             <PaginationControls
               currentPage={currentPage}
@@ -611,4 +598,4 @@ const ReportTable: React.FC<ReportTableProps> = ({
   );
 };
 
-export default memo(ReportTable);
+export default ReportTable;

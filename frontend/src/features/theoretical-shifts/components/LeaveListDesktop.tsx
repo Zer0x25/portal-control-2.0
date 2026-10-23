@@ -37,6 +37,7 @@ interface LeaveListDesktopProps {
 
 const ROW_HEIGHT = LIST_ROW_HEIGHT;
 
+// Spec 037 T11: table columns and the mobile card's dates, reason, and actions need distinct density; preserve 65/160 px virtualization geometry.
 const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
   leaves,
   isLoading,
@@ -52,28 +53,23 @@ const LeaveListDesktop: React.FC<LeaveListDesktopProps> = ({
   const parentRef = useRef<HTMLDivElement>(null);
   const todayStr = toBusinessDateChile();
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the 65 px desktop estimate; Compiler cannot memoize TanStack Virtual's measurement API.
   const rowVirtualizer = useVirtualizer({
     count: leaves.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
   });
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
-    const virtualItems = rowVirtualizer.getVirtualItems();
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
     if (lastItem.index >= leaves.length - 5 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    isFetchingNextPage,
-    leaves.length,
-    fetchNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, isFetchingNextPage, leaves.length, fetchNextPage, virtualItems]);
 
   // Shared grid layout — used by both header and virtual rows
   const gridTemplateColumns = "1.5fr 1fr 0.8fr 0.8fr 1.5fr 100px";

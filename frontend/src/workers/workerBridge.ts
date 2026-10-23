@@ -1,6 +1,7 @@
 import { useStore } from "../store/useStore";
 import { WorkerRequest, WorkerResponse, WorkerResult } from "./types";
 import SyncWorker from "./syncWorker.ts?worker";
+import { logger } from "../utils/logger";
 
 interface PendingRequest {
   resolve: (value: WorkerResult) => void;
@@ -40,16 +41,16 @@ class WorkerBridge {
       };
 
       this.worker.onerror = (err) => {
-        console.error("Worker error:", err);
+        logger.error("Worker error:", err);
       };
     } catch (err) {
-      console.error("Failed to initialize SyncWorker:", err);
+      logger.error("Failed to initialize SyncWorker:", err);
     }
   }
 
   public async putBulk(storeName: string, items: unknown[]): Promise<WorkerResult | null> {
     if (!this.worker) {
-      console.warn("SyncWorker not available, falling back to main thread.");
+      logger.warn("SyncWorker not available, falling back to main thread.");
       return null;
     }
 

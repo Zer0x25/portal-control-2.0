@@ -1,4 +1,4 @@
-/**
+import { logger } from "./logger"; /**
  * Helper function to get current geolocation.
  * Returns coordinates if available, null otherwise.
  * Does not block UI - returns quickly if position is not available.
@@ -9,7 +9,7 @@ export const getCurrentGeolocation = (): Promise<{
 } | null> => {
   return new Promise((resolve) => {
     if (!navigator.geolocation) {
-      console.warn("Geolocation not supported by browser");
+      logger.warn("Geolocation not supported by browser");
       resolve(null);
       return;
     }
@@ -25,7 +25,7 @@ export const getCurrentGeolocation = (): Promise<{
         });
       },
       (error) => {
-        console.warn("Geolocation error:", error.message);
+        logger.warn("Geolocation error:", error.message);
         resolve(null);
       },
       {

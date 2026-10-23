@@ -61,13 +61,11 @@ export const useEmailCenterController = () => {
   const { setValue } = manualEmailForm;
 
   /** Escribe un campo del correo de prueba. */
-  const handleManualEmailChange = useCallback(
-    (field: "to" | "subject" | "message", value: string) => {
-      setValue(field, value);
-    },
-    [setValue],
-  );
+  const handleManualEmailChange = (field: "to" | "subject" | "message", value: string) => {
+    setValue(field, value);
+  };
 
+  // The same status action is returned to callers and used by the mount effect.
   const checkStatus = useCallback(async () => {
     setStatus({ loading: true, success: false, message: "Verificando..." });
     const result = await emailService.verifyStatus();
@@ -78,17 +76,16 @@ export const useEmailCenterController = () => {
     });
   }, []);
 
-  const loadRules = useCallback(async () => {
-    setIsLoadingRules(true);
-    const storedRules = await emailService.getRules();
-    setRules(storedRules);
-    setIsLoadingRules(false);
-  }, []);
-
   useEffect(() => {
     checkStatus();
+    const loadRules = async () => {
+      setIsLoadingRules(true);
+      const storedRules = await emailService.getRules();
+      setRules(storedRules);
+      setIsLoadingRules(false);
+    };
     loadRules();
-  }, [checkStatus, loadRules]);
+  }, [checkStatus]);
 
   const handleRuleChange = (
     ruleKey: keyof EmailNotificationRules,

@@ -1,6 +1,6 @@
 # Spec 037: Frontend Rendering & Observability
 
-- Estado: Borrador
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0026-frontend-rendering-observability.md](file:///docs/adr/0026-frontend-rendering-observability.md)
@@ -9,14 +9,14 @@
 ## Problema
 
 El frontend ya optimizó **mucho** (code splitting, virtualización, tokens de
-performance, PWA, precache de 179 entradas) pero su **estrategia de render es
+performance, PWA, precache de 183 entradas) pero su **estrategia de render es
 manual y su observabilidad es parcial**. El repo tiene un
 `.agents/rules/frontend-performance.md` con 5 invariantes muy buenas, y ninguna
 de las tres primeras es verificable por herramienta.
 
-1. **La memoización es manual, no auditada y sin linter.** Hay **266 llamadas
-   reales** a `useMemo`/`useCallback` en `frontend/src/` (**160** `useMemo(` +
-   **106** `useCallback(`; el 360 que se citaba antes es el número de _líneas_
+1. **La memoización es manual, no auditada y sin linter.** Hay **336 llamadas
+   reales** a `useMemo`/`useCallback` en `frontend/src/` (**182** `useMemo(` +
+   **154** `useCallback(`; el 360 que se citaba antes es el número de _líneas_
    que mencionan el identificador, incluidos imports y comentarios) y **36**
    llamadas a `memo()` (**32** `React.memo(` + **4** `memo(` importado sin
    prefijo: `ReportTable.tsx:549`, `ReportTableMobileSummaryCard.tsx:69`,
@@ -136,8 +136,8 @@ de las tres primeras es verificable por herramienta.
      consume un evento de error.
 
 5. **No hay presupuesto de performance en CI.** El bundle actual es sano
-   (`react-core` 218 kB / 68 kB gzip, `charts` 145 kB / 51 kB gzip aislado,
-   `vendor` 70 kB, precache de 179 entradas / 1.52 MiB), pero **nada impide
+   (`react-core` 218.69 kB / 68.21 kB gzip, `charts` 145.61 kB / 51.05 kB gzip,
+   `vendor` 164.26 kB / 47.65 kB gzip, precache de 183 entradas / 1643.43 KiB (~1.61 MiB), pero **nada impide
    que mañana sea 400 kB**. No hay Lighthouse CI, ni budget de bundle por
    chunk, ni alerta de regresión de Core Web Vitals. Y el gate que se quiere
    añadir tiene **dos trampas**:
@@ -163,7 +163,7 @@ Dentro:
   o `@rolldown/plugin-babel` + `reactCompilerPreset()`), **activo también en
   dev y en test**, instalar `eslint-plugin-react-hooks` como guardrail previo,
   y **eliminar la memoización manual** que el compilador ya cubre
-  (`useMemo`/`useCallback`/`memo` redundantes), empezando por las 266
+  (`useMemo`/`useCallback`/`memo` redundantes), empezando por las 336
   llamadas y los 36 `memo`, con medición de bundle y de renders
   antes/después.
 - **B. Container queries**: migrar los patrones responsivos de **viewport** a
@@ -204,7 +204,7 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: **React Compiler activo en dev, test y build, por una vía
+- [x] AC1: **React Compiler activo en dev, test y build, por una vía
       compatible con `@vitejs/plugin-react@6`**. Se instala
       `oxc-transform-react` y se activa `react({ compiler: true })` (o, en su
       defecto, `@rolldown/plugin-babel` + `reactCompilerPreset()` +
@@ -215,12 +215,12 @@ Fuera (explícito):
       compilador visibles en el log del build. `npm run check` y
       `npm run validate:ci` quedan en verde. Se documenta en el README del
       frontend que el compilador sustituye la memoización manual.
-- [ ] AC2: **Memoización manual reducida con criterio y con linter**. Se
+- [x] AC2: **Memoización manual reducida con criterio y con linter**. Se
       instala `eslint-plugin-react-hooks` (v7, compatible con `eslint@10`) y
       sus reglas de compilador quedan activas (`react-hooks/exhaustive-deps`,
       `react-hooks/unsupported-syntax`, `react-hooks/incompatible-library`,
       `react-hooks/preserve-manual-memoization`) **antes** de tocar ninguna
-      memoización. Las **266** llamadas a `useMemo`/`useCallback` y los **36**
+      memoización. Las **336** llamadas a `useMemo`/`useCallback` y los **36**
       `memo()` se auditan uno a uno y se **eliminan los redundantes** (el
       compilador los cubre); los que expresan una intención real (p. ej. una
       referencia que evita re-suscribir una suscripción, o un `useMemo` en un
@@ -229,12 +229,12 @@ Fuera (explícito):
       saltó** (bail-out detectado por lint o por los diagnósticos del build):
       ese caso se documenta como excepción. El recuento final está
       documentado con el antes/después.
-- [ ] AC3: **Sin regresión de renders**. El número de renders por interacción
+- [x] AC3: **Sin regresión de renders**. El número de renders por interacción
       en las 5 vistas críticas (dashboard, planificador, worker-portal,
       logbook, kiosk) **no aumenta** respecto al baseline medido antes de
       AC2; la medición es reproducible (script documentado) y su resultado
       está en la evidencia de cierre.
-- [ ] AC4: **Container queries en las primitivas de bloque**. Las primitivas
+- [x] AC4: **Container queries en las primitivas de bloque**. Las primitivas
       reutilizables de `components/ui/` que son **contenedores de bloque**
       (`MetricCard`, `Card`, `EmptyState`, `ReportTable` y el wrapper de
       `PaginationControls`) declaran `container-type: inline-size` y **adaptan
@@ -244,7 +244,7 @@ Fuera (explícito):
       `container-type: inline-size` la colapsaría a 0 px; ninguna primitiva
       inline puede declarar el contenedor. El modo `data-ui-perf="high"` y
       `prefers-reduced-motion` siguen funcionando.
-- [ ] AC5: **Los pares desktop/mobile se eliminan o se justifican, con la
+- [x] AC5: **Los pares desktop/mobile se eliminan o se justifican, con la
       geometría de virtualización correcta**. `AssignmentList{Desktop,Mobile}`,
       `LeaveList{Desktop,Mobile}`, `PatternList{Desktop,Mobile}`,
       `HolidayList{Desktop,Mobile}`, `TimeRecordTableView{Desktop,Mobile}` +
@@ -260,7 +260,7 @@ Fuera (explícito):
       que comparten subcomponentes): **no** se puede unificar dejando un
       `estimateSize` fijo, porque las filas se superponen. El recuento final
       está documentado.
-- [ ] AC6: **Core Web Vitals en campo, sin duplicar transacciones**.
+- [x] AC6: **Core Web Vitals en campo, sin duplicar transacciones**.
       `web-vitals` reporta LCP, INP, CLS, FCP y TTFB a Sentry **enriqueciendo**
       el contexto (ruta, rol, dispositivo, conexión) y **solo** emite evento
       o breadcrumb cuando una métrica **supera un umbral degradado**: la
@@ -270,7 +270,7 @@ Fuera (explícito):
       coste en bundle está medido y documentado. La inicialización es **lazy**
       (no bloquea el primer paint) y **respeta `prefers-reduced-motion` /
       `data-ui-perf`** en lo que aplique.
-- [ ] AC7: **El logger es un sink real, filtrado y sin ciclos**. `src/utils/logger.ts`
+- [x] AC7: **El logger es un sink real, filtrado y sin ciclos**. `src/utils/logger.ts`
       forwardea a Sentry: `error` → `captureException` **con filtro de estado
       HTTP** (los 4xx de negocio que la UI ya maneja —400/401/403/409— **no**
       generan evento de error; se registran como breadcrumb, como ya hace
@@ -284,7 +284,7 @@ Fuera (explícito):
       migran al logger, y `no-console` en `frontend/eslint.config.js:39` pasa
       a `allow: []` con excepción únicamente para `src/utils/logger.ts`. El
       budget de lint sigue en **0/0**.
-- [ ] AC8: **Presupuesto de performance en CI, en el orden correcto**. Existe
+- [x] AC8: **Presupuesto de performance en CI, en el orden correcto**. Existe
       un gate que falla si un chunk del bundle supera su presupuesto (con
       margen sobre el estado actual: `react-core` ≤ 260 kB, `charts` ≤ 180 kB,
       precache ≤ 2 MiB) **verificado sobre `dist/` después de
@@ -293,10 +293,9 @@ Fuera (explícito):
       las rutas críticas con umbrales de Core Web Vitals; ambos se ejecutan en
       el pipeline. El gate de Lighthouse **siembra sesión** antes de medir (la
       app usa `HashRouter` y `ProtectedRoute`).
-- [ ] AC9: **Sin regresión funcional**. `npm run validate:ci` (frontend),
-      `npm run guardrails`, `npm run spec:check`, `npm run docs:check`,
-      `npm run preflight` en verde y `npm run e2e:staging` en verde (56
-      tests), incluidos `e2e/performance.spec.ts` y `e2e/a11y.spec.ts`.
+- [x] AC9: **Sin regresión funcional**. `npm run validate:ci` (desde `frontend/`),
+      `npm --prefix frontend run guardrails`, `npm run spec:check`, `npm run docs:check`,
+      `npm run preflight` en verde y la suite Playwright contra staging aislado en verde, incluidos `e2e/performance.spec.ts` y `e2e/a11y.spec.ts`.
 
 ## Restricciones
 

@@ -27,6 +27,7 @@ interface HolidayListDesktopProps {
   showArchived: boolean;
 }
 
+// Spec 037 T11: the four-column table and stacked mobile card carry different detail density; preserve 65/110 px virtualizer estimates.
 const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
   holidays,
   isLoading,
@@ -40,26 +41,22 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the 65 px desktop estimate; Compiler cannot memoize TanStack Virtual's measurement API.
   const rowVirtualizer = useVirtualizer({
     count: holidays.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => LIST_ROW_HEIGHT,
     overscan: 5,
   });
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
+    const [lastItem] = [...virtualItems].reverse();
     if (!lastItem) return;
     if (lastItem.index >= holidays.length - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    fetchNextPage,
-    holidays.length,
-    isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, fetchNextPage, holidays.length, isFetchingNextPage, virtualItems]);
 
   const today = toBusinessDateChile();
 

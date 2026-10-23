@@ -3,6 +3,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 import { getSettingValue, setSettingValue, COUNTER_IDS } from "../../../utils/indexedDB";
 import DOMPurify from "../../../utils/domPurify";
+import { logger } from "../../../utils/logger";
 
 export const useCommunicationsData = () => {
   const { currentUser } = useAuth();
@@ -31,7 +32,7 @@ export const useCommunicationsData = () => {
         );
         setContent(storedContent);
       } catch (error) {
-        console.error("Error loading communications content:", error);
+        logger.error("Error loading communications content:", error);
         addToast("Error al cargar los comunicados.", "error");
       } finally {
         setIsLoading(false);
@@ -46,7 +47,7 @@ export const useCommunicationsData = () => {
       addToast("Comunicado guardado con éxito.", "success");
       setIsEditing(false);
     } catch (error) {
-      console.error("Error saving communications content:", error);
+      logger.error("Error saving communications content:", error);
       addToast("Error al guardar el comunicado.", "error");
     }
   };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, FC } from "react";
+import React, { useState, useEffect, FC } from "react";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { usePeriodNavigator } from "../../../hooks/usePeriodNavigator";
@@ -40,7 +40,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
   const [customStartDate, setCustomStartDate] = useState<string>(getChileDateISO());
   const [customEndDate, setCustomEndDate] = useState<string>(getChileDateISO());
 
-  const { startDate, endDate } = useMemo(() => {
+  const { startDate, endDate } = (() => {
     switch (periodMode) {
       case "custom":
         return {
@@ -57,7 +57,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
         return getBusinessDateRangePreset("month", periodNavigator.currentDate);
       }
     }
-  }, [businessNow, periodNavigator.currentDate, periodMode, customStartDate, customEndDate]);
+  })();
 
   useEffect(() => {
     setSelectedWorkdayType("");
@@ -65,34 +65,30 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
     setSelectedEmployeeId("");
   }, [startDate, endDate]);
 
-  const employeesInDateRange = useMemo(() => activeEmployees, [activeEmployees]);
+  const employeesInDateRange = activeEmployees;
 
-  const availableWorkdayTypes = useMemo(() => {
-    return Array.from(new Set(employeesInDateRange.map((e) => e.workdayType).filter(Boolean))).sort(
-      (a, b) => String(a).localeCompare(String(b)),
-    ) as string[];
-  }, [employeesInDateRange]);
+  const availableWorkdayTypes = Array.from(
+    new Set(employeesInDateRange.map((e) => e.workdayType).filter(Boolean)),
+  ).sort((a, b) => String(a).localeCompare(String(b))) as string[];
 
-  const employeesAfterWorkdayTypeFilter = useMemo(() => {
+  const employeesAfterWorkdayTypeFilter = (() => {
     if (!selectedWorkdayType) return employeesInDateRange;
     return employeesInDateRange.filter((e) => e.workdayType === selectedWorkdayType);
-  }, [employeesInDateRange, selectedWorkdayType]);
+  })();
 
-  const availableAreas = useMemo(() => {
-    return Array.from(
-      new Set(employeesAfterWorkdayTypeFilter.map((e) => e.area).filter(Boolean)),
-    ).sort((a, b) => String(a).localeCompare(String(b))) as string[];
-  }, [employeesAfterWorkdayTypeFilter]);
+  const availableAreas = Array.from(
+    new Set(employeesAfterWorkdayTypeFilter.map((e) => e.area).filter(Boolean)),
+  ).sort((a, b) => String(a).localeCompare(String(b))) as string[];
 
-  const employeesForEmployeeDropdown = useMemo(() => {
+  const employeesForEmployeeDropdown = (() => {
     if (!selectedArea) return employeesAfterWorkdayTypeFilter;
     return employeesAfterWorkdayTypeFilter.filter((e) => e.area === selectedArea);
-  }, [employeesAfterWorkdayTypeFilter, selectedArea]);
+  })();
 
-  const employeesToAnalyze = useMemo(() => {
+  const employeesToAnalyze = (() => {
     if (!selectedEmployeeId) return employeesForEmployeeDropdown;
     return employeesForEmployeeDropdown.filter((emp) => emp.id === selectedEmployeeId);
-  }, [employeesForEmployeeDropdown, selectedEmployeeId]);
+  })();
 
   const handleApplyFilters = () => {
     onFiltersChange({

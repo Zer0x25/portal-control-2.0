@@ -7,20 +7,27 @@ interface SidebarNavItemProps extends SidebarMenuItem {
   onClick: () => void;
 }
 
-const SidebarNavItem = React.memo(
-  ({ to, icon: Icon, label, end = false, badge, isExpanded, onClick }: SidebarNavItemProps) => {
-    const itemSlug = to.replace(/^\//, "").replace(/\//g, "-") || "home";
+const SidebarNavItem = ({
+  to,
+  icon: Icon,
+  label,
+  end = false,
+  badge,
+  isExpanded,
+  onClick,
+}: SidebarNavItemProps) => {
+  const itemSlug = to.replace(/^\//, "").replace(/\//g, "-") || "home";
 
-    return (
-      <li>
-        <NavLink
-          to={to}
-          end={end}
-          onClick={onClick}
-          data-testid={`nav-item-${itemSlug}`}
-          data-nav-to={to}
-          data-nav-label={label}
-          className={({ isActive }) => `
+  return (
+    <li>
+      <NavLink
+        to={to}
+        end={end}
+        onClick={onClick}
+        data-testid={`nav-item-${itemSlug}`}
+        data-nav-to={to}
+        data-nav-label={label}
+        className={({ isActive }) => `
           group flex items-center px-4 py-2.5 mb-1 mx-2 rounded-md transition-colors duration-150
           ${
             isActive
@@ -28,40 +35,39 @@ const SidebarNavItem = React.memo(
               : "text-token-text-secondary hover:bg-token-sidebar-item-hover hover:text-token-sidebar-text-active"
           }
       `}
-        >
-          {({ isActive }) => (
-            <>
-              <div
-                className="shrink-0 flex items-center justify-center w-6 h-6"
-                data-nav-active={isActive ? "true" : "false"}
-              >
-                <Icon
-                  className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "text-token-text-onAccent" : ""}`}
-                />
-              </div>
-              <span
-                className={`
+      >
+        {({ isActive }) => (
+          <>
+            <div
+              className="shrink-0 flex items-center justify-center w-6 h-6"
+              data-nav-active={isActive ? "true" : "false"}
+            >
+              <Icon
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "text-token-text-onAccent" : ""}`}
+              />
+            </div>
+            <span
+              className={`
                 ml-4 typo-ui-caption uppercase whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-200 ease-out
                 ${isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"}
               `}
+            >
+              {label}
+            </span>
+            {badge && isExpanded && (
+              <span
+                data-testid={`nav-badge-${itemSlug}`}
+                className="ml-2 px-1.5 py-0.5 typo-ui-badge uppercase rounded-sm bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30"
               >
-                {label}
+                {badge}
               </span>
-              {badge && isExpanded && (
-                <span
-                  data-testid={`nav-badge-${itemSlug}`}
-                  className="ml-2 px-1.5 py-0.5 typo-ui-badge uppercase rounded-sm bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30"
-                >
-                  {badge}
-                </span>
-              )}
-            </>
-          )}
-        </NavLink>
-      </li>
-    );
-  },
-);
+            )}
+          </>
+        )}
+      </NavLink>
+    </li>
+  );
+};
 
 SidebarNavItem.displayName = "SidebarNavItem";
 

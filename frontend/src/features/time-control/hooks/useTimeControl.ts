@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useState } from "react";
 import { AttendanceRecord, DailyTimeRecord } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
@@ -30,10 +30,10 @@ export const useTimeControl = () => {
   // Decomposed hooks
   const filters = useTimeRecordFilters();
   const [quickActionRecord, setQuickActionRecord] = useState<DailyTimeRecord | null>(null);
-  const closeQuickActionModal = useCallback(() => setQuickActionRecord(null), []);
-  const quickActionClockStatus = useMemo(
-    () => getContractClockingStatus(quickActionRecord as AttendanceRecord, () => "fuera"),
-    [quickActionRecord],
+  const closeQuickActionModal = () => setQuickActionRecord(null);
+  const quickActionClockStatus = getContractClockingStatus(
+    quickActionRecord as AttendanceRecord,
+    () => "fuera",
   );
   const modals = useTimeControlModals({ closeQuickActionModal });
 
@@ -41,9 +41,7 @@ export const useTimeControl = () => {
     currentUser?.role === "Supervisor" || currentUser?.role === "Fiscalizador";
   const roleBasedTooltip = isActionDisabledForRole ? "Acciones deshabilitadas para este rol." : "";
 
-  const filtersKey = useMemo(() => {
-    return JSON.stringify({ ...filters.appliedDateFilters, ...filters.clientFilters });
-  }, [filters.appliedDateFilters, filters.clientFilters]);
+  const filtersKey = JSON.stringify({ ...filters.appliedDateFilters, ...filters.clientFilters });
 
   // -- PHASE 4: TanStack Infinite Query (PORTAL GOLD) --
   const { desde, hasta } = filters.appliedDateFilters;
@@ -76,6 +74,8 @@ export const useTimeControl = () => {
     },
   });
 
+  // Keep cached page rows stable across unrelated state changes so the virtual table
+  // does not rebuild its row model while a modal or filter control updates.
   const flatRecords = useMemo(() => {
     return infiniteData?.pages.flatMap((page) => page.data) || [];
   }, [infiniteData]);
@@ -83,6 +83,7 @@ export const useTimeControl = () => {
   // ----------------------------------------------------
 
   // Si el backend ya envía workedHours/overtimeHours, usamos AugmentedTimeRecord
+  // This per-row schedule/KPI enrichment is the measured heavy path for this table.
   const enrichedRecords = useMemo(() => {
     return flatRecords.map((record) => {
       const scheduleInfo = getEmployeeDailyScheduleInfo(
@@ -138,9 +139,6 @@ export const useTimeControl = () => {
     quickActionRecord,
     closeQuickActionModal,
     quickActionClockStatus,
-    handleRowDoubleClick: useCallback(
-      (record: DailyTimeRecord) => setQuickActionRecord(record),
-      [],
-    ),
+    handleRowDoubleClick: (record: DailyTimeRecord) => setQuickActionRecord(record),
   };
 };

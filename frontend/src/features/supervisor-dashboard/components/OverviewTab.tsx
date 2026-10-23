@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from "react";
+﻿import React, { useState } from "react";
 import { MetricCard, MetricStat, MetricStatProps } from "../../../components/ui/MetricCard";
 import { CalendarDaysIcon } from "../../../components/ui/icons/index";
 import LiveStatusPanel from "./LiveStatusPanel";
@@ -18,11 +18,10 @@ const OverviewTab: React.FC = () => {
 
   const { data: overviewData } = useDashboardOverviewQuery();
 
-  const employeesWithStatus = useMemo<EmployeeWithClockingStatus[]>(() => {
-    return overviewData?.employeeStatuses || [];
-  }, [overviewData]);
+  const employeesWithStatus =
+    overviewData?.employeeStatuses || ([] as EmployeeWithClockingStatus[]);
 
-  const stats = useMemo(() => {
+  const stats = (() => {
     const counts = {
       scheduled: 0,
       working: 0,
@@ -58,7 +57,7 @@ const OverviewTab: React.FC = () => {
     });
 
     return counts;
-  }, [employeesWithStatus]);
+  })();
 
   const planningKpis: MetricStatProps[] = [
     {

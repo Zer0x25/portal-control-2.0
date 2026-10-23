@@ -98,15 +98,20 @@ export const VISUAL_TARGETS: VisualTarget[] = [
     route: "/#/admin/governance",
     role: "admin",
     waitForSelector: "main",
-    // Métricas de salud (conteos y hora de la última verificación) y la
-    // tabla de alertas de integridad.
+    // Métricas de salud, badges de estado de integridad y la tabla de alertas
+    // dependen de auditorías que pueden ejecutarse durante la suite.
     //
     // La tabla tiene un alto que depende del historial de auditoría del
     // entorno: 0 filas en una base recién sembrada (CI), N en un staging de
     // larga vida. Se acota a un alto fijo para que la región enmascarada
     // tenga siempre la misma geometría; el contenido ya está enmascarado, así
     // que el snapshot sigue comparando el resto de la consola.
-    volatileSelectors: ["span.tabular-nums", '[data-testid="governance-integrity-table"]'],
+    volatileSelectors: [
+      "span.tabular-nums",
+      '[data-testid="governance-integrity-table"]',
+      "text=/^(Sincronizado|Anomalía)$/",
+      "text=/^Cargando\.\.\.$/",
+    ],
     style: '[data-testid="governance-integrity-table"] { height: 160px; overflow: hidden; }',
   },
 ];

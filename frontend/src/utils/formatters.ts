@@ -1,4 +1,5 @@
 import { formatInTimeZone } from "date-fns-tz";
+import { logger } from "./logger";
 
 const CHILE_TZ = "America/Santiago";
 
@@ -30,7 +31,7 @@ export const formatDisplayDateTime = (isoDateTimeString?: string): string => {
 
     return formatInTimeZone(date, CHILE_TZ, "dd/MM/yyyy HH:mm");
   } catch {
-    console.error("Error formatting date:", isoDateTimeString);
+    logger.error("Error formatting date:", isoDateTimeString);
     return "-";
   }
 };
@@ -108,7 +109,7 @@ export const formatLogTimestamp = (isoDateTimeString?: string): string => {
 
     return formatInTimeZone(date, CHILE_TZ, "dd/MM/yyyy HH:mm:ss");
   } catch {
-    console.error("Error formatting log timestamp:", isoDateTimeString);
+    logger.error("Error formatting log timestamp:", isoDateTimeString);
     return "-";
   }
 };

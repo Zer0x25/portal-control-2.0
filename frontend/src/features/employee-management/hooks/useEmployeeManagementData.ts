@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Employee, Syncable, UserRole } from "../../../types/index";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useAuth } from "../../../hooks/useAuth";
@@ -11,6 +11,7 @@ import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver"
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 import type { EmployeeFormFieldsValues } from "../../../schemas/forms/employee";
+import { logger } from "../../../utils/logger";
 
 type SortableEmployeeKey = keyof Employee;
 
@@ -61,7 +62,7 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   const pageSize = isMobile ? 20 : 50;
   const [visibleCount, setVisibleCount] = useState(pageSize);
 
-  const filteredBaseList = useMemo(() => {
+  const filteredBaseList = (() => {
     const baseList = view === "active" ? activeListStore : archivedListStore;
     if (!debouncedSearchTerm) return baseList;
     const search = debouncedSearchTerm.toLowerCase();
@@ -73,15 +74,11 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
         e.area.toLowerCase().includes(search)
       );
     });
-  }, [view, activeListStore, archivedListStore, debouncedSearchTerm]);
+  })();
 
-  const processedEmployees = useMemo(() => {
-    return filteredBaseList.slice(0, visibleCount);
-  }, [filteredBaseList, visibleCount]);
+  const processedEmployees = filteredBaseList.slice(0, visibleCount);
 
-  const hasNextPage = useMemo(() => {
-    return visibleCount < filteredBaseList.length;
-  }, [filteredBaseList, visibleCount]);
+  const hasNextPage = visibleCount < filteredBaseList.length;
 
   const [scrollRoot, setScrollRoot] = useState<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -106,7 +103,7 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
       }
       return false;
     } catch (error) {
-      console.error("Import failed", error);
+      logger.error("Import failed", error);
       return false;
     }
   };
@@ -123,9 +120,9 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
     PIN: { prop: "pin", type: String, required: true },
   };
 
-  const handleViewChange = useCallback(async (newView: EmployeeManagementView) => {
+  const handleViewChange = async (newView: EmployeeManagementView) => {
     setView(newView);
-  }, []);
+  };
 
   const handleOpenNewForm = () => {
     setEditingEmployee(null);

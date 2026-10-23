@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
@@ -74,20 +74,14 @@ export const useForceChangePasswordModalController = ({
   }, [isOpen, reset]);
 
   /** Escribe la contraseña nueva. */
-  const handlePasswordChange = useCallback(
-    (value: string) => {
-      setValue("password", value);
-    },
-    [setValue],
-  );
+  const handlePasswordChange = (value: string) => {
+    setValue("password", value);
+  };
 
   /** Escribe la confirmación. */
-  const handlePasswordConfirmChange = useCallback(
-    (value: string) => {
-      setValue("passwordConfirm", value);
-    },
-    [setValue],
-  );
+  const handlePasswordConfirmChange = (value: string) => {
+    setValue("passwordConfirm", value);
+  };
 
   return {
     values: form.values,

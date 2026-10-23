@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { STORAGE_KEYS } from "../../constants";
 import { useAuth } from "../useAuth";
 import { useToasts } from "../useToasts";
@@ -11,11 +11,11 @@ export const useAboutModalController = () => {
   const { addToast } = useToasts();
   const { currentUser } = useAuth();
 
-  const closeMonkey = useCallback(() => {
+  const closeMonkey = () => {
     setShowMonkey(false);
-  }, []);
+  };
 
-  const handleLogoClick = useCallback(() => {
+  const handleLogoClick = () => {
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
     }
@@ -58,7 +58,7 @@ export const useAboutModalController = () => {
     clickTimeoutRef.current = window.setTimeout(() => {
       setClickCount(0);
     }, 500);
-  }, [addToast, clickCount, currentUser?.role]);
+  };
 
   return {
     handleLogoClick,

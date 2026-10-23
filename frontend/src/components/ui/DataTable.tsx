@@ -56,7 +56,7 @@ const DataTable = <TFeatures extends TableFeatures, TData extends RowData>({
   columnCount,
   pagination,
   className = "",
-  containerClassName = "overflow-hidden rounded-lg border border-token-border-technical shadow-sm bg-token-surface-card",
+  containerClassName = "@container overflow-hidden rounded-lg border border-token-border-technical shadow-sm bg-token-surface-card",
   tableClassName = "min-w-full",
   children,
 }: DataTableProps<TFeatures, TData>) => {

@@ -8,7 +8,7 @@ export const useAssignmentConflicts = (assignments: AssignedShift[]) => {
   useEffect(() => {
     const conflicts = detectAssignmentConflicts(assignments);
     setConflictingAssignmentIds(conflicts);
-  }, [assignments, detectAssignmentConflicts]);
+  }, [assignments]);
 
   return conflictingAssignmentIds;
 };

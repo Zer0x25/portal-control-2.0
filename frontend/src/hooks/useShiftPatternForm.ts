@@ -128,6 +128,8 @@ export const useShiftPatternForm = (options?: UseShiftPatternFormOptions) => {
     [shiftPatterns, editingPattern?.id, globalMaxWeeklyHours],
   );
 
+  const [initialMaxHours] = useState(() => globalMaxWeeklyHours);
+
   const defaultValues = useMemo<ShiftPatternFormValues>(
     () => ({
       name: "",
@@ -135,11 +137,11 @@ export const useShiftPatternForm = (options?: UseShiftPatternFormOptions) => {
       startDayOfWeek: 1,
       dailySchedules: createInitialDailySchedules(7),
       color: PRESET_COLORS[0],
-      maxHoursPattern: globalMaxWeeklyHours,
+      maxHoursPattern: initialMaxHours,
       worksOnHolidays: false,
     }),
-    // Los valores por defecto se capturan una vez (como hacia `useState`).
-    [],
+    // Los valores por defecto se capturan una vez al montar el formulario.
+    [initialMaxHours],
   );
 
   const form = useAppForm<ShiftPatternFormValues>({

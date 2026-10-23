@@ -25,6 +25,7 @@ export const useMeterHistoryController = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useMeterReadingsInfinite(debouncedFilters);
 
+  // Cache the paged rows, lookup map, and KPI aggregation used by the history view.
   const displayReadings = useMemo(() => {
     return data?.pages.flatMap((page) => page.data) || [];
   }, [data]);

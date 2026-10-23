@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { ShiftReport } from "../../../types/index";
 import { useUsers } from "../../../hooks/useUsers";
 import { useEmployees } from "../../../hooks/useEmployees";
@@ -22,9 +21,7 @@ export const useMyStatusData = () => {
     return user?.employeeId ? getEmployeeById(user.employeeId)?.name || username : username;
   };
 
-  const activeShift = useMemo(() => {
-    return shiftReports.find((s: ShiftReport) => s.status === "open");
-  }, [shiftReports]);
+  const activeShift = shiftReports.find((s: ShiftReport) => s.status === "open");
 
   const statusInfo: Record<StatusType, StatusInfo> = {
     in: {

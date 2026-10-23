@@ -1,5 +1,5 @@
-import { useCallback } from "react";
 import { useStore } from "../store/useStore";
+import { logger } from "../utils/logger";
 
 export type SoundType = "success" | "error" | "notify" | "warning" | "info" | "click" | "pop";
 
@@ -65,52 +65,49 @@ const loadAudio = async (type: SoundType): Promise<HTMLAudioElement | null> => {
 export const useAudio = () => {
   const soundEnabled = useStore((state) => state.soundEnabled);
 
-  const play = useCallback(
-    async (type: SoundType) => {
-      if (!soundEnabled || typeof window === "undefined") return;
+  const play = async (type: SoundType) => {
+    if (!soundEnabled || typeof window === "undefined") return;
 
-      const now = Date.now();
-      const priority = PRIORITIES[type];
+    const now = Date.now();
+    const priority = PRIORITIES[type];
 
-      // SATURATION LOGIC:
-      // 1. If a higher priority sound is requested, it interrupts current sound.
-      // 2. If same priority, respect MIN_GAP_MS to avoid "machine gun" effect.
-      // 3. If lower priority and we are in a window, ignore.
+    // SATURATION LOGIC:
+    // 1. If a higher priority sound is requested, it interrupts current sound.
+    // 2. If same priority, respect MIN_GAP_MS to avoid "machine gun" effect.
+    // 3. If lower priority and we are in a window, ignore.
 
-      const isHighPriorityInterrupt = priority > currentPriority;
-      const isCooldownOver = now - lastPlayTime > MIN_GAP_MS;
+    const isHighPriorityInterrupt = priority > currentPriority;
+    const isCooldownOver = now - lastPlayTime > MIN_GAP_MS;
 
-      if (!isHighPriorityInterrupt && !isCooldownOver) {
-        return; // Ignore to prevent saturation
-      }
+    if (!isHighPriorityInterrupt && !isCooldownOver) {
+      return; // Ignore to prevent saturation
+    }
 
-      try {
-        const audio = await loadAudio(type);
-        if (!audio) return;
+    try {
+      const audio = await loadAudio(type);
+      if (!audio) return;
 
-        // If we are interrupting, stop all other sounds in the pool
-        if (isHighPriorityInterrupt) {
-          Object.values(audioPool).forEach((a) => {
-            if (!a.paused) {
-              a.pause();
-              a.currentTime = 0;
-            }
-          });
-        }
-
-        audio.currentTime = 0;
-        lastPlayTime = now;
-        currentPriority = priority;
-
-        audio.play().catch(() => {
-          // Silent catch for autoplay policy
+      // If we are interrupting, stop all other sounds in the pool
+      if (isHighPriorityInterrupt) {
+        Object.values(audioPool).forEach((a) => {
+          if (!a.paused) {
+            a.pause();
+            a.currentTime = 0;
+          }
         });
-      } catch (error) {
-        console.error("[useAudio] Manager error:", error);
       }
-    },
-    [soundEnabled],
-  );
+
+      audio.currentTime = 0;
+      lastPlayTime = now;
+      currentPriority = priority;
+
+      audio.play().catch(() => {
+        // Silent catch for autoplay policy
+      });
+    } catch (error) {
+      logger.error("[useAudio] Manager error:", error);
+    }
+  };
 
   return { play };
 };

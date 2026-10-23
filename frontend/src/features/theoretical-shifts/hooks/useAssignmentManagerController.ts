@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AssignedShift } from "../../../types";
 import { useShiftPatternsQuery } from "../../../hooks/queries/useShiftPatternsQuery";
 import { useAssignedShiftsInfiniteQuery } from "../../../hooks/queries/useAssignedShiftsInfiniteQuery";
@@ -46,34 +46,30 @@ export const useAssignmentManagerController = () => {
     showArchived,
   });
 
-  const flatAssignments = useMemo(() => {
-    return data?.pages.flatMap((page) => page.data) || [];
-  }, [data]);
+  const flatAssignments = data?.pages.flatMap((page) => page.data) || [];
 
-  const processedAssignments = useMemo(() => {
-    return flatAssignments.map((as) => {
-      const employee = activeEmployees.find((e) => e.id === as.employeeId);
-      const pattern = shiftPatterns.find((p) => p.id === as.shiftPatternId);
+  const processedAssignments = flatAssignments.map((as) => {
+    const employee = activeEmployees.find((e) => e.id === as.employeeId);
+    const pattern = shiftPatterns.find((p) => p.id === as.shiftPatternId);
 
-      let assignmentWeeklyHours = 0;
-      if (pattern?.cycleLengthDays && pattern.cycleLengthDays > 0) {
-        const totalHoursInCycle = pattern.dailySchedules.reduce(
-          (sum, day) => sum + (day.hours || 0),
-          0,
-        );
-        assignmentWeeklyHours = (totalHoursInCycle / pattern.cycleLengthDays) * 7;
-      }
+    let assignmentWeeklyHours = 0;
+    if (pattern?.cycleLengthDays && pattern.cycleLengthDays > 0) {
+      const totalHoursInCycle = pattern.dailySchedules.reduce(
+        (sum, day) => sum + (day.hours || 0),
+        0,
+      );
+      assignmentWeeklyHours = (totalHoursInCycle / pattern.cycleLengthDays) * 7;
+    }
 
-      return {
-        ...as,
-        employeeName: employee?.name || as.employeeName || "Empleado no encontrado",
-        shiftPatternName: pattern?.name || as.shiftPatternName || "Patrón no encontrado",
-        assignmentWeeklyHours,
-      } as ProcessedAssignment;
-    });
-  }, [flatAssignments, activeEmployees, shiftPatterns]);
+    return {
+      ...as,
+      employeeName: employee?.name || as.employeeName || "Empleado no encontrado",
+      shiftPatternName: pattern?.name || as.shiftPatternName || "Patrón no encontrado",
+      assignmentWeeklyHours,
+    } as ProcessedAssignment;
+  });
 
-  const filteredAssignments = useMemo(() => {
+  const filteredAssignments = (() => {
     if (!debouncedSearchTerm) return processedAssignments;
     const lower = debouncedSearchTerm.toLowerCase();
     return processedAssignments.filter(
@@ -81,7 +77,7 @@ export const useAssignmentManagerController = () => {
         as.employeeName.toLowerCase().includes(lower) ||
         as.shiftPatternName.toLowerCase().includes(lower),
     );
-  }, [processedAssignments, debouncedSearchTerm]);
+  })();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -104,13 +100,13 @@ export const useAssignmentManagerController = () => {
     },
   });
 
-  const filteredEmployeesForSearch = useMemo(() => {
+  const filteredEmployeesForSearch = (() => {
     if (!employeeSearchTerm) return [];
     const lower = normalizeString(employeeSearchTerm).toLowerCase();
     return activeEmployees
       .filter((e) => normalizeString(e.name).toLowerCase().includes(lower))
       .slice(0, 7);
-  }, [employeeSearchTerm, activeEmployees]);
+  })();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -193,9 +189,9 @@ export const useAssignmentManagerController = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const handleConfirmConflict = useCallback(async () => {
+  const handleConfirmConflict = async () => {
     await assignmentForm.proceedWithSave();
-  }, [assignmentForm]);
+  };
 
   return {
     shiftPatterns,

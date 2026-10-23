@@ -7,6 +7,7 @@ import { formatDisplayDateTime } from "../../../utils/formatters";
 import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useAccountingLockDateQuery } from "../../../hooks/queries/useConfigQuery";
 import { useReportsQuery } from "../../../hooks/queries/useReportsQuery";
+import { logger } from "../../../utils/logger";
 
 interface UseTimeControlModalsOptions {
   closeQuickActionModal: () => void;
@@ -15,7 +16,6 @@ interface UseTimeControlModalsOptions {
 export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlModalsOptions) => {
   const { addToast } = useToasts();
   const { currentUser } = useAuth();
-  const actorUsername = currentUser?.username || "System";
 
   // Phase 5: TanStack Mutations
   const { deleteRecordMutation } = useTimeRecordMutations();
@@ -34,6 +34,7 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
   const [noveltyInitialText, setNoveltyInitialText] = useState("");
   const [activeShiftForNovelty, setActiveShiftForNovelty] = useState<ShiftReport | null>(null);
 
+  // Keep modal action props stable while each modal's own state changes.
   const handleDeleteClick = useCallback(
     (record: DailyTimeRecord) => {
       if (accountingLockDate && record.date <= accountingLockDate) {
@@ -60,7 +61,7 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
         // Error handled by mutation
       }
     },
-    [deleteRecordMutation, actorUsername],
+    [deleteRecordMutation],
   );
 
   const handleAddCommentClick = useCallback(
@@ -92,7 +93,7 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
       if (!activeShiftForNovelty || !currentUser) return;
 
       // In a real backend-centric app, we would call a service here
-      console.warn("Saving novelty to backend (mock):", {
+      logger.warn("Saving novelty to backend (mock):", {
         annotation,
         time,
         shiftFolio: activeShiftForNovelty.folio,

@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useAuth } from "./useAuth";
 import { useToasts } from "./useToasts";
 import { ShiftReport, LogbookEntryItem } from "../types/index";
@@ -7,6 +6,7 @@ import { idFactory } from "../utils/idFactory";
 import { useReportsQuery } from "./queries/useReportsQuery";
 import { useReportMutations } from "./useReportMutations";
 import { toBusinessDateChile } from "../utils/dateUtils";
+import { logger } from "../utils/logger";
 
 export interface StartShiftResult {
   success: boolean;
@@ -22,7 +22,7 @@ export const useShiftManager = () => {
   const { refetch: refetchReports } = useReportsQuery();
   const { addReport, isPending } = useReportMutations();
 
-  const startNewShift = useCallback(async (): Promise<StartShiftResult> => {
+  const startNewShift = async (): Promise<StartShiftResult> => {
     if (!currentUser) {
       return {
         success: false,
@@ -102,11 +102,11 @@ export const useShiftManager = () => {
       return { success: true, message, type: "created", shift: savedShift };
     } catch (error) {
       const message = "Error al iniciar el turno en el servidor.";
-      console.error(message, error);
+      logger.error(message, error);
       addToast(message, "error");
       return { success: false, message, type: "error" };
     }
-  }, [currentUser, addToast, addReport, refetchReports]);
+  };
 
   return { startNewShift, isPending };
 };

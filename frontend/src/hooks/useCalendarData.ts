@@ -1,10 +1,10 @@
-import { useMemo } from "react";
 import { Employee, ScheduledEmployeeDetail } from "../types/index";
 import { formatDateUTCISO, getWeekStartDate } from "../utils/dateUtils";
 import { ScheduleInfo } from "../types/scheduling";
 import { useCalendarMatrixQuery } from "./queries/useCalendarMatrixQuery";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
 import { useAssignedShiftsQuery } from "./queries/useAssignedShiftsQuery";
+import { logger } from "../utils/logger";
 
 // A map where the key is a YYYY-MM-DD string
 export type HolidayCalendarData = {
@@ -33,7 +33,7 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
   const { viewMode, displayDate, filteredEmployees = [], selectedEmployeeId } = options;
 
   // 1. Calculate range
-  const { startDateStr, endDateStr } = useMemo(() => {
+  const { startDateStr, endDateStr } = (() => {
     if (!displayDate || isNaN(displayDate.getTime())) {
       return { startDateStr: "", endDateStr: "" };
     }
@@ -66,26 +66,15 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
         endDateStr: formatDateUTCISO(end),
       };
     } catch (e) {
-      console.error("Error calculating date range:", e, { displayDate, viewMode });
+      logger.error("Error calculating date range:", e, { displayDate, viewMode });
       return { startDateStr: "", endDateStr: "" };
     }
-  }, [viewMode, displayDate]);
+  })();
 
   // 2. Fetch Matrix from server (TanStack Query)
-  const employeeIdsKey = useMemo(
-    () =>
-      selectedEmployeeId ||
-      filteredEmployees
-        .map((e) => e.id)
-        .sort()
-        .join(","),
-    [selectedEmployeeId, filteredEmployees],
-  );
-
-  const employeeIds = useMemo(
-    () => (selectedEmployeeId ? [selectedEmployeeId] : filteredEmployees.map((e) => e.id)),
-    [selectedEmployeeId, employeeIdsKey],
-  );
+  const employeeIds = selectedEmployeeId
+    ? [selectedEmployeeId]
+    : filteredEmployees.map((employee) => employee.id);
 
   const {
     data: matrix,
@@ -97,7 +86,7 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
   const { isLoading: isShiftPatternsLoading } = useShiftPatternsQuery();
   const { isLoading: isAssignedShiftsLoading } = useAssignedShiftsQuery();
 
-  const scheduleMap: ScheduleMap = useMemo(() => {
+  const scheduleMap: ScheduleMap = (() => {
     if (!matrix) return new Map();
 
     const newScheduleMap: ScheduleMap = new Map();
@@ -157,7 +146,7 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
     }
 
     return newScheduleMap;
-  }, [matrix, selectedEmployeeId, employeeIdsKey]);
+  })();
 
   return {
     scheduleMap,

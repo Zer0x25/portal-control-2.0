@@ -1,5 +1,6 @@
 import { EmailNotificationRules, SmtpConfig, MultiSmtpConfig } from "../types";
 import { request as apiRequest, errorMessageOr } from "./apiClient";
+import { logger } from "../utils/logger";
 
 interface EmailOperationResult {
   success: boolean;
@@ -59,7 +60,7 @@ export const emailService = {
       if (!result.ok) return null;
       return result.data ?? null;
     } catch (error) {
-      console.error("Error fetching SMTP config:", error);
+      logger.error("Error fetching SMTP config:", error);
       return null;
     }
   },
@@ -86,7 +87,7 @@ export const emailService = {
         url: "/api/email/rules",
       });
     } catch (error) {
-      console.error("Error fetching notification rules:", error);
+      logger.error("Error fetching notification rules:", error);
       return {
         autoCloseShift: { enabled: false, recipient: "" },
         latenessOver15: { enabled: false, recipient: "" },

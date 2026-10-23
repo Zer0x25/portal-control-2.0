@@ -8,6 +8,8 @@ import { ROLES } from "./utils/mappings";
 import { useSocketEvents } from "./hooks/useSocketEvents";
 import { useControlInternoEnabledQuery } from "./hooks/queries/useConfigQuery";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
+import { RenderProfiler } from "./utils/RenderProfiler";
+import { logger } from "./utils/logger";
 
 // Lazy loading components
 const LoginPage = React.lazy(() => import("./features/auth/pages/LoginPage"));
@@ -111,7 +113,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      console.warn("Session lost (401/403). Initiating secure logout sequence...");
+      logger.warn("Session lost (401/403). Initiating secure logout sequence...");
       setIsSessionExpired(true);
 
       // Wait for animation (3s) before actual logout
@@ -165,7 +167,9 @@ const App: React.FC = () => {
           path={ROUTES.KIOSK}
           element={
             <Suspense fallback={<LoadingSpinner fullScreen />}>
-              <Kiosk />
+              <RenderProfiler id="kiosk">
+                <Kiosk />
+              </RenderProfiler>
             </Suspense>
           }
         />
@@ -178,7 +182,9 @@ const App: React.FC = () => {
                 <ProtectedRoute
                   requiredRoles={[ROLES.CLOCK_CONTROL, ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}
                 >
-                  <DashboardPage />
+                  <RenderProfiler id="dashboard">
+                    <DashboardPage />
+                  </RenderProfiler>
                 </ProtectedRoute>
               }
             />
@@ -224,7 +230,9 @@ const App: React.FC = () => {
                   <ProtectedRoute
                     requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.CLOCK_CONTROL]}
                   >
-                    <LogbookPage />
+                    <RenderProfiler id="logbook">
+                      <LogbookPage />
+                    </RenderProfiler>
                   </ProtectedRoute>
                 }
               />
@@ -312,7 +320,9 @@ const App: React.FC = () => {
               <ProtectedRoute
                 requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.SUPERVISOR_ELEVATED]}
               >
-                <MonthlyPlanningPage />
+                <RenderProfiler id="planner">
+                  <MonthlyPlanningPage />
+                </RenderProfiler>
               </ProtectedRoute>
             }
           />
@@ -340,7 +350,9 @@ const App: React.FC = () => {
             path={ROUTES.WORKER_PORTAL}
             element={
               <ProtectedRoute requiredRoles={[ROLES.USER]}>
-                <WorkerPortalPage />
+                <RenderProfiler id="worker-portal">
+                  <WorkerPortalPage />
+                </RenderProfiler>
               </ProtectedRoute>
             }
           />

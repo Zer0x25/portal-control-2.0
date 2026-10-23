@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from "react";
+import React from "react";
 import { ActionConfig, ToolConfig, ColorTheme } from "../../types";
 import Button from "../../../../components/ui/Button";
 
@@ -28,62 +28,50 @@ type ActionButtonProps = ClickableActionButtonProps | LinkActionButtonProps;
  * Soporta tanto clicks como enlaces, con indicadores de notificación
  * Optimizado con React.memo para prevenir re-renders innecesarios
  */
-export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
+export const ActionButton: React.FC<ActionButtonProps> = (props) => {
   const { color, icon: Icon, label, className = "", hasNotification, disabled } = props;
 
   // Memoizar clases de color para evitar recálculos
-  const colorClasses = useMemo(
-    () => ({
-      emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
-      indigo: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
-      slate: "text-token-text-secondary bg-token-surface-hover",
-      orange: "text-orange-600 dark:text-orange-400 bg-orange-500/10",
-      violet: "text-violet-600 dark:text-violet-400 bg-violet-500/10",
-    }),
-    [],
-  );
+  const colorClasses = {
+    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
+    indigo: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
+    slate: "text-token-text-secondary bg-token-surface-hover",
+    orange: "text-orange-600 dark:text-orange-400 bg-orange-500/10",
+    violet: "text-violet-600 dark:text-violet-400 bg-violet-500/10",
+  };
 
   // Memoizar clases base para evitar concatenaciones en cada render
-  const baseClasses = useMemo(
-    () => `
+  const baseClasses = `
     group relative p-3.5 h-[90px] rounded-sm flex flex-col items-center justify-center text-center
     bg-token-surface-stripe border border-token-border-technical shadow-sm transition-all duration-150
     hover:border-sap-blue/40 hover:bg-token-surface-active hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
     ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
     ${colorClasses[color]}
     ${className}
-  `,
-    [color, className, disabled, colorClasses],
-  );
+  `;
 
   // Memoizar clases del icono
-  const iconBoxClasses = useMemo(
-    () => `
+  const iconBoxClasses = `
     w-8 h-8 rounded-sm flex items-center justify-center mb-2.5 transition-transform
     group-hover:scale-110 border border-token-border-technical/50
-  `,
-    [],
-  );
+  `;
 
-  const content = useMemo(
-    () => (
-      <>
-        {hasNotification && (
-          <span className="absolute top-3 right-3 flex h-1.5 w-1.5">
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-600"></span>
-          </span>
-        )}
-        <div
-          className={`${iconBoxClasses} transition-transform group-hover:scale-110 group-active:scale-95`}
-        >
-          <Icon className="w-4 h-4" />
-        </div>
-        <span className="text-xs font-bold text-token-text-secondary uppercase tracking-wider leading-none">
-          {label}
+  const content = (
+    <>
+      {hasNotification && (
+        <span className="absolute top-3 right-3 flex h-1.5 w-1.5">
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-600"></span>
         </span>
-      </>
-    ),
-    [hasNotification, iconBoxClasses, Icon, label],
+      )}
+      <div
+        className={`${iconBoxClasses} transition-transform group-hover:scale-110 group-active:scale-95`}
+      >
+        <Icon className="w-4 h-4" />
+      </div>
+      <span className="text-xs font-bold text-token-text-secondary uppercase tracking-wider leading-none">
+        {label}
+      </span>
+    </>
   );
 
   if ("href" in props) {
@@ -101,7 +89,7 @@ export const ActionButton: React.FC<ActionButtonProps> = React.memo((props) => {
       {content}
     </Button>
   );
-});
+};
 
 ActionButton.displayName = "ActionButton";
 
@@ -110,15 +98,12 @@ ActionButton.displayName = "ActionButton";
  * Optimizado con useMemo para prevenir recálculos innecesarios
  */
 export const useActionButtonProps = (action: ActionConfig): ClickableActionButtonProps => {
-  return useMemo(
-    () => ({
-      color: action.color,
-      icon: action.icon,
-      label: action.label,
-      onClick: () => {}, // Será sobrescrito por el componente padre
-    }),
-    [action.color, action.icon, action.label],
-  );
+  return {
+    color: action.color,
+    icon: action.icon,
+    label: action.label,
+    onClick: () => {}, // Será sobrescrito por el componente padre
+  };
 };
 
 /**
@@ -126,37 +111,20 @@ export const useActionButtonProps = (action: ActionConfig): ClickableActionButto
  * Optimizado con useMemo y useCallback para máxima performance
  */
 export const useToolButtonProps = (tool: ToolConfig): ActionButtonProps => {
-  const baseProps = useMemo(
-    () => ({
-      color: tool.color,
-      icon: tool.icon,
-      label: tool.label,
-      hasNotification: tool.hasNotification,
-    }),
-    [tool.color, tool.icon, tool.label, tool.hasNotification],
-  );
+  const { type, action } = tool;
+  const baseProps = {
+    color: tool.color,
+    icon: tool.icon,
+    label: tool.label,
+    hasNotification: tool.hasNotification,
+  };
 
-  const onClick = useCallback(() => {
-    if (tool.type === "button" && typeof tool.action === "function") {
-      tool.action();
+  const onClick = () => {
+    if (type === "button" && typeof action === "function") {
+      action();
     }
-  }, [tool.type, tool.action]);
+  };
 
-  if (tool.type === "link") {
-    return useMemo(
-      () => ({
-        ...baseProps,
-        href: tool.action as string,
-      }),
-      [baseProps, tool.action],
-    );
-  }
-
-  return useMemo(
-    () => ({
-      ...baseProps,
-      onClick,
-    }),
-    [baseProps, onClick],
-  );
+  const isLink = type === "link";
+  return isLink ? { ...baseProps, href: action as string } : { ...baseProps, onClick };
 };

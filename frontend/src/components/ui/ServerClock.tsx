@@ -45,4 +45,4 @@ const ServerClock: React.FC<ServerClockProps> = ({
   );
 };
 
-export default React.memo(ServerClock);
+export default ServerClock;

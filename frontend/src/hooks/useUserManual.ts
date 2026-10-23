@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DOMPurify from "../utils/domPurify";
+import { logger } from "../utils/logger";
 
 const MANUAL_LOAD_ERROR = "Error al cargar el manual.";
 
@@ -56,7 +57,7 @@ export const useUserManual = (isOpen: boolean) => {
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        console.error("Error fetching user manual:", error);
+        logger.error("Error fetching user manual:", error);
         setManualContent(MANUAL_LOAD_ERROR);
       })
       .finally(() => {

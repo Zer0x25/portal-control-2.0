@@ -10,6 +10,7 @@ import { SeedingOptions } from "../../../schemas/forms/seed";
 import { getDBInstance } from "../../../utils/indexedDB";
 import { Z } from "../../../constants/zScale";
 import { useSeedingProgressHealth } from "../hooks/useSeedingProgressHealth";
+import { logger } from "../../../utils/logger";
 
 interface SeedingProgressModalProps {
   isOpen: boolean;
@@ -87,7 +88,7 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
     if (logEndRef.current) {
       logEndRef.current.scrollIntoView({ behavior: "auto", block: "end" });
     }
-  }, [isOpen]); // Scroll to bottom when opening
+  }, [isOpen, isPhase2Active, jobLogs.length, progressSteps.length]);
 
   if (!isOpen) return null;
 
@@ -102,7 +103,7 @@ const SeedingProgressModal: React.FC<SeedingProgressModalProps> = ({
       const db = await getDBInstance();
       await Promise.all(Array.from(db.objectStoreNames).map((storeName) => db.clear(storeName)));
     } catch (e) {
-      console.warn("Error clearing IndexedDB:", e);
+      logger.warn("Error clearing IndexedDB:", e);
     }
     localStorage.removeItem("lastSyncTime");
     sessionStorage.clear();

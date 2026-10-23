@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useAuth } from "../hooks/useAuth";
 import {
   SupervisorRole,
@@ -18,7 +18,7 @@ import {
 export const useSupervisorPermissions = () => {
   const { currentUser } = useAuth();
 
-  const supervisorData = useMemo(() => {
+  const supervisorData = (() => {
     if (!currentUser || !isSupervisorRole(currentUser.role)) {
       return {
         isSupervisor: false,
@@ -49,7 +49,7 @@ export const useSupervisorPermissions = () => {
         return permissions[permission];
       },
     };
-  }, [currentUser]);
+  })();
 
   return supervisorData;
 };
@@ -120,11 +120,11 @@ export const useSupervisorAction = () => {
 export const useSupervisorGuard = (requiredPermission?: keyof SupervisorPermissions) => {
   const { isSupervisor, hasPermission, role } = useSupervisorPermissions();
 
-  const canAccess = useMemo(() => {
+  const canAccess = (() => {
     if (!isSupervisor) return false;
     if (!requiredPermission) return true;
     return hasPermission(requiredPermission);
-  }, [isSupervisor, hasPermission, requiredPermission]);
+  })();
 
   return {
     canAccess,

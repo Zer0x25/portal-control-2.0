@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useMeterReadings } from "../../../hooks/useMeterReadings";
@@ -60,13 +60,9 @@ export const useMeterReadingsFormController = ({
   const { readings, isLoadingReadings, addReading, meterConfigs } = useMeterReadings();
 
   /** Configuracion de cada medidor, por id. */
-  const metersById = useMemo(
-    () =>
-      Object.fromEntries(
-        meterConfigs.map((config) => [config.id, toReadingMeter(config)]),
-      ) as Record<string, MeterReadingMeter>,
-    [meterConfigs],
-  );
+  const metersById = Object.fromEntries(
+    meterConfigs.map((config) => [config.id, toReadingMeter(config)]),
+  ) as Record<string, MeterReadingMeter>;
 
   /**
    * Ultima lectura de cada medidor.
@@ -74,7 +70,7 @@ export const useMeterReadingsFormController = ({
    * Los medidores de consumo no pueden bajar: para eso hace falta el valor
    * anterior (el mas reciente).
    */
-  const lastReadingById = useMemo(() => {
+  const lastReadingById = (() => {
     const map: Record<string, number> = {};
     for (const reading of readings) {
       if (map[reading.meterConfigId] === undefined) {
@@ -82,13 +78,10 @@ export const useMeterReadingsFormController = ({
       }
     }
     return map;
-  }, [readings]);
+  })();
 
   /** Schema con las reglas que dependen de cada medidor. */
-  const schema = useMemo(
-    () => buildMeterReadingsSchema({ metersById, lastReadingById }),
-    [metersById, lastReadingById],
-  );
+  const schema = buildMeterReadingsSchema({ metersById, lastReadingById });
 
   /**
    * Identidad estable del conjunto de medidores.
@@ -97,20 +90,21 @@ export const useMeterReadingsFormController = ({
    * consulta carga (`data ?? []`): usarla como dependencia de un efecto
    * reiniciaria el formulario sin parar.
    */
-  const meterIdsKey = meterConfigs.map((config) => config.id).join("|");
+  const meterIdsKey = JSON.stringify(meterConfigs.map((config) => config.id));
 
   /** Una entrada por medidor (el valor empieza vacio). */
-  const initialValues = useMemo(() => {
+  const initialValues = (() => {
     const next: MeterReadingsValues = {};
-    for (const config of meterConfigs) {
-      next[config.id] = "";
+    const meterIds = JSON.parse(meterIdsKey) as string[];
+    for (const meterId of meterIds) {
+      next[meterId] = "";
     }
     return next;
     // La identidad estable del conjunto de medidores es la lista de ids: la
     // referencia del array cambia en cada render mientras la consulta carga
     // (`data ?? []`), y un `useMemo` sobre ella provocaria un bucle de
     // reinicios.
-  }, [meterIdsKey]);
+  })();
 
   const form = useAppForm<MeterReadingsValues, MeterReadingInput[]>({
     schema,
@@ -139,9 +133,9 @@ export const useMeterReadingsFormController = ({
   const { setValue, values, reset, getError } = form;
 
   /** Reinicia el formulario (tras guardar o al abrir el modal). */
-  const clearForm = useCallback(() => {
+  const clearForm = () => {
     reset(initialValues);
-  }, [initialValues, reset]);
+  };
 
   /**
    * Al abrir el modal el formulario se reinicia con una entrada por medidor:

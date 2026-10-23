@@ -222,4 +222,4 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
   );
 };
 
-export default React.memo(AuditMonthSelector);
+export default AuditMonthSelector;

@@ -33,6 +33,7 @@ interface LeaveListMobileProps {
 
 const CARD_HEIGHT = 160;
 
+// Spec 037 T11: table columns and the mobile card's dates, reason, and actions need distinct density; preserve 65/160 px virtualization geometry.
 const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
   leaves,
   isLoading,
@@ -48,28 +49,23 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
   const parentRef = useRef<HTMLDivElement>(null);
   const todayStr = toBusinessDateChile();
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the 160 px mobile estimate; Compiler cannot memoize TanStack Virtual's measurement API.
   const rowVirtualizer = useVirtualizer({
     count: leaves.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => CARD_HEIGHT,
     overscan: 3,
   });
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
-    const virtualItems = rowVirtualizer.getVirtualItems();
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
     if (lastItem.index >= leaves.length - 3 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    isFetchingNextPage,
-    leaves.length,
-    fetchNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, isFetchingNextPage, leaves.length, fetchNextPage, virtualItems]);
 
   return (
     <div className="border border-token-border-subtle rounded-xl shadow-lg bg-token-surface-card overflow-hidden">

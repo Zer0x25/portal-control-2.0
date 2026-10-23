@@ -49,6 +49,7 @@ export interface AuthSlice {
 }
 
 import { LoginResponse } from "../../services/authService";
+import { logger } from "../../utils/logger";
 
 export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, get) => ({
   currentUser: null,
@@ -76,11 +77,11 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
         get()
           .initializeAppData()
           .catch((err) => {
-            console.error("Failed to initialize app data on session restore:", err);
+            logger.error("Failed to initialize app data on session restore:", err);
           });
         return;
       } catch (e) {
-        console.warn("Error parsing stored user:", e);
+        logger.warn("Error parsing stored user:", e);
       }
     }
     set({ currentUser: null, isAuthenticated: false, isAuthLoading: false });
@@ -152,7 +153,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     const isNewUser = lastUserId !== loginResponse.userId;
 
     if (isNewUser) {
-      console.warn("🔄 Nuevo usuario detectado. Limpiando caché local...");
+      logger.warn("🔄 Nuevo usuario detectado. Limpiando caché local...");
       await wipeAllData();
       // AC2.1: el cache de queries persistido tambien cambia de dueño.
       await resetPersistedQueryCache(loginResponse.userId);
@@ -192,7 +193,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     get()
       .initializeAppData()
       .catch((err) => {
-        console.error("Failed to initialize app data after login:", err);
+        logger.error("Failed to initialize app data after login:", err);
       });
     return user;
   },

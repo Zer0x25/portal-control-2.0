@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import IconBox from "../../../../components/ui/IconBox";
 import { StatusInfo } from "../../types";
 import { BookOpenIcon } from "../../../../components/ui/icons/index";
@@ -15,44 +15,39 @@ interface StatusCardProps {
  * Usado para estado del usuario, turnos activos, etc.
  * Optimizado con React.memo para prevenir re-renders innecesarios
  */
-export const StatusCard: React.FC<StatusCardProps> = React.memo(
-  ({ status, timeText, className = "", showAnimation = true }) => {
-    // Memoizar clases CSS para evitar recálculos
-    const cardClasses = useMemo(
-      () => `
+export const StatusCard: React.FC<StatusCardProps> = ({
+  status,
+  timeText,
+  className = "",
+  showAnimation = true,
+}) => {
+  // Memoizar clases CSS para evitar recálculos
+  const cardClasses = `
     flex items-center justify-start gap-3.5 p-3.5 rounded-md border
     ${status.borderColor} bg-token-surface-stripe shadow-none transition-all
     ${className}
-  `,
-      [status.borderColor, className],
-    );
+  `;
 
-    const cardContent = useMemo(
-      () => (
-        <div className={cardClasses}>
-          <IconBox icon={status.icon} variant={status.variant} size="md" className="rounded-sm" />
-          <div className="flex-1 min-w-0">
-            <p className={`text-lg font-bold ${status.textColor} leading-tight`}>{status.text}</p>
-            {timeText && (
-              <p className="text-xxs font-bold uppercase tracking-wider text-token-text-tertiary mt-1">
-                {timeText}
-              </p>
-            )}
-          </div>
-        </div>
-      ),
-      [cardClasses, status.icon, status.variant, status.textColor, status.text, timeText],
-    );
+  const cardContent = (
+    <div className={cardClasses}>
+      <IconBox icon={status.icon} variant={status.variant} size="md" className="rounded-sm" />
+      <div className="flex-1 min-w-0">
+        <p className={`text-lg font-bold ${status.textColor} leading-tight`}>{status.text}</p>
+        {timeText && (
+          <p className="text-xxs font-bold uppercase tracking-wider text-token-text-tertiary mt-1">
+            {timeText}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 
-    if (!showAnimation) {
-      return cardContent;
-    }
+  if (!showAnimation) {
+    return cardContent;
+  }
 
-    return (
-      <div className="animate-in fade-in slide-in-from-left-2 duration-200">{cardContent}</div>
-    );
-  },
-);
+  return <div className="animate-in fade-in slide-in-from-left-2 duration-200">{cardContent}</div>;
+};
 
 StatusCard.displayName = "StatusCard";
 

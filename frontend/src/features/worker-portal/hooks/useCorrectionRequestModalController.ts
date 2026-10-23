@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { getBusinessNow } from "../../../hooks/useBusinessNow";
@@ -137,12 +137,10 @@ export const useCorrectionRequestModalController = ({
     setAttachment(null);
   }, [isOpen, originalValue, reset]);
 
-  const attachmentLabel = useMemo(() => {
-    return attachment ? attachment.name : "Subir archivo (PDF, PNG, JPG)";
-  }, [attachment]);
+  const attachmentLabel = attachment ? attachment.name : "Subir archivo (PDF, PNG, JPG)";
 
   // Tope del input datetime-local: no se solicitan correcciones futuras (spec 030).
-  const maxRequestedValue = useMemo(() => formatDateToDateTimeLocal(getBusinessNow()), [isOpen]);
+  const maxRequestedValue = isOpen ? formatDateToDateTimeLocal(getBusinessNow()) : "";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -159,20 +157,14 @@ export const useCorrectionRequestModalController = ({
   };
 
   /** Escribe la fecha-hora solicitada. */
-  const handleRequestedValueChange = useCallback(
-    (value: string) => {
-      setValue("requestedValue", value);
-    },
-    [setValue],
-  );
+  const handleRequestedValueChange = (value: string) => {
+    setValue("requestedValue", value);
+  };
 
   /** Escribe el motivo. */
-  const handleReasonChange = useCallback(
-    (value: string) => {
-      setValue("reason", value);
-    },
-    [setValue],
-  );
+  const handleReasonChange = (value: string) => {
+    setValue("reason", value);
+  };
 
   return {
     attachment,

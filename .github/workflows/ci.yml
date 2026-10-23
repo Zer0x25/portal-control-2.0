@@ -275,7 +275,7 @@ jobs:
         !startsWith(github.head.ref, 'dependabot/')
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     defaults:
       run:
         working-directory: frontend
@@ -304,13 +304,60 @@ jobs:
         id: validate
         run: npm run validate:ci:coverage
 
+      - name: Configure isolated staging credentials
+        working-directory: .
+        run: |
+          sed '/^JWT_SECRET=/d; /^SEED_ADMIN_PASSWORD=/d' .env.staging.example > .env.staging
+          printf '\nJWT_SECRET=%s\nSEED_ADMIN_PASSWORD=%s\n' "$GITHUB_RUN_ID" "999.666" >> .env.staging
+
+      - name: Start staging stack for Lighthouse
+        working-directory: .
+        run: docker compose --project-name "portal-control-staging-${GITHUB_RUN_ID}" --env-file .env.staging -f compose.staging.yaml up -d --build
+
+      - name: Wait for staging gateway
+        working-directory: .
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080 > /dev/null; then
+              echo "staging gateway healthy"
+              exit 0
+            fi
+            sleep 3
+          done
+          docker compose --project-name "portal-control-staging-${GITHUB_RUN_ID}" --env-file .env.staging -f compose.staging.yaml logs --tail=200
+          exit 1
+
+      - name: Run Lighthouse CI against authenticated staging
+        id: lighthouse
+        env:
+          E2E_API_URL: http://127.0.0.1:8080/api
+          E2E_ADMIN_USERNAME: admin
+          E2E_ADMIN_PASSWORD: "999.666"
+        run: |
+          export CHROME_PATH="$(node -e 'const { chromium } = require("@playwright/test"); process.stdout.write(chromium.executablePath())')"
+          npm run audit:lighthouse -- --collect.chromePath="$CHROME_PATH"
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ github.run_id }}
+          path: frontend/.lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Stop staging stack
+        if: always() && hashFiles('.env.staging') != ''
+        working-directory: .
+        run: docker compose --project-name "portal-control-staging-${GITHUB_RUN_ID}" --env-file .env.staging -f compose.staging.yaml down
+
       - name: Generate Frontend Summary
         if: always()
         run: |
           echo "### 🎨 Frontend CI Validation" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.validate.outcome }}" = "success" ]; then
+          if [ "${{ steps.validate.outcome }}" = "success" ] && [ "${{ steps.lighthouse.outcome }}" = "success" ]; then
             echo "- **Estado:** ✅ APROBADO" >> $GITHUB_STEP_SUMMARY
-            echo "- **Validaciones:** ESLint, Prettier Check, Type Check, cobertura y Build pasaron exitosamente." >> $GITHUB_STEP_SUMMARY
+            echo "- **Validaciones:** ESLint, Prettier, TypeScript, cobertura, Build, bundle budget y Lighthouse CI autenticado pasaron." >> $GITHUB_STEP_SUMMARY
           else
             echo "- **Estado:** ❌ FALLIDO" >> $GITHUB_STEP_SUMMARY
             echo "- **Diagnóstico:** Revisa el paso 'Run frontend CI validation'. Si eres un agente AI, ejecuta \`npm run check\` y \`npm run format:check\` en \`frontend/\`." >> $GITHUB_STEP_SUMMARY

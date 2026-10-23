@@ -40,6 +40,7 @@ interface TimeRecordTableProps {
   filtersKey?: string;
 }
 
+// Keep the virtualized table boundary stable when parent dashboard state changes.
 const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
   ({
     records,

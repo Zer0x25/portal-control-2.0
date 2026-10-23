@@ -182,4 +182,6 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
   );
 };
 
+// useClockingPanel reads refs during render and is a compiler bail-out; this
+// boundary avoids rerunning that clocking hot path for unrelated parent renders.
 export default React.memo(ClockingPanel);

@@ -68,6 +68,8 @@ export const useAuditLogsController = () => {
 
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // TanStack Virtual is intentionally a compiler bail-out; keep the virtualizer's instance API local.
+  // eslint-disable-next-line react-hooks/incompatible-library -- the compiler cannot safely memoize Virtualizer methods
   const rowVirtualizer = useVirtualizer({
     count: allLogs.length,
     getScrollElement: () => parentRef.current,
@@ -75,21 +77,13 @@ export const useAuditLogsController = () => {
     overscan: 10,
   });
 
-  useEffect(() => {
-    const virtualItems = rowVirtualizer.getVirtualItems();
-    if (virtualItems.length === 0) return;
+  const lastVirtualItemIndex = rowVirtualizer.getVirtualItems().at(-1)?.index ?? -1;
 
-    const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem.index >= allLogs.length - 5 && hasNextPage && !isFetchingNextPage) {
+  useEffect(() => {
+    if (lastVirtualItemIndex >= allLogs.length - 5 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    isFetchingNextPage,
-    allLogs.length,
-    fetchNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, isFetchingNextPage, allLogs.length, fetchNextPage, lastVirtualItemIndex]);
 
   return {
     isMobile,

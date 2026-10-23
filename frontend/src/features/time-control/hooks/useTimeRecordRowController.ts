@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   AugmentedTimeRecord,
   AuditLog,
@@ -22,7 +21,7 @@ export const useTimeRecordRowController = ({
   externalEdits,
   externalPendingRequest,
 }: UseTimeRecordRowControllerParams) => {
-  const editsMap = useMemo(() => {
+  const editsMap = (() => {
     const map = new Map<string, { actor: string; timestamp: string; oldValue: string }>();
     (externalEdits || []).forEach((log) => {
       const field = log.details?.fieldEdited as string;
@@ -38,7 +37,7 @@ export const useTimeRecordRowController = ({
       }
     });
     return map;
-  }, [externalEdits, record.id]);
+  })();
 
   const pendingRequest = externalPendingRequest;
   const statusConfig = record.scheduleInfo
@@ -46,12 +45,12 @@ export const useTimeRecordRowController = ({
     : null;
   const isLocked = Boolean(accountingLockDate && record.date <= accountingLockDate);
 
-  const progressPercent = useMemo(() => {
+  const progressPercent = (() => {
     if (!record.entradaTimestamp || !record.scheduledHours || record.scheduledHours <= 0) return 0;
     const now = record.salidaTimestamp || Date.now();
     const diffHours = (now - record.entradaTimestamp) / (1000 * 60 * 60);
     return Math.min(Math.round((diffHours / record.scheduledHours) * 100), 100);
-  }, [record.entradaTimestamp, record.salidaTimestamp, record.scheduledHours]);
+  })();
 
   const isJustified = Boolean(
     record.justification && record.justification.type !== "SYSTEM_ANOMALY",

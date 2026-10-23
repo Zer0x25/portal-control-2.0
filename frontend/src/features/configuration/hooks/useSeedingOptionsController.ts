@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
@@ -122,13 +122,13 @@ export const useSeedingOptionsController = ({
   const { reset, setValue } = form;
 
   /** Aplica el preset "Quick Seed". */
-  const applyQuickSeedPreset = useCallback(() => {
+  const applyQuickSeedPreset = () => {
     reset(QUICK_SEED_PRESET);
     addToast("Preset Quick Seed aplicado.", "success");
-  }, [addToast, reset]);
+  };
 
   /** Aplica el siguiente nivel del preset incremental. */
-  const applyIncrementalPreset = useCallback(() => {
+  const applyIncrementalPreset = () => {
     const nextLevel = Math.min(incrementalLevel + 1, INCREMENTAL_PRESETS.length);
     const preset = INCREMENTAL_PRESETS[nextLevel - 1];
     if (!preset) return;
@@ -138,15 +138,12 @@ export const useSeedingOptionsController = ({
       `Preset incremental aplicado (nivel ${nextLevel}/${INCREMENTAL_PRESETS.length}).`,
       "success",
     );
-  }, [addToast, incrementalLevel, reset]);
+  };
 
   /** Escribe un campo numerico (el texto vacio es 0, como antes). */
-  const handleNumberChange = useCallback(
-    (field: SeedingNumberField, value: string) => {
-      setValue(field, value === "" ? 0 : Number.parseInt(value, 10));
-    },
-    [setValue],
-  );
+  const handleNumberChange = (field: SeedingNumberField, value: string) => {
+    setValue(field, value === "" ? 0 : Number.parseInt(value, 10));
+  };
 
   return {
     values: form.values,

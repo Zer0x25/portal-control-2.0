@@ -28,6 +28,7 @@ interface TimeRecordTableViewDesktopProps {
   pendingRequestsMap: Map<string, CorrectionRequest>;
 }
 
+// Spec 037 T12: retain the dense record table and the mobile card with per-record actions; their virtual rows are 66/280 px.
 const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
   records,
   fetchNextPage,
@@ -181,4 +182,5 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
   );
 };
 
+// Preserve the desktop virtualizer boundary; its 66 px row geometry is a scroll hot path.
 export default React.memo(TimeRecordTableViewDesktop);

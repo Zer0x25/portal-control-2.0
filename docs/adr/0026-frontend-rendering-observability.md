@@ -1,20 +1,19 @@
 # ADR-0026: Frontend Rendering & Observability — Compilador, container queries y métricas en campo
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-21
 - Autores: zer0x
 
 ## Contexto
 
 El repo invirtió mucho en rendimiento (code splitting con chunks por
-dominio, virtualización con `@tanstack/react-virtual`, precache PWA de 179
-entradas / 1.52 MiB, `react-core` de 218 kB / 68 kB gzip, `charts` de 145 kB
-aislado) y fijó invariantes claras en
+dominio, virtualización con `@tanstack/react-virtual`, precache PWA de 183 entradas / 1643.43 KiB (~1.61 MiB), `react-core` de 218.69 kB / 68.21 kB gzip, `charts` de 145.61 kB /
+51.05 kB gzip aislado) y fijó invariantes claras en
 `.agents/rules/frontend-performance.md`. Pero **dos de esas invariantes no son
 verificables** y la observabilidad de UI es parcial:
 
-1. **La memoización es manual y no auditada.** Hay **266 llamadas** a
-   `useMemo`/`useCallback` (**160** `useMemo(` + **106** `useCallback(`) y
+1. **La memoización es manual y no auditada.** Hay **336 llamadas** a
+   `useMemo`/`useCallback` (**182** `useMemo(` + **154** `useCallback(`) y
    **36** llamadas a `memo()` (**32** `React.memo(` + **4** `memo(` importado
    sin prefijo) en `frontend/src/`. React 19.3 está en el stack, pero **React
    Compiler no está**: `frontend/vite.config.ts:84` llama `react()` sin
@@ -25,7 +24,7 @@ verificables** y la observabilidad de UI es parcial:
      estar mal y que **ninguna herramienta audita**;
    - los 36 `memo()` pueden ser innecesarios (el compilador haría lo mismo) o
      insuficientes (memoizan el componente pero no las props que importan);
-   - con 266 optimizaciones manuales, cada re-render es difícil de razonar.
+   - con 336 optimizaciones manuales, cada re-render es difícil de razonar.
 
    Y activarlo tal cual, hoy, es imposible sin decisiones adicionales:
    - **La vía de integración habitual ya no existe en el plugin instalado.**
@@ -122,7 +121,7 @@ verificables** y la observabilidad de UI es parcial:
      dejaría dev y test ejecutando otro código que producción.
    - `eslint-plugin-react-hooks@7` se instala y se registra **antes** de tocar
      memoización: es lo que permite distinguir "redundante" de "bail-out".
-   - El compilador **sustituye la memoización manual**: se auditan las 266
+   - El compilador **sustituye la memoización manual**: se auditan las 336
      llamadas a `useMemo`/`useCallback` y los 36 `memo()` uno a uno y **se
      eliminan los redundantes**. Los que **no** son redundantes (una
      referencia que evita re-suscribir una suscripción de socket, una
@@ -185,7 +184,7 @@ verificables** y la observabilidad de UI es parcial:
 ## Alternativas consideradas
 
 1. **Mantener la memoización manual** — descartada: es la opción actual y
-   su coste es invisible. 266 declaraciones de dependencias sin auditor,
+   su coste es invisible. 336 declaraciones de dependencias sin auditor,
    con un fallo de dependencia que produce un render obsoleto en un hot path
    que nadie va a depurar. El compilador convierte una invariativa en
    código generado por el framework.
@@ -218,11 +217,10 @@ verificables** y la observabilidad de UI es parcial:
 8. **Verificar la adaptación al contenedor en Vitest/JSDOM** — descartada:
    `vite.config.ts:232` fija `environment: "jsdom"`, sin motor de layout ni
    evaluación de `@container`. La verificación va a Playwright.
-9. **Reescribir `ReportTable` y `PaginationControls` en esta spec** —
-   descartada: es el trabajo de la
-   [spec 036](file:///specs/036-frontend-form-table-primitives/spec.md)
-   (Fase D). Aquí solo se aplican container queries **sobre** las primitivas
-   que 036 crea, para no tocar los mismos ficheros en el mismo PR.
+9. **Reescribir los esquemas de ReportTable para forzar una única vista** —
+   descartada: la Fase D de la spec 036 ya entregó `DataTable`; esta spec
+   conserva las cards diarias y de resumen por sus diferentes columnas y
+   acciones, pero selecciona ambas presentaciones desde container queries.
 10. **Reportar los Core Web Vitals como transacciones propias** —
     descartada: `browserTracingIntegration` ya los instrumenta; duplicar
     Transacciones quema cuota y confunde el panel. `web-vitals` añade
@@ -255,17 +253,19 @@ verificables** y la observabilidad de UI es parcial:
 
 Positivas:
 
-- **La memoización deja de ser una responsabilidad humana**: el compilador
-  la garantiza. El código queda más corto y más legible.
+- **La memoización manual se reduce con criterio**: el compilador cubre los
+  componentes compatibles y las excepciones con bail-out o intención explícita
+  quedan auditables.
 - **El número de renders deja de ser una incógnita**: hay un script
   reproducible que lo mide y un baseline documentado (AC3).
-- **Los componentes reutilizables funcionan en cualquier ancho**, lo que
-  elimina la duplicación desktop/mobile y hace el design system realmente
-  reutilizable (p. ej. el mismo `ReportTable` en una página y en un panel).
+- **Los componentes reutilizables responden al ancho de su contenedor**. Las
+  vistas con densidades y geometrías distintas conservan implementaciones
+  separadas y razones documentadas.
 - **Una regresión de rendimiento en producción es detectable**: CWV con
   contexto de ruta y rol, sin duplicar las transacciones que Sentry ya mide.
-- **Los 105 mensajes que hoy se pierden en producción** llegan a Sentry, y
-  los errores de 4xx de negocio no consumes cuota de error.
+- **Los 105 mensajes quedan centralizados en el logger** y llegan a Sentry
+  cuando el DSN está configurado; los errores 4xx de negocio no consumen cuota
+  de error.
 - El bundle deja de crecer sin control: hay un presupuesto ejecutable.
 
 Negativas / costos aceptados:
@@ -300,48 +300,30 @@ Negativas / costos aceptados:
 - El modo `data-ui-perf="high"` y `prefers-reduced-motion` son
   **invariantes** y esta spec no los toca: es un límite deliberado.
 
+## Implementación verificada
+
+| Decisión                                                           | Evidencia actual                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React Compiler y lint de hooks activos                             | `frontend/vite.config.ts:87-90`; `frontend/eslint.config.js:157-162`                                                                                                                                                                                                                                                                                       |
+| Auditoría de memoización y excepciones                             | `specs/037-frontend-rendering-observability/evidencia/memoization-audit.md:1-44`                                                                                                                                                                                                                                                                           |
+| Render counts en cinco rutas sin aumento                           | `frontend/src/App.tsx:170-172,185-187,233-235,323-325,353-355`; `specs/037-frontend-rendering-observability/evidencia/render-after.json`                                                                                                                                                                                                                   |
+| Container queries y prueba con motor de layout real                | `frontend/src/components/ui/Card.tsx:29-32`; `frontend/src/components/ui/MetricCard.tsx:92`; `frontend/src/components/ui/EmptyState.tsx:25-28`; `frontend/src/components/ui/DataTable.tsx:59`; `frontend/src/components/ui/ReportTable.tsx:525-538`; `frontend/src/components/ui/PaginationControls.tsx:32`; `frontend/e2e/container-queries.spec.ts:3-40` |
+| Geometrías móviles virtualizadas conservadas con justificación     | `specs/037-frontend-rendering-observability/evidencia/responsive-exceptions.md:1-25`                                                                                                                                                                                                                                                                       |
+| CWV con contexto y carga diferida; logger con sink Sentry cacheado | `frontend/src/main.tsx:7,11`; `frontend/src/utils/webVitals.ts:116-129`; `frontend/src/utils/logger.ts:29-34,56-88`                                                                                                                                                                                                                                        |
+| Bundle budget posterior al build y LHCI autenticado en CI          | `frontend/performance-budget.json:6-10`; `frontend/package.json:42-43`; `frontend/.lighthouserc.json:3-35`; `frontend/scripts/lhci-puppeteer.cjs`; `.github/workflows/ci.yml:330-345`                                                                                                                                                                      |
+| Validación de staging aislado                                      | `specs/037-frontend-rendering-observability/evidencia/e2e-results.md:1-31`; `specs/037-frontend-rendering-observability/evidencia/lighthouse-results.md:1-21`                                                                                                                                                                                              |
+
 ## Referencias
 
-- `frontend/src/utils/logger.ts` — el passthrough que se convierte en sink.
-- `frontend/src/utils/sentry.ts:9` — `initSentry`, la inicialización que se
-  **extiende** (no se cambia); `:34` — `browserTracingIntegration`, la fuente
-  canónica de CWV; `:25` — el `console.warn` que pasa por el logger.
-- `frontend/src/utils/sentryMiddlewares.ts` — middlewares existentes: `:5-11`
-  el patrón de import diferido y cacheado que se replica en el logger; `:65`
-  el filtro 401/403 que se extiende al estado HTTP.
-- `frontend/src/lib/queryClient.ts:26,37` — los errores de TanStack Query
-  que hoy llegan a Sentry.
-- `frontend/eslint.config.js:39` — `no-console` con `allow: ["warn","error"]`
-  que pasa a `allow: []`.
-- `frontend/vite.config.ts:84` — `react()` sin opciones (donde entra el
-  compilador); `:232` — `environment: "jsdom"` (por qué la verificación de
-  layout va a Playwright).
-- `frontend/package.json` — `validate:ci` / `validate:ci:coverage` con los
-  tests **antes** del build.
-- `.github/workflows/ci.yml:300-302` — el job de frontend que hay que
-  enmendar para los gates de budget y Lighthouse.
-- `frontend/src/index.css:679` (`prefers-reduced-motion`) y `:689`
-  (`data-ui-perf="high"`) — invariantes que no se tocan.
-- `frontend/src/hooks/useMediaQuery.ts` (12 consumidores en producción) y
-  `frontend/src/hooks/useScreenSize.ts` (1) — la estrategia de viewport que
-  se conserva **para el shell**.
-- `frontend/src/features/employee-management/hooks/useEmployeeManagementData.ts:64,108`
-  — el `window.innerWidth` inline que se elimina.
-- `frontend/src/features/theoretical-shifts/components/{AssignmentList,LeaveList,PatternList,HolidayList}{Desktop,Mobile}.tsx`
-  y `frontend/src/features/time-control/components/TimeRecordTableView{Desktop,Mobile}.tsx`
-  — los pares desktop/mobile que se unifican, con sus geometrías.
-- `frontend/src/components/ui/Badge.tsx:20,48` — la primitiva inline que **no**
-  puede declarar `container-type`.
+- `frontend/src/utils/sentry.ts` y `frontend/src/utils/sentryMiddlewares.ts` —
+  inicialización, tracing y filtros existentes que complementa esta ADR.
 - `frontend/src/contexts/AppProviders.tsx:28` (`HashRouter`) y
-  `frontend/src/router/ProtectedRoute.tsx:21-23` — por qué las URLs de
-  Lighthouse llevan hash y necesitan sesión.
-- `frontend/src/services/authService.ts:33,120-128` y
-  `frontend/src/store/slices/authSlice.ts:62-89` — de dónde se restaura la
-  sesión (`sessionStorage`) para el `puppeteerScript` de Lighthouse.
-- `frontend/e2e/helpers/auth-helper.ts:89-95` — el mecanismo de siembra de
-  sesión ya probado en los e2e.
-- `frontend/design-system-budget.json` y `frontend/lint-budget.json` — el
-  patrón de budget monótono que se replica para el bundle.
+  `frontend/src/router/ProtectedRoute.tsx:21-23` — rutas protegidas medidas
+  por Lighthouse con sesión sembrada.
+- `frontend/src/index.css:679,689` — reglas de `prefers-reduced-motion` y
+  `data-ui-perf="high"` preservadas durante el cambio.
+- `frontend/design-system-budget.json` y `frontend/lint-budget.json` — patrón
+  de budgets monótonos que se aplica al bundle.
 - [spec 036](file:///specs/036-frontend-form-table-primitives/spec.md) — la
   reescritura de `ReportTable`/`PaginationControls` que esta spec consume.
 - [spec 037](file:///specs/037-frontend-rendering-observability/spec.md) —

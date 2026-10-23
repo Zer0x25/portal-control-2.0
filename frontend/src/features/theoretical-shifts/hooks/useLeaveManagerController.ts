@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Employee, LeaveRecord } from "../../../types";
 import { useLeavesInfiniteQuery } from "../../../hooks/queries/useLeavesInfiniteQuery";
 import { useLeaveMutations } from "../../../hooks/useLeaveMutations";
@@ -48,7 +48,7 @@ export const useLeaveManagerController = () => {
     employeeId: filterEmployeeId || undefined,
   });
 
-  const leaves = useMemo(() => data?.pages.flatMap((page) => page.data) || [], [data]);
+  const leaves = data?.pages.flatMap((page) => page.data) || [];
 
   const { createLeave, deleteLeave } = useLeaveMutations();
   const { justifyRecordsForLeave } = useTimeRecords();
@@ -74,18 +74,14 @@ export const useLeaveManagerController = () => {
    * Schema con las reglas que dependen del contexto (solapamiento con otras
    * ausencias del empleado).
    */
-  const schema = useMemo(
-    () =>
-      buildLeaveFormSchema({
-        existingLeaves: leaves,
-        editingLeaveId: editingLeave?.id,
-        oldestAllowedStartDate,
-        today: todayStr,
-      }),
-    [leaves, editingLeave?.id, oldestAllowedStartDate, todayStr],
-  );
+  const schema = buildLeaveFormSchema({
+    existingLeaves: leaves,
+    editingLeaveId: editingLeave?.id,
+    oldestAllowedStartDate,
+    today: todayStr,
+  });
 
-  const processedLeaves = useMemo(() => {
+  const processedLeaves = (() => {
     const lowerCaseFilter = normalizeString(filterEmployeeName).toLowerCase();
 
     const enriched: ProcessedLeave[] = leaves.map((l) => ({
@@ -100,7 +96,7 @@ export const useLeaveManagerController = () => {
         (!filterType ||
           normalizeString(l.type).toLowerCase() === normalizeString(filterType).toLowerCase()),
     );
-  }, [leaves, filterEmployeeName, filterType, getEmployeeById]);
+  })();
 
   const form = useAppForm<LeaveFormValues>({
     schema,
@@ -140,34 +136,31 @@ export const useLeaveManagerController = () => {
 
   const { setValue, reset } = form;
 
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     setEditingLeave(null);
     setSearchTerm("");
     reset({ employeeId: "", type: "", startDate: "", endDate: "", notes: "" });
-  }, [reset]);
+  };
 
-  const handleEditClick = useCallback(
-    (leave: LeaveRecord) => {
-      setEditingLeave(leave);
-      setValue("employeeId", leave.employeeId);
-      setValue("type", leave.type);
-      setValue("startDate", leave.startDate);
-      setValue("endDate", leave.endDate);
-      setValue("notes", leave.notes || "");
-      setSearchTerm(getEmployeeById(leave.employeeId)?.name || "");
-      setIsFormVisible(true);
-      document.getElementById("leave-manager-section")?.scrollIntoView({ behavior: "smooth" });
-    },
-    [getEmployeeById, setValue],
-  );
+  const handleEditClick = (leave: LeaveRecord) => {
+    setEditingLeave(leave);
+    setValue("employeeId", leave.employeeId);
+    setValue("type", leave.type);
+    setValue("startDate", leave.startDate);
+    setValue("endDate", leave.endDate);
+    setValue("notes", leave.notes || "");
+    setSearchTerm(getEmployeeById(leave.employeeId)?.name || "");
+    setIsFormVisible(true);
+    document.getElementById("leave-manager-section")?.scrollIntoView({ behavior: "smooth" });
+  };
 
-  const filteredEmployeesForSearch = useMemo(() => {
+  const filteredEmployeesForSearch = (() => {
     if (!searchTerm) return [];
     const lowerCaseSearchTerm = normalizeString(searchTerm).toLowerCase();
     return activeEmployees
       .filter((e) => normalizeString(e.name).toLowerCase().includes(lowerCaseSearchTerm))
       .slice(0, 7);
-  }, [searchTerm, activeEmployees]);
+  })();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

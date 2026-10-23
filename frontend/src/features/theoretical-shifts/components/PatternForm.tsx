@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
 import Select from "../../../components/ui/Select";
@@ -72,22 +72,19 @@ interface PatternFormProps {
 }
 
 const PatternForm: React.FC<PatternFormProps> = ({ onCancel, patternForm }) => {
-  const renderPlaceholders = useCallback(
-    () =>
-      Array.from({
-        length: patternForm.values.startDayOfWeek > 1 ? patternForm.values.startDayOfWeek - 1 : 0,
-      }).map((_, i) => (
-        <div
-          key={`ph-${i}`}
-          className="p-4 border-2 border-dashed rounded-2xl border-token-border-subtle bg-token-surface-technical/20 min-h-64 hidden lg:flex items-center justify-center"
-        >
-          <span className="text-[10px] font-bold uppercase tracking-widest text-token-text-tertiary rotate-90">
-            Anterior
-          </span>
-        </div>
-      )),
-    [patternForm.values.startDayOfWeek],
-  );
+  const renderPlaceholders = () =>
+    Array.from({
+      length: patternForm.values.startDayOfWeek > 1 ? patternForm.values.startDayOfWeek - 1 : 0,
+    }).map((_, i) => (
+      <div
+        key={`ph-${i}`}
+        className="p-4 border-2 border-dashed rounded-2xl border-token-border-subtle bg-token-surface-technical/20 min-h-64 hidden lg:flex items-center justify-center"
+      >
+        <span className="text-[10px] font-bold uppercase tracking-widest text-token-text-tertiary rotate-90">
+          Anterior
+        </span>
+      </div>
+    ));
 
   return (
     <form {...patternForm.formProps} className="space-y-8 pb-4">

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Holiday } from "../../../types";
 import { useHolidaysInfiniteQuery } from "../../../hooks/queries/useHolidaysInfiniteQuery";
 import { useHolidayMutations } from "../../../hooks/useHolidayMutations";
@@ -32,10 +32,10 @@ export const useHolidayManagerController = () => {
   const [holidayToDelete, setHolidayToDelete] = useState<Holiday | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
-  const holidays = useMemo(() => data?.pages.flatMap((page) => page.data) || [], [data]);
-  const today = useMemo(() => toBusinessDateChile(), []);
+  const holidays = data?.pages.flatMap((page) => page.data) || [];
+  const today = toBusinessDateChile();
 
-  const sortedHolidays = useMemo(() => {
+  const sortedHolidays = (() => {
     let sortableItems = [...holidays];
 
     if (!showArchived) {
@@ -44,18 +44,18 @@ export const useHolidayManagerController = () => {
 
     sortableItems.sort((a, b) => b.date.localeCompare(a.date));
     return sortableItems;
-  }, [holidays, showArchived, today]);
+  })();
 
   /** Fechas ya ocupadas (el feriado en edicion no cuenta como ocupado). */
-  const existingDates = useMemo(() => {
+  const existingDates = (() => {
     if (editingHoliday) {
       return holidays.filter((h) => h.id !== editingHoliday.id).map((h) => h.date);
     }
     return holidays.map((h) => h.date);
-  }, [holidays, editingHoliday]);
+  })();
 
   /** Schema con la regla que depende del contexto (fecha ya ocupada). */
-  const schema = useMemo(() => buildHolidayFormSchema({ existingDates }), [existingDates]);
+  const schema = buildHolidayFormSchema({ existingDates });
 
   const form = useAppForm<HolidayFormValues, { name: string; date: string; type: Holiday["type"] }>(
     {
@@ -83,17 +83,17 @@ export const useHolidayManagerController = () => {
 
   const { setValue, reset } = form;
 
-  const handleCancelForm = useCallback(() => {
+  const handleCancelForm = () => {
     setEditingHoliday(null);
     setIsFormVisible(false);
     reset({ name: "", date: "", type: "Nacional" });
-  }, [reset]);
+  };
 
-  const handleEditClick = useCallback((holiday: Holiday) => {
+  const handleEditClick = (holiday: Holiday) => {
     setEditingHoliday(holiday);
     setIsFormVisible(true);
     document.getElementById("holiday-manager-section")?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+  };
 
   /**
    * Al editar, el formulario se rellena con los datos del feriado; al

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { formatDateUTCISO, generateCalendarGrid } from "../../utils/dateUtils";
 import { ScheduleMap } from "../../hooks/useCalendarData";
 import ShiftCalendarDayCell from "./ShiftCalendarDayCell";
@@ -21,9 +21,7 @@ const ShiftCalendarView: React.FC<ShiftCalendarViewProps> = ({
   onDayClick,
   cellHeight,
 }) => {
-  const calendarGridCells: (Date | null)[] = useMemo(() => {
-    return generateCalendarGrid(viewMode, currentDisplayDate);
-  }, [currentDisplayDate, viewMode]);
+  const calendarGridCells: (Date | null)[] = generateCalendarGrid(viewMode, currentDisplayDate);
 
   const weekDayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 

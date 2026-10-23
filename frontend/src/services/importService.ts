@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient";
+import { logger } from "../utils/logger";
 
 /**
  * Vista previa de una importacion: filas extraidas del archivo y metadatos.
@@ -32,7 +33,7 @@ export const importService = {
         body: formData,
       })) as ImportPreviewResult;
     } catch (error) {
-      console.error("Preview import error:", error);
+      logger.error("Preview import error:", error);
       throw error;
     }
   },

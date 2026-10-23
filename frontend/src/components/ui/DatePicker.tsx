@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addDays,
   addMonths,
@@ -77,25 +77,21 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
     );
   }, [selectedDate]);
 
-  const isDayDisabled = useCallback(
-    (day: Date) => {
-      if (minDate && day < minDate) return true;
-      if (maxDate && day > maxDate) return true;
-      return false;
-    },
-    [minDate, maxDate],
-  );
+  const isDayDisabled = (day: Date) => {
+    if (minDate && day < minDate) return true;
+    if (maxDate && day > maxDate) return true;
+    return false;
+  };
 
-  const changeMonth = useCallback(
-    (next: Date) => {
-      if (!isControlled) {
-        setInternalMonth(next);
-      }
-      onMonthChange?.(next);
-    },
-    [isControlled, onMonthChange],
-  );
+  const changeMonth = (next: Date) => {
+    if (!isControlled) {
+      setInternalMonth(next);
+    }
+    onMonthChange?.(next);
+  };
 
+  // Keep Date#getTime arithmetic isolated from render: inlining it has triggered
+  // an OXC codegen bailout in the React Compiler transform.
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: WEEK_START });
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: WEEK_START });
@@ -103,23 +99,20 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
     return Array.from({ length: total }, (_, index) => addDays(start, index));
   }, [currentMonth]);
 
-  const focusDay = useCallback((date: Date) => {
+  const focusDay = (date: Date) => {
     const key = format(date, "yyyy-MM-dd");
     const element = gridRef.current?.querySelector<HTMLElement>(`[data-date="${key}"]`);
     element?.focus();
-  }, []);
+  };
 
-  const moveFocus = useCallback(
-    (next: Date) => {
-      setFocusedDate(next);
-      if (!isSameMonth(next, currentMonth)) {
-        changeMonth(startOfMonth(next));
-      }
-      // El foco se aplica tras el render del nuevo mes.
-      window.requestAnimationFrame(() => focusDay(next));
-    },
-    [changeMonth, currentMonth, focusDay],
-  );
+  const moveFocus = (next: Date) => {
+    setFocusedDate(next);
+    if (!isSameMonth(next, currentMonth)) {
+      changeMonth(startOfMonth(next));
+    }
+    // El foco se aplica tras el render del nuevo mes.
+    window.requestAnimationFrame(() => focusDay(next));
+  };
 
   const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const day = focusedDate;
@@ -313,9 +306,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const selectedDate = useMemo(() => parseBusinessDate(value), [value]);
-  const minDateObj = useMemo(() => parseBusinessDate(minDate), [minDate]);
-  const maxDateObj = useMemo(() => parseBusinessDate(maxDate), [maxDate]);
+  const selectedDate = parseBusinessDate(value);
+  const minDateObj = parseBusinessDate(minDate);
+  const maxDateObj = parseBusinessDate(maxDate);
 
   useEffect(() => {
     if (!isOpen) return;

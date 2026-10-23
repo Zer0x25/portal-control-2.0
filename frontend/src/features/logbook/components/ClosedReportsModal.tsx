@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   DocumentArrowDownIcon,
   DocumentChartBarIcon,
@@ -45,21 +45,17 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
       status: "closed",
     });
 
-  const reports = useMemo(() => {
-    return data?.pages.flatMap((page) => page.data) || [];
-  }, [data]);
+  const reports = data?.pages.flatMap((page) => page.data) || [];
 
-  const filteredReports = useMemo(() => {
-    return reports.filter((r) => {
-      const matchesSearch =
-        !searchTerm ||
-        r.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.responsibleUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.shiftName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDate = !dateFilter || r.date.startsWith(dateFilter);
-      return matchesSearch && matchesDate;
-    });
-  }, [reports, searchTerm, dateFilter]);
+  const filteredReports = reports.filter((r) => {
+    const matchesSearch =
+      !searchTerm ||
+      r.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.responsibleUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.shiftName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate = !dateFilter || r.date.startsWith(dateFilter);
+    return matchesSearch && matchesDate;
+  });
 
   const sentinelRef = useRef<HTMLTableRowElement>(null);
   const entry = useIntersectionObserver(sentinelRef, {

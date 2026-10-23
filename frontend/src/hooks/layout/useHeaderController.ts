@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { ROUTES } from "../../constants";
 import { useAuth } from "../useAuth";
@@ -28,32 +28,32 @@ export const useHeaderController = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = () => {
     logout();
     navigate(ROUTES.LOGIN);
-  }, [logout, navigate]);
+  };
 
-  const toggleSound = useCallback(() => {
+  const toggleSound = () => {
     setSoundEnabled(!soundEnabled);
-  }, [setSoundEnabled, soundEnabled]);
+  };
 
-  const openChangePassword = useCallback(() => {
+  const openChangePassword = () => {
     setIsChangePasswordModalOpen(true);
     setIsDropdownOpen(false);
-  }, []);
+  };
 
-  const openManual = useCallback(() => {
+  const openManual = () => {
     setIsManualModalOpen(true);
     setIsDropdownOpen(false);
-  }, []);
+  };
 
-  const welcomeName = useMemo(() => {
+  const welcomeName = (() => {
     if (currentUser?.employeeId) {
       const employee = employees.find((e) => e.id === currentUser.employeeId);
       if (employee) return employee.name;
     }
     return currentUser?.username;
-  }, [currentUser, employees]);
+  })();
 
   return {
     currentUser,

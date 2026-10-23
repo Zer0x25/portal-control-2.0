@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { useEmployees } from "./useEmployees";
 import { useUsers } from "./useUsers";
@@ -7,6 +7,7 @@ import { STORAGE_KEYS } from "../constants";
 import { useShiftManager } from "./useShiftManager";
 import { useReportsQuery } from "./queries/useReportsQuery";
 import { ShiftHandoverData } from "../types/index";
+import { logger } from "../utils/logger";
 
 export const useLoginAutomations = () => {
   const { currentUser } = useAuth();
@@ -20,23 +21,20 @@ export const useLoginAutomations = () => {
   const [handoverData, setHandoverData] = useState<ShiftHandoverData | null>(null);
   const [isHandoverModalOpen, setIsHandoverModalOpen] = useState(false);
 
-  const getResponsibleDisplayName = useCallback(
-    (username: string): string => {
+  const closeHandoverModal = () => {
+    setIsHandoverModalOpen(false);
+  };
+
+  useEffect(() => {
+    const getResponsibleDisplayName = (username: string): string => {
       const user = users.find((u) => u.username === username);
       if (user?.employeeId) {
         const employee = getEmployeeById(user.employeeId);
         return employee?.name || username;
       }
       return username;
-    },
-    [users, getEmployeeById],
-  );
+    };
 
-  const closeHandoverModal = useCallback(() => {
-    setIsHandoverModalOpen(false);
-  }, []);
-
-  useEffect(() => {
     // --- Automation 1: Auto-start shift for Reloj Control ---
     const runShiftStartAutomation = async () => {
       if (sessionStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_ACTIONS_DONE) || !currentUser?.employeeId)
@@ -102,7 +100,7 @@ export const useLoginAutomations = () => {
           setIsHandoverModalOpen(true);
         }
       } catch (error) {
-        console.error("Failed to process shift handover data:", error);
+        logger.error("Failed to process shift handover data:", error);
       }
     };
 
@@ -113,9 +111,9 @@ export const useLoginAutomations = () => {
     currentUser,
     getEmployeeById,
     getEmployeeDailyScheduleInfo,
-    getResponsibleDisplayName,
     startNewShift,
     shiftReports,
+    users,
   ]);
 
   return { handoverData, isHandoverModalOpen, closeHandoverModal };

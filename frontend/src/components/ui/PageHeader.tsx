@@ -86,6 +86,8 @@ const sameHeaderNode = (a?: React.ReactNode, b?: React.ReactNode): boolean => {
   return a.type === b.type && aProps?.className === bProps?.className;
 };
 
+// Keep the custom comparator: callers recreate icon React elements, while type
+// and className preserve the header's meaningful visual changes.
 export default React.memo(PageHeader, (prev, next) => {
   return (
     prev.title === next.title &&

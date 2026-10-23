@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Employee } from "../../../types/index";
 import { useAppForm } from "../../../hooks/useAppForm";
 import {
@@ -92,14 +92,10 @@ export const useEmployeeFormController = ({
   /**
    * Schema con la regla que depende del contexto (el RUT no puede repetir).
    */
-  const schema = useMemo(
-    () =>
-      buildEmployeeFormSchema({
-        existingEmployees: existingEmployees.map((item) => ({ id: item.id, rut: item.rut })),
-        employeeIdToEdit: employee?.id,
-      }),
-    [existingEmployees, employee?.id],
-  );
+  const schema = buildEmployeeFormSchema({
+    existingEmployees: existingEmployees.map((item) => ({ id: item.id, rut: item.rut })),
+    employeeIdToEdit: employee?.id,
+  });
 
   const form = useAppForm<EmployeeFormValues>({
     schema,
@@ -120,24 +116,21 @@ export const useEmployeeFormController = ({
   }, [employee, reset]);
 
   /** Escribe el RUT con el formato de la pantalla. */
-  const handleRutChange = useCallback(
-    (value: string) => {
-      setValue("rut", formatRutInput(value));
-    },
-    [setValue],
-  );
+  const handleRutChange = (value: string) => {
+    setValue("rut", formatRutInput(value));
+  };
 
-  const dropdownAreaOptions = useMemo(() => {
+  const dropdownAreaOptions = (() => {
     const currentArea = form.values.area || "";
     const combinedList = [...new Set([currentArea, ...areaList])].filter(Boolean);
     return combinedList.sort((a, b) => a.localeCompare(b));
-  }, [areaList, form.values.area]);
+  })();
 
-  const dropdownWorkdayTypeOptions = useMemo(() => {
+  const dropdownWorkdayTypeOptions = (() => {
     const currentType = form.values.workdayType || "";
     const combinedList = [...new Set([currentType, ...workdayTypeList])].filter(Boolean);
     return combinedList.sort((a, b) => a.localeCompare(b));
-  }, [workdayTypeList, form.values.workdayType]);
+  })();
 
   return {
     values: form.values,

@@ -5,6 +5,7 @@ import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
+import { logger } from "../../utils/logger";
 
 export interface SyncSlice {
   syncState: SyncState;
@@ -28,7 +29,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
 
   runSync: async () => {
     if (get().isSyncing) {
-      console.warn("Sync already in progress, skipping...");
+      logger.warn("Sync already in progress, skipping...");
       return;
     }
 
@@ -68,15 +69,15 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
       })();
 
       if (isCacheEmpty && since) {
-        console.warn("⚠️ Cache local vacía detectada. Forzando sincronización completa...");
+        logger.warn("⚠️ Cache local vacía detectada. Forzando sincronización completa...");
         since = null;
         set({ isInitialSync: true, syncProgress: 0 });
       }
 
       if (!since) {
-        console.warn("Iniciando sincronización inicial completa...");
+        logger.warn("Iniciando sincronización inicial completa...");
       } else {
-        console.warn(
+        logger.warn(
           `Iniciando sincronización delta desde: ${since ? new Date(since).toISOString() : "inicio"}`,
         );
       }
@@ -118,7 +119,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
 
       for (let i = 0; i < steps.length; i++) {
         if (!isSessionStable()) {
-          console.warn("[Sync] Session changed during sync. Aborting current synchronization.");
+          logger.warn("[Sync] Session changed during sync. Aborting current synchronization.");
           return;
         }
 
@@ -138,7 +139,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
       localStorage.setItem("lastSyncTime", now.toString());
 
       if (!isSessionStable()) {
-        console.warn("[Sync] Session changed before final sync commit. Skipping state update.");
+        logger.warn("[Sync] Session changed before final sync commit. Skipping state update.");
         return;
       }
 
@@ -149,9 +150,9 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         currentSyncStep: isInitial ? "Completado" : get().currentSyncStep,
         syncProgress: isInitial ? 100 : get().syncProgress,
       });
-      console.warn("Sincronización completada con éxito.");
+      logger.warn("Sincronización completada con éxito.");
     } catch (error) {
-      console.error("Error en sincronización:", error);
+      logger.error("Error en sincronización:", error);
       if (isInitial && isSessionStable()) {
         set({ syncState: "error", isInitialSync: false });
         addToast("Error durante la sincronización inicial de datos.", "error");
@@ -166,26 +167,26 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
     if (!state.currentUser) return;
 
     if (state.isSyncing) {
-      console.warn("[Sync] App already initializing/syncing, skipping initializeAppData.");
+      logger.warn("[Sync] App already initializing/syncing, skipping initializeAppData.");
       return;
     }
 
-    console.warn("Inicializando aplicación...");
+    logger.warn("Inicializando aplicación...");
 
     try {
       // Validar instancia de DB antes de sincronizar
       const isConsistent = await state.validateInstanceId();
 
       if (!isConsistent) {
-        console.warn("⚠️ Mismatch de instancia detectado. Caché local invalidada.");
+        logger.warn("⚠️ Mismatch de instancia detectado. Caché local invalidada.");
       }
 
       // La primera vez o en init, intentamos una sincronización delta/full
       await state.runSync();
 
-      console.warn("Aplicación inicializada correctamente.");
+      logger.warn("Aplicación inicializada correctamente.");
     } catch (error) {
-      console.error("Error en inicialización:", error);
+      logger.error("Error en inicialización:", error);
       setTimeout(() => {
         get().addToast("Error al conectar con el servidor central.", "error");
       }, 500);
@@ -199,7 +200,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
     const localInstanceId = localStorage.getItem("db_instance_id");
 
     if (localInstanceId && localInstanceId !== health.instanceId) {
-      console.warn("🧨 DB Instance Mismatch! Wiping local data...");
+      logger.warn("🧨 DB Instance Mismatch! Wiping local data...");
 
       await wipeAllData();
 

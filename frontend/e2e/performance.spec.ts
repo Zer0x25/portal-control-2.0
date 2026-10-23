@@ -112,3 +112,52 @@ test.describe.serial("Render Performance", () => {
     expect(switchTime).toBeLessThan(15000);
   });
 });
+
+const criticalRoutes = [
+  { id: "dashboard", path: "/#/dashboard", currentPath: "/dashboard", role: "admin" },
+  {
+    id: "planner",
+    path: "/#/planning/monthly",
+    currentPath: "/planning/monthly",
+    role: "admin",
+  },
+  {
+    id: "worker-portal",
+    path: "/#/worker-portal",
+    currentPath: "/worker-portal",
+    role: "worker",
+  },
+  { id: "logbook", path: "/#/logbook", currentPath: "/logbook", role: "admin" },
+  { id: "kiosk", path: "/#/kiosk", currentPath: null, role: null },
+] as const;
+
+test("critical route navigation baseline: ready times stay below 30 seconds", async ({
+  browser,
+  request,
+}) => {
+  test.setTimeout(120_000);
+  const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:8080";
+
+  for (const route of criticalRoutes) {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    try {
+      const page = await context.newPage();
+      if (route.role) await loginFast(page, request, route.role);
+
+      const startedAt = Date.now();
+      await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded" });
+      const ready = route.currentPath
+        ? page.locator(
+            `[data-testid="app-shell"][data-current-path="${route.currentPath}"] [data-testid="main-content"]`,
+          )
+        : page.getByTestId("kiosk-step");
+      await expect(ready).toBeVisible({ timeout: 30_000 });
+
+      const elapsedMs = Date.now() - startedAt;
+      console.log(`[PERF] ${route.id} route-ready ${elapsedMs}ms`);
+      expect(elapsedMs).toBeLessThan(30_000);
+    } finally {
+      await context.close();
+    }
+  }
+});

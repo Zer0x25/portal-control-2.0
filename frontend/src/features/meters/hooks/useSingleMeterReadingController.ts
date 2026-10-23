@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useMeterReadings } from "../../../hooks/useMeterReadings";
@@ -42,25 +42,21 @@ export const useSingleMeterReadingController = ({
   const { readings, addReading } = useMeterReadings();
 
   /** Ultima lectura del medidor (los de consumo no pueden bajar). */
-  const lastReadingValue = useMemo(() => {
+  const lastReadingValue = (() => {
     if (!meterConfig) return undefined;
     return readings.find((reading) => reading.meterConfigId === meterConfig.id)?.normalizedValue;
-  }, [readings, meterConfig]);
+  })();
 
   /** Schema con las reglas que dependen del medidor. */
-  const schema = useMemo(
-    () =>
-      buildSingleMeterReadingSchema({
-        meter: {
-          id: meterConfig?.id ?? "",
-          name: meterConfig?.name ?? "",
-          type: meterConfig?.type ?? "INSTANT",
-          maxCapacity: meterConfig?.maxCapacity,
-        },
-        lastReadingValue,
-      }),
-    [meterConfig, lastReadingValue],
-  );
+  const schema = buildSingleMeterReadingSchema({
+    meter: {
+      id: meterConfig?.id ?? "",
+      name: meterConfig?.name ?? "",
+      type: meterConfig?.type ?? "INSTANT",
+      maxCapacity: meterConfig?.maxCapacity,
+    },
+    lastReadingValue,
+  });
 
   const form = useAppForm<SingleMeterReadingValues, MeterReadingInput>({
     schema,
@@ -89,12 +85,9 @@ export const useSingleMeterReadingController = ({
     reset({ value: "" });
   }, [isOpen, reset]);
 
-  const handleValueChange = useCallback(
-    (value: string) => {
-      setValue("value", value);
-    },
-    [setValue],
-  );
+  const handleValueChange = (value: string) => {
+    setValue("value", value);
+  };
 
   return {
     values,

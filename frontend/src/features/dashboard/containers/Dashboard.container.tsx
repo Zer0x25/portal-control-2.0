@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React from "react";
 import { useStore } from "../../../store/useStore";
 import { useShallow } from "zustand/react/shallow";
 import { AttendanceRecord, DailyTimeRecord, MissingClockOutStatus } from "../../../types/index";
@@ -40,13 +40,10 @@ const DashboardContainer: React.FC = () => {
     unscheduledPresent,
   } = useDashboardData();
 
-  const getResponsibleDisplayName = useCallback(
-    (username: string): string => {
-      const user = users.find((u) => u.username === username);
-      return user?.employeeId ? getEmployeeById(user.employeeId)?.name || username : username;
-    },
-    [users, getEmployeeById],
-  );
+  const getResponsibleDisplayName = (username: string): string => {
+    const user = users.find((u) => u.username === username);
+    return user?.employeeId ? getEmployeeById(user.employeeId)?.name || username : username;
+  };
 
   const handleMissingClockOutDoubleClick = (missing: MissingClockOutStatus) => {
     if (missing?.recordId) {
@@ -93,16 +90,16 @@ const DashboardContainer: React.FC = () => {
     }
   };
 
-  const handleEditQuickAction = useCallback(
-    (record: DailyTimeRecord, field: import("../../../types").TimeRecordField) => {
-      actions.openEditTimestampModal(record, field);
-      actions.closeQuickActionModal();
-    },
-    [actions],
-  );
+  const handleEditQuickAction = (
+    record: DailyTimeRecord,
+    field: import("../../../types").TimeRecordField,
+  ) => {
+    actions.openEditTimestampModal(record, field);
+    actions.closeQuickActionModal();
+  };
 
   // Derived State for Rendering
-  const visibleWidgets = useMemo(() => {
+  const visibleWidgets = (() => {
     if (!currentUser) return [];
 
     return WIDGET_REGISTRY.filter((widget) => {
@@ -115,11 +112,11 @@ const DashboardContainer: React.FC = () => {
 
       return true;
     });
-  }, [currentUser, isMobile, isControlInternoEnabled]);
+  })();
 
-  const quickActionClockStatus = useMemo(
-    () => getContractClockingStatus(modals.quickActionRecord as AttendanceRecord, () => "fuera"),
-    [modals.quickActionRecord],
+  const quickActionClockStatus = getContractClockingStatus(
+    modals.quickActionRecord as AttendanceRecord,
+    () => "fuera",
   );
 
   // Typing the widget props dictionary to avoid 'any' where possible

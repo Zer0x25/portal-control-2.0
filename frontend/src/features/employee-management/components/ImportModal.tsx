@@ -9,6 +9,7 @@ import {
   ExclamationTriangleIcon,
 } from "../../../components/ui/icons/index";
 import { Z } from "../../../constants/zScale";
+import { logger } from "../../../utils/logger";
 import { useImportPreview } from "../hooks/useImportPreview";
 
 /** A single read-excel-file column mapping (serialized to the backend preview endpoint). */
@@ -75,7 +76,7 @@ const ImportModal = <T extends ImportPreviewRow>({
       setPreviewData(rows);
       setStep("preview");
     } catch (error: unknown) {
-      console.error("Error parsing file:", error);
+      logger.error("Error parsing file:", error);
       setErrors([
         extractErrorMessage(error) ||
           "Error al leer el archivo. Asegúrese de que sea un Excel válido.",
@@ -98,7 +99,7 @@ const ImportModal = <T extends ImportPreviewRow>({
         setErrors(["Falló la importación en el servidor."]);
       }
     } catch (error: unknown) {
-      console.error("Import error:", error);
+      logger.error("Import error:", error);
       setStep("preview");
       setErrors(["Ocurrió un error inesperado."]);
     } finally {

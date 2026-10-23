@@ -37,6 +37,7 @@ const IntegritySummaryView: React.FC = () => {
     sortOrder: "desc",
   });
 
+  // Keep the paginated rows stable for the audit table while integrity status polls.
   const allLogs = useMemo(
     () => logsData?.pages.flatMap((page) => page.data || []) || [],
     [logsData],

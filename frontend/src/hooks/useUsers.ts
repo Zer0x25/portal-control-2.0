@@ -5,6 +5,7 @@ import { useUsersQuery } from "./queries/useUsersQuery";
 import { User, UserRole } from "../types";
 import { userService } from "../services/userService";
 import { queryKeys } from "../lib/queryKeys";
+import { logger } from "../utils/logger";
 
 /**
  * Cuentas de usuario: única fuente = `useUsersQuery` (spec 032 T5).
@@ -78,7 +79,7 @@ export const useUsers = () => {
       addToast(`Usuario '${finalAlias}' creado correctamente para el empleado.`, "success");
       return true;
     } catch (error) {
-      console.error("[useUsers] Error creating user for employee:", error);
+      logger.error("[useUsers] Error creating user for employee:", error);
       addToast("Error al generar cuenta de usuario automática.", "error");
       return false;
     }

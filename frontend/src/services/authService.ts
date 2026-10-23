@@ -1,5 +1,6 @@
 import { request as apiRequest, errorMessageOr, ApiHttpError } from "./apiClient";
 import { authTokenStore } from "./authToken";
+import { logger } from "../utils/logger";
 
 export interface LoginResponse {
   userId: string;
@@ -61,7 +62,7 @@ class AuthServiceImpl implements AuthService {
       }
       return data;
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
       throw new Error(errorMessageOr(error, "Error en el inicio de sesión"), {
         cause: error,
       });
@@ -160,7 +161,7 @@ class AuthServiceImpl implements AuthService {
 
       return data;
     } catch (error) {
-      console.error("Kiosk verify pin error:", error);
+      logger.error("Kiosk verify pin error:", error);
       // El kiosk no lanza: muestra el mensaje en pantalla. Un 4xx del backend
       // trae su propio mensaje ("PIN incorrecto"); un fallo de red no.
       if (error instanceof ApiHttpError) {

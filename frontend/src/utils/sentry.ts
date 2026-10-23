@@ -22,7 +22,7 @@ export const initSentry = async () => {
 
   if (!dsn) {
     if (isProd) {
-      console.warn("Sentry DSN (VITE_SENTRY_DSN) not found. Skipping Sentry initialization.");
+      logger.warn("Sentry DSN (VITE_SENTRY_DSN) not found. Skipping Sentry initialization.");
     }
     return;
   }

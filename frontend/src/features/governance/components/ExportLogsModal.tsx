@@ -11,6 +11,7 @@ import { compareBusinessDate, toBusinessDateChile } from "../../../utils/dateUti
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { Z } from "../../../constants/zScale";
 import { useAuditLogDownload, type AuditLogExportFormat } from "../hooks/useAuditLogDownload";
+import { logger } from "../../../utils/logger";
 
 interface ExportLogsModalProps {
   isOpen: boolean;
@@ -58,7 +59,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
       addToast(`Descarga de ${format.toUpperCase()} iniciada.`, "success");
       onClose();
     } catch (error) {
-      console.error("Error exporting audit logs:", error);
+      logger.error("Error exporting audit logs:", error);
       addToast("Ocurrió un error durante la exportación.", "error");
     } finally {
       setIsExporting(false);

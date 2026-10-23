@@ -39,3 +39,12 @@ description: Invariants for frontend performance, bundle optimization, CSS cachi
    - **Un solo dueño del retry**: `apiClient` reintenta (GET-only, con `Retry-After` y backoff) y TanStack Query **no** (`queries.retry: false`). Un 5xx no puede generar dos capas de reintentos.
    - **Nada de errores sin status**: el cliente lanza `ApiHttpError` con `status` numérico; un service que envuelve una llamada HTTP debe relanzar o devolver un valor de negocio explícito, nunca tragarse el error en silencio.
    - **Una raíz canónica por recurso**: las claves de query salen de la tabla `src/lib/queryKeys.ts` (0 literales en el código) y toda raíz usada está en `PERSISTED_QUERY_ROOTS` o `SENSITIVE_QUERY_ROOTS` (`src/lib/queryCache.ts`). Dos raíces para el mismo recurso invalidan en el vacío: la invalidación de una query nunca alcanza a la otra.
+7. **React Compiler y memoización manual** (spec 037 / ADR-0026):
+   - React Compiler corre en `dev`, Vitest y `build` con diagnósticos de bail-out visibles.
+   - No añadir `useMemo`, `useCallback` ni `React.memo` solo para estabilizar props de React. Conservarlos únicamente para referencias consumidas por sistemas externos, hot paths medidos o componentes que el compilador omite, con justificación junto al código.
+   - `useVirtualizer` de TanStack Virtual es un bail-out conocido: conservar las estimaciones de tamaño medidas para cada lista y no unificar layouts si cambia la geometría de fila.
+8. **Container queries en componentes reutilizables** (spec 037 / ADR-0026):
+   - Los componentes reutilizables adaptan el layout al ancho de su contenedor con `@container`; decisiones del shell de página pueden seguir usando el viewport.
+   - Solo contenedores de bloque declaran `container-type: inline-size`. `Badge` es inline y no debe ser un contenedor.
+9. **Logging de producción**:
+   - No usar `console` directamente en `src/`. Enrutar los mensajes por `src/utils/logger.ts`, que limita la consola a desarrollo y filtra los errores HTTP de negocio antes de Sentry.

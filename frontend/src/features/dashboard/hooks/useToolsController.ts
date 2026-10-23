@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ROUTES, STORAGE_KEYS } from "../../../constants";
 import {
   ClipboardIcon,
@@ -46,44 +46,41 @@ export const useToolsController = (onOpenQuickNotes: () => void, hasUnreadNotes:
     };
   }, []);
 
-  const tools: ToolConfig[] = useMemo(
-    () => [
-      {
-        id: "communications",
-        label: "Comunicados",
-        icon: ClipboardIcon,
-        action: () => navigate(ROUTES.COMMUNICATIONS),
-        color: "orange" as ColorTheme,
-        type: "button" as const,
-      },
-      {
-        id: "notes",
-        label: "Notas",
-        icon: ChatBubbleLeftRightIcon,
-        action: onOpenQuickNotes,
-        color: "emerald" as ColorTheme,
-        type: "button" as const,
-        hasNotification: hasUnreadNotes,
-      },
-      {
-        id: "reglamento",
-        label: "Reglamento",
-        icon: DocumentTextIcon,
-        action: policyUrl,
-        color: "indigo" as ColorTheme,
-        type: "link" as const,
-      },
-      {
-        id: "meters",
-        label: "Medidores",
-        icon: CalculatorIcon,
-        action: () => navigate(ROUTES.METER_READINGS),
-        color: "violet" as ColorTheme,
-        type: "button" as const,
-      },
-    ],
-    [hasUnreadNotes, navigate, onOpenQuickNotes, policyUrl],
-  );
+  const tools: ToolConfig[] = [
+    {
+      id: "communications",
+      label: "Comunicados",
+      icon: ClipboardIcon,
+      action: () => navigate(ROUTES.COMMUNICATIONS),
+      color: "orange" as ColorTheme,
+      type: "button" as const,
+    },
+    {
+      id: "notes",
+      label: "Notas",
+      icon: ChatBubbleLeftRightIcon,
+      action: onOpenQuickNotes,
+      color: "emerald" as ColorTheme,
+      type: "button" as const,
+      hasNotification: hasUnreadNotes,
+    },
+    {
+      id: "reglamento",
+      label: "Reglamento",
+      icon: DocumentTextIcon,
+      action: policyUrl,
+      color: "indigo" as ColorTheme,
+      type: "link" as const,
+    },
+    {
+      id: "meters",
+      label: "Medidores",
+      icon: CalculatorIcon,
+      action: () => navigate(ROUTES.METER_READINGS),
+      color: "violet" as ColorTheme,
+      type: "button" as const,
+    },
+  ];
 
   const colorClasses: Record<string, string> = {
     orange: "bg-orange-600/10 text-orange-600",

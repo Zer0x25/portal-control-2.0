@@ -509,4 +509,6 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
   );
 };
 
+// The default formatter props trigger a compiler bail-out in this view; retain
+// the prop boundary memo until those defaults can be safely transformed.
 export default React.memo(WorkerPortalView);

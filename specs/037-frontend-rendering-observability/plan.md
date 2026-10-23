@@ -44,8 +44,8 @@ compilador es lo que revela qué memoización era realmente necesaria.
      antes "funcionaba" por casualidad). Se audita con el script de medición
      de renders (AC3) y con los e2e.
 2. **Fase B — Auditoría y limpieza de la memoización (3 PR)**:
-   - Auditar las **266** llamadas a `useMemo`/`useCallback` (**160** `useMemo(` +
-     **106** `useCallback(`) y los **36** `memo()` (**32** `React.memo(` + **4**
+   - Auditar las **336** llamadas a `useMemo`/`useCallback` (**182** `useMemo(` +
+     **154** `useCallback(`) y los **36** `memo()` (**32** `React.memo(` + **4**
      `memo(` importado sin prefijo) en **lotes** (por feature, empezando por
      los hooks más grandes: `useShiftPatternForm` (450),
      `useAccountingClosureTabController` (297), `useKioskData` (373),
@@ -100,12 +100,11 @@ compilador es lo que revela qué memoización era realmente necesaria.
      layout **de página** (shell, navegación), que sí dependen del viewport;
      lo que cambia es que los **componentes reutilizables** dejan de
      depender del viewport.
-   - **Dependencia de secuencia**: `ReportTable`, `SortableHeader` y
-     `PaginationControls` los reescribe la
-     [spec 036](file:///specs/036-frontend-form-table-primitives/spec.md)
-     (Fase D, T14-T17) sobre la primitiva `DataTable`. La container query se
-     aplica **sobre `DataTable`**, no sobre el `ReportTable` actual: esta spec
-     no reescribe `ReportTable` y no puede empezar esa fase antes que 036.
+   - **Dependencia satisfecha**: la Fase D de la spec 036 ya está integrada
+     en `main` sobre `DataTable`. Esta rama agrega contención al wrapper de
+     `DataTable` y aplica container queries a `ReportTable`, que conserva sus
+     cards móviles porque los esquemas diario y resumen presentan datos y
+     acciones distintos.
    - **Verificación con motor de layout real**: `vite.config.ts:232` fija
      `environment: "jsdom"`, sin motor de layout ni evaluación de `@container`.
      La adaptación al ancho del contenedor se verifica en **Playwright**
@@ -183,7 +182,7 @@ compilador es lo que revela qué memoización era realmente necesaria.
 | `frontend/src/utils/webVitals.ts`                                                                                            | **nuevo** — init diferida + enriquecimiento de Sentry con contexto                                                  |
 | `frontend/src/utils/logger.ts`                                                                                               | sink real a Sentry (import diferido, filtro de estado HTTP) + modo desarrollo                                       |
 | `frontend/src/utils/sentry.ts`                                                                                               | `console.warn` de la línea 25 → `logger.warn` (el resto no se toca)                                                 |
-| `frontend/src/**` (266 `useMemo`/`useCallback`, 36 `memo()`)                                                                 | auditoría y limpieza en lotes (Fase B)                                                                              |
+| `frontend/src/**` (336 `useMemo`/`useCallback`, 36 `memo()`)                                                                 | auditoría y limpieza en lotes (Fase B)                                                                              |
 | `frontend/src/components/ui/{MetricCard,Card,EmptyState,ReportTable}.tsx`                                                    | container queries en contenedores de bloque (**Badge queda fuera**)                                                 |
 | `frontend/src/components/ui/PaginationControls.tsx`                                                                          | wrapper contenedor + container queries (tras la reescritura de la spec 036)                                         |
 | `frontend/src/features/theoretical-shifts/components/{AssignmentList,LeaveList,PatternList,HolidayList}{Desktop,Mobile}.tsx` | unificación con geometría de virtualización explícita                                                               |
@@ -261,7 +260,7 @@ npm run build                                  # bundle: verificar budgets
 node scripts/check-bundle-budget.cjs          # budget de bundle (tras el build)
 node scripts/measure-renders.mjs              # AC3: renders antes/después
 npm run validate:ci
-npm run e2e:staging                            # 56 tests, incluido performance.spec.ts
+npm run e2e:staging                            # suite completa, incluido performance.spec.ts
 npx playwright test e2e/container-queries.spec.ts   # AC4/AC5: layout con motor real
 
 # Raíz

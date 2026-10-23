@@ -3,6 +3,7 @@ import { importService } from "../../../services/importService";
 
 /** Encapsula el acceso al servicio de previsualización del importador. */
 export const useImportPreview = () =>
+  // ImportModal receives this handler alongside preview state updates.
   useCallback(
     async <T extends object>(file: File, schema: Record<string, unknown>): Promise<T[]> => {
       const { rows } = await importService.previewImport(file, schema);

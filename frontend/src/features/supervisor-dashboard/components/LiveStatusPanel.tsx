@@ -48,6 +48,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
     });
   }, [employeesWithStatus, nameFilter, selectedStatuses]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Keep the measured virtualizer as a documented compiler bail-out.
   const virtualizer = useVirtualizer({
     count: filteredEmployees.length,
     getScrollElement: () => parentRef.current,

@@ -1,6 +1,7 @@
 import { request as apiRequest } from "./apiClient";
 
 import { ScheduleInfo, ScheduledEmployeeDetail, MonthlyDayScheduleView } from "../types/index";
+import { logger } from "../utils/logger";
 
 export type { ScheduleInfo, ScheduledEmployeeDetail, MonthlyDayScheduleView };
 
@@ -35,7 +36,7 @@ export const getEmployeeScheduleForDate = async (
 
     return result.data ?? null;
   } catch (error) {
-    console.error("Error fetching employee schedule for date:", error);
+    logger.error("Error fetching employee schedule for date:", error);
     throw error;
   }
 };
@@ -53,7 +54,7 @@ export const getScheduledEmployeesOnDate = async (
       params: { date },
     });
   } catch (error) {
-    console.error("Error fetching scheduled employees on date:", error);
+    logger.error("Error fetching scheduled employees on date:", error);
     throw error;
   }
 };
@@ -73,7 +74,7 @@ export const getEmployeeMonthlySchedule = async (
       params: { year, month },
     });
   } catch (error) {
-    console.error("Error fetching employee monthly schedule:", error);
+    logger.error("Error fetching employee monthly schedule:", error);
     throw error;
   }
 };
@@ -100,7 +101,7 @@ export const validateAssignmentConflicts = async (
       },
     });
   } catch (error) {
-    console.error("Error validating assignment conflicts:", error);
+    logger.error("Error validating assignment conflicts:", error);
     throw error;
   }
 };

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { getDateRange, formatDateToLocalString } from "../utils/dateUtils"; // Import the new utility
 import { useBusinessNow } from "./useBusinessNow";
 
@@ -52,14 +52,14 @@ export const usePeriodNavigator = (initialMode: PeriodViewMode = "week") => {
     setCurrentDate(getUtcToday(businessNow));
   };
 
-  const isViewingCurrentPeriod = useMemo(() => {
+  const isViewingCurrentPeriod = (() => {
     const today = getUtcToday(businessNow);
     // getDateRange already operates in UTC, so this comparison is now safe
     const { startDate, endDate } = getDateRange(viewMode, currentDate);
     return today.getTime() >= startDate.getTime() && today.getTime() <= endDate.getTime();
-  }, [businessNow, viewMode, currentDate]);
+  })();
 
-  const headerDisplay = useMemo(() => {
+  const headerDisplay = (() => {
     const { startDate, endDate } = getDateRange(viewMode, currentDate);
 
     switch (viewMode) {
@@ -93,7 +93,7 @@ export const usePeriodNavigator = (initialMode: PeriodViewMode = "week") => {
         return monthStr.charAt(0).toUpperCase() + monthStr.slice(1);
       }
     }
-  }, [viewMode, currentDate]);
+  })();
 
   return {
     viewMode,

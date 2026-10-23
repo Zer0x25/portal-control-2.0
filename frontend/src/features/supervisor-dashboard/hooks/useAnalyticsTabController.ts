@@ -1,8 +1,6 @@
-import { useMemo } from "react";
-
 export const useAnalyticsTabController = () => {
-  const heatmapData = useMemo(() => [], []);
-  const trendData = useMemo(() => [], []);
+  const heatmapData = [];
+  const trendData = [];
 
   return {
     heatmapData,

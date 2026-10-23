@@ -4,6 +4,7 @@ import { timeRecordService } from "../../../services/timeRecordService";
 import { authService } from "../../../services/authService";
 import { isDateRangeValid } from "../../../utils/validation";
 import { toBusinessDateChile } from "../../../utils/dateUtils";
+import { logger } from "../../../utils/logger";
 
 export const useMasterDataExportController = () => {
   const { addToast } = useToasts();
@@ -44,7 +45,7 @@ export const useMasterDataExportController = () => {
       setTimeout(() => setExporting(false), 2000);
     } catch (error) {
       const err = error as Error;
-      console.error("Error starting master data export:", err);
+      logger.error("Error starting master data export:", err);
       addToast(`Error al exportar: ${err.message || "Ocurrió un error inesperado"}`, "error");
       setExporting(false);
     }

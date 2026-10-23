@@ -16,6 +16,7 @@ interface PatternListMobileProps {
   onDelete: (id: string) => void;
 }
 
+// Spec 037 T11: the schedule table and stacked mobile card carry different detail density; preserve 65/120 px virtualizer estimates.
 const PatternListMobile: React.FC<PatternListMobileProps> = ({
   patterns,
   hasNextPage,
@@ -27,26 +28,22 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the 120 px mobile estimate; Compiler cannot memoize TanStack Virtual's measurement API.
   const rowVirtualizer = useVirtualizer({
     count: patterns.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 120, // Estimated card height
     overscan: 5,
   });
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
+    const [lastItem] = [...virtualItems].reverse();
     if (!lastItem) return;
     if (lastItem.index >= patterns.length - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    fetchNextPage,
-    patterns.length,
-    isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, fetchNextPage, patterns.length, isFetchingNextPage, virtualItems]);
 
   return (
     <div

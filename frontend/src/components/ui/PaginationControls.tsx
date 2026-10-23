@@ -29,7 +29,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
       data-testid="pagination"
       data-page={currentPage}
       data-total-pages={totalPages}
-      className={`flex justify-between items-center py-2 ${className}`}
+      className={`@container flex justify-between items-center gap-1 @sm:gap-2 py-2 ${className}`}
     >
       <div className="flex items-center gap-2">
         <Button
@@ -38,7 +38,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           variant="secondary"
           size="sm"
           data-testid="pagination-first"
-          className="p-2 hidden sm:inline-flex rounded-md shadow-sm"
+          className="p-2 hidden @sm:inline-flex rounded-md shadow-sm"
           title="Primera página"
         >
           <ChevronDoubleLeftIcon className="w-5 h-5 text-token-text-secondary" />
@@ -49,7 +49,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           variant="secondary"
           size="sm"
           data-testid="pagination-prev"
-          className="flex items-center px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
+          className="flex items-center px-2 @sm:px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
           title="Página anterior"
         >
           <ChevronLeftIcon className="w-4 h-4 mr-1.5" />
@@ -73,7 +73,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           variant="secondary"
           size="sm"
           data-testid="pagination-next"
-          className="flex items-center px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
+          className="flex items-center px-2 @sm:px-4 py-2 rounded-md shadow-sm font-bold text-[10px] uppercase tracking-wider"
           title="Página siguiente"
         >
           Siguiente
@@ -85,7 +85,7 @@ const PaginationControls: React.FC<PaginationControlsProps> = ({
           variant="secondary"
           size="sm"
           data-testid="pagination-last"
-          className="p-2 hidden sm:inline-flex rounded-md shadow-sm"
+          className="p-2 hidden @sm:inline-flex rounded-md shadow-sm"
           title="Última página"
         >
           <ChevronDoubleRightIcon className="w-5 h-5 text-token-text-secondary" />

@@ -4,7 +4,7 @@ import React from "react";
  * Componente de loading optimizado para lazy loading
  * Muestra un skeleton mientras se carga el componente
  */
-export const DashboardSkeleton: React.FC = React.memo(() => {
+export const DashboardSkeleton: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 animate-in fade-in duration-150">
       {/* Welcome Panel Skeleton */}
@@ -53,6 +53,6 @@ export const DashboardSkeleton: React.FC = React.memo(() => {
       </div>
     </div>
   );
-});
+};
 
 DashboardSkeleton.displayName = "DashboardSkeleton";

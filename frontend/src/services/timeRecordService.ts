@@ -1,6 +1,7 @@
 import { AttendanceRecord, DailyTimeRecord } from "../types";
 import { apiClient } from "./apiClient";
 import { API_BASE_URL } from "./apiBase";
+import { logger } from "../utils/logger";
 
 const RECORDS_ENDPOINT = "/api/records";
 type ForcedPunchType = "entrada" | "inicioColacion" | "finColacion" | "salida";
@@ -139,7 +140,7 @@ export const timeRecordService = {
         : null;
 
     if (!normalized) {
-      console.error("[timeRecordService.getAll] Unexpected response shape:", payload);
+      logger.error("[timeRecordService.getAll] Unexpected response shape:", payload);
       throw new Error("Respuesta invalida de /api/records");
     }
 
@@ -166,7 +167,7 @@ export const timeRecordService = {
         ? (payload as { data?: unknown }).data
         : null;
     if (Array.isArray(series) && series.every(isDailyAttendancePoint)) return series;
-    console.error("[timeRecordService.getDailyAttendance] Unexpected response shape:", payload);
+    logger.error("[timeRecordService.getDailyAttendance] Unexpected response shape:", payload);
     throw new Error("Respuesta invalida de /api/records/daily-attendance");
   },
 

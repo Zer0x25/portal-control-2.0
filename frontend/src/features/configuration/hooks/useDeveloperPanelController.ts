@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { ROUTES } from "../../../constants";
 import { useToasts } from "../../../hooks/useToasts";
@@ -15,6 +15,7 @@ import {
   SeedPhase2Job,
 } from "../../../services/seedingService";
 import { healthService } from "../../../services/healthService";
+import { logger } from "../../../utils/logger";
 
 export const useDeveloperPanelController = () => {
   const { addToast } = useToasts();
@@ -72,30 +73,33 @@ export const useDeveloperPanelController = () => {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
-  const refreshPhase2Status = async (jobId?: string) => {
-    // Optimization: Don't poll if tab is hidden
-    if (!isTabVisible && !jobId) return;
-    try {
-      const status = await getSeedPhase2Status(jobId || phase2Job?.id);
-      if (status.job) {
-        setPhase2Job(status.job);
-        const logsResp = await getSeedPhase2Logs(status.job.id);
-        if (Array.isArray(logsResp.logs)) {
-          setPhase2Logs(
-            logsResp.logs
-              .slice()
-              .reverse() // Reverse because backend now sends recent first (DESC)
-              .map(
-                (l: { createdAt: string | number | Date; message: string }) =>
-                  `${new Date(l.createdAt).toLocaleTimeString()} ${l.message}`,
-              ),
-          );
+  const refreshPhase2Status = useCallback(
+    async (jobId?: string) => {
+      // Optimization: Don't poll if tab is hidden
+      if (!isTabVisible && !jobId) return;
+      try {
+        const status = await getSeedPhase2Status(jobId || phase2Job?.id);
+        if (status.job) {
+          setPhase2Job(status.job);
+          const logsResp = await getSeedPhase2Logs(status.job.id);
+          if (Array.isArray(logsResp.logs)) {
+            setPhase2Logs(
+              logsResp.logs
+                .slice()
+                .reverse() // Reverse because backend now sends recent first (DESC)
+                .map(
+                  (l: { createdAt: string | number | Date; message: string }) =>
+                    `${new Date(l.createdAt).toLocaleTimeString()} ${l.message}`,
+                ),
+            );
+          }
         }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
-    }
-  };
+    },
+    [isTabVisible, phase2Job],
+  );
 
   useEffect(() => {
     // Only poll for Phase 2 status when Phase 1 is done or when panel is open
@@ -113,7 +117,14 @@ export const useDeveloperPanelController = () => {
       void refreshPhase2Status();
     }, 3000);
     return () => clearInterval(i);
-  }, [isDevPanelOpen, isSeedingFinished, isSeedingModalOpen, phase2Job?.status, isTabVisible]);
+  }, [
+    isDevPanelOpen,
+    isSeedingFinished,
+    isSeedingModalOpen,
+    phase2Job?.status,
+    isTabVisible,
+    refreshPhase2Status,
+  ]);
 
   useEffect(() => {
     let mounted = true;
@@ -173,7 +184,7 @@ export const useDeveloperPanelController = () => {
           setIsSeedingModalOpen(true);
         }
       } catch (err) {
-        console.warn("Failed to check active seeder job:", err);
+        logger.warn("Failed to check active seeder job:", err);
       }
     };
     void checkActiveJob();
