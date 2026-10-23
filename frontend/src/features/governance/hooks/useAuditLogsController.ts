@@ -77,7 +77,12 @@ export const useAuditLogsController = () => {
     overscan: 10,
   });
 
-  const lastVirtualItemIndex = rowVirtualizer.getVirtualItems().at(-1)?.index ?? -1;
+  // Se calcula en el controller (compiler bail-out de `useVirtualizer`) y se
+  // pasa como prop: si la vista compilada llamara `getVirtualItems()` inline,
+  // React Compiler memoizaría el JSX con el array vacío del primer render y
+  // la lista nunca se pintaría cuando el virtualizer mide el scroll.
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const lastVirtualItemIndex = virtualItems.at(-1)?.index ?? -1;
 
   useEffect(() => {
     if (lastVirtualItemIndex >= allLogs.length - 5 && hasNextPage && !isFetchingNextPage) {
@@ -109,6 +114,7 @@ export const useAuditLogsController = () => {
     totalLogs,
     parentRef,
     rowVirtualizer,
+    virtualItems,
   };
 };
 
