@@ -42,6 +42,7 @@ const AuditLogsViewView: FC<AuditLogsController> = (controller) => {
     totalLogs,
     parentRef,
     rowVirtualizer,
+    virtualItems,
   } = controller;
 
   const getCategoryStyles = (category: string) => {
@@ -211,7 +212,7 @@ const AuditLogsViewView: FC<AuditLogsController> = (controller) => {
           position: "relative",
         }}
       >
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+        {virtualItems.map((virtualRow) => (
           <AuditLogMobileRow
             key={virtualRow.key}
             log={allLogs[virtualRow.index]}
@@ -262,7 +263,7 @@ const AuditLogsViewView: FC<AuditLogsController> = (controller) => {
               position: "relative",
             }}
           >
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+            {virtualItems.map((virtualRow) => (
               <AuditLogDesktopRow
                 key={virtualRow.key}
                 log={allLogs[virtualRow.index]}

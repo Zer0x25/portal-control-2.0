@@ -373,6 +373,28 @@ describe("Guardrail de pureza de la vista (spec 033 T3-T5, AC1/AC2/AC3/AC6/AC11)
     ).toBeLessThanOrEqual(VIEW_HOOK_BUDGET);
   });
 
+  it("ninguna vista consume el virtualizer: el controller expone virtualItems (React Compiler)", () => {
+    // Spec 037/038: la vista está compilada. Llamar `getVirtualItems()` inline
+    // sobre un virtualizer estable hace que React Compiler memoice el JSX con
+    // el array vacío del primer render; el virtualizer mide después y la lista
+    // nunca se pinta. El controller (bail-out del hook) calcula y pasa el array.
+    const offenders = viewFiles()
+      .filter((file) =>
+        hasCallTo(
+          parse(file),
+          (callee) =>
+            ts.isPropertyAccessExpression(callee) && callee.name.text === "getVirtualItems",
+        ),
+      )
+      .map(relative);
+
+    expect(
+      offenders,
+      "Las vistas no deben llamar `getVirtualItems()`: expón `virtualItems` desde el controller. Offenders: " +
+        offenders.join(", "),
+    ).toEqual([]);
+  });
+
   it("la capa de componentes no crece en numero de componentes con estado (spec 033 AC2)", () => {
     const offenders = componentLayerFiles()
       .filter((file) => hasStateHookCall(parse(file)))
