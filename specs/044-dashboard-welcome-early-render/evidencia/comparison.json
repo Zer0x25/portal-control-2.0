@@ -1,0 +1,94 @@
+{
+  "capturedOn": "2026-10-23",
+  "scope": "Spec 044: renderizar WelcomePanel durante la carga de overview/reportes, dejando widgets tras readiness.",
+  "source": {
+    "baseCommit": "3a08b122425a41320d5b1de9ebec4ce4bc1e74d6",
+    "workingTreeDirty": true,
+    "frontendImage": "sha256:dd1b9226211b3d7d0bc1a7f391c2d387eb75e54acb22012f1c2bfa42f8f7b920",
+    "dashboardViewSha256": "a81af775de29834bd8c235c9e6f60dfa4cf6b0108ab7790c4aff1ae1cfe24a11"
+  },
+  "startup": {
+    "baselineSpec": "043-dashboard-health-query-deduplication",
+    "baseline": {
+      "mainContentVisibleOffsetMs": 576.95,
+      "serverClockVisibleOffsetMs": 674.76,
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "duplicateEndpointCount": 0,
+      "lastApiRequestFinishedOffsetMs": 687.58,
+      "http200Count": 20
+    },
+    "after": {
+      "mainContentVisibleOffsetMs": 557.37,
+      "serverClockVisibleOffsetMs": 621.42,
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "duplicateEndpointCount": 0,
+      "http200Count": 20,
+      "lastApiRequestFinishedOffsetMs": 693.49
+    },
+    "delta": {
+      "mainContentVisibleOffsetMs": -19.58,
+      "serverClockVisibleOffsetMs": -53.34,
+      "apiRequestCount": 0,
+      "uniqueApiEndpointCount": 0,
+      "duplicateEndpointCount": 0,
+      "http200Count": 0,
+      "lastApiRequestFinishedOffsetMs": 5.91
+    },
+    "samplesWithDashboardDataPendingAtServerClock": 1,
+    "interpretation": "El reloj fue visible 53.34 ms antes en mediana según el marcador DOM de Playwright. Overview/reportes seguían en vuelo en 1/3 muestras. main-content mejoró 19.58 ms; 20 solicitudes API únicas, sin duplicados, todas HTTP 200."
+  },
+  "lighthouseCold": {
+    "baseline": {
+      "performanceScore": 0.71,
+      "fcpMs": 3747.36,
+      "lcpMs": 5415.69,
+      "tbtMs": 94.5,
+      "cls": 0,
+      "speedIndexMs": 3747.36
+    },
+    "after": {
+      "performanceScore": 0.71,
+      "fcpMs": 3759.76,
+      "lcpMs": 5423.07,
+      "tbtMs": 108,
+      "cls": 0,
+      "speedIndexMs": 3759.76
+    },
+    "delta": {
+      "performanceScore": 0,
+      "fcpMs": 12.4,
+      "lcpMs": 7.38,
+      "tbtMs": 13.5,
+      "cls": 0,
+      "speedIndexMs": 12.4
+    },
+    "baselineLcpRangeMs": [
+      5411.53,
+      5475.34
+    ],
+    "afterLcpRangeMs": [
+      5415.74,
+      5553.1
+    ],
+    "lcpRangesOverlap": true,
+    "baselineLcpElementRenderDelayMedianMs": 4965.63,
+    "afterLcpElementRenderDelayMedianMs": 4971.61,
+    "interpretation": "LCP, FCP, score, TBT y CLS no muestran cambio estable; los rangos LCP se solapan. La medida demuestra una aparición anterior del reloj en algunos estados de carga DOM, no mejora CWV ni causalidad sobre pintura."
+  },
+  "evidence": {
+    "startup": "dashboard-startup-api-requests.json",
+    "startupRuns": [
+      "runs/sample-01/dashboard-startup-api-requests.json",
+      "runs/sample-02/dashboard-startup-api-requests.json",
+      "runs/sample-03/dashboard-startup-api-requests.json"
+    ],
+    "lighthouse": "lighthouse-cold-profile.json",
+    "lighthouseReports": [
+      ".lighthouseci/127_0_0_1--2026_10_23_23_49_21.report.json",
+      ".lighthouseci/127_0_0_1--2026_10_23_23_49_47.report.json",
+      ".lighthouseci/127_0_0_1--2026_10_23_23_50_12.report.json"
+    ]
+  }
+}

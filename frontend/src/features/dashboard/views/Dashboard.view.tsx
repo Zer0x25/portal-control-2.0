@@ -72,14 +72,23 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   if ((isLoadingReports && shiftReports.length === 0) || isLoadingOverview) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
-        <div className="relative mb-8">
-          <LoadingSpinner size="md" variant="default" />
+      <Container
+        variant="standard"
+        noPadding
+        data-ui-protected
+        className="dashboard-ui-protected space-y-6"
+      >
+        <WelcomePanel />
+
+        <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
+          <div className="relative mb-8">
+            <LoadingSpinner size="md" variant="default" />
+          </div>
+          <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em] animate-pulse">
+            Sincronizando Dashboard
+          </p>
         </div>
-        <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em] animate-pulse">
-          Sincronizando Dashboard
-        </p>
-      </div>
+      </Container>
     );
   }
 

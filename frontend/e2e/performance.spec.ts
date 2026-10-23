@@ -143,12 +143,25 @@ test.describe.serial("Render Performance", () => {
     const duplicateEndpoints = [...requestCounts.entries()]
       .filter(([, count]) => count > 1)
       .map(([path, count]) => ({ path, count }));
+    const apiRequestsPendingWhenServerClockAppeared = apiRequestTimings
+      .filter(
+        ({ startOffsetMs, finishOffsetMs }) =>
+          startOffsetMs <= serverClockVisibleOffsetMs &&
+          finishOffsetMs > serverClockVisibleOffsetMs,
+      )
+      .map(({ path, finishOffsetMs }) => ({ path, finishOffsetMs }));
+    const dashboardDataRequestsPendingWhenServerClockAppeared =
+      apiRequestsPendingWhenServerClockAppeared.filter(({ path }) =>
+        ["/api/kpis/overview", "/api/shift-reports"].includes(path),
+      );
     const report = {
       capturedAt: new Date().toISOString(),
       baseUrl,
       route: "/#/dashboard",
       mainContentVisibleOffsetMs,
       serverClockVisibleOffsetMs,
+      apiRequestsPendingWhenServerClockAppeared,
+      dashboardDataRequestsPendingWhenServerClockAppeared,
       apiRequestCount: apiPaths.length,
       uniqueApiEndpointCount: requestCounts.size,
       duplicateEndpoints,
