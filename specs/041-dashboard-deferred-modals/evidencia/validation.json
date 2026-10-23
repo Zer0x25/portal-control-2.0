@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-23",
+  "frontendImage": "sha256:292bc2e70eee55398cc04d7f214eff19ece18ca8ea9b384c887ddf85ea7a803c",
+  "checks": [
+    {
+      "name": "focused vitest + layer guards",
+      "status": "passed",
+      "files": 5,
+      "tests": 24
+    },
+    {
+      "name": "staging secondary modals browser regression",
+      "status": "passed",
+      "tests": 1,
+      "checks": [
+        "initial script exclusion",
+        "blank note validation",
+        "unsent content and selected color survive reopening",
+        "Escape closes and focus returns",
+        "seed report opens",
+        "print popup contains report",
+        "no page errors"
+      ]
+    },
+    {
+      "name": "frontend TypeScript",
+      "status": "passed"
+    },
+    {
+      "name": "root lint budget",
+      "status": "passed",
+      "backend": {
+        "errors": 0,
+        "warnings": 0
+      },
+      "frontend": {
+        "errors": 0,
+        "warnings": 0
+      }
+    },
+    {
+      "name": "frontend formatting",
+      "status": "passed"
+    },
+    {
+      "name": "staging Docker build",
+      "status": "passed"
+    },
+    {
+      "name": "bundle/precache budgets",
+      "status": "passed",
+      "evidence": "build-checks.json"
+    },
+    {
+      "name": "Lighthouse setup node regressions",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "name": "real Puppeteer role/route setup",
+      "status": "passed",
+      "sequence": [
+        "worker-portal",
+        "kiosk",
+        "governance-audit",
+        "dashboard",
+        "governance-audit"
+      ]
+    },
+    {
+      "name": "Hash-aware assertions node regressions",
+      "status": "passed",
+      "tests": 2
+    },
+    {
+      "name": "Performance battery",
+      "status": "passed",
+      "runId": "2026-10-23T15-01-52-304Z-45138318",
+      "routes": 18,
+      "lighthouseStandard": 17,
+      "coldSamples": 3
+    },
+    {
+      "name": "Hash-aware post-capture runner validation",
+      "status": "passed",
+      "routes": 17,
+      "assertions": 85,
+      "evidence": "per-route-assertions.json"
+    }
+  ],
+  "validationBoundary": "Focused regression and performance battery, not a complete business E2E or remote CI run. No business records written."
+}

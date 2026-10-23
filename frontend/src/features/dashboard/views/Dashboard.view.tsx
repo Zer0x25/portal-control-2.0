@@ -5,8 +5,10 @@
 
 import React from "react";
 import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
-import { QuickNotesModal } from "..";
-import ShiftReportModal from "../../logbook/components/ShiftReportModal";
+import {
+  DashboardQuickNotesModal as QuickNotesModal,
+  DashboardShiftReportModal as ShiftReportModal,
+} from "../components/DashboardDeferredModals";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import EmptyState from "../../../components/ui/EmptyState";
 import CinematicModal from "../../../components/ui/CinematicModal";

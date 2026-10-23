@@ -5,6 +5,7 @@ import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
+import { refreshActiveQueriesForSync } from "../../lib/querySync";
 import { logger } from "../../utils/logger";
 
 export interface SyncSlice {
@@ -14,7 +15,7 @@ export interface SyncSlice {
   isInitialSync: boolean;
   currentSyncStep: string;
   isSyncing: boolean;
-  runSync: () => Promise<void>;
+  runSync: (forceRefresh?: boolean) => Promise<void>;
   initializeAppData: () => Promise<void>;
   validateInstanceId: () => Promise<boolean>;
 }
@@ -27,7 +28,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
   currentSyncStep: "",
   isSyncing: false,
 
-  runSync: async () => {
+  runSync: async (forceRefresh = false) => {
     if (get().isSyncing) {
       logger.warn("Sync already in progress, skipping...");
       return;
@@ -82,36 +83,46 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         );
       }
 
-      // Spec 032 T5: colecciones remotas ya viven en query hooks; el sync
-      // solo invalida sus raices (refresco bajo demanda, sin duplicacion).
+      // Spec 032 T5: las colecciones remotas viven en query hooks. En un
+      // arranque normal se refrescan solo queries activas stale; si cambia la
+      // instancia de BD, forceRefresh descarta la caché potencialmente ajena.
       const steps = [
         {
           name: "Usuarios",
-          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.users() }),
+          action: () => refreshActiveQueriesForSync(queryClient, queryKeys.users(), forceRefresh),
           skip: role === "Usuario",
         },
         {
           name: "Empleados",
-          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.employees() }),
+          action: () =>
+            refreshActiveQueriesForSync(queryClient, queryKeys.employees(), forceRefresh),
         },
-        // Spec 032 T4: config y shift ahora viven en query hooks; el sync
-        // solo invalida sus raices para que react-query refresque bajo demanda.
+        // Spec 032 T4: configuración y turnos viven en query hooks.
         {
           name: "Configuraciones",
-          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.configRoot() }),
+          action: () =>
+            refreshActiveQueriesForSync(queryClient, queryKeys.configRoot(), forceRefresh),
         },
         {
           name: "Horarios",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: queryKeys.shiftPatterns() });
-            await queryClient.invalidateQueries({ queryKey: queryKeys.assignedShifts() });
+            await refreshActiveQueriesForSync(queryClient, queryKeys.shiftPatterns(), forceRefresh);
+            await refreshActiveQueriesForSync(
+              queryClient,
+              queryKeys.assignedShifts(),
+              forceRefresh,
+            );
           },
         },
         {
           name: "Medidores",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: queryKeys.meterReadings() });
-            await queryClient.invalidateQueries({ queryKey: queryKeys.config("meter_configs") });
+            await refreshActiveQueriesForSync(queryClient, queryKeys.meterReadings(), forceRefresh);
+            await refreshActiveQueriesForSync(
+              queryClient,
+              queryKeys.config("meter_configs"),
+              forceRefresh,
+            );
           },
           skip: role === "Usuario",
         },
@@ -182,7 +193,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
       }
 
       // La primera vez o en init, intentamos una sincronización delta/full
-      await state.runSync();
+      await state.runSync(!isConsistent);
 
       logger.warn("Aplicación inicializada correctamente.");
     } catch (error) {

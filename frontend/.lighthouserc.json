@@ -3,11 +3,22 @@
     "collect": {
       "url": [
         "http://127.0.0.1:8080/#/dashboard",
+        "http://127.0.0.1:8080/#/dashboard-supervisor",
+        "http://127.0.0.1:8080/#/time-control",
         "http://127.0.0.1:8080/#/planning/monthly",
+        "http://127.0.0.1:8080/#/theoretical-shifts",
+        "http://127.0.0.1:8080/#/shift-calendar",
+        "http://127.0.0.1:8080/#/configuration",
         "http://127.0.0.1:8080/#/worker-portal",
         "http://127.0.0.1:8080/#/logbook",
         "http://127.0.0.1:8080/#/kiosk",
-        "http://127.0.0.1:8080/#/admin/governance?tab=audit"
+        "http://127.0.0.1:8080/#/admin/governance?tab=audit",
+        "http://127.0.0.1:8080/#/meter-readings",
+        "http://127.0.0.1:8080/#/communications",
+        "http://127.0.0.1:8080/#/employee-management",
+        "http://127.0.0.1:8080/#/personnel-management",
+        "http://127.0.0.1:8080/#/user-management",
+        "http://127.0.0.1:8080/#/design-system"
       ],
       "numberOfRuns": 1,
       "puppeteerScript": "scripts/lhci-puppeteer.cjs",

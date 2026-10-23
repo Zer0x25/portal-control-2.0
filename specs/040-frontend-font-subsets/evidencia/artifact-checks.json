@@ -1,0 +1,15 @@
+{
+  "htmlBytes": 1716,
+  "preload": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+  "cacheControl": "max-age=31536000, public, max-age=31536000, immutable, no-transform",
+  "fontsAbsentFromPrecache": true,
+  "visualPixelsIdentical": true,
+  "specimenSha256": "fc5ec5109bd81e6748476ae33b08feacdcf3528327c676aa79853addeccdc28e",
+  "bundleMeasurements": {
+    "reactCoreBytes": 218860,
+    "chartsBytes": 145613,
+    "precacheBytes": 2038031,
+    "precacheEntries": 187
+  },
+  "bundleFailures": []
+}

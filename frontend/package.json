@@ -11,7 +11,7 @@
     "audit:design-system": "node scripts/audit-design-system.cjs",
     "audit:lighthouse": "lhci autorun --config=.lighthouserc.json",
     "audit:memoization": "node scripts/audit-memoization.mjs",
-    "build": "vite build",
+    "build": "npm run check:font-subsets && vite build",
     "catalog:manifest": "node scripts/build-design-system-manifest.cjs",
     "catalog:manifest:check": "node scripts/build-design-system-manifest.cjs --check",
     "check": "tsc --noEmit",
@@ -22,6 +22,7 @@
     "e2e:headed": "playwright test --headed",
     "e2e:install": "playwright install",
     "e2e:staging": "E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api playwright test",
+    "perf:staging": "node scripts/run-performance-battery.cjs",
     "e2e:ui": "playwright test --ui",
     "e2e:visual": "playwright test --project visual",
     "e2e:visual:update": "playwright test --project visual --update-snapshots",
@@ -49,7 +50,8 @@
     "tokens:build": "node scripts/build-tokens.cjs --write",
     "tokens:check": "node scripts/build-tokens.cjs --check",
     "validate:ci": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:run:ci && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget",
-    "validate:ci:coverage": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:coverage && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget"
+    "validate:ci:coverage": "npm run format:check && npm run lint && node ../scripts/lint-budget.cjs --only frontend && npm run check && npm run test:coverage && npm run catalog:manifest:check && npm run tokens:check && npm run audit:design-system && npm run storybook:build && npm run build && npm run check:storybook-runtime && npm run check:bundle-budget",
+    "check:font-subsets": "node scripts/check-font-subsets.cjs"
   },
   "dependencies": {
     "@sentry/browser": "^11.1.0",

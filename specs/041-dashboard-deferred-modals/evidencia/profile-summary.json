@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "purpose": "diagnosis only; not a timing benchmark or causal proof",
+  "method": {
+    "tool": "Playwright Chromium CDP Profiler + precise JS coverage",
+    "cpuThrottle": 4,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "storage": "fresh browser context per sample",
+    "serviceWorkers": "blocked",
+    "stop": "server-clock visible plus 1500ms",
+    "limitations": [
+      "One sample per version; recording and coverage add overhead.",
+      "Samples include waiting after readiness and varying late LCP candidates.",
+      "Self-time in React includes app rendering; it does not identify one costly component.",
+      "Raw coverage contains initialization material and is removed after analysis; no tokens or API bodies are copied here."
+    ]
+  },
+  "samples": [
+    {
+      "id": "baseline",
+      "frontendImage": "sha256:39cf4012ce2101ab5138a4f6e61a0121cb862535dc8c9d529c03ee76b52b0139",
+      "rawProfileSha256": "c089ba999772330bc936b335db134ed410566857d510141f37660b55f20469c6",
+      "scriptRequests": 84,
+      "scriptTransferBytes": 395823,
+      "topSelfTimeMs": [
+        {
+          "source": "(idle)",
+          "ms": 1247.93
+        },
+        {
+          "source": "(program)",
+          "ms": 1120.98
+        },
+        {
+          "source": "/assets/react-core-k-iqGWxC.js",
+          "ms": 399.26
+        },
+        {
+          "source": "/assets/state-aFbDlf54.js",
+          "ms": 134.13
+        },
+        {
+          "source": "/assets/router-BRIQhtRw.js",
+          "ms": 100.28
+        },
+        {
+          "source": "fetch",
+          "ms": 91.72
+        },
+        {
+          "source": "/assets/vendor-Cp4ueFOX.js",
+          "ms": 72.13
+        },
+        {
+          "source": "/assets/date-utils-DTu9wXYq.js",
+          "ms": 56.72
+        },
+        {
+          "source": "/assets/apiClient-DO9coY89.js",
+          "ms": 51.43
+        },
+        {
+          "source": "appendChild",
+          "ms": 41.51
+        },
+        {
+          "source": "(garbage collector)",
+          "ms": 35.01
+        },
+        {
+          "source": "/assets/index-OH7j6QvM.js",
+          "ms": 33.44
+        },
+        {
+          "source": "/assets/validation-Cu6zMesj.js",
+          "ms": 29.48
+        },
+        {
+          "source": "/assets/Dashboard.container-kpgcEU2x.js",
+          "ms": 26.63
+        },
+        {
+          "source": "/assets/storage-exKiCKfO.js",
+          "ms": 23.87
+        }
+      ],
+      "lcpCandidates": [
+        {
+          "time": 1124,
+          "size": 2996
+        },
+        {
+          "time": 2144,
+          "size": 8424,
+          "tag": "P",
+          "classes": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        }
+      ],
+      "apiRequestCount": 32,
+      "apiRequests": [
+        {
+          "path": "/api/health",
+          "count": 1
+        },
+        {
+          "path": "/api/configs/is_control_interno_enabled",
+          "count": 2
+        },
+        {
+          "path": "/api/corrections/stats",
+          "count": 1
+        },
+        {
+          "path": "/api/audit-logs",
+          "count": 1
+        },
+        {
+          "path": "/api/users",
+          "count": 2
+        },
+        {
+          "path": "/api/employees",
+          "count": 2
+        },
+        {
+          "path": "/api/employees/kiosk",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/global_max_hours",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/area_list",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/workday_types",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/email_recipients",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/accounting_lock_date",
+          "count": 2
+        },
+        {
+          "path": "/api/shifts/patterns",
+          "count": 2
+        },
+        {
+          "path": "/api/shifts/assignments",
+          "count": 2
+        },
+        {
+          "path": "/api/holidays",
+          "count": 1
+        },
+        {
+          "path": "/api/leaves",
+          "count": 1
+        },
+        {
+          "path": "/api/corrections",
+          "count": 1
+        },
+        {
+          "path": "/api/shift-reports",
+          "count": 1
+        },
+        {
+          "path": "/api/kpis/overview",
+          "count": 1
+        },
+        {
+          "path": "/api/configs/public/company-policy",
+          "count": 1
+        },
+        {
+          "path": "/api/notes",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "after",
+      "frontendImage": "sha256:292bc2e70eee55398cc04d7f214eff19ece18ca8ea9b384c887ddf85ea7a803c",
+      "rawProfileSha256": "27c08a19554913314bf663e6389a527eafdcfef4e6db54a73dc8a2e1ef16eae8",
+      "scriptRequests": 76,
+      "scriptTransferBytes": 295737,
+      "topSelfTimeMs": [
+        {
+          "source": "(idle)",
+          "ms": 1444.48
+        },
+        {
+          "source": "(program)",
+          "ms": 1072.54
+        },
+        {
+          "source": "/assets/react-core-k-iqGWxC.js",
+          "ms": 352.19
+        },
+        {
+          "source": "/assets/state-64_QhTZk.js",
+          "ms": 133.73
+        },
+        {
+          "source": "appendChild",
+          "ms": 74.07
+        },
+        {
+          "source": "/assets/date-utils-DTu9wXYq.js",
+          "ms": 61.02
+        },
+        {
+          "source": "/assets/index-Cd80bTTl.js",
+          "ms": 58.46
+        },
+        {
+          "source": "fetch",
+          "ms": 45.88
+        },
+        {
+          "source": "/assets/router-BRIQhtRw.js",
+          "ms": 38.42
+        },
+        {
+          "source": "/assets/Dashboard.container-BqmEbyuC.js",
+          "ms": 35.8
+        },
+        {
+          "source": "/assets/apiClient-DO9coY89.js",
+          "ms": 34.71
+        },
+        {
+          "source": "/assets/storage-exKiCKfO.js",
+          "ms": 33.83
+        },
+        {
+          "source": "(garbage collector)",
+          "ms": 27.11
+        },
+        {
+          "source": "",
+          "ms": 23.45
+        },
+        {
+          "source": "/assets/realtime-C7QaxhyT.js",
+          "ms": 20.82
+        }
+      ],
+      "lcpCandidates": [
+        {
+          "time": 1012,
+          "size": 2114,
+          "tag": "P",
+          "classes": "text-xs font-bold text-token-text-secondary uppercase tracking-tighter"
+        },
+        {
+          "time": 1616,
+          "size": 8424,
+          "tag": "P",
+          "classes": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        },
+        {
+          "time": 3216,
+          "size": 11679,
+          "tag": "H1",
+          "classes": "text-3xl sm:text-5xl font-bold text-token-text-primary leading-tight tracking-tight"
+        }
+      ],
+      "apiRequestCount": 32,
+      "apiRequests": [
+        {
+          "path": "/api/health",
+          "count": 1
+        },
+        {
+          "path": "/api/configs/is_control_interno_enabled",
+          "count": 2
+        },
+        {
+          "path": "/api/corrections/stats",
+          "count": 1
+        },
+        {
+          "path": "/api/audit-logs",
+          "count": 1
+        },
+        {
+          "path": "/api/users",
+          "count": 2
+        },
+        {
+          "path": "/api/employees",
+          "count": 2
+        },
+        {
+          "path": "/api/employees/kiosk",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/global_max_hours",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/area_list",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/workday_types",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/email_recipients",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/accounting_lock_date",
+          "count": 2
+        },
+        {
+          "path": "/api/shifts/patterns",
+          "count": 2
+        },
+        {
+          "path": "/api/shifts/assignments",
+          "count": 2
+        },
+        {
+          "path": "/api/holidays",
+          "count": 1
+        },
+        {
+          "path": "/api/leaves",
+          "count": 1
+        },
+        {
+          "path": "/api/corrections",
+          "count": 1
+        },
+        {
+          "path": "/api/shift-reports",
+          "count": 1
+        },
+        {
+          "path": "/api/kpis/overview",
+          "count": 1
+        },
+        {
+          "path": "/api/configs/public/company-policy",
+          "count": 1
+        },
+        {
+          "path": "/api/notes",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "importFindings": [
+    "Dashboard.view statically imported the dashboard barrel, which mounted the QuickNotes form while closed.",
+    "ShiftReportModal and exportToPdf were also imported for a closed report viewer.",
+    "The vendor chunk combined Query persistence, Table/Virtual cores, Workbox and Form dependencies.",
+    "Separating Form alone was insufficient: Table/Virtual in vendor imported Store from Form and pulled the whole group into boot.",
+    "Grouping the full Query family and Table/Virtual separately breaks that edge; Form and sanitization stay optional.",
+    "AmbientReminderManager still loads notes independently; socket/store unread notifications remain active."
+  ]
+}

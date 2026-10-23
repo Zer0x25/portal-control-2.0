@@ -27,7 +27,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
   const { addToast } = useToasts();
 
   const employeesQuery = useEmployeesQuery();
-  const kioskQuery = useKioskEmployeesQuery();
+  const kioskQuery = useKioskEmployeesQuery(_isKiosk);
 
   const invalidateEmployees = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.employees() });

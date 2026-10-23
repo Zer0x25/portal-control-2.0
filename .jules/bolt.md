@@ -127,5 +127,31 @@
 **Action:** (commits backend + frontend-SDK lockstep, skill `api-contracts-sync`) Backend: `brandLogo() ?? null`, OpenAPI `nullable: true` + descripción, 2 tests actualizados (incluido el de reseteo a null en spec027 que fijaba el segundo 404), `docs:generate`, snaps `-u` (limpios esta vez, solo brand-logo). Frontend: solo `sdk:generate` (`| null` + descripción), `check:sdk` OK. Staging: JSON 200 `null`, `/file` sigue 404, login sin 4xx de brand-logo, 0 pageerrors. `dataConfigs` 67/67 en PG efímero (apagado después); `tsc`/`eslint` OK.
 
 ## 2026-10-21 - perf(core): Chunked TimeRecord Enrichment
+
 **Learning:** En map() statements on massive arrays (like potentially up to 20,000 for exports or -1 page sizes in TimeRecordService), resolving all items concurrently via Promise.all starves the Node.js event loop leading to timeouts and unresponsiveness. Using a chunked iteration mechanism yielding with setImmediate correctly mitigates event loop blocks for long-running calculations.
 **Action:** Use a deterministic chunked iteration with await Promise.all() when evaluating huge un-paginated arrays and inject await new Promise(resolve => setImmediate(resolve)) to yield control back to the event loop.
+
+## 2026-10-23 - perf(frontend): Defer Dashboard Time Control Modals
+
+**Learning:** `Dashboard.container` imported two closed modal containers through the `time-control` barrel, pulling the full `TimeControl.container` route chunk and its dependencies into Dashboard's cold load. The original single Lighthouse result with TBT 2.670 s was not reproducible; three clean-storage runs exposed cold FCP/LCP as the repeatable issue.
+**Action:** Load `QuickActionModal` and `EditTimestampModal` directly with `React.lazy` and mount them only when opened. The integrated three-run cold profile cut median total transfer 7.0%, script transfer 8.8%, and requests by 25; FCP/LCP medians improved 5.3%/9.2%. TBT varied across repeat groups, so do not infer a stable improvement yet. Keep the cold Dashboard profile in `perf:staging`; investigate the still-blocking 35.9 KB stylesheet next. The staging seed had no eligible present-without-schedule row to exercise opening the modal.
+
+## 2026-10-23 - perf(frontend): Latin Font Subsets
+
+**Learning:** Four full font files consumed ~379 KB (45% of Dashboard cold transfer). FontTools subsets with disjoint Unicode ranges preserve Spanish glyph outlines/metrics while original files serve other alphabets on demand. The stylesheet row's ~901 ms duration did not imply savings: its global Lighthouse FCP/LCP savings were zero.
+**Action:** Keep immutable originals, pinned generation and hash guards, subset preload and one-year caching. Deployed font transfer fell 68.4% and total transfer 30.7%; the eight-weight specimen is pixel-identical. Three cold samples showed FCP/LCP 4.383/6.218 s versus 4.247/6.246 s before, so do not claim a stable timing improvement. Next investigate initial JavaScript/render cost, not font bytes again. Fix Puppeteer waitForFunction argument order (function, options, arguments): absent shell must never pass readiness; retain final-URL verification and failed runs. Evidence: specs/040-frontend-font-subsets/evidencia/resultado-2026-10-23.md.
+
+## 2026-10-23 - perf(frontend): Deferred Dashboard Forms and Reports
+
+- **Cambio**: notas y visor de reportes lazy desde Dashboard, conservando borradores tras el primer montaje. Query, Form, Table/Virtual y sanitización separados para evitar imports opcionales por vendor.
+- **Medido**: 3 cargas frías por versión: JS 409,696 → 304,922 B (−25.6%), total 575,671 → 470,917 B (−18.2%), LCP mediano 6,218 → 5,508 ms (−11.4%), FCP 4,383 → 3,785 ms. Score 63 → 68; TBT con rangos solapados. Perfil local: 84 → 76 scripts.
+- **Validación**: 24 tests enfocados, flujo real notas/reporte/impresión, batería 18 rutas + 17 Lighthouse + 3 fríos, presupuestos intactos. Se corrigió navegación doble del helper; se añadió gate de umbrales por hash (LHCI agrupaba por finalUrl sin fragmento). Reportes existentes revalidados: 17 rutas, 85 aserciones aprobadas; cuatro regresiones Node.
+- **Límites/siguiente**: laboratorio local y método del preparador corregido; no atribución causal aislada ni CWV de campo. Precache conserva funcionalidades. Próximo foco: consultas de kiosco/catálogos y refetches de sincronización observados en boot. Evidencia: [spec 041](../specs/041-dashboard-deferred-modals/evidencia/resultado-2026-10-23.md).
+
+## 2026-10-23 - perf(frontend): Deduplicar consultas al iniciar Dashboard
+
+- **Learning**: `useEmployees()` activaba `/api/employees/kiosk` para cualquier pantalla, y `runSync` invalidaba queries recién cargadas al restaurar sesión. Eso repetía usuarios, empleados, catálogos, configuración y turnos.
+- **Cambio**: la query de kiosco solo se habilita con `useEmployees(true)`. El sync habitual solo refresca queries activas stale y coalesce fetches en curso; al detectar otra instancia de BD conserva la invalidación forzada para vaciar la caché lógica anterior.
+- **Medido**: captura Dashboard en staging, 32 → 21 requests API (−34,4%); rutas repetidas 11 → 1 y requests kiosk 2 → 0. Repetición del test conservó 21. Queda `/api/health` dos veces entre la validación de instancia y el indicador. Dashboard readiness: mediana 529ms, 3 muestras.
+- **Validación**: 7 tests unitarios, 4 E2E enfocados (notas + tres escenarios offline), request gate 1/1; batería completa 6/6 Playwright, 18 rutas, Lighthouse 17/17 destinos con 85/85 aserciones, y 3 muestras frías. Build y budgets pasan; imagen de staging `sha256:51e1866eff3c5987eebc655801175014f6d70d71c2f57e76cd6707c4dbd3cd8f`.
+- **Límites/siguiente**: el conteo anterior es CDP con ventana de 1.500ms y el nuevo Playwright con 800ms de quietud; reducción observada en una captura por versión. Lighthouse no mejora de forma estable: LCP 5.508 → 5.599s, score 0,68 → 0,67 y requests totales 89 → 89; no atribuir efecto temporal a la reducción API. Próximo paso: compartir de forma segura la lectura `/api/health` y revisar el orden/criticidad de las 20 rutas restantes. Evidencia: [spec 042](../specs/042-dashboard-query-startup-deduplication/evidencia/resultado-2026-10-23.md).

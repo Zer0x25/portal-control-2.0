@@ -32,11 +32,12 @@ export const useEmployeesQuery = () => {
  * del backend): el kiosco funciona en dispositivo sin sesion, por lo que esta
  * query NUNCA se gatea con token.
  */
-export const useKioskEmployeesQuery = () => {
+export const useKioskEmployeesQuery = (enabled = true) => {
   return useQuery<Employee[]>({
     queryKey: queryKeys.employeesKiosk(),
     queryFn: () => employeeService.getKioskEmployees(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
+    enabled,
   });
 };

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "fontTools": "4.67.0",
+  "brotli": "1.2.1",
+  "generatorSha256": "753f6aec03c86410881cf8f0a7e3642a4587a670ebd97f1cfdc37bf3b3a8ba07",
+  "cssSha256": "c88a2e2dd5702f388bfdd1fb59e5e5f385d7cd4d23c1f5bf4db5336dd7fb173f",
+  "latinUnicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-036F, U+2000-206F, U+2074, U+20A0-20CF, U+2122, U+2190-2193, U+2212, U+2215, U+2713-2714, U+FEFF, U+FFFD",
+  "fonts": [
+    {
+      "source": "Inter-Regular.woff2",
+      "sourceSha256": "30b2259ef43df8f66adb853faf6c61e4bb8b8083a2d3bc77de4d229c8a5e8325",
+      "sourceBytes": 110612,
+      "subset": "Inter-Regular-latin.woff2",
+      "subsetSha256": "e7836ebeb32535b03b9da31be60d300e6a3c8a9a242f0ac6f98bf57f9905a4ef",
+      "subsetBytes": 33476,
+      "sourceCharacters": 2849,
+      "subsetCharacters": 379
+    },
+    {
+      "source": "Inter-SemiBold.woff2",
+      "sourceSha256": "cdaafcd49f7e4e746fbf0925fd24be39e132d359167c4d2126134d3d9e077b59",
+      "sourceBytes": 114608,
+      "subset": "Inter-SemiBold-latin.woff2",
+      "subsetSha256": "aa2dee5ce078ca80424b6c536edc872924c0bc3b719339d180ded8bb689a6fd1",
+      "subsetBytes": 34656,
+      "sourceCharacters": 2849,
+      "subsetCharacters": 379
+    },
+    {
+      "source": "Inter-Bold.woff2",
+      "sourceSha256": "17df9edfac15895e3a457cc4aca5768d550631daf6023a42b2301b34dfa84c35",
+      "sourceBytes": 114248,
+      "subset": "Inter-Bold-latin.woff2",
+      "subsetSha256": "9b9d3ac996434c9a0d9e7fc2ca62132c09afbed6ee096b547f21b64718dfa5cc",
+      "subsetBytes": 34608,
+      "sourceCharacters": 2849,
+      "subsetCharacters": 379
+    },
+    {
+      "source": "RobotoMono-Regular.woff2",
+      "sourceSha256": "58f56690e10a6181575c981ca1c565fd14aa23d307d0d126148f21f1ea5d931c",
+      "sourceBytes": 37852,
+      "subset": "RobotoMono-Regular-latin.woff2",
+      "subsetSha256": "58cd5c45122da772aaaef3f103019428af2588e91202c8c8942e2d24e992c061",
+      "subsetBytes": 14944,
+      "sourceCharacters": 876,
+      "subsetCharacters": 251
+    },
+    {
+      "source": "RobotoMono-Bold.woff2",
+      "sourceSha256": "e5f445bb5ab601f16339e2a9f71063a67f674c6867140deab184d75d177fa0f1",
+      "sourceBytes": 37984,
+      "subset": "RobotoMono-Bold-latin.woff2",
+      "subsetSha256": "bff4d71252407e500d0b3cd5b51f81dfdc397397765426b739863151c71853d3",
+      "subsetBytes": 15008,
+      "sourceCharacters": 876,
+      "subsetCharacters": 251
+    }
+  ]
+}

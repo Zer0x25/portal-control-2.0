@@ -1,5 +1,5 @@
-/* Inter Font Family */
 @import "tailwindcss";
+@import "./assets/fonts/fonts.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -299,67 +299,6 @@
 @utility slide-in-from-right-4 {
   --tw-enter-translate-x: 1rem;
 }
-
-@layer base {
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 800;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 900;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Roboto Mono";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("./assets/fonts/RobotoMono-Regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Roboto Mono";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("./assets/fonts/RobotoMono-Bold.woff2") format("woff2");
-  }
-}
-
-/* Roboto Mono Font Family */
 
 @layer utilities {
   :root {
