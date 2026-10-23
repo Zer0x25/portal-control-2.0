@@ -30,7 +30,11 @@ export default defineConfig({
     // pasó de ~50ms a ~600ms solo por contención de CPU).
     {
       name: "functional",
-      testIgnore: ["**/performance.spec.ts", "**/visual-regression.spec.ts"],
+      testIgnore: [
+        "**/performance.spec.ts",
+        "**/visual-regression.spec.ts",
+        "**/design-system-visual.spec.ts",
+      ],
       use: { ...devices["Desktop Chrome"] },
     },
     // Regresion visual (spec 035 T15): corre despues de los funcionales

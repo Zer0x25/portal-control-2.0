@@ -304,7 +304,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
 
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-6 border-b border-token-border-technical pb-4">
-                <ActivityIcon className="w-5 h-5 text-sap-warning" />
+                <ActivityIcon className="w-5 h-5 text-token-status-warning" />
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-token-text-primary">
                   Control de Sesiones
                 </h3>
@@ -438,8 +438,8 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   </p>
                 </div>
 
-                <div className="p-4 bg-sap-error/5 border border-sap-error/20 rounded-sm space-y-3">
-                  <p className="text-[10px] font-bold text-sap-error uppercase tracking-widest">
+                <div className="p-4 bg-token-status-error/5 border border-token-status-error/20 rounded-sm space-y-3">
+                  <p className="text-[10px] font-bold text-token-status-error uppercase tracking-widest">
                     Protocolo Destructivo
                   </p>
                   <Button
@@ -450,7 +450,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
                   >
                     Reseteo Maestro (Clear DB)
                   </Button>
-                  <p className="text-xxs text-sap-error/70 font-bold uppercase">
+                  <p className="text-xxs text-token-status-error/70 font-bold uppercase">
                     ¡ADVERTENCIA! Esta acción no se puede deshacer.
                   </p>
                 </div>

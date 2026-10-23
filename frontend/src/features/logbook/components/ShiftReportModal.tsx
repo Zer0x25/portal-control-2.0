@@ -76,7 +76,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <div className="bg-sap-blue/10 p-2 rounded-sm text-sap-blue border border-sap-blue/20">
+          <div className="bg-token-accent-brand/10 p-2 rounded-sm text-token-accent-brand border border-token-accent-brand/20">
             <DocumentTextIcon className="w-4 h-4" />
           </div>
           <div>
@@ -114,7 +114,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
           </div>
           <button
             onClick={handleExport}
-            className="rounded-sm flex items-center gap-2 px-4 h-8 bg-sap-blue hover:bg-sap-blue/90 text-white text-xxs font-bold uppercase tracking-widest shadow-sm active:scale-95 transition-all"
+            className="rounded-sm flex items-center gap-2 px-4 h-8 bg-token-accent-brand hover:bg-token-accent-brand/90 text-white text-xxs font-bold uppercase tracking-widest shadow-sm active:scale-95 transition-all"
           >
             <PrinterIcon className="w-3.5 h-3.5" />
             Imprimir Reporte
@@ -124,8 +124,8 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
         {/* Info Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-token-surface-stripe border border-token-border-subtle p-4 rounded-md relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-sap-blue opacity-30" />
-            <h4 className="text-xxs font-bold text-sap-blue uppercase tracking-[0.2em] mb-3">
+            <div className="absolute top-0 left-0 w-1 h-full bg-token-accent-brand opacity-30" />
+            <h4 className="text-xxs font-bold text-token-accent-brand uppercase tracking-[0.2em] mb-3">
               Datos Generales
             </h4>
             <div className="space-y-3">
@@ -151,8 +151,8 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center gap-2.5">
-                <ClockIcon className="w-3.5 h-3.5 text-sap-blue/70" />
-                <span className="text-xs font-bold text-sap-blue uppercase tracking-widest">
+                <ClockIcon className="w-3.5 h-3.5 text-token-accent-brand/70" />
+                <span className="text-xs font-bold text-token-accent-brand uppercase tracking-widest">
                   {report.shiftName}
                 </span>
               </div>
@@ -200,7 +200,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
         {/* Novedades Section */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 ml-1">
-            <div className="w-1 h-3 bg-sap-blue opacity-50 rounded-full" />
+            <div className="w-1 h-3 bg-token-accent-brand opacity-50 rounded-full" />
             <h4 className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
               Bitácora de Novedades ({report.logEntries.length})
             </h4>
@@ -210,10 +210,10 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
               report.logEntries.map((le) => (
                 <div
                   key={le.id}
-                  className="bg-token-surface-stripe border border-token-border-subtle p-3.5 rounded-md hover:border-sap-blue/20 transition-all group"
+                  className="bg-token-surface-stripe border border-token-border-subtle p-3.5 rounded-md hover:border-token-accent-brand/20 transition-all group"
                 >
                   <div className="flex gap-4">
-                    <span className="text-xxs font-mono font-bold text-sap-blue bg-sap-blue/5 px-2 py-1 rounded-sm h-fit border border-sap-blue/10">
+                    <span className="text-xxs font-mono font-bold text-token-accent-brand bg-token-accent-brand/5 px-2 py-1 rounded-sm h-fit border border-token-accent-brand/10">
                       {le.time}
                     </span>
                     <p className="text-xs text-token-text-primary font-medium leading-relaxed">

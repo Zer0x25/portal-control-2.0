@@ -71,7 +71,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card
-          className="p-6! cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
+          className="p-6! cursor-pointer hover:border-token-accent-brand transition-all active:scale-[0.98]"
           onClick={fetchInsights}
           title="Haz clic para actualizar insights"
         >
@@ -92,10 +92,10 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
             <div
               className={`h-full transition-all duration-1000 ${
                 stats.mfaAdoption > 80
-                  ? "bg-sap-success"
+                  ? "bg-token-status-success"
                   : stats.mfaAdoption > 50
-                    ? "bg-sap-warning"
-                    : "bg-sap-error"
+                    ? "bg-token-status-warning"
+                    : "bg-token-status-error"
               }`}
               style={{ width: `${stats.mfaAdoption}%`, boxShadow: "0 0 10px currentColor" }}
             />
@@ -106,13 +106,13 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
         </Card>
 
         <Card
-          className="p-6! cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
+          className="p-6! cursor-pointer hover:border-token-accent-brand transition-all active:scale-[0.98]"
           onClick={fetchInsights}
           title="Haz clic para actualizar insights"
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-red-500/10 rounded-sm border border-red-500/20">
-              <ExclamationTriangleIcon className="w-6 h-6 text-sap-error" />
+              <ExclamationTriangleIcon className="w-6 h-6 text-token-status-error" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest leading-none mb-1">
@@ -129,20 +129,20 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
         </Card>
 
         <Card
-          className="p-6! cursor-pointer hover:border-sap-blue transition-all active:scale-[0.98]"
+          className="p-6! cursor-pointer hover:border-token-accent-brand transition-all active:scale-[0.98]"
           onClick={fetchInsights}
           title="Haz clic para actualizar insights"
         >
           <div className="flex items-center gap-4">
             <div className="p-3 bg-emerald-500/10 rounded-sm border border-emerald-500/20">
-              <CheckCircleIcon className="w-6 h-6 text-sap-success" />
+              <CheckCircleIcon className="w-6 h-6 text-token-status-success" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest leading-none mb-1">
                 Security Tone
               </p>
               <p
-                className={`text-xl font-black ${stats.criticalAlertsCount === 0 ? "text-sap-success" : "text-sap-warning"}`}
+                className={`text-xl font-black ${stats.criticalAlertsCount === 0 ? "text-token-status-success" : "text-token-status-warning"}`}
               >
                 {stats.criticalAlertsCount === 0 ? "OPTIMO" : "NIVEL ALERTA"}
               </p>
@@ -220,8 +220,8 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
                       <span
                         className={`font-black uppercase tracking-tighter text-[10px] px-2 py-1 rounded-sm ${
                           log.outcome === "SUCCESS"
-                            ? "bg-sap-success/10 text-sap-success"
-                            : "bg-sap-error/10 text-sap-error"
+                            ? "bg-token-status-success/10 text-token-status-success"
+                            : "bg-token-status-error/10 text-token-status-error"
                         }`}
                       >
                         {log.outcome}

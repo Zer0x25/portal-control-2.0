@@ -47,7 +47,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
     <div className="w-full py-6 flex flex-col items-center justify-center text-token-text-tertiary">
       {isFetchingNextPage ? (
         <div className="flex items-center gap-2">
-          <ArrowPathIcon className="w-5 h-5 animate-spin text-sap-blue" />
+          <ArrowPathIcon className="w-5 h-5 animate-spin text-token-accent-brand" />
           <span className="text-xs font-black uppercase tracking-widest">
             Cargando más registros...
           </span>

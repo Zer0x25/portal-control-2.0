@@ -80,7 +80,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
             <h3 className="text-xl font-black text-token-text-primary uppercase tracking-tight leading-none">
               Panel de Parámetros Globales
             </h3>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-sap-blue mt-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-accent-brand mt-2">
               AJUSTES MAESTROS DE LÓGICA OPERATIVA
             </p>
           </div>
@@ -100,7 +100,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {/* Horas Semanales */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-sap-blue rounded-sm"></div>
+              <div className="w-1 h-6 bg-token-accent-brand rounded-sm"></div>
               <div>
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Jornada Laboral
@@ -123,7 +123,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
               />
               <Button
                 onClick={handleSaveGlobalMaxHours}
-                className="w-full h-11 rounded-md bg-sap-blue text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-sap-blue/20 hover:shadow-sap-blue/30"
+                className="w-full h-11 rounded-md bg-token-accent-brand text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-token-accent-brand/20 hover:shadow-token-accent-brand/30"
               >
                 ACTUALIZAR LÓGICA DE JORNADA
               </Button>
@@ -159,7 +159,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                 <Button
                   onClick={handleAddArea}
                   aria-label="Agregar nuevo departamento o área"
-                  className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-sap-blue text-white shadow-lg shadow-sap-blue/20 p-0 shrink-0"
+                  className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-token-accent-brand text-white shadow-lg shadow-token-accent-brand/20 p-0 shrink-0"
                 >
                   <PlusCircleIcon className="w-6 h-6" />
                 </Button>
@@ -424,7 +424,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                   <Button
                     onClick={handleUploadPolicy}
                     disabled={!policyFile || isUploadingPolicy}
-                    className="h-10 px-4 bg-sap-blue text-white font-black uppercase tracking-widest text-[10px] rounded-sm"
+                    className="h-10 px-4 bg-token-accent-brand text-white font-black uppercase tracking-widest text-[10px] rounded-sm"
                   >
                     <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
                     {isUploadingPolicy ? "Subiendo..." : "Publicar Reglamento"}
@@ -455,7 +455,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {currentUser?.role === "Administrador" && (
             <section className="space-y-6 lg:col-span-2">
               <div className="flex items-center gap-3">
-                <div className="w-1 h-6 bg-sap-blue rounded-sm"></div>
+                <div className="w-1 h-6 bg-token-accent-brand rounded-sm"></div>
                 <div>
                   <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                     Marca / Logo
@@ -505,7 +505,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                     <Button
                       onClick={handleUploadLogo}
                       disabled={!logoFile || isUploadingLogo}
-                      className="h-10 px-4 bg-sap-blue text-white font-black uppercase tracking-widest text-[10px] rounded-sm"
+                      className="h-10 px-4 bg-token-accent-brand text-white font-black uppercase tracking-widest text-[10px] rounded-sm"
                     >
                       {isUploadingLogo ? "Subiendo..." : "Publicar logo"}
                     </Button>

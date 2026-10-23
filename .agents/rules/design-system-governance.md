@@ -100,17 +100,26 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 ## 7. Auditoría, Certificación de Primitivas y Paridad de Guardrails
 
 - **Paridad Estricta de Archivos Certificados (`CERTIFIED_FILES`)**:
+  - `frontend/design-system-certified.json` es la fuente única de la lista. El audit y `designSystemGuardrails.test.ts` la leen; no se mantiene una segunda lista.
+  - Cada archivo certificado tiene una historia CSF3 en `src/**/*.stories.tsx`; el guardrail comprueba que todas existan y que el código de producción no importe runtime de Storybook.
+  - `frontend/src/features/design-system/certifiedStoryManifest.ts` se genera con `npm run catalog:manifest`; contiene metadatos estáticos de tokens, variantes y props. Enriquecer la certificación en el JSON, no editando el manifiesto generado.
+  - Usa `npm run storybook` para el playground, `npm run storybook:build` para compilar y `npm run storybook:visual` para comparar los snapshots de primitivas en claro/oscuro. `npm run storybook:visual:update` actualiza los baselines de forma explícita.
   - Toda primitiva atómica o de layout en `src/components/ui/` (ej. `Button.tsx`, `Container.tsx`, `Card.tsx`, `Input.tsx`, `Badge.tsx`) y shells de layout (`src/components/layout/`) debe estar registrada obligatoriamente en la lista de archivos certificados de **ambos** mecanismos de control:
     1. El script auditor CLI: `frontend/scripts/audit-design-system.cjs`.
     2. La suite de pruebas de guardrails: `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`.
-  - Prohibido agregar o remover componentes de una lista sin replicarlo exactamente en la otra.
+  - Prohibido agregar o remover componentes certificados sin actualizar esa fuente única.
 - **Presupuesto Monótono en Cero (`design-system-budget.json`)**:
   - El presupuesto de desvíos (`totalIssuesBudget`) se encuentra fijado en `0`. Ningún cambio puede elevar este valor.
+  - Los ratchets `sapTokenBudget` y `orphanTokenBudget` solo decrecen. `sapTokenBudget` queda bloqueado en `0`; los huérfanos de una escala protegida no autorizan a retirar miembros sueltos.
   - Al certificar nuevos componentes o migrar vistas, actualizar el recuento ejecutando `node scripts/audit-design-system.cjs --update` y validar con `npm run test:guardrails`.
 
 ---
 
 ## 8. Estandarización de Vistas (.view.tsx), Guardrails y Mocking en Tests
+
+- **Pipeline de tokens**: `frontend/tokens.json` es la fuente de verdad para el par de nombre público `token` y variable subyacente `cssVar`, junto a sus valores claro/oscuro. Regenerar con `npm run tokens:build` y comprobar con `npm run tokens:check`; no editar a mano las regiones `@tokens:theme` y `@tokens:vars` de `src/index.css`.
+- **Playground externo**: Storybook es una herramienta de desarrollo. Mantener sus imports fuera del runtime de `src/`; las stories usan imports de tipo para `Meta` y `StoryObj`. Las variables de preview permiten revisar los temas y las densidades sin añadir un runtime al bundle de la aplicación. `PORTAL_SKIP_PWA=1` omite el service worker y el precache del plugin PWA durante la compilación del catálogo.
+- **Escalas de tokens**: `status-*` y `chart-1..8` están protegidas por los guardrails de contraste. Si una escala tiene consumidores, conservarla completa; las clases construidas por interpolación no cuentan como consumidores ni se generan en Tailwind v4.
 
 - **Envoltorio Canónico Obligatorio en Vistas**:
   - Todo archivo de vista (`*.view.tsx`) debe envolver su JSX principal en el componente `Container`:

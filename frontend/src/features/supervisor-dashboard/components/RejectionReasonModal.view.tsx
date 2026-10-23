@@ -79,7 +79,7 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="p-2 rounded-sm text-token-text-tertiary hover:text-sap-blue hover:bg-sap-blue/10 transition-all disabled:opacity-30"
+              className="p-2 rounded-sm text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 transition-all disabled:opacity-30"
               aria-label="Cerrar modal"
             >
               <CloseIcon className="w-5 h-5" />
@@ -102,7 +102,7 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
                 disabled={isSubmitting}
                 aria-invalid={reasonError ? "true" : undefined}
                 aria-describedby={reasonError ? reasonErrorId : undefined}
-                className={`block w-full px-4 py-3 border ${reasonError ? "border-token-status-error" : "border-token-border-technical"} rounded-sm shadow-sm bg-token-surface-stripe text-token-text-primary focus:ring-1 focus:ring-sap-blue focus:border-sap-blue text-[13px] disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all placeholder:text-token-text-tertiary placeholder:opacity-50`}
+                className={`block w-full px-4 py-3 border ${reasonError ? "border-token-status-error" : "border-token-border-technical"} rounded-sm shadow-sm bg-token-surface-stripe text-token-text-primary focus:ring-1 focus:ring-token-accent-brand focus:border-token-accent-brand text-[13px] disabled:opacity-50 disabled:cursor-not-allowed resize-none transition-all placeholder:text-token-text-tertiary placeholder:opacity-50`}
                 placeholder="Detalle el motivo del rechazo para el registro de auditoría..."
                 required
               />

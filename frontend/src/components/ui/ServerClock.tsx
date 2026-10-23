@@ -16,7 +16,7 @@ interface ServerClockProps {
 const ServerClock: React.FC<ServerClockProps> = ({
   showDate = true,
   dateClassName = "font-black text-xs text-token-text-secondary",
-  timeClassName = "text-5xl md:text-7xl text-sap-blue dark:text-sap-light-blue",
+  timeClassName = "text-5xl md:text-7xl text-token-accent-brand",
   containerClassName = "flex flex-col items-center justify-center p-6 bg-token-surface-card md:bg-white/5 md:backdrop-blur-xl rounded-[2.5rem] border border-token-border-subtle md:border-white/10",
 }) => {
   const currentDateTime = useBusinessNow();

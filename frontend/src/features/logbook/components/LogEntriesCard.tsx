@@ -94,7 +94,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                     variant="primary"
                     size="sm"
                     fontMono
-                    className="bg-sap-blue/10 text-sap-blue border-sap-blue/20"
+                    className="bg-token-accent-brand/10 text-token-accent-brand border-token-accent-brand/20"
                   >
                     {le.time}
                   </Badge>
@@ -102,7 +102,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => openEditLogEntryModal(le)}
-                    className="p-2 rounded-sm text-token-text-tertiary hover:text-sap-blue hover:bg-sap-blue/10 transition-colors"
+                    className="p-2 rounded-sm text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 transition-colors"
                   >
                     <EditIcon className="w-3.5 h-3.5" />
                   </button>
@@ -156,8 +156,8 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
           </thead>
           <tbody className="divide-y divide-token-border-subtle">
             {activeShift.logEntries.map((le) => (
-              <tr key={le.id} className="group hover:bg-sap-blue/2 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-[13px] font-bold text-sap-blue font-mono w-24">
+              <tr key={le.id} className="group hover:bg-token-accent-brand/2 transition-colors">
+                <td className="px-6 py-4 whitespace-nowrap text-[13px] font-bold text-token-accent-brand font-mono w-24">
                   {le.time}
                 </td>
                 <td className="px-6 py-4 text-[13px] text-token-text-primary font-semibold leading-relaxed">
@@ -167,7 +167,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
                     <button
                       onClick={() => openEditLogEntryModal(le)}
-                      className="p-2 rounded-sm text-token-text-tertiary hover:text-sap-blue hover:bg-sap-blue/10 transition-colors"
+                      className="p-2 rounded-sm text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 transition-colors"
                       title="Editar Novedad"
                     >
                       <EditIcon className="w-4 h-4" />
@@ -204,7 +204,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
       <Card className="p-0! flex flex-col overflow-hidden bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm relative">
         <div className="p-6 pb-0 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-1 h-8 bg-sap-blue rounded-full" />
+            <div className="w-1 h-8 bg-token-accent-brand rounded-full" />
             <div>
               <h3 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
                 Bitácora de Novedades
@@ -220,7 +220,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
               onClick={() => setShowLogEntryModal(true)}
               variant="primary"
               size="sm"
-              className="px-6 py-2.5 bg-sap-blue text-white font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-sap-blue/10"
+              className="px-6 py-2.5 bg-token-accent-brand text-white font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-token-accent-brand/10"
             >
               <PlusCircleIcon className="w-4 h-4" />
               Ingresar Novedad

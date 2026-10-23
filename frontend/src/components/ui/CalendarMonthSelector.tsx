@@ -42,10 +42,12 @@ const YearPicker: React.FC<{
   return (
     <div className="flex flex-col gap-3">
       <div className="flex justify-between items-center pr-1">
-        <p className="text-xxs font-bold uppercase tracking-widest text-sap-blue pl-1">Años</p>
+        <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
+          Años
+        </p>
         <button
           onClick={onGoToToday}
-          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-sap-blue transition-colors flex items-center gap-1 group/today"
+          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
         >
           <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
           Actual
@@ -63,8 +65,8 @@ const YearPicker: React.FC<{
                 px-5 py-1.5 rounded-sm text-[11px] font-bold transition-all border
                 ${
                   isSelected
-                    ? "bg-sap-blue text-white border-sap-blue shadow-sm"
-                    : "bg-token-surface-stripe text-token-text-secondary border-token-border-subtle hover:border-sap-blue lg:hover:shadow-sm"
+                    ? "bg-token-accent-brand text-white border-token-accent-brand shadow-sm"
+                    : "bg-token-surface-stripe text-token-text-secondary border-token-border-subtle hover:border-token-accent-brand lg:hover:shadow-sm"
                 }
               `}
             >
@@ -105,7 +107,7 @@ const MonthPicker: React.FC<{
               className={`px-2 py-2 rounded-sm text-xxs font-bold capitalize tracking-wider transition-all border ${
                 isSelected
                   ? "bg-indigo-700 text-white border-indigo-700 shadow-sm"
-                  : "bg-token-surface-card text-token-text-secondary border-token-border-subtle hover:border-sap-blue"
+                  : "bg-token-surface-card text-token-text-secondary border-token-border-subtle hover:border-token-accent-brand"
               }`}
             >
               {format(m, "MMM", { locale: es })}
@@ -163,7 +165,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
           onClick={() => setIsOpen(!isOpen)}
           className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center cursor-pointer hover:bg-token-surface-active transition-colors group/text py-1 rounded-sm"
         >
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-sap-blue">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-token-accent-brand">
             {label}
           </p>
           <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap flex items-center gap-2">

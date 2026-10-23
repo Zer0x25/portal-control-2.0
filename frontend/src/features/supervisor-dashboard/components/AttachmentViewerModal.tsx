@@ -41,7 +41,7 @@ const AttachmentViewerModal: React.FC<AttachmentViewerModalProps> = ({
       >
         <div className="flex justify-between items-center p-5 border-b border-token-border-technical bg-token-surface-stripe shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-1 h-5 bg-sap-blue rounded-full" />
+            <div className="w-1 h-5 bg-token-accent-brand rounded-full" />
             <h3
               id="attachment-modal-title"
               className="text-[13px] font-bold text-token-text-primary uppercase tracking-widest truncate max-w-md"
@@ -53,14 +53,14 @@ const AttachmentViewerModal: React.FC<AttachmentViewerModalProps> = ({
             <a
               href={attachment.data}
               download={attachment.filename}
-              className="inline-flex items-center px-4 py-2 bg-sap-blue hover:brightness-110 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-md transition-all active:scale-95"
+              className="inline-flex items-center px-4 py-2 bg-token-accent-brand hover:brightness-110 text-white text-[11px] font-bold uppercase tracking-widest rounded-sm shadow-md transition-all active:scale-95"
             >
               <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
               Descargar
             </a>
             <button
               onClick={onClose}
-              className="p-2 text-token-text-tertiary hover:text-sap-blue hover:bg-sap-blue/10 rounded-sm transition-all"
+              className="p-2 text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 rounded-sm transition-all"
               aria-label="Cerrar modal"
             >
               <CloseIcon className="w-5 h-5" />

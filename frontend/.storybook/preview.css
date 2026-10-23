@@ -1,0 +1,11 @@
+html[data-story-density="compact"] {
+  --spacing: 0.2rem;
+}
+
+html[data-story-density="standard"] {
+  --spacing: 0.25rem;
+}
+
+html[data-story-density="spacious"] {
+  --spacing: 0.3rem;
+}

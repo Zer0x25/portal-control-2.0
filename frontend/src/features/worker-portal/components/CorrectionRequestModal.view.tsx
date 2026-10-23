@@ -88,14 +88,14 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
       >
         <div className="p-8 pb-4 flex justify-between items-start">
           <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-sap-blue/10 flex items-center justify-center text-sap-blue">
+            <div className="w-12 h-12 rounded-2xl bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand">
               <EditIcon className="w-6 h-6" />
             </div>
             <div>
               <h3 className="text-xl font-black text-token-text-primary uppercase italic tracking-tighter">
                 Solicitud de Corrección
               </h3>
-              <p className="text-[10px] font-black text-sap-blue uppercase tracking-[0.3em] mt-1">
+              <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.3em] mt-1">
                 Rectificación de Marcaje
               </p>
             </div>
@@ -112,9 +112,9 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
         </div>
 
         <form {...formProps} className="p-8 pt-4 space-y-6">
-          <div className="p-5 rounded-2xl bg-sap-blue/5 border border-sap-blue/10">
+          <div className="p-5 rounded-2xl bg-token-accent-brand/5 border border-token-accent-brand/10">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-black text-sap-blue uppercase tracking-widest">
+              <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
                 Campo a corregir
               </span>
               <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
@@ -139,7 +139,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
               max={maxRequestedValue}
               onChange={(e) => onRequestedValueChange(e.target.value)}
               error={requestedValueError}
-              className="rounded-md border-token-border-technical focus:ring-sap-blue"
+              className="rounded-md border-token-border-technical focus:ring-token-accent-brand"
             />
 
             <div className="space-y-2">
@@ -156,7 +156,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
                 rows={3}
                 aria-invalid={reasonError ? "true" : undefined}
                 aria-describedby={reasonError ? "correction-reason-error" : undefined}
-                className={`w-full p-4 rounded-md bg-token-surface-stripe text-sm font-medium focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary border ${
+                className={`w-full p-4 rounded-md bg-token-surface-stripe text-sm font-medium focus:ring-2 focus:ring-token-accent-brand outline-none transition-all text-token-text-primary border ${
                   reasonError ? "border-token-status-error" : "border-token-border-technical"
                 }`}
                 placeholder="Explique brevemente por qué requiere este cambio..."
@@ -175,14 +175,14 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
               <label className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest pl-1">
                 Justificativo Adjunto
               </label>
-              <label className="relative flex flex-col items-center justify-center h-32 w-full p-4 border-2 border-dashed border-token-border-technical rounded-md hover:bg-sap-blue/5 hover:border-sap-blue/30 transition-all cursor-pointer group">
+              <label className="relative flex flex-col items-center justify-center h-32 w-full p-4 border-2 border-dashed border-token-border-technical rounded-md hover:bg-token-accent-brand/5 hover:border-token-accent-brand/30 transition-all cursor-pointer group">
                 <input
                   type="file"
                   className="sr-only"
                   onChange={onFileChange}
                   accept="image/*,.pdf"
                 />
-                <DocumentArrowUpIcon className="w-8 h-8 text-token-text-tertiary group-hover:text-sap-blue transition-colors mb-2" />
+                <DocumentArrowUpIcon className="w-8 h-8 text-token-text-tertiary group-hover:text-token-accent-brand transition-colors mb-2" />
                 <span className="text-xs font-black text-token-text-secondary group-hover:text-token-text-primary uppercase tracking-tighter">
                   {attachmentLabel}
                 </span>

@@ -84,7 +84,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
         </div>
 
         <div className="space-y-2">
-          <p className="text-[10px] font-black text-sap-blue uppercase tracking-[0.2em] px-1 italic">
+          <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.2em] px-1 italic">
             Seleccione Nueva Hora
           </p>
           <Input

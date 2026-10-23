@@ -74,9 +74,9 @@ const EmployeeFormView: React.FC<EmployeeFormViewProps> = ({
       <form {...formProps} className="space-y-6">
         {!isEditing && (
           <div className="flex justify-end mb-4">
-            <div className="px-4 py-2 bg-sap-blue/5 dark:bg-sap-blue/10 rounded-md border border-sap-blue/20 flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-sap-blue" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sap-blue">
+            <div className="px-4 py-2 bg-token-accent-brand/5 dark:bg-token-accent-brand/10 rounded-md border border-token-accent-brand/20 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-token-accent-brand">
                 ID ASIGNADO:{" "}
                 <span className="text-token-text-primary ml-1 font-mono">
                   #{nextEmployeeId || "..."}
@@ -199,7 +199,7 @@ const EmployeeFormView: React.FC<EmployeeFormViewProps> = ({
                 onChange={(checked) => setValue("createUserAccount", checked)}
               />
               <div className="ml-4 flex-1">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-primary transition-colors group-hover:text-sap-blue">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-primary transition-colors group-hover:text-token-accent-brand">
                   {isEditing
                     ? "Generar Cuenta de Acceso Asociada"
                     : "Crear Cuenta Electrónica para este Empleado"}

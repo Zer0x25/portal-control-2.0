@@ -71,8 +71,8 @@ const AddNoveltyModalView: React.FC<AddNoveltyModalViewProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-4">
-          <div className="bg-sap-blue/10 dark:bg-sap-blue/20 p-2.5 rounded-xl">
-            <BookOpenIcon className="w-5 h-5 text-sap-blue dark:text-sap-light-blue" />
+          <div className="bg-token-accent-brand/10 dark:bg-token-accent-brand/20 p-2.5 rounded-xl">
+            <BookOpenIcon className="w-5 h-5 text-token-accent-brand" />
           </div>
           <div>
             <h3 className="text-lg font-black text-token-text-primary tracking-tight uppercase">
@@ -167,7 +167,7 @@ const AddNoveltyModalView: React.FC<AddNoveltyModalViewProps> = ({
         onClose={closeTimePicker}
         onSave={handleTimeChange}
         initialTime={values.time}
-        accentColor="sap-blue"
+        accentColor="token-accent-brand"
       />
     </CinematicModal>
   );

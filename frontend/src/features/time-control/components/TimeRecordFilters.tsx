@@ -87,7 +87,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary block mb-0.5">
               Periodo Actual
             </span>
-            <div className="text-[11px] text-sap-blue font-black uppercase tracking-tight">
+            <div className="text-[11px] text-token-accent-brand font-black uppercase tracking-tight">
               {periodDisplayText}
             </div>
           </div>
@@ -107,7 +107,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
           className={`grid transition-[grid-template-rows,opacity] duration-300 ${!isExpanded && isMobile ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
         >
           <div className="overflow-hidden">
-            <div className="text-xs text-sap-blue dark:text-sap-light-blue font-bold mt-2 pt-2 border-t border-token-border-subtle capitalize">
+            <div className="text-xs text-token-accent-brand font-bold mt-2 pt-2 border-t border-token-border-subtle capitalize">
               {periodDisplayText}
             </div>
           </div>
@@ -133,7 +133,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
                     name="workdayType"
                     value={clientFilters.workdayType}
                     onChange={(e) => onClientFilterChange({ workdayType: e.target.value })}
-                    className="block w-full px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-1 focus:ring-sap-blue focus:border-sap-blue text-[11px] font-black uppercase tracking-tight text-token-text-primary transition-all h-10"
+                    className="block w-full px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-1 focus:ring-token-accent-brand focus:border-token-accent-brand text-[11px] font-black uppercase tracking-tight text-token-text-primary transition-all h-10"
                   >
                     <option value="">TODOS LOS TIPOS</option>
                     {availableWorkdayTypes.map((type: string) => (
@@ -157,7 +157,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
                     name="area"
                     value={clientFilters.area}
                     onChange={(e) => onClientFilterChange({ area: e.target.value })}
-                    className="block w-full px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-1 focus:ring-sap-blue focus:border-sap-blue text-[11px] font-black uppercase tracking-tight text-token-text-primary transition-all h-10"
+                    className="block w-full px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-1 focus:ring-token-accent-brand focus:border-token-accent-brand text-[11px] font-black uppercase tracking-tight text-token-text-primary transition-all h-10"
                   >
                     <option value="">TODAS LAS ÁREAS</option>
                     {availableAreas.map((area: string) => (
@@ -181,7 +181,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
                     name="status"
                     value={clientFilters.status}
                     onChange={(e) => onClientFilterChange({ status: e.target.value })}
-                    className="block w-full px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-1 focus:ring-sap-blue focus:border-sap-blue text-[11px] font-black uppercase tracking-tight text-token-text-primary transition-all h-10"
+                    className="block w-full px-4 py-2 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-1 focus:ring-token-accent-brand focus:border-token-accent-brand text-[11px] font-black uppercase tracking-tight text-token-text-primary transition-all h-10"
                   >
                     <option value="">TODOS LOS ESTADOS</option>
                     {availableStatuses.map((status: string) => (
@@ -205,7 +205,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
                         className={`flex-1 min-w-[60px] h-full px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-300
                               ${
                                 activeQuickFilter === p
-                                  ? "bg-sap-blue text-white shadow-sm"
+                                  ? "bg-token-accent-brand text-token-text-onAccent shadow-sm"
                                   : "text-token-text-secondary hover:text-token-text-primary hover:bg-token-surface-hover"
                               }
                             `}

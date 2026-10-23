@@ -122,8 +122,8 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
       {/* Search Header and Period Presets */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-token-border-subtle pb-6 gap-6">
         <div className="space-y-1">
-          <h2 className="text-[11px] font-black text-sap-blue uppercase tracking-[0.2em] flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-sap-blue animate-pulse" />
+          <h2 className="text-[11px] font-black text-token-accent-brand uppercase tracking-[0.2em] flex items-center gap-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand animate-pulse" />
             Extracción Documental Parametrizada
           </h2>
           <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest ml-4.5 opacity-60">
@@ -138,7 +138,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
               onClick={() => setPeriodMode(mode)}
               className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm ${
                 periodMode === mode
-                  ? "bg-sap-blue text-white shadow-sm"
+                  ? "bg-token-accent-brand text-white shadow-sm"
                   : "text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-active"
               }`}
             >
@@ -157,7 +157,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           {periodMode === "month" ? (
             <AuditMonthSelector currentDate={activeDate} onChange={setActiveDate} />
           ) : periodMode === "custom" ? (
-            <div className="flex items-end gap-4 bg-token-surface-card p-5 rounded-sm border border-sap-blue/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
+            <div className="flex items-end gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
                   Inicio
@@ -166,7 +166,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-sap-blue outline-none transition-all uppercase"
+                  className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
                 />
               </div>
               <div className="space-y-1.5">
@@ -177,13 +177,13 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-sap-blue outline-none transition-all uppercase"
+                  className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
                 />
               </div>
             </div>
           ) : (
-            <div className="bg-sap-blue/3 border border-sap-blue/10 p-5 rounded-sm flex flex-col justify-center min-w-[200px] h-[78px] animate-in fade-in duration-500">
-              <span className="text-[10px] font-black text-sap-blue uppercase tracking-widest opacity-60">
+            <div className="bg-token-accent-brand/3 border border-token-accent-brand/10 p-5 rounded-sm flex flex-col justify-center min-w-[200px] h-[78px] animate-in fade-in duration-500">
+              <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest opacity-60">
                 Segmento Automático
               </span>
               <span className="text-[13px] font-bold text-token-text-primary uppercase mt-1">
@@ -200,13 +200,13 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
             <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
               Tipo de Jornada
             </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-sap-blue opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
+            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <FunnelIcon className="w-4 h-4" />
             </div>
             <select
               value={selectedWorkdayType}
               onChange={(e) => setSelectedWorkdayType(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-sap-blue outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
             >
               <option value="">Todas las Jornadas</option>
               {availableWorkdayTypes.map((t) => (
@@ -221,13 +221,13 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
             <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
               Ubicación / Área
             </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-sap-blue opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
+            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <MapPinIcon className="w-4 h-4" />
             </div>
             <select
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-sap-blue outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
+              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
             >
               <option value="">Todas las Áreas</option>
               {availableAreas.map((a) => (
@@ -242,13 +242,13 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
             <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
               Colaborador Específico
             </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-sap-blue opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
+            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <UsersIcon className="w-4 h-4" />
             </div>
             <select
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-sap-blue outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
+              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
             >
               <option value="">Resumen de Equipo (General)</option>
               {employeesForEmployeeDropdown.map((e) => (
@@ -266,7 +266,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
         <button
           onClick={onGenerate}
           disabled={isLoading}
-          className={`group relative flex items-center gap-3 bg-sap-blue text-white px-10 py-4 rounded-sm font-black text-[12px] uppercase tracking-[0.15em] shadow-lg shadow-sap-blue/20 hover:bg-sap-blue/90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none`}
+          className={`group relative flex items-center gap-3 bg-token-accent-brand text-white px-10 py-4 rounded-sm font-black text-[12px] uppercase tracking-[0.15em] shadow-lg shadow-token-accent-brand/20 hover:bg-token-accent-brand/90 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none`}
         >
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />
           {isLoading ? (

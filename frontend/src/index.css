@@ -13,18 +13,7 @@
   --breakpoint-2xl: 1536px;
   --breakpoint-3xl: 1920px;
 
-  --color-sap-blue: var(--accent-professional);
-  --color-sap-light-blue: #007bff;
-  --color-sap-gray: var(--surface-app);
-  --color-sap-bone: var(--surface-card);
-  --color-sap-dark-gray: #343a40;
-  --color-sap-medium-gray: #6c757d;
-  --color-sap-border: var(--border-technical);
-  --color-sap-success: var(--status-success);
-  --color-sap-error: var(--status-error);
-  --color-sap-warning: var(--status-warning);
-  --color-sap-info: var(--status-info);
-
+  /* @tokens:theme:start */
   --color-token-surface-app: var(--surface-app);
   --color-token-surface-card: var(--surface-card);
   --color-token-surface-header: var(--surface-header);
@@ -33,16 +22,13 @@
   --color-token-surface-active: var(--surface-active);
   --color-token-surface-stripe: var(--surface-stripe);
   --color-token-surface-technical: var(--surface-technical);
-
   --color-token-border-technical: var(--border-technical);
   --color-token-border-subtle: var(--border-subtle);
   --color-token-border-focus: var(--border-focus);
-
   --color-token-text-primary: var(--text-primary);
   --color-token-text-secondary: var(--text-secondary);
   --color-token-text-tertiary: var(--text-tertiary);
   --color-token-text-onAccent: var(--text-on-accent);
-
   --color-token-status-success: var(--status-success);
   --color-token-status-error: var(--status-error);
   --color-token-status-error-text: var(--status-error-text);
@@ -110,6 +96,7 @@
   --color-token-accent-brand: var(--accent-professional);
   --color-token-sidebar-text-active: var(--sidebar-text-active);
   --color-token-sidebar-item-hover: var(--sidebar-item-hover);
+  /* @tokens:theme:end */
 
   --font-sans: Inter, system-ui, sans-serif;
   --font-mono: "Roboto Mono", monospace;
@@ -378,7 +365,9 @@
   :root {
     font-size: 14px;
     /* Default for Notebooks/Laptops */
-
+  }
+  /* @tokens:vars:start */
+  :root {
     /* Shared Design Tokens */
     --surface-app: #f0f2f5;
     --surface-card: #fdfbf7;
@@ -402,7 +391,6 @@
     --text-tertiary: #5b6b7f;
     --text-on-accent: #ffffff;
 
-    /* State Colors - Reverted to HEX for solid visibility */
     --status-success: #10b981; /* emerald-500 */
     --status-error: #ef4444; /* red-500 */
     --status-error-text: #b91c1c; /* red-700 (accessible high contrast in light mode) */
@@ -556,6 +544,7 @@
 
     --accent-professional: #38bdf8;
   }
+  /* @tokens:vars:end */
 
   /* Global Typography and Contrast */
   body {

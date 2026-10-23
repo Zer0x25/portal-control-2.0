@@ -21,7 +21,7 @@ const TopLoadingBarView: React.FC<TopLoadingBarViewProps> = ({
       className={`fixed top-0 left-0 right-0 ${Z.toast} h-[2px] bg-transparent pointer-events-none`}
     >
       <div
-        className="h-full bg-linear-to-r from-transparent via-sap-blue to-indigo-400 shadow-[0_0_15px_rgba(0,143,211,0.8),0_0_5px_rgba(255,255,255,0.5)] transition-[width,opacity] duration-300 ease-out"
+        className="h-full bg-linear-to-r from-transparent via-token-accent-brand to-indigo-400 shadow-[0_0_15px_rgba(0,143,211,0.8),0_0_5px_rgba(255,255,255,0.5)] transition-[width,opacity] duration-300 ease-out"
         style={{
           width: `${loadingProgress}%`,
           opacity: isGlobalLoading ? 1 : 0,

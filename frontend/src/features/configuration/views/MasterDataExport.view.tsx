@@ -84,12 +84,12 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                   type="button"
                   variant="none"
                   onClick={() => setIsStartDatePickerOpen(true)}
-                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
+                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-token-accent-brand outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
                 >
                   <span className="font-medium text-token-text-primary">
                     {startDate ? formatBusinessDate(startDate) : "Seleccionar"}
                   </span>
-                  <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
+                  <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-40" />
                 </Button>
                 <DatePickerDialog
                   isOpen={isStartDatePickerOpen}
@@ -116,12 +116,12 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                   type="button"
                   variant="none"
                   onClick={() => setIsEndDatePickerOpen(true)}
-                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-sap-blue outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
+                  className="w-full px-4 py-3 bg-token-surface-card border border-token-border-technical rounded-md focus:ring-2 focus:ring-token-accent-brand outline-none transition-all text-token-text-primary text-left flex justify-between items-center text-sm cursor-pointer hover:bg-token-surface-hover"
                 >
                   <span className="font-medium text-token-text-primary">
                     {endDate ? formatBusinessDate(endDate) : "Seleccionar"}
                   </span>
-                  <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
+                  <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-40" />
                 </Button>
                 <DatePickerDialog
                   isOpen={isEndDatePickerOpen}

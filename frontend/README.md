@@ -62,6 +62,45 @@ npm run guardrails
 - Guardrails de separación `view` para perímetros auditados.
 - Congelamiento de vistas auditadas sin `ReturnType<typeof useX>`.
 
+## Design system
+
+`tokens.json` es la fuente de verdad de los tokens semánticos. Desde este
+directorio:
+
+```bash
+npm run tokens:build
+npm run tokens:check
+npm run audit:design-system
+```
+
+`tokens:build` regenera las regiones declaradas de `src/index.css` y los tipos
+de `src/types/tokens.ts`. `tokens:check` detecta diferencias y el audit aplica
+los ratchets de `sap-*` y de tokens sin consumidores. El formato y las reglas
+para productores como Tokens Studio están en [`tokens/README.md`](tokens/README.md).
+
+### Catálogo Storybook
+
+Storybook documenta las entradas de `design-system-certified.json` en
+aislamiento, con controles de props, tema claro/oscuro y tres densidades de
+espaciado. El catálogo de la app enlaza esas historias mediante el manifiesto
+tipado generado desde la misma lista certificada.
+
+```bash
+npm run catalog:manifest       # Regenera src/features/design-system/certifiedStoryManifest.ts
+npm run catalog:manifest:check # Comprueba que el manifiesto esté sincronizado
+npm run storybook               # Abre http://127.0.0.1:6006
+npm run storybook:build         # Compila las 68 historias
+npm run storybook:visual:update # Actualiza los snapshots claro/oscuro
+npm run storybook:visual        # Compara snapshots con el baseline
+```
+
+El enlace publicado se configura con `VITE_STORYBOOK_URL`. Storybook reutiliza
+el Vite principal para React y Tailwind; al compilar el catálogo se desactiva
+el plugin PWA, que solo pertenece al bundle de la aplicación. Los snapshots
+de `src/components/ui/` se guardan junto a la suite visual de Playwright. El
+ratchet de tokens no considera las stories consumidores para no ocultar
+tokens huérfanos.
+
 ## Documentacion oficial
 
 La documentacion consolidada del proyecto vive en la raiz `docs/`.

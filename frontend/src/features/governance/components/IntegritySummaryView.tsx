@@ -94,7 +94,9 @@ const IntegritySummaryView: React.FC = () => {
           title="Salud de Datos"
           icon={
             <ShieldCheckIcon
-              className={status?.status === "ok" ? "text-sap-success" : "text-sap-error"}
+              className={
+                status?.status === "ok" ? "text-token-status-success" : "text-token-status-error"
+              }
             />
           }
         >
@@ -113,7 +115,7 @@ const IntegritySummaryView: React.FC = () => {
         <MetricCard
           kind="panel"
           title="Carga Operativa"
-          icon={<CircleStackIcon className="text-sap-blue" />}
+          icon={<CircleStackIcon className="text-token-accent-brand" />}
         >
           <MetricStat
             label="Registros Verificados"
@@ -132,7 +134,7 @@ const IntegritySummaryView: React.FC = () => {
             <FingerPrintIcon
               className={
                 status?.lastBrokenCount && status.lastBrokenCount > 0
-                  ? "text-sap-error"
+                  ? "text-token-status-error"
                   : "text-token-text-tertiary"
               }
             />
@@ -154,7 +156,7 @@ const IntegritySummaryView: React.FC = () => {
         <MetricCard
           kind="panel"
           title="Mantenimiento Digital"
-          icon={<ArrowPathIcon className="text-sap-warning" />}
+          icon={<ArrowPathIcon className="text-token-status-warning" />}
         >
           <MetricStat
             label="Último Backfill"
@@ -224,7 +226,7 @@ const IntegritySummaryView: React.FC = () => {
         <Card ref={tableRef} className="lg:col-span-2 p-0! overflow-hidden" noPadding>
           <div className="p-4 bg-token-surface-stripe border-b token-border-technical flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ExclamationTriangleIcon className="w-4 h-4 text-sap-error" />
+              <ExclamationTriangleIcon className="w-4 h-4 text-token-status-error" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-token-text-secondary">
                 Alertas de Integridad Detectadas (Últimos 50 eventos)
               </span>
@@ -243,12 +245,12 @@ const IntegritySummaryView: React.FC = () => {
 
       {/* Extra Info Banner */}
       {status?.status === "degraded" && (
-        <div className="p-5 bg-sap-error/5 border border-sap-error/20 rounded-sm flex items-start gap-4 animate-in fade-in zoom-in-95">
-          <div className="p-2 bg-sap-error/10 rounded-full">
-            <ExclamationTriangleIcon className="w-5 h-5 text-sap-error" />
+        <div className="p-5 bg-token-status-error/5 border border-token-status-error/20 rounded-sm flex items-start gap-4 animate-in fade-in zoom-in-95">
+          <div className="p-2 bg-token-status-error/10 rounded-full">
+            <ExclamationTriangleIcon className="w-5 h-5 text-token-status-error" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-sap-error uppercase tracking-tight">
+            <h4 className="text-sm font-bold text-token-status-error uppercase tracking-tight">
               Atención: Integridad Comprometida
             </h4>
             <p className="text-xs text-token-text-secondary mt-1 max-w-2xl leading-relaxed">

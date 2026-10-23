@@ -90,7 +90,7 @@ export const useToolsController = (onOpenQuickNotes: () => void, hasUnreadNotes:
   };
 
   const itemClass =
-    "group relative p-3.5 h-[90px] rounded-sm flex flex-col items-center justify-center text-center bg-token-surface-stripe border border-token-border-technical shadow-sm transition-all duration-150 hover:border-sap-blue/40 hover:bg-token-surface-active active:scale-[0.98]";
+    "group relative p-3.5 h-[90px] rounded-sm flex flex-col items-center justify-center text-center bg-token-surface-stripe border border-token-border-technical shadow-sm transition-all duration-150 hover:border-token-accent-brand/40 hover:bg-token-surface-active active:scale-[0.98]";
 
   const iconBoxClass =
     "w-8 h-8 rounded-sm flex items-center justify-center mb-2.5 transition-transform group-hover:scale-110 border border-token-border-technical/50";

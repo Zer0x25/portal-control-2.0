@@ -78,7 +78,7 @@ export const ShiftStatusCard: React.FC<ShiftStatusCardProps> = ({
         <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest leading-none mb-1.5">
           Turno en curso
         </p>
-        <p className="text-sm font-bold text-sap-blue truncate">{responsibleName}</p>
+        <p className="text-sm font-bold text-token-accent-brand truncate">{responsibleName}</p>
       </div>
     </div>
   );

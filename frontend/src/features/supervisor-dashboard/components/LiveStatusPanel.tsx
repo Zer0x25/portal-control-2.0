@@ -86,7 +86,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             placeholder="Filtrar por nombre..."
-            className="py-2.5! text-[11px] bg-token-surface-stripe border-token-border-technical focus:border-sap-blue font-semibold rounded-sm placeholder:text-token-text-tertiary placeholder:opacity-50"
+            className="py-2.5! text-[11px] bg-token-surface-stripe border-token-border-technical focus:border-token-accent-brand font-semibold rounded-sm placeholder:text-token-text-tertiary placeholder:opacity-50"
           />
           {selectedStatuses.length > 0 && !selectedStatuses.includes("all") && (
             <div className="mt-3 flex items-center gap-3">
@@ -95,7 +95,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
               </span>
               <button
                 onClick={() => onStatusesChange(["all"])}
-                className="text-[10px] font-bold text-sap-blue hover:text-indigo-700 uppercase tracking-wider border-b border-sap-blue/30 transition-all active:scale-95"
+                className="text-[10px] font-bold text-token-accent-brand hover:text-indigo-700 uppercase tracking-wider border-b border-token-accent-brand/30 transition-all active:scale-95"
               >
                 Limpiar Parámetros
               </button>
@@ -129,7 +129,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                     onClick={() => onEmployeeClick?.(employee)}
-                    className="group flex items-center justify-between py-4 hover:bg-token-surface-active cursor-pointer transition-all active:scale-[0.99] border-l-2 border-transparent hover:border-sap-blue px-2"
+                    className="group flex items-center justify-between py-4 hover:bg-token-surface-active cursor-pointer transition-all active:scale-[0.99] border-l-2 border-transparent hover:border-token-accent-brand px-2"
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div className="relative">

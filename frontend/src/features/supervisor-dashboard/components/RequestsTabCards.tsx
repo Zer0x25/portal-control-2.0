@@ -20,10 +20,10 @@ export const PendingRequestCard: FC<{
   isProcessing?: boolean;
 }> = ({ req, employeeName, onApprove, onReject, onViewAttachment, isProcessing = false }) => {
   return (
-    <div className="p-6 rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm group hover:border-sap-blue transition duration-300">
+    <div className="p-6 rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm group hover:border-token-accent-brand transition duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start gap-5">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-sm bg-sap-blue border border-sap-blue shadow-lg shadow-sap-blue/20 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-sm bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20 flex items-center justify-center shrink-0">
             <UserIcon className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -32,7 +32,9 @@ export const PendingRequestCard: FC<{
             </p>
             <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1">
               Modificación:{" "}
-              <span className="text-sap-blue">{TIME_RECORD_FIELD_LABELS[req.recordField]}</span>
+              <span className="text-token-accent-brand">
+                {TIME_RECORD_FIELD_LABELS[req.recordField]}
+              </span>
             </p>
           </div>
         </div>
@@ -51,25 +53,25 @@ export const PendingRequestCard: FC<{
             {formatDisplayDateTime(req.originalValue)}
           </p>
         </div>
-        <div className="p-3.5 rounded-sm bg-sap-blue/3 border border-sap-blue/20 relative overflow-hidden group-hover:border-sap-blue/40 transition-colors">
-          <div className="absolute top-0 right-0 w-8 h-8 bg-sap-blue/5 rounded-bl-full" />
-          <p className="text-[10px] font-semibold text-sap-blue uppercase tracking-wider mb-1.5">
+        <div className="p-3.5 rounded-sm bg-token-accent-brand/3 border border-token-accent-brand/20 relative overflow-hidden group-hover:border-token-accent-brand/40 transition-colors">
+          <div className="absolute top-0 right-0 w-8 h-8 bg-token-accent-brand/5 rounded-bl-full" />
+          <p className="text-[10px] font-semibold text-token-accent-brand uppercase tracking-wider mb-1.5">
             Valor Solicitado
           </p>
-          <p className="text-[11px] font-bold text-sap-blue tabular-nums">
+          <p className="text-[11px] font-bold text-token-accent-brand tabular-nums">
             {formatDisplayDateTime(req.requestedValue)}
           </p>
         </div>
       </div>
 
       <div className="mt-6 pt-6 border-t border-token-border-subtle flex flex-col gap-4">
-        <p className="text-[11px] font-bold text-token-text-secondary leading-relaxed italic px-4 py-3 bg-token-surface-stripe border-l-2 border-sap-blue rounded-sm">
+        <p className="text-[11px] font-bold text-token-text-secondary leading-relaxed italic px-4 py-3 bg-token-surface-stripe border-l-2 border-token-accent-brand rounded-sm">
           "{req.reason}"
         </p>
         {req.attachment && (
           <button
             onClick={() => onViewAttachment(req.attachment!)}
-            className="flex items-center gap-2 text-[10px] font-black text-sap-blue hover:text-indigo-700 uppercase tracking-widest transition-colors w-fit"
+            className="flex items-center gap-2 text-[10px] font-black text-token-accent-brand hover:text-indigo-700 uppercase tracking-widest transition-colors w-fit"
           >
             <AttachmentIcon className="w-3.5 h-3.5" /> VER EVIDENCIA ADJUNTA
           </button>
@@ -87,7 +89,7 @@ export const PendingRequestCard: FC<{
         </Button>
         <Button
           variant="primary"
-          className="flex-1 py-3.5 text-[11px] font-bold uppercase tracking-widest rounded-sm bg-sap-blue hover:brightness-110 shadow-lg shadow-sap-blue/20 border-none text-white transition-all duration-300"
+          className="flex-1 py-3.5 text-[11px] font-bold uppercase tracking-widest rounded-sm bg-token-accent-brand hover:brightness-110 shadow-lg shadow-token-accent-brand/20 border-none text-white transition-all duration-300"
           onClick={() => onApprove(req.id)}
           loading={isProcessing}
           disabled={isProcessing}
@@ -143,7 +145,7 @@ export const ApprovedRequestCard: FC<{
         <div className="mt-auto pt-2 border-t border-token-border-subtle flex justify-end">
           <button
             onClick={() => onViewAttachment(req.attachment!)}
-            className="flex items-center gap-1 text-xxs font-black text-sap-blue hover:text-indigo-700 uppercase tracking-widest transition-colors"
+            className="flex items-center gap-1 text-xxs font-black text-token-accent-brand hover:text-indigo-700 uppercase tracking-widest transition-colors"
           >
             <AttachmentIcon className="w-3 h-3" /> VER EVIDENCIA
           </button>
@@ -193,7 +195,7 @@ export const RejectedRequestCard: FC<{
         <div className="mt-auto pt-2 border-t border-token-border-subtle flex justify-end">
           <button
             onClick={() => onViewAttachment(req.attachment!)}
-            className="flex items-center gap-1.5 text-[10px] font-bold text-sap-blue hover:text-indigo-700 uppercase tracking-wider transition-colors"
+            className="flex items-center gap-1.5 text-[10px] font-bold text-token-accent-brand hover:text-indigo-700 uppercase tracking-wider transition-colors"
           >
             <AttachmentIcon className="w-3.5 h-3.5" /> Ver evidencia
           </button>

@@ -55,7 +55,7 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
                         key={e.id}
                         className={`p-3 rounded-md cursor-pointer transition-colors group animate-in fade-in ${
                           selectedEmployeeId === e.id
-                            ? "bg-sap-blue/10 border border-sap-blue/30"
+                            ? "bg-token-accent-brand/10 border border-token-accent-brand/30"
                             : "hover:bg-token-surface-active"
                         }`}
                         onClick={() => setSelectedEmployeeId(e.id)}
@@ -69,7 +69,7 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
                               {e.area}
                             </span>
                           </div>
-                          <div className="w-1.5 h-1.5 rounded-full bg-sap-blue opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_rgba(0,87,146,0.5)]" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_rgba(0,87,146,0.5)]" />
                         </div>
                       </div>
                     ))}
@@ -95,12 +95,12 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
                   <p className="text-sm font-bold text-token-text-primary">
                     {selectedEmployee.name}
                   </p>
-                  <p className="text-xl font-black text-sap-blue dark:text-blue-400 uppercase tracking-tight">
+                  <p className="text-xl font-black text-token-accent-brand dark:text-blue-400 uppercase tracking-tight">
                     {isLoadingRecords ? "Cargando..." : statusLabels[clockStatus]}
                   </p>
                 </div>
               ) : (
-                <p className="text-xl font-black text-sap-blue dark:text-blue-400 uppercase tracking-tight">
+                <p className="text-xl font-black text-token-accent-brand dark:text-blue-400 uppercase tracking-tight">
                   Seleccione un empleado
                 </p>
               )}

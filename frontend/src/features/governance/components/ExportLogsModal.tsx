@@ -81,7 +81,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sap-blue/60">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-token-accent-brand/60">
                 Seguridad de Datos
               </p>
               <h3 className="text-2xl font-black text-token-text-primary uppercase tracking-tight">
@@ -136,7 +136,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
               <Button
                 onClick={() => handleExport("xml")}
                 disabled={isExporting}
-                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-sap-blue/20"
+                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-token-accent-brand/20"
               >
                 <CodeBracketSquareIcon className="w-5 h-5 mr-3 opacity-60" />
                 {isExporting ? "Procesando..." : "Exportar XML"}

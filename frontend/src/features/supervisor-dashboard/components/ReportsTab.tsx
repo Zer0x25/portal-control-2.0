@@ -78,7 +78,7 @@ const ReportsTab: FC = () => {
           <div className="bg-token-surface-card px-8 py-6 rounded-sm border border-token-border-technical shadow-sm flex flex-col xl:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-6">
               <div
-                className={`p-5 rounded-sm shadow-sm ${isSingleEmployeeReport ? "bg-token-surface-stripe text-token-text-primary border border-token-border-technical" : "bg-sap-blue text-white"}`}
+                className={`p-5 rounded-sm shadow-sm ${isSingleEmployeeReport ? "bg-token-surface-stripe text-token-text-primary border border-token-border-technical" : "bg-token-accent-brand text-white"}`}
               >
                 {isSingleEmployeeReport ? (
                   <UsersIcon className="w-8 h-8" />
@@ -96,7 +96,7 @@ const ReportsTab: FC = () => {
                     {sortedReportData.length} Registros Validados
                   </p>
                   <div className="h-4 w-px bg-token-border-subtle" />
-                  <p className="text-[11px] font-semibold text-sap-blue uppercase tracking-wider">
+                  <p className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider">
                     Ventana: {filters.startDateISO} al {filters.endDateISO}
                   </p>
                 </div>
@@ -114,7 +114,7 @@ const ReportsTab: FC = () => {
                 <div className="w-px h-6 bg-token-border-subtle mx-1" />
                 <button
                   onClick={() => handleExport("pdf")}
-                  className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:text-sap-blue transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:text-token-accent-brand transition-colors flex items-center gap-2"
                 >
                   <PrinterIcon className="h-4 w-4" /> IMPRIMIR
                 </button>
@@ -122,7 +122,7 @@ const ReportsTab: FC = () => {
                 <div className="relative" ref={exportMenuRef}>
                   <button
                     onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                    className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 ${isExportMenuOpen ? "bg-sap-blue text-white" : "text-token-text-secondary hover:text-sap-blue"}`}
+                    className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 ${isExportMenuOpen ? "bg-token-accent-brand text-white" : "text-token-text-secondary hover:text-token-accent-brand"}`}
                   >
                     <ExportIcon className="h-4 w-4" /> EXPORTAR
                   </button>
@@ -134,7 +134,8 @@ const ReportsTab: FC = () => {
                         onClick={() => handleExport("csv")}
                         className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
                       >
-                        <DocumentTextIcon className="w-4 h-4 mr-3 text-sap-blue" /> DATA CSV
+                        <DocumentTextIcon className="w-4 h-4 mr-3 text-token-accent-brand" /> DATA
+                        CSV
                       </button>
                       <button
                         onClick={() => handleExport("excel")}

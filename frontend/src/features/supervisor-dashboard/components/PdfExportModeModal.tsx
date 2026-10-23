@@ -37,16 +37,16 @@ const PdfExportModeModal: React.FC<PdfExportModeModalProps> = ({
         onClick={async () => {
           await onExportSummary();
         }}
-        className="flex w-full items-center rounded-sm border border-token-border-subtle bg-token-surface-stripe p-6 text-left transition duration-300 group hover:border-sap-blue hover:shadow-xl"
+        className="flex w-full items-center rounded-sm border border-token-border-subtle bg-token-surface-stripe p-6 text-left transition duration-300 group hover:border-token-accent-brand hover:shadow-xl"
       >
-        <div className="bg-sap-blue/10 mr-4 rounded-sm p-4 text-sap-blue transition-colors group-hover:bg-sap-blue group-hover:text-white">
+        <div className="bg-token-accent-brand/10 mr-4 rounded-sm p-4 text-token-accent-brand transition-colors group-hover:bg-token-accent-brand group-hover:text-white">
           <TableCellsIcon className="h-5 w-5" />
         </div>
         <div>
           <div className="text-base font-black uppercase tracking-tight text-token-text-primary">
             Resumen Analítico
           </div>
-          <div className="mt-1 text-xxs font-bold uppercase tracking-widest text-sap-blue">
+          <div className="mt-1 text-xxs font-bold uppercase tracking-widest text-token-accent-brand">
             MATRIZ TÉCNICA COMPARATIVA DE EQUIPO
           </div>
         </div>

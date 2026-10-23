@@ -23,7 +23,7 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
         <EmptyState
           title="Sin anomalías de integridad"
           description="No se han detectado violaciones de seguridad o corrupción de datos en el periodo analizado."
-          icon={<FingerPrintIcon className="w-12 h-12 text-sap-success/50" />}
+          icon={<FingerPrintIcon className="w-12 h-12 text-token-status-success/50" />}
         />
       </Card>
     );
@@ -32,12 +32,12 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
   const getAnomalyIcon = (action: string) => {
     switch (action) {
       case "INTEGRITY_VIOLATION_DETECTED":
-        return <ExclamationTriangleIcon className="w-4 h-4 text-sap-error" />;
+        return <ExclamationTriangleIcon className="w-4 h-4 text-token-status-error" />;
       case "TIME_RECORD_INTEGRITY_BROKEN":
       case "TIME_RECORD_INTEGRITY_BROKEN_BULK":
-        return <FingerPrintIcon className="w-4 h-4 text-sap-error" />;
+        return <FingerPrintIcon className="w-4 h-4 text-token-status-error" />;
       default:
-        return <CircleStackIcon className="w-4 h-4 text-sap-warning" />;
+        return <CircleStackIcon className="w-4 h-4 text-token-status-warning" />;
     }
   };
 
@@ -52,18 +52,19 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
         {details.recordId && <p>ID Registro: {String(details.recordId)}</p>}
         {details.employeeName && <p>Empleado: {String(details.employeeName)}</p>}
         {details.reason && (
-          <p className="text-sap-error">
+          <p className="text-token-status-error">
             Motivo: <span className="font-bold">{String(details.reason)}</span>
           </p>
         )}
         {details.expectedHash && (
           <p className="truncate">
-            Hash Esperado: <span className="text-sap-success">{String(details.expectedHash)}</span>
+            Hash Esperado:{" "}
+            <span className="text-token-status-success">{String(details.expectedHash)}</span>
           </p>
         )}
         {details.actualHash && (
           <p className="truncate">
-            Hash Real: <span className="text-sap-error">{String(details.actualHash)}</span>
+            Hash Real: <span className="text-token-status-error">{String(details.actualHash)}</span>
           </p>
         )}
       </div>

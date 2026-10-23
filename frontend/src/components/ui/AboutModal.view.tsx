@@ -52,7 +52,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
           <div className="text-center space-y-4 relative">
             <div
               onClick={onLogoClick}
-              className="w-20 h-20 bg-linear-to-br from-sap-blue to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-22xl shadow-blue-500/20 group hover:scale-110 transition-transform duration-500 cursor-pointer"
+              className="w-20 h-20 bg-linear-to-br from-token-accent-brand to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-22xl shadow-blue-500/20 group hover:scale-110 transition-transform duration-500 cursor-pointer"
             >
               <span className="text-white font-black text-4xl italic tracking-tighter">P</span>
             </div>

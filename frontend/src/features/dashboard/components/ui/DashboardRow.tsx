@@ -40,7 +40,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
       onClick={onClick}
       className={`
         flex items-center justify-between p-3.5 rounded-sm border border-token-border-technical
-        cursor-pointer transition-all group hover:border-sap-blue/40 ${bgClass} ${className}
+        cursor-pointer transition-all group hover:border-token-accent-brand/40 ${bgClass} ${className}
       `}
     >
       <div className="flex items-center gap-3 overflow-hidden">

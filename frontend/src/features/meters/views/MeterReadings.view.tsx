@@ -35,7 +35,7 @@ export const MeterReadingsView: React.FC<MeterReadingsViewProps> = ({
     <Container variant="wide" noPadding data-ui-protected className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <h1 className="text-3xl font-semibold text-token-text-primary flex items-center gap-3">
-          <CalculatorIcon className="w-8 h-8 text-sap-blue" />
+          <CalculatorIcon className="w-8 h-8 text-token-accent-brand" />
           Registro de Medidores
         </h1>
         <div className="flex items-center gap-2">

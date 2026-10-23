@@ -15,7 +15,7 @@ const BackgroundActivitySpinner: React.FC = () => {
         >
           <div className="relative flex items-center justify-center">
             <LoadingSpinner size="sm" variant="default" />
-            <ArrowPathIcon className="absolute w-3 h-3 text-sap-blue opacity-50" />
+            <ArrowPathIcon className="absolute w-3 h-3 text-token-accent-brand opacity-50" />
           </div>
           <div className="flex flex-col">
             <span className="text-xxs font-black text-token-text-primary uppercase tracking-[0.2em] leading-none">

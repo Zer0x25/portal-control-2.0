@@ -1,7 +1,7 @@
 import React from "react";
 
 interface IndustrialIndicatorProps {
-  color?: string; // e.g., "bg-sap-blue", "bg-emerald-500"
+  color?: string; // e.g., "bg-token-accent-brand", "bg-emerald-500"
   height?: string; // e.g., "h-10", "h-full"
   className?: string;
 }
@@ -10,7 +10,7 @@ interface IndustrialIndicatorProps {
  * Vertical colored bar used to indicate status or hierarchy in cards and list items.
  */
 export const IndustrialIndicator: React.FC<IndustrialIndicatorProps> = ({
-  color = "bg-sap-blue",
+  color = "bg-token-accent-brand",
   height = "h-10",
   className = "",
 }) => {

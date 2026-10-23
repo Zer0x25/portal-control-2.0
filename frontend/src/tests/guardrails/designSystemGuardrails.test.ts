@@ -194,6 +194,57 @@ describe("Design System & UI Governance Guardrails", () => {
     ).toEqual([]);
   });
 
+  it("requires a Storybook story for every certified design-system entry", () => {
+    const certifiedFiles = readCertifiedFiles();
+    const missingStories: string[] = [];
+    const invalidStories: string[] = [];
+
+    for (const relPath of certifiedFiles) {
+      const storyPath = path.join(frontendRoot, relPath.replace(/\.tsx?$/, ".stories.tsx"));
+      if (!existsSync(storyPath)) {
+        missingStories.push(path.relative(frontendRoot, storyPath));
+        continue;
+      }
+
+      const story = readFileSync(storyPath, "utf8");
+      if (
+        !story.includes('from "@storybook/react-vite"') ||
+        !/export\s+default\s+meta\s*;/.test(story) ||
+        !/export\s+const\s+Default\s*:/.test(story)
+      ) {
+        invalidStories.push(path.relative(frontendRoot, storyPath));
+      }
+    }
+
+    expect(
+      missingStories,
+      `Certified entries without stories:\n${missingStories.join("\n")}`,
+    ).toEqual([]);
+    expect(
+      invalidStories,
+      `Stories missing typed metadata or a named story:\n${invalidStories.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("keeps Storybook runtime imports out of production source", () => {
+    const scannedFiles = getFilesRecursively(srcDir, [".tsx", ".ts"]).filter(
+      (file) =>
+        !file.includes(".test.") &&
+        !file.includes(".spec.") &&
+        !file.includes(".stories.") &&
+        !file.includes(".d.ts"),
+    );
+    const runtimeImport = /(?:from\s*["']@storybook\/|import\s*\(\s*["']@storybook\/)/;
+    const violations = scannedFiles
+      .filter((file) => runtimeImport.test(readFileSync(file, "utf8")))
+      .map((file) => path.relative(frontendRoot, file));
+
+    expect(
+      violations,
+      `Production source imports Storybook runtime:\n${violations.join("\n")}`,
+    ).toEqual([]);
+  });
+
   /**
    * Spec 031 T8 (AC3): el ratchet del palette crudo completo.
    *

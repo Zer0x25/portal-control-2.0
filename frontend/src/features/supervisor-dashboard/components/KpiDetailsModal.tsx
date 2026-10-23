@@ -45,8 +45,8 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
             <p className="text-[13px] font-bold text-token-text-primary uppercase tracking-tight">
               {item.employeeName}
             </p>
-            <p className="text-[10px] font-semibold text-sap-blue uppercase tracking-widest mt-1.5 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-sap-blue" />
+            <p className="text-[10px] font-semibold text-token-accent-brand uppercase tracking-widest mt-1.5 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-token-accent-brand" />
               Atraso detectado: {formatDisplayDateTime(item.entrada)}
             </p>
           </li>
