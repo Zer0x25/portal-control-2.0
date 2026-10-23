@@ -129,3 +129,7 @@
 ## 2026-10-21 - perf(core): Chunked TimeRecord Enrichment
 **Learning:** En map() statements on massive arrays (like potentially up to 20,000 for exports or -1 page sizes in TimeRecordService), resolving all items concurrently via Promise.all starves the Node.js event loop leading to timeouts and unresponsiveness. Using a chunked iteration mechanism yielding with setImmediate correctly mitigates event loop blocks for long-running calculations.
 **Action:** Use a deterministic chunked iteration with await Promise.all() when evaluating huge un-paginated arrays and inject await new Promise(resolve => setImmediate(resolve)) to yield control back to the event loop.
+
+## 2026-10-23 - [Chunking Promise.all Arrays]
+**Learning:** [A codebase-specific anti-pattern exists when performing potentially large requests on activeEmployees arrays by applying unbounded Promise.all. Unbounded Promise.all requests overwhelm the DB connections and blocks the node event loop when handling large arrays]
+**Action:** [Use a chunk-size mechanism with setImmediate loop, processing 50 iterations per chunk limits and prevent regressions]
