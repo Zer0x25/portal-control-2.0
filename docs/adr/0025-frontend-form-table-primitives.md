@@ -1,7 +1,8 @@
 # ADR-0025: Frontend Form & Table Primitives — Capa headless de formularios y data grid
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-21
+- Aceptado: 2026-10-23
 - Autores: zer0x
 
 ## Contexto
@@ -265,12 +266,40 @@ Negativas / costos aceptados:
   es la autoridad para todo lo demás), pero es una divergencia conocida que
   habría que revisar si el backend la incorpora.
 - **La migración depende de la spec 033**: los componentes que 033 parte en
-  container + view + hook de dominio se migran sobre esa arquitectura, y las
-  8 piezas migradas que hoy son >150 líneas con hooks y sin gemelo
-  container **decrementan el `LARGE_HOOKED_COMPONENT_BUDGET` de 033** (39 →
-  31), lo que exige sincronizar los dos ratchets en el mismo commit.
+  container + view + hook de dominio se migran sobre esa arquitectura. El
+  `LARGE_HOOKED_COMPONENT_BUDGET` se sincronizó con el conteo real medido
+  (**48 → 39**); el objetivo de 31 no se alcanzó porque la Fase C migró los
+  formularios en su sitio, sin partir 8 componentes en container + view. El
+  ratchet queda en 39 y solo decrece.
 - Unificar los 5 pares desktop/mobile de tablas **cambia el diseño móvil** de
   esas pantallas; hay que revisarlo visualmente, no solo con tests.
+
+## Implementación verificada (2026-10-23)
+
+- **Capa de formulario**: `frontend/src/hooks/useAppForm.ts` (TanStack Form +
+  Zod v4 vía Standard Schema) con normalización del payload, foco en el primer
+  error y `submitGuard` sincrónico. Los schemas viven en
+  `frontend/src/schemas/forms/*`; la paridad con el backend se cubre en
+  `frontend/src/tests/contracts/form-schema-parity.test.ts`.
+- **Migración**: 24 formularios migrados durante la Fase C (PRs #105–#114),
+  con el payload verificado contra el contrato del backend (T13).
+- **Data grid**: `DataTable`/`DataTableHeader`/`DataTableRow` sobre TanStack
+  Table v9, con `role="grid"`, `aria-rowcount`/`aria-colcount`,
+  `aria-rowindex` absoluto y navegación por teclado. `SortableHeader` aporta
+  `aria-sort` y nombre accesible; `ReportTable` se reescribió sobre la
+  primitiva y los subtotales se extrajeron a
+  `frontend/src/utils/reportSubtotals.ts` (Fase D, PRs #115–#117).
+- **Certificación**: las 3 primitivas nuevas están en
+  `frontend/design-system-certified.json` y en el manifiesto/paridad del
+  catálogo (spec 038); el audit de design system queda en 0/0.
+- **Guardrails**: `frontend/src/tests/guardrails/formTableGuardrails.test.ts`
+  (AC7: whitelist de formularios manuales con budget decreciente, consumidores
+  de sort, `aria-sort` y pureza de vistas) y
+  `frontend/src/tests/tables/report-table.a11y.test.tsx` +
+  `frontend/e2e/a11y.spec.ts` (AC6).
+- **Verificación**: `npm run validate:ci`, `npm run guardrails`,
+  `npm run spec:check`, `npm run docs:check`, `npm run preflight` y
+  `npm run e2e:staging` (72/72) verdes.
 
 ## Referencias
 

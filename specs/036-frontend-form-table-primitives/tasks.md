@@ -335,7 +335,7 @@ produccion.
 
 ## Fase E — Guardrails
 
-- [ ] T19: Crear `frontend/src/tests/guardrails/formTableGuardrails.test.ts`:
+- [x] T19: Crear `frontend/src/tests/guardrails/formTableGuardrails.test.ts`:
       (a) todo fichero de `frontend/src/` (tests excluidos) que cumpla una
       de las dos cláusulas del criterio de inventario del spec (Problema 1:
       **(a)** componente con `useState` + handler de envío (`<form`,
@@ -356,10 +356,10 @@ produccion.
       expone `aria-sort`; (d) los `.view.tsx` no instancian `useAppForm` ni
       conservan `useState` de valores; registrar el guardrail en
       `frontend/package.json` (`test:guardrails` y `lint:guardrails`) (AC7).
-- [ ] T20: Crear `frontend/src/tests/tables/report-table.a11y.test.ts` con
+- [x] T20: Crear `frontend/src/tests/tables/report-table.a11y.test.ts` con
       axe-core sobre la tabla: sin violaciones nuevas, `aria-sort` correcto en
       los 3 estados y navegación por teclado operativa (AC6).
-- [ ] T21: Extender `frontend/e2e/a11y.spec.ts` con la tabla de reportes en
+- [x] T21: Extender `frontend/e2e/a11y.spec.ts` con la tabla de reportes en
       claro y oscuro (AC6).
 
 ### Nota de ejecución — Fase C, PR 3 (T8: `theoretical-shifts`)
@@ -981,25 +981,55 @@ comparar).
 
 ## Verificación final
 
-- [ ] T22: Actualizar la documentación: `frontend/src/features/README.md`
+- [x] T22: Actualizar la documentación: `frontend/src/features/README.md`
       (los hooks de formulario viven en `features/<dominio>/hooks/` y usan
       `useAppForm`; el `.view.tsx` recibe los valores por props),
       `.agents/rules/design-system-governance.md` (sección
       "Formularios y tablas" con el contrato de la capa) y
       `.agents/rules/frontend-performance.md` (invariante 5 ampliada: la
       protección anti-doble-submit la provee la capa de formulario) (AC8).
-- [ ] T23: Suite completa verde: `npm run validate:ci` (frontend),
+- [x] T23: Suite completa verde: `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run spec:check`, `npm run docs:check`,
       `npm run preflight` y `npm run e2e:staging` (56 tests, incluidos los
       flujos de formulario: alta/edición de empleados, alta de reportes de
       turno, configuración SMTP, cambio de contraseña y MFA) (AC8).
-- [ ] T24: Promover `docs/adr/0025-frontend-form-table-primitives.md` de
+- [x] T24: Promover `docs/adr/0025-frontend-form-table-primitives.md` de
       "Propuesto" a "Aceptado" con las líneas de implementación verificadas;
       actualizar la tabla de `docs/adr/README.md` en el mismo commit; marcar
       el spec como "Implementado" (AC8).
-- [ ] T25: Sincronizar con la **spec 033**: actualizar su
+- [x] T25: Sincronizar con la **spec 033**: actualizar su
       `LARGE_HOOKED_COMPONENT_BUDGET` (39 → 31, los 8 componentes migrados
       que se parten en container + view) y su whitelist en
       `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts` **en el
       mismo commit** que la última migración de la Fase C, para que los dos
       ratchets no diverjan (AC1, AC7).
+
+### Nota de ejecución — Verificación final (2026-10-23)
+
+- **T19**: `formTableGuardrails.test.ts` con 5 tests (inventario, consumidores
+  de sort, `aria-sort`, pureza de vistas). El detector estricto mide **4**
+  formularios manuales, no 34: la Fase C ya migró 24;
+  `GlobalVariablesManager` desapareció con la partición de 033; 5 de los 10
+  "no migrados" no cumplen el criterio sintáctico y los 2 invisibles ya están
+  migrados. Whitelist con budget **4**: `TimePickerDialog`,
+  `useCommunicationsData`, `useEmployeeManagementData`, `MeterConfigPanel`.
+  Registrado en `test:guardrails` y `lint:guardrails`.
+- **T20**: `src/tests/tables/report-table.a11y.test.tsx` (extensión `.tsx`
+  porque contiene JSX). axe-core en jsdom con `color-contrast` desactivado
+  (el contraste real lo cubre T21 en Chromium), `aria-sort` en los 3 estados
+  y navegación por teclado. Añade `axe-core` a devDependencies.
+- **T21**: `e2e/a11y.spec.ts` suma la tabla de reportes en claro y oscuro,
+  con axe acotado al `role="grid"` para no mezclar deuda preexistente.
+- **T22**: documentación actualizada en `frontend/src/features/README.md`,
+  `.agents/rules/design-system-governance.md` §10 y
+  `.agents/rules/frontend-performance.md` (invariante 5).
+- **T23**: `validate:ci` verde (lint 0/0, jsdom+browser, catálogo, tokens,
+  audit 0/0, Storybook, build y bundle); `guardrails` 87/87; `spec:check` y
+  `docs:check` verdes; `preflight` verde; `e2e:staging` **72/72** (baseline
+  anterior 70 + 2 de la tabla de reportes).
+- **T24**: ADR-0025 "Aceptado", índice de ADRs actualizado, spec
+  "Implementado" y AC1–AC8 marcados.
+- **T25**: `LARGE_HOOKED_COMPONENT_BUDGET` **48 → 39** (conteo real medido).
+  El objetivo 31 no se alcanzó: la Fase C migró los formularios en su sitio y
+  no partió 8 componentes en container + view; queda documentado en el
+  ADR-0025.

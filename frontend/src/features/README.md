@@ -28,6 +28,20 @@ src/features/<feature>/
 5. Los hooks remotos se llaman `use*Data`; la orquestación y el estado de UI se llaman `use*Controller`.
 6. Controllers del shell global van en `src/hooks/layout`; las reglas de dominio quedan en el feature.
 
+## Formularios y tablas (spec 036)
+
+- El estado del formulario vive en `useAppForm` (`src/hooks/useAppForm.ts`), instanciado en
+  `features/<dominio>/hooks/use*Controller.ts` o en el `.container.tsx`. La `.view.tsx`
+  recibe `values`, `errors`, `field(...)` y `formProps` por props: no importa
+  `useAppForm` ni guarda valores con `useState`.
+- Los schemas Zod v4 viven en `src/schemas/forms/*` y los mensajes de error se
+  resuelven en `src/utils/errorMessages.ts`; no se duplica validación en componentes.
+- `useAppForm` aporta `isSubmitting`, `formProps` y `submitGuard`: el `disabled` y el
+  ref anti-doble-submit los pone la capa, no cada formulario.
+- Las tablas ordenables usan `DataTable`/`DataTableHeader`/`DataTableRow` (TanStack
+  Table) con `SortableHeader` y `PaginationControls`. `ReportTable` es el data grid
+  compuesto; no se reimplementan sort, paginación ni subtotales a mano.
+
 ## Ubicación del estado
 
 | Estado                                                              | Hogar                                                                   |

@@ -758,7 +758,16 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     category: "primitive",
     tokens: ["token-surface-active", "token-text-tertiary"],
     variants: [],
-    props: ["title", "sortKey", "sortConfig", "onSort", "className?", "style?", "as?"],
+    props: [
+      "title",
+      "sortKey",
+      "sortConfig",
+      "onSort",
+      "className?",
+      "style?",
+      "as?",
+      "ariaLabel?",
+    ],
   },
   {
     path: "src/components/ui/Switch.tsx",

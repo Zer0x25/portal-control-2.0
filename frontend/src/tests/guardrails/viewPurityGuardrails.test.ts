@@ -35,8 +35,15 @@ export const VIEW_HOOK_BUDGET = 0;
 /** Componentes de la capa de componentes que llaman a un hook **con estado**. */
 export const HOOKED_COMPONENT_BUDGET = 80;
 
-/** Componentes con hooks, >150 líneas y sin container/view gemelo. */
-export const LARGE_HOOKED_COMPONENT_BUDGET = 48;
+/**
+ * Componentes con hooks, >150 líneas y sin container/view gemelo.
+ *
+ * Spec 036 T25: se sincroniza el ratchet con el conteo real medido al cierre
+ * (48 → 39). El objetivo de 31 exigía partir 8 componentes que la Fase C
+ * migró en su sitio (sin container/view gemelo); ese refactor queda fuera del
+ * alcance de la spec 036 y el budget solo decrece.
+ */
+export const LARGE_HOOKED_COMPONENT_BUDGET = 39;
 
 /** Componentes que importan `services/` **por valor** (los `import type` valen). */
 export const SERVICE_IMPORT_BUDGET = 0;

@@ -61,10 +61,13 @@ const DataTableHeader = <TFeatures extends TableFeatures, TData extends RowData>
           }
 
           const sorted = column.getIsSorted();
+          const headerLabel =
+            typeof column.columnDef.header === "string" ? column.columnDef.header : column.id;
           return (
             <SortableHeader<Record<string, unknown>>
               key={header.id}
               title={content}
+              ariaLabel={`Ordenar por ${headerLabel}`}
               sortKey={column.id}
               sortConfig={
                 sorted

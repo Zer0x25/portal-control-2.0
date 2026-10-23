@@ -1,6 +1,6 @@
 # Spec 036: Frontend Form & Table Primitives
 
-- Estado: Borrador
+- Estado: Implementado (2026-10-23)
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0025-frontend-form-table-primitives.md](file:///docs/adr/0025-frontend-form-table-primitives.md)
@@ -274,7 +274,7 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: **Una capa de formulario única**. Existe `useAppForm` (wrapper de
+- [x] AC1: **Una capa de formulario única**. Existe `useAppForm` (wrapper de
       TanStack Form + validación Zod v4 vía Standard Schema) en
       `frontend/src/hooks/` y **los 24 formularios de mutación** de la tabla
       del Problema 1 lo usan (directamente o a través del hook de dominio que
@@ -282,7 +282,7 @@ Fuera (explícito):
       en `useState` sueltos. El `useAppForm` se instancia **siempre** en el
       hook de dominio / controller o en el `.container.tsx`, nunca en un
       `.view.tsx` (invariante de la spec 033 AC1).
-- [ ] AC2: **Validación de formulario alineada con el backend**. Existe un
+- [x] AC2: **Validación de formulario alineada con el backend**. Existe un
       schema Zod de **entrada de usuario** por formulario de negocio, con
       reglas que coinciden con las del backend; los mensajes de error están
       en español y son consistentes. Un **test de contrato** verifica que
@@ -297,7 +297,7 @@ Fuera (explícito):
       y el backend no (`employee.schemas.ts:6` solo exige `min(8)`), se
       documenta como **divergencia deliberada a favor del cliente**, no como
       caso de paridad.
-- [ ] AC3: **A11y de error garantizada**. Todo `Input`/`Select`/`Textarea`
+- [x] AC3: **A11y de error garantizada**. Todo `Input`/`Select`/`Textarea`
       con error expone `aria-invalid="true"` y `aria-describedby` apuntando al
       mensaje, y el mensaje está asociado al `label` vía `htmlFor`; el primer
       campo inválido recibe foco al enviar. Las primitivas **conservan la prop
@@ -309,12 +309,12 @@ Fuera (explícito):
       quedan garantizados en el 100 % de los casos; `Switch` además gana
       `label` y `error`. **Guardrail**: un test verifica esta invariante en
       todos los formularios migrados.
-- [ ] AC4: **Anti-doble-submit uniforme**. Todo formulario migrado bloquea
+- [x] AC4: **Anti-doble-submit uniforme**. Todo formulario migrado bloquea
       un segundo envío con **ref sincrónico** (`isSubmittingRef`) **y**
       `disabled` en el botón, complyendo la invariante 5 de
       `.agents/rules/frontend-performance.md`; el botón refleja estado de
       carga.
-- [ ] AC5: **Un solo data grid**. `frontend/src/components/ui/ReportTable.tsx`
+- [x] AC5: **Un solo data grid**. `frontend/src/components/ui/ReportTable.tsx`
       (549 líneas) deja de implementar sort/paginación/subtotales a mano y se
       apoya en la primitiva nueva sobre TanStack Table. El **ordenamiento se
       resuelve antes de calcular los subtotales** (`manualSorting` o el sort
@@ -332,13 +332,13 @@ Fuera (explícito):
       paridad que exige `.agents/rules/design-system-governance.md` §7
       (`frontend/scripts/audit-design-system.cjs` y
       `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`).
-- [ ] AC6: **Tabla accesible**. La tabla expone `role="grid"`,
+- [x] AC6: **Tabla accesible**. La tabla expone `role="grid"`,
       `aria-rowcount`, `aria-colcount`; las cabeceras ordenables son
       `<button>` con `aria-sort` (`ascending`/`descending`/`none`) y nombre
       accesible; la navegación por teclado funciona (flechas sobre la fila
       activa). Un test con **axe-core** sobre la tabla no reporta violaciones
       nuevas.
-- [ ] AC7: **Guardrails de formularios y tablas**. Nuevo
+- [x] AC7: **Guardrails de formularios y tablas**. Nuevo
       `frontend/src/tests/guardrails/formTableGuardrails.test.ts` con: (a)
       todo fichero que cumple el criterio de inventario del Problema 1 está en
       una **whitelist explícita** (budget decreciente, inicializado a **34**,
@@ -346,7 +346,7 @@ Fuera (explícito):
       `sortConfig`/`requestSort` usa la primitiva de tabla o está en la
       whitelist; (c) las tablas ordenables exponen `aria-sort`. Se registra
       en `test:guardrails` y `lint:guardrails`.
-- [ ] AC8: **Sin regresión funcional**. `npm run validate:ci` (frontend),
+- [x] AC8: **Sin regresión funcional**. `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run spec:check`, `npm run docs:check`,
       `npm run preflight` en verde y `npm run e2e:staging` en verde (56
       tests), incluidos los flujos que dependen de formularios:
