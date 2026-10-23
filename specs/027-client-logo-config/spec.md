@@ -19,7 +19,7 @@ Sin solución aquí.
 
 Dentro:
 
-- Fuente del logo sustituible por cliente: URL remota o archivo subido (PNG/JPG/SVG/WebP), persistida en backend vía `SystemConfig` y administrable desde la vista de Configuración ([Configuration.view.tsx](file:///frontend/src/features/configuration/views/Configuration.view.tsx) / [GlobalVariablesManager.tsx](file:///frontend/src/features/configuration/components/GlobalVariablesManager.tsx)).
+- Fuente del logo sustituible por cliente: URL remota o archivo subido (PNG/JPG/SVG/WebP), persistida en backend vía `SystemConfig` y administrable desde la vista de Configuración ([Configuration.view.tsx](file:///frontend/src/features/configuration/views/Configuration.view.tsx) / [GlobalVariablesManager.view.tsx](file:///frontend/src/features/configuration/views/GlobalVariablesManager.view.tsx)).
 - Tamaño personalizable desde la configuración (ancho/alto o escala), con rangos validados, aplicado en los puntos de marca que hoy usan el asset (`LoginPage`; header usa letra de `APP_TITLE`, ver decisión abierta).
 - Fallback garantizado al asset empaquetado `Mini_Zer0x.jpg` cuando no hay configuración, la lectura falla o el usuario no está autenticado; preservando atributos `width`/`height` anti-CLS.
 - Validación, autorización por rol y auditoría consistentes con el sistema de configs existente (`POST /api/configs/:key` solo `Administrador`, `CONFIG_SET` en audit log).

@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
-import { SyncState, DailyTimeRecord } from "../../types/index";
+import { SyncState } from "../../types/index";
 import { AppState } from "../types";
-import { timeRecordService } from "../../services/timeRecordService";
 import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
@@ -17,8 +16,6 @@ export interface SyncSlice {
   runSync: () => Promise<void>;
   initializeAppData: () => Promise<void>;
   validateInstanceId: () => Promise<boolean>;
-  conflicts: unknown[];
-  bulkAddRecords: (records: DailyTimeRecord[]) => Promise<boolean>;
 }
 
 export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, get) => ({
@@ -116,10 +113,6 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
             await queryClient.invalidateQueries({ queryKey: queryKeys.config("meter_configs") });
           },
           skip: role === "Usuario",
-        },
-        {
-          name: "Notificaciones",
-          action: () => get().loadNotifications(),
         },
       ];
 
@@ -222,15 +215,5 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
     }
 
     return true;
-  },
-  conflicts: [],
-  bulkAddRecords: async (records) => {
-    try {
-      await timeRecordService.bulkSave(records);
-      return true;
-    } catch (error) {
-      console.error("Error bulk adding records:", error);
-      return false;
-    }
   },
 });

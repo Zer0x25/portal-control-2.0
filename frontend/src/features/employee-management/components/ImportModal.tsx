@@ -1,6 +1,5 @@
 import React, { useState, useRef } from "react";
 import Button from "../../../components/ui/Button";
-import { importService } from "../../../services/importService";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
   DocumentArrowDownIcon,
@@ -10,6 +9,7 @@ import {
   ExclamationTriangleIcon,
 } from "../../../components/ui/icons/index";
 import { Z } from "../../../constants/zScale";
+import { useImportPreview } from "../hooks/useImportPreview";
 
 /** A single read-excel-file column mapping (serialized to the backend preview endpoint). */
 export interface ImportFieldSchema {
@@ -60,6 +60,7 @@ const ImportModal = <T extends ImportPreviewRow>({
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"upload" | "preview" | "importing" | "success">("upload");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewImport = useImportPreview();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -70,8 +71,8 @@ const ImportModal = <T extends ImportPreviewRow>({
     setErrors([]);
 
     try {
-      const { rows } = await importService.previewImport(selectedFile, schema);
-      setPreviewData(rows as T[]);
+      const rows = await previewImport<T>(selectedFile, schema);
+      setPreviewData(rows);
       setStep("preview");
     } catch (error: unknown) {
       console.error("Error parsing file:", error);

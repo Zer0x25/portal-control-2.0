@@ -1,20 +1,18 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useStore } from "../../../store/useStore";
+import type { Employee } from "../../../types";
 import { useToasts } from "../../../hooks/useToasts";
 import { timeRecordService } from "../../../services/timeRecordService";
 import { toCaughtError } from "../../../utils/caughtError";
 import { queryKeys } from "../../../lib/queryKeys";
 
 /**
- * Relojes del dashboard (spec 032 T5): antes vivian en `dashboardSlice` con
- * import de `timeRecordService`. Aqui invalidan las raices afectadas en lugar
- * de recargar la coleccion desde el store.
+ * Acción de reloj del dashboard (spec 032 T5): invalida las raíces afectadas
+ * en lugar de recargar la colección desde el store.
  */
-export const useDashboardClockActions = () => {
-  const employeeToConfirmClockOut = useStore((state) => state.employeeToConfirmClockOut);
-  const closeResponsibleClockOutConfirmation = useStore(
-    (state) => state.closeResponsibleClockOutConfirmation,
-  );
+export const useDashboardClockActions = (
+  employeeToConfirmClockOut: Employee | null,
+  closeResponsibleClockOutConfirmation: () => void,
+) => {
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
 

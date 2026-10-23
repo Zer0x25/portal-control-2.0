@@ -1,9 +1,16 @@
 import React from "react";
 import EditTimestampModalView from "./EditTimestampModal.view";
 import { useEditTimestampModalController } from "../hooks/useEditTimestampModalController";
+import type { DailyTimeRecord, TimeRecordField } from "../../../types";
 
-const EditTimestampModalContainer: React.FC = () => {
-  const controller = useEditTimestampModalController();
+interface EditTimestampModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  editingInfo: { record: DailyTimeRecord; field: TimeRecordField } | null;
+}
+
+const EditTimestampModalContainer: React.FC<EditTimestampModalProps> = (props) => {
+  const controller = useEditTimestampModalController(props);
 
   return (
     <EditTimestampModalView

@@ -41,7 +41,7 @@ export const useSupervisorDashboardPreload = () => {
   const preloadKpis = React.useCallback(() => {
     // Precargar componentes de KPIs
     import("../components/KpisTab");
-    import("../hooks/useKpisLogic");
+    import("../hooks/useKpisController");
   }, []);
 
   const preloadReports = React.useCallback(() => {

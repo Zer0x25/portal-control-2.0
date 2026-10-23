@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { render, screen, fireEvent } from "@testing-library/react";
-import DesignSystemCatalogView from "../../features/design-system/views/DesignSystemCatalog.view";
+import DesignSystemCatalogView from "../../features/design-system/containers/DesignSystemCatalog.container";
 
 /**
  * Spec 031 T18 (AC12): el catalogo del design system es una ruta navegable
@@ -55,11 +55,15 @@ describe("Catalogo del design system (spec 031 AC12)", () => {
   });
 
   it("el showcase modal queda reemplazado por la ruta", () => {
-    const developerPanel = readFileSync(
-      path.join(frontendRoot, "src/features/configuration/components/DeveloperPanel.tsx"),
+    const developerPanelController = readFileSync(
+      path.join(frontendRoot, "src/features/configuration/hooks/useDeveloperPanelController.ts"),
       "utf8",
     );
-    expect(developerPanel).toContain("navigate(ROUTES.DESIGN_SYSTEM)");
-    expect(developerPanel).not.toContain("DesignSystemShowcaseModal");
+    const developerPanelView = readFileSync(
+      path.join(frontendRoot, "src/features/configuration/views/DeveloperPanel.view.tsx"),
+      "utf8",
+    );
+    expect(developerPanelController).toContain("navigate(ROUTES.DESIGN_SYSTEM)");
+    expect(developerPanelView).not.toContain("DesignSystemShowcaseModal");
   });
 });

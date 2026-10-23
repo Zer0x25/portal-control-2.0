@@ -111,9 +111,7 @@ export const useSocketEvents = () => {
       socket.on("quickNote:updated", handleQuickNoteUpdate);
 
       // -- Correction Request Events --
-      const handleCorrectionUpdate = (data: unknown) => {
-        useStore.getState().handleCorrectionRequestSocketEvent(data);
-        useStore.getState().loadNotifications();
+      const handleCorrectionUpdate = () => {
         debouncedInvalidate("correctionRequests", queryKeys.correctionRequests());
       };
       socket.on("correctionRequest:created", handleCorrectionUpdate);

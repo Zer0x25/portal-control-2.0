@@ -52,7 +52,7 @@ src/features/supervisor-dashboard/hooks/
 ├── useSupervisorDashboardTabs.ts        ✅ Memoizado con useMemo/useCallback
 ├── useSupervisorDashboardData.ts        ✅ Datos optimizados
 ├── useAttendanceAnalytics.ts            ✅ Cache agresivo + memoización
-├── useKpisLogic.ts                      ✅ Lógica de KPIs optimizada
+├── useKpisController.ts                      ✅ Lógica de KPIs optimizada
 ├── useSupervisorPerformance.ts          ✅ Utilidades de performance
 └── useSupervisorDashboardTabsConfig.ts  ✅ Configuración de tabs
 ```
@@ -182,7 +182,7 @@ src/features/supervisor-dashboard/hooks/
 ├── useSupervisorDashboardTabsConfig.ts  ✅ Configuración de tabs
 ├── useSupervisorDashboardContent.tsx    ✅ Rendering condicional
 ├── useAttendanceAnalytics.ts            ✅ Lógica de analytics
-└── useKpisLogic.ts                      ✅ Lógica de KPIs
+└── useKpisController.ts                      ✅ Lógica de KPIs
 ```
 
 ## 📊 **Funcionalidades**

@@ -4,10 +4,7 @@ import { devtools } from "zustand/middleware";
 import { createAuthSlice } from "./slices/authSlice";
 import { createToastSlice } from "./slices/toastSlice";
 import { createThemeSlice } from "./slices/themeSlice";
-import { createDashboardSlice } from "./slices/dashboardSlice";
-import { createNotificationSlice } from "./slices/notificationSlice";
 import { createUxSlice } from "./slices/uxSlice";
-import { createCorrectionRequestSlice } from "./slices/correctionRequestSlice";
 
 import { AppState } from "./types";
 import { createSyncSlice } from "./slices/syncSlice";
@@ -23,9 +20,6 @@ export const useStore = create<AppState>()(
         ...createAuthSlice(set, get, api),
         ...createToastSlice(set, get, api),
         ...createThemeSlice(set, get, api),
-        ...createDashboardSlice(set, get, api),
-        ...createNotificationSlice(set, get, api),
-        ...createCorrectionRequestSlice(set, get, api),
         ...createSyncSlice(set, get, api),
         ...createQuickNotesSlice(set, get, api),
         ...createUxSlice(set, get, api),

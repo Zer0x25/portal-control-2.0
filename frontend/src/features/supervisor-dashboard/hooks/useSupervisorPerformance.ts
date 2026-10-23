@@ -1,28 +1,12 @@
 import { useState, useEffect } from "react";
+import { useMediaQuery } from "../../../hooks/useMediaQuery";
 
 /**
  * Hook para detectar si el usuario prefiere movimiento reducido
  * Respeta la configuración de accesibilidad del sistema operativo
  */
 export const usePrefersReducedMotion = () => {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    // Verificar si estamos en el navegador
-    if (typeof window === "undefined") return;
-
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
-
-  return prefersReducedMotion;
+  return useMediaQuery("(prefers-reduced-motion: reduce)");
 };
 
 /**

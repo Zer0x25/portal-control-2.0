@@ -8,11 +8,12 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useUsers } from "../../../hooks/useUsers";
 import { useEmployees } from "../../../hooks/useEmployees";
 
-import { useDashboardModalsLoading, useDashboardActions } from "../hooks/useDashboardStore";
+import { useDashboardModalController } from "../hooks/useDashboardModalController";
 import { useDashboardData } from "../hooks/useDashboardData";
 
 import DashboardView from "../views/Dashboard.view";
 import { WIDGET_REGISTRY } from "../components/widgetRegistry";
+import { EditTimestampModal, QuickActionModal } from "../../time-control";
 
 const DashboardContainer: React.FC = () => {
   const { currentUser } = useStore(
@@ -28,8 +29,8 @@ const DashboardContainer: React.FC = () => {
   const { clockOut, startBreak, endBreak } = useTimeRecordActions();
 
   // Extract Logic to Hooks (Golden Path)
-  const modals = useDashboardModalsLoading();
-  const actions = useDashboardActions();
+  const { actions, editingRecordInfo, hasUnreadNotes, isQuickNotesModalOpen, modals } =
+    useDashboardModalController();
   const {
     isControlInternoEnabled,
     shiftReports,
@@ -38,14 +39,6 @@ const DashboardContainer: React.FC = () => {
     teamStatus,
     unscheduledPresent,
   } = useDashboardData();
-
-  // QuickNotes state selectors
-  const { isQuickNotesModalOpen, handleCloseQuickNotes } = useStore(
-    useShallow((s) => ({
-      isQuickNotesModalOpen: s.isQuickNotesModalOpen,
-      handleCloseQuickNotes: s.handleCloseQuickNotes,
-    })),
-  );
 
   const getResponsibleDisplayName = useCallback(
     (username: string): string => {
@@ -100,12 +93,13 @@ const DashboardContainer: React.FC = () => {
     }
   };
 
-  const handleEditClick = () => {
-    if (modals.quickActionRecord) {
-      actions.openEditTimestampModal(modals.quickActionRecord, "entrada");
+  const handleEditQuickAction = useCallback(
+    (record: DailyTimeRecord, field: import("../../../types").TimeRecordField) => {
+      actions.openEditTimestampModal(record, field);
       actions.closeQuickActionModal();
-    }
-  };
+    },
+    [actions],
+  );
 
   // Derived State for Rendering
   const visibleWidgets = useMemo(() => {
@@ -148,7 +142,34 @@ const DashboardContainer: React.FC = () => {
       getResponsibleDisplayName,
       openReportDetailsModal: actions.openReportDetailsModal,
     },
+    tools: {
+      onOpenQuickNotes: actions.openQuickNotes,
+      hasUnreadNotes,
+    },
   };
+
+  const quickActionModal = (
+    <QuickActionModal
+      isOpen={Boolean(modals.quickActionRecord)}
+      onClose={actions.closeQuickActionModal}
+      record={modals.quickActionRecord}
+      clockStatus={quickActionClockStatus}
+      onStartBreak={handleStartBreakFromQuickAction}
+      onEndBreak={handleEndBreakFromQuickAction}
+      onClockOut={handleClockOutFromQuickAction}
+      onEdit={handleEditQuickAction}
+      isActionDisabled={false}
+      disabledTooltip=""
+    />
+  );
+
+  const editTimestampModal = (
+    <EditTimestampModal
+      isOpen={Boolean(editingRecordInfo)}
+      onClose={actions.closeEditTimestampModal}
+      editingInfo={editingRecordInfo}
+    />
+  );
 
   return (
     <DashboardView
@@ -159,7 +180,7 @@ const DashboardContainer: React.FC = () => {
       isMobile={isMobile}
       modals={modals}
       isQuickNotesModalOpen={isQuickNotesModalOpen}
-      handleCloseQuickNotes={handleCloseQuickNotes}
+      handleCloseQuickNotes={actions.closeQuickNotes}
       actions={actions}
       shiftReports={shiftReports}
       isLoadingReports={isLoadingReports}
@@ -168,11 +189,8 @@ const DashboardContainer: React.FC = () => {
       unscheduledPresent={unscheduledPresent}
       visibleWidgets={visibleWidgets}
       widgetProps={widgetProps}
-      quickActionClockStatus={quickActionClockStatus}
-      handleClockOutFromQuickAction={handleClockOutFromQuickAction}
-      handleStartBreakFromQuickAction={handleStartBreakFromQuickAction}
-      handleEndBreakFromQuickAction={handleEndBreakFromQuickAction}
-      handleEditClick={handleEditClick}
+      quickActionModal={quickActionModal}
+      editTimestampModal={editTimestampModal}
       handlePresentEmployeeDoubleClick={handlePresentEmployeeDoubleClick}
       handleAnomalyRecordDoubleClick={handleAnomalyRecordDoubleClick}
     />

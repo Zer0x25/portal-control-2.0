@@ -141,3 +141,11 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
       AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     }));
     ```
+
+## 9. Frontera de capas por feature
+
+- `containers/` componen hooks del dominio con una vista y devuelven una sola raíz JSX. Los containers no importan servicios ni implementan presentación extensa.
+- `views/` reciben datos y callbacks por props. No contienen hooks de estado/efecto, navegación, queries, acceso al store ni clientes HTTP.
+- `hooks/` concentran consultas, reglas de dominio y controladores. Nombres `use*Data` para datos remotos y `use*Controller` para orquestación/estado de UI.
+- Los modales, tabs, menús y borradores viven en el feature que los muestra. Zustand queda para sesión/proceso compartido, tema, toasts, sincronización y señales transversales justificadas.
+- Los imports lazy apuntan a containers; no crear shims de reexportación en `components/` ni páginas-wrapper.

@@ -66,6 +66,8 @@ describe("TimeControlView", () => {
     modalState: { type: "none" },
     setModalState: vi.fn(),
     handleConfirmDelete: vi.fn(),
+    editingRecordInfo: null,
+    closeEditTimestampModal: vi.fn(),
     quickActionRecord: null,
     closeQuickActionModal: vi.fn(),
     quickActionClockStatus: null,

@@ -46,7 +46,7 @@ const ConfigurationPage = React.lazy(() =>
 const WorkerPortalPage = React.lazy(
   () => import("./features/worker-portal/containers/WorkerPortal.container"),
 );
-const KioskPage = React.lazy(() => import("./features/kiosk/pages/KioskPage"));
+const Kiosk = React.lazy(() => import("./features/kiosk/containers/Kiosk.container"));
 
 const TheoreticalShiftsPage = React.lazy(() =>
   import("./features/theoretical-shifts/containers/TheoreticalShifts.container").then((m) => ({
@@ -90,7 +90,7 @@ const MonthlyPlanningPage = React.lazy(() =>
   })),
 );
 const DesignSystemCatalogPage = React.lazy(
-  () => import("./features/design-system/views/DesignSystemCatalog.view"),
+  () => import("./features/design-system/containers/DesignSystemCatalog.container"),
 );
 const GovernanceHubPage = React.lazy(() =>
   import("./features/governance/containers/GovernanceHub.container").then((m) => ({
@@ -101,7 +101,7 @@ const NotFoundPage = React.lazy(() => import("./features/not-found/pages/NotFoun
 const AccessDeniedNotifier = React.lazy(() => import("./router/AccessDeniedNotifier"));
 
 const App: React.FC = () => {
-  const { isForcePasswordChangeModalOpen, closeForcePasswordChangeModal } = useAuth();
+  const { isForcePasswordChangeModalOpen, clearMustChangePassword } = useAuth();
   const { logout } = useAuth();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const { data: isControlInternoEnabled = true } = useControlInternoEnabledQuery();
@@ -165,7 +165,7 @@ const App: React.FC = () => {
           path={ROUTES.KIOSK}
           element={
             <Suspense fallback={<LoadingSpinner fullScreen />}>
-              <KioskPage />
+              <Kiosk />
             </Suspense>
           }
         />
@@ -401,7 +401,7 @@ const App: React.FC = () => {
         {isForcePasswordChangeModalOpen && (
           <ForceChangePasswordModal
             isOpen={isForcePasswordChangeModalOpen}
-            onClose={closeForcePasswordChangeModal}
+            onClose={clearMustChangePassword}
           />
         )}
       </Suspense>

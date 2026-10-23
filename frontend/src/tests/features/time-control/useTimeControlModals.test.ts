@@ -2,19 +2,13 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTimeControlModals } from "../../../features/time-control/hooks/useTimeControlModals";
 
-const {
-  addToastMock,
-  closeQuickActionModalMock,
-  openEditTimestampModalMock,
-  mutateDeleteAsyncMock,
-  mutateResolveAsyncMock,
-} = vi.hoisted(() => ({
-  addToastMock: vi.fn(),
-  closeQuickActionModalMock: vi.fn(),
-  openEditTimestampModalMock: vi.fn(),
-  mutateDeleteAsyncMock: vi.fn(),
-  mutateResolveAsyncMock: vi.fn(),
-}));
+const { addToastMock, closeQuickActionModalMock, mutateDeleteAsyncMock, mutateResolveAsyncMock } =
+  vi.hoisted(() => ({
+    addToastMock: vi.fn(),
+    closeQuickActionModalMock: vi.fn(),
+    mutateDeleteAsyncMock: vi.fn(),
+    mutateResolveAsyncMock: vi.fn(),
+  }));
 
 vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => ({ addToast: addToastMock }),
@@ -31,19 +25,6 @@ vi.mock("../../../hooks/useAuth", () => ({
       isDeleted: false,
     },
   }),
-}));
-
-vi.mock("../../../store/useStore", () => ({
-  useStore: (
-    selector: (s: {
-      openEditTimestampModal: typeof openEditTimestampModalMock;
-      closeQuickActionModal: typeof closeQuickActionModalMock;
-    }) => unknown,
-  ) =>
-    selector({
-      openEditTimestampModal: openEditTimestampModalMock,
-      closeQuickActionModal: closeQuickActionModalMock,
-    }),
 }));
 
 vi.mock("../../../hooks/queries/useTimeRecordsQuery", () => ({
@@ -86,7 +67,9 @@ describe("useTimeControlModals", () => {
   });
 
   it("blocks delete/comment on records before accounting lock date", () => {
-    const { result } = renderHook(() => useTimeControlModals());
+    const { result } = renderHook(() =>
+      useTimeControlModals({ closeQuickActionModal: closeQuickActionModalMock }),
+    );
 
     const blockedRecord = {
       id: "t1",
@@ -114,7 +97,9 @@ describe("useTimeControlModals", () => {
   });
 
   it("opens novelty flow and resolves anomalies", async () => {
-    const { result } = renderHook(() => useTimeControlModals());
+    const { result } = renderHook(() =>
+      useTimeControlModals({ closeQuickActionModal: closeQuickActionModalMock }),
+    );
 
     const editableRecord = {
       id: "t2",

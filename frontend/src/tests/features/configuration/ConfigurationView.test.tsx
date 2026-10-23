@@ -6,11 +6,11 @@ vi.mock("../../../features/configuration/components/GlobalVariablesView", () => 
   default: () => <div>GLOBAL-VARS-CONTENT</div>,
 }));
 
-vi.mock("../../../features/configuration/components/EmailCenterView", () => ({
+vi.mock("../../../features/configuration/containers/EmailCenter.container", () => ({
   default: () => <div>EMAIL-CONTENT</div>,
 }));
 
-vi.mock("../../../features/configuration/components/MasterDataExportView", () => ({
+vi.mock("../../../features/configuration/containers/MasterDataExport.container", () => ({
   default: () => <div>MASTER-DATA-CONTENT</div>,
 }));
 

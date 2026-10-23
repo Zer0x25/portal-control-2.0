@@ -1,6 +1,6 @@
 # Spec 033: Frontend Layering Hardening
 
-- Estado: Borrador
+- Estado: Implementado localmente — pendiente de merge
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0023-frontend-layering-hardening.md](file:///docs/adr/0023-frontend-layering-hardening.md) (extiende [0020-design-system-governance.md](file:///docs/adr/0020-design-system-governance.md) y [0022-ui-ux-consolidation.md](file:///docs/adr/0022-ui-ux-consolidation.md))
@@ -60,19 +60,20 @@ no es enforceable**:
 4. **8 componentes importan `services/` por valor** (los `import type` quedan
    permitidos):
    `features/auth/components/MFASetupModal.tsx:2` (`authService`),
-   `features/configuration/components/DeveloperPanel.tsx:27-28` (`API_BASE_URL`,
-   `authService`), `features/configuration/components/GlobalVariablesManager.tsx:18`
+   `features/configuration/components/DeveloperPanel.tsx:27-28`
+   (`seedingService`, `healthService` y el import dinámico de `socketService`),
+   `features/configuration/components/GlobalVariablesManager.tsx:18`
    (`configService`), `features/configuration/components/SeedingProgressModal.tsx:11`
    (`healthService`), `features/configuration/components/SmtpConfigModal.tsx:3`
    (`emailService`), `features/employee-management/components/ImportModal.tsx:3`
-   (`importService`), `features/employee-management/components/ShiftHistoryModal.tsx:4-5`,
+   (`importService`), `features/employee-management/components/ShiftHistoryModal.tsx:4`
+   (`auditLogService`),
    `features/governance/components/ExportLogsModal.tsx:3-4`.
-   2 de ellos hacen además `fetch` crudo:
-   `features/configuration/components/DeveloperPanel.tsx:249` y
-   `features/employee-management/components/ShiftHistoryModal.tsx:60`; un
-   tercero, fuera de `features/`, hace
-   `fetch("/ManualRelojControl.md")` en
-   `components/ui/UserManualModal.tsx:64` (asset estático del manual). Y
+   En la base de esta rama, solo `components/ui/UserManualModal.tsx:64` hace
+   `fetch("/ManualRelojControl.md")` (asset estático del manual); DeveloperPanel
+   y ShiftHistoryModal no hacen `fetch` crudo. El ceiling preexistente del
+   guardrail era 3, aunque el conteo confirmado en esos componentes era 1; T14
+   elimina esa última llamada y el budget baja a 0. Además,
    `features/governance/components/IntegritySummaryView.tsx:52` hace
    `queryClient.invalidateQueries` inline (gestión imperativa de caché desde
    un componente).
@@ -168,7 +169,7 @@ Fuera (explícito, con spec propio):
 
 ## Criterios de aceptación
 
-- [ ] AC1: **La capa de vista es enforceable, no declarativa**. `npm run lint`
+- [x] AC1: **La capa de vista es enforceable, no declarativa**. `npm run lint`
       queda verde con budget 0/0 y una regla ESLint nueva que prohíbe
       **cualquier hook de React** en `src/**/*.view.tsx`: el patrón es
       `/^use[A-Z]/` (cubre `useState`, `useEffect`, `useMemo`, `useCallback`,
@@ -191,18 +192,18 @@ Fuera (explícito, con spec propio):
       (`no-restricted-syntax`), por lo que suspende también los selectores de
       fecha de ese archivo: verificado, ninguna de las 5 views los incumple
       hoy, así que no se pierde cobertura real hasta la retirada.
-- [ ] AC2: **Guardrail de pureza con budgets monótonos**. Nuevo
+- [x] AC2: **Guardrail de pureza con budgets monótonos**. Nuevo
       `frontend/src/tests/guardrails/viewPurityGuardrails.test.ts` con 5
       budgets decrementables inicializados al conteo real medido y **congelados**
       en constantes exportadas (el test falla si suben, nunca exige editar el
       test para bajarlos):
       | Budget | Baseline | Invariante |
       |--------|----------|------------|
-      | `VIEW_HOOK_BUDGET` | 5 → 1 (tras T7) | views con hooks → 0 |
-      | `HOOKED_COMPONENT_BUDGET` | 95 | componentes no-view con hooks |
-      | `LARGE_HOOKED_COMPONENT_BUDGET` | 56 | componentes con hooks **y >150 líneas** sin container/view gemelo |
-      | `SERVICE_IMPORT_BUDGET` | 8 | componentes que importan `services/` **por valor** |
-      | `RAW_FETCH_BUDGET` | 3 | `fetch` crudo en componente |
+      | `VIEW_HOOK_BUDGET` | 5 → 1 (T7) → 0 (T8) | views con hooks → 0 |
+      | `HOOKED_COMPONENT_BUDGET` | 95 → 80 | componentes no-view con hooks |
+      | `LARGE_HOOKED_COMPONENT_BUDGET` | 56 → 48 | componentes con hooks **y >150 líneas** sin container/view gemelo |
+      | `SERVICE_IMPORT_BUDGET` | 8 → 0 | componentes que importan `services/` **por valor** |
+      | `RAW_FETCH_BUDGET` | 3 (conteo verificado: 1) → 0 | `fetch` crudo en componente |
       Más un invariante **no-budget** (`INLINE_CACHE_INVALIDATION_BUDGET` = 1 →
       0): ningún componente llama `queryClient.invalidateQueries` inline; debe
       vivir en un hook de mutación. El guardrail se agrega a
@@ -213,23 +214,25 @@ Fuera (explícito, con spec propio):
       `services/` están permitidos (`BrandLogo.tsx` ya los usa). El conteo se
       hace sobre el **AST de TypeScript**: un regex no ve
       `useRef<number | null>(null)`, y esa diferencia cambia el resultado
-      (5 vistas, 95 componentes y 56 componentes grandes). `RAW_FETCH_BUDGET` incluye
-      `components/ui/UserManualModal.tsx:64` (`fetch("/ManualRelojControl.md")`),
+      (5 vistas, 95 componentes y 56 componentes grandes). `RAW_FETCH_BUDGET` tenía
+      un ceiling preexistente de 3; el escaneo de `origin/main` confirma 1 llamada,
+      que T14 retira. El budget incluye
+      `components/ui/UserManualModal.tsx` (`fetch("/ManualRelojControl.md")`),
       que es un **asset estático del manual** y por tanto entra en el budget
       como cualquier otro `fetch` en capa de componente.
-- [ ] AC3: **El invariante "componente grande con hooks ⇒ tiene container
+- [x] AC3: **El invariante "componente grande con hooks ⇒ tiene container
       gemelo" es un ratchet, no un fallo duro**. El guardrail **falla si el
       conteo actual de componentes con hooks y >150 líneas sin gemelo supera
-      `LARGE_HOOKED_COMPONENT_BUDGET` (= 56)**: es decir, **bloquea componentes
+      `LARGE_HOOKED_COMPONENT_BUDGET` (= 48)**: es decir, **bloquea componentes
       nuevos** con esa forma y **obliga a bajar** el conteo con cada migración
-      de AC4 (56 → 50 al cerrar T9, T10, T11, T12, T13 y T15; la migración de
+      de AC4 (56 → 48 al cerrar T9, T10, T11, T12, T13 y T15; la migración de
       `DesignSystemCatalog` no cuenta porque vive en `views/` y ya está cubierta
       por `VIEW_HOOK_BUDGET`). No se exige llegar a 0 en esta iteración:
       hacerlo exigiría refactors cosméticos sobre componentes legítimos (p. ej.
       `components/ui/DatePicker.tsx`, que es interactivo por naturaleza).
       Cuando el conteo llegue a 0, el budget baja a 0 y el invariante pasa a
       ser de fallo duro **sin cambiar una línea del guardrail**.
-- [ ] AC4: **Los 7 contenedores que faltan existen**. Cada uno de
+- [x] AC4: **Los 7 contenedores que faltan existen**. Cada uno de
       `configuration/GlobalVariablesManager`, `configuration/SmtpConfigModal`,
       `supervisor-dashboard/RequestsTab`, `configuration/DeveloperPanel`,
       `governance/AuditLogsView`, `meters/MeterHistory` y
@@ -244,74 +247,73 @@ Fuera (explícito, con spec propio):
       puede emitir elementos DOM intrínsecos (`<div>`, `<span>`, …) ni
       fragmentos con múltiples hijos en su `return`. Ningún container nuevo
       supera 200 líneas ni contiene más de un elemento JSX **de primer nivel**.
-- [ ] AC5: **`features/design-system` deja de ser una vista-route**. El
+- [x] AC5: **`features/design-system` deja de ser una vista-route**. El
       feature pasa a tener `containers/`, `views/` y `hooks/`; `App.tsx` monta
       el container, no la vista; `DesignSystemCatalog.view.tsx` queda sin hooks
       y ≤ 300 líneas.
-- [ ] AC6: **Cero shims y cero pages-wrapper**. Los 9 archivos shim de 1 línea
+- [x] AC6: **Cero shims y cero pages-wrapper**. Los 9 archivos shim de 1 línea
       de `features/*/components/` se eliminan y las vistas que los lazy-importan
       apuntan al container directamente; `features/kiosk/pages/KioskPage.tsx`
       (3 líneas) se elimina y `App.tsx` importa
       `features/kiosk/containers/Kiosk.container`. `src/features/**` no contiene
       ningún archivo de 1–3 líneas cuyo único propósito sea re-exportar otro
       archivo del mismo feature (verificado por grep + guardrail).
-- [ ] AC7: **Un solo hogar para el estado de modal, sin perder señal de
+- [x] AC7: **Un solo hogar para el estado de modal, sin perder señal de
       origen**. `dashboardSlice` y `quickNotesSlice` quedan sin flags de modal
       (o se eliminan si quedan vacíos) y todo flag de "modal abierto" vive en
       el feature que lo muestra, vía `useState` local o un hook
       `use*Controller` del feature. El store global conserva **solo** estado de
       proceso: sesión, tema, toasts, sync y offset de reloj. **Tres casos
       requieren un tratamiento explícito** (no son un "flag más"): 1. **`authSlice.isForcePasswordChangeModalOpen` NO es un flag de UI
-      arbitrario**: se asigna en `authSlice.ts:189` a partir de
+      arbitrario**: se asigna en `authSlice._handleSuccessfulLogin` a partir de
       `loginResponse.mustChangePassword === true` (invariante de seguridad
       de la spec 002) y el modal se monta en `App.tsx` **después** de
       desmontar `LoginPage`. Se conserva `mustChangePassword?: boolean`
       **como propiedad de sesión dentro de `currentUser`** (el slice lo
-      emite, no el componente) y el `useAuthModalController` del feature
-      `auth` lo lee para abrir el modal y lo limpia al cambiar la
-      contraseña. El flujo de cambio forzado debe seguir funcionando
-      idéntico. 2. **`quickActionRecord` e `isEditTimestampModalOpen` los consumen dos
+      emite, no el componente); `useAuth` deriva
+      `isForcePasswordChangeModalOpen` de esa propiedad y
+      `clearMustChangePassword` la limpia y persiste al cambiar la contraseña.
+      El flujo de cambio forzado debe seguir funcionando idéntico. 2. **`quickActionRecord` e `isEditTimestampModalOpen` los consumen dos
       features**: `QuickActionModal` y `EditTimestampModal` se montan en
       `features/time-control/views/TimeControl.view.tsx:230,268` **y** en
       `features/dashboard/views/Dashboard.view.tsx:153,170`. Por eso
       `EditTimestampModal.container.tsx` deja de leer del store global y
-      **recibe props controladas** (`isOpen`, `onClose`, `editingInfo`,
-      `value`, `onSave`), y **cada container que monta el modal
-      instanciará su propio hook de estado local** (dashboard y time-control
-      por separado). Se elimina la importación cross-feature
-      `from "../../time-control"` en `Dashboard.view.tsx`, que hoy invierte
-      la dependencia entre features. 3. **`quickNotesSlice.hasUnreadNotes` no es "estado derivado de datos
+      recibe props controladas (`isOpen`, `onClose`, `editingInfo`). El
+      container conecta `useEditTimestampModalController` con la vista para
+      resolver `value`, guardado y errores; dashboard y time-control instancian
+      sus propios containers y mantienen separado el registro que editan. Se
+      elimina la importación cross-feature desde `Dashboard.view.tsx`, que
+      ahora recibe los modales ya compuestos. 3. **`quickNotesSlice.hasUnreadNotes` no es "estado derivado de datos
       remotos"**: `QuickNote` **no tiene campo read/unread** en la API; la
       señal se enciende exclusivamente cuando llega el evento WebSocket
-      `quickNote:created` **con el modal cerrado**
-      (`quickNotesSlice.ts:24-31` + `useSocketEvents.ts:104-110`). La
-      migración preserva esa semántica: el evento de socket sigue
-      levantando la señal "hay notas sin leer" y el `handleOpenQuickNotes`
-      la baja al abrir el modal. `ToolsPanel` (que muestra el badge) se
-      monta por el `WIDGET_REGISTRY` del dashboard
-      (`features/dashboard/components/withDashboardLazy.tsx:46`) **sin
-      recibir props** de `Dashboard.container`: el cableado de esa señal
-      queda explícito en la tarea correspondiente (contexto del store
-      mínimo o un hook de dominio compartido), sin inventar una fourth
-      fuente de verdad.
-- [ ] AC8: **Store sin stubs muertos**. `notificationSlice`,
+      `quickNote:created` (`quickNotesSlice.ts` + `useSocketEvents.ts`). El
+      estado de apertura vive en `useDashboardModalController`; abrirlo limpia
+      la señal. Si llega el evento mientras está abierto, el store la marca y
+      un `useLayoutEffect` del controller la limpia antes del siguiente paint.
+      `ToolsPanel` recibe `onOpenQuickNotes` y `hasUnreadNotes` desde
+      `Dashboard.container` vía `widgetProps`; el store conserva la señal del
+      socket, pero no el estado de apertura del modal.
+- [x] AC8: **Store sin stubs muertos**. `notificationSlice`,
       `correctionRequestSlice`, `syncSlice.conflicts` y
       `syncSlice.bulkAddRecords` se eliminan (o se rellenan con comportamiento
       real si resultan necesarios), y `useSocketEvents.ts` deja de llamar a
       `handleCorrectionRequestSocketEvent`. Ningún slice expone un método que
       no haga nada.
-- [ ] AC9: **Capas muertas eliminadas**. `src/types/contexts.ts`,
+- [x] AC9: **Capas muertas eliminadas**. `src/types/contexts.ts`,
       `src/hooks/useDataRefresher.ts`, `src/hooks/useLogs.ts` y
       `src/hooks/useServerTime.ts` se borran junto con sus re-exports
       (`src/types/index.ts`), y `npm run check` + `npm run lint` quedan en verde
       con 0 referencias colgantes.
-- [ ] AC10: **Hook responsive único**. `useMediaQuery`, `useScreenSize` y el
-      `usePrefersReducedMotion` interno de `useSupervisorPerformance.ts` se
-      consolidan en un solo hook con una API explícita
-      (`useMediaQuery(query)` + `useBreakpoint()`); los listeners `resize`
-      ad-hoc de `features/employee-management/hooks/useEmployeeManagementData.ts:64,108-110`
-      se eliminan a favor del hook único.
-- [ ] AC11: **Sin imports de `services/` en la capa de componentes**. Los 8
+- [x] AC10: **Una sola base para consultas responsive**. `useMediaQuery(query)`
+      queda como base para `usePrefersReducedMotion` de
+      `useSupervisorPerformance.ts` y para la detección móvil de
+      `useEmployeeManagementData`; se eliminan `useScreenSize` y los listeners
+      `resize`/lecturas `innerWidth` ad-hoc. El único consumidor de
+      `useScreenSize` era `ScreenSizeIndicator`, un overlay de administrador en
+      modo desarrollo que mostraba dimensiones en píxeles; se retira junto con
+      su montaje, sin afectar flujos de usuario final. No se añade una API
+      `useBreakpoint()` que la aplicación no necesita.
+- [x] AC11: **Sin imports de `services/` en la capa de componentes**. Los 8
       componentes del baseline quedan en 0 (con excepción permitida
       exclusivamente para imports **solo de tipo** vía `import type`, que
       `BrandLogo.tsx` ya usa; el guardrail distingue tipo de valor):
@@ -319,18 +321,19 @@ Fuera (explícito, con spec propio):
       |---|---|---|
       | `configuration/GlobalVariablesManager.tsx` | `configService` | hook de dominio (T9) |
       | `configuration/SmtpConfigModal.tsx` | `emailService` | hook de dominio (T15) |
-      | `configuration/DeveloperPanel.tsx` | `API_BASE_URL`, `authService` | hook de dominio (T11) |
+      | `configuration/DeveloperPanel.tsx` | `seedingService`, `healthService`, import dinámico de `socketService` | hook de dominio (T11) |
       | `configuration/SeedingProgressModal.tsx` | `healthService` | hook de dominio (T16) |
       | `auth/MFASetupModal.tsx` | `authService` | hook del feature `auth` (T17) |
       | `employee-management/ImportModal.tsx` | `importService` | hook de dominio (T18) |
-      | `employee-management/ShiftHistoryModal.tsx` | `authService`, `API_BASE_URL` | hook de dominio (T14) |
+      | `employee-management/ShiftHistoryModal.tsx` | `auditLogService` | hook de dominio (T14) |
       | `governance/ExportLogsModal.tsx` | `authService`, `API_BASE_URL` | hook de dominio (T19) |
-      Todos los modales de la tabla quedan **sin props de datos opacas**: el
-      container resuelve los datos y el view solo presenta. `API_BASE_URL` es
+      Los imports de servicios quedan encapsulados en hooks de dominio; los
+      componentes dejan de depender directamente de `services/`.
+      `API_BASE_URL` es
       una constante, no un servicio: puede permanecer en `services/apiBase.ts`
       solo si **no** se importa por valor desde un componente; en ese caso se
-      expone como prop o se encapsula en el hook de dominio (T11, T14, T19).
-- [ ] AC12: **Suite completa verde**. `npm run validate:ci` (frontend),
+      expone como prop o se encapsula en el hook de dominio (T19).
+- [x] AC12: **Suite completa verde**. `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run audit:design-system` (budgets de tokens
       **no suben**), `npm run spec:check`, `npm run docs:check` y
       `npm run preflight` en verde; `npm run e2e:staging` en verde (sin
@@ -346,11 +349,14 @@ Fuera (explícito, con spec propio):
   refactor estructural. Los flags de modal que migran del store a estado local
   deben conservar exactamente la misma visibilidad y orden de aparición.
 - Los `data-testid`, roles ARIA, landmarks y selectores E2E existentes
-  **no se renombran**: Playwright (56 tests) es el contrato de regresión.
+  **no se renombran**: Playwright es el contrato de regresión; la ejecución
+  local actual enumera 68 tests.
 - El budget de palette crudo (`design-system-budget.json`) y el de warnings de
   ESLint (`lint-budget.json`) **no se suben**: si una migración toca archivos
   certificados, su conteo de palette crudo no puede crecer.
-- Rollback por fase: cada workstream (A–D) es un PR independiente y revertible.
+- Entrega transversal: las fases A–D se revisan en una sola rama y un PR a
+  `main`. El PR completo es reversible; las fases son hitos de revisión y
+  validación, no PR separados.
 
 ## Trazabilidad
 
@@ -363,16 +369,18 @@ Fuera (explícito, con spec propio):
     la frontera del store a "el store no guarda flags de modal", AC7, AC8)
   - `frontend/src/tests/state/` (tests de slice existentes que deben seguir en
     verde tras la purga, AC7, AC8)
-  - `frontend/src/tests/features/auth/` (nuevo, AC7): test del flujo de
-    **cambio forzado de contraseña** — login con `mustChangePassword === true`
-    ⇒ el modal se abre sin interacción del usuario; tras el cambio, el flag
-    queda limpio y el modal se cierra.
-  - `frontend/src/tests/features/dashboard/` (nuevo, AC7): test de la señal
-    `quickNote:created` del socket ⇒ `hasUnreadNotes` se enciende con el
-    modal cerrado y se baja al abrirlo.
-  - `frontend/src/tests/features/time-control/` (nuevo, AC7): test de que
-    `EditTimestampModal` abre y guarda con **props controladas** (sin leer
-    del store global) tanto desde el dashboard como desde time-control.
+  - `frontend/src/tests/state/forcePasswordChangeSession.test.tsx` (nuevo,
+    AC7): login con `mustChangePassword === true` persiste la señal de sesión,
+    `useAuth` abre el modal y `clearMustChangePassword` la limpia después del
+    cambio. `features/auth/useForceChangePasswordModalController.test.ts`
+    verifica el submit exitoso y el cierre.
+  - `frontend/src/tests/features/dashboard/useDashboardModalController.test.ts`
+    (nuevo, AC7) y `src/tests/services/quickNoteInvalidation.test.ts` verifican
+    la apertura local del modal, el badge unread y los eventos del socket.
+  - `frontend/src/tests/features/time-control/` verifica el editor controlado
+    y la separación del estado entre dashboard y time-control
+    (`useEditTimestampModalController.test.ts`, `useTimeControl.test.ts`,
+    `TimeControlView.test.tsx`).
   - `frontend/e2e/*.spec.ts` (regresión funcional, AC12)
 - **Docs a actualizar**:
   - `frontend/src/features/README.md` (reglas 2 y 3 endurecidas + tabla de

@@ -7,11 +7,11 @@ Esta carpeta contiene la suite completa de tests para el dashboard, implementada
 ```
 tests/features/dashboard/
 ├── vitest.config.ts              # Configuración específica de Vitest
-├── useWelcomeLogic.test.ts       # Tests unitarios para hook de bienvenida
-├── useQuickActionsLogic.test.ts  # Tests unitarios para acciones rápidas
-├── useToolsLogic.test.ts         # Tests unitarios para herramientas
-├── useMyStatusLogic.test.ts      # Tests unitarios para estado del usuario
-├── useTeamStatusLogic.test.ts    # Tests unitarios para estado del equipo
+├── useWelcomeController.test.ts       # Tests unitarios para hook de bienvenida
+├── useQuickActionsController.test.ts  # Tests unitarios para acciones rápidas
+├── useToolsController.test.ts         # Tests unitarios para herramientas
+├── useMyStatusData.test.ts      # Tests unitarios para estado del usuario
+├── useTeamStatusData.test.ts    # Tests unitarios para estado del equipo
 ├── ActionButton.test.tsx         # Tests de componente ActionButton
 ├── StatusCard.test.tsx           # Tests de componentes StatusCard
 ├── MetricGrid.test.tsx           # Tests de componente MetricGrid
@@ -22,11 +22,11 @@ tests/features/dashboard/
 
 ### **Unit Tests (Hooks)**
 
-- **useWelcomeLogic**: Lógica de bienvenida, saludos por hora, nombres de usuario
-- **useQuickActionsLogic**: Configuración de acciones, navegación
-- **useToolsLogic**: Configuración de herramientas, estados de notificación
-- **useMyStatusLogic**: Estados de usuario, turnos activos, responsables
-- **useTeamStatusLogic**: Estado del equipo, anomalías, empleados sin horario
+- **useWelcomeController**: Lógica de bienvenida, saludos por hora, nombres de usuario
+- **useQuickActionsController**: Configuración de acciones, navegación
+- **useToolsController**: Configuración de herramientas, estados de notificación
+- **useMyStatusData**: Estados de usuario, turnos activos, responsables
+- **useTeamStatusData**: Estado del equipo, anomalías, empleados sin horario
 
 ### **Component Tests**
 
@@ -116,7 +116,7 @@ tests/features/dashboard/
 npm run test -- tests/features/dashboard/
 
 # Tests específicos
-npm run test -- useWelcomeLogic.test.ts
+npm run test -- useWelcomeController.test.ts
 npm run test -- ActionButton.test.tsx
 
 # Con coverage

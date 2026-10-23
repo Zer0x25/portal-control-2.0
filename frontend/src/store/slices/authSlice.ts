@@ -38,7 +38,6 @@ export interface AuthSlice {
   currentUser: User | null;
   isAuthenticated: boolean;
   isAuthLoading: boolean;
-  isForcePasswordChangeModalOpen: boolean;
   mfaRequired: boolean;
   mfaToken: string | null;
   login: (username: string, password: string) => Promise<LoginResponse | User>;
@@ -46,7 +45,7 @@ export interface AuthSlice {
   logout: () => void;
   _verifyAuth: () => Promise<void>;
   _handleSuccessfulLogin: (loginResponse: LoginResponse) => Promise<User>;
-  closeForcePasswordChangeModal: () => void;
+  clearMustChangePassword: () => void;
 }
 
 import { LoginResponse } from "../../services/authService";
@@ -55,7 +54,6 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
   currentUser: null,
   isAuthenticated: false,
   isAuthLoading: true,
-  isForcePasswordChangeModalOpen: false,
   mfaRequired: false,
   mfaToken: null,
 
@@ -177,6 +175,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       isDeleted: false,
       lastModified: Date.now(),
       syncStatus: "synced",
+      mustChangePassword: loginResponse.mustChangePassword === true,
     };
 
     set({
@@ -185,8 +184,6 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       isAuthLoading: false,
       mfaRequired: false,
       mfaToken: null,
-      // Spec 002 H-06: el backend indica contraseña por defecto pendiente.
-      isForcePasswordChangeModalOpen: loginResponse.mustChangePassword === true,
     });
     sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
 
@@ -222,7 +219,12 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     window.location.href = ROUTES.LOGIN; // Redirección limpia
   },
 
-  closeForcePasswordChangeModal: () => {
-    set({ isForcePasswordChangeModalOpen: false });
+  clearMustChangePassword: () => {
+    const currentUser = get().currentUser;
+    if (!currentUser?.mustChangePassword) return;
+
+    const updatedUser = { ...currentUser, mustChangePassword: false };
+    set({ currentUser: updatedUser });
+    sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
   },
 });

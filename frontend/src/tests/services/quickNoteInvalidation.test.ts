@@ -10,8 +10,8 @@ it("marks unread from a created invalidation without receiving note content", ()
   expect(state.hasUnreadNotes).toBe(false);
   state.handleQuickNoteSocketEvent({ changed: true, created: true });
   expect(state.hasUnreadNotes).toBe(true);
-  state.handleOpenQuickNotes();
+  state.clearQuickNotesUnread();
   expect(state.hasUnreadNotes).toBe(false);
   state.handleQuickNoteSocketEvent({ changed: true, created: true });
-  expect(state.hasUnreadNotes).toBe(false);
+  expect(state.hasUnreadNotes).toBe(true);
 });

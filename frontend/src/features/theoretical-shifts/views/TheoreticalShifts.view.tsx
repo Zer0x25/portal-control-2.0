@@ -10,10 +10,10 @@ import {
 } from "../../../components/ui/icons";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
 
-const PatternManager = React.lazy(() => import("../components/PatternManager"));
-const AssignmentManager = React.lazy(() => import("../components/AssignmentManager"));
-const LeaveManager = React.lazy(() => import("../components/LeaveManager"));
-const HolidayManager = React.lazy(() => import("../components/HolidayManager"));
+const PatternManager = React.lazy(() => import("../containers/PatternManager.container"));
+const AssignmentManager = React.lazy(() => import("../containers/AssignmentManager.container"));
+const LeaveManager = React.lazy(() => import("../containers/LeaveManager.container"));
+const HolidayManager = React.lazy(() => import("../containers/HolidayManager.container"));
 
 export type TheoreticalShiftsTabId = "patterns" | "assignments" | "leaves" | "holidays";
 

@@ -1,7 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo } from "react";
-import { useStore } from "../store/useStore";
 import { useTimeRecordMutations } from "./queries/useTimeRecordsQuery";
-import { DailyTimeRecord } from "../types/index";
+import type { DailyTimeRecord, TimeRecordField } from "../types/index";
 import { useToasts } from "./useToasts";
 import { useAppForm } from "./useAppForm";
 import { editTimestampFormSchema, type EditTimestampFormValues } from "../schemas/forms/timestamp";
@@ -15,8 +14,9 @@ const CHILE_TZ = "America/Santiago";
 /**
  * Editor de un marcaje (`EditTimestampModal`), spec 036 T12c (AC1, AC2, AC3).
  *
- * El borrador de hora **no vive en el store**: el formulario es propietario de
- * su estado (`useAppForm`) y el store solo dice que marcaje se esta editando.
+ * El borrador de hora no vive en el store: el formulario es propietario de su
+ * estado (`useAppForm`) y la feature que monta el modal pasa por props qué
+ * marcaje se edita.
  * La regla `HH:mm` vive en `editTimestampFormSchema` (AC2) y el error se pinta
  * junto al input (AC3); el hook solo expone `value`/`setValue`/`error` y los
  * `formProps` del `<form>`.
@@ -25,12 +25,17 @@ const CHILE_TZ = "America/Santiago";
  * del registro existente se construye el registro completo que manda
  * `updateRecordMutation` (contrato documentado en `timeRecordWriteFormSchema`).
  */
-export const useTimestampEditor = () => {
+interface TimestampEditingInfo {
+  record: DailyTimeRecord;
+  field: TimeRecordField;
+}
+
+export const useTimestampEditor = (
+  editingInfo: TimestampEditingInfo | null,
+  closeEditTimestampModal: () => void,
+) => {
   const { updateRecordMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
-
-  const editingInfo = useStore((s) => s.editingRecordInfo);
-  const closeEditTimestampModal = useStore((s) => s.closeEditTimestampModal);
 
   const maxTimeForExit = (() => {
     if (!editingInfo || editingInfo.field !== "salida" || !editingInfo.record.entrada) return null;
@@ -137,7 +142,8 @@ export const useTimestampEditor = () => {
    * El modal abre con un registro (o lo reabre con otro): el borrador vuelve
    * a la hora del marcaje, como hacia `openEditTimestampModal` antes. Se usa
    * `useLayoutEffect` para que el input nunca pinte un frame en blanco, y no
-   * se resetea al cerrar (el registro ya no esta en el store).
+   * se resetea al cerrar (el container conserva el valor hasta el siguiente
+   * registro que recibe).
    */
   useLayoutEffect(() => {
     if (editingInfo) reset({ time: initialValue });

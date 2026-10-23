@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useAuth } from "../useAuth";
-import { useDataRefresher } from "../useDataRefresher";
 import { useLoginAutomations } from "../useLoginAutomations";
 import { STORAGE_KEYS } from "../../constants";
 import { getDefaultRouteForRole } from "../../utils/routeUtils";
@@ -18,7 +17,6 @@ export const usePersistentLayoutController = () => {
   const { currentUser } = useAuth();
   const isInitialSync = useStore((state) => state.isInitialSync);
 
-  useDataRefresher();
   const { handoverData, isHandoverModalOpen, closeHandoverModal } = useLoginAutomations();
 
   useEffect(() => {

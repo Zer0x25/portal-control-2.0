@@ -3,19 +3,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authTokenStore } from "../../../services/authToken";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
 
-const { openQuickActionModalMock, closeQuickActionModalMock, queryArgsMock, filtersMock } =
-  vi.hoisted(() => ({
-    openQuickActionModalMock: vi.fn(),
-    closeQuickActionModalMock: vi.fn(),
-    queryArgsMock: vi.fn(),
-    filtersMock: {
-      name: "Ana",
-      area: "Ops",
-      workdayType: "Full",
-      status: "Activo",
-      showAnomalies: false,
-    },
-  }));
+const { queryArgsMock, filtersMock } = vi.hoisted(() => ({
+  queryArgsMock: vi.fn(),
+  filtersMock: {
+    name: "Ana",
+    area: "Ops",
+    workdayType: "Full",
+    status: "Activo",
+    showAnomalies: false,
+  },
+}));
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
@@ -56,6 +53,8 @@ vi.mock("../../../features/time-control/hooks/useTimeControlModals", () => ({
   useTimeControlModals: () => ({
     modalState: { type: "none" },
     setModalState: vi.fn(),
+    editingRecordInfo: null,
+    closeEditTimestampModal: vi.fn(),
     isAddNoveltyModalOpen: false,
     setIsAddNoveltyModalOpen: vi.fn(),
     noveltyInitialText: "",
@@ -115,21 +114,6 @@ vi.mock("../../../hooks/queries/useConfigQuery", () => ({
   useAccountingLockDateQuery: () => ({ data: "2026-01-01" }),
 }));
 
-vi.mock("../../../store/useStore", () => ({
-  useStore: (
-    selector: (s: {
-      openQuickActionModal: typeof openQuickActionModalMock;
-      quickActionRecord: null;
-      closeQuickActionModal: typeof closeQuickActionModalMock;
-    }) => unknown,
-  ) =>
-    selector({
-      openQuickActionModal: openQuickActionModalMock,
-      quickActionRecord: null,
-      closeQuickActionModal: closeQuickActionModalMock,
-    }),
-}));
-
 vi.mock("../../../utils/calculations", () => ({
   getEmployeeClockingStatus: vi.fn(() => null),
 }));
@@ -149,7 +133,7 @@ describe("useTimeControl", () => {
     filtersMock.showAnomalies = false;
   });
 
-  it("builds filtersKey and delegates row double click to quick action modal", () => {
+  it("builds filtersKey and opens the local quick action modal on row double click", () => {
     const { result } = renderHook(() => useTimeControl());
 
     expect(result.current.filtersKey).toContain("2026-03-01");
@@ -159,7 +143,7 @@ describe("useTimeControl", () => {
       result.current.handleRowDoubleClick({ id: "r1" } as never);
     });
 
-    expect(openQuickActionModalMock).toHaveBeenCalledWith({ id: "r1" });
+    expect(result.current.quickActionRecord).toEqual({ id: "r1" });
   });
 
   it("exports streaming only when token exists", () => {

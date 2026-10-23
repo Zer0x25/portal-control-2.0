@@ -1,4 +1,4 @@
-import { useStore } from "../../../store/useStore";
+import type { DailyTimeRecord, TimeRecordField } from "../../../types";
 import { useTimestampEditor } from "../../../hooks/useTimestampEditor";
 import { TIME_RECORD_FIELD_LABELS } from "../../../utils/mappings";
 
@@ -9,12 +9,21 @@ import { TIME_RECORD_FIELD_LABELS } from "../../../utils/mappings";
  * `useTimestampEditor`: aqui solo se traduce a los props de la vista
  * (`value`/`setValue`/`error`/`formProps`).
  */
-export const useEditTimestampModalController = () => {
-  const isOpen = useStore((s) => s.isEditTimestampModalOpen);
-  const editingInfo = useStore((s) => s.editingRecordInfo);
-  const onClose = useStore((s) => s.closeEditTimestampModal);
+interface EditTimestampModalControllerOptions {
+  isOpen: boolean;
+  onClose: () => void;
+  editingInfo: { record: DailyTimeRecord; field: TimeRecordField } | null;
+}
 
-  const { value, setValue, error, formProps, isLoading, maxTimeForExit } = useTimestampEditor();
+export const useEditTimestampModalController = ({
+  isOpen,
+  onClose,
+  editingInfo,
+}: EditTimestampModalControllerOptions) => {
+  const { value, setValue, error, formProps, isLoading, maxTimeForExit } = useTimestampEditor(
+    editingInfo,
+    onClose,
+  );
 
   const fieldLabel = editingInfo
     ? TIME_RECORD_FIELD_LABELS[editingInfo.field] || "Marcaje"

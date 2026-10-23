@@ -1,32 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Button from "../../../components/ui/Button";
 import { ClockIcon, ChevronRightIcon, UserIcon } from "../../../components/ui/icons/index";
-import { auditLogService } from "../../../services/auditLogService";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import IconBox from "../../../components/ui/IconBox";
 import { IndustrialIndicator } from "../../../components/ui/IndustrialIndicator";
 import EmptyState from "../../../components/ui/EmptyState";
 import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-
-interface ShiftHistoryEntry {
-  id: string;
-  timestamp: string;
-  actorUsername: string;
-  action: string;
-  details: {
-    employeeId: string;
-    employeeName?: string;
-    previousPatternId?: string;
-    previousPatternName?: string;
-    newPatternId?: string;
-    newPatternName?: string;
-    previousStartDate?: string;
-    previousEndDate?: string | null;
-    newStartDate?: string;
-    newEndDate?: string | null;
-  };
-}
+import { useShiftHistoryData } from "../hooks/useShiftHistoryData";
 
 interface ShiftHistoryModalProps {
   isOpen: boolean;
@@ -41,38 +22,10 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
   employeeId,
   employeeName,
 }) => {
-  const [historyEntries, setHistoryEntries] = useState<ShiftHistoryEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isOpen && employeeId) {
-      fetchHistory();
-    }
-  }, [isOpen, employeeId]);
-
-  const fetchHistory = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await auditLogService.getAll<ShiftHistoryEntry>({
-        page: 1,
-        pageSize: 100,
-        filters: { category: "SHIFT_ASSIGNMENT" },
-      });
-
-      // Filter entries that match this employee
-      const filteredEntries = result.data.filter(
-        (entry: ShiftHistoryEntry) => entry.details?.employeeId === employeeId,
-      );
-
-      setHistoryEntries(filteredEntries);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { historyEntries, isLoading, error, fetchHistory } = useShiftHistoryData(
+    isOpen,
+    employeeId,
+  );
 
   const getActionLabel = (action: string) => {
     switch (action) {

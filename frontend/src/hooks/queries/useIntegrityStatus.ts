@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { auditLogService } from "../../services/auditLogService";
 import { queryKeys } from "../../lib/queryKeys";
 
@@ -30,4 +31,13 @@ export const useIntegrityStatus = () => {
     refetchInterval: 1000 * 30, // Poll every 30 seconds
     staleTime: 1000 * 10,
   });
+};
+
+export const useRefreshIntegrityStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.integrityStatus() }),
+    [queryClient],
+  );
 };

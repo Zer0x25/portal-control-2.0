@@ -3,8 +3,8 @@ import { render, screen } from "@testing-library/react";
 import QuickActionsPanel from "../../../features/dashboard/components/QuickActionsPanel";
 
 // Mock de hooks
-vi.mock("../../../features/dashboard/hooks/useQuickActionsLogic", () => ({
-  useQuickActionsLogic: () => ({
+vi.mock("../../../features/dashboard/hooks/useQuickActionsController", () => ({
+  useQuickActionsController: () => ({
     actions: [
       {
         id: "time",

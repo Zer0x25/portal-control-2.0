@@ -23,7 +23,8 @@ description: Invariants for frontend performance, bundle optimization, CSS cachi
 4. **Separación Estricta de Estado (TanStack Query vs Zustand)**:
    - Toda colección de datos remotos proveniente de APIs (asistencia, paginaciones, registros de tiempo, catálogos) debe ser gestionada exclusivamente por TanStack Query hooks.
    - Prohibido duplicar colecciones de entidades remotas o paginaciones en slices de Zustand (como el deprecado `timeRecordSlice`).
-   - Zustand se reserva estrictamente para estado de UI del cliente efímero y global (autenticación local, modales, toasts, tema).
+   - Zustand se reserva para estado global de proceso o sesión: usuario y sesión, tema, toasts, progreso/cola de sincronización, offset de reloj y señales transversales como `hasUnreadNotes`.
+   - El estado efímero de UI (`is*ModalOpen`, tab activa, menús, filtros y borradores) vive en `useState` o `use*Controller` del feature que presenta la interfaz; no en slices globales.
 
 5. **Mutation Guarding, Optimistic State & Rapid-Click Invariants**:
    - **Protección contra Clics Rápidos**: Todo botón o disparador de mutación (`ActionButton`, botones de aprobación/rechazo) debe enlazar sincrónicamente `disabled={isProcessing}` y reflejar un estado visual de carga (`loading`/spinner).

@@ -3,16 +3,16 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { TheoreticalShiftsView } from "../../../features/theoretical-shifts/views/TheoreticalShifts.view";
 
-vi.mock("../../../features/theoretical-shifts/components/PatternManager", () => ({
+vi.mock("../../../features/theoretical-shifts/containers/PatternManager.container", () => ({
   default: () => <div>PATTERN-MANAGER</div>,
 }));
-vi.mock("../../../features/theoretical-shifts/components/AssignmentManager", () => ({
+vi.mock("../../../features/theoretical-shifts/containers/AssignmentManager.container", () => ({
   default: () => <div>ASSIGNMENT-MANAGER</div>,
 }));
-vi.mock("../../../features/theoretical-shifts/components/LeaveManager", () => ({
+vi.mock("../../../features/theoretical-shifts/containers/LeaveManager.container", () => ({
   default: () => <div>LEAVE-MANAGER</div>,
 }));
-vi.mock("../../../features/theoretical-shifts/components/HolidayManager", () => ({
+vi.mock("../../../features/theoretical-shifts/containers/HolidayManager.container", () => ({
   default: () => <div>HOLIDAY-MANAGER</div>,
 }));
 

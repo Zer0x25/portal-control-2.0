@@ -29,8 +29,8 @@ const SRC_ROOT = path.join(FRONTEND_ROOT, "src");
 /* Budgets congelados (spec 033 AC2/AC3)                                      */
 /* -------------------------------------------------------------------------- */
 
-/** Vistas (`*.view.tsx`) que llaman a un hook. Baseline medido: 5 -> 1 tras T7. */
-export const VIEW_HOOK_BUDGET = 1;
+/** Vistas (`*.view.tsx`) que llaman a un hook. Baseline medido: 5 -> 0 tras T7/T8. */
+export const VIEW_HOOK_BUDGET = 0;
 
 /** Componentes de la capa de componentes que llaman a un hook **con estado**. */
 export const HOOKED_COMPONENT_BUDGET = 80;
@@ -39,19 +39,19 @@ export const HOOKED_COMPONENT_BUDGET = 80;
 export const LARGE_HOOKED_COMPONENT_BUDGET = 48;
 
 /** Componentes que importan `services/` **por valor** (los `import type` valen). */
-export const SERVICE_IMPORT_BUDGET = 8;
+export const SERVICE_IMPORT_BUDGET = 0;
 
 /** Llamadas a `fetch` crudo dentro de la capa de componentes. */
-export const RAW_FETCH_BUDGET = 3;
+export const RAW_FETCH_BUDGET = 0;
 
 /** `queryClient.invalidateQueries` inline (debe vivir en un hook de mutación). */
-export const INLINE_CACHE_INVALIDATION_BUDGET = 1;
+export const INLINE_CACHE_INVALIDATION_BUDGET = 0;
 
 /** Shims de 1-3 líneas en `features/**\/components/**` que re-exportan un container. */
-export const CONTAINER_SHIM_BUDGET = 9;
+export const CONTAINER_SHIM_BUDGET = 0;
 
 /** Pages-wrapper de 1-3 líneas que solo re-exportan un container. */
-export const PAGE_WRAPPER_BUDGET = 1;
+export const PAGE_WRAPPER_BUDGET = 0;
 
 /** Un container devuelve exactamente **un** elemento JSX de primer nivel. */
 export const CONTAINER_SINGLE_ROOT_BUDGET = 0;

@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useStore } from "../store/useStore";
 import { useCorrectionRequestsStatsQuery } from "./queries/useCorrectionRequestsStatsQuery";
 import { useProactiveDetectionsQuery } from "./queries/useProactiveDetectionsQuery";
 import { ROUTES } from "../constants";
@@ -15,15 +14,11 @@ const getDetectionMessage = (details: Record<string, unknown> | undefined): stri
 };
 
 export const useNotifications = () => {
-  const storeNotifications = useStore((state) => state.notifications);
-  const storeUnreadCount = useStore((state) => state.unreadCount);
-  const markCommunicationsAsRead = useStore((state) => state.markCommunicationsAsRead);
-
   const { data: stats } = useCorrectionRequestsStatsQuery();
   const { data: proactiveDetections } = useProactiveDetectionsQuery();
 
   const notifications = useMemo(() => {
-    const combined: NotificationItem[] = [...storeNotifications];
+    const combined: NotificationItem[] = [];
 
     // Add proactive detections as alerts
     if (proactiveDetections && proactiveDetections.length > 0) {
@@ -53,12 +48,12 @@ export const useNotifications = () => {
     }
 
     return combined;
-  }, [storeNotifications, stats?.pending, proactiveDetections]);
+  }, [stats?.pending, proactiveDetections]);
 
   const unreadCount = useMemo(() => {
     const alertCount = proactiveDetections?.length || 0;
-    return storeUnreadCount + (stats?.pending && stats.pending > 0 ? 1 : 0) + alertCount;
-  }, [storeUnreadCount, stats?.pending, proactiveDetections]);
+    return (stats?.pending && stats.pending > 0 ? 1 : 0) + alertCount;
+  }, [stats?.pending, proactiveDetections]);
 
-  return { notifications, unreadCount, markCommunicationsAsRead };
+  return { notifications, unreadCount };
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { useServerTime } from "../../hooks/useServerTime";
+import { useBusinessNow } from "../../hooks/useBusinessNow";
 
 interface ServerClockProps {
   showDate?: boolean;
@@ -19,7 +19,7 @@ const ServerClock: React.FC<ServerClockProps> = ({
   timeClassName = "text-5xl md:text-7xl text-sap-blue dark:text-sap-light-blue",
   containerClassName = "flex flex-col items-center justify-center p-6 bg-token-surface-card md:bg-white/5 md:backdrop-blur-xl rounded-[2.5rem] border border-token-border-subtle md:border-white/10",
 }) => {
-  const currentDateTime = useServerTime();
+  const currentDateTime = useBusinessNow();
 
   return (
     <div data-testid="server-clock" className={containerClassName}>

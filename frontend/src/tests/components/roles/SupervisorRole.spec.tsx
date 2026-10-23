@@ -5,7 +5,6 @@ import TimeRecordRow from "../../../features/time-control/components/TimeRecordR
 import { useAuth } from "../../../hooks/useAuth";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
-import { useLogs } from "../../../hooks/useLogs";
 import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
 import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useToasts } from "../../../hooks/useToasts";
@@ -14,7 +13,6 @@ import { useToasts } from "../../../hooks/useToasts";
 vi.mock("../../../hooks/useAuth");
 vi.mock("../../../hooks/useEmployees");
 vi.mock("../../../hooks/useTimeRecords");
-vi.mock("../../../hooks/useLogs");
 vi.mock("../../../hooks/useCorrectionRequests");
 vi.mock("../../../hooks/queries/useTimeRecordsQuery");
 vi.mock("../../../hooks/useToasts");
@@ -32,7 +30,6 @@ describe("Supervisor Role Component Permissions", () => {
     (useToasts as any).mockReturnValue({ addToast: mockAddToast });
     (useEmployees as any).mockReturnValue({ activeEmployees: [] });
     (useTimeRecords as any).mockReturnValue({ timeRecordsPage: [], isLoadingRecords: false });
-    (useLogs as any).mockReturnValue({ logsPage: { data: [], total: 0 }, isLoadingLogs: false });
     (useCorrectionRequests as any).mockReturnValue({
       requests: [],
       isLoadingRequests: false,

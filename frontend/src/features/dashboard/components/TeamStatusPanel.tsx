@@ -3,7 +3,7 @@ import { DailyTimeRecord } from "../../../types/index";
 import { WidgetContainer } from "./ui/WidgetContainer";
 import { MetricGrid, useTeamMetrics } from "./ui/MetricGrid";
 import DashboardRow from "./ui/DashboardRow";
-import { useTeamStatusLogic } from "../hooks/useTeamStatusLogic";
+import { useTeamStatusData } from "../hooks/useTeamStatusData";
 
 interface TeamStatusPanelProps {
   onUnscheduledPresentDoubleClick: (record: DailyTimeRecord) => void;
@@ -17,7 +17,7 @@ export const TeamStatusPanel: React.FC<TeamStatusPanelProps> = ({
   openPresentModal,
 }) => {
   const { teamStatus, anomaliesCount, unscheduledPresent, hasUnscheduledPresent } =
-    useTeamStatusLogic();
+    useTeamStatusData();
 
   const metrics = useTeamMetrics(
     teamStatus.present,

@@ -5,13 +5,13 @@ import TimeRecordTable from "../../../features/time-control/components/TimeRecor
 import { EnrichedTimeRecord } from "../../../types/derived";
 import { useToasts } from "../../../hooks/useToasts";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
-import { useLogs } from "../../../hooks/useLogs";
+import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
 import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
 
 // Mock hooks and components
 vi.mock("../../../hooks/useToasts");
 vi.mock("../../../hooks/useIntersectionObserver");
-vi.mock("../../../hooks/useLogs");
+vi.mock("../../../hooks/queries/useAuditLogsInfinite");
 vi.mock("../../../hooks/useCorrectionRequests");
 vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: vi.fn(),
@@ -128,10 +128,9 @@ describe("TimeRecordTable Component", () => {
     vi.mocked(useIntersectionObserver).mockReturnValue({
       isIntersecting: false,
     } as unknown as IntersectionObserverEntry);
-    vi.mocked(useLogs).mockReturnValue({
-      logsPage: { data: [] },
-      isLoadingLogs: false,
-    } as any);
+    vi.mocked(useAuditLogsInfinite).mockReturnValue({
+      data: { pages: [{ data: [], total: 0 }] },
+    } as never);
     vi.mocked(useCorrectionRequests).mockReturnValue({
       requests: [],
       isLoading: false,

@@ -27,10 +27,6 @@ vi.mock("../../../components/layout/Sidebar", () => ({
   ),
 }));
 
-vi.mock("../../../components/ui/ScreenSizeIndicator", () => ({
-  default: () => <div data-testid="mock-screen-indicator" />,
-}));
-
 describe("Responsive Layout & Viewport Coverage Suite", () => {
   beforeEach(() => {
     vi.restoreAllMocks();

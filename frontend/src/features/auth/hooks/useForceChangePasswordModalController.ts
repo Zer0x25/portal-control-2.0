@@ -32,7 +32,7 @@ import {
 interface UseForceChangePasswordModalControllerParams {
   /** El modal esta abierto. */
   readonly isOpen: boolean;
-  /** Cierra el modal (en la app es `closeForcePasswordChangeModal`). */
+  /** Limpia la señal de sesión que activa este modal bloqueante. */
   readonly onClose: () => void;
 }
 
