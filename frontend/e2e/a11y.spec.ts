@@ -8,8 +8,16 @@ import { withWorker } from "./helpers/worker-factory";
 // (TD-001 llevó el contraste a 0 serious en 3 páginas × 2 temas, 2026-10-04).
 // Moderadas (landmarks/region/heading-order) quedan como backlog en consola.
 
-async function expectNoBlockingA11y(page: import("@playwright/test").Page, label: string) {
-  const results = await new AxeBuilder({ page }).analyze();
+async function expectNoBlockingA11y(
+  page: import("@playwright/test").Page,
+  label: string,
+  include?: string,
+) {
+  const builder = new AxeBuilder({ page });
+  // Spec 036 AC6: la tabla de reportes se audita como subárbol para no
+  // mezclar deuda de a11y preexistente del resto de la pestaña.
+  if (include) builder.include(include);
+  const results = await builder.analyze();
   const blocking = results.violations.filter(
     (v) => v.impact === "critical" || v.impact === "serious",
   );
@@ -48,6 +56,25 @@ async function gotoDark(page: import("@playwright/test").Page) {
   // El tema "system" (default sin preferencia guardada) resuelve por media
   // query al cargar: setearla antes de navegar basta para forzar dark.
   await page.emulateMedia({ colorScheme: "dark" });
+}
+
+async function openReportsTable(
+  page: import("@playwright/test").Page,
+  request: import("@playwright/test").APIRequestContext,
+) {
+  await loginFast(page, request, "admin");
+  await page.goto("/#/dashboard-supervisor?tab=reports");
+
+  const generate = page.getByRole("button", { name: /generar reporte/i });
+  await expect(generate).toBeVisible({ timeout: 30000 });
+  await generate.click();
+
+  const grid = page.getByRole("grid", {
+    name: /resumen de reporte por empleado|reporte diario del empleado/i,
+  });
+  await expect(grid).toBeVisible({ timeout: 60000 });
+  await page.waitForTimeout(1500); // settle de animaciones y celdas lazy
+  return grid;
 }
 
 test.describe("Accesibilidad axe-core", () => {
@@ -129,5 +156,16 @@ test.describe("Accesibilidad axe-core", () => {
       await page.waitForTimeout(2000);
       await expectNoBlockingA11y(page, "worker-dark");
     });
+  });
+
+  test("tabla de reportes light sin violaciones bloqueantes", async ({ page, request }) => {
+    await openReportsTable(page, request);
+    await expectNoBlockingA11y(page, "reports-table-light", '[role="grid"]');
+  });
+
+  test("tabla de reportes dark sin violaciones bloqueantes", async ({ page, request }) => {
+    await gotoDark(page);
+    await openReportsTable(page, request);
+    await expectNoBlockingA11y(page, "reports-table-dark", '[role="grid"]');
   });
 });

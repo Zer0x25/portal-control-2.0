@@ -16,6 +16,8 @@ interface SortableHeaderProps<T> {
   className?: string;
   style?: React.CSSProperties;
   as?: "th" | "div";
+  /** Nombre accesible explícito cuando `title` no es texto plano. */
+  ariaLabel?: string;
 }
 
 const SORT_BUTTON_CLASS =
@@ -30,6 +32,7 @@ const SortableHeader = <T,>({
   className = "",
   style,
   as = "th",
+  ariaLabel,
 }: SortableHeaderProps<T>) => {
   const isSorted = sortConfig?.key === sortKey;
   const isAscending = isSorted && sortConfig?.direction === "ascending";
@@ -57,7 +60,8 @@ const SortableHeader = <T,>({
 
   const thSortableClass = `px-4 h-[48px] text-left text-[13px] font-bold uppercase tracking-widest cursor-pointer group select-none transition-all duration-150 hover:bg-token-surface-active ${className}`;
 
-  const accessibleName = typeof title === "string" ? `Ordenar por ${title}` : "Ordenar columna";
+  const accessibleName =
+    ariaLabel ?? (typeof title === "string" ? `Ordenar por ${title}` : "Ordenar columna");
 
   const ariaSortProps: React.AriaAttributes =
     as === "th" ? { "aria-sort": ariaSort as React.AriaAttributes["aria-sort"] } : {};
