@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.36.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.35.0...v8.36.0) (2026-10-23)
+
+
+### Features
+
+* **frontend:** add design system catalog and token pipeline ([#123](https://github.com/Zer0x25/portal-control-2.0/issues/123)) ([a0b6f88](https://github.com/Zer0x25/portal-control-2.0/commit/a0b6f8833742a3a3dbf1d304785781590671551d))
+* **frontend:** implement spec 037 rendering observability ([#121](https://github.com/Zer0x25/portal-control-2.0/issues/121)) ([376f293](https://github.com/Zer0x25/portal-control-2.0/commit/376f2931dba2522fc07fb6931d35ccbc98af4e06))
+
 ## [8.35.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.34.0...v8.35.0) (2026-10-22)
 
 
