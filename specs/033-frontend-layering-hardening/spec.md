@@ -1,6 +1,6 @@
 # Spec 033: Frontend Layering Hardening
 
-- Estado: Implementado localmente — pendiente de merge
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0023-frontend-layering-hardening.md](file:///docs/adr/0023-frontend-layering-hardening.md) (extiende [0020-design-system-governance.md](file:///docs/adr/0020-design-system-governance.md) y [0022-ui-ux-consolidation.md](file:///docs/adr/0022-ui-ux-consolidation.md))
