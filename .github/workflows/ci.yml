@@ -305,17 +305,17 @@ jobs:
         run: npm run validate:ci:coverage
 
       - name: Configure isolated staging credentials
-        working-directory: ..
+        working-directory: .
         run: |
           sed '/^JWT_SECRET=/d; /^SEED_ADMIN_PASSWORD=/d' .env.staging.example > .env.staging
           printf '\nJWT_SECRET=%s\nSEED_ADMIN_PASSWORD=%s\n' "$GITHUB_RUN_ID" "999.666" >> .env.staging
 
       - name: Start staging stack for Lighthouse
-        working-directory: ..
+        working-directory: .
         run: docker compose --project-name "portal-control-staging-${GITHUB_RUN_ID}" --env-file .env.staging -f compose.staging.yaml up -d --build
 
       - name: Wait for staging gateway
-        working-directory: ..
+        working-directory: .
         run: |
           for attempt in $(seq 1 60); do
             if curl -sf http://127.0.0.1:8080 > /dev/null; then
@@ -348,7 +348,7 @@ jobs:
 
       - name: Stop staging stack
         if: always() && hashFiles('.env.staging') != ''
-        working-directory: ..
+        working-directory: .
         run: docker compose --project-name "portal-control-staging-${GITHUB_RUN_ID}" --env-file .env.staging -f compose.staging.yaml down
 
       - name: Generate Frontend Summary

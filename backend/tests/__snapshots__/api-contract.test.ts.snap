@@ -1089,8 +1089,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
           "type": {
             "enum": [
-              "Civil",
-              "Religioso",
+              "Nacional",
+              "Regional",
+              "Específico",
             ],
             "type": "string",
           },
