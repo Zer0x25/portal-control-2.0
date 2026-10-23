@@ -1,11 +1,11 @@
 import { StateCreator } from "zustand";
 import { SyncState } from "../../types/index";
 import { AppState } from "../types";
-import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
 import { refreshActiveQueriesForSync } from "../../lib/querySync";
+import { healthQueryOptions, type HealthData } from "../../hooks/queries/useHealthQuery";
 import { logger } from "../../utils/logger";
 
 export interface SyncSlice {
@@ -205,7 +205,16 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
   },
 
   validateInstanceId: async () => {
-    const health = await configService.getHealth();
+    let health: HealthData | undefined;
+    try {
+      // La validación debe comprobar la instancia actual, no reutilizar una
+      // respuesta antigua; `fetchQuery` aún comparte el promise si ya está en vuelo.
+      health = await queryClient.fetchQuery({ ...healthQueryOptions, staleTime: 0 });
+    } catch (error) {
+      logger.error("Error fetching health for instance validation:", error);
+      return true; // Fail safe
+    }
+
     if (!health || !health.instanceId) return true; // Fail safe
 
     const localInstanceId = localStorage.getItem("db_instance_id");

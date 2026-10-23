@@ -4,6 +4,7 @@ import { queryKeys } from "../../lib/queryKeys";
 
 export interface HealthData {
   status: "healthy" | "degraded";
+  instanceId?: string | null;
   timestamp: string;
   uptime: number;
   system: {
@@ -61,6 +62,20 @@ export interface HealthResponse {
 
 export const HEALTH_QUERY_KEY = queryKeys.systemHealth();
 
+/** Opciones compartidas para que el arranque reutilice el sondeo de salud. */
+export const healthQueryOptions = {
+  queryKey: HEALTH_QUERY_KEY,
+  queryFn: async () => {
+    // Use type assertion for the path since /health might not be in the auto-generated types yet
+    const response = await apiClient.get("/health" as never, {
+      timeoutMs: 5000,
+      retry: false,
+    });
+    return (response as unknown as HealthResponse).data;
+  },
+  staleTime: 15000,
+};
+
 /**
  * Single source of truth for backend liveness (Fase 1: shared query).
  * 30s poll replaces the former 3x10s independent fetch loops
@@ -71,17 +86,8 @@ export const HEALTH_QUERY_KEY = queryKeys.systemHealth();
  */
 export const useHealthQuery = (options: { refetchInterval?: number } = {}) => {
   return useQuery({
-    queryKey: HEALTH_QUERY_KEY,
-    queryFn: async () => {
-      // Use type assertion for the path since /health might not be in the auto-generated types yet
-      const response = await apiClient.get("/health" as never, {
-        timeoutMs: 5000,
-        retry: false,
-      });
-      return (response as unknown as HealthResponse).data;
-    },
+    ...healthQueryOptions,
     refetchInterval: options.refetchInterval ?? 30000,
-    staleTime: 15000,
     gcTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });

@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { performance } from "node:perf_hooks";
+import { expect, test, type Page, type Request } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
 import { attachPerformanceReport, summarizePerformance } from "./helpers/performance-metrics";
 import performanceRouteDefinitions from "../performance-routes.json" with { type: "json" };
@@ -77,26 +78,57 @@ test.describe.serial("Render Performance", () => {
     page,
   }, testInfo) => {
     const apiPaths: string[] = [];
-    const inFlight = new Set<string>();
+    const inFlight = new Set<Request>();
+    const requestStartTimes = new Map<Request, number>();
+    const responseStatuses = new Map<Request, number>();
+    const apiRequestTimings: {
+      path: string;
+      startOffsetMs: number;
+      durationMs: number;
+      finishOffsetMs: number;
+      status: number | null;
+    }[] = [];
     let lastApiActivity = Date.now();
+    const navigationStartedAt = performance.now();
     const trackRequest = (request: import("@playwright/test").Request) => {
       const url = new URL(request.url());
       if (!url.pathname.startsWith("/api/")) return;
       apiPaths.push(url.pathname);
-      inFlight.add(request.url());
+      inFlight.add(request);
+      requestStartTimes.set(request, performance.now());
       lastApiActivity = Date.now();
     };
-    const finishRequest = (request: import("@playwright/test").Request) => {
-      if (!inFlight.delete(request.url())) return;
+    const recordResponseStatus = (response: import("@playwright/test").Response) => {
+      const request = response.request();
+      if (requestStartTimes.has(request)) responseStatuses.set(request, response.status());
+    };
+    const finishRequest = (request: Request) => {
+      if (!inFlight.delete(request)) return;
+      const startTime = requestStartTimes.get(request);
+      if (startTime !== undefined) {
+        const finishTime = performance.now();
+        apiRequestTimings.push({
+          path: new URL(request.url()).pathname,
+          startOffsetMs: Number((startTime - navigationStartedAt).toFixed(2)),
+          durationMs: Number((finishTime - startTime).toFixed(2)),
+          finishOffsetMs: Number((finishTime - navigationStartedAt).toFixed(2)),
+          status: responseStatuses.get(request) ?? null,
+        });
+        requestStartTimes.delete(request);
+        responseStatuses.delete(request);
+      }
       lastApiActivity = Date.now();
     };
     page.on("request", trackRequest);
+    page.on("response", recordResponseStatus);
     page.on("requestfinished", finishRequest);
     page.on("requestfailed", finishRequest);
 
     await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+    const mainContentVisibleOffsetMs = Number((performance.now() - navigationStartedAt).toFixed(2));
     await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+    const serverClockVisibleOffsetMs = Number((performance.now() - navigationStartedAt).toFixed(2));
 
     const quietDeadline = Date.now() + 15_000;
     while (Date.now() < quietDeadline) {
@@ -115,26 +147,30 @@ test.describe.serial("Render Performance", () => {
       capturedAt: new Date().toISOString(),
       baseUrl,
       route: "/#/dashboard",
+      mainContentVisibleOffsetMs,
+      serverClockVisibleOffsetMs,
       apiRequestCount: apiPaths.length,
       uniqueApiEndpointCount: requestCounts.size,
       duplicateEndpoints,
       apiPaths,
+      apiRequestTimings: [...apiRequestTimings].sort((a, b) => b.durationMs - a.durationMs),
     };
     await attachPerformanceReport(testInfo, "dashboard-startup-api-requests.json", report);
 
     expect(inFlight.size, "Dashboard API requests should settle after startup").toBe(0);
+    expect(
+      apiRequestTimings,
+      "every API request should include a complete duration and status",
+    ).toHaveLength(apiPaths.length);
     expect(apiPaths, "the public kiosk list belongs only to kiosk mode").not.toContain(
       "/api/employees/kiosk",
     );
-    expect(apiPaths.length, "baseline Dashboard startup used 32 API requests").toBeLessThan(32);
+    expect(apiPaths.length, "spec 042 recorded 21 Dashboard startup API requests").toBeLessThan(21);
     expect(
-      duplicateEndpoints.length,
-      "baseline Dashboard startup repeated 11 endpoint paths",
-    ).toBeLessThan(11);
-    expect(
-      duplicateEndpoints.filter(({ path }) => path !== "/api/health"),
-      "only the independent instance-validation and health-indicator checks may still repeat",
+      duplicateEndpoints,
+      "Dashboard startup should request each API endpoint at most once",
     ).toEqual([]);
+    expect(apiPaths.filter((path) => path === "/api/health").length).toBeLessThanOrEqual(1);
   });
 
   test("Audit Logs virtualized scrolling frame distribution", async ({ page }, testInfo) => {
