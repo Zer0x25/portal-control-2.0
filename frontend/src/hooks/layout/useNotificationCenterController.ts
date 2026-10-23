@@ -19,6 +19,7 @@ export const useNotificationCenterController = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // These callbacks are passed to the notification menu and its click handlers.
   const toggleOpen = useCallback(() => {
     setIsOpen((prev) => !prev);
   }, []);

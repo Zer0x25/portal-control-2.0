@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useQuickNotes } from "../../hooks/useQuickNotes";
 import { BellIcon, CheckIcon, SparklesIcon } from "../../components/ui/icons/index";
 import { useAudio } from "../../hooks/useAudio";
@@ -7,6 +7,10 @@ import { Z } from "../../constants/zScale";
 
 const INTERVALS = [10, 15, 20, 25, 30]; // in minutes
 const STORAGE_KEY = "portal_reminder_next_trigger";
+const getNextInterval = () => {
+  const randomMin = INTERVALS[Math.floor(Math.random() * INTERVALS.length)];
+  return randomMin * 60 * 1000;
+};
 
 /**
  * Sistema de Recordatorios Ambientales
@@ -24,17 +28,13 @@ const AmbientReminderManager: React.FC = () => {
   const [activeNote, setActiveNote] = useState<QuickNote | null>(null);
   const [nextTrigger, setNextTrigger] = useState<number | null>(null);
 
-  const getNextInterval = useCallback(() => {
-    const randomMin = INTERVALS[Math.floor(Math.random() * INTERVALS.length)];
-    return randomMin * 60 * 1000;
-  }, []);
-
+  // Timer effects use this identity as a dependency; only the clock and setter are read.
   const scheduleNext = useCallback(() => {
     const delay = getNextInterval();
     const triggerAt = Date.now() + delay;
     setNextTrigger(triggerAt);
     localStorage.setItem(STORAGE_KEY, triggerAt.toString());
-  }, [getNextInterval]);
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);

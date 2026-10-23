@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import {
@@ -54,12 +54,9 @@ export const useRejectionReasonController = ({
     reset({ rejectionReason: "" });
   }, [isOpen, reset]);
 
-  const handleReasonChange = useCallback(
-    (value: string) => {
-      setValue("rejectionReason", value);
-    },
-    [setValue],
-  );
+  const handleReasonChange = (value: string) => {
+    setValue("rejectionReason", value);
+  };
 
   return {
     values: form.values,

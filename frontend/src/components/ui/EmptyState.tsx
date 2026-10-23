@@ -22,10 +22,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       data-testid="empty-state"
-      className={`flex flex-col items-center justify-center py-16 px-8 text-center rounded-md border border-dashed border-token-border-technical bg-token-surface-stripe ${className}`}
+      className={`@container flex flex-col items-center justify-center py-10 px-5 @sm:py-16 @sm:px-8 text-center rounded-md border border-dashed border-token-border-technical bg-token-surface-stripe ${className}`}
     >
       {icon && <IconBox icon={icon} variant="neutral" size="lg" className="mb-6 opacity-50" />}
-      <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tight mb-2">
+      <h3 className="text-base @sm:text-lg font-black text-token-text-primary uppercase tracking-tight mb-2">
         {title}
       </h3>
       {description && (

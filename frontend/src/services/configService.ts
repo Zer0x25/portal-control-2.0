@@ -1,6 +1,7 @@
 import { request as apiRequest } from "./apiClient";
 import { API_ORIGIN_URL } from "./apiBase";
 import { ValidateClosureResponse } from "../types/supervisor";
+import { logger } from "../utils/logger";
 
 type CompanyPolicy = {
   url: string;
@@ -173,7 +174,7 @@ export const configService = {
       if (!result.ok) return null;
       return result.data ?? null;
     } catch (error) {
-      console.error("Error fetching server time:", error);
+      logger.error("Error fetching server time:", error);
       return null;
     }
   },
@@ -198,7 +199,7 @@ export const configService = {
         instanceId: payload?.instanceId ?? null,
       };
     } catch (error) {
-      console.error("Error fetching health:", error);
+      logger.error("Error fetching health:", error);
       return null;
     }
   },

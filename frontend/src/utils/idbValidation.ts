@@ -17,6 +17,7 @@ import {
   KpiCacheItemSchema,
   CalendarCacheItemSchema,
 } from "../types/schemas";
+import { logger } from "./logger";
 
 // Map stores to their Zod validation schemas. Lives in its own chunk,
 // loaded via dynamic import() only on cache writes — never in boot preload.
@@ -48,7 +49,7 @@ export const validateIdbItem = (storeName: string, item: unknown): void => {
     schema.parse(item);
   } catch (e) {
     if (e instanceof z.ZodError) {
-      console.error(`Validation failed for store '${storeName}':`, e.issues);
+      logger.error(`Validation failed for store '${storeName}':`, e.issues);
       throw new Error(`Invalid data structure for '${storeName}'.`, { cause: e });
     }
     throw e;
@@ -74,19 +75,19 @@ export const filterValidIdbItems = <T>(storeName: string, items: T[]): T[] => {
       if (validationErrors <= 5) {
         // Log only the first 5 errors to avoid spamming the console
         if (e instanceof z.ZodError) {
-          console.warn(
+          logger.warn(
             `[IDB Sync] Dropping invalid record in '${storeName}' at index ${i}:`,
             JSON.stringify(e.issues, null, 2),
           );
         } else {
-          console.warn(`[IDB Sync] Dropping invalid record in '${storeName}' at index ${i}:`, e);
+          logger.warn(`[IDB Sync] Dropping invalid record in '${storeName}' at index ${i}:`, e);
         }
       }
     }
   }
 
   if (validationErrors > 0) {
-    console.warn(
+    logger.warn(
       `[IDB Sync] Dropped ${validationErrors} invalid records in '${storeName}'. Syncing remaining ${validItems.length} valid items...`,
     );
   }

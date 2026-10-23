@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { User } from "../../../types/index";
 import { useUsers } from "../../../hooks/useUsers";
 import { useEmployees } from "../../../hooks/useEmployees";
@@ -42,7 +42,7 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
   const pageSize = isMobile ? 30 : 60;
   const [visibleCount, setVisibleCount] = useState(pageSize);
 
-  const processedUsers = useMemo(() => {
+  const processedUsers = (() => {
     let filtered = allUsers;
     if (debouncedSearchTerm) {
       const search = debouncedSearchTerm.toLowerCase();
@@ -57,11 +57,9 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
       );
     }
     return filtered;
-  }, [allUsers, debouncedSearchTerm, activeEmployees]);
+  })();
 
-  const paginatedUsers = useMemo(() => {
-    return processedUsers.slice(0, visibleCount);
-  }, [processedUsers, visibleCount]);
+  const paginatedUsers = processedUsers.slice(0, visibleCount);
 
   const hasNextPage = visibleCount < processedUsers.length;
 

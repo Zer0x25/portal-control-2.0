@@ -30,6 +30,7 @@ interface AssignmentListMobileProps {
 // Estimated row height for cards
 const ROW_HEIGHT = 160;
 
+// Spec 037 T11: keep the six-column 65 px table rows separate from the 160 px stacked mobile cards; see evidence/responsive-exceptions.md.
 const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
   assignments,
   isLoading,
@@ -46,28 +47,24 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
   const parentRef = useRef<HTMLDivElement>(null);
   const today = toBusinessDateChile();
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the 160 px mobile estimate; Compiler cannot memoize TanStack Virtual's measurement API.
   const rowVirtualizer = useVirtualizer({
     count: assignments.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
   });
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   // Infinite Scroll Trigger
   useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
+    const [lastItem] = [...virtualItems].reverse();
     if (!lastItem) return;
 
     if (lastItem.index >= assignments.length - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    fetchNextPage,
-    assignments.length,
-    isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, fetchNextPage, assignments.length, isFetchingNextPage, virtualItems]);
 
   return (
     <div className="border border-token-border-subtle rounded-xl shadow-lg bg-token-surface-card overflow-hidden">

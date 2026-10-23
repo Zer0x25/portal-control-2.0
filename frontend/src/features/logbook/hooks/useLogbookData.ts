@@ -14,6 +14,7 @@ import { idFactory } from "../../../utils/idFactory";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { shiftReportService } from "../../../services/shiftReportService";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import { logger } from "../../../utils/logger";
 
 export const useLogbookData = () => {
   const { currentUser, logout } = useAuth();
@@ -140,7 +141,7 @@ export const useLogbookData = () => {
             await punch(currentUser.employeeId, "out");
             addToast("Marcación de salida registrada automáticamente.", "success");
           } catch (error) {
-            console.error("Auto clock-out failed:", error);
+            logger.error("Auto clock-out failed:", error);
             addToast("No se pudo registrar la salida automática del personal.", "warning");
           }
         }
@@ -149,7 +150,7 @@ export const useLogbookData = () => {
         navigate(ROUTES.DASHBOARD);
       }
     } catch (error) {
-      console.error("Error closing shift:", error);
+      logger.error("Error closing shift:", error);
       addToast("Error al cerrar el turno.", "error");
       setShowCloseShiftConfirmation(false);
     }
@@ -174,7 +175,7 @@ export const useLogbookData = () => {
       await shiftReportService.save(updatedShift);
       await loadShiftReports();
     } catch (error) {
-      console.error("Error updating shift report:", error);
+      logger.error("Error updating shift report:", error);
       addToast("Error al actualizar el reporte de turno.", "error");
     }
   };
@@ -193,7 +194,7 @@ export const useLogbookData = () => {
       triggerBrowserDownload(blob, filename);
       addToast("Descarga iniciada", "success");
     } catch (error) {
-      console.error("Download error:", error);
+      logger.error("Download error:", error);
       addToast("Error al descargar el PDF", "error");
     }
   };
@@ -204,7 +205,7 @@ export const useLogbookData = () => {
       triggerBrowserDownload(blob, filename);
       addToast("Exportación Excel iniciada", "success");
     } catch (error) {
-      console.error("Export error:", error);
+      logger.error("Export error:", error);
       addToast("Error al exportar a Excel", "error");
     }
   };

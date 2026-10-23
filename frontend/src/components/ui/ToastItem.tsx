@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { ToastMessage } from "../../types/index";
 import {
   CheckCircleIcon,
@@ -21,7 +21,8 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
   const { id, message, type, duration } = toast;
   const [closing, setClosing] = React.useState(false);
 
-  const dismiss = React.useCallback(() => {
+  // Keep the timeout callback stable for this toast identity.
+  const dismiss = useCallback(() => {
     setClosing((prev) => {
       if (!prev) setTimeout(() => onDismiss(id), EXIT_MS);
       return true;
@@ -35,7 +36,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
     }
   }, [id, duration, dismiss]);
 
-  const statusConfig = useMemo(() => {
+  const statusConfig = (() => {
     switch (type) {
       case "success":
         return {
@@ -73,7 +74,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
           glowColor: "shadow-black/10",
         };
     }
-  }, [type]);
+  })();
 
   const { Icon, color } = statusConfig;
 

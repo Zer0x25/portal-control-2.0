@@ -7,6 +7,7 @@ import {
   KpiWorkerResult,
 } from "../types";
 import { apiClient, request as apiRequest, type BinaryResponse } from "./apiClient";
+import { logger } from "../utils/logger";
 
 // Simplified signature delegating to backend
 export const runKpiCalculation = async (payload: KpiWorkerPayload): Promise<KpiWorkerResult> => {
@@ -24,7 +25,7 @@ export const runKpiCalculation = async (payload: KpiWorkerPayload): Promise<KpiW
       },
     });
   } catch (error) {
-    console.error("Error fetching KPI summary from backend:", error);
+    logger.error("Error fetching KPI summary from backend:", error);
     throw error;
   }
 };
@@ -50,7 +51,7 @@ export const getDashboardOverview = async (): Promise<DashboardOverviewResponse>
       unscheduledPresent: result.unscheduledPresent ?? [],
     };
   } catch (error) {
-    console.error("Error calling dashboard overview API:", error);
+    logger.error("Error calling dashboard overview API:", error);
     throw error;
   }
 };
@@ -70,7 +71,7 @@ export const getDetailedReport = async (
       details: result.details ?? {},
     };
   } catch (error) {
-    console.error("Error fetching detailed report from backend:", error);
+    logger.error("Error fetching detailed report from backend:", error);
     throw error;
   }
 };
@@ -87,7 +88,7 @@ export const getDailyPlanningSummary = async (): Promise<DailyPlanningSummaryRes
       stats: result.stats ?? {},
     };
   } catch (error) {
-    console.error("Error calling daily planning summary API:", error);
+    logger.error("Error calling daily planning summary API:", error);
     throw error;
   }
 };
@@ -126,7 +127,7 @@ export const downloadReportPDF = async (filters: {
         binary.filename ?? `Reporte_Asistencia_${filters.startDate}_al_${filters.endDate}.pdf`,
     };
   } catch (error) {
-    console.error("Error downloading PDF:", error);
+    logger.error("Error downloading PDF:", error);
     throw error;
   }
 };
@@ -163,7 +164,7 @@ export const downloadReportExcel = async (filters: {
         binary.filename ?? `Reporte_Asistencia_${filters.startDate}_al_${filters.endDate}.xlsx`,
     };
   } catch (error) {
-    console.error("Error downloading Excel:", error);
+    logger.error("Error downloading Excel:", error);
     throw error;
   }
 };

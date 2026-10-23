@@ -20,6 +20,7 @@ interface PatternListDesktopProps {
   onDelete: (id: string) => void;
 }
 
+// Spec 037 T11: the schedule table and stacked mobile card carry different detail density; preserve 65/120 px virtualizer estimates.
 const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
   patterns,
   isLoading,
@@ -34,26 +35,22 @@ const PatternListDesktop: React.FC<PatternListDesktopProps> = ({
 }) => {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the 65 px desktop estimate; Compiler cannot memoize TanStack Virtual's measurement API.
   const rowVirtualizer = useVirtualizer({
     count: patterns.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => LIST_ROW_HEIGHT,
     overscan: 5,
   });
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse();
+    const [lastItem] = [...virtualItems].reverse();
     if (!lastItem) return;
     if (lastItem.index >= patterns.length - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [
-    hasNextPage,
-    fetchNextPage,
-    patterns.length,
-    isFetchingNextPage,
-    rowVirtualizer.getVirtualItems(),
-  ]);
+  }, [hasNextPage, fetchNextPage, patterns.length, isFetchingNextPage, virtualItems]);
 
   // Grid layout consistent with Assignments/Leaves
   // Columns: Name | Cycle | Max Hours | Color | Actions

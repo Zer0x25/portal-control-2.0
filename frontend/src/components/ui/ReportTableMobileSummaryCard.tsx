@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import { ReportStat } from "../../types/index";
 import { formatDecimalHoursToHHMM } from "../../utils/formatters";
 
@@ -6,6 +6,7 @@ interface MobileSummaryCardProps {
   stat: ReportStat;
 }
 
+// Spec 037 T13: summary cards combine day/hour pairs and anomaly counts; they remain a compact mobile presentation for this separate report schema.
 const ReportTableMobileSummaryCard: React.FC<MobileSummaryCardProps> = ({ stat }) => (
   <div className="relative overflow-hidden p-4 rounded-2xl shadow-xl shadow-black/5 bg-token-surface-card backdrop-blur-xl border border-token-border-subtle animate-in fade-in [--tw-enter-translate-y:10px] [animation-duration:200ms]">
     <div className="absolute top-0 left-0 w-1.5 h-full bg-token-accent-brand"></div>
@@ -66,4 +67,4 @@ const ReportTableMobileSummaryCard: React.FC<MobileSummaryCardProps> = ({ stat }
   </div>
 );
 
-export default memo(ReportTableMobileSummaryCard);
+export default ReportTableMobileSummaryCard;

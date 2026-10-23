@@ -7,6 +7,7 @@ import { useToasts } from "../useToasts";
 import { useEffect, useState } from "react";
 import { idbGetAll, idbPutBulk, STORES } from "../../utils/indexedDB";
 import { queryKeys } from "../../lib/queryKeys";
+import { logger } from "../../utils/logger";
 
 export interface TimeRecordsFilterParams {
   pageSize: number;
@@ -107,7 +108,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
         // Background persistence to IDB
         if (result.data && result.data.length > 0 && params.filters?.showAnomalies !== true) {
           idbPutBulk(STORES.DAILY_TIME_RECORDS, result.data, true).catch((err) =>
-            console.warn("Failed to persist time records to IDB:", err),
+            logger.warn("Failed to persist time records to IDB:", err),
           );
         }
 

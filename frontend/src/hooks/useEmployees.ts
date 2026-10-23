@@ -7,10 +7,12 @@ import { shiftService } from "../services/shiftService";
 import { timeRecordService } from "../services/timeRecordService";
 import { employeeService } from "../services/employeeService";
 import { Employee, EmployeeStatus } from "../types";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { toBusinessDateChile } from "../utils/dateUtils";
 import { UserRole } from "../types/user";
 import { queryKeys } from "../lib/queryKeys";
+
+const EMPTY_EMPLOYEES: Employee[] = [];
 
 /**
  * Empleados: única fuente = `useEmployeesQuery` (spec 032 T5).
@@ -30,10 +32,10 @@ export const useEmployees = (_isKiosk: boolean = false) => {
   const invalidateEmployees = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.employees() });
 
-  const allEmployees = employeesQuery.data ?? [];
+  const allEmployees = employeesQuery.data ?? EMPTY_EMPLOYEES;
   const isLoading = employeesQuery.isLoading;
 
-  const kioskEmployees = kioskQuery.data ?? [];
+  const kioskEmployees = kioskQuery.data ?? EMPTY_EMPLOYEES;
   const isLoadingKioskEmployees = kioskQuery.isLoading;
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
     addToast(message, "error");
   }, [_isKiosk, kioskQuery.isError, kioskQuery.error, addToast]);
 
-  const data = useMemo(() => {
+  const data = (() => {
     if (_isKiosk) {
       const activeForWork = kioskEmployees
         .filter((e) => e.status === "Activo")
@@ -91,7 +93,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
       archived: archivedSorted,
       archivedCount: archivedSorted.length,
     };
-  }, [_isKiosk, allEmployees, currentUser, kioskEmployees]);
+  })();
 
   const getNextEmployeeId = () => {
     const list = data?.all || [];

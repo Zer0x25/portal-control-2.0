@@ -4,6 +4,7 @@ import tsParser from "@typescript-eslint/parser";
 import prettier from "eslint-plugin-prettier";
 import prettierConfig from "eslint-config-prettier";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 
 /**
@@ -20,7 +21,8 @@ const DATE_RESTRICTED_SYNTAX = [
   },
   {
     selector: "NewExpression[callee.name='Date'] > BinaryExpression > Literal[value='T00:00:00']",
-    message: "Evita new Date(... + 'T00:00:00'). Usa parseDateOnlyUTC/toBusinessDateChile según el caso.",
+    message:
+      "Evita new Date(... + 'T00:00:00'). Usa parseDateOnlyUTC/toBusinessDateChile según el caso.",
   },
   {
     selector: "NewExpression[callee.name='Date'] > Literal[value=/^\\d{4}-\\d{2}-\\d{2}$/]",
@@ -57,7 +59,8 @@ const VIEW_HOOK_RESTRICTED_SYNTAX = [
     message: "No uses el hook `use` de React 19 en *.view.tsx: una vista es presentacional puro.",
   },
   {
-    selector: "ImportDeclaration[source.value='react'] > ImportSpecifier[imported.name=/^use[A-Z]/]",
+    selector:
+      "ImportDeclaration[source.value='react'] > ImportSpecifier[imported.name=/^use[A-Z]/]",
     message:
       "No importes hooks de React en *.view.tsx: recibe el estado por props desde el container.",
   },
@@ -135,6 +138,7 @@ export default [
       "@typescript-eslint": typescript,
       prettier: prettier,
       "jsx-a11y": jsxA11y,
+      "react-hooks": reactHooks,
     },
     rules: {
       ...typescript.configs.recommended.rules,
@@ -148,7 +152,14 @@ export default [
       "no-redeclare": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      // An empty allow array is rejected by ESLint 10's schema. The default
+      // rule forbids every console method, with src/utils/logger.ts as the sole override.
+      "no-console": "error",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
+      "react-hooks/unsupported-syntax": "error",
+      "react-hooks/incompatible-library": "error",
+      "react-hooks/preserve-manual-memoization": "error",
       // Spec 031 Fase A / AC1: sandbox mínimo de accesibilidad. Subset core,
       // extensión progresiva solo con budget 0/0 intacto.
       "jsx-a11y/alt-text": "error",

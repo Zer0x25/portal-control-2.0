@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DailyTimeRecord, ClockingStatus } from "../../../types";
 import { useAuth } from "../../../hooks/useAuth";
 import {
@@ -53,7 +53,7 @@ export const useQuickActionModalController = ({
   );
   const isShiftOpen = Boolean(record && ["Laborando", "Colacion"].includes(record.status));
 
-  const statusConfig = useMemo(() => {
+  const statusConfig = (() => {
     if (!record) {
       return {
         label: "Desconocido",
@@ -69,7 +69,7 @@ export const useQuickActionModalController = ({
         text: "text-token-text-secondary",
       }
     );
-  }, [record]);
+  })();
 
   const finalDisabledState = !isArmed || isActionDisabled || isJustified || isLocked;
   const finalTooltip = isLocked

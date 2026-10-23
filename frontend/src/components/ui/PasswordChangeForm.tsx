@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Input from "./Input";
 import Button from "./Button";
 import { EyeIcon, EyeSlashIcon } from "./icons/index";
@@ -31,7 +31,7 @@ const getPasswordStrength = (password: string): PasswordStrength => {
 };
 
 const PasswordStrengthIndicator: React.FC<{ strength: PasswordStrength }> = ({ strength }) => {
-  const config = useMemo(() => {
+  const config = (() => {
     switch (strength) {
       case "weak":
         return { text: "Débil", color: "text-red-500" };
@@ -42,7 +42,7 @@ const PasswordStrengthIndicator: React.FC<{ strength: PasswordStrength }> = ({ s
       default:
         return { text: "", color: "" };
     }
-  }, [strength]);
+  })();
 
   if (strength === "none") return null;
 

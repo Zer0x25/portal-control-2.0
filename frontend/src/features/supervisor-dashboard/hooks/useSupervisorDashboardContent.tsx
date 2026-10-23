@@ -17,7 +17,7 @@ const AnalyticsTab = withSupervisorDashboardLazy(() => import("../components/Ana
  * Hook para manejar el rendering condicional del contenido del supervisor dashboard
  */
 export const useSupervisorDashboardContent = (activeTab: SupervisorActiveTab) => {
-  const renderContent = React.useCallback(() => {
+  const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return <OverviewTab />;
@@ -34,7 +34,7 @@ export const useSupervisorDashboardContent = (activeTab: SupervisorActiveTab) =>
       default:
         return null;
     }
-  }, [activeTab]);
+  };
 
   return { renderContent };
 };

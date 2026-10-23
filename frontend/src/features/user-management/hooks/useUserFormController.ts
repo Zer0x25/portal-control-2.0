@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
@@ -69,7 +69,7 @@ export const useUserFormController = ({
    * Schema con la regla que depende del contexto (en el alta la contraseña es
    * obligatoria; en la edicion no se toca).
    */
-  const schema = useMemo(() => buildUserFormSchema({ isEditing }), [isEditing]);
+  const schema = buildUserFormSchema({ isEditing });
 
   const form = useAppForm<UserFormValues>({
     schema,
@@ -94,43 +94,33 @@ export const useUserFormController = ({
    * El nombre de usuario no puede llevar tildes: se normaliza mientras se
    * escribe y se avisa con un aviso informativo (regla de la pantalla).
    */
-  const handleUsernameChange = useCallback(
-    (value: string) => {
-      const normalizedValue = normalizeString(value);
-      setValue("username", normalizedValue);
+  const handleUsernameChange = (value: string) => {
+    const normalizedValue = normalizeString(value);
+    setValue("username", normalizedValue);
 
-      if (value !== normalizedValue) {
-        addToast(
-          "Los nombres de usuario no pueden contener tildes y se han normalizado.",
-          "info",
-          3000,
-        );
-      }
-    },
-    [addToast, setValue],
-  );
+    if (value !== normalizedValue) {
+      addToast(
+        "Los nombres de usuario no pueden contener tildes y se han normalizado.",
+        "info",
+        3000,
+      );
+    }
+  };
 
   /** Roles que puede asignar el usuario en sesion. */
-  const roleOptions = useMemo(
-    () =>
-      USER_ROLES.filter((role) => ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[role]).map(
-        (role) => ({ value: role, label: role }),
-      ),
-    [currentUserRole],
-  );
+  const roleOptions = USER_ROLES.filter(
+    (role) => ROLE_HIERARCHY[currentUserRole] >= ROLE_HIERARCHY[role],
+  ).map((role) => ({ value: role, label: role }));
 
   /** Empleados que todavia no estan vinculados a otro usuario. */
-  const employeeOptions = useMemo(
-    () => [
-      { value: "", label: "-- SIN ASIGNAR --" },
-      ...activeEmployees
-        .filter(
-          (emp) => !existingUsers.some((u) => u.employeeId === emp.id && u.id !== editingUser?.id),
-        )
-        .map((emp) => ({ value: emp.id, label: emp.name })),
-    ],
-    [activeEmployees, existingUsers, editingUser],
-  );
+  const employeeOptions = [
+    { value: "", label: "-- SIN ASIGNAR --" },
+    ...activeEmployees
+      .filter(
+        (emp) => !existingUsers.some((u) => u.employeeId === emp.id && u.id !== editingUser?.id),
+      )
+      .map((emp) => ({ value: emp.id, label: emp.name })),
+  ];
 
   return {
     values: form.values,

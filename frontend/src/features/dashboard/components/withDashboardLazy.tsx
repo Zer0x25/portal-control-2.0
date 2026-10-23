@@ -30,21 +30,21 @@ export function withDashboardLazy<TProps extends object, TRef = unknown>(
  * Útil para precargar componentes basados en interacciones del usuario
  */
 export function useDashboardPreload() {
-  const preloadWelcomePanel = React.useCallback(() => {
+  const preloadWelcomePanel = () => {
     import("../components/WelcomePanel");
-  }, []);
+  };
 
-  const preloadQuickActions = React.useCallback(() => {
+  const preloadQuickActions = () => {
     import("../components/QuickActionsPanel");
-  }, []);
+  };
 
-  const preloadTeamStatus = React.useCallback(() => {
+  const preloadTeamStatus = () => {
     import("../components/TeamStatusPanel");
-  }, []);
+  };
 
-  const preloadTools = React.useCallback(() => {
+  const preloadTools = () => {
     import("../components/ToolsPanel");
-  }, []);
+  };
 
   return {
     preloadWelcomePanel,

@@ -15,6 +15,7 @@ import { useCalendarData } from "../../../hooks/useCalendarData";
 import { exportService } from "../../../services/exportService";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { openBlobInNewTab, triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import { logger } from "../../../utils/logger";
 
 export type CalendarViewMode = "month" | "week" | "day";
 type CalendarEntryType = "employee" | "group" | "holiday";
@@ -219,7 +220,7 @@ export const useShiftCalendarData = () => {
 
       addToast("Vista de impresión generada con éxito.", "success");
     } catch (error: unknown) {
-      console.error("Print Error:", error);
+      logger.error("Print Error:", error);
       addToast("Error al generar la vista de impresión.", "error");
     } finally {
       setIsPrinting(false);

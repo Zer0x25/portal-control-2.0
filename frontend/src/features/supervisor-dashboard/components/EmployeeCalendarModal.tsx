@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import { Employee } from "../../../types/index";
 import { useCalendarData } from "../../../hooks/useCalendarData";
@@ -23,8 +23,8 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const displayDate = useMemo(() => new Date(), []);
-  const filteredEmployees = useMemo(() => [employee], [employee.id]);
+  const displayDate = new Date();
+  const filteredEmployees = [employee];
 
   const { scheduleMap, isLoadingCalendar } = useCalendarData({
     viewMode: "month",

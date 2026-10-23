@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useMeterReadings } from "../../../hooks/useMeterReadings";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
@@ -114,10 +114,10 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
     setConfigToDelete(null);
   };
 
-  const availableUnits = useMemo(() => {
+  const availableUnits = (() => {
     if (!editingConfig || !editingConfig.category) return [];
     return METER_UNITS[editingConfig.category as MeterCategory] || [];
-  }, [editingConfig]);
+  })();
 
   const activeMetersCount = meterConfigs.length;
   const isLimitReached = activeMetersCount >= MAX_METERS;

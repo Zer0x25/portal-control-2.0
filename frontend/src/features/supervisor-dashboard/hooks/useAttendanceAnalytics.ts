@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
@@ -51,7 +50,7 @@ export function useAttendanceAnalytics(days: number = 30) {
     ...SUPERVISOR_DASHBOARD_CONFIG.analyticsCache,
   });
 
-  const stats = useMemo<AttendanceStats | null>(() => {
+  const stats = (() => {
     if (!attendanceData || attendanceData.length === 0) return null;
 
     const totalDays = attendanceData.length;
@@ -102,9 +101,9 @@ export function useAttendanceAnalytics(days: number = 30) {
       bestDay,
       worstDay,
     };
-  }, [attendanceData]);
+  })() as AttendanceStats | null;
 
-  const trends = useMemo(() => {
+  const trends = (() => {
     if (!attendanceData || attendanceData.length < 7) return null;
 
     const recent = attendanceData.slice(-7);
@@ -122,7 +121,7 @@ export function useAttendanceAnalytics(days: number = 30) {
       trend: change > 1 ? "up" : change < -1 ? "down" : "stable",
       change: Math.abs(change),
     };
-  }, [attendanceData]);
+  })();
 
   return {
     data: attendanceData,
@@ -141,7 +140,7 @@ export function useAttendanceAnalytics(days: number = 30) {
 export function useAttendanceTrends(days: number = 30) {
   const { data, isLoading } = useAttendanceAnalytics(days);
 
-  const trends = useMemo(() => {
+  const trends = (() => {
     if (!data || data.length < 7) return null;
 
     const recent = data.slice(-7);
@@ -158,7 +157,7 @@ export function useAttendanceTrends(days: number = 30) {
       recentAverage: recentAvg,
       previousAverage: previousAvg,
     };
-  }, [data]);
+  })();
 
   return {
     trends,

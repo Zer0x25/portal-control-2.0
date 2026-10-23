@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { ShiftReport } from "../../../types/index";
 import { useUsers } from "../../../hooks/useUsers";
 import { useEmployees } from "../../../hooks/useEmployees";
@@ -53,17 +53,14 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
   const { users } = useUsers();
   const { getEmployeeById } = useEmployees();
 
-  const getResponsibleDisplayName = useCallback(
-    (username: string): string => {
-      const user = users.find((u) => u.username === username);
-      if (user?.employeeId) {
-        const employee = getEmployeeById(user.employeeId);
-        return employee?.name || username;
-      }
-      return username;
-    },
-    [users, getEmployeeById],
-  );
+  const getResponsibleDisplayName = (username: string): string => {
+    const user = users.find((u) => u.username === username);
+    if (user?.employeeId) {
+      const employee = getEmployeeById(user.employeeId);
+      return employee?.name || username;
+    }
+    return username;
+  };
 
   if (!report) return null;
 

@@ -5,7 +5,7 @@ Aplicacion SPA para el sistema PORTAL, construida con React + Vite + TypeScript.
 ## Stack
 
 - React 19
-- Vite 7
+- Vite 8
 - TypeScript
 - TanStack Query v5
 - Zustand
@@ -20,6 +20,30 @@ npm run dev
 ```
 
 Frontend disponible en `http://localhost:5173`.
+
+## React Compiler
+
+React Compiler está activo en el servidor de desarrollo de Vite, Vitest y los
+builds de producción mediante `@vitejs/plugin-react` y `oxc-transform-react`.
+El build muestra diagnósticos de los componentes que el compilador omite. En
+componentes compilados, no agregues `useMemo`, `useCallback` o `React.memo`
+solo para estabilizar props de React; conserva memoización manual únicamente
+para hot paths medidos, suscripciones externas o componentes omitidos, y
+documenta el motivo junto al código.
+
+## Métricas web y budgets
+
+`web-vitals` se carga en tiempo ocioso y añade a Sentry los valores LCP, INP,
+CLS, FCP y TTFB con ruta, rol, dispositivo y conexión. Las transacciones de
+`browserTracingIntegration` siguen siendo la fuente canónica; solo una métrica
+degradada genera breadcrumb. Lighthouse CI mide las rutas con sesión sembrada
+y gatea LCP, CLS, FCP, respuesta del servidor y score general. INP se observa
+con `web-vitals` en campo; el modo de navegación de Lighthouse no produce una
+métrica INP sin interacción de usuario.
+
+Después del build, `npm run check:bundle-budget` mide `react-core`, `charts` y
+el precache del Service Worker. `npm run audit:memoization` enumera las
+llamadas manuales para auditar la política del compilador.
 
 ## Calidad
 

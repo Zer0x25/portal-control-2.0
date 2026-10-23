@@ -8,6 +8,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { normalizeString } from "../../../utils/stringUtils";
 import { getContractClockingStatus } from "../../../utils/mappings";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
+import { logger } from "../../../utils/logger";
 
 export interface ClockingPanelState {
   searchTerm: string;
@@ -166,7 +167,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
       }
       return true;
     } catch (error: unknown) {
-      console.error("Clocking error:", error);
+      logger.error("Clocking error:", error);
       return false;
     }
   };

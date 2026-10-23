@@ -84,7 +84,9 @@ export default defineConfig(({ mode }) => {
     base: "/",
     plugins: [
       tailwindcss(),
-      react(),
+      // Keep React Compiler identical in dev, Vitest, and production builds.
+      // Recoverable bail-outs are emitted by the plugin for auditability.
+      react({ compiler: { reportDiagnostics: true } }),
       fontPreloadPlugin(),
       VitePWA({
         registerType: "autoUpdate",

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import MetricCard, { type MetricTone } from "../../../../components/ui/MetricCard";
 
 interface MetricItem {
@@ -23,62 +23,52 @@ interface MetricGridProps {
  * Usado en el panel de equipo y otros lugares que necesiten métricas
  * Optimizado con React.memo y useMemo para máxima performance
  */
-export const MetricGrid: React.FC<MetricGridProps> = React.memo(
-  ({ metrics, columns = 3, gap = "md", className = "", showAnimation = true }) => {
-    // Memoizar configuraciones de grid para evitar recálculos
-    const gridCols = useMemo(
-      () => ({
-        1: "grid-cols-1",
-        2: "grid-cols-1 sm:grid-cols-2",
-        3: "grid-cols-1 sm:grid-cols-3",
-        4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
-      }),
-      [],
-    );
+export const MetricGrid: React.FC<MetricGridProps> = ({
+  metrics,
+  columns = 3,
+  gap = "md",
+  className = "",
+  showAnimation = true,
+}) => {
+  // Memoizar configuraciones de grid para evitar recálculos
+  const gridCols = {
+    1: "grid-cols-1",
+    2: "grid-cols-1 sm:grid-cols-2",
+    3: "grid-cols-1 sm:grid-cols-3",
+    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+  };
 
-    const gapClasses = useMemo(
-      () => ({
-        sm: "gap-2",
-        md: "gap-3",
-        lg: "gap-4",
-      }),
-      [],
-    );
+  const gapClasses = {
+    sm: "gap-2",
+    md: "gap-3",
+    lg: "gap-4",
+  };
 
-    // Memoizar clases del contenedor
-    const containerClasses = useMemo(
-      () =>
-        `
+  // Memoizar clases del contenedor
+  const containerClasses = `
     grid ${gridCols[columns]} ${gapClasses[gap]} ${className}
-  `.trim(),
-      [gridCols, columns, gapClasses, gap, className],
-    );
+  `.trim();
 
-    // Memoizar las métricas renderizadas para evitar re-renders
-    const renderedMetrics = useMemo(
-      () =>
-        metrics.map((metric, index) => (
-          <MetricCard
-            key={`${metric.title}-${index}`}
-            title={metric.title}
-            value={metric.value}
-            tone={metric.tone}
-            className={metric.className}
-            onClick={metric.onClick}
-          />
-        )),
-      [metrics],
-    );
+  // Memoizar las métricas renderizadas para evitar re-renders
+  const renderedMetrics = metrics.map((metric, index) => (
+    <MetricCard
+      key={`${metric.title}-${index}`}
+      title={metric.title}
+      value={metric.value}
+      tone={metric.tone}
+      className={metric.className}
+      onClick={metric.onClick}
+    />
+  ));
 
-    return (
-      <div
-        className={`${containerClasses} ${showAnimation ? "animate-in fade-in duration-200" : ""}`}
-      >
-        {renderedMetrics}
-      </div>
-    );
-  },
-);
+  return (
+    <div
+      className={`${containerClasses} ${showAnimation ? "animate-in fade-in duration-200" : ""}`}
+    >
+      {renderedMetrics}
+    </div>
+  );
+};
 
 MetricGrid.displayName = "MetricGrid";
 

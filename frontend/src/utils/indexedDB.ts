@@ -1,5 +1,6 @@
 import { IDBPDatabase, openDB, deleteDB } from "idb";
 import { AppSetting, Employee } from "../types/index";
+import { logger } from "./logger";
 
 export const DB_NAME = "SAPHRPortalDB";
 export const DB_VERSION = 22; // Incremented to flush worker-corrupted data
@@ -322,7 +323,7 @@ export const idbPutBulk = async <T>(
 
   const actuallyPersisted = items.length - skippedCount - unmodifiedCount;
   if (items.length > 50) {
-    console.warn(
+    logger.warn(
       `[IDB] Store '${storeName}': ${actuallyPersisted} updated, ${unmodifiedCount} skipped (no changes), ${skippedCount} items invalid/duplicates.`,
     );
   }
@@ -415,7 +416,7 @@ export const exportDB = async (): Promise<void> => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Error exporting database:", error);
+    logger.error("Error exporting database:", error);
     throw new Error("Failed to export database.", { cause: error });
   }
 };
@@ -455,7 +456,7 @@ export const importDB = async (file: File): Promise<void> => {
           }),
         );
 
-        console.warn("All stores cleared. Starting import...");
+        logger.warn("All stores cleared. Starting import...");
 
         // Populate all stores with imported data
         await Promise.all(
@@ -469,18 +470,18 @@ export const importDB = async (file: File): Promise<void> => {
           }),
         );
 
-        console.warn("Data import transaction prepared.");
+        logger.warn("Data import transaction prepared.");
 
         await tx.done;
-        console.warn("Import transaction completed.");
+        logger.warn("Import transaction completed.");
         resolve();
       } catch (error) {
-        console.error("Error during database import:", error);
+        logger.error("Error during database import:", error);
         reject(error);
       }
     };
     reader.onerror = (error) => {
-      console.error("Error reading file:", error);
+      logger.error("Error reading file:", error);
       reject(new Error("Failed to read file."));
     };
     reader.readAsText(file);
@@ -550,15 +551,15 @@ export const wipeAllData = async (): Promise<void> => {
     }
 
     // 2. Use deleteDB for a guaranteed fresh start
-    console.warn("🧨 Wiping IndexedDB data via deleteDB...");
+    logger.warn("🧨 Wiping IndexedDB data via deleteDB...");
     await deleteDB(DB_NAME, {
       blocked() {
-        console.warn("[IDB] Delete blocked - Reload may be required.");
+        logger.warn("[IDB] Delete blocked - Reload may be required.");
       },
     });
 
-    console.warn("🧨 Todas las tiendas locales han sido eliminadas exitosamente.");
+    logger.warn("🧨 Todas las tiendas locales han sido eliminadas exitosamente.");
   } catch (error) {
-    console.error("Error al vaciar IndexedDB:", error);
+    logger.error("Error al vaciar IndexedDB:", error);
   }
 };

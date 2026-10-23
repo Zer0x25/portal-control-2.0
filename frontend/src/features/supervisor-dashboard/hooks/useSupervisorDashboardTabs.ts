@@ -1,8 +1,17 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearchParams } from "react-router";
 import { SupervisorTab } from "../../../types/supervisor";
 
 export type SupervisorActiveTab = SupervisorTab;
+
+const VALID_SUPERVISOR_TABS = [
+  "dashboard",
+  "analytics",
+  "kpis",
+  "reports",
+  "employees",
+  "shifts",
+] as SupervisorActiveTab[];
 
 export interface SupervisorTabConfig {
   id: SupervisorActiveTab;
@@ -22,15 +31,11 @@ export const useSupervisorDashboardTabs = () => {
   const tabParam = searchParams.get("tab") as SupervisorActiveTab | null;
 
   // Memoizar lista de tabs válidos para evitar recreación en cada render
-  const validTabs = useMemo<SupervisorActiveTab[]>(
-    () => ["dashboard", "analytics", "kpis", "reports", "employees", "shifts"],
-    [],
-  );
-
   // Memoizar tab inicial para evitar cálculos innecesarios
-  const initialTab = useMemo<SupervisorActiveTab>(() => {
-    return tabParam && validTabs.includes(tabParam) ? tabParam : "dashboard";
-  }, [tabParam, validTabs]);
+  const initialTab =
+    tabParam && VALID_SUPERVISOR_TABS.includes(tabParam)
+      ? tabParam
+      : ("dashboard" as SupervisorActiveTab);
 
   const [activeTab, setActiveTab] = useState<SupervisorActiveTab>(initialTab);
 
@@ -47,30 +52,24 @@ export const useSupervisorDashboardTabs = () => {
 
   // Efecto optimizado para sincronizar con URL params
   useEffect(() => {
-    if (tabParam && validTabs.includes(tabParam)) {
+    if (tabParam && VALID_SUPERVISOR_TABS.includes(tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [tabParam, validTabs]);
+  }, [tabParam]);
 
   // Callback memoizado para cambios de tab
-  const handleTabClick = useCallback(
-    (tab: string) => {
-      const tabId = tab as SupervisorActiveTab;
-      if (validTabs.includes(tabId)) {
-        setActiveTab(tabId);
-        setSearchParams({ tab: tabId });
-      }
-    },
-    [setSearchParams, validTabs],
-  );
+  const handleTabClick = (tab: string) => {
+    const tabId = tab as SupervisorActiveTab;
+    if (VALID_SUPERVISOR_TABS.includes(tabId)) {
+      setActiveTab(tabId);
+      setSearchParams({ tab: tabId });
+    }
+  };
 
   // Memoizar valores de retorno para estabilidad de referencias
-  return useMemo(
-    () => ({
-      activeTab,
-      handleTabClick,
-      validTabs,
-    }),
-    [activeTab, handleTabClick, validTabs],
-  );
+  return {
+    activeTab,
+    handleTabClick,
+    validTabs: VALID_SUPERVISOR_TABS,
+  };
 };

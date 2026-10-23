@@ -16,7 +16,7 @@ import { useKpisController } from "../hooks/useKpisController";
  * Logic/UI separation: Pure UI component using useKpisController hook.
  * Optimizado con memoización para mejor performance
  */
-const KpisTab: React.FC = React.memo(() => {
+const KpisTab: React.FC = () => {
   const {
     isDateRangeInvalid,
     isDetailsModalOpen,
@@ -154,7 +154,7 @@ const KpisTab: React.FC = React.memo(() => {
       />
     </div>
   );
-});
+};
 
 KpisTab.displayName = "KpisTab";
 

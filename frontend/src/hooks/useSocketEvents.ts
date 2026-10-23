@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "../store/useStore";
 import { queryKeys } from "../lib/queryKeys";
+import { logger } from "../utils/logger";
 
 /**
  * A global hook to listen for WebSocket events and trigger Query invalidations.
@@ -28,6 +29,7 @@ export const useSocketEvents = () => {
   );
 
   useEffect(() => {
+    const pendingDebounceTimeouts = debounceTimeouts.current;
     if (!authenticated || !userId) return;
     let disconnect: (() => void) | undefined;
     let mounted = true;
@@ -50,7 +52,7 @@ export const useSocketEvents = () => {
 
       socket.on("connect_error", (err: unknown) => {
         const message = err instanceof Error ? err.message : "Unknown socket error";
-        console.warn("🔌 ❌ Real-time connection error:", message);
+        logger.warn("🔌 ❌ Real-time connection error:", message);
       });
 
       // -- Time Record Events --
@@ -219,7 +221,7 @@ export const useSocketEvents = () => {
 
     return () => {
       mounted = false;
-      Object.values(debounceTimeouts.current).forEach(clearTimeout);
+      Object.values(pendingDebounceTimeouts).forEach(clearTimeout);
       cleanupSocketListeners?.();
       activeSocket?.off("connect");
       activeSocket?.off("connect_error");

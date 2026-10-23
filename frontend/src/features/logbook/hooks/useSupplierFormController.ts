@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { localSupplierFormSchema, type LocalSupplierFormValues } from "../../../schemas/forms/note";
@@ -105,50 +105,32 @@ export const useSupplierFormController = ({
     });
   }, [isOpen, initialData, reset]);
 
-  const handleLicensePlateChange = useCallback(
-    (value: string) => {
-      setValue("licensePlate", formatLicensePlateInput(value));
-    },
-    [setValue],
-  );
+  const handleLicensePlateChange = (value: string) => {
+    setValue("licensePlate", formatLicensePlateInput(value));
+  };
 
-  const handleDriverNameChange = useCallback(
-    (value: string) => {
-      setValue("driverName", value);
-    },
-    [setValue],
-  );
+  const handleDriverNameChange = (value: string) => {
+    setValue("driverName", value);
+  };
 
-  const handleCompanyChange = useCallback(
-    (value: string) => {
-      setValue("company", value);
-    },
-    [setValue],
-  );
+  const handleCompanyChange = (value: string) => {
+    setValue("company", value);
+  };
 
-  const handleReasonChange = useCallback(
-    (value: string) => {
-      setValue("reason", value);
-    },
-    [setValue],
-  );
+  const handleReasonChange = (value: string) => {
+    setValue("reason", value);
+  };
 
-  const handlePaxCountChange = useCallback(
-    (value: string) => {
-      setValue("paxCount", value === "" ? 0 : Number.parseInt(value, 10));
-    },
-    [setValue],
-  );
+  const handlePaxCountChange = (value: string) => {
+    setValue("paxCount", value === "" ? 0 : Number.parseInt(value, 10));
+  };
 
-  const handleTimeChange = useCallback(
-    (value: string) => {
-      setValue("time", value);
-    },
-    [setValue],
-  );
+  const handleTimeChange = (value: string) => {
+    setValue("time", value);
+  };
 
-  const openTimePicker = useCallback(() => setIsTimePickerOpen(true), []);
-  const closeTimePicker = useCallback(() => setIsTimePickerOpen(false), []);
+  const openTimePicker = () => setIsTimePickerOpen(true);
+  const closeTimePicker = () => setIsTimePickerOpen(false);
 
   return {
     values: form.values,

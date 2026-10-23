@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { localNoveltyFormSchema, type LocalNoveltyFormValues } from "../../../schemas/forms/note";
@@ -65,22 +65,16 @@ export const useNoveltyFormController = ({
     reset({ annotation: initialText ?? "", time: initialTime || formatTime(new Date()) });
   }, [isOpen, initialText, initialTime, reset]);
 
-  const handleAnnotationChange = useCallback(
-    (value: string) => {
-      setValue("annotation", value);
-    },
-    [setValue],
-  );
+  const handleAnnotationChange = (value: string) => {
+    setValue("annotation", value);
+  };
 
-  const handleTimeChange = useCallback(
-    (value: string) => {
-      setValue("time", value);
-    },
-    [setValue],
-  );
+  const handleTimeChange = (value: string) => {
+    setValue("time", value);
+  };
 
-  const openTimePicker = useCallback(() => setIsTimePickerOpen(true), []);
-  const closeTimePicker = useCallback(() => setIsTimePickerOpen(false), []);
+  const openTimePicker = () => setIsTimePickerOpen(true);
+  const closeTimePicker = () => setIsTimePickerOpen(false);
 
   return {
     values: form.values,

@@ -22,6 +22,8 @@ interface TimeRecordMobileCardProps {
   externalPendingRequest?: CorrectionRequest;
 }
 
+// Spec 037 T12: this stacked mobile card groups schedule, correction, and action details that do not fit the 66 px desktop row.
+// Keep the card memoized because the virtualizer mounts one card per visible record.
 const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
   ({
     record,

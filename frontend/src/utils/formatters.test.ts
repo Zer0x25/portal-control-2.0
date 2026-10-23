@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { formatDisplayDateTime } from "./formatters";
 import * as dateFnsTz from "date-fns-tz";
+import { logger } from "./logger";
 
 // Mock the date-fns-tz module to allow spying/overriding
 vi.mock("date-fns-tz", async (importOriginal) => {
@@ -39,7 +40,7 @@ describe("formatDisplayDateTime", () => {
   });
 
   it("should gracefully catch error from formatInTimeZone, log error, and return '-'", () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const loggerErrorSpy = vi.spyOn(logger, "error");
 
     // Mock formatInTimeZone to throw an error
     vi.mocked(dateFnsTz.formatInTimeZone).mockImplementationOnce(() => {
@@ -49,6 +50,6 @@ describe("formatDisplayDateTime", () => {
     const result = formatDisplayDateTime("2024-05-15T10:30:00Z");
 
     expect(result).toBe("-");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Error formatting date:", "2024-05-15T10:30:00Z");
+    expect(loggerErrorSpy).toHaveBeenCalledWith("Error formatting date:", "2024-05-15T10:30:00Z");
   });
 });

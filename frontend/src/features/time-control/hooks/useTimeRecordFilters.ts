@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
 import {
   addBusinessDaysChile,
@@ -71,32 +71,26 @@ export const useTimeRecordFilters = () => {
   const [isApplyButtonEnabled, setIsApplyButtonEnabled] = useState(false);
   const [activeQuickFilter, setActiveQuickFilter] = useState<QuickFilterMode | null>("24h");
 
-  const handleClientFilterChange = useCallback((updates: Partial<typeof clientFilters>) => {
+  const handleClientFilterChange = (updates: Partial<typeof clientFilters>) => {
     setClientFilters((prev) => ({ ...prev, ...updates }));
-  }, []);
+  };
 
-  const handleDateFilterChange = useCallback(
-    (updates: Partial<Omit<typeof dateFilters, "is24h">>) => {
-      setDateFilters((prev) => ({ ...prev, ...updates, is24h: false }));
-      setActiveQuickFilter(null);
-      setIsApplyButtonEnabled(true);
-    },
-    [dateFilters],
-  );
+  const handleDateFilterChange = (updates: Partial<Omit<typeof dateFilters, "is24h">>) => {
+    setDateFilters((prev) => ({ ...prev, ...updates, is24h: false }));
+    setActiveQuickFilter(null);
+    setIsApplyButtonEnabled(true);
+  };
 
-  const handleQuickFilterClick = useCallback(
-    (mode: QuickFilterMode) => {
-      const newFilters = getQuickFilterRange(mode, businessNow);
+  const handleQuickFilterClick = (mode: QuickFilterMode) => {
+    const newFilters = getQuickFilterRange(mode, businessNow);
 
-      setDateFilters(newFilters);
-      setAppliedDateFilters(newFilters);
-      setActiveQuickFilter(mode);
-      setIsApplyButtonEnabled(false);
-    },
-    [businessNow],
-  );
+    setDateFilters(newFilters);
+    setAppliedDateFilters(newFilters);
+    setActiveQuickFilter(mode);
+    setIsApplyButtonEnabled(false);
+  };
 
-  const handleApplyCustomFilters = useCallback(() => {
+  const handleApplyCustomFilters = () => {
     if (!dateFilters.desde || !dateFilters.hasta) {
       addToast("Debe seleccionar una fecha de inicio y fin.", "error");
       return;
@@ -109,18 +103,18 @@ export const useTimeRecordFilters = () => {
 
     setAppliedDateFilters(dateFilters);
     setIsApplyButtonEnabled(false);
-  }, [dateFilters, addToast]);
+  };
 
-  const clearFilters = useCallback(() => {
+  const clearFilters = () => {
     setClientFilters({ name: "", area: "", workdayType: "", status: "", showAnomalies: false });
     const initialDates = getInitialDateFilters(businessNow);
     setDateFilters(initialDates);
     setAppliedDateFilters(initialDates);
     setActiveQuickFilter("24h");
     setIsApplyButtonEnabled(false);
-  }, [businessNow]);
+  };
 
-  const periodDisplayText = useMemo(() => {
+  const periodDisplayText = (() => {
     if (appliedDateFilters.is24h) {
       return "Últimas 24 horas";
     }
@@ -153,7 +147,7 @@ export const useTimeRecordFilters = () => {
     }
 
     return "Período no definido";
-  }, [appliedDateFilters]);
+  })();
 
   useEffect(() => {
     const fromDate = searchParams.get("startDate");

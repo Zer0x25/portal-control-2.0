@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AssignedShift, Syncable } from "../types/index";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
 import { useAssignedShiftsQuery } from "./queries/useAssignedShiftsQuery";
@@ -50,16 +50,12 @@ export const useShiftAssignmentForm = (options?: UseShiftAssignmentFormOptions) 
    * No se pueden crear asignaciones con mas de 7 dias de antiguedad (regla de
    * la pantalla, no del backend).
    */
-  const oldestAllowedStartDate = useMemo(() => addBusinessDaysChile(toBusinessDateChile(), -7), []);
+  const oldestAllowedStartDate = addBusinessDaysChile(toBusinessDateChile(), -7);
 
-  const schema = useMemo(
-    () =>
-      buildShiftAssignmentSchema({
-        patterns: shiftPatterns,
-        oldestAllowedStartDate,
-      }),
-    [shiftPatterns, oldestAllowedStartDate],
-  );
+  const schema = buildShiftAssignmentSchema({
+    patterns: shiftPatterns,
+    oldestAllowedStartDate,
+  });
 
   const form = useAppForm<ShiftAssignmentFormValues>({
     schema,
@@ -131,78 +127,67 @@ export const useShiftAssignmentForm = (options?: UseShiftAssignmentFormOptions) 
 
   const { setValue, reset } = form;
 
+  // The returned reset action is also an effect dependency, so keep its identity stable.
   const clearForm = useCallback(() => {
     setEditingAssignment(null);
     setPendingAssignmentData(null);
     reset({ employeeId: "", shiftPatternId: "", startDate: "", endDate: "" });
   }, [reset]);
 
-  const proceedWithSave = useCallback(
-    async (dataToSave?: PendingAssignment) => {
-      const dataToProcess = dataToSave || pendingAssignmentData;
-      if (!dataToProcess) return false;
+  const proceedWithSave = async (dataToSave?: PendingAssignment) => {
+    const dataToProcess = dataToSave || pendingAssignmentData;
+    if (!dataToProcess) return false;
 
-      const { assignmentData, isEditing } = dataToProcess;
-      let success: boolean;
-      try {
-        if (resolutionMode === "SMART_TERMINATE" && conflictingAssignment) {
-          // Smart Resolution: Terminate old, Create new
-          const yesterday = addBusinessDaysChile(assignmentData.startDate, -1);
+    const { assignmentData, isEditing } = dataToProcess;
+    let success: boolean;
+    try {
+      if (resolutionMode === "SMART_TERMINATE" && conflictingAssignment) {
+        // Smart Resolution: Terminate old, Create new
+        const yesterday = addBusinessDaysChile(assignmentData.startDate, -1);
 
-          // 1. Terminate existing
-          await updateAssignment({
-            id: conflictingAssignment.id,
-            assignment: {
-              ...conflictingAssignment,
-              endDate: yesterday,
-            },
-          });
+        // 1. Terminate existing
+        await updateAssignment({
+          id: conflictingAssignment.id,
+          assignment: {
+            ...conflictingAssignment,
+            endDate: yesterday,
+          },
+        });
 
-          // 2. Create new
-          await assignShift({
+        // 2. Create new
+        await assignShift({
+          ...assignmentData,
+          id: crypto.randomUUID(),
+        } as AssignedShift);
+
+        success = true;
+      } else if (isEditing) {
+        await updateAssignment({
+          id: editingAssignment!.id,
+          assignment: {
             ...assignmentData,
-            id: crypto.randomUUID(),
-          } as AssignedShift);
-
-          success = true;
-        } else if (isEditing) {
-          await updateAssignment({
             id: editingAssignment!.id,
-            assignment: {
-              ...assignmentData,
-              id: editingAssignment!.id,
-            } as AssignedShift,
-          });
-          success = true;
-        } else {
-          await assignShift({
-            ...assignmentData,
-            id: crypto.randomUUID(),
-          } as AssignedShift);
-          success = true;
-        }
-      } catch {
-        success = false;
+          } as AssignedShift,
+        });
+        success = true;
+      } else {
+        await assignShift({
+          ...assignmentData,
+          id: crypto.randomUUID(),
+        } as AssignedShift);
+        success = true;
       }
+    } catch {
+      success = false;
+    }
 
-      if (success) {
-        clearForm();
-        options?.onSaved?.();
-      }
-      setIsConflictModalOpen(false);
-      return success;
-    },
-    [
-      assignShift,
-      clearForm,
-      conflictingAssignment,
-      editingAssignment,
-      options,
-      pendingAssignmentData,
-      resolutionMode,
-      updateAssignment,
-    ],
-  );
+    if (success) {
+      clearForm();
+      options?.onSaved?.();
+    }
+    setIsConflictModalOpen(false);
+    return success;
+  };
 
   useEffect(() => {
     if (editingAssignment) {

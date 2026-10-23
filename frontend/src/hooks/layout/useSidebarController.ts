@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../useAuth";
 import { useAudio } from "../useAudio";
 import { useTheme } from "../useTheme";
@@ -51,48 +51,44 @@ export const useSidebarController = ({ isOpen, toggleSidebar }: UseSidebarContro
     };
   }, []);
 
-  const handleMouseEnter = useCallback(() => {
+  const handleMouseEnter = () => {
     if (window.innerWidth < MOBILE_WIDTH) return;
     if (collapseTimeoutRef.current) clearTimeout(collapseTimeoutRef.current);
     if (isHovered) return;
     hoverTimeoutRef.current = setTimeout(() => setIsHovered(true), HOVER_DELAY_MS);
-  }, [isHovered]);
+  };
 
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseLeave = () => {
     if (window.innerWidth < MOBILE_WIDTH) return;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     collapseTimeoutRef.current = setTimeout(() => setIsHovered(false), COLLAPSE_DELAY_MS);
-  }, []);
+  };
 
-  const handleItemClick = useCallback(() => {
+  const handleItemClick = () => {
     play("click");
     if (window.innerWidth < MOBILE_WIDTH && isOpen) {
       toggleSidebar();
     }
-  }, [isOpen, play, toggleSidebar]);
+  };
 
-  const handleToggleTheme = useCallback(() => {
+  const handleToggleTheme = () => {
     play("click");
     toggleTheme();
-  }, [play, toggleTheme]);
+  };
 
-  const openAboutModal = useCallback(() => {
+  const openAboutModal = () => {
     play("click");
     setShowAboutModal(true);
-  }, [play]);
+  };
 
-  const closeAboutModal = useCallback(() => {
+  const closeAboutModal = () => {
     setShowAboutModal(false);
-  }, []);
+  };
 
-  const menuItems = useMemo(
-    () =>
-      buildSidebarMenuByRole({
-        role: currentUser?.role,
-        isControlInternoEnabled,
-      }),
-    [currentUser?.role, isControlInternoEnabled],
-  );
+  const menuItems = buildSidebarMenuByRole({
+    role: currentUser?.role,
+    isControlInternoEnabled,
+  });
 
   return {
     effectiveTheme,

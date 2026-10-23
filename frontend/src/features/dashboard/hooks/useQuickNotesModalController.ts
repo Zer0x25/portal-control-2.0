@@ -1,5 +1,3 @@
-import { useCallback, useMemo } from "react";
-
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
 import { useQuickNotes } from "../../../hooks/useQuickNotes";
@@ -50,7 +48,7 @@ export const useQuickNotesModalController = () => {
   const { notes, isLoadingNotes, addNote, deleteNote } = useQuickNotes();
   const { currentUser } = useAuth();
 
-  const colorOptions = useMemo(() => Object.keys(COLOR_MAP), []);
+  const colorOptions = Object.keys(COLOR_MAP);
 
   const form = useAppForm<QuickNoteFormValues>({
     schema: quickNoteFormSchema,
@@ -68,20 +66,14 @@ export const useQuickNotesModalController = () => {
   const { reset, setValue } = form;
 
   /** Escribe el texto de la nota. */
-  const handleContentChange = useCallback(
-    (value: string) => {
-      setValue("content", value);
-    },
-    [setValue],
-  );
+  const handleContentChange = (value: string) => {
+    setValue("content", value);
+  };
 
   /** Escribe el color de la nota. */
-  const handleColorChange = useCallback(
-    (value: string) => {
-      setValue("color", value);
-    },
-    [setValue],
-  );
+  const handleColorChange = (value: string) => {
+    setValue("color", value);
+  };
 
   const canDelete = (authorUsername: string) => {
     return authorUsername === currentUser?.username || currentUser?.role === "Administrador";

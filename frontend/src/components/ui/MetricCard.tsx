@@ -89,7 +89,7 @@ const MetricTile: React.FC<MetricTileProps> = ({
     <div
       onClick={onClick}
       className={`
-        animate-in fade-in duration-150 relative flex flex-col p-3 rounded-md border border-token-border-subtle shadow-none transition-all duration-150
+        @container animate-in fade-in duration-150 relative flex flex-col p-3 rounded-md border border-token-border-subtle shadow-none transition-all duration-150
         bg-token-surface-stripe
         ${onClick ? "cursor-pointer active:scale-[0.98] hover:border-token-accent-brand hover:bg-token-surface-active" : ""}
         ${className}
@@ -113,7 +113,7 @@ const MetricTile: React.FC<MetricTileProps> = ({
               : icon}
           </div>
         )}
-        <h2 className="text-3xl font-bold text-token-text-primary tracking-tighter leading-none truncate text-center">
+        <h2 className="text-2xl @sm:text-3xl font-bold text-token-text-primary tracking-tighter leading-none truncate text-center">
           {value}
         </h2>
       </div>
@@ -140,7 +140,7 @@ const MetricTile: React.FC<MetricTileProps> = ({
 
 const MetricPanel: React.FC<MetricPanelProps> = ({ title, icon, children, className = "" }) => (
   <div
-    className={`animate-in fade-in duration-150 relative overflow-hidden rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm p-4 md:p-5 ${className}`}
+    className={`@container animate-in fade-in duration-150 relative overflow-hidden rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm p-3 @sm:p-4 @lg:p-5 ${className}`}
   >
     <div className="flex items-center gap-4 mb-4">
       <div className="w-9 h-9 rounded-sm bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20 flex items-center justify-center shrink-0">

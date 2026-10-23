@@ -35,6 +35,8 @@ interface TimeRecordRowProps {
   externalPendingRequest?: CorrectionRequest;
 }
 
+// Virtualized rows keep their formatting and edit controller work stable while
+// a different visible record changes during scrolling.
 const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
   ({
     record,

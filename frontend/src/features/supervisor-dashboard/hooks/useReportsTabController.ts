@@ -17,6 +17,7 @@ import {
 } from "../../../types/index";
 import { getChileDateISO } from "../../../utils/dateUtils";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import { logger } from "../../../utils/logger";
 
 export interface ReportsTabFilters {
   employeeId: string;
@@ -95,7 +96,7 @@ export const useReportsTabController = () => {
       }
       addToast("Reporte generado con éxito.", "success");
     } catch (error) {
-      console.error("Failed to fetch detailed report:", error);
+      logger.error("Failed to fetch detailed report:", error);
       addToast("Error al obtener el reporte del servidor.", "error");
     } finally {
       setIsLoading(false);
@@ -202,7 +203,7 @@ export const useReportsTabController = () => {
           }
         }
       } catch (error) {
-        console.error("Export failure:", error);
+        logger.error("Export failure:", error);
         addToast("Error al realizar la exportación", "error");
       }
     },

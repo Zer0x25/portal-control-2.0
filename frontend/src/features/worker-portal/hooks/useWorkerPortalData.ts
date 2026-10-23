@@ -166,7 +166,6 @@ export const useWorkerPortalData = () => {
     return options;
   }, [businessNow]);
 
-  const dateRangeRecords = recordsData || [];
   const [status, setStatus] = useState<ClockingStatus>("fuera");
   const [latestOpenRecord, setLatestOpenRecord] = useState<DailyTimeRecord | null>(null);
 
@@ -220,7 +219,7 @@ export const useWorkerPortalData = () => {
   const enrichedRecords = useMemo(() => {
     if (!employee) return [];
 
-    return (dateRangeRecords as AugmentedTimeRecord[])
+    return ((recordsData || []) as AugmentedTimeRecord[])
       .filter((r) => r.employeeId === employee.id && r.date.startsWith(selectedMonth))
       .map((record) => {
         const scheduleInfo = getEmployeeDailyScheduleInfo(
@@ -243,7 +242,7 @@ export const useWorkerPortalData = () => {
         if (a.date !== b.date) return b.date.localeCompare(a.date);
         return (b.entradaTimestamp || 0) - (a.entradaTimestamp || 0);
       });
-  }, [dateRangeRecords, employee, getEmployeeDailyScheduleInfo, selectedMonth]);
+  }, [recordsData, employee, getEmployeeDailyScheduleInfo, selectedMonth]);
 
   const getPeriodDates = useCallback(() => {
     const [year, month] = selectedMonth.split("-").map(Number);

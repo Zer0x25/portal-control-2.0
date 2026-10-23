@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import {
   EmployeeDailyScheduleInfo,
   ScheduledEmployeeDetail,
@@ -174,4 +174,4 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
   );
 };
 
-export default memo(ShiftCalendarDayCell);
+export default ShiftCalendarDayCell;

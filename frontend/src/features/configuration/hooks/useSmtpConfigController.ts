@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
@@ -162,41 +162,35 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
   }, [currentSlot, profiles, reset]);
 
   /** Cambia de perfil: guarda el que se editaba y carga el nuevo. */
-  const selectSlot = useCallback(
-    (index: number) => {
-      setProfiles((prev) =>
-        prev.map((profile, slot) => (slot === currentSlot ? toSmtpConfig(liveValues()) : profile)),
-      );
-      setCurrentSlot(index);
-    },
-    [currentSlot],
-  );
+  const selectSlot = (index: number) => {
+    setProfiles((prev) =>
+      prev.map((profile, slot) => (slot === currentSlot ? toSmtpConfig(liveValues()) : profile)),
+    );
+    setCurrentSlot(index);
+  };
 
   /** Escribe un campo del perfil que se esta editando. */
-  const handleFieldChange = useCallback(
-    <K extends keyof SmtpProfileFormValues>(field: K, value: SmtpProfileFormValues[K]) => {
-      setValue(field, value);
-    },
-    [setValue],
-  );
+  const handleFieldChange = <K extends keyof SmtpProfileFormValues>(
+    field: K,
+    value: SmtpProfileFormValues[K],
+  ) => {
+    setValue(field, value);
+  };
 
   /** Aplica un preset de servidor al perfil que se esta editando. */
-  const applyPreset = useCallback(
-    (type: "google" | "outlook") => {
-      const preset = PRESETS[type];
-      setValue("host", preset.host);
-      setValue("port", preset.port);
-      setValue("secure", preset.secure);
-      addToast(
-        `Valores de ${type === "google" ? "Gmail" : "Outlook"} aplicados al Perfil ${currentSlot + 1}`,
-        "success",
-      );
-    },
-    [addToast, currentSlot, setValue],
-  );
+  const applyPreset = (type: "google" | "outlook") => {
+    const preset = PRESETS[type];
+    setValue("host", preset.host);
+    setValue("port", preset.port);
+    setValue("secure", preset.secure);
+    addToast(
+      `Valores de ${type === "google" ? "Gmail" : "Outlook"} aplicados al Perfil ${currentSlot + 1}`,
+      "success",
+    );
+  };
 
   /** Prueba la conexion con el perfil que se esta editando. */
-  const handleTestConnection = useCallback(async () => {
+  const handleTestConnection = async () => {
     const profile = toSmtpConfig(liveValues());
     if (!profile.host || !profile.user || !profile.pass) {
       addToast("Complete el host, usuario y contraseña para probar.", "warning");
@@ -210,13 +204,13 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
       addToast(result.message, "error");
     }
     setIsVerifying(false);
-  }, [addToast]);
+  };
 
   /** Marca el perfil que se esta editando como el perfil de salida. */
-  const handleSetActive = useCallback(() => {
+  const handleSetActive = () => {
     setActiveProfileIndex(currentSlot);
     addToast(`Perfil ${currentSlot + 1} marcado como activo`, "info");
-  }, [addToast, currentSlot]);
+  };
 
   return {
     values: form.values,

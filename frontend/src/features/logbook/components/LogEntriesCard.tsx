@@ -258,4 +258,4 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
   );
 };
 
-export default React.memo(LogEntriesCard);
+export default LogEntriesCard;

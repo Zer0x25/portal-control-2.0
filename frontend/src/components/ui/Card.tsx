@@ -9,42 +9,40 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "premium" | "flat";
 }
 
-const Card = React.memo(
-  React.forwardRef<HTMLDivElement, CardProps>(
-    ({ children, className = "", title, badge, noPadding, variant = "default", ...rest }, ref) => {
-      // Variants logic
-      const isPremium = variant === "premium";
-      const isFlat = variant === "flat";
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ children, className = "", title, badge, noPadding, variant = "default", ...rest }, ref) => {
+    // Variants logic
+    const isPremium = variant === "premium";
+    const isFlat = variant === "flat";
 
-      const paddingClass = noPadding ? "" : isPremium ? "p-6 md:p-8" : "p-5";
+    const paddingClass = noPadding ? "" : isPremium ? "p-4 @sm:p-6 @lg:p-8" : "p-4 @sm:p-5";
 
-      const baseClasses = `relative ${className}`;
-      const borderClasses = isFlat
-        ? ""
-        : "bg-token-surface-card border border-token-border-technical shadow-sm rounded-md overflow-hidden";
+    const baseClasses = `relative ${className}`;
+    const borderClasses = isFlat
+      ? ""
+      : "bg-token-surface-card border border-token-border-technical shadow-sm rounded-md overflow-hidden";
 
-      return (
-        <div
-          ref={ref}
-          {...rest}
-          className={`animate-in fade-in duration-150 ${baseClasses} ${borderClasses}`}
-        >
-          {title && (
-            <div className="px-5 py-3 border-b border-token-border-technical bg-token-surface-header flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-1.5 h-3 bg-token-accent-brand rounded-sm" />
-                <h3 className="text-[11px] font-black uppercase tracking-widest text-token-text-primary leading-none">
-                  {title}
-                </h3>
-              </div>
-              {badge && <div className="shrink-0">{badge}</div>}
+    return (
+      <div
+        ref={ref}
+        {...rest}
+        className={`@container animate-in fade-in duration-150 ${baseClasses} ${borderClasses}`}
+      >
+        {title && (
+          <div className="px-4 py-3 @sm:px-5 border-b border-token-border-technical bg-token-surface-header flex flex-col @sm:flex-row items-start @sm:items-center justify-between gap-2 @sm:gap-0">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-3 bg-token-accent-brand rounded-sm" />
+              <h3 className="text-[11px] font-black uppercase tracking-widest text-token-text-primary leading-none">
+                {title}
+              </h3>
             </div>
-          )}
-          <div className={`${paddingClass} text-token-text-primary h-full`}>{children}</div>
-        </div>
-      );
-    },
-  ),
+            {badge && <div className="shrink-0">{badge}</div>}
+          </div>
+        )}
+        <div className={`${paddingClass} text-token-text-primary h-full`}>{children}</div>
+      </div>
+    );
+  },
 );
 
 export default Card;

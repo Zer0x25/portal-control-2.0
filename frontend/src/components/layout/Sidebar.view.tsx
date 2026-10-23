@@ -128,4 +128,4 @@ const SidebarView: React.FC<SidebarViewProps> = ({
   );
 };
 
-export default React.memo(SidebarView);
+export default SidebarView;

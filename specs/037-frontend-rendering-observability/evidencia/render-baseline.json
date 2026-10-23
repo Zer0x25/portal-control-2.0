@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-10-22T21:46:23.932Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "interaction": "direct route navigation; committed React Profiler updates during the first second",
+  "routes": [
+    {
+      "id": "dashboard",
+      "path": "/#/dashboard",
+      "role": "admin",
+      "navigationCommits": 4
+    },
+    {
+      "id": "planner",
+      "path": "/#/planning/monthly",
+      "role": "admin",
+      "navigationCommits": 1
+    },
+    {
+      "id": "worker-portal",
+      "path": "/#/worker-portal",
+      "role": "worker",
+      "navigationCommits": 5
+    },
+    {
+      "id": "logbook",
+      "path": "/#/logbook",
+      "role": "admin",
+      "navigationCommits": 6
+    },
+    {
+      "id": "kiosk",
+      "path": "/#/kiosk",
+      "role": null,
+      "navigationCommits": 3
+    }
+  ]
+}

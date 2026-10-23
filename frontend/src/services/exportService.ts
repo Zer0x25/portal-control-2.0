@@ -1,4 +1,5 @@
 import { apiClient, type BinaryResponse } from "./apiClient";
+import { logger } from "../utils/logger";
 
 /**
  * Descargas del modulo de exportacion.
@@ -45,7 +46,7 @@ export const exportService = {
         action,
       };
     } catch (error) {
-      console.error("Error during PDF action:", error);
+      logger.error("Error during PDF action:", error);
       throw error;
     }
   },
@@ -71,7 +72,7 @@ export const exportService = {
       const binary = response as unknown as BinaryResponse;
       return { blob: binary.blob, filename: binary.filename ?? "lista_empleados.xlsx" };
     } catch (error) {
-      console.error("Error downloading employees excel:", error);
+      logger.error("Error downloading employees excel:", error);
       throw error;
     }
   },

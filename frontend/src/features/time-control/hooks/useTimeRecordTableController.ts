@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToasts } from "../../../hooks/useToasts";
 import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
 import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
@@ -27,7 +27,7 @@ export const useTimeRecordTableController = ({
   const logsPage = logsData?.pages[0] || { data: [], total: 0 };
   const { requests: correctionRequests } = useCorrectionRequests();
 
-  const editsMapAll = useMemo(() => {
+  const editsMapAll = (() => {
     const globalLogMap = new Map<string, AuditLog[]>();
     const logs = (logsPage.data || []) as AuditLog[];
     if (logs.length === 0) return globalLogMap;
@@ -40,9 +40,9 @@ export const useTimeRecordTableController = ({
       }
     }
     return globalLogMap;
-  }, [logsPage.data]);
+  })();
 
-  const pendingRequestsMap = useMemo(() => {
+  const pendingRequestsMap = (() => {
     const map = new Map<string, CorrectionRequest>();
     const currentRequests = (correctionRequests as CorrectionRequest[]) || [];
     if (currentRequests.length === 0) return map;
@@ -53,7 +53,7 @@ export const useTimeRecordTableController = ({
       }
     }
     return map;
-  }, [correctionRequests]);
+  })();
 
   useEffect(() => {
     if (!isExportMenuOpen) return;
@@ -67,56 +67,53 @@ export const useTimeRecordTableController = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isExportMenuOpen]);
 
-  const handleExport = useCallback(
-    async (format: "csv" | "excel" | "pdf") => {
-      if (records.length === 0) {
-        addToast("No hay datos para exportar.", "info");
+  const handleExport = async (format: "csv" | "excel" | "pdf") => {
+    if (records.length === 0) {
+      addToast("No hay datos para exportar.", "info");
+      return;
+    }
+
+    setIsExportMenuOpen(false);
+    const headers = [
+      "Área",
+      "Nombre",
+      "Fecha",
+      "Cargo",
+      "Inicio Jornada",
+      "Inicio Colación",
+      "Fin Colación",
+      "Fin Jornada",
+    ];
+    const data = records.map((r) => [
+      r.employeeArea,
+      r.employeeName,
+      r.date,
+      r.employeePosition,
+      formatDisplayDateTime(r.entrada),
+      formatDisplayDateTime(r.inicioColacion),
+      formatDisplayDateTime(r.finColacion),
+      formatDisplayDateTime(r.salida),
+    ]);
+
+    const filtersString = "Filtros aplicados desde la interfaz";
+    switch (format) {
+      case "csv":
+        onExportStreaming("csv");
+        addToast("Registros exportados a CSV.", "success");
         return;
-      }
-
-      setIsExportMenuOpen(false);
-      const headers = [
-        "Área",
-        "Nombre",
-        "Fecha",
-        "Cargo",
-        "Inicio Jornada",
-        "Inicio Colación",
-        "Fin Colación",
-        "Fin Jornada",
-      ];
-      const data = records.map((r) => [
-        r.employeeArea,
-        r.employeeName,
-        r.date,
-        r.employeePosition,
-        formatDisplayDateTime(r.entrada),
-        formatDisplayDateTime(r.inicioColacion),
-        formatDisplayDateTime(r.finColacion),
-        formatDisplayDateTime(r.salida),
-      ]);
-
-      const filtersString = "Filtros aplicados desde la interfaz";
-      switch (format) {
-        case "csv":
-          onExportStreaming("csv");
-          addToast("Registros exportados a CSV.", "success");
-          return;
-        case "excel":
-          onExportStreaming("excel");
-          addToast("Registros exportados a EXCEL.", "success");
-          return;
-        case "pdf":
-          exportToPDF("Reporte de Registros de Horario", headers, data, filtersString);
-          addToast("Registros enviados a impresión (PDF).", "success");
-          return;
-        default:
-          addToast("Formato no soportado.", "error");
-          return;
-      }
-    },
-    [records, addToast, onExportStreaming],
-  );
+      case "excel":
+        onExportStreaming("excel");
+        addToast("Registros exportados a EXCEL.", "success");
+        return;
+      case "pdf":
+        exportToPDF("Reporte de Registros de Horario", headers, data, filtersString);
+        addToast("Registros enviados a impresión (PDF).", "success");
+        return;
+      default:
+        addToast("Formato no soportado.", "error");
+        return;
+    }
+  };
 
   return {
     editsMapAll,

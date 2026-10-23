@@ -356,4 +356,4 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
   );
 };
 
-export default React.memo(SupplierEntriesCard);
+export default SupplierEntriesCard;

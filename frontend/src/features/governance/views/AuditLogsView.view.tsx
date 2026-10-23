@@ -88,6 +88,7 @@ const AuditLogsViewView: FC<AuditLogsController> = (controller) => {
     onSelect: (log: AuditLog) => void;
   }
 
+  // Keep each virtualized row boundary stable while another log changes.
   const AuditLogDesktopRow = React.memo(({ log, virtualRow, onSelect }: AuditLogRowProps) => {
     const severity = SEVERITIES.find((s) => s.id === log.severity);
 
@@ -162,6 +163,7 @@ const AuditLogsViewView: FC<AuditLogsController> = (controller) => {
     );
   });
 
+  // The mobile card has a separate measured geometry and virtual row boundary.
   const AuditLogMobileRow = React.memo(({ log, virtualRow, onSelect }: AuditLogRowProps) => {
     const categoryStyles = getCategoryStyles(log.category || "");
     const categoryBorderColor = categoryStyles.split(" ").pop()?.replace("border-", "bg-");

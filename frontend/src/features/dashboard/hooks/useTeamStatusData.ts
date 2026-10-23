@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useDashboardOverviewQuery } from "../../../hooks/queries/useDashboardQueries";
 import { TeamStatusData } from "../types";
 
@@ -11,9 +10,7 @@ export const useTeamStatusData = () => {
     anomaliesCount: 0,
   };
 
-  const unscheduledPresent = useMemo(() => {
-    return overviewData?.unscheduledPresent || [];
-  }, [overviewData]);
+  const unscheduledPresent = overviewData?.unscheduledPresent || [];
 
   // El backend esbelto envía anomaliesCount; el fallback cubre la ventana de
   // despliegue contra el backend previo (array completo).

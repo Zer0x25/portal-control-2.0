@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useTimeControl } from "./useTimeControl";
 import { useTimeRecordActions } from "../../../hooks/useTimeRecordActions";
 import {
@@ -66,7 +65,7 @@ export const useTimeControlData = () => {
   const { startBreak, endBreak, clockOut } = useTimeRecordActions();
   const { data: accountingLockDate } = useAccountingLockDateQuery();
 
-  const effectiveLockDate = useMemo(() => {
+  const effectiveLockDate = (() => {
     const currentYear = businessNow.getFullYear();
     const currentMonth = businessNow.getMonth();
 
@@ -83,7 +82,7 @@ export const useTimeControlData = () => {
     if (!accountingLockDate) return autoLockDate;
 
     return accountingLockDate > autoLockDate ? accountingLockDate : autoLockDate;
-  }, [accountingLockDate, businessNow]);
+  })();
 
   const isPageLoading = (isLoading && !filteredRecords.length) || isLoadingConfig;
 

@@ -19,6 +19,7 @@ import {
 } from "../../../utils/dateUtils";
 import { configService } from "../../../services/configService";
 import { AuditLog } from "../../../types";
+import { logger } from "../../../utils/logger";
 
 interface ValidationResult {
   status: "idle" | "success" | "failure";
@@ -126,7 +127,7 @@ export const useAccountingClosureTabController = () => {
         });
       })
       .catch((err) => {
-        console.error("Validation error:", err);
+        logger.error("Validation error:", err);
         addToast(err.message || "Error al validar integridad estructural.", "error");
       })
       .finally(() => {
@@ -145,7 +146,7 @@ export const useAccountingClosureTabController = () => {
       await updateConfig({ key: "accounting_lock_date", value: endDate });
       success = true;
     } catch (error: unknown) {
-      console.error("Failed to update accounting lock date:", error);
+      logger.error("Failed to update accounting lock date:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Error al actualizar la fecha de cierre contable.";
       addToast(errorMessage, "error");
@@ -177,7 +178,7 @@ export const useAccountingClosureTabController = () => {
         await idbPut(STORES.KPI_CACHE, cacheItem);
         addToast("Caché de KPIs generado con éxito.", "success");
       } catch (error) {
-        console.error("Failed to generate KPI cache:", error);
+        logger.error("Failed to generate KPI cache:", error);
         addToast("Error al generar el caché de KPIs.", "error");
       }
     }

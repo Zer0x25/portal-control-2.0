@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { useHealthQuery, deriveBackendStatus } from "./queries/useHealthQuery";
 
 export type SystemStatus = "online" | "offline" | "degraded";
@@ -20,9 +19,9 @@ export const useSystemStatus = (): UseSystemStatusReturn => {
   const status: SystemStatus =
     backend === "healthy" ? "online" : backend === "degraded" ? "degraded" : "offline";
 
-  const checkHealth = useCallback(async () => {
+  const checkHealth = async () => {
     await refetch();
-  }, [refetch]);
+  };
 
   return { isOnline: status !== "offline", status, checkHealth };
 };

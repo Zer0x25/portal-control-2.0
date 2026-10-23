@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
@@ -49,10 +49,10 @@ export const useChangePasswordModalController = ({
   const { getUserById, updateUser, changeOwnPassword } = useUsers();
   const { addToast } = useToasts();
 
-  const targetUser = useMemo(() => {
+  const targetUser = (() => {
     const targetId = userIdToUpdate || currentUser?.id;
     return targetId ? getUserById(targetId) : null;
-  }, [userIdToUpdate, currentUser, getUserById]);
+  })();
 
   const isSelfChange = !userIdToUpdate;
 
@@ -101,20 +101,14 @@ export const useChangePasswordModalController = ({
   }, [isOpen, reset]);
 
   /** Escribe la contraseña nueva. */
-  const handlePasswordChange = useCallback(
-    (value: string) => {
-      setValue("password", value);
-    },
-    [setValue],
-  );
+  const handlePasswordChange = (value: string) => {
+    setValue("password", value);
+  };
 
   /** Escribe la confirmación. */
-  const handlePasswordConfirmChange = useCallback(
-    (value: string) => {
-      setValue("passwordConfirm", value);
-    },
-    [setValue],
-  );
+  const handlePasswordConfirmChange = (value: string) => {
+    setValue("passwordConfirm", value);
+  };
 
   // Escape cierra el modal. El listener es un efecto del DOM: vive en el
   // controller, no en la vista (spec 033 AC1: sin hooks en *.view.tsx).

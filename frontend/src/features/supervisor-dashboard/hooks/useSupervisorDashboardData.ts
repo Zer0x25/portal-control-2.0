@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useCorrectionRequestsStatsQuery } from "../../../hooks/queries/useCorrectionRequestsStatsQuery";
 
 /**
@@ -7,7 +6,7 @@ import { useCorrectionRequestsStatsQuery } from "../../../hooks/queries/useCorre
 export const useSupervisorDashboardData = () => {
   const { data: stats } = useCorrectionRequestsStatsQuery();
 
-  const requestCount = useMemo(() => stats?.pending ?? 0, [stats]);
+  const requestCount = stats?.pending ?? 0;
 
   return {
     requestCount,

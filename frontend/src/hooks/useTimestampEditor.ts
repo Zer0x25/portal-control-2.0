@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo } from "react";
+import { useLayoutEffect } from "react";
 import { useTimeRecordMutations } from "./queries/useTimeRecordsQuery";
 import type { DailyTimeRecord, TimeRecordField } from "../types/index";
 import { useToasts } from "./useToasts";
@@ -54,13 +54,13 @@ export const useTimestampEditor = (
    * campo no tiene marcaje). Antes este calculo vivia en
    * `openEditTimestampModal`.
    */
-  const initialValue = useMemo(() => {
+  const initialValue = (() => {
     if (!editingInfo) return "";
     const currentValue = editingInfo.record[editingInfo.field];
     return currentValue && currentValue !== "SIN REGISTRO"
       ? formatChileTimeHHmm(new Date(currentValue))
       : formatChileTimeHHmm(new Date());
-  }, [editingInfo]);
+  })();
 
   const form = useAppForm<EditTimestampFormValues>({
     schema: editTimestampFormSchema,
@@ -150,7 +150,7 @@ export const useTimestampEditor = (
   }, [editingInfo, initialValue, reset]);
 
   // `setValue` con la clave fija: la vista solo conoce el campo "time".
-  const setValue = useCallback((value: string) => form.setValue("time", value), [form.setValue]);
+  const setValue = (value: string) => form.setValue("time", value);
 
   return {
     value: form.values.time,

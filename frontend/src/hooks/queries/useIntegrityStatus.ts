@@ -36,6 +36,7 @@ export const useIntegrityStatus = () => {
 export const useRefreshIntegrityStatus = () => {
   const queryClient = useQueryClient();
 
+  // Expose a stable invalidation action to integrity panels and command buttons.
   return useCallback(
     () => queryClient.invalidateQueries({ queryKey: queryKeys.integrityStatus() }),
     [queryClient],

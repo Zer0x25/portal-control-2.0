@@ -4,10 +4,11 @@
  */
 import "./index.css";
 import { initSentry } from "./utils/sentry";
+import { initWebVitals } from "./utils/webVitals";
 import { logger } from "./utils/logger";
 
 // Inicializar Sentry
-void initSentry();
+void initSentry().then(initWebVitals);
 
 import { registerSW } from "virtual:pwa-register";
 

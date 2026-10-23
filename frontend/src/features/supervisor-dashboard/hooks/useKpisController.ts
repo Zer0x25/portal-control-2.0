@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState } from "react";
 import { useKpiCalculations } from "../../../hooks/useKpiCalculations";
 import { Employee, DailyTimeRecord } from "../../../types";
 import { isDateRangeValid } from "../../../utils/validation";
@@ -28,23 +28,20 @@ export const useKpisController = () => {
 
   const { kpis, kpiDetails, isLoadingKpis, calculateKpis } = useKpiCalculations();
 
-  const handleFiltersChange = useCallback(
-    (newFilters: KpisFilters) => {
-      let isValid = true;
-      if (newFilters.startDate && newFilters.endDate) {
-        isValid = isDateRangeValid(newFilters.startDate, newFilters.endDate);
-        setIsDateRangeInvalid(!isValid);
-      } else {
-        setIsDateRangeInvalid(false);
-      }
-      setFilters(newFilters);
+  const handleFiltersChange = (newFilters: KpisFilters) => {
+    let isValid = true;
+    if (newFilters.startDate && newFilters.endDate) {
+      isValid = isDateRangeValid(newFilters.startDate, newFilters.endDate);
+      setIsDateRangeInvalid(!isValid);
+    } else {
+      setIsDateRangeInvalid(false);
+    }
+    setFilters(newFilters);
 
-      if (isValid) {
-        calculateKpis(newFilters);
-      }
-    },
-    [calculateKpis],
-  );
+    if (isValid) {
+      calculateKpis(newFilters);
+    }
+  };
 
   const hasDetailData =
     kpiDetails.tardyRecords.length > 0 ||
@@ -66,49 +63,33 @@ export const useKpisController = () => {
     !hasDetailData &&
     !hasAggregateData;
 
-  const handleKpiClick = useCallback(
-    (
-      title: string,
-      data: (DailyTimeRecord | Employee | { id: string; employeeName: string; date: string })[],
-      type: "record" | "employee" | "justification",
-    ) => {
-      if (data.length > 0) {
-        setModalData({ title, data, type });
-        setIsDetailsModalOpen(true);
-      }
-    },
-    [],
-  );
+  const handleKpiClick = (
+    title: string,
+    data: (DailyTimeRecord | Employee | { id: string; employeeName: string; date: string })[],
+    type: "record" | "employee" | "justification",
+  ) => {
+    if (data.length > 0) {
+      setModalData({ title, data, type });
+      setIsDetailsModalOpen(true);
+    }
+  };
 
-  const closeModal = useCallback(() => {
+  const closeModal = () => {
     setIsDetailsModalOpen(false);
-  }, []);
+  };
 
   // ⚡ Bolt: Memoize kpiMetrics to prevent unnecessary re-renders of KpisTab and KpiStat components
-  const kpiMetrics = useMemo(
-    () => [
-      { value: `${kpis.totalAbsenteeismRate.toFixed(2)}%`, label: "Tasa Ausentismo Total" },
-      { value: `${kpis.unjustifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Injustificadas" },
-      { value: `${kpis.justifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Justificadas" },
-      { value: `${kpis.vacationRate.toFixed(2)}%`, label: "├─ Vacaciones" },
-      { value: `${kpis.medicalLeaveRate.toFixed(2)}%`, label: "├─ Licencias Médicas" },
-      { value: `${kpis.specialPermitRate.toFixed(2)}%`, label: "└─ Permisos Especiales" },
-      { value: `${kpis.tardinessRate.toFixed(2)}%`, label: "Tasa de Atrasos" },
-      { value: `${kpis.overtimePercentage.toFixed(2)}%`, label: "Incidencia Horas Extra" },
-      { value: kpis.avgWeeklyHours.toFixed(2), label: "Promedio Horas Semanales" },
-    ],
-    [
-      kpis.totalAbsenteeismRate,
-      kpis.unjustifiedAbsenceRate,
-      kpis.justifiedAbsenceRate,
-      kpis.vacationRate,
-      kpis.medicalLeaveRate,
-      kpis.specialPermitRate,
-      kpis.tardinessRate,
-      kpis.overtimePercentage,
-      kpis.avgWeeklyHours,
-    ],
-  );
+  const kpiMetrics = [
+    { value: `${kpis.totalAbsenteeismRate.toFixed(2)}%`, label: "Tasa Ausentismo Total" },
+    { value: `${kpis.unjustifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Injustificadas" },
+    { value: `${kpis.justifiedAbsenceRate.toFixed(2)}%`, label: "Ausencias Justificadas" },
+    { value: `${kpis.vacationRate.toFixed(2)}%`, label: "├─ Vacaciones" },
+    { value: `${kpis.medicalLeaveRate.toFixed(2)}%`, label: "├─ Licencias Médicas" },
+    { value: `${kpis.specialPermitRate.toFixed(2)}%`, label: "└─ Permisos Especiales" },
+    { value: `${kpis.tardinessRate.toFixed(2)}%`, label: "Tasa de Atrasos" },
+    { value: `${kpis.overtimePercentage.toFixed(2)}%`, label: "Incidencia Horas Extra" },
+    { value: kpis.avgWeeklyHours.toFixed(2), label: "Promedio Horas Semanales" },
+  ];
 
   return {
     // Estado

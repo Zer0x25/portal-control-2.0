@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useStore } from "../store/useStore";
 import { Employee, KpiDetails } from "../types/index";
@@ -65,16 +65,13 @@ export const useKpiCalculations = () => {
    * completo inflaria la clave y haria que un reordenamiento de la lista
    * invalide la cache sin cambiar el resultado.
    */
-  const employeeIds = useMemo(
-    () => filters.employees.map((employee) => employee.id).sort(),
-    [filters.employees],
-  );
+  const employeeIds = filters.employees.map((employee) => employee.id).sort();
 
-  const isRangeUsable = useMemo(() => {
+  const isRangeUsable = (() => {
     if (!startDate || !endDate) return false;
     if (filters.employees.length === 0) return false;
     return isDateRangeValid(startDate, endDate);
-  }, [filters.employees.length, startDate, endDate]);
+  })();
 
   const query = useQuery({
     queryKey: queryKeys.kpis({ startDate: startDate ?? "", endDate: endDate ?? "", employeeIds }),
@@ -100,9 +97,9 @@ export const useKpiCalculations = () => {
   }, [query.isFetching]);
 
   /** Aplica los filtros: la query se invalida sola al cambiar la clave. */
-  const calculateKpis = useCallback((nextFilters: KpiFilters) => {
+  const calculateKpis = (nextFilters: KpiFilters) => {
     setFilters(nextFilters);
-  }, []);
+  };
 
   // Sin filtros utilizables (rango vacio, invalido o sin empleados) los KPIs
   // valen cero: es el mismo contrato que devolvia el fetch manual.

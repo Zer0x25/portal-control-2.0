@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { healthService, type SecurityInsights } from "../../../services/healthService";
 import { AuditLog } from "../../../types";
+import { logger } from "../../../utils/logger";
 
 export const useSecurityInsightsController = () => {
   const [loading, setLoading] = useState(false);
@@ -14,7 +15,7 @@ export const useSecurityInsightsController = () => {
       setStats(data.stats);
       setAlerts(data.recentAlerts);
     } catch (error) {
-      console.error("Error fetching security insights:", error);
+      logger.error("Error fetching security insights:", error);
     } finally {
       setLoading(false);
     }

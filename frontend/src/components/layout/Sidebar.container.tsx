@@ -28,4 +28,4 @@ const SidebarContainer: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => 
   );
 };
 
-export default React.memo(SidebarContainer);
+export default SidebarContainer;

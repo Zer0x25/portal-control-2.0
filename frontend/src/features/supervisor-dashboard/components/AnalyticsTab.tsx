@@ -10,7 +10,7 @@ import { useAnalyticsTabController } from "../hooks/useAnalyticsTabController";
  * Proporciona insights profundos sobre asistencia, tendencias y predicciones
  * Optimizado con memoización para mejor performance
  */
-const AnalyticsTab: React.FC = React.memo(() => {
+const AnalyticsTab: React.FC = () => {
   const { heatmapData, trendData } = useAnalyticsTabController();
 
   return (
@@ -47,7 +47,7 @@ const AnalyticsTab: React.FC = React.memo(() => {
       </div>
     </div>
   );
-});
+};
 
 AnalyticsTab.displayName = "AnalyticsTab";
 

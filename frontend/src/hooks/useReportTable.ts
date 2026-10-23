@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   tableFeatures,
   useTable,
@@ -49,11 +48,11 @@ export const useReportTable = ({
   currentPage,
   setCurrentPage,
 }: UseReportTableParams) => {
-  const rows = useMemo<ReportRow[]>(() => {
+  const rows = (() => {
     if (!reportData || reportData.length === 0) return [];
     if (!isSingleEmployeeReport) return reportData as ReportRow[];
     return buildReportRowsWithSubtotals(reportData as DailyReportItem[]);
-  }, [reportData, isSingleEmployeeReport]);
+  })() as ReportRow[];
 
   const sorting: SortingState = sortConfig
     ? [{ id: sortConfig.key, desc: sortConfig.direction === "descending" }]
@@ -86,10 +85,10 @@ export const useReportTable = ({
     rowCount: rows.length,
   });
 
-  const pageRows = useMemo(() => {
+  const pageRows = (() => {
     const all = table.getRowModel().rows;
     return all.slice(pageStart, pageStart + pageSize);
-  }, [table, pageStart, pageSize]);
+  })();
 
   return { table, rows, pageRows, totalPages, rowCount: rows.length };
 };

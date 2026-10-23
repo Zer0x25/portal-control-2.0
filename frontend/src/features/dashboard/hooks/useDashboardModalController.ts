@@ -32,6 +32,8 @@ export const useDashboardModalController = () => {
     if (isQuickNotesModalOpen && hasUnreadNotes) clearQuickNotesUnread();
   }, [clearQuickNotesUnread, hasUnreadNotes, isQuickNotesModalOpen]);
 
+  // The returned actions feed several modal props; stable identities keep an
+  // update to one modal from invalidating sibling action props.
   const openQuickNotes = useCallback(() => {
     setIsQuickNotesModalOpen(true);
     clearQuickNotesUnread();

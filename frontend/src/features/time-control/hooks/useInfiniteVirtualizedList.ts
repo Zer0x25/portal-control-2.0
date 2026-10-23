@@ -22,6 +22,7 @@ export const useInfiniteVirtualizedList = ({
   const parentRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- Preserve the measured virtualizer as a documented compiler bail-out.
   const virtualizer = useVirtualizer({
     count,
     getScrollElement: () => parentRef.current,

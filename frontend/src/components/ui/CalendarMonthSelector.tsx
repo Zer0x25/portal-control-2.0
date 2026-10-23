@@ -212,4 +212,4 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
   );
 };
 
-export default React.memo(CalendarMonthSelector);
+export default CalendarMonthSelector;

@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import { DailyReportItem } from "../../types/index";
 import { formatDecimalHoursToHHMM } from "../../utils/formatters";
 
@@ -7,6 +7,7 @@ interface MobileDailyCardProps {
   justificationStyles: Record<string, string>;
 }
 
+// Spec 037 T13: daily records expose clocking, schedule, justification, and weekly subtotals in a stacked layout distinct from summary rows.
 const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
   item,
   justificationStyles,
@@ -103,4 +104,4 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
   );
 };
 
-export default memo(ReportTableMobileDailyCard);
+export default ReportTableMobileDailyCard;

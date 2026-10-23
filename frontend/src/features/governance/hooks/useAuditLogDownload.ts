@@ -6,6 +6,7 @@ export type AuditLogExportFormat = "csv" | "xml";
 
 /** Inicia una descarga de auditoría con la sesión actual. */
 export const useAuditLogDownload = () =>
+  // ExportLogsModal receives this callback independently of its form state.
   useCallback((startDate: string, endDate: string, format: AuditLogExportFormat) => {
     const query = new URLSearchParams();
     query.set("startDate", startDate);
