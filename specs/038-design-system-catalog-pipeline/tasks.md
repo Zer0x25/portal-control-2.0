@@ -204,17 +204,16 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
       catálogo y regenerar tokens) y
       `.agents/rules/design-system-governance.md` (§7 y §8: la fuente de
       verdad de las certificadas y el pipeline de tokens) (AC8).
-- [ ] T25: Suite completa verde: `npm run validate:ci` (frontend),
+- [x] T25: Suite completa verde: `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run audit:design-system` (ningún budget
       sube), `npm run spec:check`, `npm run docs:check`, `npm run preflight`
-      y `npm run e2e:staging` (70 pruebas: 55 funcionales, 12 visuales y 3 de
-      rendimiento) (AC8).
+      y suite Playwright completa en staging (70 pruebas: 55 funcionales, 12
+      visuales y 3 de rendimiento) (AC8).
 - [x] T26: Promover `docs/adr/0027-design-system-catalog-pipeline.md` de
       "Propuesto" a "Aceptado" con las líneas de implementación verificadas
       y actualizar la tabla de `docs/adr/README.md`.
-- [ ] T27: Cerrar AC8 y el estado final del spec tras ejecutar la suite E2E
-      completa (70 pruebas) contra staging actualizado y con datos de prueba
-      consistentes.
+- [x] T27: Cerrar AC8 y el estado final del spec tras ejecutar la suite E2E
+      completa (70 pruebas) contra el stack staging aislado y actualizado.
 
 ## Notas de ejecución (2026-10-22)
 
@@ -225,5 +224,7 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - T15-T20: Storybook 10.6.3, 68 historias CSF3 y manifiesto generado. El preview ofrece temas claro/oscuro y densidad compacta/estándar/espaciosa; `storybook build` pasa y omite PWA solo mediante `PORTAL_SKIP_PWA=1`.
 - T21: comparación estricta de 80 baselines (40 primitivas × 2 temas) pasó 80/80. Tras integrar spec 037 se actualizaron cuatro imágenes de EmptyState y ReportTable, coherentes con el nuevo tamaño responsivo; el resto permaneció igual.
 - Verificación anterior al rebase: `e2e:staging` pasó 68/68 en la versión previa a los dos casos nuevos de Spec 037. Se conserva como evidencia histórica, no como cierre de AC8 sobre `origin/main` 376f293.
-- T25 tras el rebase: `validate:ci` en Node 26.10 pasó con 855 pruebas en 161 archivos, build Storybook/app, guard de runtime y bundle budget. `guardrails` pasó 82/82; preflight, spec/docs y lint budget 0/0 pasaron. El audit quedó en strict 0/0, palette 879/879, certified 173/173, sap 0/0 y orphan 5/5; evidencia visual `passed`, 0 snapshots distintos. La ejecución completa contra staging no quedó verde: la imagen frontend servida en `127.0.0.1:8080` falló el caso de container queries (54 pasaron, 1 falló, 15 no se ejecutaron); el caso aislado pasó 1/1 con el frontend de esta rama en `127.0.0.1:5174` contra la misma API. Una repetición de la suite con ese frontend registró 38 pasadas, 14 fallidas y 18 no ejecutadas en flujos dependientes de auth/datos, por lo que no se atribuye ese resultado a una regresión del cambio ni se cuenta como validación E2E completa.
-- T26: ADR-0027 promovido a Aceptado y registrado en `docs/adr/README.md`. AC2 queda cerrado; AC8 y el estado final del spec esperan T27.
+- Corrida E2E inicial posterior al rebase contra staging compartido: la imagen frontend de `127.0.0.1:8080` era anterior a `origin/main` y falló container queries (54 pasaron, 1 falló, 15 no se ejecutaron). El caso aislado con frontend actual pasó 1/1; una repetición completa contra esa API compartida dio 38 pasadas, 14 fallidas y 18 no ejecutadas en flujos dependientes de auth/datos. Ese resultado quedó inconcluso por el estado compartido de la prueba.
+- T25 tras el rebase: `validate:ci` en Node 26.10 pasó con 855 pruebas en 161 archivos, build Storybook/app, guard de runtime y bundle budget. `guardrails` pasó 82/82; preflight, spec/docs y lint budget 0/0 pasaron. El audit quedó en strict 0/0, palette 879/879, certified 173/173, sap 0/0 y orphan 5/5; evidencia visual `passed`, 0 snapshots distintos.
+- T25/T27 E2E final: se construyó un stack independiente con `compose.staging.yaml`, frontend/backend de esta rama, base nueva con seed y puerto `8081`. `E2E_BASE_URL=http://127.0.0.1:8081 E2E_API_URL=http://127.0.0.1:8081/api npm run e2e` pasó 70/70 (55 funcionales, 12 visuales, 3 rendimiento). La medición de scroll en audit logs se auto-omitió porque la base seed no contenía eventos; los otros casos E2E pasaron.
+- T26: ADR-0027 promovido a Aceptado y registrado en `docs/adr/README.md`. AC2, AC8 y el estado del spec quedan cerrados.

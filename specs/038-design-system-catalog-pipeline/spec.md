@@ -1,6 +1,6 @@
 # Spec 038: Design System Catalog & Token Pipeline
 
-- Estado: Implementado; cierre de AC8 pendiente de E2E staging actualizado (2026-10-23, origin/main 376f293)
+- Estado: Implementado (2026-10-23; E2E staging aislado 70/70 sobre origin/main 376f293)
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0027-design-system-catalog-pipeline.md](file:///docs/adr/0027-design-system-catalog-pipeline.md) (extiende [0020-design-system-governance.md](file:///docs/adr/0020-design-system-governance.md) y [0022-ui-ux-consolidation.md](file:///docs/adr/0022-ui-ux-consolidation.md))
@@ -257,13 +257,15 @@ Fuera (explícito):
       cuando ese resumen no existe, la sección se reporta como `skipped`
       (sin artefacto visual) en las corridas estáticas locales. El reporte es
       legible y accionable por módulo.
-- [ ] AC8: **Sin regresión**. `npm run validate:ci` (frontend),
+- [x] AC8: **Sin regresión**. `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run audit:design-system` (los budgets
       vigentes **no suben**), `npm run spec:check`, `npm run docs:check`,
-      `npm run preflight` en verde y `npm run e2e:staging` en verde (70
-      pruebas: 55 funcionales, 12 visuales y 3 de rendimiento). El cierre
-      requiere ejecutar la suite contra frontend/backend de staging
-      actualizados y datos de prueba consistentes.
+      `npm run preflight` en verde y la suite Playwright completa en staging
+      en verde (70 pruebas: 55 funcionales, 12 visuales y 3 de rendimiento).
+      La corrida final usó `compose.staging.yaml` con proyecto/base aislados,
+      construidos desde esta rama, en `127.0.0.1:8081`; no tocó el staging
+      compartido en `127.0.0.1:8080`. La submedición de scroll de auditoría
+      se auto-omitió porque el seed limpio no tenía eventos de auditoría.
 
 ## Restricciones
 
