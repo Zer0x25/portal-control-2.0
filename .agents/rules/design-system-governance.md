@@ -158,3 +158,11 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 - `hooks/` concentran consultas, reglas de dominio y controladores. Nombres `use*Data` para datos remotos y `use*Controller` para orquestación/estado de UI.
 - Los modales, tabs, menús y borradores viven en el feature que los muestra. Zustand queda para sesión/proceso compartido, tema, toasts, sincronización y señales transversales justificadas.
 - Los imports lazy apuntan a containers; no crear shims de reexportación en `components/` ni páginas-wrapper.
+
+## 10. Formularios y tablas (spec 036)
+
+- **Capa de formulario única**: `src/hooks/useAppForm.ts` envuelve TanStack Form + Zod v4 (Standard Schema). Se instancia en el hook de dominio o en el `.container.tsx`; las `.view.tsx` reciben `values`, `errors`, `field(...)` y `formProps` por props.
+- **Schemas**: `src/schemas/forms/*`; la validación no se reimplementa a mano en componentes ni se duplica el mapa de mensajes (`src/utils/errorMessages.ts`).
+- **Anti-doble-submit**: lo provee `useAppForm` (`isSubmitting` + `submitGuard`). No agregar refs manuales en formularios migrados; los flujos de mutación fuera de la capa siguen sujetos al invariante 5 de `frontend-performance.md`.
+- **Data grid**: `DataTable`, `DataTableHeader` y `DataTableRow` (TanStack Table) se componen con `SortableHeader` y `PaginationControls`. Toda tabla ordenable expone `aria-sort` y no se permiten `<th onClick>` crudos.
+- **Guardrail**: `src/tests/guardrails/formTableGuardrails.test.ts` (spec 036 AC7) congela la whitelist de formularios manuales y de consumidores de sort; el budget de formularios manuales solo decrece.

@@ -32,7 +32,7 @@ con Prettier (`printWidth: 100`).
 | [0022](0022-ui-ux-consolidation.md)                     | Aceptado  | Ui Ux Consolidation                    |
 | [0023](0023-frontend-layering-hardening.md)             | Aceptado  | Frontera de capas frontend enforceable |
 | [0024](0024-frontend-http-client-consolidation.md)      | Aceptado  | Cliente HTTP único en el frontend      |
-| [0025](0025-frontend-form-table-primitives.md)          | Propuesto | Capa headless de formularios y tablas  |
+| [0025](0025-frontend-form-table-primitives.md)          | Aceptado  | Capa headless de formularios y tablas  |
 | [0026](0026-frontend-rendering-observability.md)        | Aceptado  | Compilador, container queries y CWV    |
 | [0027](0027-design-system-catalog-pipeline.md)          | Aceptado  | Catálogo externo y pipeline de tokens  |
 | [0028](0028-frontend-testing-stack.md)                  | Propuesto | MSW, browser mode y cobertura          |
