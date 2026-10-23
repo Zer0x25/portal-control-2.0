@@ -28,10 +28,13 @@ const Tooltip: React.FC<TooltipProps> = ({
       className={`relative inline-block ${className}`}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
+      onFocus={() => setIsVisible(true)}
+      onBlur={() => setIsVisible(false)}
     >
       {children}
       {isVisible && (
         <div
+          role="tooltip"
           className={`
               absolute ${Z.modal} px-4 py-2.5
               bg-token-surface-card text-token-text-primary text-[11px] font-mono tracking-tight

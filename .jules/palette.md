@@ -12,3 +12,7 @@
 ## 2023-10-21 - ARIA Label Redundancy on Text Buttons
 **Learning:** Adding `aria-label` to buttons that already have clear, visible text is an accessibility anti-pattern. It overwrites the visible text for screen readers, potentially causing confusion if the label differs or is redundant.
 **Action:** Only apply `aria-label` to strictly icon-only interactive elements or when the visible text is insufficiently descriptive on its own.
+
+## 2024-10-23 - [Keyboard Accessible Tooltips via Focus Events Bubbling]
+**Learning:** Tooltips that rely solely on `onMouseEnter` and `onMouseLeave` are completely inaccessible to users navigating via keyboard. Because React's `onFocus` and `onBlur` events bubble up from child elements, adding them to the tooltip wrapper div makes the tooltip appear when a nested interactive element receives keyboard focus.
+**Action:** When creating wrapper components that reveal content on hover, always include `onFocus` and `onBlur` handlers, and apply `role="tooltip"` to the revealed content so it functions intuitively for keyboard navigation and screen readers.

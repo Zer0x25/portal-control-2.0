@@ -11,6 +11,8 @@ interface LoadingOverlayProps {
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = true }) => {
   const content = (
     <div
+      role="alert"
+      aria-live="assertive"
       className={`${Z.modal} flex flex-col items-center justify-center p-12 bg-token-surface-card border border-token-border-technical rounded-sm shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95`}
     >
       {/* Subtle tech background for the card */}
