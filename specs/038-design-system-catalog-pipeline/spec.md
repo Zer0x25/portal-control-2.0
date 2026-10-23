@@ -1,6 +1,6 @@
 # Spec 038: Design System Catalog & Token Pipeline
 
-- Estado: Borrador
+- Estado: Implementado; cierre de AC8 pendiente de E2E staging actualizado (2026-10-23, origin/main 376f293)
 - Autor: zer0x
 - Fecha: 2026-10-21
 - ADR relacionado: [0027-design-system-catalog-pipeline.md](file:///docs/adr/0027-design-system-catalog-pipeline.md) (extiende [0020-design-system-governance.md](file:///docs/adr/0020-design-system-governance.md) y [0022-ui-ux-consolidation.md](file:///docs/adr/0022-ui-ux-consolidation.md))
@@ -8,14 +8,14 @@
 
 ## Dependencias de secuencia
 
-| Fase  | Tareas  | Dependencia                                                                                |
-| ----- | ------- | ------------------------------------------------------------------------------------------ |
-| A     | T1-T6   | **Ninguna bloqueante**: ejecutable de inmediato                                            |
-| B     | T7-T11  | **Ninguna bloqueante**: ejecutable de inmediato                                            |
-| C     | T12-T14 | **Ninguna bloqueante**: ejecutable de inmediato                                            |
-| D     | T15-T20 | **Spec 033** para los componentes y vistas que se parten en `.container.tsx` + `.view.tsx` |
-| E     | T21-T23 | **Spec 035** para la infraestructura `frontend/e2e/visual-regression.spec.ts`              |
-| Final | T24-T26 | **Ninguna bloqueante**: verificación, documentación y promoción del ADR                    |
+| Fase  | Tareas  | Dependencia                                                                           |
+| ----- | ------- | ------------------------------------------------------------------------------------- |
+| A     | T1-T6   | **Ninguna bloqueante**: ejecutable de inmediato                                       |
+| B     | T7-T11  | **Ninguna bloqueante**: ejecutable de inmediato                                       |
+| C     | T12-T14 | **Ninguna bloqueante**: ejecutable de inmediato                                       |
+| D     | T15-T20 | **Spec 033 integrada** en `main` (`1276f47`, `32f438f`); dependencia satisfecha       |
+| E     | T21-T23 | Infraestructura de la spec 035 disponible en `frontend/e2e/visual-regression.spec.ts` |
+| Final | T24-T26 | **Ninguna bloqueante**: verificación, documentación y promoción del ADR               |
 
 El orden interno dentro de A es A → B → C: retirar `sap-*` y poner los
 tokens bajo ratchet **simplifica** el catálogo; migrar 431 usos antes de
@@ -38,8 +38,9 @@ tener el pipeline sería reescribir a ciegas.
   cualquier momento (incluso antes o en paralelo): solo tocan `index.css`,
   `scripts/`, `design-system-budget.json` y los 431 usos de `sap-*`.
 
-Consecuencia operativa: `features/design-system/` es propiedad exclusiva de
-la spec 033 hasta que cierre su T8; esta spec no lo modifica antes.
+Consecuencia operativa: la spec 033 completó T8 y T14-T19 en `main` con los
+commits `1276f47` y `32f438f` (2026-10-23). La fase D queda habilitada y monta
+las historias sobre las superficies presentacionales ya extraídas.
 
 ## Problema
 
@@ -111,7 +112,7 @@ sistema gobernado en un sistema **mantenible por otras personas**:
 Dentro:
 
 - **A. Catálogo de primitivas como herramienta de trabajo**: introducir
-  Storybook 10 como catálogo **real** de las **65 entradas** certificadas,
+  Storybook 10 como catálogo **real** de las **68 entradas** certificadas,
   con playground de props, los estados que apliquen al contrato de props de
   cada entrada, modo claro/oscuro y las densidades industriales; **el
   catálogo dentro del app se conserva** como vista de negocio (quién puede
@@ -138,7 +139,7 @@ Fuera (explícito):
 - **El color del producto**: el branding por instancia (ADR-0021) y el logo
   configurable (spec 027) no se tocan.
 - **`token-*` y su semántica**: no se renombran tokens existentes (rompería
-  las 65 entradas certificadas y los miles de usos de `token-*`); el pipeline
+  las 68 entradas certificadas y los miles de usos de `token-*`); el pipeline
   los adopta tal cual.
 - **Migración de `index.css` a un formato distinto**: el archivo sigue siendo
   Tailwind v4 con `@theme`; lo que cambia es que **dos regiones** se
@@ -157,13 +158,13 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: **Catálogo de las 65 entradas certificadas, con la taxonomía
+- [x] AC1: **Catálogo de las 68 entradas certificadas, con la taxonomía
       correcta**. El catálogo externo es **Storybook 10** (decisión del
       [ADR-0027](file:///docs/adr/0027-design-system-catalog-pipeline.md);
-      **Ladle 5.1.1** queda como **fallback** documentado). Las **65 entradas**
+      **Ladle 5.1.1** queda como **fallback** documentado). Las **68 entradas**
       de `frontend/design-system-certified.json` tienen una historia (story)
       en el catálogo. La taxonomía es explícita, porque **no todas son
-      primitivas ni componentes React**: - **37** están en
+      primitivas ni componentes React**: - **40** están en
       `src/components/ui/` (primitivas canónicas); - **21** en
       `src/features/**` (**16** modales/tablas de dominio, **4**
       vistas completas de feature —`AssignmentManager.view.tsx`,
@@ -187,11 +188,11 @@ Fuera (explícito):
       033 parte en su T15—; el componente con el contrato del hook de
       dominio cuando 033 solo extrae los imports de `services/` —`T16`
       `SeedingProgressModal`, `T18` `ImportModal`, `T19` `ExportLogsModal` y
-      `T14` `ShiftHistoryModal`—). La lista de 65 es la **misma
+      `T14` `ShiftHistoryModal`—). La lista de 68 es la **misma
       fuente de verdad** que consumen `frontend/scripts/audit-design-system.cjs`
       y `frontend/src/tests/guardrails/designSystemGuardrails.test.ts` (no hay
       una lista nueva que mantener en paralelo).
-- [ ] AC2: **El catálogo del app deja de ser el único catálogo, deja de
+- [x] AC2: **El catálogo del app deja de ser el único catálogo, deja de
       violar el estándar de capas y no arrastra runtime de Storybook**.
       `features/design-system/` pasa a tener `containers/`, `views/` y
       `hooks/` (con la migración de `DesignSystemCatalog.view.tsx` que la
@@ -203,11 +204,11 @@ Fuera (explícito):
       **de tipo**, borrados al compilar— y **cero imports de runtime** de
       `@storybook/*` en `*.stories.tsx` ni en código de producción: el bundle
       de producción no contiene el runtime de Storybook.
-- [ ] AC3: **Regresión visual de las primitivas**. Existen snapshots de las
+- [x] AC3: **Regresión visual de las primitivas**. Existen snapshots de las
       primitivas certificadas en claro y oscuro; un cambio de token que
       altere el render de una primitiva **rompe el CI** hasta que el baseline
       se actualice de forma explícita y revisable.
-- [ ] AC4: **Pipeline de tokens sobre las dos regiones reales de
+- [x] AC4: **Pipeline de tokens sobre las dos regiones reales de
       `index.css`**. Existe `frontend/tokens.json` como fuente de verdad
       declarativa de los tokens semánticos (`token-*`), de los estados de
       dominio (`status-*`) y de data-viz (`chart-1..8`); un script
@@ -223,7 +224,7 @@ Fuera (explícito):
       redeclaran en `.dark`). El primer run produce un **diff vacío** contra
       el CSS actual (hoy: 71 entradas en `@theme` ↔ 71 variables en `:root`,
       correspondencia 1 a 1 sin HEX directos en `@theme`).
-- [ ] AC5: **Los tokens tienen consumidor o desaparecen, sin mutilar las
+- [x] AC5: **Los tokens tienen consumidor o desaparecen, sin mutilar las
       escalas contractuales**. Cada token del `@theme` tiene al menos un
       consumidor real; el script de tokens reporta los huérfanos y el guardrail
       falla si **el número de tokens huérfanos supera el budget vigente**
@@ -242,12 +243,12 @@ Fuera (explícito):
       `token-status-info-surface`, `token-status-info-text`): los tres
       `chart` están dentro de la escala protegida, y los dos `status-info` son
       miembros de la escala genérica protegida.
-- [ ] AC6: **La familia `sap-*` está retirada**. Los **431** usos de
+- [x] AC6: **La familia `sap-*` está retirada**. Los **431** usos de
       producción (más 1 en tests) de `sap-*` migran a `token-*` (o a los
       tokens de estado de dominio donde corresponda); el ratchet de `sap-*`
       queda en **0** y bloqueado para siempre. Ninguna clase `sap-*`
       sobrevive en `frontend/src`.
-- [ ] AC7: **El scorecard del audit se completa con evidencia visual, sin
+- [x] AC7: **El scorecard del audit se completa con evidencia visual, sin
       convertirse en un runner**. `frontend/scripts/audit-design-system.cjs`
       sigue siendo un **check estático y rápido** (hoy corre en **0,096 s**):
       **no** invoca Playwright ni ningún proceso externo. Incorpora el
@@ -259,8 +260,10 @@ Fuera (explícito):
 - [ ] AC8: **Sin regresión**. `npm run validate:ci` (frontend),
       `npm run guardrails`, `npm run audit:design-system` (los budgets
       vigentes **no suben**), `npm run spec:check`, `npm run docs:check`,
-      `npm run preflight` en verde y `npm run e2e:staging` en verde (56
-      tests).
+      `npm run preflight` en verde y `npm run e2e:staging` en verde (70
+      pruebas: 55 funcionales, 12 visuales y 3 de rendimiento). El cierre
+      requiere ejecutar la suite contra frontend/backend de staging
+      actualizados y datos de prueba consistentes.
 
 ## Restricciones
 
@@ -270,7 +273,7 @@ Fuera (explícito):
 - **ADR-0020 se mantiene**: Storybook es **documentación y playground**, no
   un runtime de componentes. Las primitivas siguen siendo las del proyecto;
   Storybook las importa y las documenta.
-- **No se renombra ningún token `token-*`**: eso rompería las 65 entradas
+- **No se renombra ningún token `token-*`**: eso rompería las 68 entradas
   certificadas y los miles de usos existentes.
 - **El pipeline no toca la paleta de `status-*` ni de `chart-*`**: se
   **generan**, no se redefinen; sus valores y su contrato de contraste siguen
@@ -296,7 +299,7 @@ Fuera (explícito):
     escala atómica, `sap-*` == 0, AC4, AC5, AC6)
   - `frontend/scripts/build-tokens.cjs` (nuevo, AC4)
   - `frontend/src/tests/guardrails/designSystemGuardrails.test.ts`
-    (extendido: las 65 entradas certificadas tienen story, con las
+    (extendido: las 68 entradas certificadas tienen story, con las
     excepciones de la taxonomía de AC1, AC1)
   - `frontend/e2e/visual-regression.spec.ts` (de la spec 035; las primitivas
     se suman al conjunto, AC3)

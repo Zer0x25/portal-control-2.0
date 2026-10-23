@@ -118,7 +118,7 @@ describe("useToolsController", () => {
     const { result } = renderToolsLogic();
 
     expect(result.current.itemClass).toBe(
-      "group relative p-3.5 h-[90px] rounded-sm flex flex-col items-center justify-center text-center bg-token-surface-stripe border border-token-border-technical shadow-sm transition-all duration-150 hover:border-sap-blue/40 hover:bg-token-surface-active active:scale-[0.98]",
+      "group relative p-3.5 h-[90px] rounded-sm flex flex-col items-center justify-center text-center bg-token-surface-stripe border border-token-border-technical shadow-sm transition-all duration-150 hover:border-token-accent-brand/40 hover:bg-token-surface-active active:scale-[0.98]",
     );
 
     expect(result.current.iconBoxClass).toBe(

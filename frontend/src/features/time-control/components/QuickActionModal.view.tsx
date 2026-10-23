@@ -161,7 +161,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
               className={`w-full flex items-center justify-center gap-3 h-14 shadow-md transition-all group hover:scale-[1.02] active:scale-[0.98] ${
                 !isArmed || isLocked
                   ? "bg-amber-500/10 text-amber-700/40 dark:text-amber-400/30 border border-amber-500/20 shadow-none"
-                  : "bg-sap-blue text-white border border-sap-blue shadow-md hover:bg-sap-blue-dark"
+                  : "bg-token-accent-brand text-white border border-token-accent-brand shadow-md hover:bg-token-accent-brand"
               }`}
             >
               <WrenchScrewdriverIcon className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -281,7 +281,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
                   onClick={() => setActiveTab("live")}
                   className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
                     activeTab === "live"
-                      ? "bg-token-surface-card text-sap-blue shadow-sm"
+                      ? "bg-token-surface-card text-token-accent-brand shadow-sm"
                       : "text-token-text-secondary hover:text-token-text-primary"
                   }`}
                 >
@@ -294,7 +294,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
                   onClick={() => setActiveTab("edit")}
                   className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
                     activeTab === "edit"
-                      ? "bg-token-surface-card text-sap-blue shadow-sm"
+                      ? "bg-token-surface-card text-token-accent-brand shadow-sm"
                       : "text-token-text-secondary hover:text-token-text-primary"
                   }`}
                 >

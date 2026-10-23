@@ -178,7 +178,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
             <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-wider">
               Seleccionados
             </span>
-            <span className="text-xs font-black text-sap-blue font-mono tabular-nums leading-none">
+            <span className="text-xs font-black text-token-accent-brand font-mono tabular-nums leading-none">
               {props.totalRecords.toLocaleString()}
             </span>
           </div>

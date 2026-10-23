@@ -4,36 +4,35 @@ import path from "node:path";
 import { render, screen, fireEvent } from "@testing-library/react";
 import DesignSystemCatalogView from "../../features/design-system/containers/DesignSystemCatalog.container";
 
-/**
- * Spec 031 T18 (AC12): el catalogo del design system es una ruta navegable
- * del app (no solo un panel de desarrollador).
- */
+/** Spec 038: la ruta expone tokens y el catálogo certificado de Storybook. */
 
 const currentDir = path.dirname(new URL(import.meta.url).pathname);
 const frontendRoot = path.resolve(currentDir, "../../..");
 
-describe("Catalogo del design system (spec 031 AC12)", () => {
-  it("expone las secciones del catalogo con tabs accesibles", () => {
+describe("Catálogo del design system (spec 038)", () => {
+  it("expone las secciones de tokens y Storybook con tabs accesibles", () => {
     render(<DesignSystemCatalogView />);
     expect(screen.getByRole("tablist")).toBeInTheDocument();
     const tabs = screen.getAllByRole("tab");
-    expect(tabs.length).toBeGreaterThanOrEqual(4);
+    expect(tabs).toHaveLength(2);
     expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+    expect(tabs[0]).toHaveTextContent("Tokens Semánticos");
+    expect(tabs[1]).toHaveTextContent("Catálogo Storybook");
+    expect(screen.getByText(/Catálogo generado desde/)).toBeInTheDocument();
   });
 
-  it("documenta las primitivas con variantes y uso", () => {
+  it("muestra las entradas certificadas y sus historias al abrir Storybook", () => {
     render(<DesignSystemCatalogView />);
 
-    // La documentacion de Button vive en la seccion de formularios.
-    fireEvent.click(screen.getByRole("tab", { name: /Formularios/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /Catálogo Storybook/i }));
 
+    expect(
+      screen.getByText(/68 entradas enlazadas a sus historias de Storybook/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Abrir Storybook" })).toBeInTheDocument();
     expect(screen.getByText("Button")).toBeInTheDocument();
     expect(screen.getByText("src/components/ui/Button.tsx")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Acción disparadora. La variante comunica jerarquía: una sola acción primaria por pantalla.",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Ver historia" }).length).toBeGreaterThan(0);
   });
 
   it("la ruta /design-system existe y esta restringida a Administrador", () => {

@@ -122,9 +122,13 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
             {historyEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="group p-5 rounded-2xl bg-token-surface-card border border-token-border-subtle hover:border-sap-blue/20 transition-all flex items-start gap-4 shadow-sm"
+                className="group p-5 rounded-2xl bg-token-surface-card border border-token-border-subtle hover:border-token-accent-brand/20 transition-all flex items-start gap-4 shadow-sm"
               >
-                <IndustrialIndicator height="h-full" color="bg-sap-blue/20" className="mt-1" />
+                <IndustrialIndicator
+                  height="h-full"
+                  color="bg-token-accent-brand/20"
+                  className="mt-1"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-4">
                     <span
@@ -138,8 +142,8 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-5 h-5 rounded-full bg-sap-blue/10 flex items-center justify-center">
-                      <UserIcon className="w-3 h-3 text-sap-blue" />
+                    <div className="w-5 h-5 rounded-full bg-token-accent-brand/10 flex items-center justify-center">
+                      <UserIcon className="w-3 h-3 text-token-accent-brand" />
                     </div>
                     <p className="text-[11px] font-black text-token-text-secondary uppercase tracking-widest">
                       Actor:{" "}
@@ -166,7 +170,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                         <p className="text-xxs font-black text-emerald-500/60 uppercase mb-1 tracking-widest">
                           Nuevo
                         </p>
-                        <p className="text-xs font-black text-sap-blue truncate uppercase italic">
+                        <p className="text-xs font-black text-token-accent-brand truncate uppercase italic">
                           {entry.details.newPatternName || "N/A"}
                         </p>
                         <p className="text-xxs font-bold text-token-text-tertiary font-mono">

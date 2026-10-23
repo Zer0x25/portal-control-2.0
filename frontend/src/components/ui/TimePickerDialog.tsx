@@ -8,7 +8,7 @@ interface TimePickerDialogProps {
   onClose: () => void;
   onSave: (time: string) => void;
   initialTime: string;
-  accentColor?: "sap-blue" | "emerald";
+  accentColor?: "token-accent-brand" | "emerald";
 }
 
 const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
@@ -16,7 +16,7 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
   onClose,
   onSave,
   initialTime,
-  accentColor = "sap-blue",
+  accentColor = "token-accent-brand",
 }) => {
   const [hh, mm] = initialTime.split(":");
   const [selectedHour, setSelectedHour] = useState(hh || "12");
@@ -31,8 +31,10 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
     onClose();
   };
 
-  const colorClass = accentColor === "sap-blue" ? "text-sap-blue" : "text-emerald-500";
-  const bgAccentClass = accentColor === "sap-blue" ? "bg-sap-blue" : "bg-emerald-600";
+  const colorClass =
+    accentColor === "token-accent-brand" ? "text-token-accent-brand" : "text-emerald-500";
+  const bgAccentClass =
+    accentColor === "token-accent-brand" ? "bg-token-accent-brand" : "bg-emerald-600";
 
   return (
     isOpen && (

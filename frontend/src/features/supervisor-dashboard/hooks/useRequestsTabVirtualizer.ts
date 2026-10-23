@@ -19,8 +19,8 @@ export const useRequestsTabVirtualizer = ({
   fetchNextPage,
 }: UseRequestsTabVirtualizerOptions) => {
   const parentRef = useRef<HTMLDivElement>(null);
-  // TanStack Virtual is intentionally a compiler bail-out; keep the virtualizer's instance API local.
-  // eslint-disable-next-line react-hooks/incompatible-library -- the compiler cannot safely memoize Virtualizer methods
+  // TanStack Virtual returns an instance that the React Compiler cannot safely memoize.
+  // eslint-disable-next-line react-hooks/incompatible-library -- Keep the virtualizer instance for scroll state.
   const rowVirtualizer = useVirtualizer({
     count: requests.length,
     getScrollElement: () => parentRef.current,
@@ -28,13 +28,16 @@ export const useRequestsTabVirtualizer = ({
     overscan: 5,
   });
 
-  const lastVirtualItemIndex = rowVirtualizer.getVirtualItems().at(-1)?.index ?? -1;
+  const virtualItems = rowVirtualizer.getVirtualItems();
 
   useEffect(() => {
-    if (lastVirtualItemIndex >= requests.length - 5 && hasNextPage && !isFetchingNextPage) {
+    if (virtualItems.length === 0) return;
+
+    const lastItem = virtualItems[virtualItems.length - 1];
+    if (lastItem.index >= requests.length - 5 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, requests.length, fetchNextPage, lastVirtualItemIndex]);
+  }, [hasNextPage, isFetchingNextPage, requests.length, fetchNextPage, virtualItems]);
 
   return { parentRef, rowVirtualizer };
 };

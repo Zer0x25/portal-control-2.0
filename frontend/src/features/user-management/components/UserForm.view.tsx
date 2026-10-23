@@ -93,7 +93,7 @@ const UserFormView: React.FC<UserFormViewProps> = ({
           </div>
           {!isEditing && (
             <div className="flex flex-col justify-center px-6 py-4 bg-linear-to-br from-token-surface-stripe to-token-surface-card border border-token-border-technical rounded-md shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-sap-blue/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+              <div className="absolute top-0 right-0 w-16 h-16 bg-token-accent-brand/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-tertiary">
                 Contraseña Temporal
               </span>
@@ -101,7 +101,7 @@ const UserFormView: React.FC<UserFormViewProps> = ({
                 <span className="text-2xl font-black text-token-text-primary tabular-nums tracking-tighter">
                   123456
                 </span>
-                <span className="text-xxs font-black text-sap-blue uppercase tracking-tighter">
+                <span className="text-xxs font-black text-token-accent-brand uppercase tracking-tighter">
                   * Cambio Obligatorio
                 </span>
               </div>

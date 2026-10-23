@@ -33,7 +33,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
       onClick={onClick}
       className={`
         flex items-center justify-between p-3.5 rounded-sm border border-token-border-technical 
-        cursor-pointer transition-all group hover:border-sap-blue/40 ${bgClass} ${className}
+        cursor-pointer transition-all group hover:border-token-accent-brand/40 ${bgClass} ${className}
       `}
     >
       <div className="flex items-center gap-3 overflow-hidden">
@@ -48,7 +48,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
         ) : null}
 
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-[13px] text-token-text-primary group-hover:text-sap-blue transition-colors truncate">
+          <p className="font-bold text-[13px] text-token-text-primary group-hover:text-token-accent-brand transition-colors truncate">
             {title}
           </p>
           <div className="flex items-center gap-2">

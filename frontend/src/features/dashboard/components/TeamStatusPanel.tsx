@@ -35,7 +35,7 @@ export const TeamStatusPanel: React.FC<TeamStatusPanelProps> = ({
         {hasUnscheduledPresent && (
           <div className="space-y-4">
             <div className="flex items-center gap-2.5 px-1">
-              <div className="w-1 h-4 bg-sap-blue opacity-50 rounded-full" />
+              <div className="w-1 h-4 bg-token-accent-brand opacity-50 rounded-full" />
               <h4 className="font-semibold text-[11px] uppercase tracking-wider text-token-text-tertiary leading-none">
                 Sin Horario Asignado
               </h4>
@@ -56,7 +56,7 @@ export const TeamStatusPanel: React.FC<TeamStatusPanelProps> = ({
                   title={record.employeeName}
                   subtitle={record.employeePosition}
                   indicator={
-                    <div className="w-1.5 h-1.5 rounded-full bg-sap-blue/40 border border-sap-blue/20 shadow-sm"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand/40 border border-token-accent-brand/20 shadow-sm"></div>
                   }
                   onDoubleClick={() => onUnscheduledPresentDoubleClick(record)}
                   animationDelay={index * 0.05}

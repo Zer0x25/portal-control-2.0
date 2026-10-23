@@ -67,7 +67,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-sap-blue/10 flex items-center justify-center text-sap-blue border border-sap-blue/20">
+          <div className="w-10 h-10 rounded-xl bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand border border-token-accent-brand/20">
             <BeakerIcon className="w-5 h-5" />
           </div>
           <div>
@@ -86,7 +86,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
         {/* Form Section */}
         <div className="w-full md:w-5/12 p-8 border-b md:border-b-0 md:border-r border-token-border-subtle bg-token-surface-stripe overflow-y-auto">
           <div className="flex items-center gap-2 mb-6">
-            <DocumentChartBarIcon className="w-4 h-4 text-sap-blue" />
+            <DocumentChartBarIcon className="w-4 h-4 text-token-accent-brand" />
             <h3 className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] italic">
               Nueva Lectura
             </h3>
@@ -106,7 +106,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
                   <div key={config.id} className="space-y-2 group">
                     <label
                       htmlFor={`meter-${config.id}`}
-                      className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest ml-4 transition-colors group-focus-within:text-sap-blue italic"
+                      className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest ml-4 transition-colors group-focus-within:text-token-accent-brand italic"
                     >
                       {config.name}
                     </label>
@@ -117,7 +117,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
                       onChange={(e) => setValue(config.id, e.target.value)}
                       error={getError(config.id)}
                       placeholder="00.00"
-                      className="rounded-md! h-12! bg-token-surface-card! border-token-border-technical! text-token-text-primary! focus:ring-4! focus:ring-sap-blue/10! transition-all! font-mono text-center text-lg active:scale-[0.98]"
+                      className="rounded-md! h-12! bg-token-surface-card! border-token-border-technical! text-token-text-primary! focus:ring-4! focus:ring-token-accent-brand/10! transition-all! font-mono text-center text-lg active:scale-[0.98]"
                       autoComplete="off"
                     />
                   </div>
@@ -148,7 +148,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
         <div className="w-full md:w-7/12 p-8 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <ArrowPathIcon className="w-4 h-4 text-sap-blue" />
+              <ArrowPathIcon className="w-4 h-4 text-token-accent-brand" />
               <h3 className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] italic">
                 Últimos Registros
               </h3>
@@ -172,7 +172,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
                   return (
                     <div
                       key={readingItem.id}
-                      className="flex items-center justify-between p-4 bg-token-surface-card rounded-md border border-token-border-technical hover:border-sap-blue/20 transition-all group"
+                      className="flex items-center justify-between p-4 bg-token-surface-card rounded-md border border-token-border-technical hover:border-token-accent-brand/20 transition-all group"
                     >
                       <div className="flex flex-col gap-0.5">
                         <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest leading-none">
@@ -188,7 +188,7 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-2xl font-black font-mono text-sap-blue dark:text-sap-light-blue tracking-tighter group-hover:scale-110 transition-transform block italic">
+                        <span className="text-2xl font-black font-mono text-token-accent-brand tracking-tighter group-hover:scale-110 transition-transform block italic">
                           {readingItem.value}
                         </span>
                       </div>

@@ -79,7 +79,7 @@ const MeterFormView: React.FC<MeterFormViewProps> = ({
     return (
       <div className="w-full bg-token-surface-stripe border border-token-border-subtle rounded-full h-1.5 mt-1">
         <div
-          className="bg-sap-blue h-1.5 rounded-full"
+          className="bg-token-accent-brand h-1.5 rounded-full"
           style={{ width: `${Math.min(percentage, 100)}%` }}
         ></div>
       </div>

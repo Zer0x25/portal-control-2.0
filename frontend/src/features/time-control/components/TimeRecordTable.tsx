@@ -78,7 +78,7 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
         <div className={`relative ${Z.sticky}`}>
           <div className="flex flex-col md:flex-row gap-6 justify-between items-end mb-8">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-md bg-sap-blue border border-sap-blue shadow-lg shadow-sap-blue/20">
+              <div className="p-3 rounded-md bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20">
                 <TableCellsIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -108,7 +108,7 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
                   variant="secondary"
                   className="flex items-center gap-3 h-11 px-6 rounded-md font-black uppercase tracking-widest text-[10px] bg-token-surface-card border border-token-border-technical hover:bg-token-surface-hover shadow-sm"
                 >
-                  <ExportIcon className="w-4 h-4 text-sap-blue" />
+                  <ExportIcon className="w-4 h-4 text-token-accent-brand" />
                   <span className="hidden sm:inline">Exportar Datos</span>
                 </Button>
 
@@ -122,21 +122,21 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
                     <Button
                       variant="none"
                       onClick={() => handleExport("csv")}
-                      className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-sap-blue hover:text-white rounded transition-colors"
+                      className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-accent-brand hover:text-white rounded transition-colors"
                     >
                       <DocumentTextIcon className="w-4 h-4 mr-3" /> Standard CSV
                     </Button>
                     <Button
                       variant="none"
                       onClick={() => handleExport("excel")}
-                      className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-sap-blue hover:text-white rounded transition-colors"
+                      className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-accent-brand hover:text-white rounded transition-colors"
                     >
                       <TableCellsIcon className="w-4 h-4 mr-3" /> Microsoft Excel
                     </Button>
                     <Button
                       variant="none"
                       onClick={() => handleExport("pdf")}
-                      className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-sap-blue hover:text-white rounded transition-colors"
+                      className="flex items-center w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-accent-brand hover:text-white rounded transition-colors"
                     >
                       <PrinterIcon className="w-4 h-4 mr-3" /> Imprimir Documento
                     </Button>

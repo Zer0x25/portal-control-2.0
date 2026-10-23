@@ -62,7 +62,7 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
     >
       {isFetchingNextPage ? (
         <div className="flex items-center gap-2">
-          <ArrowPathIcon className="w-5 h-5 animate-spin text-sap-blue" />
+          <ArrowPathIcon className="w-5 h-5 animate-spin text-token-accent-brand" />
           <span className="text-xs font-black uppercase tracking-widest">
             Cargando más registros...
           </span>

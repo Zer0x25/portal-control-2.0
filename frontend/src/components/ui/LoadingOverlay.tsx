@@ -20,8 +20,8 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = t
         <div className="relative w-10 h-10 mb-8">
           <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full opacity-20"></div>
           <LoadingSpinner size="md" variant="default" />
-          <div className="absolute inset-2 rounded-full bg-sap-blue/5 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-sap-blue/20 animate-pulse" />
+          <div className="absolute inset-2 rounded-full bg-token-accent-brand/5 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-token-accent-brand/20 animate-pulse" />
           </div>
         </div>
 

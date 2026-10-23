@@ -12,14 +12,14 @@ const WelcomePanel: React.FC = () => {
       <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 px-1">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="h-1 w-6 bg-sap-blue rounded-full opacity-80"></div>
+            <div className="h-1 w-6 bg-token-accent-brand rounded-full opacity-80"></div>
             <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider leading-none">
               {greeting} • Dashboard Operativo
             </p>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold text-token-text-primary leading-tight tracking-tight">
             Hola,{" "}
-            <span className="bg-clip-text text-transparent bg-linear-to-r from-sap-blue to-sap-light-blue">
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-token-accent-brand to-token-accent-brand/60">
               {welcomeName}
             </span>
           </h1>

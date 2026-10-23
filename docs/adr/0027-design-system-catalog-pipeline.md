@@ -1,6 +1,6 @@
 # ADR-0027: Design System Catalog & Token Pipeline — Catálogo externo y tokens generados
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-21
 - Autores: zer0x
 

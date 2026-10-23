@@ -45,10 +45,10 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
         <div className="relative">
           <LoadingSpinner size="lg" variant="default" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <InboxArrowDownIcon className="w-5 h-5 text-sap-blue animate-pulse" />
+            <InboxArrowDownIcon className="w-5 h-5 text-token-accent-brand animate-pulse" />
           </div>
         </div>
-        <p className="text-[11px] font-bold text-sap-blue uppercase tracking-widest animate-pulse">
+        <p className="text-[11px] font-bold text-token-accent-brand uppercase tracking-widest animate-pulse">
           Auditando bandeja de entrada...
         </p>
       </div>
@@ -124,7 +124,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                 ) : (
                   <div className="sm:col-span-2 flex flex-col items-center justify-center py-40 opacity-30">
                     <div className="w-24 h-24 rounded-sm bg-token-surface-stripe flex items-center justify-center mb-8 border border-token-border-technical shadow-inner">
-                      <CheckCircleIcon className="w-12 h-12 text-sap-blue" />
+                      <CheckCircleIcon className="w-12 h-12 text-token-accent-brand" />
                     </div>
                     <p className="text-[11px] font-black text-token-text-tertiary uppercase tracking-[0.4em]">
                       AUDITADO. SIN PENDIENTES.
@@ -134,7 +134,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
               </div>
               <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
                 {isFetchingNextPage && (
-                  <div className="flex items-center gap-3 text-[10px] font-black text-sap-blue uppercase tracking-widest animate-pulse">
+                  <div className="flex items-center gap-3 text-[10px] font-black text-token-accent-brand uppercase tracking-widest animate-pulse">
                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
                     SINCRONIZANDO MÁS ENTREGAS...
                   </div>
@@ -157,7 +157,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
               />
               <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-6">
                 {isFetchingNextPage && (
-                  <div className="flex items-center gap-3 text-[10px] font-black text-sap-blue uppercase tracking-widest animate-pulse">
+                  <div className="flex items-center gap-3 text-[10px] font-black text-token-accent-brand uppercase tracking-widest animate-pulse">
                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
                     RECUPERANDO HISTORIAL...
                   </div>

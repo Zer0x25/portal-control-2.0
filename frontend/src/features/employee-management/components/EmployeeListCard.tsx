@@ -69,7 +69,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                 <h4 className="text-sm font-black text-token-text-primary uppercase tracking-tight">
                   {emp.name}
                 </h4>
-                <p className="text-[10px] font-black text-sap-blue uppercase tracking-widest mt-1">
+                <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest mt-1">
                   {emp.position}
                 </p>
               </div>
@@ -117,7 +117,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                       size="sm"
                       variant="secondary"
                       onClick={() => onEdit(emp)}
-                      className="flex-1 justify-center hover:bg-sap-blue/10 hover:text-sap-blue"
+                      className="flex-1 justify-center hover:bg-token-accent-brand/10 hover:text-token-accent-brand"
                     >
                       <EditIcon className="w-4 h-4 mr-2" />
                       Editar
@@ -203,14 +203,14 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
             paginatedEmployees.map((emp) => (
               <tr
                 key={emp.id}
-                className="group hover:bg-sap-blue/2 dark:hover:bg-white/2 transition-colors"
+                className="group hover:bg-token-accent-brand/2 dark:hover:bg-white/2 transition-colors"
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
                     <span className="text-sm font-black text-token-text-primary uppercase tracking-tight">
                       {emp.name}
                     </span>
-                    <span className="text-[10px] font-black text-sap-blue uppercase tracking-widest">
+                    <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
                       {emp.position}
                     </span>
                   </div>
@@ -253,7 +253,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="secondary"
                           onClick={() => onEdit(emp)}
-                          className="p-2! shadow-sm rounded-md border-token-border-technical hover:bg-sap-blue hover:text-white"
+                          className="p-2! shadow-sm rounded-md border-token-border-technical hover:bg-token-accent-brand hover:text-white"
                           title="Editar"
                         >
                           <EditIcon className="w-4 h-4" />

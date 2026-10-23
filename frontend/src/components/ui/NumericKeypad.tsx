@@ -42,7 +42,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
           key={key}
           data-testid={`kiosk-key-${key}`}
           onPointerDown={(e) => handlePress(e, () => onInput(key))}
-          className="aspect-square flex items-center justify-center text-3xl font-black rounded-2xl bg-white/5 dark:bg-white/10 hover:bg-white/15 dark:hover:bg-white/20 border border-white/10 dark:border-white/20 backdrop-blur-md transition-all active:scale-90 active:bg-sap-blue/30 active:shadow-inner text-token-text-primary font-mono shadow-md hover:shadow-lg hover:-translate-y-0.5"
+          className="aspect-square flex items-center justify-center text-3xl font-black rounded-2xl bg-white/5 dark:bg-white/10 hover:bg-white/15 dark:hover:bg-white/20 border border-white/10 dark:border-white/20 backdrop-blur-md transition-all active:scale-90 active:bg-token-accent-brand/30 active:shadow-inner text-token-text-primary font-mono shadow-md hover:shadow-lg hover:-translate-y-0.5"
         >
           {key}
         </Button>
@@ -62,7 +62,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
           variant="none"
           data-testid="kiosk-key-confirm"
           onPointerDown={(e) => handlePress(e, onConfirm, 100)}
-          className="col-span-3 h-16 mt-2 flex items-center justify-center text-sm font-black uppercase tracking-[0.3em] rounded-2xl bg-sap-blue text-white shadow-2xl shadow-blue-500/40 hover:brightness-110 hover:-translate-y-1 transition-all active:scale-[0.96] active:brightness-90"
+          className="col-span-3 h-16 mt-2 flex items-center justify-center text-sm font-black uppercase tracking-[0.3em] rounded-2xl bg-token-accent-brand text-white shadow-2xl shadow-blue-500/40 hover:brightness-110 hover:-translate-y-1 transition-all active:scale-[0.96] active:brightness-90"
         >
           Confirmar Identidad
         </Button>

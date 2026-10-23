@@ -30,13 +30,13 @@ const InitialSyncOverlay: React.FC = () => {
           {/* Main Animated Status Indicator */}
           <div className="relative mb-12">
             {/* Outer Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-sap-blue blur-3xl opacity-10 animate-pulse"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-token-accent-brand blur-3xl opacity-10 animate-pulse"></div>
 
             {/* Technical Spinner */}
             <div className="relative w-20 h-20 mx-auto">
               <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full"></div>
               <LoadingSpinner size="md" variant="default" />
-              <div className="absolute inset-4 border border-sap-blue/20 rounded-full flex items-center justify-center">
+              <div className="absolute inset-4 border border-token-accent-brand/20 rounded-full flex items-center justify-center">
                 <LoadingSpinner size="xs" variant="subtle" />
               </div>
             </div>
@@ -49,7 +49,7 @@ const InitialSyncOverlay: React.FC = () => {
                 Sincronizando Entorno
               </p>
               <h2 className="text-xl font-bold text-token-text-primary tracking-tight">
-                Inicializando <span className="text-sap-blue">Portal Core</span>
+                Inicializando <span className="text-token-accent-brand">Portal Core</span>
               </h2>
             </div>
 
@@ -59,7 +59,7 @@ const InitialSyncOverlay: React.FC = () => {
                 <span className="text-[11px] font-bold text-token-text-secondary uppercase tracking-[0.2em]">
                   {currentSyncStep || "Preparando entorno seguro..."}
                 </span>
-                <span className="text-[13px] font-mono font-black text-sap-blue">
+                <span className="text-[13px] font-mono font-black text-token-accent-brand">
                   {syncProgress}%
                 </span>
               </div>
@@ -67,7 +67,7 @@ const InitialSyncOverlay: React.FC = () => {
               <div className="h-[2px] w-full bg-token-surface-stripe overflow-hidden">
                 <div
                   style={{ width: `${syncProgress}%` }}
-                  className="h-full bg-sap-blue shadow-[0_0_15px_rgba(0,87,146,0.6)] transition-[width] duration-500 ease-out"
+                  className="h-full bg-token-accent-brand shadow-[0_0_15px_rgba(0,87,146,0.6)] transition-[width] duration-500 ease-out"
                 />
               </div>
 

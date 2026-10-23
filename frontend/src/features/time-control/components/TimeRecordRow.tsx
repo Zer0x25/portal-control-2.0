@@ -232,7 +232,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 title={`${progressPercent}% de jornada completada`}
               >
                 <div
-                  className="h-full bg-linear-to-r from-sap-blue to-blue-400 shadow-[0_0_8px_rgba(0,102,204,0.4)] transition-all duration-500"
+                  className="h-full bg-linear-to-r from-token-accent-brand to-blue-400 shadow-[0_0_8px_rgba(0,102,204,0.4)] transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -289,7 +289,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 }}
                 disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
                 title="Agregar novedad"
-                className="p-2! shadow-md rounded-md border-sap-blue/30 bg-blue-50 dark:bg-sap-blue/20 text-sap-blue hover:bg-sap-blue hover:text-white transition-all"
+                className="p-2! shadow-md rounded-md border-token-accent-brand/30 bg-blue-50 dark:bg-token-accent-brand/20 text-token-accent-brand hover:bg-token-accent-brand hover:text-white transition-all"
               >
                 <ChatBubbleLeftRightIcon className="w-4 h-4 stroke-[2.5px]" />
               </Button>

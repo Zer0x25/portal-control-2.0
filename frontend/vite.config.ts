@@ -47,6 +47,7 @@ const fontPreloadPlugin = (): Plugin => ({
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const isStorybook = process.env.PORTAL_SKIP_PWA === "1";
 
   return {
     define: {
@@ -88,7 +89,7 @@ export default defineConfig(({ mode }) => {
       // Recoverable bail-outs are emitted by the plugin for auditability.
       react({ compiler: { reportDiagnostics: true } }),
       fontPreloadPlugin(),
-      VitePWA({
+      ...(!isStorybook ? [VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.svg"],
         workbox: {
@@ -160,7 +161,7 @@ export default defineConfig(({ mode }) => {
             },
           ],
         },
-      }),
+      })] : []),
     ],
     build: {
       rollupOptions: {

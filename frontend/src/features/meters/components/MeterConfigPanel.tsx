@@ -233,7 +233,7 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
               <>
                 <Button
                   onClick={handleStartAdd}
-                  className="w-full flex items-center justify-center gap-2 mb-2 bg-sap-blue"
+                  className="w-full flex items-center justify-center gap-2 mb-2 bg-token-accent-brand"
                   disabled={isLimitReached}
                   title={
                     isLimitReached

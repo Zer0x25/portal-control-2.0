@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
   return (
     <div
       data-testid="login-page"
-      className="min-h-screen flex items-center justify-center bg-token-surface-stripe p-6 overflow-hidden relative selection:bg-sap-blue/30 selection:text-sap-blue"
+      className="min-h-screen flex items-center justify-center bg-token-surface-stripe p-6 overflow-hidden relative selection:bg-token-accent-brand/30 selection:text-token-accent-brand"
     >
       {/* Crystal Clear Spotlight Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none bg-token-surface-stripe">
@@ -108,7 +108,7 @@ const LoginPage: React.FC = () => {
 
         {/* Inner Glow behind the card */}
         <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sap-blue/10 rounded-full blur-[120px] ${Z.base}`}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-token-accent-brand/10 rounded-full blur-[120px] ${Z.base}`}
         />
 
         {/* Technical Grid - Pure CSS & Sharp */}
@@ -126,20 +126,20 @@ const LoginPage: React.FC = () => {
           className="overflow-hidden bg-token-surface-card md:backdrop-blur-2xl border border-token-border-subtle shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] relative group rounded-2xl"
         >
           {/* Top colored line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-sap-blue to-transparent opacity-50"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-transparent via-token-accent-brand to-transparent opacity-50"></div>
 
           <div className={`px-8 py-10 sm:px-10 sm:py-8 relative ${Z.sticky}`}>
             {/* Header Section */}
             <div className="text-center mb-10 sm:mb-8">
               <div className="mb-8 sm:mb-6 relative inline-block group-hover:scale-105 transition-transform duration-500 animate-in fade-in slide-in-from-top-4 [animation-duration:600ms] [animation-delay:200ms]">
-                <div className="absolute inset-0 bg-sap-blue rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-token-accent-brand rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
                 <BrandLogo
                   className={`h-20 sm:h-16 w-auto relative ${Z.sticky} rounded-2xl shadow-2xl`}
                 />
               </div>
 
               <div className="animate-in fade-in slide-in-from-bottom-2 [animation-duration:600ms] [animation-delay:300ms]">
-                <h1 className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-linear-to-r from-token-text-primary via-sap-blue to-sap-light-blue uppercase tracking-[0.2em] mb-1">
+                <h1 className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-linear-to-r from-token-text-primary via-token-accent-brand to-token-accent-brand/60 uppercase tracking-[0.2em] mb-1">
                   {APP_TITLE}
                 </h1>
                 <div className="flex items-center justify-center gap-2">
@@ -166,7 +166,7 @@ const LoginPage: React.FC = () => {
                     autoComplete="username"
                     aria-invalid={usernameError ? "true" : undefined}
                     aria-describedby={usernameError ? "username-error" : undefined}
-                    className="bg-token-surface-stripe border-token-border-subtle text-token-text-primary placeholder:text-token-text-tertiary rounded-xl px-4 py-3.5 focus:border-sap-blue focus:bg-token-surface-active focus:ring-1 focus:ring-sap-blue/20 transition-all font-bold text-sm tracking-wide"
+                    className="bg-token-surface-stripe border-token-border-subtle text-token-text-primary placeholder:text-token-text-tertiary rounded-xl px-4 py-3.5 focus:border-token-accent-brand focus:bg-token-surface-active focus:ring-1 focus:ring-token-accent-brand/20 transition-all font-bold text-sm tracking-wide"
                   />
                   <div className="absolute inset-0 rounded-xl border border-token-border-subtle pointer-events-none"></div>
                 </div>
@@ -192,7 +192,7 @@ const LoginPage: React.FC = () => {
                     autoComplete="current-password"
                     aria-invalid={passwordError ? "true" : undefined}
                     aria-describedby={passwordError ? "password-error" : undefined}
-                    className="bg-token-surface-stripe border-token-border-subtle text-token-text-primary placeholder:text-token-text-tertiary rounded-xl px-4 py-3.5 focus:border-sap-blue focus:bg-token-surface-active focus:ring-1 focus:ring-sap-blue/20 transition-all font-bold text-sm tracking-wide"
+                    className="bg-token-surface-stripe border-token-border-subtle text-token-text-primary placeholder:text-token-text-tertiary rounded-xl px-4 py-3.5 focus:border-token-accent-brand focus:bg-token-surface-active focus:ring-1 focus:ring-token-accent-brand/20 transition-all font-bold text-sm tracking-wide"
                   />
                   <div className="absolute inset-0 rounded-xl border border-token-border-subtle pointer-events-none"></div>
                 </div>
@@ -211,7 +211,7 @@ const LoginPage: React.FC = () => {
                   type="submit"
                   variant="primary"
                   data-testid="login-submit"
-                  className="w-full h-12 rounded-xl bg-sap-blue text-token-text-onAccent hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-sap-blue/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition duration-300"
+                  className="w-full h-12 rounded-xl bg-token-accent-brand text-token-text-onAccent hover:brightness-110 border-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-token-accent-brand/30 flex items-center justify-center gap-2 group/btn relative overflow-hidden transition duration-300"
                   disabled={isSubmitting}
                 >
                   <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700"></div>
@@ -250,10 +250,10 @@ const LoginPage: React.FC = () => {
                 data-testid="login-kiosk-link"
                 className="group inline-flex flex-col items-center gap-2 py-2 px-4 rounded-lg hover:bg-token-surface-active transition-colors"
               >
-                <span className="text-[10px] font-black bg-clip-text text-transparent bg-linear-to-r from-sap-blue via-sap-light-blue to-token-text-primary uppercase tracking-[0.25em]">
+                <span className="text-[10px] font-black bg-clip-text text-transparent bg-linear-to-r from-token-accent-brand via-token-accent-brand/75 to-token-text-primary uppercase tracking-[0.25em]">
                   Acceder como Kiosko
                 </span>
-                <div className="h-px w-0 bg-sap-blue group-hover:w-full transition-[width] duration-300"></div>
+                <div className="h-px w-0 bg-token-accent-brand group-hover:w-full transition-[width] duration-300"></div>
               </Link>
             </div>
           </div>

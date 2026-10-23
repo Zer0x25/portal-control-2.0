@@ -46,7 +46,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
           onClick={() => setActiveAlertTab("upcoming")}
           className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider rounded-sm transition-all ${
             activeAlertTab === "upcoming"
-              ? "bg-token-surface-card shadow-sm text-sap-blue border border-token-border-technical"
+              ? "bg-token-surface-card shadow-sm text-token-accent-brand border border-token-border-technical"
               : "text-token-text-tertiary hover:text-token-text-secondary"
           }`}
         >
@@ -56,7 +56,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
           onClick={() => setActiveAlertTab("missing")}
           className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider rounded-sm transition-all relative ${
             activeAlertTab === "missing"
-              ? "bg-token-surface-card shadow-sm text-sap-blue border border-token-border-technical"
+              ? "bg-token-surface-card shadow-sm text-token-accent-brand border border-token-border-technical"
               : "text-token-text-tertiary hover:text-token-text-secondary"
           }`}
         >

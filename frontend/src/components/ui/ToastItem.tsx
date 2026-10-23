@@ -41,30 +41,30 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
       case "success":
         return {
           Icon: CheckCircleIcon,
-          color: "text-sap-success",
-          borderColor: "border-sap-success/20",
-          glowColor: "shadow-sap-success/20",
+          color: "text-token-status-success",
+          borderColor: "border-token-status-success/20",
+          glowColor: "shadow-token-status-success/20",
         };
       case "error":
         return {
           Icon: XCircleIcon,
-          color: "text-sap-error",
-          borderColor: "border-sap-error/20",
-          glowColor: "shadow-sap-error/20",
+          color: "text-token-status-error",
+          borderColor: "border-token-status-error/20",
+          glowColor: "shadow-token-status-error/20",
         };
       case "info":
         return {
           Icon: InformationCircleIcon,
-          color: "text-sap-blue",
-          borderColor: "border-sap-blue/20",
-          glowColor: "shadow-sap-blue/20",
+          color: "text-token-accent-brand",
+          borderColor: "border-token-accent-brand/20",
+          glowColor: "shadow-token-accent-brand/20",
         };
       case "warning":
         return {
           Icon: ExclamationTriangleIcon,
-          color: "text-sap-warning",
-          borderColor: "border-sap-warning/20",
-          glowColor: "shadow-sap-warning/20",
+          color: "text-token-status-warning",
+          borderColor: "border-token-status-warning/20",
+          glowColor: "shadow-token-status-warning/20",
         };
       default:
         return {
@@ -84,7 +84,7 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onDismiss }) => {
         pointer-events-auto w-full max-w-sm overflow-hidden
         bg-token-surface-card rounded-lg
         border border-token-border-technical
-        border-l-4 ${type === "success" ? "border-l-sap-success" : type === "error" ? "border-l-sap-error" : type === "warning" ? "border-l-sap-warning" : "border-l-sap-blue"}
+        border-l-4 ${type === "success" ? "border-l-token-status-success" : type === "error" ? "border-l-token-status-error" : type === "warning" ? "border-l-token-status-warning" : "border-l-token-accent-brand"}
         shadow-lg flex items-stretch
         ${closing ? "animate-out fade-out zoom-out-90" : "animate-in fade-in zoom-in-90 [--tw-enter-translate-x:50px] [animation-duration:200ms]"}
       `}

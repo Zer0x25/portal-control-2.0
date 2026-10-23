@@ -55,11 +55,11 @@ const AccountingClosureTab: React.FC = () => {
           >
             <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-600 opacity-60 shrink-0" />
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-14 h-14 rounded-sm bg-sap-blue/5 flex items-center justify-center text-sap-blue shrink-0 shadow-inner border border-sap-blue/10">
+              <div className="w-14 h-14 rounded-sm bg-token-accent-brand/5 flex items-center justify-center text-token-accent-brand shrink-0 shadow-inner border border-token-accent-brand/10">
                 <KeyIcon className="w-7 h-7" />
               </div>
               <div className="grow text-center md:text-left">
-                <h3 className="text-[11px] font-semibold text-sap-blue uppercase tracking-wider mb-2">
+                <h3 className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider mb-2">
                   Protocolo de Seguridad Operativa
                 </h3>
                 <h1 className="text-2xl font-bold text-token-text-primary uppercase tracking-tight">
@@ -67,7 +67,7 @@ const AccountingClosureTab: React.FC = () => {
                     ? `Período Blindado: ${formatBusinessDate(accountingLockDate, { day: "2-digit", month: "long", year: "numeric" })}`
                     : "Sistema de Control sin Inicializar"}
                 </h1>
-                <div className="flex items-center gap-3 bg-token-surface-stripe px-3.5 py-2 rounded-sm border border-token-border-technical w-fit group-hover:border-sap-blue/30 transition-colors mx-auto md:mx-0 mt-3 shadow-sm">
+                <div className="flex items-center gap-3 bg-token-surface-stripe px-3.5 py-2 rounded-sm border border-token-border-technical w-fit group-hover:border-token-accent-brand/30 transition-colors mx-auto md:mx-0 mt-3 shadow-sm">
                   <ShieldCheckIcon className="w-4 h-4 text-emerald-600" />
                   <p className="text-[11px] font-bold text-token-text-secondary uppercase tracking-wider">
                     {accountingLockDate
@@ -93,7 +93,7 @@ const AccountingClosureTab: React.FC = () => {
         <div className="lg:col-span-12">
           <Card className="p-6 bg-token-surface-card border-token-border-technical rounded-sm shadow-sm space-y-8">
             <h4 className="text-[11px] font-bold text-token-text-primary uppercase tracking-wider flex items-center gap-2.5">
-              <div className="w-1.5 h-1.5 bg-sap-blue rounded-full shadow-sm" />
+              <div className="w-1.5 h-1.5 bg-token-accent-brand rounded-full shadow-sm" />
               Configuración de Punto de Sellado
             </h4>
 
@@ -119,23 +119,23 @@ const AccountingClosureTab: React.FC = () => {
               </div>
 
               <div className="space-y-2.5">
-                <label className="text-[11px] font-semibold text-sap-blue uppercase tracking-wider ml-1 block">
+                <label className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider ml-1 block">
                   Nuevo Límite de Cierre (CUT-OFF)
                 </label>
                 <button
                   onClick={() => setIsEndDatePickerOpen(true)}
                   disabled={!startDate}
-                  className="w-full px-5 py-4 bg-token-surface-card border border-token-border-technical rounded-sm hover:border-sap-blue focus:ring-1 focus:ring-sap-blue transition-all group flex justify-between items-center shadow-sm active:scale-[0.99] disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-full px-5 py-4 bg-token-surface-card border border-token-border-technical rounded-sm hover:border-token-accent-brand focus:ring-1 focus:ring-token-accent-brand transition-all group flex justify-between items-center shadow-sm active:scale-[0.99] disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[16px] font-bold text-token-text-primary tabular-nums group-hover:text-sap-blue transition-colors">
+                    <span className="text-[16px] font-bold text-token-text-primary tabular-nums group-hover:text-token-accent-brand transition-colors">
                       {endDate ? endDate : "DEFINIR"}
                     </span>
                     <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-wide">
                       Frontera de Inalterabilidad
                     </span>
                   </div>
-                  <div className="w-9 h-9 rounded-sm bg-sap-blue/10 flex items-center justify-center border border-sap-blue/20 group-hover:bg-sap-blue group-hover:text-white transition-all shadow-sm">
+                  <div className="w-9 h-9 rounded-sm bg-token-accent-brand/10 flex items-center justify-center border border-token-accent-brand/20 group-hover:bg-token-accent-brand group-hover:text-white transition-all shadow-sm">
                     <ChevronRightIcon className="w-4 h-4 rotate-90" />
                   </div>
                 </button>
@@ -156,7 +156,7 @@ const AccountingClosureTab: React.FC = () => {
               disabled={isLoading || !startDate || !endDate}
               className={`
                 w-full py-4 rounded-sm text-[11px] font-bold uppercase tracking-widest transition-all relative overflow-hidden shadow-md active:scale-[0.98]
-                ${isLoading ? "bg-token-surface-active cursor-wait" : "bg-sap-blue hover:brightness-110 text-white border-none truncate px-6"}
+                ${isLoading ? "bg-token-surface-active cursor-wait" : "bg-token-accent-brand hover:brightness-110 text-white border-none truncate px-6"}
               `}
             >
               {isLoading ? (
@@ -261,7 +261,7 @@ const AccountingClosureTab: React.FC = () => {
                         </div>
                       )}
                       {validationResult.pendingRequests.length > 0 && (
-                        <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-sap-blue rounded-sm flex flex-col justify-between gap-5 shadow-sm">
+                        <div className="p-5 bg-token-surface-card border border-token-border-technical border-t-4 border-t-token-accent-brand rounded-sm flex flex-col justify-between gap-5 shadow-sm">
                           <div>
                             <p className="text-[20px] font-bold text-token-text-primary tabular-nums leading-none">
                               {validationResult.pendingRequests.length}
@@ -272,7 +272,7 @@ const AccountingClosureTab: React.FC = () => {
                           </div>
                           <Button
                             onClick={() => handleNavigateToCorrections("requests")}
-                            className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-sap-blue hover:text-white transition-all rounded-sm shadow-sm"
+                            className="w-full py-2.5 bg-token-surface-stripe border border-token-border-technical text-[10px] font-bold uppercase tracking-wider hover:bg-token-accent-brand hover:text-white transition-all rounded-sm shadow-sm"
                           >
                             Liquidar
                           </Button>

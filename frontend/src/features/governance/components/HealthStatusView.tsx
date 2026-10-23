@@ -55,7 +55,11 @@ const HealthStatusView: React.FC = () => {
         <MetricCard
           kind="panel"
           title="Estado Global"
-          icon={<ActivityIcon className={isHealthy ? "text-sap-success" : "text-sap-error"} />}
+          icon={
+            <ActivityIcon
+              className={isHealthy ? "text-token-status-success" : "text-token-status-error"}
+            />
+          }
         >
           <MetricStat
             label="Sistema"
@@ -68,7 +72,7 @@ const HealthStatusView: React.FC = () => {
         <MetricCard
           kind="panel"
           title="Base de Datos"
-          icon={<CircleStackIcon className="text-sap-blue" />}
+          icon={<CircleStackIcon className="text-token-accent-brand" />}
         >
           <MetricStat
             label="Latencia Query"
@@ -81,7 +85,7 @@ const HealthStatusView: React.FC = () => {
         <MetricCard
           kind="panel"
           title="Recursos Server"
-          icon={<CpuChipIcon className="text-sap-warning" />}
+          icon={<CpuChipIcon className="text-token-status-warning" />}
         >
           <MetricStat
             label="Memoria Node (Heap)"
@@ -167,7 +171,7 @@ const HealthStatusView: React.FC = () => {
                       style={{
                         width: `${100 - ((health?.system?.os?.freeMem || 0) / (health?.system?.os?.totalMem || 1)) * 100}%`,
                       }}
-                      className="h-full bg-sap-blue shadow-[0_0_8px_rgba(4,105,255,0.4)] transition-[width] duration-500"
+                      className="h-full bg-token-accent-brand shadow-[0_0_8px_rgba(4,105,255,0.4)] transition-[width] duration-500"
                     />
                   </div>
                 </div>
@@ -180,7 +184,7 @@ const HealthStatusView: React.FC = () => {
         <Card className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between border-b token-border-technical pb-4">
             <div className="flex items-center gap-2">
-              <ShieldCheckIcon className="w-4 h-4 text-sap-success" />
+              <ShieldCheckIcon className="w-4 h-4 text-token-status-success" />
               <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
                 Continuidad de Negocio
               </h3>
@@ -214,11 +218,11 @@ const HealthStatusView: React.FC = () => {
                 </div>
               </div>
               {health?.backup?.lastError && (
-                <div className="p-3 bg-sap-error/5 border border-sap-error/20 rounded-sm">
-                  <p className="text-xxs font-bold text-sap-error uppercase mb-1">
+                <div className="p-3 bg-token-status-error/5 border border-token-status-error/20 rounded-sm">
+                  <p className="text-xxs font-bold text-token-status-error uppercase mb-1">
                     Error Detectado
                   </p>
-                  <p className="text-[10px] text-sap-error leading-tight font-medium italic">
+                  <p className="text-[10px] text-token-status-error leading-tight font-medium italic">
                     {health.backup?.lastError}
                   </p>
                 </div>

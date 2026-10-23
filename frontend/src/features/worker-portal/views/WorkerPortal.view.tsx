@@ -148,7 +148,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         <button
           onClick={() => openCorrectionModal(record, field)}
           disabled={isPendingCorrection}
-          className="text-xxs font-black text-sap-blue uppercase tracking-widest opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 focus-visible:opacity-100 focus:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
+          className="text-xxs font-black text-token-accent-brand uppercase tracking-widest opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 focus-visible:opacity-100 focus:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
         >
           {isPendingCorrection ? `[ ${requestStatus} ]` : "[ Corregir ]"}
         </button>
@@ -204,7 +204,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         >
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <div className="absolute inset-0 bg-sap-blue/20 rounded-2xl blur-2xl group-hover:bg-sap-blue/40 transition-all scale-125" />
+              <div className="absolute inset-0 bg-token-accent-brand/20 rounded-2xl blur-2xl group-hover:bg-token-accent-brand/40 transition-all scale-125" />
               <IconBox
                 icon={<UserIcon />}
                 variant="primary"
@@ -213,7 +213,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               />
             </div>
             <div>
-              <p className="text-[10px] font-black text-sap-blue uppercase tracking-[0.4em] mb-1">
+              <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.4em] mb-1">
                 Identidad Digital
               </p>
               <h2
@@ -250,7 +250,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </div>
           </div>
         </div>
-        <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-sap-blue/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-token-accent-brand/10 rounded-full blur-[100px] pointer-events-none" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -312,7 +312,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               aria-label="Seleccionar mes del calendario"
-              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-xl text-[10px] font-black uppercase text-token-text-secondary outline-none focus:border-sap-blue/50"
+              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-xl text-[10px] font-black uppercase text-token-text-secondary outline-none focus:border-token-accent-brand/50"
             >
               {monthOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -322,7 +322,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </select>
             <button
               onClick={() => handleExportPDF && handleExportPDF()}
-              className="h-10 px-6 bg-sap-blue hover:brightness-110 text-token-text-onAccent rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
+              className="h-10 px-6 bg-token-accent-brand hover:brightness-110 text-token-text-onAccent rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               Descargar PDF
@@ -377,7 +377,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                           <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                             Trabajado
                           </p>
-                          <p className="text-[10px] font-black text-sap-blue font-mono italic tracking-tighter">
+                          <p className="text-[10px] font-black text-token-accent-brand font-mono italic tracking-tighter">
                             {formatDecimalHoursToHHMM &&
                               formatDecimalHoursToHHMM(record.workedHours)}{" "}
                             hrs
@@ -436,7 +436,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   enrichedRecords.map((record) => (
                     <tr
                       key={record.id}
-                      className={`group hover:bg-token-surface-active transition-colors animate-in fade-in ${record.scheduleInfo?.justificationType || record.justification?.type ? "bg-sap-blue/5" : ""}`}
+                      className={`group hover:bg-token-surface-active transition-colors animate-in fade-in ${record.scheduleInfo?.justificationType || record.justification?.type ? "bg-token-accent-brand/5" : ""}`}
                     >
                       <td className="px-6 py-4 align-top">
                         <div className="text-sm font-black text-token-text-primary uppercase italic tracking-tighter">
@@ -468,12 +468,12 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                         {formatDecimalHoursToHHMM &&
                           formatDecimalHoursToHHMM(record.scheduledHours ?? 0)}
                       </td>
-                      <td className="px-6 py-4 align-top text-xs font-black font-mono text-sap-blue italic">
+                      <td className="px-6 py-4 align-top text-xs font-black font-mono text-token-accent-brand italic">
                         {formatDecimalHoursToHHMM && formatDecimalHoursToHHMM(record.workedHours)}
                       </td>
                       <td className={`px-6 py-4 align-top text-right`}>
                         <div
-                          className={`text-sm font-black font-mono italic tracking-tighter ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-sap-error"}`}
+                          className={`text-sm font-black font-mono italic tracking-tighter ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-token-status-error"}`}
                         >
                           {formatDecimalHoursToHHMM &&
                             formatDecimalHoursToHHMM(record.overtimeHours)}

@@ -63,7 +63,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
               </span>
             </div>
             {scheduleInfo.hours !== undefined && (
-              <span className="text-xxs font-black uppercase text-sap-blue/60 mt-0.5 tracking-tighter">
+              <span className="text-xxs font-black uppercase text-token-accent-brand/60 mt-0.5 tracking-tighter">
                 {scheduleInfo.hours.toFixed(1)}h Totales
               </span>
             )}
@@ -120,7 +120,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
             })}
           </div>
           {hiddenCount > 0 && (
-            <div className="text-center text-xxs font-black text-sap-blue/60 uppercase tracking-tighter">
+            <div className="text-center text-xxs font-black text-token-accent-brand/60 uppercase tracking-tighter">
               + {hiddenCount} colab.
             </div>
           )}
@@ -139,19 +139,19 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
                 group relative p-2 ${cellHeightClass} overflow-hidden cursor-pointer transition-colors duration-150
                 ${isToday ? "bg-token-accent-brand/5 dark:bg-token-accent-brand/20" : "bg-token-surface-card"}
                 border-r border-b border-token-border-subtle
-                hover:${Z.sticky} hover:shadow-sm hover:bg-sap-blue/5
+                hover:${Z.sticky} hover:shadow-sm hover:bg-token-accent-brand/5
             `}
     >
       {/* Header: Date number & Today tag */}
       <div className="flex justify-between items-start mb-1">
         <span
-          className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-sap-blue dark:text-blue-400" : "text-token-text-secondary group-hover:text-token-text-primary"}`}
+          className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-token-accent-brand dark:text-blue-400" : "text-token-text-secondary group-hover:text-token-text-primary"}`}
         >
           {day.getDate()}
         </span>
 
         {isToday && (
-          <span className="text-xxs font-black uppercase tracking-widest text-sap-blue dark:text-blue-300 bg-sap-blue/10 dark:bg-blue-400/20 px-1.5 py-0.5 rounded-md border border-sap-blue/20">
+          <span className="text-xxs font-black uppercase tracking-widest text-token-accent-brand dark:text-blue-300 bg-token-accent-brand/10 dark:bg-blue-400/20 px-1.5 py-0.5 rounded-md border border-token-accent-brand/20">
             Hoy
           </span>
         )}
@@ -169,7 +169,9 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
       )}
 
       {/* Active/Today status pulse effect */}
-      {isToday && <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-sap-blue" />}
+      {isToday && (
+        <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-token-accent-brand" />
+      )}
     </div>
   );
 };

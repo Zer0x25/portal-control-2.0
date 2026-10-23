@@ -32,14 +32,14 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
     <div className={`relative group ${className}`}>
       {/* Background Glow Effect */}
       <div
-        className={`absolute -inset-0.5 bg-linear-to-r from-sap-blue to-sap-light-blue rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500 ${isFocused ? "opacity-60 scale-[1.01]" : ""}`}
+        className={`absolute -inset-0.5 bg-linear-to-r from-token-accent-brand to-token-accent-brand/60 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500 ${isFocused ? "opacity-60 scale-[1.01]" : ""}`}
       ></div>
 
       <div className="relative flex items-center">
         {/* Search Icon Wrap */}
         <div className="absolute left-4 flex items-center justify-center">
           <div
-            className={`transition-transform duration-300 ${isFocused ? "scale-110 rotate-5 text-sap-blue" : "scale-100 text-token-text-tertiary"}`}
+            className={`transition-transform duration-300 ${isFocused ? "scale-110 rotate-5 text-token-accent-brand" : "scale-100 text-token-text-tertiary"}`}
           >
             <SearchIcon className="w-4 h-4" />
           </div>
@@ -67,7 +67,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
             text-[10px] font-black uppercase tracking-wider text-token-text-primary
             placeholder:text-token-text-tertiary
             transition duration-300
-            ${disabled ? "opacity-50 cursor-not-allowed bg-token-surface-stripe" : isFocused ? "border-sap-blue shadow-lg shadow-sap-blue/10 bg-token-surface-card" : "hover:border-token-border-subtle"}
+            ${disabled ? "opacity-50 cursor-not-allowed bg-token-surface-stripe" : isFocused ? "border-token-accent-brand shadow-lg shadow-token-accent-brand/10 bg-token-surface-card" : "hover:border-token-border-subtle"}
           `}
         />
 
@@ -77,7 +77,7 @@ const PremiumSearchInput: React.FC<PremiumSearchInputProps> = ({
             <button
               key="clear"
               onClick={handleClear}
-              className="p-1 hover:text-sap-error text-token-text-tertiary transition-colors animate-in fade-in zoom-in-90"
+              className="p-1 hover:text-token-status-error text-token-text-tertiary transition-colors animate-in fade-in zoom-in-90"
               title="Limpiar búsqueda"
               aria-label="Limpiar búsqueda"
             >

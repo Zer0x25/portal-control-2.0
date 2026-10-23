@@ -123,7 +123,7 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
           return (
             <div
               key={r.id}
-              className="p-4 rounded-lg shadow-sm bg-token-surface-card border border-token-border-subtle border-l-4 border-l-sap-blue"
+              className="p-4 rounded-lg shadow-sm bg-token-surface-card border border-token-border-subtle border-l-4 border-l-token-accent-brand"
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -180,11 +180,11 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
           {meterConfigs.map((config) => (
             <div
               key={config.id}
-              className="p-4 border rounded-lg border-token-border-subtle bg-token-surface-stripe cursor-pointer hover:shadow-md hover:border-sap-blue transition-all"
+              className="p-4 border rounded-lg border-token-border-subtle bg-token-surface-stripe cursor-pointer hover:shadow-md hover:border-token-accent-brand transition-all"
               onDoubleClick={() => setSelectedMeterForInput(config)}
               title="Doble click para ingreso rápido"
             >
-              <h4 className="font-bold text-sap-blue truncate">{config.name}</h4>
+              <h4 className="font-bold text-token-accent-brand truncate">{config.name}</h4>
               <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
                 {METER_CATEGORIES[config.category]}
               </p>
@@ -222,20 +222,20 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div className="relative group">
             <label
-              className={`absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-sap-blue uppercase tracking-widest rounded ${Z.sticky} transition-all group-focus-within:scale-110`}
+              className={`absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-token-accent-brand uppercase tracking-widest rounded ${Z.sticky} transition-all group-focus-within:scale-110`}
             >
               Desde
             </label>
             <button
               onClick={() => setIsStartDatePickerOpen(true)}
-              className="w-full px-4 py-3 text-xs bg-token-surface-card border border-token-border-subtle rounded-lg outline-none transition-all font-bold text-token-text-primary text-left flex justify-between items-center hover:border-sap-blue/30"
+              className="w-full px-4 py-3 text-xs bg-token-surface-card border border-token-border-subtle rounded-lg outline-none transition-all font-bold text-token-text-primary text-left flex justify-between items-center hover:border-token-accent-brand/30"
             >
               <span>
                 {filters.startDate
                   ? new Date(filters.startDate + "T12:00:00").toLocaleDateString("es-CL")
                   : "Seleccionar"}
               </span>
-              <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
+              <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-40" />
             </button>
             <DatePickerDialog
               isOpen={isStartDatePickerOpen}
@@ -247,20 +247,20 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
 
           <div className="relative group">
             <label
-              className={`absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-sap-blue uppercase tracking-widest rounded ${Z.sticky} transition-all group-focus-within:scale-110`}
+              className={`absolute -top-2 left-3 px-1.5 bg-token-surface-card text-xxs font-black text-token-accent-brand uppercase tracking-widest rounded ${Z.sticky} transition-all group-focus-within:scale-110`}
             >
               Hasta
             </label>
             <button
               onClick={() => setIsEndDatePickerOpen(true)}
-              className="w-full px-4 py-3 text-xs bg-token-surface-card border border-token-border-subtle rounded-lg outline-none transition-all font-bold text-token-text-primary text-left flex justify-between items-center hover:border-sap-blue/30"
+              className="w-full px-4 py-3 text-xs bg-token-surface-card border border-token-border-subtle rounded-lg outline-none transition-all font-bold text-token-text-primary text-left flex justify-between items-center hover:border-token-accent-brand/30"
             >
               <span>
                 {filters.endDate
                   ? new Date(filters.endDate + "T12:00:00").toLocaleDateString("es-CL")
                   : "Seleccionar"}
               </span>
-              <ChevronRightIcon className="w-4 h-4 text-sap-blue rotate-90 opacity-40" />
+              <ChevronRightIcon className="w-4 h-4 text-token-accent-brand rotate-90 opacity-40" />
             </button>
             <DatePickerDialog
               isOpen={isEndDatePickerOpen}
