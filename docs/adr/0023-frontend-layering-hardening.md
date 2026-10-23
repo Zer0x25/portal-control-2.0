@@ -1,6 +1,6 @@
 # ADR-0023: Frontend Layering Hardening — Frontera de capas enforceable por budgets monótonos
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-21
 - Autores: zer0x
 

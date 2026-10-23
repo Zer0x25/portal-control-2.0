@@ -30,7 +30,7 @@ con Prettier (`printWidth: 100`).
 | [0020](0020-design-system-governance.md)                | Aceptado  | Design System & Gobernanza Agéntica    |
 | [0021](0021-branding-por-instancia-logo.md)             | Propuesto | Branding por instancia en SystemConfig |
 | [0022](0022-ui-ux-consolidation.md)                     | Aceptado  | Ui Ux Consolidation                    |
-| [0023](0023-frontend-layering-hardening.md)             | Propuesto | Frontera de capas frontend enforceable |
+| [0023](0023-frontend-layering-hardening.md)             | Aceptado  | Frontera de capas frontend enforceable |
 | [0024](0024-frontend-http-client-consolidation.md)      | Aceptado  | Cliente HTTP único en el frontend      |
 | [0025](0025-frontend-form-table-primitives.md)          | Propuesto | Capa headless de formularios y tablas  |
 | [0026](0026-frontend-rendering-observability.md)        | Propuesto | Compilador, container queries y CWV    |
