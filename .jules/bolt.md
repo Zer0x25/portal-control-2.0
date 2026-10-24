@@ -420,3 +420,11 @@
 - **Límite**: el CPU activo total bajó solo 2,2% entre medianas por corrida y `react-core` propio quedó 176,928 vs 176,955 ms. Sin Lighthouse posterior; no se afirma mejora de página, LCP ni TBT. El selector live mantuvo 12 opciones y API/WS sin fallos.
 - **Staging**: solo se reconstruyó frontend. Imagen candidata `sha256:8cf223b927a58f697ceda99de0a00a04e70888f35ff8b1384fa156677a57b54b`; backend, DB, PgBouncer, gateway y volumen conservaron sus IDs.
 - **Evidencia**: [resultado Spec 078](../specs/078-worker-portal-month-options-formatter/evidencia/resultado-2026-10-24.md) y sus tres perfiles candidatos.
+
+## 2026-10-24 - test(perf): clasificar CPU de Worker Portal sin frame de app
+
+- **Cambio**: el perfilador ahora conserva la categoría de frame hoja y el frame fuente mapeado más cercano para muestras sin `src/`; agrega medianas por contexto y no serializa pilas crudas.
+- **Medido**: tres perfiles fríos en staging, 207/207 scripts iguales, React-core 100% mapeado. CPU activo mediano 676,480 ms; 394,681 ms sin frame de app. Hojas: dependencias mapeadas 245,980 ms; browser/native o desconocido 133,478 ms; bundle sin mapear 14,113 ms. Contextos repetidos incluyen `react-dom` `updateFunctionComponent` (20,940 ms), `setProp` (9,770 ms) y `performUnitOfWork` (9,107 ms), cada uno en 3/3.
+- **Límite**: 140,348 ms medianos no tienen caller mapeado; `browser/native o desconocido` mezcla frames sin URL como `anonymous`, así que no se atribuye todo al DOM. No se comparan estos perfiles con LCP/TBT ni se afirma mejora. App y servicios staging intactos.
+- **Siguiente**: correlacionar React DOM con componentes concretos del Worker Portal usando el perfilador React existente; instrumentar traza de navegador aparte antes de atribuir el bloque nativo/desconocido.
+- **Evidencia**: [resultado Spec 079](../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/resultado-2026-10-24.md) y [perfil agregado](../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/worker-portal-noapp-cpu-2026-10-24.json).

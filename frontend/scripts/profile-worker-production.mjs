@@ -15,7 +15,7 @@ const viewport = { width: 412, height: 823 };
 const sampleCount = 3;
 const cpuThrottleRate = 4;
 const outputArg = process.argv.find((arg) => arg.startsWith("--output="))?.slice(9);
-const defaultOutput = `../specs/077-worker-portal-production-cpu-attribution/evidencia/worker-portal-production-cpu-${new Date().toISOString().slice(0, 10)}.json`;
+const defaultOutput = `../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/worker-portal-noapp-cpu-${new Date().toISOString().slice(0, 10)}.json`;
 const outputPath = resolve(frontendRoot, outputArg || defaultOutput);
 
 const workerCredentials = {
@@ -90,6 +90,22 @@ function frameKey(frame) {
   return `${frame.sourcePath}::${frame.functionName}${location}`;
 }
 
+function classifyFrame(frame) {
+  if (frame.scriptName === "unknown.js") return "browser-native-or-unknown";
+  if (frame.sourcePath.startsWith("node_modules/")) return "mapped-dependency";
+  if (frame.sourcePath.startsWith("unmapped/") || frame.sourcePath.startsWith("mapped/unmapped/")) {
+    return "unmapped-bundle";
+  }
+  return "other-mapped-source";
+}
+
+function nearestMappedContext(frames) {
+  const parents = frames.slice(0, -1);
+  const parent = [...parents].reverse().find((frame) => frame.mapped);
+  if (parent) return parent;
+  return frames.at(-1)?.mapped ? frames.at(-1) : null;
+}
+
 function scriptNameFromUrl(url) {
   try {
     return basename(new URL(url).pathname) || "unknown.js";
@@ -150,6 +166,9 @@ export function summarizeCpuProfile(profile, resolveFrame) {
   let noAppFrameSampledMs = 0;
   const selfByKey = new Map();
   const appInclusiveByKey = new Map();
+  const noAppLeafByKey = new Map();
+  const noAppContextByKey = new Map();
+  const noAppLeafCategorySampledMs = new Map();
 
   profile.samples.forEach((nodeId, index) => {
     const leaf = nodesById.get(nodeId);
@@ -198,6 +217,46 @@ export function summarizeCpuProfile(profile, resolveFrame) {
     const appFrame = [...frames].reverse().find((frame) => frame.sourcePath.startsWith("src/"));
     if (!appFrame) {
       noAppFrameSampledMs += sampledMs;
+      const leafCategory = classifyFrame(selfFrame);
+      noAppLeafCategorySampledMs.set(
+        leafCategory,
+        (noAppLeafCategorySampledMs.get(leafCategory) ?? 0) + sampledMs,
+      );
+      const leafKey = `${leafCategory}:${frameKey(selfFrame)}`;
+      const leafAggregate = noAppLeafByKey.get(leafKey) ?? {
+        key: leafKey,
+        category: leafCategory,
+        sourcePath: selfFrame.sourcePath,
+        functionName: selfFrame.functionName,
+        scriptName: selfFrame.scriptName,
+        ...(Number.isInteger(selfFrame.sourceLine) ? { sourceLine: selfFrame.sourceLine } : {}),
+        sampledMs: 0,
+        sampleCount: 0,
+      };
+      leafAggregate.sampledMs += sampledMs;
+      leafAggregate.sampleCount += 1;
+      noAppLeafByKey.set(leafKey, leafAggregate);
+
+      const contextFrame = nearestMappedContext(frames);
+      const contextCategory = contextFrame ? classifyFrame(contextFrame) : "unresolved-context";
+      const contextKey = contextFrame
+        ? `${contextCategory}:${frameKey(contextFrame)}`
+        : contextCategory;
+      const contextAggregate = noAppContextByKey.get(contextKey) ?? {
+        key: contextKey,
+        category: contextCategory,
+        sourcePath: contextFrame?.sourcePath ?? contextCategory,
+        functionName: contextFrame?.functionName ?? contextCategory,
+        ...(contextFrame?.scriptName ? { scriptName: contextFrame.scriptName } : {}),
+        ...(Number.isInteger(contextFrame?.sourceLine)
+          ? { sourceLine: contextFrame.sourceLine }
+          : {}),
+        sampledMs: 0,
+        sampleCount: 0,
+      };
+      contextAggregate.sampledMs += sampledMs;
+      contextAggregate.sampleCount += 1;
+      noAppContextByKey.set(contextKey, contextAggregate);
       return;
     }
     const appKey = frameKey(appFrame);
@@ -231,16 +290,31 @@ export function summarizeCpuProfile(profile, resolveFrame) {
         ? 0
         : Number((reactCoreSourceMappedSampledMs / reactCoreInclusiveSampledMs).toFixed(4)),
     noAppFrameSampledMs: roundMs(noAppFrameSampledMs),
+    noAppLeafCategorySampledMs: Object.fromEntries(
+      [...noAppLeafCategorySampledMs.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([category, sampledMs]) => [category, roundMs(sampledMs)]),
+    ),
     appInclusiveFrames: sortedFrames(appInclusiveByKey),
     selfFrames: sortedFrames(selfByKey),
+    noAppLeafFrames: sortedFrames(noAppLeafByKey),
+    noAppContextFrames: sortedFrames(noAppContextByKey),
   };
 }
 
 export function aggregateProfileSummaries(samples) {
   if (samples.length === 0) throw new Error("At least one CPU profile summary is required");
   const appFrameKeys = new Map();
+  const noAppContextFrameKeys = new Map();
+  const noAppLeafCategories = new Set();
   for (const sample of samples) {
     for (const frame of sample.appInclusiveFrames) appFrameKeys.set(frame.key, frame);
+    for (const frame of sample.noAppContextFrames ?? []) {
+      noAppContextFrameKeys.set(frame.key, frame);
+    }
+    for (const category of Object.keys(sample.noAppLeafCategorySampledMs ?? {})) {
+      noAppLeafCategories.add(category);
+    }
   }
 
   const appFrameMedians = [...appFrameKeys.entries()]
@@ -262,6 +336,41 @@ export function aggregateProfileSummaries(samples) {
         right.medianSampledMs - left.medianSampledMs || left.key.localeCompare(right.key),
     );
 
+  const noAppContextFrameMedians = [...noAppContextFrameKeys.entries()]
+    .map(([key, frame]) => {
+      const observed = samples.map(
+        (sample) => sample.noAppContextFrames?.find((entry) => entry.key === key)?.sampledMs ?? 0,
+      );
+      return {
+        key,
+        category: frame.category,
+        sourcePath: frame.sourcePath,
+        functionName: frame.functionName,
+        ...(frame.scriptName ? { scriptName: frame.scriptName } : {}),
+        ...(Number.isInteger(frame.sourceLine) ? { sourceLine: frame.sourceLine } : {}),
+        medianSampledMs: roundMs(median(observed)),
+        observedSamples: observed.filter((value) => value > 0).length,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.medianSampledMs - left.medianSampledMs || left.key.localeCompare(right.key),
+    );
+
+  const noAppLeafCategoryMedians = [...noAppLeafCategories]
+    .map((category) => {
+      const observed = samples.map((sample) => sample.noAppLeafCategorySampledMs?.[category] ?? 0);
+      return {
+        category,
+        medianSampledMs: roundMs(median(observed)),
+        observedSamples: observed.filter((value) => value > 0).length,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.medianSampledMs - left.medianSampledMs || left.category.localeCompare(right.category),
+    );
+
   return {
     sampleCount: samples.length,
     medianProfileWindowMs: roundMs(median(samples.map((sample) => sample.profileWindowMs))),
@@ -280,6 +389,11 @@ export function aggregateProfileSummaries(samples) {
     medianNoAppFrameSampledMs: roundMs(median(samples.map((sample) => sample.noAppFrameSampledMs))),
     appFrameMedians,
     repeatedAppCandidates: appFrameMedians.filter((frame) => frame.observedSamples >= 2),
+    noAppLeafCategoryMedians,
+    noAppContextFrameMedians,
+    repeatedNoAppContextCandidates: noAppContextFrameMedians.filter(
+      (frame) => frame.observedSamples >= 2 && frame.category !== "unresolved-context",
+    ),
   };
 }
 
@@ -487,6 +601,8 @@ async function captureSample(browser, session, maps) {
       ...summary,
       appInclusiveFrames: summary.appInclusiveFrames.slice(0, 20),
       selfFrames: summary.selfFrames.slice(0, 30),
+      noAppLeafFrames: summary.noAppLeafFrames.slice(0, 30),
+      noAppContextFrames: summary.noAppContextFrames.slice(0, 30),
     };
   } finally {
     if (profileStarted && cdp) {
@@ -538,7 +654,7 @@ async function main() {
       }
 
       const report = {
-        schemaVersion: 1,
+        schemaVersion: 2,
         capturedAt: new Date().toISOString(),
         source: {
           commit: gitValue(["rev-parse", "HEAD"]),
@@ -565,7 +681,7 @@ async function main() {
         interpretation: {
           performanceComparison: false,
           recommendationRule:
-            "A module is a candidate only when its app frame appears in at least two samples.",
+            "An unattributed context is a candidate only when its closest mapped frame appears in at least two samples; native or unknown leaf frames remain separate from that context.",
         },
       };
       assertPrivacySafe(report);
