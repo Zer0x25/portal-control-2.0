@@ -1,6 +1,6 @@
 # Spec 049: Defer Role-specific Auto-start Code
 
-- Estado: Borrador
+- Estado: Completada y validada en staging
 - Autor: zer0x
 - Fecha: 2026-10-24
 - ADR relacionado: N/A
@@ -26,10 +26,10 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: En Dashboard para Administrador sin empleado elegible, no se solicitan los chunks de auto-inicio (`useScheduling`, `useShiftManager` y dependencias exclusivas) ni consultas de planificación.
-- [ ] AC2: Para una cuenta elegible, el auto-inicio conserva la espera de datos completos, el horario laboral, el umbral de hora y la protección `AUTO_LOGIN_ACTIONS_DONE`.
-- [ ] AC3: El chequeo y modal de entrega de turno continúan funcionando para los roles aplicables.
-- [ ] AC4: La batería Lighthouse posterior captura tres muestras frías de Dashboard y 17 rutas estándar; la comparación registra bytes/scripts, FCP, LCP, TBT, solicitudes y ausencia de regresión visual/funcional.
+- [x] AC1: En Dashboard para Administrador sin empleado elegible, no se solicitan los chunks de auto-inicio (`useScheduling`, `useShiftManager` y dependencias exclusivas) ni consultas de planificación.
+- [x] AC2: Para una cuenta elegible, el auto-inicio conserva la espera de datos completos, el horario laboral, el umbral de hora y la protección `AUTO_LOGIN_ACTIONS_DONE`.
+- [x] AC3: El chequeo y modal de entrega de turno continúan funcionando para los roles aplicables.
+- [x] AC4: La batería Lighthouse posterior captura tres muestras frías de Dashboard y 17 rutas estándar; la comparación registra bytes/scripts, FCP, LCP, TBT, solicitudes y ausencia de regresión visual/funcional.
 
 ## Restricciones
 
@@ -41,3 +41,8 @@ Sin cambios a contratos HTTP o comportamiento para usuarios elegibles. El criter
 - Baseline: `../039-frontend-performance-battery/evidencia/runs/2026-10-24T01-42-28-474Z-b49d6915.json`.
 - Evidencia posterior: `./evidencia/resultado-2026-10-24.md`.
 - Docs a actualizar: `../../.jules/bolt.md`.
+
+## Evidencia
+
+- Resultado comparativo: [`evidencia/resultado-2026-10-24.md`](./evidencia/resultado-2026-10-24.md).
+- Métricas estructuradas: [`evidencia/comparison.json`](./evidencia/comparison.json).
