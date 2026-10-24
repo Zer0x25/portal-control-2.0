@@ -39,7 +39,9 @@ La variación de una muestra de `latestReports` llegó a 3,1 ms; su mediana fue 
 
 No hacer un cambio de producto basado en este perfil: no hay un widget dominante y los widgets no se vuelven a renderizar en estas capturas. La instrumentación sí deja una herramienta para repetir el diagnóstico por ruta.
 
-El siguiente candidato debe venir de la diferencia entre la carga fría de Dashboard (LCP mediano de 2.555 ms en Spec 051) y el costo React observado aquí. Conviene registrar un trace de producción con red y tareas largas, y separar descarga/descubrimiento de recursos, API y render inicial antes de volver a cambiar componentes.
+El trace frío de staging ya está registrado en el [diagnóstico de Spec 039](../../039-frontend-performance-battery/evidencia/diagnostico-dashboard-carga-fria-2026-10-24.md). Mantiene LCP simulado mediano en 2.558 ms; el trace Chromium sin throttle observa 116 ms para el shell inicial. Lighthouse estima 450 ms de ahorro en FCP/LCP por el CSS bloqueante, pero el ahorro aún no se ha medido y el auditor no encontró CSS sin uso.
+
+El siguiente experimento será aislar CSS crítico mínimo para el shell y medir tres muestras frías con regresión visual clara/oscura. Después se repetirán tres muestras para Worker Portal y Control horario, cuyos LCP observados superaron 1.500 ms en la pasada estándar de una muestra por ruta.
 
 ## Validación
 
