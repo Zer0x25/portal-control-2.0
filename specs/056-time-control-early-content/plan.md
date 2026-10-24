@@ -11,13 +11,13 @@ Spec: `./spec.md`. Constitución: `../constitution.md`.
 
 ## Archivos a tocar
 
-| Archivo                                                               | Cambio                                                                                           |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `frontend/src/features/time-control/hooks/useTimeControlData.ts`      | No bloquear cabecera y filtros por la consulta de registros; conservar el gate de configuración. |
-| `frontend/src/tests/features/time-control/useTimeControlData.test.ts` | Verificar por separado carga de registros y carga de configuración.                              |
-| `frontend/src/tests/features/time-control/TimeControlView.test.tsx`   | Asegurar que la cabecera renderiza mientras la tabla sigue cargando.                             |
-| `frontend/e2e/performance.spec.ts`                                    | Retener GET `/api/records` y comprobar que la cabecera aparece antes de liberar la respuesta.    |
-| `specs/056-time-control-early-content/*`                              | Registrar aceptación, resultado y medición post-rebuild.                                         |
+| Archivo                                                               | Cambio                                                                                                                         |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `frontend/src/features/time-control/hooks/useTimeControlData.ts`      | No bloquear cabecera y filtros por la consulta de registros; conservar el gate de configuración.                               |
+| `frontend/src/tests/features/time-control/useTimeControlData.test.ts` | Verificar por separado carga de registros y carga de configuración.                                                            |
+| `frontend/src/tests/features/time-control/TimeControlView.test.tsx`   | Asegurar que la cabecera renderiza mientras la tabla sigue cargando.                                                           |
+| `frontend/e2e/performance.spec.ts`                                    | Retener GET `/api/records`, aplicar CPU 4× y comprobar que la cabecera queda arriba del overlay antes de liberar la respuesta. |
+| `specs/056-time-control-early-content/*`                              | Registrar aceptación, resultado y medición post-rebuild.                                                                       |
 
 ## Contratos afectados
 

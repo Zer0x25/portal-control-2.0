@@ -1,20 +1,15 @@
 {
-  "schemaVersion": 1,
-  "capturedAt": "2026-10-24T09:13:35.202Z",
-  "sourceCommit": "faa79842c25ce853eff81c67ca17c314662a7d06",
-  "stagingFrontendImageId": "sha256:88fa33758435e8e667fcaea1bd6659e8b2ff161da4fb01a3f8bcc60d8fdddc4d",
-  "browser": {
-    "name": "Chromium",
-    "version": "153.0.8010.12"
-  },
+  "capturedAt": "2026-10-24T09:23:45.734Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/time-control",
   "viewport": {
     "width": 412,
     "height": 823
   },
-  "route": "/#/time-control",
-  "delayedRequest": "GET /api/records",
-  "recordsPendingAtMs": 947.51,
-  "headingVisibleAtMs": 1006.54,
-  "recordsWereStillPendingAtHeading": true,
-  "result": "passed"
+  "recordsPendingAtMs": 2062.26,
+  "headingRenderedAtMs": 2150.59,
+  "syncOverlayWasVisible": false,
+  "shellUnobscuredAtMs": 2169.21,
+  "headingIsUnobscured": true,
+  "recordsWereStillPendingAtUnobscured": true
 }

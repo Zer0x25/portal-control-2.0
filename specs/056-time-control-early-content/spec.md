@@ -36,7 +36,7 @@ o checklist medible:
 
 - [x] AC1: Con registros cargando y configuración lista, `isPageLoading` es `false`, por lo que la cabecera puede pintarse mientras la tabla recibe `isLoading=true`.
 - [x] AC2: Con configuración todavía cargando, `isPageLoading` permanece `true`; la consola no se muestra con configuración sin resolver.
-- [x] AC3: Las pruebas de hook y vista prueban ambos estados y staging muestra la cabecera mientras GET `/api/records` sigue pendiente, sin modificar `TimeControl.view.tsx`.
+- [x] AC3: Las pruebas de hook y vista prueban ambos estados y staging confirma que la cabecera queda despejada del overlay mientras GET `/api/records` sigue pendiente, sin modificar `TimeControl.view.tsx`.
 - [x] AC4: La batería fría post-rebuild guarda tres muestras de Control horario y reporta LCP, TBT y retraso observado sin mezclar perfil desarrollo con producción.
 - [x] AC5: Typecheck, lint, validaciones de gobernanza y el flujo de staging pasan.
 

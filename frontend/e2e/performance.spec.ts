@@ -615,6 +615,8 @@ test.describe.serial("Render Performance", () => {
   }, testInfo) => {
     const mobileViewport = { width: 412, height: 823 };
     await page.setViewportSize(mobileViewport);
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
     const recordsPattern = "**/api/records**";
     let recordsRequestPending = false;
     let releaseRecords: (() => void) | undefined;
@@ -633,12 +635,30 @@ test.describe.serial("Render Performance", () => {
       await expect.poll(() => recordsRequestPending, { timeout: 15_000 }).toBe(true);
 
       const recordsPendingAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
-      await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
-        timeout: 10_000,
+      const heading = page.getByRole("heading", { name: "Control de Asistencia" });
+      const syncOverlay = page.getByText(
+        "Establishing technical handshake • Validating integrity...",
+        {
+          exact: true,
+        },
+      );
+      await expect(heading).toBeVisible({ timeout: 10_000 });
+      const headingRenderedAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+      const syncOverlayWasVisible = await syncOverlay.isVisible();
+
+      await expect(syncOverlay).toBeHidden({ timeout: 15_000 });
+      const shellUnobscuredAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+      const headingIsUnobscured = await heading.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const topElement = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
+        return topElement === element || element.contains(topElement);
       });
-      const headingVisibleAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
 
       expect(recordsRequestPending).toBe(true);
+      expect(headingIsUnobscured).toBe(true);
       expect(await page.getByText("Optimizando registros de asistencia...").count()).toBe(0);
       await attachPerformanceReport(testInfo, "time-control-shell-before-records.json", {
         capturedAt: new Date().toISOString(),
@@ -646,11 +666,15 @@ test.describe.serial("Render Performance", () => {
         route: "/#/time-control",
         viewport: mobileViewport,
         recordsPendingAtMs,
-        headingVisibleAtMs,
-        recordsWereStillPendingAtHeading: recordsRequestPending,
+        headingRenderedAtMs,
+        syncOverlayWasVisible,
+        shellUnobscuredAtMs,
+        headingIsUnobscured,
+        recordsWereStillPendingAtUnobscured: recordsRequestPending,
       });
     } finally {
       releaseRecords?.();
+      await cdp.detach();
     }
 
     await page.waitForLoadState("networkidle");
