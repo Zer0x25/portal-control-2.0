@@ -812,6 +812,11 @@ test.describe.serial("Render Performance", () => {
             finishedAtMs: number | null;
             statusCode: number | null;
             failure: string | null;
+            queryDimensions: {
+              pageSize: string | null;
+              hasEmployeeFilter: boolean;
+              hasDateRange: boolean;
+            } | null;
           }
         >();
         const requestOffset = () => Number((Date.now() - navigationStartedAtEpochMs).toFixed(2));
@@ -826,6 +831,14 @@ test.describe.serial("Render Performance", () => {
             finishedAtMs: null,
             statusCode: null,
             failure: null,
+            queryDimensions:
+              url.pathname === "/api/records"
+                ? {
+                    pageSize: url.searchParams.get("pageSize"),
+                    hasEmployeeFilter: url.searchParams.has("employeeId"),
+                    hasDateRange: url.searchParams.has("desde") && url.searchParams.has("hasta"),
+                  }
+                : null,
           });
         });
         page.on("response", (response) => {
@@ -949,6 +962,25 @@ test.describe.serial("Render Performance", () => {
           metrics.syncStepChanges.some((change) => change.step.startsWith("Sincronizando ")),
         ).toBe(true);
         expect(apiRequestTimings.size).toBeGreaterThan(0);
+        const recordRequestTimings = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/records",
+        );
+        expect(recordRequestTimings).toHaveLength(2);
+        expect(
+          recordRequestTimings.some(
+            (timing) =>
+              timing.queryDimensions?.pageSize === "5" && !timing.queryDimensions.hasEmployeeFilter,
+          ),
+        ).toBe(false);
+        expect(
+          recordRequestTimings.some(
+            (timing) =>
+              timing.queryDimensions?.pageSize === "30" && timing.queryDimensions.hasDateRange,
+          ),
+        ).toBe(true);
+        expect(
+          recordRequestTimings.some((timing) => timing.queryDimensions?.pageSize === "50"),
+        ).toBe(true);
         expect(
           metrics.activeAnimations.some((animation) => animation.animationName === "spin"),
           "The progress spinner must retain its rotation while the sync overlay is visible",
@@ -1006,7 +1038,8 @@ test.describe.serial("Render Performance", () => {
       viewport: mobileViewport,
       cpuThrottle: 4,
       sampleCount: samples.length,
-      apiRequestPathPolicy: "pathname only; query strings and request/response bodies omitted",
+      apiRequestPathPolicy:
+        "pathname only; query values and request/response bodies omitted; /api/records captures pageSize and filter-presence booleans only",
       timingOffsetBasis: "Date.now immediately before page.goto",
       readinessMetric:
         "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",

@@ -61,6 +61,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
   const { timeRecordsPage: employeeRecordsData, isLoadingRecords } = useTimeRecords({
     page: 1,
     pageSize: 5,
+    enabled: Boolean(selectedEmployeeId),
     filters: {
       desde: "",
       hasta: "",

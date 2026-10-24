@@ -60,6 +60,7 @@ describe("ClockingPanel Component", () => {
     render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
     expect(screen.getByPlaceholderText(/Buscar empleado/i)).toBeInTheDocument();
     expect(screen.getByText(/Seleccione un empleado/i)).toBeInTheDocument();
+    expect(useTimeRecords).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }));
   });
 
   it("should show results when typing in search input", async () => {
@@ -85,6 +86,12 @@ describe("ClockingPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(/Fuera de Jornada/i)).toBeInTheDocument();
     });
+    expect(useTimeRecords).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        enabled: true,
+        filters: expect.objectContaining({ employeeId: "1" }),
+      }),
+    );
 
     const inicioBtn = screen.getByRole("button", { name: /^Inicio$/i });
     expect(inicioBtn).not.toBeDisabled();

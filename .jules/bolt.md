@@ -257,3 +257,12 @@
 - **Medido**: `/api/health` mediana 344 ms; primera oleada de APIs termina entre 0,87–1,17 s; segunda empieza entre 1,43–1,58 s y termina hasta 1,72 s. El overlay dura 0,80–0,94 s (mediana 0,87 s) y se retira después de la última respuesta observada.
 - **Límite**: los textos de etapa quedan agrupados al final; no se aíslan los `await` de `runSync`. Requests concurrentes y overlay solapados no prueban causalidad. `/api/records` aparece tres veces y `/api/shift-reports` dos veces por contexto, pero al omitir queries no se infiere duplicidad.
 - **Siguiente**: registrar marcas optativas en `validateInstanceId` y alrededor de cada `step.action`, luego priorizar el cambio según el tiempo que realmente espera cada etapa. Evidencia: [resultado Spec 058](../specs/058-sync-initial-phase-diagnostics/evidencia/resultado-2026-10-24.md) y [muestras crudas](../specs/058-sync-initial-phase-diagnostics/evidencia/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - perf(time-control): Diferir consulta de estado hasta elegir empleado
+
+- **Diagnóstico**: el arranque frío hacía tres GET `/api/records`; `ClockingPanel` pedía cinco filas sin empleado seleccionado y descartaba el resultado en ese estado.
+- **Cambio**: la query del panel permanece deshabilitada hasta seleccionar empleado; al seleccionarlo conserva el filtro por ID. El test de regresión verifica ambos estados.
+- **Medido**: staging frío, tres contextos: `/api/records` bajó de 3 a 2 por contexto (−33 % en esa ruta; 21 a 20 requests API totales). Las firmas `pageSize=30` con rango y `pageSize=50` para filtros permanecen; las 60 respuestas API fueron HTTP 200.
+- **Límite**: FCP mediana 696 → 712 ms, LCP observado 1.568 → 1.608 ms y overlay 871,5 → 904,4 ms. Rangos pequeños y solapados; no se demuestra mejora visual ni causalidad.
+- **Siguiente**: instrumentar `validateInstanceId` y cada `step.action` de `runSync` para localizar el mayor tiempo de espera real.
+- **Evidencia**: [resultado Spec 059](../specs/059-time-control-lazy-clock-status-query/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/059-time-control-lazy-clock-status-query/evidencia/time-control-sync-phase-diagnostics.json).
