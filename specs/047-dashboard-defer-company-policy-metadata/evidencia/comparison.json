@@ -1,0 +1,122 @@
+{
+  "baselineSource": "Spec 046 staging runs, same frontend before Spec 047",
+  "baselineRuns": [
+    {
+      "capturedAt": "2026-10-24T01:01:40.216Z",
+      "mainContentVisibleOffsetMs": 517.45,
+      "serverClockVisibleOffsetMs": 536.73,
+      "apiRequestCount": 10,
+      "uniqueApiEndpointCount": 10,
+      "duplicateEndpoints": [],
+      "allRequestsSuccessful": true,
+      "policyMetadataRequest": {
+        "path": "/api/configs/public/company-policy",
+        "startOffsetMs": 563.95,
+        "durationMs": 26.52,
+        "finishOffsetMs": 590.47,
+        "status": 200
+      }
+    },
+    {
+      "capturedAt": "2026-10-24T01:01:43.775Z",
+      "mainContentVisibleOffsetMs": 687.09,
+      "serverClockVisibleOffsetMs": 693.13,
+      "apiRequestCount": 10,
+      "uniqueApiEndpointCount": 10,
+      "duplicateEndpoints": [],
+      "allRequestsSuccessful": true,
+      "policyMetadataRequest": {
+        "path": "/api/configs/public/company-policy",
+        "startOffsetMs": 628.27,
+        "durationMs": 56.73,
+        "finishOffsetMs": 685,
+        "status": 200
+      }
+    },
+    {
+      "capturedAt": "2026-10-24T01:01:47.293Z",
+      "mainContentVisibleOffsetMs": 564.82,
+      "serverClockVisibleOffsetMs": 602.52,
+      "apiRequestCount": 10,
+      "uniqueApiEndpointCount": 10,
+      "duplicateEndpoints": [],
+      "allRequestsSuccessful": true,
+      "policyMetadataRequest": {
+        "path": "/api/configs/public/company-policy",
+        "startOffsetMs": 654.41,
+        "durationMs": 41.17,
+        "finishOffsetMs": 695.58,
+        "status": 200
+      }
+    }
+  ],
+  "redCheckBeforeChange": {
+    "capturedAt": "2026-10-24T01:15:24.178Z",
+    "mainContentVisibleOffsetMs": 595.18,
+    "serverClockVisibleOffsetMs": 1030.42,
+    "apiRequestCount": 10,
+    "uniqueApiEndpointCount": 10,
+    "duplicateEndpoints": [],
+    "allRequestsSuccessful": true,
+    "policyMetadataRequest": {
+      "path": "/api/configs/public/company-policy",
+      "startOffsetMs": 1047.15,
+      "durationMs": 21.38,
+      "finishOffsetMs": 1068.53,
+      "status": 200
+    }
+  },
+  "afterRuns": [
+    {
+      "capturedAt": "2026-10-24T01:17:53.080Z",
+      "mainContentVisibleOffsetMs": 553.08,
+      "serverClockVisibleOffsetMs": 571.27,
+      "apiRequestCount": 9,
+      "uniqueApiEndpointCount": 9,
+      "duplicateEndpoints": [],
+      "allRequestsSuccessful": true,
+      "policyMetadataRequest": null
+    },
+    {
+      "capturedAt": "2026-10-24T01:17:56.463Z",
+      "mainContentVisibleOffsetMs": 559.29,
+      "serverClockVisibleOffsetMs": 612.62,
+      "apiRequestCount": 9,
+      "uniqueApiEndpointCount": 9,
+      "duplicateEndpoints": [],
+      "allRequestsSuccessful": true,
+      "policyMetadataRequest": null
+    },
+    {
+      "capturedAt": "2026-10-24T01:17:59.863Z",
+      "mainContentVisibleOffsetMs": 536.19,
+      "serverClockVisibleOffsetMs": 550.84,
+      "apiRequestCount": 9,
+      "uniqueApiEndpointCount": 9,
+      "duplicateEndpoints": [],
+      "allRequestsSuccessful": true,
+      "policyMetadataRequest": null
+    }
+  ],
+  "comparison": {
+    "beforeApiRequestCount": 10,
+    "afterApiRequestCount": 9,
+    "apiRequestsRemoved": 1,
+    "apiRequestReductionPercent": 10,
+    "removedPaths": [
+      "/api/configs/public/company-policy"
+    ],
+    "policyMetadataDurationBeforeMs": {
+      "median": 41.17,
+      "min": 26.52,
+      "max": 56.73
+    },
+    "policyMetadataAbsentAfter": true,
+    "beforeMainContentMedianMs": 564.82,
+    "afterMainContentMedianMs": 553.08,
+    "beforeServerClockMedianMs": 602.52,
+    "afterServerClockMedianMs": 571.27,
+    "renderImprovementDemonstrated": false,
+    "renderTimingConclusion": "Ranges overlap and request removal has no demonstrated causal effect on visible render timing."
+  }
+}

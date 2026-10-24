@@ -199,10 +199,15 @@ test.describe.serial("Render Performance", () => {
       apiRequestTimings,
       "every API request should include a complete duration and status",
     ).toHaveLength(apiPaths.length);
+    expect(
+      apiRequestTimings.every(({ status }) => status === 200),
+      "Dashboard startup API requests should all succeed",
+    ).toBe(true);
     expect(apiPaths, "the public kiosk list belongs only to kiosk mode").not.toContain(
       "/api/employees/kiosk",
     );
     expect(apiPaths.length, "spec 042 recorded 21 Dashboard startup API requests").toBeLessThan(21);
+    expect(apiPaths.length, "Spec 047 removes one redundant metadata request").toBe(9);
     expect(
       duplicateEndpoints,
       "Dashboard startup should request each API endpoint at most once",
@@ -211,6 +216,10 @@ test.describe.serial("Render Performance", () => {
       autoStartSchedulingRequests,
       "Dashboard should not load auto-start scheduling data for an Administrator without an employee",
     ).toEqual([]);
+    expect(
+      apiPaths,
+      "the Dashboard uses the fixed company policy file URL and should not fetch redundant metadata",
+    ).not.toContain("/api/configs/public/company-policy");
     expect(apiPaths.filter((path) => path === "/api/health").length).toBeLessThanOrEqual(1);
   });
 

@@ -22,9 +22,6 @@ vi.mock("../../../constants", () => ({
     COMMUNICATIONS: "/communications",
     METER_READINGS: "/meters",
   },
-  STORAGE_KEYS: {
-    POLICY_URL_CHECKED: "companyPolicyUrlChecked",
-  },
 }));
 
 // Mock de iconos
@@ -54,6 +51,7 @@ describe("useToolsController", () => {
     recorder.stop();
     authTokenStore.removeToken();
     server.resetHandlers();
+    vi.unstubAllEnvs();
   });
 
   it("should return correct tools configuration", () => {
@@ -161,6 +159,15 @@ describe("useToolsController", () => {
     }
   });
 
+  it("uses the configured company policy URL when present", () => {
+    vi.stubEnv("VITE_COMPANY_POLICY_URL", "https://example.test/company-policy.pdf");
+    const { result } = renderToolsLogic();
+
+    expect(result.current.tools.find((tool) => tool.id === "reglamento")?.action).toBe(
+      "https://example.test/company-policy.pdf",
+    );
+  });
+
   it("should call navigate for meters tool", () => {
     const { result } = renderToolsLogic();
 
@@ -180,17 +187,13 @@ describe("useToolsController", () => {
     expect(notesTool?.hasNotification).toBe(true);
   });
 
-  it("fetches company policy at most once per session (memo en sessionStorage)", async () => {
-    sessionStorage.clear();
-
-    renderToolsLogic();
+  it("does not fetch fixed company policy metadata on Dashboard startup", async () => {
+    const { result } = renderToolsLogic();
     await act(async () => {});
-    expect(recorder.countOf("GET", "/api/configs/public/company-policy")).toBe(1);
 
-    renderToolsLogic();
-    await Promise.resolve();
-    // Segundo montaje reutiliza el memo: sin segundo fetch.
-    expect(recorder.countOf("GET", "/api/configs/public/company-policy")).toBe(1);
-    sessionStorage.clear();
+    expect(recorder.countOf("GET", "/api/configs/public/company-policy")).toBe(0);
+    expect(result.current.tools.find((tool) => tool.id === "reglamento")?.action).toBe(
+      "/api/configs/public/company-policy/file",
+    );
   });
 });
