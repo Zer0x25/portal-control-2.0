@@ -428,3 +428,11 @@
 - **Límite**: 140,348 ms medianos no tienen caller mapeado; `browser/native o desconocido` mezcla frames sin URL como `anonymous`, así que no se atribuye todo al DOM. No se comparan estos perfiles con LCP/TBT ni se afirma mejora. App y servicios staging intactos.
 - **Siguiente**: correlacionar React DOM con componentes concretos del Worker Portal usando el perfilador React existente; instrumentar traza de navegador aparte antes de atribuir el bloque nativo/desconocido.
 - **Evidencia**: [resultado Spec 079](../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/resultado-2026-10-24.md) y [perfil agregado](../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/worker-portal-noapp-cpu-2026-10-24.json).
+
+## 2026-10-24 - perf(worker-portal): atribuir tiempo del subárbol de vista
+
+- **Cambio**: el container envuelve `WorkerPortalView` con el profiler de desarrollo existente. `WorkerPortal.view.tsx` se mantuvo intacta por su marca `UI-PROTECTED`; en producción el helper retorna los children.
+- **Medido**: Vite dev, Chromium 153, CPU 4×, 412×823, 3/3 muestras. Ruta `worker-portal`: 5 commits y 145,3 ms `actualDuration` mediano. Scope `worker-portal:view`: 4 commits y 102,7 ms. Cero eventos de profiler descartados.
+- **Límite**: los scopes son anidados y tienen distinto número de commits; no se suman ni restan. Vite registró fallos de WebSocket/EPIPE del proxy; no se atribuye esta corrida a producción o CWV. Staging no se reconstruyó.
+- **Siguiente**: revisar actualizaciones y props derivados de `useWorkerPortalData` para encontrar estado evitable dentro del container; cualquier ajuste a componentes internos de la vista necesita aprobación humana por la marca UI-protected.
+- **Evidencia**: [resultado Spec 080](../specs/080-worker-portal-view-subtree-render-profile/evidencia/resultado-2026-10-24.md) y [perfil React](../specs/080-worker-portal-view-subtree-render-profile/evidencia/worker-portal-view-render-profile-2026-10-24.json).
