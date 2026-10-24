@@ -42,7 +42,7 @@ Las corridas `06-17` y `06-35` se conservan en el historial, pero no se usan par
 
 ## Próximo foco
 
-Control horario tiene la mayor oportunidad de carga fría del conjunto: mediana FCP/LCP/TBT de **4.353,35 / 6.472,80 / 232 ms**, score 0,62, 107 solicitudes y una cadena de dependencias de 763 ms. Su trace observado muestra LCP de 1.678 ms, con 1.675 ms de demora de render del elemento; `react-core` tiene cerca de 2,0 s de CPU atribuido y la muestra más lenta registra una tarea de 331 ms. Lighthouse estima 55 KB de JavaScript sin uso en esta ruta. Worker Portal registró **3.939,12 / 5.646,48 / 163 ms**, score 0,68 y 88 solicitudes. Perfilar el montaje y los módulos de Control horario antes de elegir una optimización. En Lighthouse estándar, Dashboard tuvo el TBT mayor (306 ms), seguido de Gestión de personal (295 ms), Worker Portal (253 ms) y Control horario (225,5 ms).
+La primera optimización de Control horario ya se midió en [Spec 053](../../053-time-control-defer-edit-timestamp-modal/resultado.md): difirió el editor de marcajes, redujo las solicitudes frías de 107 a 99 y el JavaScript transferido 12,1% en la mediana; FCP/LCP también bajaron en la comparación, mientras TBT quedó sin mejora concluyente. El LCP conserva una demora de render alta. La siguiente iteración debe capturar un perfil con un volumen representativo de registros y localizar el trabajo dominante antes de tocar la tabla, el reloj o el panel de marcaje.
 
 ## Límites
 

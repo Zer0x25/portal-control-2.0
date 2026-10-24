@@ -34,9 +34,11 @@ vi.mock("../../../features/time-control", async (importOriginal) => {
   return {
     ...actual,
     QuickActionModal: () => <div>QUICK-ACTION-MODAL</div>,
-    EditTimestampModal: () => <div>EDIT-TIMESTAMP-MODAL</div>,
   };
 });
+vi.mock("../../../features/time-control/components/EditTimestampModal.container", () => ({
+  default: () => <div>EDIT-TIMESTAMP-MODAL</div>,
+}));
 vi.mock("../../../features/time-control/components/AnomalyResolutionModal", () => ({
   default: () => <div>ANOMALY-RESOLUTION-MODAL</div>,
 }));
@@ -98,6 +100,36 @@ describe("TimeControlView", () => {
     render(<TimeControlView {...baseProps} isPageLoading={true} />);
 
     expect(screen.getByText("Optimizando registros de asistencia...")).toBeInTheDocument();
+  });
+
+  it("mounts the timestamp editor only when a record is selected for editing", async () => {
+    const { rerender } = render(<TimeControlView {...baseProps} />);
+
+    expect(screen.queryByText("EDIT-TIMESTAMP-MODAL")).not.toBeInTheDocument();
+
+    const editingRecordInfo: NonNullable<
+      React.ComponentProps<typeof TimeControlView>["editingRecordInfo"]
+    > = {
+      record: {
+        id: "record-1",
+        employeeId: "employee-1",
+        employeeName: "JUAN PEREZ",
+        employeePosition: "OPERADOR",
+        employeeArea: "OPERACIONES",
+        employeeWorkdayType: "Full Time",
+        date: "2026-03-03",
+        status: "Completado",
+        entrada: "2026-03-03T08:00:00Z",
+        lastModified: 1,
+        syncStatus: "synced",
+        isDeleted: false,
+      },
+      field: "entrada",
+    };
+
+    rerender(<TimeControlView {...baseProps} editingRecordInfo={editingRecordInfo} />);
+
+    expect(await screen.findByText("EDIT-TIMESTAMP-MODAL")).toBeInTheDocument();
   });
 
   it("renders main content and delegates filter/export actions", () => {

@@ -563,6 +563,53 @@ test.describe.serial("Render Performance", () => {
     ).toEqual([]);
   });
 
+  test("Time Control excludes the timestamp editor from its cold route", async ({
+    page,
+  }, testInfo) => {
+    const editModalRequests: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.resourceType() === "script" &&
+        /\/assets\/EditTimestampModal\.container-[^/?]+\.js(?:[?#]|$)/.test(request.url())
+      ) {
+        editModalRequests.push(request.url());
+      }
+    });
+
+    await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await page.waitForLoadState("networkidle");
+
+    const coldScriptResources = await page.evaluate(() => {
+      const resources = performance
+        .getEntriesByType("resource")
+        .filter((entry): entry is PerformanceResourceTiming => {
+          return (
+            entry.initiatorType === "script" && new URL(entry.name).pathname.includes("/assets/")
+          );
+        });
+      return {
+        assets: resources.map((resource) => new URL(resource.name).pathname.split("/").pop()),
+        transferBytes: resources.reduce((total, resource) => total + resource.transferSize, 0),
+      };
+    });
+
+    const coldEditModalRequests = [...editModalRequests];
+    expect(
+      coldEditModalRequests,
+      "The timestamp editor chunk must stay out of the cold Time Control route",
+    ).toEqual([]);
+    await attachPerformanceReport(testInfo, "time-control-deferred-editor.json", {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      coldScriptResources,
+      coldEditModalRequests,
+    });
+  });
+
   test("Dashboard startup avoids the kiosk list and repeated API reads", async ({
     page,
   }, testInfo) => {

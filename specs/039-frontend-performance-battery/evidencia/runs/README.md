@@ -25,7 +25,8 @@ Las mediciones de interacción distinguen la primera activación de sus repetici
 
 - `2026-10-24T06-17-37-339Z-465361c6.json` y `2026-10-24T06-35-12-796Z-465361c6.json` completaron las fases registradas antes de probar el bloqueo de CSS en navegador. La inspección encontró que podían mostrar una ruta ajena al Dashboard sin estilos; conservar los JSON como evidencia histórica, pero no usarlos para aceptar una mejora ni como referencia visual.
 - `2026-10-24T06-57-55-919Z-465361c6.json` midió el handoff antes del último ajuste de fallback por timeout. Se conserva como corrida intermedia; la corrida siguiente usa el digest final y añade la prueba de ese fallback.
-- `2026-10-24T07-19-00-817Z-465361c6.json` es la corrida final. Playwright pasó 13/13; Lighthouse estándar validó 17 rutas con 85/85 aserciones; Dashboard, Worker Portal y Control horario tienen tres muestras frías con ruta validada cada uno. Worker Portal usó `worker` y Control horario `admin`. El resultado comparativo está en [`../seguimiento-css-critico-2026-10-24.md`](../seguimiento-css-critico-2026-10-24.md).
+- `2026-10-24T07-19-00-817Z-465361c6.json` cerró el experimento de CSS crítico: Playwright 13/13; Lighthouse estándar 17 rutas y 85/85 aserciones; tres muestras frías validadas para Dashboard, Worker Portal (`worker`) y Control horario (`admin`). Su comparación está en [`../seguimiento-css-critico-2026-10-24.md`](../seguimiento-css-critico-2026-10-24.md) y se usa como baseline de Control horario para Spec 053.
+- `2026-10-24T07-47-52-697Z-0ab420f2.json` registra el cambio de carga diferida del editor de marcajes (Spec 053): Playwright 14/14; Lighthouse estándar 17 rutas y 85/85 aserciones; tres muestras frías validadas para Worker Portal y Control horario. La comparación completa está en [`../../../053-time-control-defer-edit-timestamp-modal/resultado.md`](../../../053-time-control-defer-edit-timestamp-modal/resultado.md).
 
 ## Correcciones de captura
 
