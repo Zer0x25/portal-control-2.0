@@ -503,7 +503,7 @@ test.describe.serial("Render Performance", () => {
     }
   });
 
-  test("non-Dashboard content stays hidden until the full stylesheet is applied", async ({
+  test("non-shell content stays hidden until the full stylesheet is applied", async ({
     browser,
     request,
   }, testInfo) => {
@@ -531,7 +531,7 @@ test.describe.serial("Render Performance", () => {
         await cssGate;
         await route.continue();
       });
-      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "commit" });
+      await page.goto(`${baseUrl}/#/configuration`, { waitUntil: "commit" });
 
       const stylesheet = page.locator('link[rel="stylesheet"][href*="/assets/index-"]');
       await expect(stylesheet).toHaveAttribute("media", "all");
@@ -547,7 +547,7 @@ test.describe.serial("Render Performance", () => {
         bodyBackground: "rgb(2, 6, 23)",
       });
       await expect(page.getByTestId("main-content")).not.toBeVisible();
-      await testInfo.attach("time-control-before-global-css.png", {
+      await testInfo.attach("configuration-before-global-css.png", {
         body: await page.screenshot(),
         contentType: "image/png",
       });
@@ -607,7 +607,7 @@ test.describe.serial("Render Performance", () => {
     }
   });
 
-  test("Bootstrap shell stays absent without a session or on other routes", async ({
+  test("Bootstrap shell requires a session and covers authenticated Time Control startup", async ({
     browser,
     request,
   }) => {
@@ -628,8 +628,12 @@ test.describe.serial("Render Performance", () => {
       const page = await authenticatedContext.newPage();
       await loginFast(page, request, "admin");
       await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
-      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#app-bootstrap-shell")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Preparando el portal", exact: true }),
+      ).toBeVisible();
       await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
       await expect
         .poll(() =>
           page
@@ -645,7 +649,7 @@ test.describe.serial("Render Performance", () => {
     try {
       const page = await restrictedContext.newPage();
       await loginFast(page, request, "worker");
-      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveURL(/#\/worker-portal/, { timeout: 30_000 });
       await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
     } finally {

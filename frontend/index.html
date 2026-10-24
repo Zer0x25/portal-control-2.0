@@ -100,13 +100,13 @@
       id="app-bootstrap-shell"
       role="status"
       aria-live="polite"
-      aria-label="Cargando Portal Control Interno"
+      aria-label="Cargando Portal"
       class="boot"
       hidden
     >
       <section>
         <p>Portal Control Interno</p>
-        <h1 id="app-bootstrap-title">Preparando el portal</h1>
+        <h1>Preparando el portal</h1>
         <div>
           <div id="app-bootstrap-date"></div>
           <time id="app-bootstrap-time"></time>
@@ -171,7 +171,7 @@
         }
 
         const route = currentRoute();
-        if (route !== "#/dashboard" && route !== "#/worker-portal") {
+        if (!/^#\/(dashboard|worker-portal|time-control)$/.test(route)) {
           shell.remove();
           activateOtherRouteStyles();
           return;
@@ -218,7 +218,10 @@
         };
 
         observer = new MutationObserver(() => {
-          if (root.querySelector('[data-testid="server-clock"]')) {
+          if (
+            root.querySelector('[data-testid="server-clock"]') ||
+            (route === "#/time-control" && root.querySelector("#initial-sync-overlay"))
+          ) {
             appReady = true;
             releaseWhenReady();
           }

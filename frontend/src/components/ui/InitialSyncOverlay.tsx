@@ -11,10 +11,13 @@ const InitialSyncOverlay: React.FC = () => {
   const isInitialSync = useStore((state) => state.isInitialSync);
   const syncProgress = useStore((state) => state.syncProgress);
   const currentSyncStep = useStore((state) => state.currentSyncStep);
+  const isTimeControlRoute = window.location.hash.split("?")[0] === "#/time-control";
 
   return (
     isInitialSync && (
       <div
+        id="initial-sync-overlay"
+        style={isTimeControlRoute ? { zIndex: 10_000 } : undefined}
         className={`fixed inset-0 ${Z.toast} flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]`}
       >
         {/* Decorative Technical Background - Unified with Login */}
