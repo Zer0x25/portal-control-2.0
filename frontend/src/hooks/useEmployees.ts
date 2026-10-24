@@ -20,7 +20,11 @@ const loadDateUtilsForArchive = () => import("../utils/dateUtils");
  * acción invalida `employees` para que react-query refresque.
  */
 export const useEmployees = (_isKiosk: boolean = false) => {
-  const { users: usersData, deleteUser: hardDeleteUser, addUser: recreateUser } = useUsers();
+  const {
+    deleteUser: hardDeleteUser,
+    addUser: recreateUser,
+    refetchUsers,
+  } = useUsers({ enabled: false });
   const currentUser = useStore((state) => state.currentUser);
 
   const queryClient = useQueryClient();
@@ -200,6 +204,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         });
 
         // 2. Delete associated user (Hard Delete)
+        const { data: usersData = [] } = await refetchUsers();
         const linkedUser = usersData.find((u) => u.employeeId === employee.id);
         if (linkedUser) {
           await hardDeleteUser(linkedUser.id);

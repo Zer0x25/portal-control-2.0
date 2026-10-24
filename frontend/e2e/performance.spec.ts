@@ -848,6 +848,7 @@ test.describe.serial("Render Performance", () => {
             finishedAtMs: number | null;
             statusCode: number | null;
             responseBodyBytes: number | null;
+            responseHasClosedHandover: boolean | null;
             failure: string | null;
             queryDimensions: {
               pageSize: string | null;
@@ -869,6 +870,7 @@ test.describe.serial("Render Performance", () => {
             finishedAtMs: null,
             statusCode: null,
             responseBodyBytes: null,
+            responseHasClosedHandover: null,
             failure: null,
             queryDimensions:
               url.pathname === "/api/records"
@@ -885,11 +887,40 @@ test.describe.serial("Render Performance", () => {
           if (!timing) return;
           timing.responseAtMs = requestOffset();
           timing.statusCode = response.status();
-          if (timing.path === "/api/health" || timing.path === "/api/health/ready") {
+          if (
+            timing.path === "/api/health" ||
+            timing.path === "/api/health/ready" ||
+            timing.path === "/api/users" ||
+            timing.path === "/api/shift-reports"
+          ) {
             responseBodyReads.push(
               response.body().then(
                 (body) => {
                   timing.responseBodyBytes = body.byteLength;
+                  if (timing.path === "/api/shift-reports") {
+                    try {
+                      const payload = JSON.parse(new TextDecoder().decode(body)) as unknown;
+                      const reports = Array.isArray(payload)
+                        ? payload
+                        : payload &&
+                            typeof payload === "object" &&
+                            "data" in payload &&
+                            Array.isArray(payload.data)
+                          ? payload.data
+                          : [];
+                      timing.responseHasClosedHandover = reports.some((report: unknown) => {
+                        if (!report || typeof report !== "object") return false;
+                        return (
+                          "status" in report &&
+                          report.status === "closed" &&
+                          "endTime" in report &&
+                          Boolean(report.endTime)
+                        );
+                      });
+                    } catch {
+                      timing.responseHasClosedHandover = null;
+                    }
+                  }
                 },
                 () => undefined,
               ),
@@ -1035,6 +1066,31 @@ test.describe.serial("Render Performance", () => {
         expect(readinessRequests[0]?.responseBodyBytes).not.toBeNull();
         expect(readinessRequests[0]?.responseBodyBytes ?? Infinity).toBeLessThan(512);
         expect(detailedHealthRequests).toHaveLength(0);
+        const userDirectoryRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/users",
+        );
+        expect(
+          userDirectoryRequests.every((timing) => timing.responseBodyBytes !== null),
+          "the performance report should retain only the user response byte count",
+        ).toBe(true);
+        const shiftReportRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/shift-reports",
+        );
+        expect(
+          shiftReportRequests.every((timing) => timing.responseHasClosedHandover !== null),
+          "the performance report should record only whether a closed handover exists",
+        ).toBe(true);
+        const hasClosedHandover = shiftReportRequests.some(
+          (timing) => timing.responseHasClosedHandover === true,
+        );
+        if (!hasClosedHandover) {
+          expect(
+            userDirectoryRequests,
+            "the Time Control startup must not fetch the user directory without a closed handover",
+          ).toHaveLength(0);
+        }
+        expect(userDirectoryRequests.length).toBeLessThanOrEqual(1);
+        expect(userDirectoryRequests.every((timing) => timing.statusCode === 200)).toBe(true);
         expect(apiRequestTimings.size).toBeLessThanOrEqual(20);
         const recordRequestTimings = Array.from(apiRequestTimings.values()).filter(
           (timing) => timing.path === "/api/records",
@@ -1114,7 +1170,7 @@ test.describe.serial("Render Performance", () => {
       cpuThrottle: 4,
       sampleCount: samples.length,
       apiRequestPathPolicy:
-        "pathname only; request/response bodies omitted; response byte length recorded only for health endpoints; /api/records captures pageSize and filter-presence booleans only",
+        "pathname only; request/response bodies omitted; byte lengths recorded for health and users; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
       syncPhasePolicy:
         "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
       timingOffsetBasis: "Date.now immediately before page.goto",

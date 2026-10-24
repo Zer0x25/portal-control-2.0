@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 
-const { kioskFetch } = vi.hoisted(() => ({
+const { kioskFetch, usersQueryEnablement } = vi.hoisted(() => ({
   kioskFetch: vi.fn().mockResolvedValue([]),
+  usersQueryEnablement: [] as boolean[],
 }));
 
 vi.mock("../../services/employeeService", () => ({
@@ -13,7 +14,15 @@ vi.mock("../../services/employeeService", () => ({
 }));
 
 vi.mock("../../hooks/useUsers", () => ({
-  useUsers: () => ({ users: [], deleteUser: vi.fn(), addUser: vi.fn() }),
+  useUsers: (options?: { enabled?: boolean }) => {
+    usersQueryEnablement.push(options?.enabled ?? true);
+    return {
+      users: [],
+      deleteUser: vi.fn(),
+      addUser: vi.fn(),
+      refetchUsers: vi.fn(async () => ({ data: [] })),
+    };
+  },
 }));
 
 vi.mock("../../hooks/queries/useEmployeesQuery", async (importOriginal) => {
@@ -31,6 +40,7 @@ describe("query pública de empleados para kiosco", () => {
 
   beforeEach(() => {
     kioskFetch.mockClear();
+    usersQueryEnablement.length = 0;
     client = new QueryClient({
       defaultOptions: { queries: { retry: false, gcTime: 0 } },
     });
@@ -49,11 +59,13 @@ describe("query pública de empleados para kiosco", () => {
     renderHook(() => useEmployees(), { wrapper });
 
     expect(kioskFetch).not.toHaveBeenCalled();
+    expect(usersQueryEnablement).toEqual([false]);
   });
 
   it("mantiene la carga pública de kiosco sin requerir un token", async () => {
     renderHook(() => useEmployees(true), { wrapper });
 
     await waitFor(() => expect(kioskFetch).toHaveBeenCalledTimes(1));
+    expect(usersQueryEnablement).toEqual([false]);
   });
 });

@@ -290,3 +290,11 @@
 - **Límite**: validación 369,5 → 393,4 ms (+23,9 ms), overlay 394,1 → 440,9 ms (+46,8 ms) y retiro desde navegación 1.298,9 → 1.424,8 ms (+125,9 ms). No se demuestra mejora de latencia ni que el cambio cause estos aumentos. FCP 744 → 772 ms con rangos solapados.
 - **Siguiente**: separar request start, respuesta de Fastify y recepción en browser para ubicar el tiempo fuera del handler; perfilar `/api/users` y la fase Usuarios (mediana 281,8 ms) sin relajar validación fresca ni el bloqueo.
 - **Evidencia**: [resultado Spec 062](../specs/062-lightweight-health-readiness-for-frontend-startup/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/062-lightweight-health-readiness-for-frontend-startup/evidencia/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - perf(time-control): Diferir directorio de usuarios hasta handover
+
+- **Diagnóstico**: el layout y `useEmployees` consultaban `/api/users` aunque no hubiera cierre pendiente. En staging, los tres contextos devolvieron `responseHasClosedHandover: false`; cada lista ocupó 636 B.
+- **Cambio**: esperar los informes antes de marcar el handover visto; cargar usuarios solo con cierre pendiente y rol autorizado. Los usos generales de `useEmployees` deshabilitan el listado; el archivado refresca la lista antes de buscar y borrar la cuenta asociada.
+- **Medido**: solicitudes API 20 → 19 por contexto y `/api/users` 1 → 0. La fase Usuarios bajó 263,1 → 46,2 ms (−82,4 %); la espera apareció en Empleados, cuya mediana pasó 8,7 → 201,6 ms. La suma Usuarios+Empleados bajó solo 7,6 ms (−2,9 %); overlay 435,1 → 420,5 ms (−3,4 %) y FCP 740 → 724 ms, sin mejora global demostrada por la variación de n=3.
+- **Siguiente**: medir bytes y latencia browser de `/api/employees`, y separar recepción/parseo del backend antes de cambiar la colección que usa Control Horario.
+- **Evidencia**: [resultado Spec 063](../specs/063-defer-user-directory-for-shift-handover/evidencia/resultado-2026-10-24.md), [baseline](../specs/063-defer-user-directory-for-shift-handover/evidencia/baseline-2026-10-24.md) y [captura final](../specs/063-defer-user-directory-for-shift-handover/evidencia/final/time-control-sync-phase-diagnostics.json).

@@ -11,8 +11,8 @@ import { logger } from "../utils/logger";
  * Cuentas de usuario: única fuente = `useUsersQuery` (spec 032 T5).
  * El store ya no replica esta colección ni escribe IndexedDB.
  */
-export const useUsers = () => {
-  const { data: users = [], isLoading: isLoadingUsers, refetch } = useUsersQuery();
+export const useUsers = (options: { readonly enabled?: boolean } = {}) => {
+  const { data: users = [], isLoading: isLoadingUsers, refetch } = useUsersQuery(options);
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
   const { currentUser } = useAuth();

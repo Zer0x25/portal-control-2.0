@@ -12,11 +12,30 @@ const mocks = vi.hoisted(() => ({
     ],
   })),
   updateAssignment: vi.fn(async () => undefined),
+  deleteUser: vi.fn(async () => undefined),
+  refetchUsers: vi.fn(async () => ({
+    data: [
+      {
+        id: "user-1",
+        username: "empleado.prueba",
+        role: "Usuario",
+        employeeId: "employee-1",
+        isDeleted: false,
+        lastModified: 0,
+        syncStatus: "synced",
+      },
+    ],
+  })),
   addToast: vi.fn(),
 }));
 
 vi.mock("../../hooks/useUsers", () => ({
-  useUsers: () => ({ users: [], deleteUser: vi.fn(), addUser: vi.fn() }),
+  useUsers: () => ({
+    users: [],
+    deleteUser: mocks.deleteUser,
+    addUser: vi.fn(),
+    refetchUsers: mocks.refetchUsers,
+  }),
 }));
 
 vi.mock("../../hooks/useToasts", () => ({
@@ -66,6 +85,8 @@ describe("useEmployees archive timezone helper", () => {
     mocks.employeeUpdate.mockClear();
     mocks.getAssignments.mockClear();
     mocks.updateAssignment.mockClear();
+    mocks.deleteUser.mockClear();
+    mocks.refetchUsers.mockClear();
     mocks.addToast.mockClear();
   });
 
@@ -83,6 +104,8 @@ describe("useEmployees archive timezone helper", () => {
     });
 
     expect(archived).toBe(true);
+    expect(mocks.refetchUsers).toHaveBeenCalledTimes(1);
+    expect(mocks.deleteUser).toHaveBeenCalledWith("user-1");
     expect(mocks.updateAssignment).toHaveBeenCalledWith(
       "assignment-1",
       expect.objectContaining({ endDate: "2026-10-23" }),
