@@ -250,3 +250,10 @@
 - **Decisión**: restaurar las clases originales; no declarar mejora de rendimiento. El probe de tres contextos permanece: confirma pantalla bloqueante, dos spinners, progreso y captura del LCP candidato. El estilo restaurado calcula `enter` / `0.8s`.
 - **Validación**: batería completa aprobada en el build experimental, con 18 rutas, 17 Lighthouse y 85/85 aserciones. Rebuild final con el overlay original saludable; prueba enfocada 1/1 (tres contextos). Evidencia: [resultado Spec 057](../specs/057-time-control-sync-overlay-lcp/evidencia/resultado-2026-10-24.md), [corrida completa](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T10-01-29-292Z-efa823d3.json).
 - **Siguiente**: cronometrar las fases de sincronización inicial para localizar el trabajo que mantiene tapada la ruta y optimizarlo sin habilitar interacción prematura.
+
+## 2026-10-24 - test(perf): Medir fases de sincronización inicial
+
+- **Captura**: tres contextos fríos de Control horario, 412×823, CPU 4×; 21 requests API por contexto, todos HTTP 200. El probe omite query strings y cuerpos.
+- **Medido**: `/api/health` mediana 344 ms; primera oleada de APIs termina entre 0,87–1,17 s; segunda empieza entre 1,43–1,58 s y termina hasta 1,72 s. El overlay dura 0,80–0,94 s (mediana 0,87 s) y se retira después de la última respuesta observada.
+- **Límite**: los textos de etapa quedan agrupados al final; no se aíslan los `await` de `runSync`. Requests concurrentes y overlay solapados no prueban causalidad. `/api/records` aparece tres veces y `/api/shift-reports` dos veces por contexto, pero al omitir queries no se infiere duplicidad.
+- **Siguiente**: registrar marcas optativas en `validateInstanceId` y alrededor de cada `step.action`, luego priorizar el cambio según el tiempo que realmente espera cada etapa. Evidencia: [resultado Spec 058](../specs/058-sync-initial-phase-diagnostics/evidencia/resultado-2026-10-24.md) y [muestras crudas](../specs/058-sync-initial-phase-diagnostics/evidencia/time-control-sync-phase-diagnostics.json).

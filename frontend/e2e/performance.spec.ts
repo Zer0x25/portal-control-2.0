@@ -610,7 +610,7 @@ test.describe.serial("Render Performance", () => {
     });
   });
 
-  test("Time Control initial sync overlay records paint and remains blocking", async ({
+  test("Time Control initial sync records phase timings and remains blocking", async ({
     browser,
     request,
   }, testInfo) => {
@@ -634,6 +634,7 @@ test.describe.serial("Render Performance", () => {
         await page.addInitScript(() => {
           type OverlayPaintAudit = {
             initialLastSyncTime: string | null;
+            timeOriginEpochMs: number;
             fcpEntries: number[];
             lcpEntries: Array<{
               startTimeMs: number;
@@ -643,6 +644,18 @@ test.describe.serial("Render Performance", () => {
             }>;
             overlayVisibleAtMs: number | null;
             overlayHiddenAtMs: number | null;
+            overlayVisibleAtEpochMs: number | null;
+            overlayHiddenAtEpochMs: number | null;
+            syncStepChanges: Array<{
+              atEpochMs: number;
+              step: string;
+              progressPercent: number | null;
+            }>;
+            syncStepChanges: Array<{
+              atMs: number;
+              step: string;
+              progressPercent: number | null;
+            }>;
             rootAnimationName: string | null;
             rootAnimationDuration: string | null;
             statusAnimationName: string | null;
@@ -655,10 +668,15 @@ test.describe.serial("Render Performance", () => {
           };
           const audit: OverlayPaintAudit = {
             initialLastSyncTime: localStorage.getItem("lastSyncTime"),
+            timeOriginEpochMs: performance.timeOrigin,
             fcpEntries: [],
             lcpEntries: [],
             overlayVisibleAtMs: null,
             overlayHiddenAtMs: null,
+            overlayVisibleAtEpochMs: null,
+            overlayHiddenAtEpochMs: null,
+            syncStepChanges: [],
+            syncStepChanges: [],
             rootAnimationName: null,
             rootAnimationDuration: null,
             statusAnimationName: null,
@@ -711,12 +729,37 @@ test.describe.serial("Render Performance", () => {
               style?.visibility !== "hidden" &&
               status.getClientRects().length > 0,
             );
-            if (isVisible && !wasVisible && status) {
-              let root: HTMLElement | null = status as HTMLElement;
-              while (root && getComputedStyle(root).position !== "fixed") {
-                root = root.parentElement;
+            let root: HTMLElement | null = status ? (status as HTMLElement) : null;
+            while (root && getComputedStyle(root).position !== "fixed") {
+              root = root.parentElement;
+            }
+            if (root) {
+              const spans = Array.from(root.querySelectorAll("span"));
+              const step = spans
+                .map((element) => element.textContent?.trim() ?? "")
+                .find((text) =>
+                  /^(Autenticando acceso|Preparando entorno seguro|Sincronizando |Completado)/.test(
+                    text,
+                  ),
+                );
+              const progressText = spans
+                .map((element) => element.textContent?.trim() ?? "")
+                .find((text) => /^\d+%$/.test(text));
+              if (step) {
+                const progressPercent = progressText ? Number.parseInt(progressText, 10) : null;
+                const previous = audit.syncStepChanges.at(-1);
+                if (previous?.step !== step || previous.progressPercent !== progressPercent) {
+                  audit.syncStepChanges.push({
+                    atEpochMs: performance.timeOrigin + performance.now(),
+                    step,
+                    progressPercent,
+                  });
+                }
               }
+            }
+            if (isVisible && !wasVisible && status) {
               audit.overlayVisibleAtMs = performance.now();
+              audit.overlayVisibleAtEpochMs = performance.timeOrigin + performance.now();
               if (root) {
                 const rootStyle = getComputedStyle(root);
                 audit.rootAnimationName = rootStyle.animationName;
@@ -744,6 +787,7 @@ test.describe.serial("Render Performance", () => {
               wasVisible = true;
             } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
               audit.overlayHiddenAtMs = performance.now();
+              audit.overlayHiddenAtEpochMs = performance.timeOrigin + performance.now();
             }
           };
           new MutationObserver(observeOverlay).observe(document, {
@@ -757,6 +801,49 @@ test.describe.serial("Render Performance", () => {
 
         const cdp = await context.newCDPSession(page);
         await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        const navigationStartedAtEpochMs = Date.now();
+        const apiRequestTimings = new Map<
+          Request,
+          {
+            method: string;
+            path: string;
+            startedAtMs: number;
+            responseAtMs: number | null;
+            finishedAtMs: number | null;
+            statusCode: number | null;
+            failure: string | null;
+          }
+        >();
+        const requestOffset = () => Number((Date.now() - navigationStartedAtEpochMs).toFixed(2));
+        page.on("request", (request) => {
+          const url = new URL(request.url());
+          if (!url.pathname.startsWith("/api/")) return;
+          apiRequestTimings.set(request, {
+            method: request.method(),
+            path: url.pathname,
+            startedAtMs: requestOffset(),
+            responseAtMs: null,
+            finishedAtMs: null,
+            statusCode: null,
+            failure: null,
+          });
+        });
+        page.on("response", (response) => {
+          const timing = apiRequestTimings.get(response.request());
+          if (!timing) return;
+          timing.responseAtMs = requestOffset();
+          timing.statusCode = response.status();
+        });
+        page.on("requestfinished", (request) => {
+          const timing = apiRequestTimings.get(request);
+          if (timing) timing.finishedAtMs = requestOffset();
+        });
+        page.on("requestfailed", (request) => {
+          const timing = apiRequestTimings.get(request);
+          if (!timing) return;
+          timing.finishedAtMs = requestOffset();
+          timing.failure = request.failure()?.errorText ?? "request failed";
+        });
         await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
         const syncOverlay = page.getByText(
           "Establishing technical handshake • Validating integrity...",
@@ -796,6 +883,7 @@ test.describe.serial("Render Performance", () => {
             window as Window & {
               __syncOverlayPaintAudit?: {
                 initialLastSyncTime: string | null;
+                timeOriginEpochMs: number;
                 fcpEntries: number[];
                 lcpEntries: Array<{
                   startTimeMs: number;
@@ -805,6 +893,13 @@ test.describe.serial("Render Performance", () => {
                 }>;
                 overlayVisibleAtMs: number | null;
                 overlayHiddenAtMs: number | null;
+                overlayVisibleAtEpochMs: number | null;
+                overlayHiddenAtEpochMs: number | null;
+                syncStepChanges: Array<{
+                  atEpochMs: number;
+                  step: string;
+                  progressPercent: number | null;
+                }>;
                 rootAnimationName: string | null;
                 rootAnimationDuration: string | null;
                 statusAnimationName: string | null;
@@ -821,11 +916,15 @@ test.describe.serial("Render Performance", () => {
           if (!audit || !lastSyncTime) throw new Error("Initial sync paint audit is incomplete");
           return {
             initialLastSyncTime: audit.initialLastSyncTime,
+            timeOriginEpochMs: audit.timeOriginEpochMs,
             lastSyncTimePresent: Boolean(lastSyncTime),
             fcpMs: audit.fcpEntries[0] ?? null,
             lcpEntries: audit.lcpEntries,
             overlayVisibleAtMs: audit.overlayVisibleAtMs,
             overlayHiddenAtMs: audit.overlayHiddenAtMs,
+            overlayVisibleAtEpochMs: audit.overlayVisibleAtEpochMs,
+            overlayHiddenAtEpochMs: audit.overlayHiddenAtEpochMs,
+            syncStepChanges: audit.syncStepChanges,
             overlayVisibleDurationMs:
               audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
                 ? Number((audit.overlayHiddenAtMs - audit.overlayVisibleAtMs).toFixed(2))
@@ -847,6 +946,10 @@ test.describe.serial("Render Performance", () => {
         expect(metrics.rootAnimationDuration).toBeTruthy();
         expect(metrics.statusAnimationName).toBeTruthy();
         expect(
+          metrics.syncStepChanges.some((change) => change.step.startsWith("Sincronizando ")),
+        ).toBe(true);
+        expect(apiRequestTimings.size).toBeGreaterThan(0);
+        expect(
           metrics.activeAnimations.some((animation) => animation.animationName === "spin"),
           "The progress spinner must retain its rotation while the sync overlay is visible",
         ).toBe(true);
@@ -859,7 +962,35 @@ test.describe.serial("Render Performance", () => {
         samples.push({
           sample,
           overlayCoverage,
-          ...metrics,
+          initialLastSyncTime: metrics.initialLastSyncTime,
+          lastSyncTimePresent: metrics.lastSyncTimePresent,
+          fcpMs: metrics.fcpMs,
+          lcpEntries: metrics.lcpEntries,
+          overlayVisibleAtMs:
+            metrics.overlayVisibleAtEpochMs === null
+              ? null
+              : Number((metrics.overlayVisibleAtEpochMs - navigationStartedAtEpochMs).toFixed(2)),
+          overlayHiddenAtMs:
+            metrics.overlayHiddenAtEpochMs === null
+              ? null
+              : Number((metrics.overlayHiddenAtEpochMs - navigationStartedAtEpochMs).toFixed(2)),
+          syncStepChanges: metrics.syncStepChanges.map(({ atEpochMs, ...change }) => ({
+            atMs: Number((atEpochMs - navigationStartedAtEpochMs).toFixed(2)),
+            ...change,
+          })),
+          overlayVisibleDurationMs: metrics.overlayVisibleDurationMs,
+          rootAnimationName: metrics.rootAnimationName,
+          rootAnimationDuration: metrics.rootAnimationDuration,
+          statusAnimationName: metrics.statusAnimationName,
+          activeAnimations: metrics.activeAnimations,
+          syncReadyAtMs: metrics.syncReadyAtMs,
+          apiRequests: Array.from(apiRequestTimings.values()).map((timing) => ({
+            ...timing,
+            durationMs:
+              timing.finishedAtMs === null
+                ? null
+                : Number((timing.finishedAtMs - timing.startedAtMs).toFixed(2)),
+          })),
           finalLcpCandidate,
         });
         await cdp.detach();
@@ -868,15 +999,17 @@ test.describe.serial("Render Performance", () => {
       }
     }
 
-    await attachPerformanceReport(testInfo, "time-control-initial-sync-overlay.json", {
+    await attachPerformanceReport(testInfo, "time-control-sync-phase-diagnostics.json", {
       capturedAt: new Date().toISOString(),
       baseUrl,
       route: "/#/time-control",
       viewport: mobileViewport,
       cpuThrottle: 4,
       sampleCount: samples.length,
+      apiRequestPathPolicy: "pathname only; query strings and request/response bodies omitted",
+      timingOffsetBasis: "Date.now immediately before page.goto",
       readinessMetric:
-        "Initial sync overlay LCP candidate and hit-test under a clean authenticated context",
+        "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",
       samples,
       fcpStats: summarizePerformance(fcpSamples),
       observedLcpStats: summarizePerformance(lcpSamples),
