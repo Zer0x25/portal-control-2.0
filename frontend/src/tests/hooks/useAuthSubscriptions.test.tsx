@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth, useAuthShellControls } from "../../hooks/useAuth";
 import { useStore } from "../../store/useStore";
 import type { User } from "../../types/user";
 
@@ -61,5 +61,60 @@ describe("useAuth store subscription", () => {
     });
 
     expect(result.current.isForcePasswordChangeModalOpen).toBe(false);
+  });
+
+  it("keeps the shell subscription limited to its modal state and actions", () => {
+    const useSyncExternalStore = vi.spyOn(React, "useSyncExternalStore");
+    let renderCount = 0;
+    const { result } = renderHook(() => {
+      renderCount += 1;
+      return useAuthShellControls();
+    });
+    const authStoreSubscriptions = useSyncExternalStore.mock.calls.filter(
+      ([subscribe]) => subscribe === useStore.subscribe,
+    );
+
+    expect(authStoreSubscriptions).toHaveLength(1);
+    expect(result.current.isForcePasswordChangeModalOpen).toBe(false);
+
+    const rendersBeforeUnrelatedAuthUpdate = renderCount;
+    act(() => {
+      useStore.setState({
+        isAuthLoading: !useStore.getState().isAuthLoading,
+        mfaRequired: !useStore.getState().mfaRequired,
+        mfaToken: "mfa-test-token",
+      });
+    });
+    expect(renderCount).toBe(rendersBeforeUnrelatedAuthUpdate);
+
+    act(() => {
+      useStore.setState({
+        currentUser: {
+          id: "auth-shell-user",
+          username: "admin",
+          role: "Administrador",
+          lastModified: Date.now(),
+          syncStatus: "synced",
+          isDeleted: false,
+          mustChangePassword: false,
+        } satisfies User,
+      });
+    });
+    expect(renderCount).toBe(rendersBeforeUnrelatedAuthUpdate);
+
+    act(() => {
+      useStore.setState({
+        currentUser: {
+          id: "auth-shell-user",
+          username: "admin",
+          role: "Administrador",
+          lastModified: Date.now(),
+          syncStatus: "synced",
+          isDeleted: false,
+          mustChangePassword: true,
+        } satisfies User,
+      });
+    });
+    expect(result.current.isForcePasswordChangeModalOpen).toBe(true);
   });
 });

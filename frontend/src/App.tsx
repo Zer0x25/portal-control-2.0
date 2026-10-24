@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROUTES } from "./constants";
-import { useAuth } from "./hooks/useAuth";
+import { useAuthShellControls } from "./hooks/useAuth";
 import { useNavigationLoading } from "./hooks/useNavigationLoading";
 import { ROLES } from "./utils/mappings";
 import { useSocketEvents } from "./hooks/useSocketEvents";
@@ -103,7 +103,8 @@ const NotFoundPage = React.lazy(() => import("./features/not-found/pages/NotFoun
 const AccessDeniedNotifier = React.lazy(() => import("./router/AccessDeniedNotifier"));
 
 const App: React.FC = () => {
-  const { isForcePasswordChangeModalOpen, clearMustChangePassword, logout } = useAuth();
+  const { isForcePasswordChangeModalOpen, clearMustChangePassword, logout } =
+    useAuthShellControls();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const { data: isControlInternoEnabled = true } = useControlInternoEnabledQuery();
 

@@ -16,3 +16,13 @@ export const useAuth = () =>
       clearMustChangePassword: state.clearMustChangePassword,
     })),
   );
+
+/** Narrow auth selection for the always-mounted application shell. */
+export const useAuthShellControls = () =>
+  useStore(
+    useShallow((state) => ({
+      isForcePasswordChangeModalOpen: state.currentUser?.mustChangePassword === true,
+      clearMustChangePassword: state.clearMustChangePassword,
+      logout: state.logout,
+    })),
+  );

@@ -363,3 +363,11 @@
 - **Decisión**: no alcanza el umbral de 20%; se revierte el cambio. `actualDuration` dev baja 13,8% en la mediana, con rangos solapados; no se declara mejora.
 - **Siguiente**: separar cambios de `useControlInternoEnabledQuery` y selector `useAuth` antes de escoger una optimización funcional.
 - **Evidencia**: [resultado Spec 071](../specs/071-isolate-navigation-loading-renders/evidencia/resultado-2026-10-24.md) y [tres perfiles](../specs/071-isolate-navigation-loading-renders/evidencia/navigation-loading-render-profile-2026-10-24.json).
+
+## 2026-10-24 - perf(app): Acotar suscripción auth del shell
+
+- **Cambio**: `App` usa una suscripción superficial a solo estado del modal de cambio de contraseña, `clearMustChangePassword` y `logout`. `useAuth` conserva su contrato.
+- **Medido**: mediana de commits `app:application` 29 → 21 (−27,6%) en Vite dev a CPU 4×; el gate estructural era ≥20%. `actualDuration` total baja 10,9% con rangos solapados.
+- **Límite**: commits en la ventana de validación permanecieron 3/3 muestras; no se atribuye mejora de producción/CWV. Vite registró errores Socket.IO/proxy durante los perfiles.
+- **Siguiente**: perfilar aparte los estados de `useControlInternoEnabledQuery` y `useAuthShellControls`; verificar el efecto con una corrida Lighthouse comparable antes de afirmar un beneficio visual.
+- **Evidencia**: [resultado Spec 072](../specs/072-narrow-app-auth-subscription/evidencia/resultado-2026-10-24.md) y [perfil React](../specs/072-narrow-app-auth-subscription/evidencia/app-auth-render-profile-2026-10-24.json).
