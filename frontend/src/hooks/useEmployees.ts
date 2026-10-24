@@ -8,11 +8,11 @@ import { timeRecordService } from "../services/timeRecordService";
 import { employeeService } from "../services/employeeService";
 import { Employee, EmployeeStatus } from "../types";
 import { useEffect } from "react";
-import { toBusinessDateChile } from "../utils/dateUtils";
 import { UserRole } from "../types/user";
 import { queryKeys } from "../lib/queryKeys";
 
 const EMPTY_EMPLOYEES: Employee[] = [];
+const loadDateUtilsForArchive = () => import("../utils/dateUtils");
 
 /**
  * Empleados: única fuente = `useEmployeesQuery` (spec 032 T5).
@@ -210,6 +210,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         const assignmentsResponse = await shiftService.getAssignments();
         const allAssignments = assignmentsResponse.data;
         const employeeAssignments = allAssignments.filter((a) => a.employeeId === employee.id);
+        const { toBusinessDateChile } = await loadDateUtilsForArchive();
         const todayStr = toBusinessDateChile();
 
         const terminationPromises = employeeAssignments.map(async (assignment) => {

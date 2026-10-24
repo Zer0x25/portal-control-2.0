@@ -23,7 +23,7 @@ import {
   LeaveRecord,
 } from "../types/index";
 import { calculateHoursBetween } from "../utils/calculations";
-import { parseDateOnlyUTC } from "../utils/dateUtils";
+import { parseISODateAtUTC } from "../utils/dateOnly";
 
 const formatUTCDateOnly = (date: Date): string => {
   const year = date.getUTCFullYear();
@@ -187,8 +187,8 @@ export const useScheduling = (requestsStatus?: string, sinceRequests?: number) =
       };
     }
 
-    const assignmentStartDate = parseDateOnlyUTC(activeAssignment.startDate);
-    const targetDayUTC = parseDateOnlyUTC(targetDateString);
+    const assignmentStartDate = parseISODateAtUTC(activeAssignment.startDate);
+    const targetDayUTC = parseISODateAtUTC(targetDateString);
     const diffTime = targetDayUTC.getTime() - assignmentStartDate.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
     const dayInCycleIndex = diffDays % pattern.cycleLengthDays;

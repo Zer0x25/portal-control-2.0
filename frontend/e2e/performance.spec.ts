@@ -15,7 +15,7 @@ test.describe.serial("Render Performance", () => {
     await loginFast(page, request, "admin");
   });
 
-  test("Dashboard does not eagerly load the Time Control route bundle", async ({
+  test("Dashboard defers route, modal, and action-only timezone chunks", async ({
     page,
   }, testInfo) => {
     const scriptRequests: string[] = [];
@@ -52,6 +52,9 @@ test.describe.serial("Render Performance", () => {
         url,
       ),
     );
+    const eagerTimezoneChunks = scriptRequests.filter((url) =>
+      /\/assets\/(date-utils|dateUtils|formatters)-[^/?]+\.js(?:[?#]|$)/.test(url),
+    );
     const report = {
       capturedAt: new Date().toISOString(),
       baseUrl,
@@ -61,6 +64,7 @@ test.describe.serial("Render Performance", () => {
       scriptResources,
       eagerTimeControlChunks,
       eagerSecondaryModalChunks,
+      eagerTimezoneChunks,
     };
 
     await attachPerformanceReport(testInfo, "dashboard-eager-chunks.json", report);
@@ -71,6 +75,10 @@ test.describe.serial("Render Performance", () => {
     expect(
       eagerSecondaryModalChunks,
       "Dashboard should defer secondary modal controllers and their optional libraries",
+    ).toEqual([]);
+    expect(
+      eagerTimezoneChunks,
+      "Dashboard should load timezone helpers only when an action needs them",
     ).toEqual([]);
   });
 
