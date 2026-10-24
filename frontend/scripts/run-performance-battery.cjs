@@ -170,6 +170,15 @@ const readJsonFiles = (directory, predicate = () => true) => {
   }
 };
 
+const buildPerformanceEnvironment = (sourceEnv) => ({
+  ...sourceEnv,
+  E2E_BASE_URL: stagingUrl,
+  E2E_API_URL: apiUrl,
+  PERFORMANCE_RESULTS_DIR: playwrightResultsDirectory,
+  PERFORMANCE_SOURCE_SHA: sourceCommit ?? "unknown",
+  PERFORMANCE_REQUIRE_CLOCKING_OPTIONS_ENDPOINT: "1",
+});
+
 const routePathFor = (url) => {
   const parsed = new URL(url);
   return `${parsed.pathname}${parsed.hash}`;
@@ -301,13 +310,7 @@ const persistRunRecord = () => {
 };
 
 const main = async () => {
-  const env = {
-    ...process.env,
-    E2E_BASE_URL: stagingUrl,
-    E2E_API_URL: apiUrl,
-    PERFORMANCE_RESULTS_DIR: playwrightResultsDirectory,
-    PERFORMANCE_SOURCE_SHA: sourceCommit ?? "unknown",
-  };
+  const env = buildPerformanceEnvironment(process.env);
   let exitCode = 1;
 
   try {
@@ -434,4 +437,8 @@ if (require.main === module) {
   });
 }
 
-module.exports = { assertColdPriorityRouteCoverage, validateLighthouseStage };
+module.exports = {
+  assertColdPriorityRouteCoverage,
+  buildPerformanceEnvironment,
+  validateLighthouseStage,
+};
