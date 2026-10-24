@@ -24,6 +24,7 @@ Dentro:
 - Medir patrones compartidos de búsqueda, pestañas diferidas y apertura/cierre de paneles en rutas representativas, con tres repeticiones y sin enviar formularios.
 - Guardar cada ejecución completa como JSON versionado bajo `evidencia/runs/`, con identificación del build de staging, entorno, catálogo y estado de cada fase.
 - Medir Dashboard tres veces con storage del navegador limpio para distinguir la carga fría del resultado con estado persistido.
+- Repetir tres muestras frías para Worker Portal y Control horario después del experimento de Dashboard, con el rol catalogado para cada ruta.
 - Establecer una línea base del build actual y documentar los siguientes focos: (1) FCP/LCP fríos de Dashboard; (2) las otras vistas con TBT más alto y Kiosk, cuya ruta tiene la mediana más alta; (3) scroll virtualizado de Governance como control, con p95 33,4 ms y cero frames sobre 50 ms; (4) mantener bundle/precache bajo sus presupuestos existentes y volver a medirlos al intervenir chunks.
 - Mantener los presupuestos de bundle y las métricas Lighthouse ya existentes como capas complementarias de la batería.
 
@@ -35,19 +36,20 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [x] AC1: `npm run perf:staging` requiere Node 26, valida que el gateway y `/api/health` respondan 200; luego corre solo el proyecto Playwright `perf` con `--no-deps` y un worker, Lighthouse CI por las diecisiete rutas elegibles y tres muestras frías adicionales de Dashboard.
+- [x] AC1: `npm run perf:staging` requiere Node 26, valida que el gateway y `/api/health` respondan 200; luego corre solo el proyecto Playwright `perf` con `--no-deps` y un worker, Lighthouse CI por las diecisiete rutas elegibles, tres muestras frías adicionales de Dashboard y tres muestras frías para cada una de Worker Portal y Control horario.
 - [x] AC2: La medición de scroll realiza al menos 60 muestras de intervalos entre `requestAnimationFrame` dentro del navegador, verifica que la lista realmente tenga overflow, y reporta p50, p95, máximo, eventos de scroll y cantidad de filas renderizadas. El reporte avisa si p95 supera 50 ms y conserva un límite de fallo inicial de 250 ms para detectar pausas severas.
 - [x] AC3: Las dieciocho rutas del catálogo tienen tres mediciones en contextos de navegador nuevos y reportan cada muestra, mediana, máximo, rol y familia; Governance mide cinco transiciones y distingue la primera del comportamiento repetido.
-- [x] AC4: Cada prueba Playwright adjunta un JSON con timestamp, URL base, viewport, métrica y muestras; ambos perfiles Lighthouse conservan sus reportes bajo `frontend/.lighthouseci/`.
+- [x] AC4: Cada prueba Playwright adjunta un JSON con timestamp, URL base, viewport, métrica y muestras; los perfiles Lighthouse estándar y fríos conservan sus reportes bajo `frontend/.lighthouseci/`.
 - [x] AC5: La batería no crea, modifica ni elimina datos de negocio; usa navegación, autenticación seed, búsqueda local, cambio de pestaña, apertura/cierre del panel de lecturas y scroll, sin enviar formularios. Si el staging no tiene filas auditables/desplazables, falla con diagnóstico en vez de marcar la medición como exitosa sin datos.
 - [x] AC6: Se guarda evidencia del build actual con commit, estado de salud, salida de cada batería y sus límites; la evidencia distingue la métrica histórica de round-trip de la nueva métrica de frame.
 - [x] AC7: El perfil frío usa tres corridas seriales con `disableStorageReset: false`, no cambia los umbrales globales de Lighthouse y permite comparar FCP, LCP, TBT, solicitudes y bytes con el mismo método.
 - [x] AC8: Lighthouse selecciona una sesión autorizada para Worker Portal y detiene la medición si una ruta protegida aterriza en otra página.
-- [x] AC9: `frontend/performance-routes.json` es el catálogo único de 18 rutas; cada una declara familia, URL esperada, perfil de acceso, criterio de preparación y si admite Lighthouse. Un check verifica ids/rutas únicas, razones para las exclusiones y coherencia de ambas configuraciones Lighthouse.
+- [x] AC9: `frontend/performance-routes.json` es el catálogo único de 18 rutas; cada una declara familia, URL esperada, perfil de acceso, criterio de preparación y si admite Lighthouse. Un check verifica ids/rutas únicas, razones para las exclusiones y coherencia de las tres configuraciones Lighthouse, incluidos los perfiles fríos por ruta.
 - [x] AC10: Cada ejecución escribe un archivo nuevo en `evidencia/runs/<runId>.json` con `schemaVersion`, commit y estado del checkout, id de imagen de staging, entorno, rutas/familias, fases, métricas y error si una fase falla. El formato está documentado en `evidencia/runs/README.md`.
 - [x] AC11: Las pruebas representativas repiten tres veces búsquedas locales, pestañas diferidas y el ciclo abrir/cerrar del formulario, y guardan muestras, mediana, p95 y máximo por interacción.
 - [x] AC12: Login permanece en Playwright, pero se excluye de Lighthouse tras reproducir `NO_FCP` con las variantes móvil y desktop mientras Chromium muestra el contenido. La limitación queda documentada en el catálogo y en evidencia; las otras 17 rutas sí generan métricas Lighthouse.
 - [x] AC13: El adaptador Lighthouse usa el contrato Puppeteer `waitForFunction(función, opciones, argumentos)`, exige un shell presente para rutas protegidas y adjunta ruta/rol observados al fallar sin exponer tokens.
+- [x] AC14: Cada registro de la batería conserva tres muestras Lighthouse frías y con ruta validada para Worker Portal y Control horario; el perfil de Worker Portal autentica el rol `worker` y el de Control horario usa `admin`.
 
 ## Restricciones
 
@@ -58,5 +60,5 @@ Fuera (explícito):
 
 ## Trazabilidad
 
-- Tests que lo probarán: `frontend/e2e/performance.spec.ts`, `frontend/scripts/run-performance-battery.cjs`, `frontend/scripts/check-performance-routes.cjs`, Lighthouse CI y `frontend/scripts/check-bundle-budget.cjs`.
+- Tests que lo probarán: `frontend/e2e/performance.spec.ts`, `frontend/scripts/run-performance-battery.cjs`, `frontend/scripts/run-performance-battery.test.cjs`, `frontend/scripts/check-performance-routes.cjs`, Lighthouse CI y `frontend/scripts/check-bundle-budget.cjs`.
 - Docs/evidencia: `./plan.md`, `./tasks.md`, `./evidencia/diagnostico-previo-2026-10-23.md`, `./evidencia/baseline-2026-10-23.md`, `./evidencia/seguimiento-dashboard-2026-10-23.md`, `./evidencia/expansion-rutas-2026-10-23.md` y los registros de `./evidencia/runs/`.

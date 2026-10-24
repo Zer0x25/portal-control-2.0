@@ -212,6 +212,199 @@ test.describe.serial("Render Performance", () => {
     }
   });
 
+  test("Dashboard critical shell stays styled until the full stylesheet is ready", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const indexResponse = await request.get(baseUrl);
+    test.skip(
+      !(await indexResponse.text()).includes('rel="stylesheet"'),
+      "Critical stylesheet handoff is verified against the production build.",
+    );
+
+    for (const theme of ["light", "dark"] as const) {
+      const context = await browser.newContext({
+        viewport: { width: 412, height: 823 },
+        serviceWorkers: "block",
+      });
+      let releaseCss: (() => void) | undefined;
+      try {
+        const page = await context.newPage();
+        await page.addInitScript((storedTheme) => {
+          localStorage.setItem("app-theme", storedTheme);
+        }, theme);
+        await loginFast(page, request, "admin");
+
+        const cssGate = new Promise<void>((resolve) => {
+          releaseCss = resolve;
+        });
+        await page.route("**/assets/index-*.css", async (route) => {
+          await cssGate;
+          await route.continue();
+        });
+        await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "commit" });
+
+        const shell = page.locator("#dashboard-bootstrap-shell");
+        await expect(shell).toBeVisible({ timeout: 15_000 });
+        const criticalStyle = await page.evaluate(() => {
+          const shellElement = document.querySelector<HTMLElement>("#dashboard-bootstrap-shell");
+          const card = shellElement?.querySelector<HTMLElement>("section");
+          const rect = card?.getBoundingClientRect();
+          const stylesheet = document.querySelector<HTMLLinkElement>(
+            'link[rel="stylesheet"][href*="/assets/index-"]',
+          );
+          return {
+            dark: document.documentElement.classList.contains("dark"),
+            media: stylesheet?.media ?? null,
+            background: shellElement ? getComputedStyle(shellElement).backgroundColor : null,
+            color: shellElement ? getComputedStyle(shellElement).color : null,
+            cardBackground: card ? getComputedStyle(card).backgroundColor : null,
+            cardWidth: rect?.width ?? 0,
+            cardRight: rect?.right ?? 0,
+          };
+        });
+
+        expect(criticalStyle.media).toBe("print");
+        expect(criticalStyle.dark).toBe(theme === "dark");
+        expect(criticalStyle.background).toBe(
+          theme === "dark" ? "rgb(2, 6, 23)" : "rgb(240, 242, 245)",
+        );
+        expect(criticalStyle.color).toBe(
+          theme === "dark" ? "rgb(248, 250, 252)" : "rgb(15, 23, 42)",
+        );
+        expect(criticalStyle.cardBackground).toBe(
+          theme === "dark" ? "rgb(15, 23, 42)" : "rgb(253, 251, 247)",
+        );
+        expect(criticalStyle.cardWidth).toBeGreaterThan(0);
+        expect(criticalStyle.cardRight).toBeLessThanOrEqual(412);
+        await testInfo.attach(`dashboard-critical-${theme}.png`, {
+          body: await page.screenshot(),
+          contentType: "image/png",
+        });
+
+        releaseCss();
+        await expect(page.locator('#root [data-testid="server-clock"]')).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(shell).toHaveCount(0);
+        await expect
+          .poll(() =>
+            page
+              .locator('link[rel="stylesheet"][href*="/assets/index-"]')
+              .evaluate((link) => (link as HTMLLinkElement).media),
+          )
+          .toBe("all");
+      } finally {
+        releaseCss?.();
+        await context.close();
+      }
+    }
+  });
+
+  test("non-Dashboard content stays hidden until the full stylesheet is applied", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const indexResponse = await request.get(baseUrl);
+    test.skip(
+      !(await indexResponse.text()).includes('rel="stylesheet"'),
+      "Stylesheet handoff is verified against the production build.",
+    );
+
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      serviceWorkers: "block",
+    });
+    let releaseCss: (() => void) | undefined;
+    try {
+      const page = await context.newPage();
+      await page.addInitScript(() => {
+        localStorage.setItem("app-theme", "dark");
+      });
+      await loginFast(page, request, "admin");
+      const cssGate = new Promise<void>((resolve) => {
+        releaseCss = resolve;
+      });
+      await page.route("**/assets/index-*.css", async (route) => {
+        await cssGate;
+        await route.continue();
+      });
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "commit" });
+
+      const stylesheet = page.locator('link[rel="stylesheet"][href*="/assets/index-"]');
+      await expect(stylesheet).toHaveAttribute("media", "all");
+      await page.waitForTimeout(150);
+      const beforeStyles = await page.evaluate(() => ({
+        rootVisibility: getComputedStyle(document.getElementById("root")!).visibility,
+        bodyMargin: getComputedStyle(document.body).margin,
+        bodyBackground: getComputedStyle(document.body).backgroundColor,
+      }));
+      expect(beforeStyles).toEqual({
+        rootVisibility: "hidden",
+        bodyMargin: "0px",
+        bodyBackground: "rgb(2, 6, 23)",
+      });
+      await expect(page.getByTestId("main-content")).not.toBeVisible();
+      await testInfo.attach("time-control-before-global-css.png", {
+        body: await page.screenshot(),
+        contentType: "image/png",
+      });
+
+      releaseCss();
+      await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await expect
+        .poll(() => page.locator("#root").evaluate((root) => getComputedStyle(root).visibility))
+        .toBe("visible");
+      expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(
+        true,
+      );
+    } finally {
+      releaseCss?.();
+      await context.close();
+    }
+  });
+
+  test("Dashboard bootstrap timeout reveals the app if stylesheet loading stalls", async ({
+    browser,
+    request,
+  }) => {
+    const indexResponse = await request.get(baseUrl);
+    test.skip(
+      !(await indexResponse.text()).includes('rel="stylesheet"'),
+      "Stylesheet handoff is verified against the production build.",
+    );
+
+    const context = await browser.newContext({
+      viewport: { width: 412, height: 823 },
+      serviceWorkers: "block",
+    });
+    let releaseCss: (() => void) | undefined;
+    try {
+      const page = await context.newPage();
+      await page.addInitScript(() => {
+        localStorage.setItem("app-theme", "dark");
+      });
+      await loginFast(page, request, "admin");
+      await page.clock.install();
+      const cssGate = new Promise<void>((resolve) => {
+        releaseCss = resolve;
+      });
+      await page.route("**/assets/index-*.css", async (route) => {
+        await cssGate;
+        await route.continue();
+      });
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "commit" });
+
+      await expect(page.locator("#dashboard-bootstrap-shell")).toBeVisible();
+      await page.clock.fastForward(8_001);
+      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#root")).toHaveCSS("visibility", "visible");
+    } finally {
+      releaseCss?.();
+      await context.close();
+    }
+  });
+
   test("Dashboard bootstrap stays absent without a Dashboard session or route", async ({
     browser,
     request,
@@ -233,6 +426,13 @@ test.describe.serial("Render Performance", () => {
       await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
       await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
       await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await expect
+        .poll(() =>
+          page
+            .locator('link[rel="stylesheet"][href*="/assets/index-"]')
+            .evaluate((link) => (link as HTMLLinkElement).media),
+        )
+        .toBe("all");
     } finally {
       await authenticatedContext.close();
     }

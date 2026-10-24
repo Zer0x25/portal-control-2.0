@@ -1,6 +1,7 @@
 const { createHash } = require("node:crypto");
 const { readFileSync } = require("node:fs");
 const path = require("node:path");
+const { minifySync } = require("vite");
 
 const useBuiltHtml = process.argv.includes("--dist");
 const frontendRoot = path.resolve(__dirname, "..");
@@ -18,7 +19,27 @@ if (!inlineScript) {
   throw new Error(`Dashboard bootstrap script was not found in ${htmlPath}`);
 }
 
-const hash = createHash("sha256").update(inlineScript[1]).digest("base64");
+if (!html.includes('id="dashboard-bootstrap-critical"')) {
+  throw new Error(`Dashboard critical CSS was not found in ${htmlPath}`);
+}
+
+if (useBuiltHtml) {
+  const stylesheet = html.match(/<link\b(?=[^>]*\brel="stylesheet")[^>]*>/);
+  if (!stylesheet || !/\bmedia="print"/.test(stylesheet[0])) {
+    throw new Error("Built Dashboard stylesheet must start with media=print for critical handoff");
+  }
+  if (!/\bfetchpriority="high"/.test(stylesheet[0])) {
+    throw new Error("Built stylesheet must keep high fetch priority while critical CSS renders");
+  }
+}
+
+const scriptForHash = useBuiltHtml
+  ? inlineScript[1]
+  : minifySync("dashboard-bootstrap.js", inlineScript[1], {
+      compress: true,
+      mangle: true,
+    }).code.trim();
+const hash = createHash("sha256").update(scriptForHash).digest("base64");
 const allowedHash = `'sha256-${hash}'`;
 const scriptPolicies = [...nginxConfig.matchAll(/script-src ([^;]+);/g)].map((match) => match[1]);
 
@@ -36,5 +57,5 @@ if (scriptPolicies.some((policy) => policy.trim() !== expectedScriptPolicy)) {
 }
 
 process.stdout.write(
-  `[BOOTSTRAP-CSP] ${useBuiltHtml ? "dist" : "source"} hash matches both policies.\n`,
+  `[BOOTSTRAP-CSP] ${useBuiltHtml ? "dist" : "build-transformed source"} hash matches both policies.\n`,
 );

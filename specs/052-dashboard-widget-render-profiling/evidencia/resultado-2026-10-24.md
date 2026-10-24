@@ -39,9 +39,9 @@ La variación de una muestra de `latestReports` llegó a 3,1 ms; su mediana fue 
 
 No hacer un cambio de producto basado en este perfil: no hay un widget dominante y los widgets no se vuelven a renderizar en estas capturas. La instrumentación sí deja una herramienta para repetir el diagnóstico por ruta.
 
-El trace frío de staging ya está registrado en el [diagnóstico de Spec 039](../../039-frontend-performance-battery/evidencia/diagnostico-dashboard-carga-fria-2026-10-24.md). Mantiene LCP simulado mediano en 2.558 ms; el trace Chromium sin throttle observa 116 ms para el shell inicial. Lighthouse estima 450 ms de ahorro en FCP/LCP por el CSS bloqueante, pero el ahorro aún no se ha medido y el auditor no encontró CSS sin uso.
+El trace frío de staging y el resultado del experimento CSS están registrados en el [diagnóstico de Spec 039](../../039-frontend-performance-battery/evidencia/diagnostico-dashboard-carga-fria-2026-10-24.md) y su [seguimiento de CSS crítico](../../039-frontend-performance-battery/evidencia/seguimiento-css-critico-2026-10-24.md). El handoff redujo las medianas frías de FCP/LCP en 435/304 ms y pasó las guardas visuales clara, oscura, de ruta y timeout. TBT mediano subió 57 ms; una muestra llegó a 413 ms y el informe conserva esa señal.
 
-El siguiente experimento será aislar CSS crítico mínimo para el shell y medir tres muestras frías con regresión visual clara/oscura. Después se repetirán tres muestras para Worker Portal y Control horario, cuyos LCP observados superaron 1.500 ms en la pasada estándar de una muestra por ruta.
+La siguiente ruta será Control horario, con LCP frío mediano de 6.473 ms y TBT de 232 ms en tres muestras. Su trace de Lighthouse marca `react-core` como principal costo de CPU (cerca de 2,0 s atribuidos), demora de render mediana de 1.675 ms y una cadena de dependencias mediana de 763 ms; primero hay que perfilar qué módulos y trabajo de montaje dominan esa ruta. Gestión de personal queda como siguiente señal de TBT con 295 ms en la medición estándar.
 
 ## Validación
 

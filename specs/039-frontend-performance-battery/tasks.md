@@ -18,3 +18,4 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita explícitamente
 - [x] T12: Ejecutar la batería ampliada contra staging y guardar su registro como evidencia (AC1, AC3, AC4, AC6, AC9–AC11).
 - [x] T13: Investigar el error Lighthouse `NO_FCP` del login en ambos presets; conservar su cobertura Playwright y excluirlo explícitamente del conjunto Lighthouse (AC9, AC12).
 - [x] T14: Corregir el orden de argumentos Puppeteer detectado durante spec 040, exigir shell existente, reproducir Worker Portal antes/después y repetir la batería con diagnóstico de ruta/rol (AC8, AC13).
+- [x] T15: Añadir a la batería tres muestras frías para Worker Portal y Control horario, validar sus rutas/roles y guardar las seis métricas Lighthouse en el registro versionado (AC1, AC4, AC9, AC10, AC14).

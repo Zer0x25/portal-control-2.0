@@ -2,6 +2,7 @@ const stagingUrl = "http://127.0.0.1:8080";
 const routes = require("../performance-routes.json");
 const standardConfig = require("../.lighthouserc.json");
 const coldConfig = require("../.lighthouserc-dashboard-cold.json");
+const priorityColdConfig = require("../.lighthouserc-priority-cold.json");
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
@@ -49,6 +50,23 @@ assert(dashboardUrl, "Dashboard is missing from the route catalog");
 assert(
   JSON.stringify(coldConfig.ci.collect.url) === JSON.stringify([dashboardUrl]),
   "The cold Lighthouse profile must target only Dashboard",
+);
+
+const priorityRouteIds = ["worker-portal", "time-control"];
+const priorityRoutes = priorityRouteIds.map((id) => {
+  const route = routes.find((candidate) => candidate.id === id);
+  assert(route?.lighthouse, `Cold priority route ${id} must remain Lighthouse eligible`);
+  assert(route.role !== null, `Cold priority route ${id} must seed an authenticated role`);
+  return route;
+});
+const priorityUrls = priorityRoutes.map((route) => new URL(route.path, stagingUrl).toString());
+assert(
+  JSON.stringify(priorityColdConfig.ci.collect.url) === JSON.stringify(priorityUrls),
+  "Cold priority Lighthouse URLs must match Worker Portal and Time Control in the route catalog",
+);
+assert(
+  priorityColdConfig.ci.collect.numberOfRuns === 3,
+  "Cold priority Lighthouse profile must collect three runs per route",
 );
 
 process.stdout.write(

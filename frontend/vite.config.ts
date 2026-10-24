@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv, type Plugin } from "vite";
+import { defineConfig, loadEnv, minifySync, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -41,6 +41,49 @@ const fontPreloadPlugin = (): Plugin => ({
       injectTo: "head-prepend" as const,
     };
     return { html, tags: [tag] };
+  },
+});
+
+const dashboardCriticalCssPlugin = (): Plugin => ({
+  name: "dashboard-critical-css-handoff",
+  apply: "build",
+  transformIndexHtml: {
+    order: "post",
+    handler(html) {
+      const bootstrapPattern = /<script id="dashboard-bootstrap-script">([\s\S]*?)<\/script>/;
+      const bootstrap = html.match(bootstrapPattern);
+      const stylesheets = html.match(/<link\b(?=[^>]*\brel="stylesheet")[^>]*>/g) ?? [];
+
+      if (!bootstrap) throw new Error("Dashboard bootstrap script is missing from built HTML");
+      if (stylesheets.length !== 1) {
+        throw new Error(`Expected one built stylesheet link; found ${stylesheets.length}`);
+      }
+      if (!html.includes('id="dashboard-bootstrap-critical"')) {
+        throw new Error("Dashboard critical CSS is missing from built HTML");
+      }
+
+      const minifiedBootstrap = minifySync("dashboard-bootstrap.js", bootstrap[1], {
+        compress: true,
+        mangle: true,
+      });
+      if (minifiedBootstrap.errors.length > 0) {
+        throw new Error("Could not minify the Dashboard bootstrap script");
+      }
+      const compactBootstrap = minifiedBootstrap.code.trim();
+      const compactHtml = html.replace(
+        bootstrapPattern,
+        `<script id="dashboard-bootstrap-script">${compactBootstrap}</script>`,
+      );
+      const stylesheet = stylesheets[0];
+      if (/\bmedia=/.test(stylesheet)) {
+        throw new Error("Built stylesheet must not define a media attribute before handoff");
+      }
+
+      return compactHtml.replace(
+        stylesheet,
+        stylesheet.replace(/>$/, ' media="print" fetchpriority="high">'),
+      );
+    },
   },
 });
 
@@ -88,6 +131,7 @@ export default defineConfig(({ mode }) => {
       // Recoverable bail-outs are emitted by the plugin for auditability.
       react({ compiler: { reportDiagnostics: true } }),
       fontPreloadPlugin(),
+      dashboardCriticalCssPlugin(),
       ...(!isStorybook
         ? [
             VitePWA({

@@ -10,7 +10,7 @@
 - `target`: staging local, id de imagen frontend de Docker cuando está disponible y códigos de salud.
 - `runtime`: sistema, arquitectura, Node, Chromium y viewport.
 - `routeCatalog`: rutas identificadas por id, agrupación por familia, perfil de acceso e interacciones medidas.
-- `stages`: resultado, tiempos y códigos de salida de validación del catálogo, Playwright, Lighthouse estándar y Lighthouse frío. Incluye los reportes JSON de Playwright y métricas Lighthouse resumidas por ruta. Desde spec 041, `harnessValidation` ejecuta primero las regresiones del preparador de sesión; el campo no existe en corridas anteriores.
+- `stages`: resultado, tiempos y códigos de salida de validación del catálogo, Playwright, Lighthouse estándar, Dashboard frío y rutas prioritarias frías. Incluye los reportes JSON de Playwright y métricas Lighthouse resumidas por ruta. `lighthouseColdDashboard.samples` contiene tres muestras; `lighthouseColdPriorityRoutes.samples` contiene tres muestras para cada una de Worker Portal y Control horario. Desde spec 041, `harnessValidation` ejecuta primero las regresiones del preparador de sesión; el campo no existe en corridas anteriores.
 - Cada muestra Lighthouse conserva `metrics` del modelo simulado de Lighthouse y `observed` del trace Chromium sin throttle. No comparar ambos grupos como si midieran el mismo modo: `observed.lcpPhasesMs`, `network`, `mainThread` y `opportunities` explican el trace; `metrics` mantiene la puntuación con el perfil mobile definido por Lighthouse.
 - `network.apiRequests` y las rutas de recursos omiten query strings para no guardar filtros, identificadores o credenciales que pudieran aparecer en URLs. Tiempos de solicitudes, tareas largas y fases LCP son observaciones del trace; oportunidades de CSS/JavaScript son estimaciones del Lighthouse simulado.
 - `failure`: primera excepción del runner, si la ejecución falló fuera de una fase con código de salida.
@@ -20,6 +20,12 @@ Los resultados son evidencia de una corrida, no una comparación causal. Antes d
 Desde el cierre de spec 041, `lighthouseStandard.routeAssertions` comprueba los umbrales agrupando por `finalDisplayedUrl` (incluido hash). LHCI usa `finalUrl`, sin fragmento, y agrupaba las 17 rutas como una URL: su aprobación no demostraba los umbrales de cada ruta. Las mediciones históricas siguen siendo válidas; no interpretar su fase estándar aprobada como un gate individual por ruta. El lote `2026-10-23T15-01-52-304Z-45138318` se revalidó con el nuevo gate después de capturarse: 17 rutas, 85 aserciones aprobadas; evidencia suplementaria en spec 041. Los próximos lotes ejecutan esta comprobación antes de guardar el resultado global y fallan si alguna ruta incumple.
 
 Las mediciones de interacción distinguen la primera activación de sus repeticiones. El primer cambio puede incluir la descarga y evaluación de un chunk diferido; las siguientes transiciones miden el comportamiento con ese chunk ya cargado. Para búsquedas, la primera muestra incluye el render del estado vacío.
+
+## Corridas del 2026-10-24
+
+- `2026-10-24T06-17-37-339Z-465361c6.json` y `2026-10-24T06-35-12-796Z-465361c6.json` completaron las fases registradas antes de probar el bloqueo de CSS en navegador. La inspección encontró que podían mostrar una ruta ajena al Dashboard sin estilos; conservar los JSON como evidencia histórica, pero no usarlos para aceptar una mejora ni como referencia visual.
+- `2026-10-24T06-57-55-919Z-465361c6.json` midió el handoff antes del último ajuste de fallback por timeout. Se conserva como corrida intermedia; la corrida siguiente usa el digest final y añade la prueba de ese fallback.
+- `2026-10-24T07-19-00-817Z-465361c6.json` es la corrida final. Playwright pasó 13/13; Lighthouse estándar validó 17 rutas con 85/85 aserciones; Dashboard, Worker Portal y Control horario tienen tres muestras frías con ruta validada cada uno. Worker Portal usó `worker` y Control horario `admin`. El resultado comparativo está en [`../seguimiento-css-critico-2026-10-24.md`](../seguimiento-css-critico-2026-10-24.md).
 
 ## Correcciones de captura
 

@@ -22,6 +22,7 @@ Dentro:
 - Mantenerla fuera del root de React y retirarla al aparecer la vista de Dashboard.
 - Medir FCP, LCP y ciclo de vida del shell en tres muestras frías de staging.
 - Comparar el resultado con el baseline persistido de Spec 049.
+- Separar el CSS mínimo del shell del CSS completo, manteniendo la hoja completa como asset estático externo para todas las rutas.
 
 Fuera (explícito):
 
@@ -36,6 +37,8 @@ Fuera (explícito):
 - [x] AC3: La prueba Playwright guarda FCP, LCP, momento de visibilidad del reloj real y eventos de aparición/eliminación del shell en tres muestras móviles frías.
 - [x] AC4: En staging, la mediana de LCP frío mejora al menos 10% frente a 5.179,54 ms y FCP no empeora frente a 3.642,41 ms. TBT se mide y se reporta en todas las muestras, pero no es un gate duro mientras el historial de Spec 039 lo considera variable y no tiene aserción configurada.
 - [x] AC5: La batería estándar conserva las 18 rutas, sus 85 aserciones y el perfil visual; `dist/index.html` permanece bajo 5 KB, el shell no añade solicitudes de red y CSP permite solo el hash SHA-256 exacto sin `unsafe-inline` en `script-src`.
+- [x] AC6: El shell crítico del Dashboard se pinta con CSS inline mínimo mientras la hoja completa permanece externa; el root de las demás rutas no se revela hasta aplicar esa hoja. Playwright verifica el shell claro/oscuro, una ruta no Dashboard con CSS retenido y el fallback del timeout si la carga de CSS del Dashboard se estanca; el build conserva `dist/index.html` bajo 5 KiB y comprueba el hash CSP exacto.
+- [x] AC7: Frente al baseline post-shell `2026-10-24T05-47-44-993Z-90a9f766`, tres muestras frías de staging reducen las medianas de FCP y LCP al menos 250 ms cada una y validan la ruta Dashboard. TBT se mide y reporta, pero no es un gate porque la evidencia de Spec 039 documenta variación alta entre corridas.
 
 Nota de método: el borrador inicial fijó TBT en 151,25 ms (+10% del baseline).
 Se retiró ese gate provisional al contrastarlo con la evidencia de Spec 039, que

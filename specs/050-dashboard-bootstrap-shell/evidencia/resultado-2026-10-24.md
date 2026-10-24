@@ -91,6 +91,21 @@ tareas que retrasan la disponibilidad real del Dashboard. Lighthouse reportó
 TBT mediano 171 ms en seis muestras, y una carga lenta llegó a 204 ms. El
 shell adelanta la pintura genérica; no reemplaza una mejora de interactividad.
 
+## Seguimiento: handoff de CSS crítico
+
+El handoff de la hoja completa pasó el umbral pactado: contra el run pre-handoff
+`2026-10-24T05-47-44-993Z-90a9f766`, las tres muestras frías redujeron FCP
+mediano de 2.462 a 2.027 ms y LCP de 2.558 a 2.254 ms. TBT mediano subió de
+187 a 244 ms; una muestra llegó a 413 ms. Se reporta como señal variable, no
+como gate. El tamaño final de HTML es 5.076 bytes y las guardas de estilos y
+timeout pasaron.
+
+El registro, datos por muestra y limitaciones están en [seguimiento CSS crítico
+de Spec 039](../../039-frontend-performance-battery/evidencia/seguimiento-css-critico-2026-10-24.md).
+La próxima ruta para investigar es Control horario: LCP frío mediano de
+6.473 ms, con demora de render observada de 1.675 ms; luego revisar Gestión de
+personal por el TBT estándar más alto, 295 ms.
+
 ## Validación ejecutada
 
 ```bash

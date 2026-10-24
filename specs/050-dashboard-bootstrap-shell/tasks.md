@@ -9,3 +9,4 @@ Reglas: una tarea = un PR revisable o un commit. Cada tarea cita su AC.
 - [x] T3: Ejecutar las tres muestras frías y la batería completa; conservar solo si cumple la mejora de Lighthouse (AC3, AC4, AC5).
 - [x] T4: Guardar comparación, hashes, límites y comandos de validación (AC4, AC5).
 - [x] T5: Ejecutar preflight frontend y gates de gobierno antes del commit (AC1–AC5).
+- [x] T6: Añadir el handoff de CSS crítico, proteger Dashboard claro/oscuro, mantener ocultas las demás rutas y verificar el fallback del timeout antes de conservarlo tras las tres mediciones frías (AC6, AC7).

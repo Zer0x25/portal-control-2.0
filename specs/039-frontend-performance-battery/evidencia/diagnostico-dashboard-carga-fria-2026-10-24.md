@@ -58,6 +58,12 @@ El perfil Lighthouse estándar midió cada ruta una vez. Son señales para repet
 
 Estas dos rutas muestran mayor LCP observado que el resto del catálogo y pasan a una repetición fría de tres muestras antes de atribuir la demora a sus componentes.
 
-## Siguiente experimento
+## Resultado del experimento CSS crítico
 
-Primero se comprobará la cadena CSS del shell del Dashboard con un experimento de CSS crítico mínimo. La aceptación exige bajar al menos 250 ms la mediana del FCP/LCP simulado en tres muestras frías, mantener la aparición del contenido Dashboard y aprobar la regresión visual clara/oscura. El tamaño de `dist/index.html` debe seguir bajo 5 KB y el CSS completo debe seguir disponible para todas las rutas. Luego se repetirá Lighthouse frío para Worker Portal y Control horario, con tres muestras cada uno.
+El seguimiento [`seguimiento-css-critico-2026-10-24.md`](./seguimiento-css-critico-2026-10-24.md) conserva el handoff: en tres muestras frías, Dashboard redujo la mediana de FCP en 435 ms y LCP en 304 ms frente al registro `2026-10-24T05-47-44-993Z-90a9f766`. TBT mediano subió de 187 a 244 ms, con una muestra en 413 ms; queda visible como señal de seguimiento y no como gate por la variación histórica. Las pruebas de tema claro/oscuro, contenido no Dashboard con CSS retenido y recuperación por timeout pasaron; el HTML de salida quedó en 5.076 bytes.
+
+La batería nueva también completó tres capturas frías por ruta para Worker Portal y Control horario y validó sus roles. Los registros previos `06-17` y `06-35` se mantienen como exploratorios: la inspección manual encontró que mostraban una ruta sin estilos antes de añadir el guard correspondiente.
+
+## Siguiente foco
+
+Perfilar Control horario antes de cambiar código. Sus medianas frías son FCP 4.353 ms, LCP 6.473 ms y TBT 232 ms, con score Lighthouse 0,62 y 107 solicitudes; es la peor carga fría del grupo. El trace observado da LCP mediano de 1.678 ms, casi todo en demora de render del elemento; `react-core` se asocia a cerca de 2,0 s de CPU y a una tarea de 331 ms en la muestra más lenta. Worker Portal quedó en LCP 5.646 ms. En la pasada estándar, Dashboard tuvo TBT 306 ms, Gestión de personal 295 ms, Worker Portal 253 ms y Control horario 225,5 ms; conviene tratar este perfil como variable mientras no se configure un gate de TBT.

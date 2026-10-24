@@ -107,6 +107,7 @@ const record = {
     playwright: { status: "not-run", reports: [] },
     lighthouseStandard: { status: "not-run", routes: [] },
     lighthouseColdDashboard: { status: "not-run", samples: [] },
+    lighthouseColdPriorityRoutes: { status: "not-run", samples: [] },
   },
   failure: null,
 };
@@ -174,6 +175,33 @@ const routePathFor = (url) => {
   return `${parsed.pathname}${parsed.hash}`;
 };
 
+const assertColdPriorityRouteCoverage = (reports) => {
+  const expectedSamples = new Map([
+    ["worker-portal", 3],
+    ["time-control", 3],
+  ]);
+  const counts = new Map([...expectedSamples.keys()].map((routeId) => [routeId, 0]));
+
+  for (const report of reports) {
+    if (!expectedSamples.has(report.routeId)) {
+      throw new Error(`Unexpected route in cold priority profile: ${report.routeId}`);
+    }
+    if (!report.routeMatched) {
+      throw new Error(`Cold priority Lighthouse route did not match: ${report.routeId}`);
+    }
+    counts.set(report.routeId, counts.get(report.routeId) + 1);
+  }
+
+  if (
+    reports.length !== 6 ||
+    [...expectedSamples].some(([routeId, count]) => counts.get(routeId) !== count)
+  ) {
+    throw new Error(
+      `Cold priority profile expected three matched samples for Worker Portal and Time Control; found ${JSON.stringify(Object.fromEntries(counts))}`,
+    );
+  }
+};
+
 const collectRawLighthouseReports = (startedAtIso, completedAtIso) => {
   const startedAtMs = new Date(startedAtIso).getTime();
   const completedAtMs = new Date(completedAtIso).getTime();
@@ -191,7 +219,7 @@ const collectLighthouseReports = (startedAtIso, completedAtIso, profile) =>
     .sort((left, right) => left.requestedPath.localeCompare(right.requestedPath));
 
 const validateLighthouseStage = (stageName, stage) => {
-  const profile = stageName === "lighthouseColdDashboard" ? "cold" : "warm";
+  const profile = stageName.startsWith("lighthouseCold") ? "cold" : "warm";
   const reports = collectLighthouseReports(stage.startedAt, stage.completedAt, profile);
   if (stageName === "lighthouseColdDashboard") {
     stage.samples = reports;
@@ -203,6 +231,11 @@ const validateLighthouseStage = (stageName, stage) => {
         `Cold Dashboard profile expected 3 dashboard reports; found ${reports.length}`,
       );
     }
+    return;
+  }
+  if (stageName === "lighthouseColdPriorityRoutes") {
+    stage.samples = reports;
+    assertColdPriorityRouteCoverage(reports);
     return;
   }
 
@@ -236,7 +269,11 @@ const persistRunRecord = () => {
   record.completedAt = new Date().toISOString();
   record.stages.playwright.reports = readJsonFiles(playwrightResultsDirectory);
 
-  for (const stageName of ["lighthouseStandard", "lighthouseColdDashboard"]) {
+  for (const stageName of [
+    "lighthouseStandard",
+    "lighthouseColdDashboard",
+    "lighthouseColdPriorityRoutes",
+  ]) {
     const stage = record.stages[stageName];
     if (stage.startedAt && stage.completedAt) {
       try {
@@ -288,6 +325,7 @@ const main = async () => {
         path.join(frontendRoot, "scripts", "lhci-puppeteer.test.cjs"),
         path.join(frontendRoot, "scripts", "assert-performance-routes.test.cjs"),
         path.join(frontendRoot, "scripts", "lighthouse-report.test.cjs"),
+        path.join(frontendRoot, "scripts", "run-performance-battery.test.cjs"),
       ],
       env,
     );
@@ -350,6 +388,24 @@ const main = async () => {
             ],
             env,
           );
+
+          if (exitCode === 0) {
+            const priorityStage = record.stages.lighthouseColdPriorityRoutes;
+            process.stdout.write(
+              "[PERF] Running three cold Lighthouse samples for Worker Portal and Time Control.\n",
+            );
+            exitCode = runStage(
+              priorityStage,
+              "npx",
+              [
+                "lhci",
+                "autorun",
+                "--config=.lighthouserc-priority-cold.json",
+                `--collect.chromePath=${chromePath}`,
+              ],
+              env,
+            );
+          }
         }
       }
     }
@@ -378,4 +434,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { validateLighthouseStage };
+module.exports = { assertColdPriorityRouteCoverage, validateLighthouseStage };

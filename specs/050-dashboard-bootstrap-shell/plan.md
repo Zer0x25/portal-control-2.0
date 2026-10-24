@@ -15,17 +15,20 @@ con Lighthouse sigue siendo la puerta para conservar el cambio.
 4. Retirarla cuando aparezca el reloj real, al cambiar de ruta o al vencer el límite de seguridad.
 5. Ejecutar primero la prueba dirigida, luego la batería completa y comparar tres muestras Lighthouse frías contra Spec 049. Si TBT varía entre corridas, repetir la batería y reportar ambas series y la mediana conjunta de seis muestras.
 6. Conservar el cambio solo si cumple los presupuestos de mejora; registrar los reportes y el hash de imagen de staging.
+7. En el seguimiento, diferir la aplicación de la hoja completa con `media="print"` y alta prioridad, mostrar el shell con CSS crítico mínimo, ocultar otras rutas hasta que la hoja esté lista y repetir la batería. Retener el handoff solo con al menos 250 ms de mejora mediana en FCP y LCP, shell visualmente correcto y ninguna ruta sin estilo; registrar TBT para seguimiento sin usarlo como gate mientras la batería no tenga umbral de regresión.
 
 ## Archivos a tocar
 
-| Archivo                                                                 | Cambio                                                                   |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `frontend/index.html`                                                   | Shell liviano fuera del root de React, visibilidad de ruta y hora local. |
-| `frontend/nginx.conf`                                                   | SHA-256 exacto del script inline en las políticas CSP existentes.        |
-| `frontend/scripts/check-bootstrap-csp.cjs`                              | Falla si el hash HTML y las dos políticas Nginx dejan de coincidir.      |
-| `frontend/package.json`                                                 | Ejecuta el check del hash antes y después del build.                     |
-| `frontend/e2e/performance.spec.ts`                                      | Medición de FCP/LCP y ciclo de vida en tres contextos fríos.             |
-| `specs/050-dashboard-bootstrap-shell/evidencia/resultado-2026-10-24.md` | Resultado, comparación, entorno y límites.                               |
+| Archivo                                                                 | Cambio                                                                           |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `frontend/index.html`                                                   | Shell liviano fuera del root de React, visibilidad de ruta y hora local.         |
+| `frontend/nginx.conf`                                                   | SHA-256 exacto del script inline en las políticas CSP existentes.                |
+| `frontend/scripts/check-bootstrap-csp.cjs`                              | Falla si el hash HTML y las dos políticas Nginx dejan de coincidir.              |
+| `frontend/package.json`                                                 | Ejecuta el check del hash antes y después del build.                             |
+| `frontend/e2e/performance.spec.ts`                                      | Medición de FCP/LCP y ciclo de vida en tres contextos fríos.                     |
+| `frontend/vite.config.ts`                                               | Handoff de la hoja externa después del CSS crítico y compactación del bootstrap. |
+| `frontend/scripts/check-bootstrap-csp.cjs`                              | Verificar el handoff de la hoja y conservar el hash CSP exacto.                  |
+| `specs/050-dashboard-bootstrap-shell/evidencia/resultado-2026-10-24.md` | Resultado, comparación, entorno y límites.                                       |
 
 ## Contratos afectados
 
