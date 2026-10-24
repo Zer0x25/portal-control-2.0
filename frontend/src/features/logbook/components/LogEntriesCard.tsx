@@ -103,6 +103,8 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                   <button
                     onClick={() => openEditLogEntryModal(le)}
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 transition-colors"
+                    aria-label="Editar Novedad"
+                    title="Editar Novedad"
                   >
                     <EditIcon className="w-3.5 h-3.5" />
                   </button>
@@ -115,6 +117,8 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                       })
                     }
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                    aria-label="Eliminar Novedad"
+                    title="Eliminar Novedad"
                   >
                     <DeleteIcon className="w-3.5 h-3.5" />
                   </button>

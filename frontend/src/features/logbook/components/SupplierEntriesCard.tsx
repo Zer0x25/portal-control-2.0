@@ -137,6 +137,8 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                   <button
                     onClick={() => openEditSupplierEntryModal(se)}
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-emerald-600 hover:bg-emerald-600/10 transition-colors"
+                    aria-label="Editar"
+                    title="Editar"
                   >
                     <EditIcon className="w-3.5 h-3.5" />
                   </button>
@@ -149,6 +151,8 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                       })
                     }
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                    aria-label="Eliminar"
+                    title="Eliminar"
                   >
                     <DeleteIcon className="w-3.5 h-3.5" />
                   </button>
