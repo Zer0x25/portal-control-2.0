@@ -1,0 +1,1425 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-24T03-34-33-780Z-992fedcf",
+  "status": "passed",
+  "startedAt": "2026-10-24T03:34:33.780Z",
+  "completedAt": "2026-10-24T03:44:43.556Z",
+  "source": {
+    "commit": "992fedcfc77a8c377e0c15d99c3fbcfa8dc8592e",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "name": "local-staging",
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontendImageId": "sha256:fede9c521e380769647c3675fe391d7a80d4c7178f3f1e30860f713d6ce47ad8",
+    "health": {
+      "gatewayStatus": 200,
+      "apiStatus": 200
+    }
+  },
+  "runtime": {
+    "platform": "linux",
+    "architecture": "x64",
+    "nodeVersion": "v26.10.0",
+    "browser": "Chromium",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "routeCatalog": {
+    "count": 18,
+    "families": {
+      "access": [
+        "login"
+      ],
+      "administration": [
+        "configuration",
+        "governance-audit",
+        "design-system"
+      ],
+      "communications": [
+        "communications"
+      ],
+      "dashboard": [
+        "dashboard",
+        "supervisor-dashboard"
+      ],
+      "directory-management": [
+        "employee-management",
+        "personnel-management",
+        "user-management"
+      ],
+      "operational-data": [
+        "time-control",
+        "logbook",
+        "meter-readings"
+      ],
+      "planning": [
+        "planner",
+        "theoretical-shifts",
+        "shift-calendar"
+      ],
+      "worker-experience": [
+        "worker-portal",
+        "kiosk"
+      ]
+    },
+    "routes": [
+      {
+        "id": "login",
+        "path": "/#/",
+        "currentPath": "/",
+        "role": "anonymous",
+        "family": "access",
+        "lighthouse": false,
+        "lighthouseSkipReason": "Chromium displays the login screen but emits no First Contentful Paint; Lighthouse exits with NO_FCP in mobile and desktop presets. Playwright still measures route readiness.",
+        "probes": []
+      },
+      {
+        "id": "dashboard",
+        "path": "/#/dashboard",
+        "currentPath": "/dashboard",
+        "role": "admin",
+        "family": "dashboard",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "supervisor-dashboard",
+        "path": "/#/dashboard-supervisor",
+        "currentPath": "/dashboard-supervisor",
+        "role": "admin",
+        "family": "dashboard",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "time-control",
+        "path": "/#/time-control",
+        "currentPath": "/time-control",
+        "role": "admin",
+        "family": "operational-data",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "planner",
+        "path": "/#/planning/monthly",
+        "currentPath": "/planning/monthly",
+        "role": "admin",
+        "family": "planning",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "theoretical-shifts",
+        "path": "/#/theoretical-shifts",
+        "currentPath": "/theoretical-shifts",
+        "role": "admin",
+        "family": "planning",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "lazy-tab-transitions",
+            "kind": "tabs"
+          }
+        ]
+      },
+      {
+        "id": "shift-calendar",
+        "path": "/#/shift-calendar",
+        "currentPath": "/shift-calendar",
+        "role": "admin",
+        "family": "planning",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "configuration",
+        "path": "/#/configuration",
+        "currentPath": "/configuration",
+        "role": "admin",
+        "family": "administration",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "lazy-settings-tabs",
+            "kind": "tabs"
+          }
+        ]
+      },
+      {
+        "id": "worker-portal",
+        "path": "/#/worker-portal",
+        "currentPath": "/worker-portal",
+        "role": "worker",
+        "family": "worker-experience",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "logbook",
+        "path": "/#/logbook",
+        "currentPath": "/logbook",
+        "role": "admin",
+        "family": "operational-data",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "kiosk",
+        "path": "/#/kiosk",
+        "currentPath": null,
+        "role": "anonymous",
+        "family": "worker-experience",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "governance-audit",
+        "path": "/#/admin/governance?tab=audit",
+        "currentPath": "/admin/governance",
+        "role": "admin",
+        "family": "administration",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "meter-readings",
+        "path": "/#/meter-readings",
+        "currentPath": "/meter-readings",
+        "role": "admin",
+        "family": "operational-data",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "reading-form-open-close",
+            "kind": "modal"
+          }
+        ]
+      },
+      {
+        "id": "communications",
+        "path": "/#/communications",
+        "currentPath": "/communications",
+        "role": "admin",
+        "family": "communications",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "employee-management",
+        "path": "/#/employee-management",
+        "currentPath": "/employee-management",
+        "role": "admin",
+        "family": "directory-management",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "directory-search",
+            "kind": "search"
+          }
+        ]
+      },
+      {
+        "id": "personnel-management",
+        "path": "/#/personnel-management",
+        "currentPath": "/personnel-management",
+        "role": "admin",
+        "family": "directory-management",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "personnel-access-tab",
+            "kind": "tabs"
+          }
+        ]
+      },
+      {
+        "id": "user-management",
+        "path": "/#/user-management",
+        "currentPath": "/user-management",
+        "role": "admin",
+        "family": "directory-management",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "directory-search",
+            "kind": "search"
+          }
+        ]
+      },
+      {
+        "id": "design-system",
+        "path": "/#/design-system",
+        "currentPath": "/design-system",
+        "role": "admin",
+        "family": "administration",
+        "lighthouse": true,
+        "probes": []
+      }
+    ]
+  },
+  "stages": {
+    "harnessValidation": {
+      "status": "passed",
+      "startedAt": "2026-10-24T03:34:33.924Z",
+      "completedAt": "2026-10-24T03:34:34.044Z",
+      "exitCode": 0
+    },
+    "catalog": {
+      "status": "passed",
+      "startedAt": "2026-10-24T03:34:34.044Z",
+      "completedAt": "2026-10-24T03:34:34.078Z",
+      "exitCode": 0
+    },
+    "playwright": {
+      "status": "passed",
+      "reports": [
+        {
+          "capturedAt": "2026-10-24T03:34:53.784Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "route": "/#/admin/governance?tab=audit",
+          "scrollRangePx": 4200,
+          "renderedRows": 23,
+          "scrollEventCount": 150,
+          "frameIntervalMs": {
+            "sampleCount": 90,
+            "medianMs": 16.7,
+            "p95Ms": 33.4,
+            "maxMs": 33.4
+          },
+          "framesOver50Ms": 0,
+          "framesOver50MsPercent": 0,
+          "attentionP95Ms": 50,
+          "failureP95Ms": 250
+        },
+        {
+          "capturedAt": "2026-10-24T03:35:36.590Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "samplesPerRoute": 3,
+          "readinessMetric": "domcontentloaded until the route's primary content is visible",
+          "buildCommit": "992fedcfc77a8c377e0c15d99c3fbcfa8dc8592e",
+          "routes": [
+            {
+              "id": "login",
+              "path": "/#/",
+              "role": "anonymous",
+              "family": "access",
+              "samplesMs": [
+                172.86,
+                930,
+                951.73
+              ],
+              "medianMs": 930,
+              "maxMs": 951.73
+            },
+            {
+              "id": "dashboard",
+              "path": "/#/dashboard",
+              "role": "admin",
+              "family": "dashboard",
+              "samplesMs": [
+                512.74,
+                303.3,
+                505.29
+              ],
+              "medianMs": 505.29,
+              "maxMs": 512.74
+            },
+            {
+              "id": "supervisor-dashboard",
+              "path": "/#/dashboard-supervisor",
+              "role": "admin",
+              "family": "dashboard",
+              "samplesMs": [
+                485.47,
+                498.67,
+                510.72
+              ],
+              "medianMs": 498.67,
+              "maxMs": 510.72
+            },
+            {
+              "id": "time-control",
+              "path": "/#/time-control",
+              "role": "admin",
+              "family": "operational-data",
+              "samplesMs": [
+                496.93,
+                482.63,
+                509.17
+              ],
+              "medianMs": 496.93,
+              "maxMs": 509.17
+            },
+            {
+              "id": "planner",
+              "path": "/#/planning/monthly",
+              "role": "admin",
+              "family": "planning",
+              "samplesMs": [
+                509.93,
+                525.85,
+                530.99
+              ],
+              "medianMs": 525.85,
+              "maxMs": 530.99
+            },
+            {
+              "id": "theoretical-shifts",
+              "path": "/#/theoretical-shifts",
+              "role": "admin",
+              "family": "planning",
+              "samplesMs": [
+                543.55,
+                537.63,
+                504.67
+              ],
+              "medianMs": 537.63,
+              "maxMs": 543.55
+            },
+            {
+              "id": "shift-calendar",
+              "path": "/#/shift-calendar",
+              "role": "admin",
+              "family": "planning",
+              "samplesMs": [
+                501.07,
+                303.25,
+                268.38
+              ],
+              "medianMs": 303.25,
+              "maxMs": 501.07
+            },
+            {
+              "id": "configuration",
+              "path": "/#/configuration",
+              "role": "admin",
+              "family": "administration",
+              "samplesMs": [
+                513.86,
+                494.9,
+                518.54
+              ],
+              "medianMs": 513.86,
+              "maxMs": 518.54
+            },
+            {
+              "id": "worker-portal",
+              "path": "/#/worker-portal",
+              "role": "worker",
+              "family": "worker-experience",
+              "samplesMs": [
+                203.79,
+                267.4,
+                551.55
+              ],
+              "medianMs": 267.4,
+              "maxMs": 551.55
+            },
+            {
+              "id": "logbook",
+              "path": "/#/logbook",
+              "role": "admin",
+              "family": "operational-data",
+              "samplesMs": [
+                481.72,
+                560.45,
+                510
+              ],
+              "medianMs": 510,
+              "maxMs": 560.45
+            },
+            {
+              "id": "kiosk",
+              "path": "/#/kiosk",
+              "role": "anonymous",
+              "family": "worker-experience",
+              "samplesMs": [
+                969.31,
+                920.91,
+                277.87
+              ],
+              "medianMs": 920.91,
+              "maxMs": 969.31
+            },
+            {
+              "id": "governance-audit",
+              "path": "/#/admin/governance?tab=audit",
+              "role": "admin",
+              "family": "administration",
+              "samplesMs": [
+                553.61,
+                538.56,
+                547.56
+              ],
+              "medianMs": 547.56,
+              "maxMs": 553.61
+            },
+            {
+              "id": "meter-readings",
+              "path": "/#/meter-readings",
+              "role": "admin",
+              "family": "operational-data",
+              "samplesMs": [
+                261.33,
+                536.18,
+                510.43
+              ],
+              "medianMs": 510.43,
+              "maxMs": 536.18
+            },
+            {
+              "id": "communications",
+              "path": "/#/communications",
+              "role": "admin",
+              "family": "communications",
+              "samplesMs": [
+                531.37,
+                497.97,
+                520.94
+              ],
+              "medianMs": 520.94,
+              "maxMs": 531.37
+            },
+            {
+              "id": "employee-management",
+              "path": "/#/employee-management",
+              "role": "admin",
+              "family": "directory-management",
+              "samplesMs": [
+                570.36,
+                593.29,
+                479.63
+              ],
+              "medianMs": 570.36,
+              "maxMs": 593.29
+            },
+            {
+              "id": "personnel-management",
+              "path": "/#/personnel-management",
+              "role": "admin",
+              "family": "directory-management",
+              "samplesMs": [
+                544.52,
+                554.95,
+                540.6
+              ],
+              "medianMs": 544.52,
+              "maxMs": 554.95
+            },
+            {
+              "id": "user-management",
+              "path": "/#/user-management",
+              "role": "admin",
+              "family": "directory-management",
+              "samplesMs": [
+                547.89,
+                655.08,
+                498.7
+              ],
+              "medianMs": 547.89,
+              "maxMs": 655.08
+            },
+            {
+              "id": "design-system",
+              "path": "/#/design-system",
+              "role": "admin",
+              "family": "administration",
+              "samplesMs": [
+                501.52,
+                536.97,
+                572.72
+              ],
+              "medianMs": 536.97,
+              "maxMs": 572.72
+            }
+          ]
+        },
+        {
+          "capturedAt": "2026-10-24T03:34:40.391Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "route": "/#/dashboard",
+          "profile": {
+            "viewport": {
+              "width": 412,
+              "height": 823
+            },
+            "deviceScaleFactor": 1.75,
+            "cpuThrottleRate": 4
+          },
+          "sampleCount": 3,
+          "fcp": {
+            "sampleCount": 3,
+            "medianMs": 192,
+            "p95Ms": 196,
+            "maxMs": 196
+          },
+          "lcp": {
+            "sampleCount": 3,
+            "medianMs": 192,
+            "p95Ms": 196,
+            "maxMs": 196
+          },
+          "bootstrapLcp": {
+            "sampleCount": 3,
+            "medianMs": 192,
+            "p95Ms": 196,
+            "maxMs": 196
+          },
+          "samples": [
+            {
+              "sample": 1,
+              "fcpMs": 192,
+              "lcpMs": 192,
+              "bootstrapLcpMs": 192,
+              "lcpElement": "H1",
+              "liveClockVisibleAtMs": 1174.8999999985099,
+              "shellVisibleAtMs": 148.19999999925494,
+              "reactRootChildrenAtShellPaint": 0,
+              "shellRemovedAtMs": 1103.300000000745
+            },
+            {
+              "sample": 2,
+              "fcpMs": 192,
+              "lcpMs": 192,
+              "bootstrapLcpMs": 192,
+              "lcpElement": "H1",
+              "liveClockVisibleAtMs": 1171.8999999985099,
+              "shellVisibleAtMs": 159.59999999776483,
+              "reactRootChildrenAtShellPaint": 0,
+              "shellRemovedAtMs": 1071.5999999977648
+            },
+            {
+              "sample": 3,
+              "fcpMs": 196,
+              "lcpMs": 196,
+              "bootstrapLcpMs": 196,
+              "lcpElement": "H1",
+              "liveClockVisibleAtMs": 1209.4000000022352,
+              "shellVisibleAtMs": 163.80000000074506,
+              "reactRootChildrenAtShellPaint": 0,
+              "shellRemovedAtMs": 1039.800000000745
+            }
+          ]
+        },
+        {
+          "capturedAt": "2026-10-24T03:34:44.982Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "route": "/#/dashboard",
+          "scriptRequestCount": 69,
+          "scriptResources": {
+            "assets": [
+              "index-DMT6bBN4.js",
+              "vendor-15MWHJyx.js",
+              "InitialSyncOverlay-FmJGMMoG.js",
+              "TopLoadingBar-CysFHdgg.js",
+              "BackgroundActivitySpinner-Dya4Sm_6.js",
+              "ArrowPathIcon-DjaUgXQO.js",
+              "ToastContainer-ZGt9y5I7.js",
+              "CloseIcon-B-extsPE.js",
+              "InformationCircleIcon-CJ6A_RAs.js",
+              "CheckCircleIcon-B7F6dVvJ.js",
+              "XCircleIcon-qYrVDFGz.js",
+              "useToasts-Cpv3nGmb.js",
+              "AccessDeniedNotifier-Cqd_AoPp.js",
+              "PersistentLayout-BjSq-yCE.js",
+              "HomeIcon--s95XYUN.js",
+              "ClockIcon-DBGXec8U.js",
+              "BookOpenIcon--EwDa11P.js",
+              "CogIcon-Dn1uFZfA.js",
+              "SunIcon-WeA9IBwH.js",
+              "UserPlusIcon-CKOs7trP.js",
+              "DocumentChartBarIcon-B2bJpk6V.js",
+              "UsersIcon-DNJryQiZ.js",
+              "CalendarDaysIcon-DFDbjO-p.js",
+              "ChatBubbleLeftRightIcon-DbGwGsSp.js",
+              "CalculatorIcon-BaNS82dH.js",
+              "SparklesIcon-ClmLRkft.js",
+              "ShieldIcon-txWMKwZp.js",
+              "BellIcon-C6EpezsA.js",
+              "useUsers-C_Yvtdq9.js",
+              "shiftService-Dm_SacUv.js",
+              "useEmployees-DlMLl7Fl.js",
+              "timeRecordService-DGM8h_WP.js",
+              "useReportsQuery-DEiYiNat.js",
+              "IndustrialIndicator-BLP78HkA.js",
+              "useCorrectionRequestsStatsQuery-CO0wiJL4.js",
+              "auditLogService-6zHSoiD8.js",
+              "correctionService-uEsVKm9R.js",
+              "socketService-K0-pyUwM.js",
+              "realtime-C7QaxhyT.js",
+              "Dashboard.container-COIFics-.js",
+              "ClipboardIcon-dim4KORh.js",
+              "DocumentTextIcon-ColF15Fq.js",
+              "MinusCircleIcon-DnhYt2rT.js",
+              "CheckIcon-BpGqftcf.js",
+              "CinematicModal-Bel4DV-t.js",
+              "IconBox-BSfEH36O.js",
+              "ConfirmationModal-D68p5ZEv.js",
+              "Card-DamvMvkh.js",
+              "Container-DCofuNTF.js",
+              "EmptyState-ZaV97OjX.js",
+              "useTimeRecordsQuery-C9n8Ppzm.js",
+              "useTimeRecordActions-CNamWMma.js",
+              "leaveService-BGfqfDa4.js",
+              "useMediaQuery-DxtJ_Ym3.js",
+              "useDashboardQueries-D4_i-h0Z.js",
+              "kpiService-MOUnmk8Q.js",
+              "ServerClock-DOoggQgJ.js",
+              "useBusinessNow-B0E3SGhJ.js",
+              "WidgetContainer-1nisuUps.js",
+              "MetricCard-Dv1lwLNs.js"
+            ],
+            "transferBytes": 150394,
+            "encodedBodyBytes": 132394
+          },
+          "eagerTimeControlChunks": [],
+          "eagerSecondaryModalChunks": [],
+          "eagerTimezoneChunks": [],
+          "eagerAutoStartSchedulingChunks": []
+        },
+        {
+          "capturedAt": "2026-10-24T03:34:46.663Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "route": "/#/dashboard",
+          "mainContentVisibleOffsetMs": 559.81,
+          "serverClockVisibleOffsetMs": 574.9,
+          "apiRequestsPendingWhenServerClockAppeared": [
+            {
+              "path": "/api/kpis/overview",
+              "finishOffsetMs": 575.67
+            }
+          ],
+          "dashboardDataRequestsPendingWhenServerClockAppeared": [
+            {
+              "path": "/api/kpis/overview",
+              "finishOffsetMs": 575.67
+            }
+          ],
+          "apiRequestCount": 8,
+          "uniqueApiEndpointCount": 8,
+          "duplicateEndpoints": [],
+          "autoStartSchedulingRequests": [],
+          "apiPaths": [
+            "/api/health",
+            "/api/configs/is_control_interno_enabled",
+            "/api/corrections/stats",
+            "/api/audit-logs",
+            "/api/users",
+            "/api/employees",
+            "/api/shift-reports",
+            "/api/kpis/overview"
+          ],
+          "apiRequestTimings": [
+            {
+              "path": "/api/kpis/overview",
+              "startOffsetMs": 511.55,
+              "durationMs": 64.12,
+              "finishOffsetMs": 575.67,
+              "status": 200
+            },
+            {
+              "path": "/api/configs/is_control_interno_enabled",
+              "startOffsetMs": 207.58,
+              "durationMs": 48.01,
+              "finishOffsetMs": 255.58,
+              "status": 200
+            },
+            {
+              "path": "/api/employees",
+              "startOffsetMs": 510.59,
+              "durationMs": 42.6,
+              "finishOffsetMs": 553.19,
+              "status": 200
+            },
+            {
+              "path": "/api/shift-reports",
+              "startOffsetMs": 510.61,
+              "durationMs": 40.74,
+              "finishOffsetMs": 551.36,
+              "status": 200
+            },
+            {
+              "path": "/api/audit-logs",
+              "startOffsetMs": 509.27,
+              "durationMs": 27.25,
+              "finishOffsetMs": 536.53,
+              "status": 200
+            },
+            {
+              "path": "/api/corrections/stats",
+              "startOffsetMs": 509.24,
+              "durationMs": 27.17,
+              "finishOffsetMs": 536.41,
+              "status": 200
+            },
+            {
+              "path": "/api/users",
+              "startOffsetMs": 510.56,
+              "durationMs": 26.01,
+              "finishOffsetMs": 536.57,
+              "status": 200
+            },
+            {
+              "path": "/api/health",
+              "startOffsetMs": 191,
+              "durationMs": 22.02,
+              "finishOffsetMs": 213.02,
+              "status": 200
+            }
+          ]
+        },
+        {
+          "capturedAt": "2026-10-24T03:34:55.741Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "route": "/#/admin/governance",
+          "firstTransition": {
+            "transition": "integrity-to-security",
+            "elapsedMs": 557.84
+          },
+          "repeatedTransitions": [
+            {
+              "transition": "security-to-integrity",
+              "elapsedMs": 109.68
+            },
+            {
+              "transition": "integrity-to-security",
+              "elapsedMs": 109.74
+            },
+            {
+              "transition": "security-to-integrity",
+              "elapsedMs": 128.07
+            },
+            {
+              "transition": "integrity-to-security",
+              "elapsedMs": 164.69
+            }
+          ],
+          "repeatedStats": {
+            "sampleCount": 4,
+            "medianMs": 118.91,
+            "p95Ms": 164.69,
+            "maxMs": 164.69
+          }
+        },
+        {
+          "capturedAt": "2026-10-24T03:34:49.211Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "route": "/#/dashboard",
+          "apiPath": "/api/notes",
+          "requestedBeforeModalOpen": false,
+          "requestOffsetFromModalOpenMs": 398.19,
+          "responseStatus": 200
+        },
+        {
+          "capturedAt": "2026-10-24T03:35:46.776Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "repetitionsPerInteraction": 3,
+          "dataMutation": false,
+          "routes": [
+            {
+              "routeId": "theoretical-shifts",
+              "path": "/#/theoretical-shifts",
+              "family": "planning",
+              "role": "admin",
+              "id": "lazy-tab-transitions",
+              "kind": "tabs",
+              "samplesMs": [
+                456.85,
+                67.09,
+                53.98,
+                381.61,
+                48.8,
+                53.76,
+                367.61,
+                57.24,
+                60.87
+              ],
+              "sampleCount": 9,
+              "medianMs": 60.87,
+              "p95Ms": 456.85,
+              "maxMs": 456.85
+            },
+            {
+              "routeId": "configuration",
+              "path": "/#/configuration",
+              "family": "administration",
+              "role": "admin",
+              "id": "lazy-settings-tabs",
+              "kind": "tabs",
+              "samplesMs": [
+                558.21,
+                140.3,
+                102.64,
+                452.85,
+                59.22,
+                63.45
+              ],
+              "sampleCount": 6,
+              "medianMs": 121.47,
+              "p95Ms": 558.21,
+              "maxMs": 558.21
+            },
+            {
+              "routeId": "meter-readings",
+              "path": "/#/meter-readings",
+              "family": "operational-data",
+              "role": "admin",
+              "id": "reading-form-open-close",
+              "kind": "modal",
+              "samplesMs": [
+                84.75,
+                51.76,
+                53.03
+              ],
+              "sampleCount": 3,
+              "medianMs": 53.03,
+              "p95Ms": 84.75,
+              "maxMs": 84.75
+            },
+            {
+              "routeId": "employee-management",
+              "path": "/#/employee-management",
+              "family": "directory-management",
+              "role": "admin",
+              "id": "directory-search",
+              "kind": "search",
+              "samplesMs": [
+                476.86,
+                15.19,
+                13.13
+              ],
+              "sampleCount": 3,
+              "medianMs": 15.19,
+              "p95Ms": 476.86,
+              "maxMs": 476.86
+            },
+            {
+              "routeId": "personnel-management",
+              "path": "/#/personnel-management",
+              "family": "directory-management",
+              "role": "admin",
+              "id": "personnel-access-tab",
+              "kind": "tabs",
+              "samplesMs": [
+                139.8,
+                63.77,
+                82.9
+              ],
+              "sampleCount": 3,
+              "medianMs": 82.9,
+              "p95Ms": 139.8,
+              "maxMs": 139.8
+            },
+            {
+              "routeId": "user-management",
+              "path": "/#/user-management",
+              "family": "directory-management",
+              "role": "admin",
+              "id": "directory-search",
+              "kind": "search",
+              "samplesMs": [
+                380.01,
+                19.67,
+                19.07
+              ],
+              "sampleCount": 3,
+              "medianMs": 19.67,
+              "p95Ms": 380.01,
+              "maxMs": 380.01
+            }
+          ]
+        }
+      ],
+      "startedAt": "2026-10-24T03:34:34.078Z",
+      "completedAt": "2026-10-24T03:35:46.907Z",
+      "exitCode": 0
+    },
+    "lighthouseStandard": {
+      "status": "passed",
+      "routes": [
+        {
+          "routeId": "governance-audit",
+          "family": "administration",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/admin/governance?tab=audit",
+          "finalPath": "/#/admin/governance?tab=audit",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 472.15,
+            "lcpMs": 859.19,
+            "tbtMs": 84,
+            "cls": 0,
+            "speedIndexMs": 1216.39,
+            "totalTransferBytes": 9143,
+            "scriptTransferBytes": 0,
+            "requestCount": 92
+          }
+        },
+        {
+          "routeId": "communications",
+          "family": "communications",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/communications",
+          "finalPath": "/#/communications",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 214.55,
+            "lcpMs": 746.48,
+            "tbtMs": 55.5,
+            "cls": 0,
+            "speedIndexMs": 1063.42,
+            "totalTransferBytes": 4835,
+            "scriptTransferBytes": 0,
+            "requestCount": 66
+          }
+        },
+        {
+          "routeId": "configuration",
+          "family": "administration",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/configuration",
+          "finalPath": "/#/configuration",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 228.44,
+            "lcpMs": 784.23,
+            "tbtMs": 103.5,
+            "cls": 0,
+            "speedIndexMs": 1124.81,
+            "totalTransferBytes": 5760,
+            "scriptTransferBytes": 0,
+            "requestCount": 79
+          }
+        },
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 92.1,
+            "lcpMs": 109.1,
+            "tbtMs": 146.5,
+            "cls": 0,
+            "speedIndexMs": 1002.86,
+            "totalTransferBytes": 4837,
+            "scriptTransferBytes": 0,
+            "requestCount": 80
+          }
+        },
+        {
+          "routeId": "supervisor-dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/dashboard-supervisor",
+          "finalPath": "/#/dashboard-supervisor",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 279.72,
+            "lcpMs": 864.02,
+            "tbtMs": 140.88,
+            "cls": 0,
+            "speedIndexMs": 1147.51,
+            "totalTransferBytes": 4838,
+            "scriptTransferBytes": 0,
+            "requestCount": 77
+          }
+        },
+        {
+          "routeId": "design-system",
+          "family": "administration",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/design-system",
+          "finalPath": "/#/design-system",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 464.51,
+            "lcpMs": 789.97,
+            "tbtMs": 38,
+            "cls": 0,
+            "speedIndexMs": 1005.88,
+            "totalTransferBytes": 4831,
+            "scriptTransferBytes": 0,
+            "requestCount": 63
+          }
+        },
+        {
+          "routeId": "employee-management",
+          "family": "directory-management",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/employee-management",
+          "finalPath": "/#/employee-management",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 221.12,
+            "lcpMs": 804.04,
+            "tbtMs": 141.26,
+            "cls": 0,
+            "speedIndexMs": 1091.68,
+            "totalTransferBytes": 5794,
+            "scriptTransferBytes": 0,
+            "requestCount": 88
+          }
+        },
+        {
+          "routeId": "kiosk",
+          "family": "worker-experience",
+          "role": "anonymous",
+          "profile": "warm",
+          "requestedPath": "/#/kiosk",
+          "finalPath": "/#/kiosk",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 186.02,
+            "lcpMs": 963.79,
+            "tbtMs": 95.16,
+            "cls": 0,
+            "speedIndexMs": 1136.45,
+            "totalTransferBytes": 2262,
+            "scriptTransferBytes": 0,
+            "requestCount": 46
+          }
+        },
+        {
+          "routeId": "logbook",
+          "family": "operational-data",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/logbook",
+          "finalPath": "/#/logbook",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 229.12,
+            "lcpMs": 783.15,
+            "tbtMs": 136.5,
+            "cls": 0,
+            "speedIndexMs": 1255.87,
+            "totalTransferBytes": 4833,
+            "scriptTransferBytes": 0,
+            "requestCount": 96
+          }
+        },
+        {
+          "routeId": "meter-readings",
+          "family": "operational-data",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/meter-readings",
+          "finalPath": "/#/meter-readings",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.97,
+            "fcpMs": 275.62,
+            "lcpMs": 854.55,
+            "tbtMs": 187.98,
+            "cls": 0,
+            "speedIndexMs": 1210.36,
+            "totalTransferBytes": 4834,
+            "scriptTransferBytes": 0,
+            "requestCount": 81
+          }
+        },
+        {
+          "routeId": "personnel-management",
+          "family": "directory-management",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/personnel-management",
+          "finalPath": "/#/personnel-management",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.98,
+            "fcpMs": 222.44,
+            "lcpMs": 787.65,
+            "tbtMs": 156,
+            "cls": 0,
+            "speedIndexMs": 1153.4,
+            "totalTransferBytes": 4836,
+            "scriptTransferBytes": 0,
+            "requestCount": 96
+          }
+        },
+        {
+          "routeId": "planner",
+          "family": "planning",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/planning/monthly",
+          "finalPath": "/#/planning/monthly",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 211.29,
+            "lcpMs": 757.95,
+            "tbtMs": 104.39,
+            "cls": 0,
+            "speedIndexMs": 873.56,
+            "totalTransferBytes": 4838,
+            "scriptTransferBytes": 0,
+            "requestCount": 64
+          }
+        },
+        {
+          "routeId": "shift-calendar",
+          "family": "planning",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/shift-calendar",
+          "finalPath": "/#/shift-calendar",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 392.19,
+            "lcpMs": 743.63,
+            "tbtMs": 33,
+            "cls": 0,
+            "speedIndexMs": 1123.73,
+            "totalTransferBytes": 4835,
+            "scriptTransferBytes": 0,
+            "requestCount": 74
+          }
+        },
+        {
+          "routeId": "theoretical-shifts",
+          "family": "planning",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/theoretical-shifts",
+          "finalPath": "/#/theoretical-shifts",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 514.24,
+            "lcpMs": 874.01,
+            "tbtMs": 115.5,
+            "cls": 0,
+            "speedIndexMs": 1009.85,
+            "totalTransferBytes": 4838,
+            "scriptTransferBytes": 0,
+            "requestCount": 89
+          }
+        },
+        {
+          "routeId": "time-control",
+          "family": "operational-data",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/time-control",
+          "finalPath": "/#/time-control",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 240.12,
+            "lcpMs": 893.21,
+            "tbtMs": 122.56,
+            "cls": 0,
+            "speedIndexMs": 1220.11,
+            "totalTransferBytes": 6984,
+            "scriptTransferBytes": 0,
+            "requestCount": 106
+          }
+        },
+        {
+          "routeId": "user-management",
+          "family": "directory-management",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/user-management",
+          "finalPath": "/#/user-management",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 232.12,
+            "lcpMs": 815.29,
+            "tbtMs": 127,
+            "cls": 0,
+            "speedIndexMs": 1051.7,
+            "totalTransferBytes": 4834,
+            "scriptTransferBytes": 0,
+            "requestCount": 80
+          }
+        },
+        {
+          "routeId": "worker-portal",
+          "family": "worker-experience",
+          "role": "worker",
+          "profile": "warm",
+          "requestedPath": "/#/worker-portal",
+          "finalPath": "/#/worker-portal",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.98,
+            "fcpMs": 242.44,
+            "lcpMs": 812.05,
+            "tbtMs": 173.5,
+            "cls": 0,
+            "speedIndexMs": 1071.23,
+            "totalTransferBytes": 5233,
+            "scriptTransferBytes": 0,
+            "requestCount": 89
+          }
+        }
+      ],
+      "startedAt": "2026-10-24T03:35:46.907Z",
+      "completedAt": "2026-10-24T03:43:24.071Z",
+      "exitCode": 0,
+      "routeAssertions": {
+        "urlCount": 17,
+        "assertionCount": 85,
+        "passedCount": 85,
+        "failures": []
+      }
+    },
+    "lighthouseColdDashboard": {
+      "status": "passed",
+      "samples": [
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "cold",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.92,
+            "fcpMs": 2470.77,
+            "lcpMs": 2558.66,
+            "tbtMs": 158.5,
+            "cls": 0,
+            "speedIndexMs": 2474.68,
+            "totalTransferBytes": 448470,
+            "scriptTransferBytes": 283535,
+            "requestCount": 81
+          }
+        },
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "cold",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.89,
+            "fcpMs": 2592.47,
+            "lcpMs": 2811.36,
+            "tbtMs": 204,
+            "cls": 0,
+            "speedIndexMs": 2592.47,
+            "totalTransferBytes": 448489,
+            "scriptTransferBytes": 283535,
+            "requestCount": 81
+          }
+        },
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "cold",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "metrics": {
+            "performanceScore": 0.92,
+            "fcpMs": 2455.29,
+            "lcpMs": 2551.93,
+            "tbtMs": 137.5,
+            "cls": 0,
+            "speedIndexMs": 2497.22,
+            "totalTransferBytes": 448450,
+            "scriptTransferBytes": 283528,
+            "requestCount": 81
+          }
+        }
+      ],
+      "startedAt": "2026-10-24T03:43:24.071Z",
+      "completedAt": "2026-10-24T03:44:43.556Z",
+      "exitCode": 0
+    }
+  },
+  "failure": null
+}

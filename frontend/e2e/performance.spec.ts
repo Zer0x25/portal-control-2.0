@@ -18,6 +18,16 @@ const autoStartSchedulingApiPaths = new Set([
   "/api/leaves",
   "/api/corrections",
 ]);
+type DashboardBootstrapAuditState = {
+  events: { type: "visible" | "removed"; atMs: number; rootChildren: number }[];
+  paints: { name: string; startTime: number }[];
+  lcpEntries: {
+    startTime: number;
+    size: number;
+    elementTag: string | null;
+    isBootstrapShell: boolean;
+  }[];
+};
 
 test.describe.serial("Render Performance", () => {
   test.use({ viewport });
@@ -25,6 +35,255 @@ test.describe.serial("Render Performance", () => {
 
   test.beforeEach(async ({ page, request }) => {
     await loginFast(page, request, "admin");
+  });
+
+  test("Dashboard bootstrap paints before React and releases after the live clock appears", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const coldViewport = { width: 412, height: 823 };
+    const samples: {
+      sample: number;
+      fcpMs: number | null;
+      lcpMs: number | null;
+      bootstrapLcpMs: number | null;
+      lcpElement: string | null;
+      reactRootChildrenAtShellPaint: number | null;
+      liveClockVisibleAtMs: number;
+      shellVisibleAtMs: number | null;
+      shellRemovedAtMs: number | null;
+    }[] = [];
+
+    for (let sample = 1; sample <= 3; sample++) {
+      const context = await browser.newContext({
+        viewport: coldViewport,
+        deviceScaleFactor: 1.75,
+        isMobile: true,
+        hasTouch: true,
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        await page.addInitScript(() => {
+          const audit: DashboardBootstrapAuditState = {
+            events: [],
+            paints: [],
+            lcpEntries: [],
+          };
+          (
+            window as Window & { __dashboardBootstrapAudit?: typeof audit }
+          ).__dashboardBootstrapAudit = audit;
+          let wasVisible = false;
+          let wasRemoved = false;
+          const recordShell = () => {
+            const shell = document.getElementById("dashboard-bootstrap-shell");
+            const isVisible =
+              shell !== null &&
+              !shell.hidden &&
+              getComputedStyle(shell).display !== "none" &&
+              getComputedStyle(shell).visibility !== "hidden";
+            if (isVisible && !wasVisible) {
+              audit.events.push({
+                type: "visible",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              wasVisible = true;
+            } else if (!shell && wasVisible && !wasRemoved) {
+              audit.events.push({
+                type: "removed",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              wasRemoved = true;
+            }
+          };
+          new MutationObserver(recordShell).observe(document, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["hidden", "style", "class"],
+          });
+          new PerformanceObserver((list) => {
+            audit.paints.push(
+              ...list
+                .getEntries()
+                .map((entry) => ({ name: entry.name, startTime: entry.startTime })),
+            );
+          }).observe({ type: "paint", buffered: true });
+          new PerformanceObserver((list) => {
+            audit.lcpEntries.push(
+              ...list.getEntries().map((entry) => {
+                const lcpEntry = entry as PerformanceEntry & {
+                  size: number;
+                  element: Element | null;
+                };
+                return {
+                  startTime: lcpEntry.startTime,
+                  size: lcpEntry.size,
+                  elementTag: lcpEntry.element?.tagName ?? null,
+                  isBootstrapShell: Boolean(
+                    lcpEntry.element?.closest("#dashboard-bootstrap-shell"),
+                  ),
+                };
+              }),
+            );
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+        });
+
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+        await expect(page.locator('#root [data-testid="server-clock"]')).toBeVisible({
+          timeout: 30_000,
+        });
+        const liveClockVisibleAtMs = await page.evaluate(() => performance.now());
+        await page.waitForTimeout(250);
+
+        const metrics = await page.evaluate(() => {
+          const audit = (
+            window as Window & { __dashboardBootstrapAudit?: DashboardBootstrapAuditState }
+          ).__dashboardBootstrapAudit;
+          const fcp = audit?.paints.find((entry) => entry.name === "first-contentful-paint");
+          const lcp = audit?.lcpEntries.at(-1);
+          const bootstrapLcp = audit?.lcpEntries.find((entry) => entry.isBootstrapShell);
+          return {
+            fcpMs: fcp?.startTime ?? null,
+            lcpMs: lcp?.startTime ?? null,
+            bootstrapLcpMs: bootstrapLcp?.startTime ?? null,
+            lcpElement: lcp?.elementTag ?? null,
+            auditEvents: audit?.events ?? [],
+          };
+        });
+        samples.push({
+          sample,
+          fcpMs: metrics.fcpMs,
+          lcpMs: metrics.lcpMs,
+          bootstrapLcpMs: metrics.bootstrapLcpMs,
+          lcpElement: metrics.lcpElement,
+          liveClockVisibleAtMs,
+          shellVisibleAtMs:
+            metrics.auditEvents.find((event) => event.type === "visible")?.atMs ?? null,
+          reactRootChildrenAtShellPaint:
+            metrics.auditEvents.find((event) => event.type === "visible")?.rootChildren ?? null,
+          shellRemovedAtMs:
+            metrics.auditEvents.find((event) => event.type === "removed")?.atMs ?? null,
+        });
+      } finally {
+        await context.close();
+      }
+    }
+
+    const fcpSamples = samples.flatMap((sample) => (sample.fcpMs === null ? [] : [sample.fcpMs]));
+    const lcpSamples = samples.flatMap((sample) => (sample.lcpMs === null ? [] : [sample.lcpMs]));
+    const bootstrapLcpSamples = samples.flatMap((sample) =>
+      sample.bootstrapLcpMs === null ? [] : [sample.bootstrapLcpMs],
+    );
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/dashboard",
+      profile: { viewport: coldViewport, deviceScaleFactor: 1.75, cpuThrottleRate: 4 },
+      sampleCount: samples.length,
+      fcp: fcpSamples.length > 0 ? summarizePerformance(fcpSamples) : null,
+      lcp: lcpSamples.length > 0 ? summarizePerformance(lcpSamples) : null,
+      bootstrapLcp:
+        bootstrapLcpSamples.length > 0 ? summarizePerformance(bootstrapLcpSamples) : null,
+      samples,
+    };
+    await attachPerformanceReport(testInfo, "dashboard-bootstrap-shell.json", report);
+
+    expect(samples).toHaveLength(3);
+    for (const sample of samples) {
+      expect(
+        sample.shellVisibleAtMs,
+        `sample ${sample.sample} should paint the bootstrap shell`,
+      ).not.toBeNull();
+      expect(
+        sample.shellRemovedAtMs,
+        `sample ${sample.sample} should remove the bootstrap shell`,
+      ).not.toBeNull();
+      expect(sample.shellVisibleAtMs).toBeLessThan(sample.liveClockVisibleAtMs);
+      expect(sample.reactRootChildrenAtShellPaint).toBe(0);
+      expect(sample.shellRemovedAtMs).toBeGreaterThanOrEqual(sample.shellVisibleAtMs ?? 0);
+      expect(sample.lcpMs, `sample ${sample.sample} should report LCP`).not.toBeNull();
+      expect(sample.bootstrapLcpMs).not.toBeNull();
+    }
+  });
+
+  test("Dashboard bootstrap stays absent without a Dashboard session or route", async ({
+    browser,
+    request,
+  }) => {
+    const unauthenticatedContext = await browser.newContext({ viewport });
+    try {
+      const page = await unauthenticatedContext.newPage();
+      await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#username")).toBeVisible({ timeout: 30_000 });
+    } finally {
+      await unauthenticatedContext.close();
+    }
+
+    const authenticatedContext = await browser.newContext({ viewport });
+    try {
+      const page = await authenticatedContext.newPage();
+      await loginFast(page, request, "admin");
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+    } finally {
+      await authenticatedContext.close();
+    }
+
+    const restrictedContext = await browser.newContext({ viewport });
+    try {
+      const page = await restrictedContext.newPage();
+      await loginFast(page, request, "worker");
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+      await expect(page).toHaveURL(/#\/worker-portal/, { timeout: 30_000 });
+      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+    } finally {
+      await restrictedContext.close();
+    }
+  });
+
+  test("Dashboard bootstrap clears after query and route changes during cold boot", async ({
+    browser,
+    request,
+  }) => {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+      await loginFast(page, request, "admin");
+      await page.route("**/assets/index-*.js", (route) =>
+        route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
+      );
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+      const shell = page.getByRole("heading", { name: "Dashboard Operativo" });
+      await expect(shell).toBeVisible();
+
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("hashchange", () => resolve(), { once: true });
+            window.location.hash = "#/dashboard?boot=1";
+          }),
+      );
+      await expect(shell).toBeVisible();
+
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("hashchange", () => resolve(), { once: true });
+            window.location.hash = "#/time-control";
+          }),
+      );
+      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
   });
 
   test("Dashboard defers route, modal, and action-only timezone chunks", async ({
