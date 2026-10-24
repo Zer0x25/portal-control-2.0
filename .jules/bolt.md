@@ -322,3 +322,12 @@
 - **Siguiente**: estudiar `validateInstanceId`, mediana instrumentada de 358,6 ms al final, separando latencia de red, handler y recepción del navegador antes de cambiar la validación.
 - **Validación**: probe Playwright 3/3 contextos, integración Fastify 14/14, frontend dirigido 28/28, preflight 6/6 y staging healthy. No se guardan cuerpos ni identidades.
 - **Evidencia**: [resultado Spec 066](../specs/066-time-control-employee-clock-options/evidencia/resultado-2026-10-24.md), [baseline](../specs/066-time-control-employee-clock-options/evidencia/baseline/time-control-sync-phase-diagnostics.json) y [final](../specs/066-time-control-employee-clock-options/evidencia/final/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - test(perf): Descomponer la validación de instancia
+
+- **Diagnóstico**: `validateInstanceId` tuvo mediana 369,6 ms (313,5–409,1). El request de readiness tardó 2,9–6,2 ms y Fastify 0,83–1,43 ms; el body fue de 95 B.
+- **Medido**: `Response.json()` ocupó 186,0–359,2 ms (mediana 271,1) y `fetchQuery` esperó 0,6–3,5 ms. Las long tasks cubrieron 88,0–102,6 ms durante la validación.
+- **Límite**: `Response.json()` agrupa lectura, decodificación y parseo; la instrumentación no atribuye la causa. `n=3`, CPU 4×, sin demostrar causalidad ni mejora estable.
+- **Siguiente**: atribuir el trabajo del hilo principal que se solapa con readiness y separar el tiempo de espera del costo de ejecución antes de modificar código.
+- **Validación**: probe Playwright 3/3, readiness HTTP 200 y staging healthy; tests dirigidos 20/20, preflight 6/6 y ESLint 0/0.
+- **Evidencia**: [resultado Spec 067](../specs/067-time-control-instance-validation-breakdown/evidencia/resultado-2026-10-24.md), [mediciones de navegador](../specs/067-time-control-instance-validation-breakdown/evidencia/final/time-control-sync-phase-diagnostics.json) y [respuesta Fastify](../specs/067-time-control-instance-validation-breakdown/evidencia/final/fastify-response-timings.json).

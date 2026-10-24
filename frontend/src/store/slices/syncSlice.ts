@@ -36,17 +36,31 @@ const emitSyncDiagnostic = (
   name: string,
   durationMs: number,
   outcome: SyncDiagnosticOutcome,
+  startedAtMs: number,
 ): void => {
   if (!isSyncDiagnosticsEnabled()) return;
 
   try {
     window.dispatchEvent(
       new CustomEvent("portal:sync-phase", {
-        detail: { phase, name, durationMs, outcome },
+        detail: { phase, name, startedAtMs, durationMs, outcome },
       }),
     );
   } catch {
     // Diagnostics are observational and must never interrupt synchronization.
+  }
+};
+
+const emitInstanceValidationStage = (stage: "readiness-query-resolved"): void => {
+  if (!isSyncDiagnosticsEnabled()) return;
+  try {
+    window.dispatchEvent(
+      new CustomEvent("portal:instance-validation-stage", {
+        detail: { stage, atMs: Number(performance.now().toFixed(2)) },
+      }),
+    );
+  } catch {
+    // Stage timing is observational and must never interrupt synchronization.
   }
 };
 
@@ -59,7 +73,13 @@ const measureSyncPhase = <T>(
 
   const startedAt = performance.now();
   const emitResult = (outcome: SyncDiagnosticOutcome): void => {
-    emitSyncDiagnostic(phase, name, Number((performance.now() - startedAt).toFixed(2)), outcome);
+    emitSyncDiagnostic(
+      phase,
+      name,
+      Number((performance.now() - startedAt).toFixed(2)),
+      outcome,
+      Number(startedAt.toFixed(2)),
+    );
   };
 
   let result: Promise<T>;
@@ -279,6 +299,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
       // La validación debe comprobar la instancia actual, no reutilizar una
       // respuesta antigua; `fetchQuery` aún comparte el promise si ya está en vuelo.
       health = await queryClient.fetchQuery({ ...readinessQueryOptions, staleTime: 0 });
+      emitInstanceValidationStage("readiness-query-resolved");
     } catch (error) {
       logger.error("Error fetching health for instance validation:", error);
       return true; // Fail safe

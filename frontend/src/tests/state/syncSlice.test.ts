@@ -37,6 +37,7 @@ import { STORES } from "../../utils/indexedDB";
 type SyncDiagnosticDetail = {
   phase: "validation" | "cache-check" | "sync-step";
   name: string;
+  startedAtMs: number;
   durationMs: number;
   outcome: "success" | "failure";
 };
@@ -128,14 +129,20 @@ describe("sync de sesión ante cambio de instancia", () => {
     const diagnosticWindow = window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean };
     diagnosticWindow.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
     const events: SyncDiagnosticDetail[] = [];
+    const validationStages: Array<{ stage: string; atMs: number }> = [];
     const listener = (event: Event) => {
       events.push((event as CustomEvent<SyncDiagnosticDetail>).detail);
     };
+    const stageListener = (event: Event) => {
+      validationStages.push((event as CustomEvent<(typeof validationStages)[number]>).detail);
+    };
     window.addEventListener("portal:sync-phase", listener);
+    window.addEventListener("portal:instance-validation-stage", stageListener);
 
     await createAdminSyncState(Date.now()).initializeAppData();
 
     window.removeEventListener("portal:sync-phase", listener);
+    window.removeEventListener("portal:instance-validation-stage", stageListener);
     expect(events.map(({ phase, name }) => [phase, name])).toEqual([
       ["validation", "validateInstanceId"],
       ["cache-check", "criticalStores"],
@@ -151,7 +158,19 @@ describe("sync de sesión ante cambio de instancia", () => {
           Number.isFinite(durationMs) && durationMs >= 0 && outcome === "success",
       ),
     ).toBe(true);
-    expect(Object.keys(events[0] ?? {}).sort()).toEqual(["durationMs", "name", "outcome", "phase"]);
+    expect(Object.keys(events[0] ?? {}).sort()).toEqual([
+      "durationMs",
+      "name",
+      "outcome",
+      "phase",
+      "startedAtMs",
+    ]);
+    expect(
+      events.every(({ startedAtMs }) => Number.isFinite(startedAtMs) && startedAtMs >= 0),
+    ).toBe(true);
+    expect(validationStages).toHaveLength(1);
+    expect(validationStages[0]?.stage).toBe("readiness-query-resolved");
+    expect(Number.isFinite(validationStages[0]?.atMs)).toBe(true);
   });
 
   it("records a failed cache check and preserves the sync error path", async () => {

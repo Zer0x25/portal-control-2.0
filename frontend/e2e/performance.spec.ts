@@ -622,6 +622,12 @@ test.describe.serial("Render Performance", () => {
   }, testInfo) => {
     test.setTimeout(180_000);
     const mobileViewport = { width: 412, height: 823 };
+    const diagnosticRunId = process.env.PERFORMANCE_DIAGNOSTIC_RUN_ID ?? null;
+    if (diagnosticRunId && !/^[a-z0-9-]{1,64}$/i.test(diagnosticRunId)) {
+      throw new Error(
+        "PERFORMANCE_DIAGNOSTIC_RUN_ID must contain only letters, digits and hyphens",
+      );
+    }
     const samples: Array<Record<string, unknown>> = [];
     const fcpSamples: number[] = [];
     const lcpSamples: number[] = [];
@@ -637,209 +643,258 @@ test.describe.serial("Render Performance", () => {
       try {
         const page = await context.newPage();
         await loginFast(page, request, "admin");
-        await page.addInitScript(() => {
-          type SyncPhaseTiming = {
-            phase: "validation" | "cache-check" | "sync-step";
-            name: string;
-            durationMs: number;
-            outcome: "success" | "failure";
-          };
-          type OverlayPaintAudit = {
-            initialLastSyncTime: string | null;
-            timeOriginEpochMs: number;
-            fcpEntries: number[];
-            lcpEntries: Array<{
-              startTimeMs: number;
-              size: number;
-              tag: string | null;
-              className: string | null;
-            }>;
-            overlayVisibleAtMs: number | null;
-            overlayHiddenAtMs: number | null;
-            overlayVisibleAtEpochMs: number | null;
-            overlayHiddenAtEpochMs: number | null;
-            overlayCoverage: {
-              coversViewport: boolean;
-              hitTestBelongsToOverlay: boolean;
-            } | null;
-            loadingIndicatorCount: number | null;
-            progressVisible: boolean;
-            syncStepChanges: Array<{
-              atEpochMs: number;
-              step: string;
-              progressPercent: number | null;
-            }>;
-            syncPhaseTimings: SyncPhaseTiming[];
-            rootAnimationName: string | null;
-            rootAnimationDuration: string | null;
-            statusAnimationName: string | null;
-            activeAnimations: Array<{
-              tag: string;
-              className: string;
-              animationName: string;
-              duration: string;
-            }>;
-          };
-          const audit: OverlayPaintAudit = {
-            initialLastSyncTime: localStorage.getItem("lastSyncTime"),
-            timeOriginEpochMs: performance.timeOrigin,
-            fcpEntries: [],
-            lcpEntries: [],
-            overlayVisibleAtMs: null,
-            overlayHiddenAtMs: null,
-            overlayVisibleAtEpochMs: null,
-            overlayHiddenAtEpochMs: null,
-            overlayCoverage: null,
-            loadingIndicatorCount: null,
-            progressVisible: false,
-            syncStepChanges: [],
-            syncPhaseTimings: [],
-            rootAnimationName: null,
-            rootAnimationDuration: null,
-            statusAnimationName: null,
-            activeAnimations: [],
-          };
-          (
-            window as Window & { __syncOverlayPaintAudit?: OverlayPaintAudit }
-          ).__syncOverlayPaintAudit = audit;
-          (
-            window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean }
-          ).__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
-          window.addEventListener("portal:sync-phase", (event) => {
-            audit.syncPhaseTimings.push((event as CustomEvent<SyncPhaseTiming>).detail);
-          });
-
-          new PerformanceObserver((list) => {
-            audit.fcpEntries.push(
-              ...list
-                .getEntries()
-                .filter((entry) => entry.name === "first-contentful-paint")
-                .map((entry) => entry.startTime),
-            );
-          }).observe({ type: "paint", buffered: true });
-          new PerformanceObserver((list) => {
-            audit.lcpEntries.push(
-              ...list.getEntries().map((entry) => {
-                const candidate = entry as PerformanceEntry & {
-                  size: number;
-                  element: Element | null;
-                };
-                const elementClassName = candidate.element?.className;
-                return {
-                  startTimeMs: candidate.startTime,
-                  size: candidate.size,
-                  tag: candidate.element?.tagName ?? null,
-                  className:
-                    typeof elementClassName === "string"
-                      ? elementClassName
-                      : (candidate.element?.getAttribute("class") ?? null),
-                };
-              }),
-            );
-          }).observe({ type: "largest-contentful-paint", buffered: true });
-
-          let wasVisible = false;
-          const observeOverlay = () => {
-            const status = Array.from(document.querySelectorAll("p")).find(
-              (element) =>
-                element.textContent?.trim() ===
-                "Establishing technical handshake • Validating integrity...",
-            );
-            const style = status ? getComputedStyle(status) : null;
-            const isVisible = Boolean(
-              status &&
-              style?.display !== "none" &&
-              style?.visibility !== "hidden" &&
-              status.getClientRects().length > 0,
-            );
-            let root: HTMLElement | null = status ? (status as HTMLElement) : null;
-            while (root && getComputedStyle(root).position !== "fixed") {
-              root = root.parentElement;
+        await page.addInitScript(
+          ({ probeRunId, sampleIndex }) => {
+            type SyncPhaseTiming = {
+              phase: "validation" | "cache-check" | "sync-step";
+              name: string;
+              startedAtMs: number;
+              durationMs: number;
+              outcome: "success" | "failure";
+            };
+            type OverlayPaintAudit = {
+              initialLastSyncTime: string | null;
+              timeOriginEpochMs: number;
+              fcpEntries: number[];
+              lcpEntries: Array<{
+                startTimeMs: number;
+                size: number;
+                tag: string | null;
+                className: string | null;
+              }>;
+              overlayVisibleAtMs: number | null;
+              overlayHiddenAtMs: number | null;
+              overlayVisibleAtEpochMs: number | null;
+              overlayHiddenAtEpochMs: number | null;
+              overlayCoverage: {
+                coversViewport: boolean;
+                hitTestBelongsToOverlay: boolean;
+              } | null;
+              loadingIndicatorCount: number | null;
+              progressVisible: boolean;
+              syncStepChanges: Array<{
+                atEpochMs: number;
+                step: string;
+                progressPercent: number | null;
+              }>;
+              syncPhaseTimings: SyncPhaseTiming[];
+              readinessQueryTimings: Array<{
+                startedAtMs: number;
+                resolvedAtMs: number;
+                outcome: "success" | "failure";
+              }>;
+              readinessApiClientStages: Array<{ stage: string; atMs: number }>;
+              validationStages: Array<{ stage: string; atMs: number }>;
+              longTaskEntries: Array<{ startTimeMs: number; durationMs: number }>;
+              rootAnimationName: string | null;
+              rootAnimationDuration: string | null;
+              statusAnimationName: string | null;
+              activeAnimations: Array<{
+                tag: string;
+                className: string;
+                animationName: string;
+                duration: string;
+              }>;
+            };
+            const audit: OverlayPaintAudit = {
+              initialLastSyncTime: localStorage.getItem("lastSyncTime"),
+              timeOriginEpochMs: performance.timeOrigin,
+              fcpEntries: [],
+              lcpEntries: [],
+              overlayVisibleAtMs: null,
+              overlayHiddenAtMs: null,
+              overlayVisibleAtEpochMs: null,
+              overlayHiddenAtEpochMs: null,
+              overlayCoverage: null,
+              loadingIndicatorCount: null,
+              progressVisible: false,
+              syncStepChanges: [],
+              syncPhaseTimings: [],
+              readinessQueryTimings: [],
+              readinessApiClientStages: [],
+              validationStages: [],
+              longTaskEntries: [],
+              rootAnimationName: null,
+              rootAnimationDuration: null,
+              statusAnimationName: null,
+              activeAnimations: [],
+            };
+            (
+              window as Window & { __syncOverlayPaintAudit?: OverlayPaintAudit }
+            ).__syncOverlayPaintAudit = audit;
+            (
+              window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean }
+            ).__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+            if (probeRunId) {
+              const diagnosticsWindow = window as Window & {
+                __PORTAL_SYNC_PERF_RUN_ID__?: string;
+                __PORTAL_SYNC_PERF_SAMPLE__?: number;
+              };
+              diagnosticsWindow.__PORTAL_SYNC_PERF_RUN_ID__ = probeRunId;
+              diagnosticsWindow.__PORTAL_SYNC_PERF_SAMPLE__ = sampleIndex;
             }
-            if (root) {
-              const spans = Array.from(root.querySelectorAll("span"));
-              const step = spans
-                .map((element) => element.textContent?.trim() ?? "")
-                .find((text) =>
-                  /^(Autenticando acceso|Preparando entorno seguro|Sincronizando |Completado)/.test(
-                    text,
-                  ),
+            window.addEventListener("portal:sync-phase", (event) => {
+              audit.syncPhaseTimings.push((event as CustomEvent<SyncPhaseTiming>).detail);
+            });
+            window.addEventListener("portal:readiness-query", (event) => {
+              audit.readinessQueryTimings.push(
+                (event as CustomEvent<(typeof audit.readinessQueryTimings)[number]>).detail,
+              );
+            });
+            window.addEventListener("portal:readiness-api-client-stage", (event) => {
+              audit.readinessApiClientStages.push(
+                (event as CustomEvent<(typeof audit.readinessApiClientStages)[number]>).detail,
+              );
+            });
+            window.addEventListener("portal:instance-validation-stage", (event) => {
+              audit.validationStages.push(
+                (event as CustomEvent<(typeof audit.validationStages)[number]>).detail,
+              );
+            });
+
+            new PerformanceObserver((list) => {
+              audit.fcpEntries.push(
+                ...list
+                  .getEntries()
+                  .filter((entry) => entry.name === "first-contentful-paint")
+                  .map((entry) => entry.startTime),
+              );
+            }).observe({ type: "paint", buffered: true });
+            new PerformanceObserver((list) => {
+              audit.lcpEntries.push(
+                ...list.getEntries().map((entry) => {
+                  const candidate = entry as PerformanceEntry & {
+                    size: number;
+                    element: Element | null;
+                  };
+                  const elementClassName = candidate.element?.className;
+                  return {
+                    startTimeMs: candidate.startTime,
+                    size: candidate.size,
+                    tag: candidate.element?.tagName ?? null,
+                    className:
+                      typeof elementClassName === "string"
+                        ? elementClassName
+                        : (candidate.element?.getAttribute("class") ?? null),
+                  };
+                }),
+              );
+            }).observe({ type: "largest-contentful-paint", buffered: true });
+            if (PerformanceObserver.supportedEntryTypes.includes("longtask")) {
+              new PerformanceObserver((list) => {
+                audit.longTaskEntries.push(
+                  ...list.getEntries().map((entry) => ({
+                    startTimeMs: Number(entry.startTime.toFixed(2)),
+                    durationMs: Number(entry.duration.toFixed(2)),
+                  })),
                 );
-              const progressText = spans
-                .map((element) => element.textContent?.trim() ?? "")
-                .find((text) => /^\d+%$/.test(text));
-              if (step) {
-                const progressPercent = progressText ? Number.parseInt(progressText, 10) : null;
-                const previous = audit.syncStepChanges.at(-1);
-                if (previous?.step !== step || previous.progressPercent !== progressPercent) {
-                  audit.syncStepChanges.push({
-                    atEpochMs: performance.timeOrigin + performance.now(),
-                    step,
-                    progressPercent,
-                  });
+              }).observe({ type: "longtask", buffered: true });
+            }
+
+            let wasVisible = false;
+            const observeOverlay = () => {
+              const status = Array.from(document.querySelectorAll("p")).find(
+                (element) =>
+                  element.textContent?.trim() ===
+                  "Establishing technical handshake • Validating integrity...",
+              );
+              const style = status ? getComputedStyle(status) : null;
+              const isVisible = Boolean(
+                status &&
+                style?.display !== "none" &&
+                style?.visibility !== "hidden" &&
+                status.getClientRects().length > 0,
+              );
+              let root: HTMLElement | null = status ? (status as HTMLElement) : null;
+              while (root && getComputedStyle(root).position !== "fixed") {
+                root = root.parentElement;
+              }
+              if (root) {
+                const spans = Array.from(root.querySelectorAll("span"));
+                const step = spans
+                  .map((element) => element.textContent?.trim() ?? "")
+                  .find((text) =>
+                    /^(Autenticando acceso|Preparando entorno seguro|Sincronizando |Completado)/.test(
+                      text,
+                    ),
+                  );
+                const progressText = spans
+                  .map((element) => element.textContent?.trim() ?? "")
+                  .find((text) => /^\d+%$/.test(text));
+                if (step) {
+                  const progressPercent = progressText ? Number.parseInt(progressText, 10) : null;
+                  const previous = audit.syncStepChanges.at(-1);
+                  if (previous?.step !== step || previous.progressPercent !== progressPercent) {
+                    audit.syncStepChanges.push({
+                      atEpochMs: performance.timeOrigin + performance.now(),
+                      step,
+                      progressPercent,
+                    });
+                  }
                 }
               }
-            }
-            if (isVisible && !wasVisible && status) {
-              audit.overlayVisibleAtMs = performance.now();
-              audit.overlayVisibleAtEpochMs = performance.timeOrigin + performance.now();
-              if (root) {
-                const rect = root.getBoundingClientRect();
-                const centralTarget = document.elementFromPoint(
-                  window.innerWidth / 2,
-                  window.innerHeight / 2,
-                );
-                audit.overlayCoverage = {
-                  coversViewport:
-                    rect.left <= 0 &&
-                    rect.top <= 0 &&
-                    rect.right >= window.innerWidth &&
-                    rect.bottom >= window.innerHeight,
-                  hitTestBelongsToOverlay: Boolean(centralTarget && root.contains(centralTarget)),
-                };
-                audit.loadingIndicatorCount = root.querySelectorAll(
-                  '[role="status"][aria-label="Cargando"]',
-                ).length;
-                audit.progressVisible = Array.from(root.querySelectorAll("span")).some((element) =>
-                  /^\d+%$/.test(element.textContent?.trim() ?? ""),
-                );
-                const rootStyle = getComputedStyle(root);
-                audit.rootAnimationName = rootStyle.animationName;
-                audit.rootAnimationDuration = rootStyle.animationDuration;
-                audit.statusAnimationName = getComputedStyle(status).animationName;
-                audit.activeAnimations = Array.from(root.querySelectorAll("*")).flatMap(
-                  (element) => {
-                    const animatedStyle = getComputedStyle(element);
-                    return animatedStyle.animationName
-                      .split(",")
-                      .map((animationName) => animationName.trim())
-                      .filter((animationName) => animationName && animationName !== "none")
-                      .map((animationName) => ({
-                        tag: element.tagName,
-                        className:
-                          typeof element.className === "string"
-                            ? element.className
-                            : (element.getAttribute("class") ?? ""),
-                        animationName,
-                        duration: animatedStyle.animationDuration,
-                      }));
-                  },
-                );
+              if (isVisible && !wasVisible && status) {
+                audit.overlayVisibleAtMs = performance.now();
+                audit.overlayVisibleAtEpochMs = performance.timeOrigin + performance.now();
+                if (root) {
+                  const rect = root.getBoundingClientRect();
+                  const centralTarget = document.elementFromPoint(
+                    window.innerWidth / 2,
+                    window.innerHeight / 2,
+                  );
+                  audit.overlayCoverage = {
+                    coversViewport:
+                      rect.left <= 0 &&
+                      rect.top <= 0 &&
+                      rect.right >= window.innerWidth &&
+                      rect.bottom >= window.innerHeight,
+                    hitTestBelongsToOverlay: Boolean(centralTarget && root.contains(centralTarget)),
+                  };
+                  audit.loadingIndicatorCount = root.querySelectorAll(
+                    '[role="status"][aria-label="Cargando"]',
+                  ).length;
+                  audit.progressVisible = Array.from(root.querySelectorAll("span")).some(
+                    (element) => /^\d+%$/.test(element.textContent?.trim() ?? ""),
+                  );
+                  const rootStyle = getComputedStyle(root);
+                  audit.rootAnimationName = rootStyle.animationName;
+                  audit.rootAnimationDuration = rootStyle.animationDuration;
+                  audit.statusAnimationName = getComputedStyle(status).animationName;
+                  audit.activeAnimations = Array.from(root.querySelectorAll("*")).flatMap(
+                    (element) => {
+                      const animatedStyle = getComputedStyle(element);
+                      return animatedStyle.animationName
+                        .split(",")
+                        .map((animationName) => animationName.trim())
+                        .filter((animationName) => animationName && animationName !== "none")
+                        .map((animationName) => ({
+                          tag: element.tagName,
+                          className:
+                            typeof element.className === "string"
+                              ? element.className
+                              : (element.getAttribute("class") ?? ""),
+                          animationName,
+                          duration: animatedStyle.animationDuration,
+                        }));
+                    },
+                  );
+                }
+                wasVisible = true;
+              } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
+                audit.overlayHiddenAtMs = performance.now();
+                audit.overlayHiddenAtEpochMs = performance.timeOrigin + performance.now();
               }
-              wasVisible = true;
-            } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
-              audit.overlayHiddenAtMs = performance.now();
-              audit.overlayHiddenAtEpochMs = performance.timeOrigin + performance.now();
-            }
-          };
-          new MutationObserver(observeOverlay).observe(document, {
-            attributes: true,
-            attributeFilter: ["class", "hidden", "style"],
-            childList: true,
-            subtree: true,
-          });
-          observeOverlay();
-        });
+            };
+            new MutationObserver(observeOverlay).observe(document, {
+              attributes: true,
+              attributeFilter: ["class", "hidden", "style"],
+              childList: true,
+              subtree: true,
+            });
+            observeOverlay();
+          },
+          { probeRunId: diagnosticRunId, sampleIndex: sample },
+        );
 
         const cdp = await context.newCDPSession(page);
         await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
@@ -856,6 +911,7 @@ test.describe.serial("Render Performance", () => {
             responseBodyBytes: number | null;
             responseRowCount: number | null;
             responseHasClosedHandover: boolean | null;
+            diagnosticProbeMatched: boolean | null;
             failure: string | null;
             queryDimensions: {
               pageSize: string | null;
@@ -880,6 +936,10 @@ test.describe.serial("Render Performance", () => {
             responseBodyBytes: null,
             responseRowCount: null,
             responseHasClosedHandover: null,
+            diagnosticProbeMatched:
+              url.pathname === "/api/health/ready" && diagnosticRunId
+                ? url.searchParams.get("performance_probe") === `${diagnosticRunId}-s${sample}`
+                : null,
             failure: null,
             queryDimensions:
               url.pathname === "/api/records"
@@ -973,80 +1033,118 @@ test.describe.serial("Render Performance", () => {
           timeout: 30_000,
         });
         await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
-        const metrics = await page.evaluate(() => {
-          const audit = (
-            window as Window & {
-              __syncOverlayPaintAudit?: {
-                initialLastSyncTime: string | null;
-                timeOriginEpochMs: number;
-                fcpEntries: number[];
-                lcpEntries: Array<{
-                  startTimeMs: number;
-                  size: number;
-                  tag: string | null;
-                  className: string | null;
-                }>;
-                overlayVisibleAtMs: number | null;
-                overlayHiddenAtMs: number | null;
-                overlayVisibleAtEpochMs: number | null;
-                overlayHiddenAtEpochMs: number | null;
-                overlayCoverage: {
-                  coversViewport: boolean;
-                  hitTestBelongsToOverlay: boolean;
-                } | null;
-                loadingIndicatorCount: number | null;
-                progressVisible: boolean;
-                syncStepChanges: Array<{
-                  atEpochMs: number;
-                  step: string;
-                  progressPercent: number | null;
-                }>;
-                syncPhaseTimings: Array<{
-                  phase: "validation" | "cache-check" | "sync-step";
-                  name: string;
-                  durationMs: number;
-                  outcome: "success" | "failure";
-                }>;
-                rootAnimationName: string | null;
-                rootAnimationDuration: string | null;
-                statusAnimationName: string | null;
-                activeAnimations: Array<{
-                  tag: string;
-                  className: string;
-                  animationName: string;
-                  duration: string;
-                }>;
-              };
-            }
-          ).__syncOverlayPaintAudit;
-          const lastSyncTime = localStorage.getItem("lastSyncTime");
-          if (!audit || !lastSyncTime) throw new Error("Initial sync paint audit is incomplete");
-          return {
-            initialLastSyncTime: audit.initialLastSyncTime,
-            timeOriginEpochMs: audit.timeOriginEpochMs,
-            lastSyncTimePresent: Boolean(lastSyncTime),
-            fcpMs: audit.fcpEntries[0] ?? null,
-            lcpEntries: audit.lcpEntries,
-            overlayVisibleAtMs: audit.overlayVisibleAtMs,
-            overlayHiddenAtMs: audit.overlayHiddenAtMs,
-            overlayVisibleAtEpochMs: audit.overlayVisibleAtEpochMs,
-            overlayHiddenAtEpochMs: audit.overlayHiddenAtEpochMs,
-            overlayCoverage: audit.overlayCoverage,
-            loadingIndicatorCount: audit.loadingIndicatorCount,
-            progressVisible: audit.progressVisible,
-            syncStepChanges: audit.syncStepChanges,
-            syncPhaseTimings: audit.syncPhaseTimings,
-            overlayVisibleDurationMs:
-              audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
-                ? Number((audit.overlayHiddenAtMs - audit.overlayVisibleAtMs).toFixed(2))
-                : null,
-            rootAnimationName: audit.rootAnimationName,
-            rootAnimationDuration: audit.rootAnimationDuration,
-            statusAnimationName: audit.statusAnimationName,
-            activeAnimations: audit.activeAnimations,
-            syncReadyAtMs: performance.now(),
-          };
-        });
+        const metrics = await page.evaluate(
+          ({ probeRunId, sampleIndex }) => {
+            const audit = (
+              window as Window & {
+                __syncOverlayPaintAudit?: {
+                  initialLastSyncTime: string | null;
+                  timeOriginEpochMs: number;
+                  fcpEntries: number[];
+                  lcpEntries: Array<{
+                    startTimeMs: number;
+                    size: number;
+                    tag: string | null;
+                    className: string | null;
+                  }>;
+                  overlayVisibleAtMs: number | null;
+                  overlayHiddenAtMs: number | null;
+                  overlayVisibleAtEpochMs: number | null;
+                  overlayHiddenAtEpochMs: number | null;
+                  overlayCoverage: {
+                    coversViewport: boolean;
+                    hitTestBelongsToOverlay: boolean;
+                  } | null;
+                  loadingIndicatorCount: number | null;
+                  progressVisible: boolean;
+                  syncStepChanges: Array<{
+                    atEpochMs: number;
+                    step: string;
+                    progressPercent: number | null;
+                  }>;
+                  syncPhaseTimings: Array<{
+                    phase: "validation" | "cache-check" | "sync-step";
+                    name: string;
+                    startedAtMs: number;
+                    durationMs: number;
+                    outcome: "success" | "failure";
+                  }>;
+                  readinessQueryTimings: Array<{
+                    startedAtMs: number;
+                    resolvedAtMs: number;
+                    outcome: "success" | "failure";
+                  }>;
+                  readinessApiClientStages: Array<{ stage: string; atMs: number }>;
+                  validationStages: Array<{ stage: string; atMs: number }>;
+                  longTaskEntries: Array<{ startTimeMs: number; durationMs: number }>;
+                  rootAnimationName: string | null;
+                  rootAnimationDuration: string | null;
+                  statusAnimationName: string | null;
+                  activeAnimations: Array<{
+                    tag: string;
+                    className: string;
+                    animationName: string;
+                    duration: string;
+                  }>;
+                };
+              }
+            ).__syncOverlayPaintAudit;
+            const lastSyncTime = localStorage.getItem("lastSyncTime");
+            if (!audit || !lastSyncTime) throw new Error("Initial sync paint audit is incomplete");
+            const readinessResourceTimings = performance
+              .getEntriesByType("resource")
+              .flatMap((entry) => {
+                const timing = entry as PerformanceResourceTiming;
+                const url = new URL(timing.name);
+                if (url.pathname !== "/api/health/ready") return [];
+                if (probeRunId) {
+                  if (url.searchParams.get("performance_probe") !== `${probeRunId}-s${sampleIndex}`)
+                    return [];
+                } else if (url.searchParams.has("performance_probe")) {
+                  return [];
+                }
+                return [
+                  {
+                    fetchStartMs: Number(timing.fetchStart.toFixed(2)),
+                    requestStartMs: Number(timing.requestStart.toFixed(2)),
+                    responseStartMs: Number(timing.responseStart.toFixed(2)),
+                    responseEndMs: Number(timing.responseEnd.toFixed(2)),
+                  },
+                ];
+              });
+            return {
+              initialLastSyncTime: audit.initialLastSyncTime,
+              timeOriginEpochMs: audit.timeOriginEpochMs,
+              lastSyncTimePresent: Boolean(lastSyncTime),
+              fcpMs: audit.fcpEntries[0] ?? null,
+              lcpEntries: audit.lcpEntries,
+              overlayVisibleAtMs: audit.overlayVisibleAtMs,
+              overlayHiddenAtMs: audit.overlayHiddenAtMs,
+              overlayVisibleAtEpochMs: audit.overlayVisibleAtEpochMs,
+              overlayHiddenAtEpochMs: audit.overlayHiddenAtEpochMs,
+              overlayCoverage: audit.overlayCoverage,
+              loadingIndicatorCount: audit.loadingIndicatorCount,
+              progressVisible: audit.progressVisible,
+              syncStepChanges: audit.syncStepChanges,
+              syncPhaseTimings: audit.syncPhaseTimings,
+              readinessQueryTimings: audit.readinessQueryTimings,
+              readinessApiClientStages: audit.readinessApiClientStages,
+              validationStages: audit.validationStages,
+              longTaskEntries: audit.longTaskEntries,
+              readinessResourceTimings,
+              overlayVisibleDurationMs:
+                audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
+                  ? Number((audit.overlayHiddenAtMs - audit.overlayVisibleAtMs).toFixed(2))
+                  : null,
+              rootAnimationName: audit.rootAnimationName,
+              rootAnimationDuration: audit.rootAnimationDuration,
+              statusAnimationName: audit.statusAnimationName,
+              activeAnimations: audit.activeAnimations,
+              syncReadyAtMs: performance.now(),
+            };
+          },
+          { probeRunId: diagnosticRunId, sampleIndex: sample },
+        );
         const activeEmployeeProbe = captureActiveEmployeeFilterProbe
           ? await page.evaluate(async () => {
               const token = sessionStorage.getItem("authToken");
@@ -1148,6 +1246,125 @@ test.describe.serial("Render Performance", () => {
         expect(readinessRequests[0]?.statusCode).toBe(200);
         expect(readinessRequests[0]?.responseBodyBytes).not.toBeNull();
         expect(readinessRequests[0]?.responseBodyBytes ?? Infinity).toBeLessThan(512);
+        expect(readinessRequests[0]?.diagnosticProbeMatched).toBe(diagnosticRunId ? true : null);
+        expect(metrics.readinessResourceTimings).toHaveLength(1);
+        expect(metrics.readinessQueryTimings).toHaveLength(1);
+        expect(metrics.readinessApiClientStages).toHaveLength(2);
+        expect(metrics.validationStages).toHaveLength(1);
+        const readinessTiming = metrics.readinessResourceTimings[0];
+        const readinessQueryTiming = metrics.readinessQueryTimings[0];
+        const apiClientFetchResolved = metrics.readinessApiClientStages.find(
+          ({ stage }) => stage === "fetch-resolved",
+        );
+        const apiClientBodyResolved = metrics.readinessApiClientStages.find(
+          ({ stage }) => stage === "read-body-resolved",
+        );
+        const validationStage = metrics.validationStages.find(
+          ({ stage }) => stage === "readiness-query-resolved",
+        );
+        const validationTiming = metrics.syncPhaseTimings.find(
+          ({ phase, name }) => phase === "validation" && name === "validateInstanceId",
+        );
+        if (
+          !readinessTiming ||
+          !readinessQueryTiming ||
+          !apiClientFetchResolved ||
+          !apiClientBodyResolved ||
+          !validationStage ||
+          !validationTiming
+        )
+          throw new Error("Validation and readiness browser timings are incomplete");
+        expect(
+          [
+            readinessTiming.fetchStartMs,
+            readinessTiming.requestStartMs,
+            readinessTiming.responseStartMs,
+            readinessTiming.responseEndMs,
+            readinessQueryTiming.startedAtMs,
+            readinessQueryTiming.resolvedAtMs,
+            apiClientFetchResolved.atMs,
+            apiClientBodyResolved.atMs,
+            validationStage.atMs,
+            validationTiming.startedAtMs,
+            validationTiming.durationMs,
+          ].every(Number.isFinite),
+        ).toBe(true);
+        expect(readinessQueryTiming.outcome).toBe("success");
+        expect(apiClientBodyResolved.atMs).toBeGreaterThanOrEqual(apiClientFetchResolved.atMs);
+        expect(readinessQueryTiming.resolvedAtMs).toBeGreaterThanOrEqual(
+          apiClientBodyResolved.atMs,
+        );
+        expect(readinessQueryTiming.resolvedAtMs).toBeGreaterThanOrEqual(
+          readinessTiming.responseEndMs,
+        );
+        expect(validationStage.atMs).toBeGreaterThanOrEqual(readinessQueryTiming.resolvedAtMs);
+        expect(readinessTiming.requestStartMs).toBeGreaterThanOrEqual(readinessTiming.fetchStartMs);
+        expect(readinessTiming.responseStartMs).toBeGreaterThanOrEqual(
+          readinessTiming.requestStartMs,
+        );
+        expect(readinessTiming.responseEndMs).toBeGreaterThanOrEqual(
+          readinessTiming.responseStartMs,
+        );
+        const validationEndMs = validationTiming.startedAtMs + validationTiming.durationMs;
+        const validationLongTasks = metrics.longTaskEntries
+          .map((entry) => ({
+            startTimeMs: entry.startTimeMs,
+            durationMs: entry.durationMs,
+            overlapMs: Number(
+              Math.max(
+                0,
+                Math.min(entry.startTimeMs + entry.durationMs, validationEndMs) -
+                  Math.max(entry.startTimeMs, validationTiming.startedAtMs),
+              ).toFixed(2),
+            ),
+          }))
+          .filter((entry) => entry.overlapMs > 0);
+        const readinessBreakdown = {
+          validationStartedAtMs: validationTiming.startedAtMs,
+          validationDurationMs: validationTiming.durationMs,
+          browserFetchStartMs: readinessTiming.fetchStartMs,
+          browserResponseEndMs: readinessTiming.responseEndMs,
+          requestStartOffsetFromValidationMs: Number(
+            (readinessTiming.fetchStartMs - validationTiming.startedAtMs).toFixed(2),
+          ),
+          browserQueueBeforeRequestMs: Number(
+            (readinessTiming.requestStartMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          browserTimeToFirstByteMs: Number(
+            (readinessTiming.responseStartMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          apiClientFetchResolvedMs: apiClientFetchResolved.atMs,
+          apiClientFetchResolvedAfterRequestMs: Number(
+            (apiClientFetchResolved.atMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          apiClientFetchResolvedVsResponseEndMs: Number(
+            (apiClientFetchResolved.atMs - readinessTiming.responseEndMs).toFixed(2),
+          ),
+          apiClientReadBodyMs: Number(
+            (apiClientBodyResolved.atMs - apiClientFetchResolved.atMs).toFixed(2),
+          ),
+          apiClientReturnAfterBodyMs: Number(
+            (readinessQueryTiming.resolvedAtMs - apiClientBodyResolved.atMs).toFixed(2),
+          ),
+          browserRequestMs: Number(
+            (readinessTiming.responseEndMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          queryFunctionAfterResponseMs: Number(
+            (readinessQueryTiming.resolvedAtMs - readinessTiming.responseEndMs).toFixed(2),
+          ),
+          queryCacheWaitAfterFunctionMs: Number(
+            (validationStage.atMs - readinessQueryTiming.resolvedAtMs).toFixed(2),
+          ),
+          validationAfterQueryCacheMs: Number((validationEndMs - validationStage.atMs).toFixed(2)),
+          validationAfterResponseMs: Number(
+            (validationEndMs - readinessTiming.responseEndMs).toFixed(2),
+          ),
+          longTaskCountDuringValidation: validationLongTasks.length,
+          longTaskDurationMsDuringValidation: Number(
+            validationLongTasks.reduce((total, entry) => total + entry.overlapMs, 0).toFixed(2),
+          ),
+          longTasksDuringValidation: validationLongTasks,
+        };
         expect(detailedHealthRequests).toHaveLength(0);
         const employeeRequests = Array.from(apiRequestTimings.values()).filter(
           (timing) => timing.path === "/api/employees",
@@ -1243,6 +1460,7 @@ test.describe.serial("Render Performance", () => {
 
         samples.push({
           sample,
+          browserTimeOriginEpochMs: metrics.timeOriginEpochMs,
           overlayCoverage,
           initialLastSyncTime: metrics.initialLastSyncTime,
           lastSyncTimePresent: metrics.lastSyncTimePresent,
@@ -1261,6 +1479,7 @@ test.describe.serial("Render Performance", () => {
             ...change,
           })),
           syncPhaseTimings: metrics.syncPhaseTimings,
+          readinessBreakdown,
           overlayVisibleDurationMs: metrics.overlayVisibleDurationMs,
           rootAnimationName: metrics.rootAnimationName,
           rootAnimationDuration: metrics.rootAnimationDuration,
@@ -1292,9 +1511,11 @@ test.describe.serial("Render Performance", () => {
       cpuThrottle: 4,
       sampleCount: samples.length,
       apiRequestPathPolicy:
-        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees, clocking options and users; clocking options also records row count; /api/employees records only whether status=Activo; optional active-filter and field-projection diagnostics use PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE=1 and PERFORMANCE_EMPLOYEE_CLOCKING_PROJECTION_PROBE=1; the projection probe reports only row count and byte lengths; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
+        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees, clocking options and users; clocking options also records row count; /api/employees records only whether status=Activo; optional active-filter and field-projection diagnostics use PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE=1 and PERFORMANCE_EMPLOYEE_CLOCKING_PROJECTION_PROBE=1; readiness query correlation is checked in memory and its value is omitted; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
       syncPhasePolicy:
-        "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
+        "opt-in CustomEvent records phase, name, monotonic start, duration and outcome only; user/session data omitted",
+      readinessProbePolicy:
+        "an optional unique query marker identifies the browser request; Fastify logs are correlated by the browser request interval within 500 ms; query contents and response bodies are never written to evidence",
       timingOffsetBasis: "Date.now immediately before page.goto",
       readinessMetric:
         "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",

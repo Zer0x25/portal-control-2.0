@@ -60,11 +60,73 @@ export interface HealthResponse {
   data: HealthData;
 }
 
-const fetchReadiness = () =>
-  apiClient.get("/api/health/ready", {
-    timeoutMs: 5000,
-    retry: false,
-  });
+type ReadinessDiagnosticsWindow = Window & {
+  __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean;
+  __PORTAL_SYNC_PERF_RUN_ID__?: string;
+  __PORTAL_SYNC_PERF_SAMPLE__?: number;
+};
+
+const getReadinessDiagnosticParams = (): Record<string, string> | undefined => {
+  if (typeof window === "undefined") return undefined;
+
+  const diagnostics = window as ReadinessDiagnosticsWindow;
+  const runId = diagnostics.__PORTAL_SYNC_PERF_RUN_ID__;
+  const sample = diagnostics.__PORTAL_SYNC_PERF_SAMPLE__;
+  if (
+    diagnostics.__PORTAL_SYNC_PERF_DIAGNOSTICS__ !== true ||
+    !runId ||
+    !/^[a-z0-9-]{1,64}$/i.test(runId) ||
+    !Number.isInteger(sample) ||
+    sample === undefined ||
+    sample < 1 ||
+    sample > 3
+  ) {
+    return undefined;
+  }
+
+  const probeId = `${runId}-s${sample}`;
+  return { performance_probe: probeId };
+};
+
+const emitReadinessQueryTiming = (startedAtMs: number, outcome: "success" | "failure"): void => {
+  if (
+    typeof window === "undefined" ||
+    (window as ReadinessDiagnosticsWindow).__PORTAL_SYNC_PERF_DIAGNOSTICS__ !== true
+  ) {
+    return;
+  }
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("portal:readiness-query", {
+        detail: {
+          startedAtMs: Number(startedAtMs.toFixed(2)),
+          resolvedAtMs: Number(performance.now().toFixed(2)),
+          outcome,
+        },
+      }),
+    );
+  } catch {
+    // Diagnostic timing must never affect the readiness query.
+  }
+};
+
+const fetchReadiness = async () => {
+  const diagnosticParams = getReadinessDiagnosticParams();
+  const startedAtMs = performance.now();
+  try {
+    const response = await apiClient.get("/api/health/ready", {
+      ...(diagnosticParams ? { params: diagnosticParams as never } : {}),
+      timeoutMs: 5000,
+      retry: false,
+    });
+    emitReadinessQueryTiming(startedAtMs, "success");
+    return response;
+  } catch (error) {
+    emitReadinessQueryTiming(startedAtMs, "failure");
+    throw error;
+  }
+};
 
 export type HealthReadinessData = Awaited<ReturnType<typeof fetchReadiness>>;
 
