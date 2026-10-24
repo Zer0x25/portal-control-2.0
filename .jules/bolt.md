@@ -196,3 +196,9 @@
 - **Cambio**: habilitar la query un minuto antes del recordatorio y mantener habilitado el comportamiento predeterminado para Quick Notes al abrirse.
 - **Medido**: en tres arranques seriales de staging, solicitudes únicas 9 → 8 (−11,1%); `/api/notes` pasó de 3/3 solicitudes (mediana 25,96 ms) a 0/3. Abrir Notas solicita la ruta bajo demanda y recibe HTTP 200. Todas las respuestas de arranque fueron 200 y no hubo duplicados. Las medianas de contenido/reloj fueron 553/571 ms antes y 583/633 ms después; los rangos se solapan y no se demuestra una mejora estable de render/CWV. Reducción acumulada desde Spec 046: 10 → 8 (−20%).
 - **Evidencia**: [Spec 048](../specs/048-defer-ambient-notes-query/evidencia/resultado-2026-10-23.md). Imagen staging `sha256:90f244ed92908124a6635a82612179318c88604e57ccbdd4ce0474aaa216f534`.
+
+## 2026-10-24 - test(perf): Batería Lighthouse multirruta
+
+- **Medido**: 18 rutas funcionales listas; 17 Lighthouse estándar y 3 muestras frías de Dashboard, todas aprobadas. El Dashboard frío obtuvo mediana de 0,69; FCP 3.710 ms, LCP 5.330 ms, TBT 174 ms, 459.522 bytes transferidos, 295.739 bytes de scripts y 86 solicitudes. Frente al último registro previo (0,67; FCP 3.809 ms; LCP 5.599 ms; 473.684 bytes; 89 solicitudes), las cifras mejoran, pero el intervalo incluye varios cambios y no se atribuye a uno solo.
+- **Gap detectado**: React core transfiere ~80 KB y concentra 0,98–1,25 s de scripting en las tres muestras frías. `useLoginAutomations` importa `useScheduling` y `useShiftManager` aunque el usuario actual no pueda usar el auto-inicio; separar esa ruta por elegibilidad puede reducir JS inicial sin cambiar el Dashboard Admin.
+- **Evidencia**: [`b49d6915` — batería staging](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T01-42-28-474Z-b49d6915.json).
