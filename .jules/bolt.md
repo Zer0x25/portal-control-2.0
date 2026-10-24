@@ -242,3 +242,11 @@
 - **Aprendizaje**: en tres perfiles fríos, el candidato LCP fue texto de `InitialSyncOverlay`; otros tres hit-tests mostraron que puede cubrir el encabezado hasta 1,96–2,38 s, incluso con marcaciones aún pendientes. La batería actual mide también sincronización inicial.
 - **Siguiente**: separar escenarios de sincronización fría y navegación autenticada ya sincronizada antes de atribuir LCP de ruta o cambiar el overlay.
 - **Evidencia**: [resultado Spec 056](../specs/056-time-control-early-content/resultado.md), [prueba retenida](../specs/056-time-control-early-content/evidencia/time-control-shell-before-records.json), [perfil del overlay](../specs/056-time-control-early-content/evidencia/time-control-initial-sync-overlay-2026-10-24.json) y [ledger](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T08-58-04-237Z-faa79842.json). Imagen staging `sha256:88fa33758435e8e667fcaea1bd6659e8b2ff161da4fb01a3f8bcc60d8fdddc4d`.
+
+## 2026-10-24 - perf(time-control): Revertir animaciones del overlay por gate no alcanzado
+
+- **Experimento**: retirar el fade de 800 ms y dos pulsos decorativos, sin tocar la opacidad ni el bloqueo de la sincronización.
+- **Comparación fría**: tres muestras Lighthouse con el mismo perfil. LCP observado mediano 1.592 → 1.549 ms (−43 ms; el criterio requería −100 ms). FCP observado 639 → 646 ms (+7); TBT 172,5 → 248,5 ms (+76). El LCP experimental varió 737–1.723 ms y se solapó con el baseline.
+- **Decisión**: restaurar las clases originales; no declarar mejora de rendimiento. El probe de tres contextos permanece: confirma pantalla bloqueante, dos spinners, progreso y captura del LCP candidato. El estilo restaurado calcula `enter` / `0.8s`.
+- **Validación**: batería completa aprobada en el build experimental, con 18 rutas, 17 Lighthouse y 85/85 aserciones. Rebuild final con el overlay original saludable; prueba enfocada 1/1 (tres contextos). Evidencia: [resultado Spec 057](../specs/057-time-control-sync-overlay-lcp/evidencia/resultado-2026-10-24.md), [corrida completa](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T10-01-29-292Z-efa823d3.json).
+- **Siguiente**: cronometrar las fases de sincronización inicial para localizar el trabajo que mantiene tapada la ruta y optimizarlo sin habilitar interacción prematura.

@@ -610,6 +610,279 @@ test.describe.serial("Render Performance", () => {
     });
   });
 
+  test("Time Control initial sync overlay records paint and remains blocking", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    test.setTimeout(180_000);
+    const mobileViewport = { width: 412, height: 823 };
+    const samples: Array<Record<string, unknown>> = [];
+    const fcpSamples: number[] = [];
+    const lcpSamples: number[] = [];
+
+    for (let sample = 1; sample <= 3; sample += 1) {
+      const context = await browser.newContext({
+        viewport: mobileViewport,
+        deviceScaleFactor: 1,
+        isMobile: true,
+        hasTouch: true,
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        await page.addInitScript(() => {
+          type OverlayPaintAudit = {
+            initialLastSyncTime: string | null;
+            fcpEntries: number[];
+            lcpEntries: Array<{
+              startTimeMs: number;
+              size: number;
+              tag: string | null;
+              className: string | null;
+            }>;
+            overlayVisibleAtMs: number | null;
+            overlayHiddenAtMs: number | null;
+            rootAnimationName: string | null;
+            rootAnimationDuration: string | null;
+            statusAnimationName: string | null;
+            activeAnimations: Array<{
+              tag: string;
+              className: string;
+              animationName: string;
+              duration: string;
+            }>;
+          };
+          const audit: OverlayPaintAudit = {
+            initialLastSyncTime: localStorage.getItem("lastSyncTime"),
+            fcpEntries: [],
+            lcpEntries: [],
+            overlayVisibleAtMs: null,
+            overlayHiddenAtMs: null,
+            rootAnimationName: null,
+            rootAnimationDuration: null,
+            statusAnimationName: null,
+            activeAnimations: [],
+          };
+          (
+            window as Window & { __syncOverlayPaintAudit?: OverlayPaintAudit }
+          ).__syncOverlayPaintAudit = audit;
+
+          new PerformanceObserver((list) => {
+            audit.fcpEntries.push(
+              ...list
+                .getEntries()
+                .filter((entry) => entry.name === "first-contentful-paint")
+                .map((entry) => entry.startTime),
+            );
+          }).observe({ type: "paint", buffered: true });
+          new PerformanceObserver((list) => {
+            audit.lcpEntries.push(
+              ...list.getEntries().map((entry) => {
+                const candidate = entry as PerformanceEntry & {
+                  size: number;
+                  element: Element | null;
+                };
+                const elementClassName = candidate.element?.className;
+                return {
+                  startTimeMs: candidate.startTime,
+                  size: candidate.size,
+                  tag: candidate.element?.tagName ?? null,
+                  className:
+                    typeof elementClassName === "string"
+                      ? elementClassName
+                      : (candidate.element?.getAttribute("class") ?? null),
+                };
+              }),
+            );
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+
+          let wasVisible = false;
+          const observeOverlay = () => {
+            const status = Array.from(document.querySelectorAll("p")).find(
+              (element) =>
+                element.textContent?.trim() ===
+                "Establishing technical handshake • Validating integrity...",
+            );
+            const style = status ? getComputedStyle(status) : null;
+            const isVisible = Boolean(
+              status &&
+              style?.display !== "none" &&
+              style?.visibility !== "hidden" &&
+              status.getClientRects().length > 0,
+            );
+            if (isVisible && !wasVisible && status) {
+              let root: HTMLElement | null = status as HTMLElement;
+              while (root && getComputedStyle(root).position !== "fixed") {
+                root = root.parentElement;
+              }
+              audit.overlayVisibleAtMs = performance.now();
+              if (root) {
+                const rootStyle = getComputedStyle(root);
+                audit.rootAnimationName = rootStyle.animationName;
+                audit.rootAnimationDuration = rootStyle.animationDuration;
+                audit.statusAnimationName = getComputedStyle(status).animationName;
+                audit.activeAnimations = Array.from(root.querySelectorAll("*")).flatMap(
+                  (element) => {
+                    const animatedStyle = getComputedStyle(element);
+                    return animatedStyle.animationName
+                      .split(",")
+                      .map((animationName) => animationName.trim())
+                      .filter((animationName) => animationName && animationName !== "none")
+                      .map((animationName) => ({
+                        tag: element.tagName,
+                        className:
+                          typeof element.className === "string"
+                            ? element.className
+                            : (element.getAttribute("class") ?? ""),
+                        animationName,
+                        duration: animatedStyle.animationDuration,
+                      }));
+                  },
+                );
+              }
+              wasVisible = true;
+            } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
+              audit.overlayHiddenAtMs = performance.now();
+            }
+          };
+          new MutationObserver(observeOverlay).observe(document, {
+            attributes: true,
+            attributeFilter: ["class", "hidden", "style"],
+            childList: true,
+            subtree: true,
+          });
+          observeOverlay();
+        });
+
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+        const syncOverlay = page.getByText(
+          "Establishing technical handshake • Validating integrity...",
+          { exact: true },
+        );
+        await expect(syncOverlay).toBeVisible({ timeout: 30_000 });
+        const overlayCoverage = await syncOverlay.evaluate((status) => {
+          let overlayRoot: HTMLElement | null = status as HTMLElement;
+          while (overlayRoot && getComputedStyle(overlayRoot).position !== "fixed") {
+            overlayRoot = overlayRoot.parentElement;
+          }
+          if (!overlayRoot) throw new Error("Initial sync overlay root was not found");
+          const rect = overlayRoot.getBoundingClientRect();
+          const target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+          return {
+            coversViewport:
+              rect.left <= 0 &&
+              rect.top <= 0 &&
+              rect.right >= window.innerWidth &&
+              rect.bottom >= window.innerHeight,
+            hitTestBelongsToOverlay: Boolean(target && overlayRoot.contains(target)),
+            topElementTag: target?.tagName ?? null,
+          };
+        });
+        expect(overlayCoverage.coversViewport).toBe(true);
+        expect(overlayCoverage.hitTestBelongsToOverlay).toBe(true);
+        const loadingIndicators = page.getByRole("status", { name: "Cargando" });
+        await expect(loadingIndicators).toHaveCount(2);
+        await expect(page.getByText(/^\d+%$/)).toBeVisible();
+
+        await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
+        await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+          timeout: 30_000,
+        });
+        const metrics = await page.evaluate(() => {
+          const audit = (
+            window as Window & {
+              __syncOverlayPaintAudit?: {
+                initialLastSyncTime: string | null;
+                fcpEntries: number[];
+                lcpEntries: Array<{
+                  startTimeMs: number;
+                  size: number;
+                  tag: string | null;
+                  className: string | null;
+                }>;
+                overlayVisibleAtMs: number | null;
+                overlayHiddenAtMs: number | null;
+                rootAnimationName: string | null;
+                rootAnimationDuration: string | null;
+                statusAnimationName: string | null;
+                activeAnimations: Array<{
+                  tag: string;
+                  className: string;
+                  animationName: string;
+                  duration: string;
+                }>;
+              };
+            }
+          ).__syncOverlayPaintAudit;
+          const lastSyncTime = localStorage.getItem("lastSyncTime");
+          if (!audit || !lastSyncTime) throw new Error("Initial sync paint audit is incomplete");
+          return {
+            initialLastSyncTime: audit.initialLastSyncTime,
+            lastSyncTimePresent: Boolean(lastSyncTime),
+            fcpMs: audit.fcpEntries[0] ?? null,
+            lcpEntries: audit.lcpEntries,
+            overlayVisibleAtMs: audit.overlayVisibleAtMs,
+            overlayHiddenAtMs: audit.overlayHiddenAtMs,
+            overlayVisibleDurationMs:
+              audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
+                ? Number((audit.overlayHiddenAtMs - audit.overlayVisibleAtMs).toFixed(2))
+                : null,
+            rootAnimationName: audit.rootAnimationName,
+            rootAnimationDuration: audit.rootAnimationDuration,
+            statusAnimationName: audit.statusAnimationName,
+            activeAnimations: audit.activeAnimations,
+            syncReadyAtMs: performance.now(),
+          };
+        });
+        expect(metrics.initialLastSyncTime).toBeNull();
+        expect(metrics.lastSyncTimePresent).toBe(true);
+        expect(metrics.overlayVisibleAtMs).not.toBeNull();
+        expect(metrics.overlayHiddenAtMs).not.toBeNull();
+        if (metrics.fcpMs === null) throw new Error("First Contentful Paint was not recorded");
+        expect(metrics.lcpEntries.length).toBeGreaterThan(0);
+        expect(metrics.rootAnimationName).toBeTruthy();
+        expect(metrics.rootAnimationDuration).toBeTruthy();
+        expect(metrics.statusAnimationName).toBeTruthy();
+        expect(
+          metrics.activeAnimations.some((animation) => animation.animationName === "spin"),
+          "The progress spinner must retain its rotation while the sync overlay is visible",
+        ).toBe(true);
+        const finalLcpCandidate = metrics.lcpEntries.at(-1);
+        if (!finalLcpCandidate)
+          throw new Error("Largest Contentful Paint candidate was not recorded");
+        fcpSamples.push(metrics.fcpMs);
+        lcpSamples.push(finalLcpCandidate.startTimeMs);
+
+        samples.push({
+          sample,
+          overlayCoverage,
+          ...metrics,
+          finalLcpCandidate,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    await attachPerformanceReport(testInfo, "time-control-initial-sync-overlay.json", {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      viewport: mobileViewport,
+      cpuThrottle: 4,
+      sampleCount: samples.length,
+      readinessMetric:
+        "Initial sync overlay LCP candidate and hit-test under a clean authenticated context",
+      samples,
+      fcpStats: summarizePerformance(fcpSamples),
+      observedLcpStats: summarizePerformance(lcpSamples),
+    });
+  });
+
   test("Time Control shows its page shell while attendance records are pending", async ({
     page,
   }, testInfo) => {
