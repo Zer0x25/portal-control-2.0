@@ -216,7 +216,9 @@ const App: React.FC = () => {
                   ROLES.AUDITOR,
                 ]}
               >
-                <TimeControlPage />
+                <RenderProfiler id="time-control">
+                  <TimeControlPage />
+                </RenderProfiler>
               </ProtectedRoute>
             }
           />

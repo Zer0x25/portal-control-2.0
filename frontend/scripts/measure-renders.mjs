@@ -17,6 +17,9 @@ const baselineArg = process.argv
 const samplesArg = process.argv
   .find((arg) => arg.startsWith("--samples="))
   ?.slice("--samples=".length);
+const viewportArg = process.argv
+  .find((arg) => arg.startsWith("--viewport="))
+  ?.slice("--viewport=".length);
 const outputPath = outputArg ? resolve(frontendRoot, outputArg) : undefined;
 const baselinePath = baselineArg ? resolve(frontendRoot, baselineArg) : undefined;
 const sampleCount = samplesArg === undefined ? 3 : Number(samplesArg);
@@ -29,11 +32,31 @@ const routes = [
   { id: "dashboard", path: "/#/dashboard", role: "admin" },
   { id: "planner", path: "/#/planning/monthly", role: "admin" },
   { id: "worker-portal", path: "/#/worker-portal", role: "worker" },
+  { id: "time-control", path: "/#/time-control", role: "admin" },
   { id: "logbook", path: "/#/logbook", role: "admin" },
   { id: "kiosk", path: "/#/kiosk", role: null },
 ];
 
-const viewport = { width: 1440, height: 900 };
+const routeArg = process.argv.find((arg) => arg.startsWith("--route="))?.slice("--route=".length);
+const selectedRoutes = routeArg ? routes.filter((route) => route.id === routeArg) : routes;
+
+if (routeArg && selectedRoutes.length === 0) {
+  throw new Error(
+    `Unknown route "${routeArg}". Available routes: ${routes.map((route) => route.id).join(", ")}`,
+  );
+}
+
+const viewportPresets = {
+  desktop: { width: 1440, height: 900 },
+  mobile: { width: 412, height: 823 },
+};
+
+if (viewportArg && !Object.hasOwn(viewportPresets, viewportArg)) {
+  throw new Error('--viewport must be "desktop" or "mobile"');
+}
+
+const viewportName = viewportArg ?? "desktop";
+const viewport = viewportPresets[viewportName];
 
 const credentials = {
   admin: {
@@ -135,6 +158,9 @@ const measureRouteSample = async (route, sessions) => {
         widgets: Object.fromEntries(
           Object.entries(metrics).filter(([metricId]) => metricId.startsWith("widget:")),
         ),
+        scopedProfiles: Object.fromEntries(
+          Object.entries(metrics).filter(([metricId]) => metricId.startsWith(`${id}:`)),
+        ),
       };
     }, route.id);
 
@@ -178,6 +204,9 @@ const measureRoute = async (route, sessions) => {
   const widgetIds = [
     ...new Set(samples.flatMap((sample) => Object.keys(sample.renderProfile.widgets))),
   ].sort();
+  const scopedProfileIds = [
+    ...new Set(samples.flatMap((sample) => Object.keys(sample.renderProfile.scopedProfiles))),
+  ].sort();
 
   return {
     id: route.id,
@@ -193,6 +222,14 @@ const measureRoute = async (route, sessions) => {
         widgetIds.map((id) => [
           id,
           aggregateMetrics(samples.map((sample) => sample.renderProfile.widgets[id] ?? null)),
+        ]),
+      ),
+      scopedProfiles: Object.fromEntries(
+        scopedProfileIds.map((id) => [
+          id,
+          aggregateMetrics(
+            samples.map((sample) => sample.renderProfile.scopedProfiles[id] ?? null),
+          ),
         ]),
       ),
     },
@@ -233,7 +270,7 @@ try {
 
   const sessions = {};
   const measurements = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     measuredAt: new Date().toISOString(),
     baseUrl,
     apiBase,
@@ -241,13 +278,14 @@ try {
     browser: { name: "Chromium", version: browser.version() },
     viewport,
     sampleCountPerRoute: sampleCount,
+    viewportName,
     interaction: "direct route navigation in a fresh browser context per sample",
     timingLimit:
       "React Profiler timings come from Vite development mode; do not compare them to production Lighthouse or CPU profiles",
     routes: [],
   };
 
-  for (const route of routes) {
+  for (const route of selectedRoutes) {
     measurements.routes.push(await measureRoute(route, sessions));
   }
 

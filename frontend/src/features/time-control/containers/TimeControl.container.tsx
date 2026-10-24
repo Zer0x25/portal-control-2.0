@@ -1,4 +1,5 @@
 import React from "react";
+import { RenderProfiler } from "../../../utils/RenderProfiler";
 import TimeControlView from "../views/TimeControl.view";
 import { useTimeControlData } from "../hooks/useTimeControlData";
 
@@ -13,7 +14,11 @@ import { useTimeControlData } from "../hooks/useTimeControlData";
 const TimeControlContainer: React.FC = () => {
   const logic = useTimeControlData();
 
-  return <TimeControlView {...logic} />;
+  return (
+    <RenderProfiler id="time-control:view">
+      <TimeControlView {...logic} />
+    </RenderProfiler>
+  );
 };
 
 export default TimeControlContainer;

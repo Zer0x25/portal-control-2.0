@@ -225,3 +225,11 @@
 - **Medido**: en tres muestras frías Lighthouse, JS transferido 357.482 → 296.809 B (−17,0%), transferencia total 525.073 → 462.233 B (−12,0%) y solicitudes 99 → 85. FCP/LCP simulados bajan 7,2%/7,7%; el TBT mediano sube 8,2% y el trace Chromium observado no mejora. No declarar ganancia global de CWV.
 - **Siguiente**: instrumentar el render inicial de Control horario; el retraso del candidato LCP sigue cerca de 1,66 s y TBT mediano en 258 ms. Staging sin filas, de modo que no se validó virtualización con registros vivos.
 - **Evidencia**: [resultado Spec 054](../specs/054-time-control-defer-virtualized-table/resultado.md) y [ledger staging](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T08-18-04-669Z-c6f06995.json). Imagen `sha256:4e184992f8b571d59d1a716399a6baf296e4577e983efb260b92eee5cc4c0eb1`.
+
+## 2026-10-24 - test(perf): Perfilar render inicial de Time Control
+
+- **Método**: React Profiler en Vite dev, Node 26.10.0, Chromium 153, 412×823, tres contextos nuevos contra la API local de staging.
+- **Medido**: 12 commits medianos durante el primer segundo. El árbol de ruta acumuló 64,3 ms de `actualDuration`; la vista acumuló 32,9 ms. Diferencia de scopes: 31,4 ms, atribuible por inferencia al contenedor/orquestación fuera de la vista; no es costo exclusivo de hook.
+- **Límite**: El rango inicial devolvió 2 registros; no representa carga de tabla con volumen. Los tiempos de desarrollo no se comparan con Lighthouse. No se atribuye mejora CWV ni se eligió aún una optimización.
+- **Siguiente**: capturar CPU de producción en esta ruta y localizar el LCP y el trabajo de `react-core` antes de cambiar lógica.
+- **Evidencia**: [resultado Spec 055](../specs/055-time-control-render-profile/resultado.md) y [muestras crudas](../specs/055-time-control-render-profile/evidencia/render-profile-2026-10-24.json).
