@@ -890,6 +890,7 @@ test.describe.serial("Render Performance", () => {
           if (
             timing.path === "/api/health" ||
             timing.path === "/api/health/ready" ||
+            timing.path === "/api/employees" ||
             timing.path === "/api/users" ||
             timing.path === "/api/shift-reports"
           ) {
@@ -1066,6 +1067,14 @@ test.describe.serial("Render Performance", () => {
         expect(readinessRequests[0]?.responseBodyBytes).not.toBeNull();
         expect(readinessRequests[0]?.responseBodyBytes ?? Infinity).toBeLessThan(512);
         expect(detailedHealthRequests).toHaveLength(0);
+        const employeeRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/employees",
+        );
+        expect(employeeRequests.length).toBeGreaterThan(0);
+        expect(
+          employeeRequests.every((timing) => timing.responseBodyBytes !== null),
+          "the performance report should retain only the employee response byte count",
+        ).toBe(true);
         const userDirectoryRequests = Array.from(apiRequestTimings.values()).filter(
           (timing) => timing.path === "/api/users",
         );
@@ -1170,7 +1179,7 @@ test.describe.serial("Render Performance", () => {
       cpuThrottle: 4,
       sampleCount: samples.length,
       apiRequestPathPolicy:
-        "pathname only; request/response bodies omitted; byte lengths recorded for health and users; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
+        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees and users; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
       syncPhasePolicy:
         "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
       timingOffsetBasis: "Date.now immediately before page.goto",

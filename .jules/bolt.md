@@ -298,3 +298,11 @@
 - **Medido**: solicitudes API 20 → 19 por contexto y `/api/users` 1 → 0. La fase Usuarios bajó 263,1 → 46,2 ms (−82,4 %); la espera apareció en Empleados, cuya mediana pasó 8,7 → 201,6 ms. La suma Usuarios+Empleados bajó solo 7,6 ms (−2,9 %); overlay 435,1 → 420,5 ms (−3,4 %) y FCP 740 → 724 ms, sin mejora global demostrada por la variación de n=3.
 - **Siguiente**: medir bytes y latencia browser de `/api/employees`, y separar recepción/parseo del backend antes de cambiar la colección que usa Control Horario.
 - **Evidencia**: [resultado Spec 063](../specs/063-defer-user-directory-for-shift-handover/evidencia/resultado-2026-10-24.md), [baseline](../specs/063-defer-user-directory-for-shift-handover/evidencia/baseline-2026-10-24.md) y [captura final](../specs/063-defer-user-directory-for-shift-handover/evidencia/final/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - perf(employees): Omitir conteo en listas completas
+
+- **Cambio**: la lista sin paginación ya no ejecuta `employee.count`; conserva el total exacto desde el tamaño de `findMany`. La ruta paginada mantiene su conteo.
+- **Medido**: `/api/employees` devolvió 75.926 B en todas las muestras. Baseline/final de tres contextos: fase Empleados 204,5 → 204,6 ms; petición browser 186 → 185 ms; overlay 407,6 → 378,2 ms y FCP 724 → 736 ms.
+- **Límite**: las muestras son pequeñas y sus rangos se solapan. Se reduce una query sin demostrar mejora frontend ni CWV; no atribuir la variación de overlay al cambio.
+- **Siguiente**: comprobar qué campos/estados necesita Control Horario. Si el consumidor puede usar solo empleados activos o un DTO menor, medir el ahorro potencial antes de cambiar el contrato.
+- **Evidencia**: [resultado Spec 064](../specs/064-skip-unused-employee-count-on-full-list/evidencia/resultado-2026-10-24.md), [baseline](../specs/064-skip-unused-employee-count-on-full-list/evidencia/baseline/time-control-sync-phase-diagnostics.json) y [final](../specs/064-skip-unused-employee-count-on-full-list/evidencia/final/time-control-sync-phase-diagnostics.json).

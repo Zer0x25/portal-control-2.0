@@ -257,14 +257,20 @@ export class EmployeeService {
     const isPaginated = page !== undefined && pageSize !== undefined;
     const take = isPaginated ? Number(pageSize) : undefined;
     const skip = isPaginated ? (Number(page) - 1) * Number(pageSize) : undefined;
+    const employeeQuery = {
+      where,
+      orderBy: { name: "asc" as const },
+      take,
+      skip,
+    };
+
+    if (!isPaginated) {
+      const rawEmployees = await prisma.employee.findMany(employeeQuery);
+      return { rawEmployees, total: rawEmployees.length };
+    }
 
     const [rawEmployees, total] = await Promise.all([
-      prisma.employee.findMany({
-        where,
-        orderBy: { name: "asc" },
-        take,
-        skip,
-      }),
+      prisma.employee.findMany(employeeQuery),
       prisma.employee.count({ where }),
     ]);
 
