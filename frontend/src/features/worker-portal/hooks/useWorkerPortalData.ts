@@ -154,12 +154,16 @@ export const useWorkerPortalData = () => {
   const monthOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     const now = businessNow;
+    const monthFormatter = new Intl.DateTimeFormat("es-CL", {
+      month: "long",
+      year: "numeric",
+    });
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = date.getFullYear();
       const month = date.getMonth();
       const value = `${year}-${String(month + 1).padStart(2, "0")}`;
-      const label = date.toLocaleString("es-CL", { month: "long", year: "numeric" });
+      const label = monthFormatter.format(date);
       const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
       options.push({ value, label: capitalizedLabel });
     }

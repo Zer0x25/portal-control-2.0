@@ -412,3 +412,11 @@
 - **Límite**: 384,9 ms de CPU activo mediano no tuvo frame `src/` más cercano; no se equipara el perfil instrumentado a LCP/TBT ni se declara mejora. App runtime, backend y staging quedaron intactos.
 - **Siguiente**: evaluar como experimento aislado un `Intl.DateTimeFormat` reutilizable para las etiquetas mensuales y exigir una reducción medible del tiempo propio antes de conservar el cambio; perfilar por separado React/DOM para explicar el trabajo aún no atribuido.
 - **Evidencia**: [resultado Spec 077](../specs/077-worker-portal-production-cpu-attribution/evidencia/resultado-2026-10-24.md) y [perfil agregado](../specs/077-worker-portal-production-cpu-attribution/evidencia/worker-portal-production-cpu-2026-10-24.json).
+
+## 2026-10-24 - perf(worker-portal): reutilizar formatter de meses
+
+- **Cambio**: `useWorkerPortalData` crea una instancia local de `Intl.DateTimeFormat("es-CL", ...)` y la reutiliza para las doce opciones mensuales. Test de hook preserva valores, orden y etiquetas anteriores, incluyendo el cruce de año.
+- **Medido**: base `useMemo@154` 15,708 ms propios de mediana, observado 3/3. En tres corridas candidatas, los frames detectados fueron 4,620, 3,876 y 6,624 ms; mediana 4,620 ms (−70,6%); cada corrida detectó 1/3 contextos con muestreo de 1 ms. Se conserva como mejora local.
+- **Límite**: el CPU activo total bajó solo 2,2% entre medianas por corrida y `react-core` propio quedó 176,928 vs 176,955 ms. Sin Lighthouse posterior; no se afirma mejora de página, LCP ni TBT. El selector live mantuvo 12 opciones y API/WS sin fallos.
+- **Staging**: solo se reconstruyó frontend. Imagen candidata `sha256:8cf223b927a58f697ceda99de0a00a04e70888f35ff8b1384fa156677a57b54b`; backend, DB, PgBouncer, gateway y volumen conservaron sus IDs.
+- **Evidencia**: [resultado Spec 078](../specs/078-worker-portal-month-options-formatter/evidencia/resultado-2026-10-24.md) y sus tres perfiles candidatos.

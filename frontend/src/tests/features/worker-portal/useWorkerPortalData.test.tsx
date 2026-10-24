@@ -183,6 +183,24 @@ describe("useWorkerPortalData (spec 028)", () => {
     authTokenStore.removeToken();
     server.resetHandlers();
   });
+
+  it("AC-perf: mantiene las 12 etiquetas localizadas al cambiar de año", () => {
+    const now = new Date("2026-03-15T12:00:00.000Z");
+    const { result } = renderHook(() => useWorkerPortalData());
+    const expected = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+      const label = date.toLocaleString("es-CL", { month: "long", year: "numeric" });
+
+      return {
+        value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      };
+    });
+
+    expect(result.current.monthOptions).toEqual(expected);
+    expect(result.current.monthOptions[0]?.value).toBe("2026-03");
+    expect(result.current.monthOptions[11]?.value).toBe("2025-04");
+  });
   it("AC2: enrichedRecords filtra por empleado y por selectedMonth", async () => {
     const { result } = renderHook(() => useWorkerPortalData());
 

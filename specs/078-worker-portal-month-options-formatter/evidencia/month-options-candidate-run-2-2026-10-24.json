@@ -1,0 +1,1616 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-24T19:39:36.729Z",
+  "source": {
+    "commit": "6936a2fd54fad6959c51721516e55f523512eeaa",
+    "workingTreeDirty": true
+  },
+  "runtime": {
+    "nodeVersion": "v26.10.0",
+    "browser": "Chromium",
+    "browserVersion": "153.0.8010.12",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75,
+    "cpuThrottleRate": 4,
+    "samplingIntervalUs": 1000
+  },
+  "target": {
+    "routeId": "worker-portal",
+    "profile": "active-staging-production-bundle",
+    "stagingFrontendImageId": "sha256:8cf223b927a58f697ceda99de0a00a04e70888f35ff8b1384fa156677a57b54b",
+    "sourceMapAssetsMatched": true,
+    "comparedScriptAssets": 207
+  },
+  "samples": [
+    {
+      "wallWindowMs": 2198,
+      "clockVisible": true,
+      "apiResponseFailures": 0,
+      "websocketOpenCount": 1,
+      "websocketErrorCount": 0,
+      "websocketReceivedFrameCount": 2,
+      "sampleCount": 1772,
+      "profileWindowMs": 2088.899,
+      "activeSampledMs": 660.074,
+      "idleSampledMs": 899.215,
+      "programSampledMs": 529.61,
+      "reactCoreInclusiveSampledMs": 421.125,
+      "reactCoreSelfSampledMs": 182.709,
+      "reactCoreSourceMappedSampledMs": 420.265,
+      "reactCoreSourceMapCoverage": 0.998,
+      "noAppFrameSampledMs": 387.081,
+      "appInclusiveFrames": [
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 42.444
+        },
+        {
+          "key": "src/App.tsx::anonymous@16",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 16,
+          "sampledMs": 15.419
+        },
+        {
+          "key": "src/App.tsx::anonymous@48",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 48,
+          "sampledMs": 13.435
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "useControlInternoEnabledQuery",
+          "sourceLine": 73,
+          "sampledMs": 11.158
+        },
+        {
+          "key": "src/services/socketService.ts::connect@11",
+          "sourcePath": "src/services/socketService.ts",
+          "functionName": "connect",
+          "sourceLine": 11,
+          "sampledMs": 10.776
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 10.168
+        },
+        {
+          "key": "src/hooks/useAuth.ts::useAuth@4",
+          "sourcePath": "src/hooks/useAuth.ts",
+          "functionName": "useAuth",
+          "sourceLine": 4,
+          "sampledMs": 7.861
+        },
+        {
+          "key": "src/utils/indexedDB.ts::createStoreWithSyncIndexes@43",
+          "sourcePath": "src/utils/indexedDB.ts",
+          "functionName": "createStoreWithSyncIndexes",
+          "sourceLine": 43,
+          "sampledMs": 6.471
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useWorkerPortalData",
+          "sourceLine": 32,
+          "sampledMs": 6.074
+        },
+        {
+          "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+          "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+          "functionName": "usePersistentLayoutController",
+          "sourceLine": 10,
+          "sampledMs": 4.862
+        },
+        {
+          "key": "src/hooks/useScheduling.ts::useScheduling@37",
+          "sourcePath": "src/hooks/useScheduling.ts",
+          "functionName": "useScheduling",
+          "sourceLine": 37,
+          "sampledMs": 4.842
+        },
+        {
+          "key": "src/App.tsx::App@105",
+          "sourcePath": "src/App.tsx",
+          "functionName": "App",
+          "sourceLine": 105,
+          "sampledMs": 4.521
+        },
+        {
+          "key": "src/App.tsx::anonymous@17",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 17,
+          "sampledMs": 4.47
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useMemo@154",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useMemo",
+          "sourceLine": 154,
+          "sampledMs": 3.876
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 3.854
+        },
+        {
+          "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+          "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+          "functionName": "d",
+          "sourceLine": 14,
+          "sampledMs": 3.829
+        },
+        {
+          "key": "src/App.tsx::anonymous@103",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 103,
+          "sampledMs": 3.794
+        },
+        {
+          "key": "src/store/slices/syncSlice.ts::validateInstanceId@296",
+          "sourcePath": "src/store/slices/syncSlice.ts",
+          "functionName": "validateInstanceId",
+          "sourceLine": 296,
+          "sampledMs": 3.544
+        },
+        {
+          "key": "src/hooks/useSocketEvents.ts::d@41",
+          "sourcePath": "src/hooks/useSocketEvents.ts",
+          "functionName": "d",
+          "sourceLine": 41,
+          "sampledMs": 3.49
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 3.359
+        }
+      ],
+      "selfFrames": [
+        {
+          "key": "mapped/unmapped/unknown.js::anonymous",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "sampledMs": 86.338,
+          "sampleCount": 67
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::appendChild",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "sampledMs": 36.957,
+          "sampleCount": 26
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::fetch",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "fetch",
+          "sampledMs": 25.878,
+          "sampleCount": 20
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "sourceLine": 4627,
+          "sampledMs": 19.757,
+          "sampleCount": 18
+        },
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 16.566,
+          "sampleCount": 11
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::query",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "sampledMs": 11.471,
+          "sampleCount": 7
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 10.168,
+          "sampleCount": 9
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "sampledMs": 9.595,
+          "sampleCount": 10
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::garbage collector",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "sampledMs": 9.224,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped/unmapped/realtime-C7QaxhyT.js::anonymous",
+          "sourcePath": "mapped/unmapped/realtime-C7QaxhyT.js",
+          "functionName": "anonymous",
+          "sampledMs": 8.325,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "sourceLine": 9011,
+          "sampledMs": 7.979,
+          "sampleCount": 7
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "sourceLine": 12815,
+          "sampledMs": 6.672,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "sourceLine": 1,
+          "sampledMs": 6.394,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/zustand/esm/vanilla/shallow.mjs::compareEntries@6",
+          "sourcePath": "node_modules/zustand/esm/vanilla/shallow.mjs",
+          "functionName": "compareEntries",
+          "sourceLine": 6,
+          "sampledMs": 6.181,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js::useBaseQuery@10",
+          "sourcePath": "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js",
+          "functionName": "useBaseQuery",
+          "sourceLine": 10,
+          "sampledMs": 5.531,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::d",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "d",
+          "sampledMs": 5.424,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "sourceLine": 8359,
+          "sampledMs": 5.211,
+          "sampleCount": 4
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useWorkerPortalData",
+          "sourceLine": 32,
+          "sampledMs": 4.958,
+          "sampleCount": 5
+        },
+        {
+          "key": "src/hooks/useScheduling.ts::useScheduling@37",
+          "sourcePath": "src/hooks/useScheduling.ts",
+          "functionName": "useScheduling",
+          "sourceLine": 37,
+          "sampledMs": 4.842,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/index-BkOqbS92.js::anonymous",
+          "sourcePath": "mapped/unmapped/index-BkOqbS92.js",
+          "functionName": "anonymous",
+          "sampledMs": 4.802,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitReconciliationEffects@10909",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitReconciliationEffects",
+          "sourceLine": 10909,
+          "sampledMs": 4.784,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/idb/build/index.js::anonymous@118",
+          "sourcePath": "node_modules/idb/build/index.js",
+          "functionName": "anonymous",
+          "sourceLine": 118,
+          "sampledMs": 4.768,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseMutationEffects@10454",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "recursivelyTraverseMutationEffects",
+          "sourceLine": 10454,
+          "sampledMs": 4.729,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "sourceLine": 7768,
+          "sampledMs": 4.69,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/hydration.js::dehydrate@84",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/hydration.js",
+          "functionName": "dehydrate",
+          "sourceLine": 84,
+          "sampledMs": 4.303,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::setTimeout",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "setTimeout",
+          "sampledMs": 4.22,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/query.js::anonymous@474",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/query.js",
+          "functionName": "anonymous",
+          "sourceLine": 474,
+          "sampledMs": 4.168,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::flushPassiveEffects@13229",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "flushPassiveEffects",
+          "sourceLine": 13229,
+          "sampledMs": 3.98,
+          "sampleCount": 2
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useMemo@154",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useMemo",
+          "sourceLine": 154,
+          "sampledMs": 3.876,
+          "sampleCount": 3
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 3.854,
+          "sampleCount": 4
+        }
+      ]
+    },
+    {
+      "wallWindowMs": 2026,
+      "clockVisible": true,
+      "apiResponseFailures": 0,
+      "websocketOpenCount": 1,
+      "websocketErrorCount": 0,
+      "websocketReceivedFrameCount": 2,
+      "sampleCount": 1680,
+      "profileWindowMs": 1967.281,
+      "activeSampledMs": 613.468,
+      "idleSampledMs": 893.728,
+      "programSampledMs": 460.085,
+      "reactCoreInclusiveSampledMs": 405.187,
+      "reactCoreSelfSampledMs": 183.958,
+      "reactCoreSourceMappedSampledMs": 405.187,
+      "reactCoreSourceMapCoverage": 1,
+      "noAppFrameSampledMs": 364.616,
+      "appInclusiveFrames": [
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 40.092
+        },
+        {
+          "key": "src/App.tsx::anonymous@16",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 16,
+          "sampledMs": 14.406
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "useControlInternoEnabledQuery",
+          "sourceLine": 73,
+          "sampledMs": 9.154
+        },
+        {
+          "key": "src/services/socketService.ts::connect@11",
+          "sourcePath": "src/services/socketService.ts",
+          "functionName": "connect",
+          "sourceLine": 11,
+          "sampledMs": 7.69
+        },
+        {
+          "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+          "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+          "functionName": "d",
+          "sourceLine": 14,
+          "sampledMs": 6.683
+        },
+        {
+          "key": "src/App.tsx::anonymous@17",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 17,
+          "sampledMs": 6.649
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useWorkerPortalData",
+          "sourceLine": 32,
+          "sampledMs": 5.626
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 5.532
+        },
+        {
+          "key": "src/hooks/useToasts.ts::useToasts@5",
+          "sourcePath": "src/hooks/useToasts.ts",
+          "functionName": "useToasts",
+          "sourceLine": 5,
+          "sampledMs": 5.417
+        },
+        {
+          "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+          "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+          "functionName": "usePersistentLayoutController",
+          "sourceLine": 10,
+          "sampledMs": 5.364
+        },
+        {
+          "key": "src/hooks/queries/useEmployeesQuery.ts::m@12",
+          "sourcePath": "src/hooks/queries/useEmployeesQuery.ts",
+          "functionName": "m",
+          "sourceLine": 12,
+          "sampledMs": 5.042
+        },
+        {
+          "key": "src/App.tsx::App@105",
+          "sourcePath": "src/App.tsx",
+          "functionName": "App",
+          "sourceLine": 105,
+          "sampledMs": 4.892
+        },
+        {
+          "key": "src/services/apiClient.ts::request@515",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "request",
+          "sourceLine": 515,
+          "sampledMs": 4.709
+        },
+        {
+          "key": "src/hooks/layout/useSidebarController.ts::Pe@17",
+          "sourcePath": "src/hooks/layout/useSidebarController.ts",
+          "functionName": "Pe",
+          "sourceLine": 17,
+          "sampledMs": 4.708
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 4.648
+        },
+        {
+          "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+          "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+          "functionName": "useTimeRecordMutations",
+          "sourceLine": 203,
+          "sampledMs": 4.504
+        },
+        {
+          "key": "src/hooks/queries/useEmployeesQuery.ts::h@28",
+          "sourcePath": "src/hooks/queries/useEmployeesQuery.ts",
+          "functionName": "h",
+          "sourceLine": 28,
+          "sampledMs": 4.309
+        },
+        {
+          "key": "src/utils/sentryMiddlewares.ts::config@52",
+          "sourcePath": "src/utils/sentryMiddlewares.ts",
+          "functionName": "config",
+          "sourceLine": 52,
+          "sampledMs": 4.078
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 3.673
+        },
+        {
+          "key": "src/lib/queryCache.ts::getItem@110",
+          "sourcePath": "src/lib/queryCache.ts",
+          "functionName": "getItem",
+          "sourceLine": 110,
+          "sampledMs": 3.531
+        }
+      ],
+      "selfFrames": [
+        {
+          "key": "mapped/unmapped/unknown.js::anonymous",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "sampledMs": 76.163,
+          "sampleCount": 70
+        },
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 24.356,
+          "sampleCount": 15
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "sourceLine": 4627,
+          "sampledMs": 23.506,
+          "sampleCount": 20
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::appendChild",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "sampledMs": 19.393,
+          "sampleCount": 16
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::fetch",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "fetch",
+          "sampledMs": 15.736,
+          "sampleCount": 12
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "sampledMs": 12.429,
+          "sampleCount": 8
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setValueForKnownAttribute@1145",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForKnownAttribute",
+          "sourceLine": 1145,
+          "sampledMs": 11.641,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::garbage collector",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "sampledMs": 9.524,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js::useBaseQuery@10",
+          "sourcePath": "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js",
+          "functionName": "useBaseQuery",
+          "sourceLine": 10,
+          "sampledMs": 8.063,
+          "sampleCount": 7
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "sourceLine": 8359,
+          "sampledMs": 7.159,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::d",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "d",
+          "sampledMs": 6.893,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::query",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "sampledMs": 6.322,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "sourceLine": 7768,
+          "sampledMs": 6.24,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/react/cjs/react-jsx-runtime.production.js::jsxProd@14",
+          "sourcePath": "node_modules/react/cjs/react-jsx-runtime.production.js",
+          "functionName": "jsxProd",
+          "sourceLine": 14,
+          "sampledMs": 6.119,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::setTimeout",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "setTimeout",
+          "sampledMs": 5.932,
+          "sampleCount": 2
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 5.532,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "sourceLine": 14406,
+          "sampledMs": 5.016,
+          "sampleCount": 2
+        },
+        {
+          "key": "src/services/apiClient.ts::request@515",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "request",
+          "sourceLine": 515,
+          "sampledMs": 4.709,
+          "sampleCount": 3
+        },
+        {
+          "key": "src/hooks/layout/useSidebarController.ts::Pe@17",
+          "sourcePath": "src/hooks/layout/useSidebarController.ts",
+          "functionName": "Pe",
+          "sourceLine": 17,
+          "sampledMs": 4.708,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/react-router/dist/production/lib/hooks.js::useNavigate@271",
+          "sourcePath": "node_modules/react-router/dist/production/lib/hooks.js",
+          "functionName": "useNavigate",
+          "sourceLine": 271,
+          "sampledMs": 4.428,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/scheduler/cjs/scheduler.production.js::ae@201",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "ae",
+          "sourceLine": 201,
+          "sampledMs": 4.426,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/query.js::setOptions@67",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/query.js",
+          "functionName": "setOptions",
+          "sourceLine": 67,
+          "sampledMs": 4.282,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "sourceLine": 12815,
+          "sampledMs": 3.918,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "sourceLine": 1,
+          "sampledMs": 3.855,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::useMemo@5809",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "useMemo",
+          "sourceLine": 5809,
+          "sampledMs": 3.743,
+          "sampleCount": 3
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 3.673,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRoot@12069",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performWorkOnRoot",
+          "sourceLine": 12069,
+          "sampledMs": 3.649,
+          "sampleCount": 3
+        },
+        {
+          "key": "src/App.tsx::App@105",
+          "sourcePath": "src/App.tsx",
+          "functionName": "App",
+          "sourceLine": 105,
+          "sampledMs": 3.539,
+          "sampleCount": 3
+        },
+        {
+          "key": "src/lib/queryCache.ts::getItem@110",
+          "sourcePath": "src/lib/queryCache.ts",
+          "functionName": "getItem",
+          "sourceLine": 110,
+          "sampledMs": 3.531,
+          "sampleCount": 1
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitMutationEffectsOnFiber@10497",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitMutationEffectsOnFiber",
+          "sourceLine": 10497,
+          "sampledMs": 3.525,
+          "sampleCount": 2
+        }
+      ]
+    },
+    {
+      "wallWindowMs": 2046,
+      "clockVisible": true,
+      "apiResponseFailures": 0,
+      "websocketOpenCount": 1,
+      "websocketErrorCount": 0,
+      "websocketReceivedFrameCount": 2,
+      "sampleCount": 1706,
+      "profileWindowMs": 1982.72,
+      "activeSampledMs": 665.807,
+      "idleSampledMs": 889.834,
+      "programSampledMs": 427.079,
+      "reactCoreInclusiveSampledMs": 425.462,
+      "reactCoreSelfSampledMs": 162.391,
+      "reactCoreSourceMappedSampledMs": 425.462,
+      "reactCoreSourceMapCoverage": 1,
+      "noAppFrameSampledMs": 392.071,
+      "appInclusiveFrames": [
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 37.022
+        },
+        {
+          "key": "src/App.tsx::anonymous@16",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 16,
+          "sampledMs": 24.324
+        },
+        {
+          "key": "src/App.tsx::anonymous@48",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 48,
+          "sampledMs": 11.587
+        },
+        {
+          "key": "src/services/socketService.ts::connect@11",
+          "sourcePath": "src/services/socketService.ts",
+          "functionName": "connect",
+          "sourceLine": 11,
+          "sampledMs": 10.733
+        },
+        {
+          "key": "src/utils/sentryMiddlewares.ts::config@52",
+          "sourcePath": "src/utils/sentryMiddlewares.ts",
+          "functionName": "config",
+          "sourceLine": 52,
+          "sampledMs": 9.681
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "useControlInternoEnabledQuery",
+          "sourceLine": 73,
+          "sampledMs": 8.708
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 8.126
+        },
+        {
+          "key": "src/hooks/useScheduling.ts::useScheduling@37",
+          "sourcePath": "src/hooks/useScheduling.ts",
+          "functionName": "useScheduling",
+          "sourceLine": 37,
+          "sampledMs": 6.219
+        },
+        {
+          "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+          "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+          "functionName": "d",
+          "sourceLine": 14,
+          "sampledMs": 5.555
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useWorkerPortalData",
+          "sourceLine": 32,
+          "sampledMs": 5.396
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 4.746
+        },
+        {
+          "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+          "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+          "functionName": "usePersistentLayoutController",
+          "sourceLine": 10,
+          "sampledMs": 4.633
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 4.579
+        },
+        {
+          "key": "src/features/worker-portal/views/WorkerPortal.view.tsx::anonymous@317",
+          "sourcePath": "src/features/worker-portal/views/WorkerPortal.view.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 317,
+          "sampledMs": 4.339
+        },
+        {
+          "key": "src/App.tsx::anonymous@17",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 17,
+          "sampledMs": 4.204
+        },
+        {
+          "key": "src/hooks/queries/useTimeRecordsQuery.ts::w@101",
+          "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+          "functionName": "w",
+          "sourceLine": 101,
+          "sampledMs": 4.016
+        },
+        {
+          "key": "src/hooks/useSocketEvents.ts::d@41",
+          "sourcePath": "src/hooks/useSocketEvents.ts",
+          "functionName": "d",
+          "sourceLine": 41,
+          "sampledMs": 3.845
+        },
+        {
+          "key": "src/App.tsx::anonymous@21",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 21,
+          "sampledMs": 3.693
+        },
+        {
+          "key": "src/hooks/useEmployees.ts::useEmployees@22",
+          "sourcePath": "src/hooks/useEmployees.ts",
+          "functionName": "useEmployees",
+          "sourceLine": 22,
+          "sampledMs": 3.622
+        },
+        {
+          "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+          "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+          "functionName": "useTimeRecordMutations",
+          "sourceLine": 203,
+          "sampledMs": 3.589
+        }
+      ],
+      "selfFrames": [
+        {
+          "key": "mapped/unmapped/unknown.js::anonymous",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "sampledMs": 79.967,
+          "sampleCount": 69
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::appendChild",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "sampledMs": 33.597,
+          "sampleCount": 26
+        },
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 21.994,
+          "sampleCount": 21
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "sourceLine": 4627,
+          "sampledMs": 15.165,
+          "sampleCount": 15
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::fetch",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "fetch",
+          "sampledMs": 15.028,
+          "sampleCount": 13
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::garbage collector",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "sampledMs": 12.893,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::query",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "sampledMs": 9.678,
+          "sampleCount": 8
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 8.126,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::d",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "d",
+          "sampledMs": 7.094,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitRoot@12906",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitRoot",
+          "sourceLine": 12906,
+          "sampledMs": 6.465,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performUnitOfWork",
+          "sourceLine": 12706,
+          "sampledMs": 6.351,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::o",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "o",
+          "sampledMs": 6.272,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::computeElementStyleVisibilityVisible",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "computeElementStyleVisibilityVisible",
+          "sampledMs": 6.262,
+          "sampleCount": 6
+        },
+        {
+          "key": "src/hooks/useScheduling.ts::useScheduling@37",
+          "sourcePath": "src/hooks/useScheduling.ts",
+          "functionName": "useScheduling",
+          "sourceLine": 37,
+          "sampledMs": 6.219,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/index-BkOqbS92.js::anonymous",
+          "sourcePath": "mapped/unmapped/index-BkOqbS92.js",
+          "functionName": "anonymous",
+          "sampledMs": 5.725,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "sampledMs": 5.663,
+          "sampleCount": 5
+        },
+        {
+          "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+          "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+          "functionName": "useWorkerPortalData",
+          "sourceLine": 32,
+          "sampledMs": 5.396,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "sourceLine": 12815,
+          "sampledMs": 5.302,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/zustand/esm/vanilla.mjs::setState@4",
+          "sourcePath": "node_modules/zustand/esm/vanilla.mjs",
+          "functionName": "setState",
+          "sourceLine": 4,
+          "sampledMs": 5.286,
+          "sampleCount": 1
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::propagateParentContextChanges@3223",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "propagateParentContextChanges",
+          "sourceLine": 3223,
+          "sampledMs": 5.148,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::queueMicrotask",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "queueMicrotask",
+          "sampledMs": 5.065,
+          "sampleCount": 1
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "sourceLine": 9011,
+          "sampledMs": 4.949,
+          "sampleCount": 5
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 4.746,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::updateProperties@15035",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateProperties",
+          "sourceLine": 15035,
+          "sampledMs": 4.707,
+          "sampleCount": 2
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 4.579,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/idb/build/index.js::wrap@136",
+          "sourcePath": "node_modules/idb/build/index.js",
+          "functionName": "wrap",
+          "sourceLine": 136,
+          "sampledMs": 4.486,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped/unmapped/realtime-C7QaxhyT.js::anonymous",
+          "sourcePath": "mapped/unmapped/realtime-C7QaxhyT.js",
+          "functionName": "anonymous",
+          "sampledMs": 4.426,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "sourceLine": 8359,
+          "sampledMs": 4.391,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setValueForAttribute@1125",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForAttribute",
+          "sourceLine": 1125,
+          "sampledMs": 4.337,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/zustand/esm/react.mjs::anonymous@8",
+          "sourcePath": "node_modules/zustand/esm/react.mjs",
+          "functionName": "anonymous",
+          "sourceLine": 8,
+          "sampledMs": 4.276,
+          "sampleCount": 4
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "sampleCount": 3,
+    "medianProfileWindowMs": 1982.72,
+    "medianActiveSampledMs": 660.074,
+    "medianIdleSampledMs": 893.728,
+    "medianProgramSampledMs": 460.085,
+    "medianReactCoreInclusiveSampledMs": 421.125,
+    "medianReactCoreSelfSampledMs": 182.709,
+    "medianReactCoreSourceMapCoverage": 1,
+    "medianNoAppFrameSampledMs": 387.081,
+    "appFrameMedians": [
+      {
+        "key": "src/services/apiClient.ts::performRequest@384",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "performRequest",
+        "sourceLine": 384,
+        "medianSampledMs": 40.092,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@16",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 16,
+        "medianSampledMs": 15.419,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@48",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 48,
+        "medianSampledMs": 11.587,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/services/socketService.ts::connect@11",
+        "sourcePath": "src/services/socketService.ts",
+        "functionName": "connect",
+        "sourceLine": 11,
+        "medianSampledMs": 10.733,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+        "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+        "functionName": "useControlInternoEnabledQuery",
+        "sourceLine": 73,
+        "medianSampledMs": 9.154,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+        "sourcePath": "src/store/slices/themeSlice.ts",
+        "functionName": "_applyTheme",
+        "sourceLine": 17,
+        "medianSampledMs": 8.126,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+        "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+        "functionName": "useWorkerPortalData",
+        "sourceLine": 32,
+        "medianSampledMs": 5.626,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+        "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+        "functionName": "d",
+        "sourceLine": 14,
+        "medianSampledMs": 5.555,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+        "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+        "functionName": "usePersistentLayoutController",
+        "sourceLine": 10,
+        "medianSampledMs": 4.862,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/useScheduling.ts::useScheduling@37",
+        "sourcePath": "src/hooks/useScheduling.ts",
+        "functionName": "useScheduling",
+        "sourceLine": 37,
+        "medianSampledMs": 4.842,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useLoginAutomations.ts::Be@12",
+        "sourcePath": "src/hooks/useLoginAutomations.ts",
+        "functionName": "Be",
+        "sourceLine": 12,
+        "medianSampledMs": 4.579,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::App@105",
+        "sourcePath": "src/App.tsx",
+        "functionName": "App",
+        "sourceLine": 105,
+        "medianSampledMs": 4.521,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/App.tsx::anonymous@17",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 17,
+        "medianSampledMs": 4.47,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/utils/sentryMiddlewares.ts::config@52",
+        "sourcePath": "src/utils/sentryMiddlewares.ts",
+        "functionName": "config",
+        "sourceLine": 52,
+        "medianSampledMs": 4.078,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/components/ui/ServerClock.tsx::a@16",
+        "sourcePath": "src/components/ui/ServerClock.tsx",
+        "functionName": "a",
+        "sourceLine": 16,
+        "medianSampledMs": 3.673,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+        "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+        "functionName": "useTimeRecordMutations",
+        "sourceLine": 203,
+        "medianSampledMs": 3.589,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useSocketEvents.ts::d@41",
+        "sourcePath": "src/hooks/useSocketEvents.ts",
+        "functionName": "d",
+        "sourceLine": 41,
+        "medianSampledMs": 3.49,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/App.tsx::anonymous@103",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 103,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/App.tsx::anonymous@21",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 21,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useMemo@154",
+        "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+        "functionName": "useMemo",
+        "sourceLine": 154,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/features/worker-portal/views/WorkerPortal.view.tsx::anonymous@317",
+        "sourcePath": "src/features/worker-portal/views/WorkerPortal.view.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 317,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/layout/useSidebarController.ts::Pe@17",
+        "sourcePath": "src/hooks/layout/useSidebarController.ts",
+        "functionName": "Pe",
+        "sourceLine": 17,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useEmployeesQuery.ts::h@28",
+        "sourcePath": "src/hooks/queries/useEmployeesQuery.ts",
+        "functionName": "h",
+        "sourceLine": 28,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useEmployeesQuery.ts::m@12",
+        "sourcePath": "src/hooks/queries/useEmployeesQuery.ts",
+        "functionName": "m",
+        "sourceLine": 12,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useTimeRecordsQuery.ts::w@101",
+        "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+        "functionName": "w",
+        "sourceLine": 101,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useAuth.ts::useAuth@4",
+        "sourcePath": "src/hooks/useAuth.ts",
+        "functionName": "useAuth",
+        "sourceLine": 4,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useEmployees.ts::useEmployees@22",
+        "sourcePath": "src/hooks/useEmployees.ts",
+        "functionName": "useEmployees",
+        "sourceLine": 22,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useToasts.ts::useToasts@5",
+        "sourcePath": "src/hooks/useToasts.ts",
+        "functionName": "useToasts",
+        "sourceLine": 5,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/lib/queryCache.ts::getItem@110",
+        "sourcePath": "src/lib/queryCache.ts",
+        "functionName": "getItem",
+        "sourceLine": 110,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/services/apiClient.ts::request@515",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "request",
+        "sourceLine": 515,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/store/slices/syncSlice.ts::validateInstanceId@296",
+        "sourcePath": "src/store/slices/syncSlice.ts",
+        "functionName": "validateInstanceId",
+        "sourceLine": 296,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/utils/indexedDB.ts::createStoreWithSyncIndexes@43",
+        "sourcePath": "src/utils/indexedDB.ts",
+        "functionName": "createStoreWithSyncIndexes",
+        "sourceLine": 43,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      }
+    ],
+    "repeatedAppCandidates": [
+      {
+        "key": "src/services/apiClient.ts::performRequest@384",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "performRequest",
+        "sourceLine": 384,
+        "medianSampledMs": 40.092,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@16",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 16,
+        "medianSampledMs": 15.419,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@48",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 48,
+        "medianSampledMs": 11.587,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/services/socketService.ts::connect@11",
+        "sourcePath": "src/services/socketService.ts",
+        "functionName": "connect",
+        "sourceLine": 11,
+        "medianSampledMs": 10.733,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+        "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+        "functionName": "useControlInternoEnabledQuery",
+        "sourceLine": 73,
+        "medianSampledMs": 9.154,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+        "sourcePath": "src/store/slices/themeSlice.ts",
+        "functionName": "_applyTheme",
+        "sourceLine": 17,
+        "medianSampledMs": 8.126,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/features/worker-portal/hooks/useWorkerPortalData.ts::useWorkerPortalData@32",
+        "sourcePath": "src/features/worker-portal/hooks/useWorkerPortalData.ts",
+        "functionName": "useWorkerPortalData",
+        "sourceLine": 32,
+        "medianSampledMs": 5.626,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+        "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+        "functionName": "d",
+        "sourceLine": 14,
+        "medianSampledMs": 5.555,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+        "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+        "functionName": "usePersistentLayoutController",
+        "sourceLine": 10,
+        "medianSampledMs": 4.862,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/useScheduling.ts::useScheduling@37",
+        "sourcePath": "src/hooks/useScheduling.ts",
+        "functionName": "useScheduling",
+        "sourceLine": 37,
+        "medianSampledMs": 4.842,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useLoginAutomations.ts::Be@12",
+        "sourcePath": "src/hooks/useLoginAutomations.ts",
+        "functionName": "Be",
+        "sourceLine": 12,
+        "medianSampledMs": 4.579,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::App@105",
+        "sourcePath": "src/App.tsx",
+        "functionName": "App",
+        "sourceLine": 105,
+        "medianSampledMs": 4.521,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/App.tsx::anonymous@17",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 17,
+        "medianSampledMs": 4.47,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/utils/sentryMiddlewares.ts::config@52",
+        "sourcePath": "src/utils/sentryMiddlewares.ts",
+        "functionName": "config",
+        "sourceLine": 52,
+        "medianSampledMs": 4.078,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/components/ui/ServerClock.tsx::a@16",
+        "sourcePath": "src/components/ui/ServerClock.tsx",
+        "functionName": "a",
+        "sourceLine": 16,
+        "medianSampledMs": 3.673,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+        "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+        "functionName": "useTimeRecordMutations",
+        "sourceLine": 203,
+        "medianSampledMs": 3.589,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useSocketEvents.ts::d@41",
+        "sourcePath": "src/hooks/useSocketEvents.ts",
+        "functionName": "d",
+        "sourceLine": 41,
+        "medianSampledMs": 3.49,
+        "observedSamples": 2
+      }
+    ]
+  },
+  "interpretation": {
+    "performanceComparison": false,
+    "recommendationRule": "A module is a candidate only when its app frame appears in at least two samples."
+  }
+}
