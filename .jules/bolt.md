@@ -404,3 +404,11 @@
 - **Siguiente**: atribuir los long tasks de `react-core` (807–1.027 ms de scripting en las tres trazas frías) antes de elegir otra optimización.
 - **Validación**: shell Playwright 6/6; batería 20/20, Lighthouse estándar 17/17 y rutas frías 9/9; preflight aprobado, lint budget 0/0, staging gateway/API 200.
 - **Evidencia**: [resultado Spec 076](../specs/076-worker-portal-bootstrap-shell/evidencia/resultado-2026-10-24.md), [auditoría Playwright](../specs/076-worker-portal-bootstrap-shell/evidencia/worker-portal-bootstrap-shell-2026-10-24.json) y [run](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T18-38-45-541Z-ec56eb43.json).
+
+## 2026-10-24 - test(perf): Atribuir CPU frío de Worker Portal en producción
+
+- **Medido**: tres perfiles CPU 4× en staging, 412×823, source maps locales con paridad exacta en 207/207 scripts. React-core cobertura 99,8–100%; mediana de CPU activo 651,9 ms; inclusivo/self de React-core 433,4/177,0 ms.
+- **Frames**: `apiClient.ts:384 performRequest` 46,3 ms inclusivo/17,5 ms propio; `useWorkerPortalData.ts:154 useMemo` 15,7 ms propio en 3/3. Ese `useMemo` crea 12 etiquetas y llama a `toLocaleString` por mes; explica solo ~2,4% del CPU activo en este perfil.
+- **Límite**: 384,9 ms de CPU activo mediano no tuvo frame `src/` más cercano; no se equipara el perfil instrumentado a LCP/TBT ni se declara mejora. App runtime, backend y staging quedaron intactos.
+- **Siguiente**: evaluar como experimento aislado un `Intl.DateTimeFormat` reutilizable para las etiquetas mensuales y exigir una reducción medible del tiempo propio antes de conservar el cambio; perfilar por separado React/DOM para explicar el trabajo aún no atribuido.
+- **Evidencia**: [resultado Spec 077](../specs/077-worker-portal-production-cpu-attribution/evidencia/resultado-2026-10-24.md) y [perfil agregado](../specs/077-worker-portal-production-cpu-attribution/evidencia/worker-portal-production-cpu-2026-10-24.json).
