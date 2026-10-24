@@ -21,6 +21,8 @@ Desde el cierre de spec 041, `lighthouseStandard.routeAssertions` comprueba los 
 
 Las mediciones de interacción distinguen la primera activación de sus repeticiones. El primer cambio puede incluir la descarga y evaluación de un chunk diferido; las siguientes transiciones miden el comportamiento con ese chunk ya cargado. Para búsquedas, la primera muestra incluye el render del estado vacío.
 
+La medición SPA usa contextos nuevos y exige `lastSyncTime` después de ocultarse el overlay inicial antes de navegar desde Dashboard a Control horario. Separa la primera visita SPA (que puede cargar el chunk de la ruta) de la repetición después de volver a Dashboard. Su métrica termina cuando el contenido principal y el encabezado quedan visibles en el mismo documento; no es LCP ni se compara directamente con las cargas frías de Lighthouse. El detalle de la primera captura está en [`../time-control-spa-transition-2026-10-24.json`](../time-control-spa-transition-2026-10-24.json); futuras corridas completas incluyen el reporte en su JSON versionado.
+
 ## Corridas del 2026-10-24
 
 - `2026-10-24T06-17-37-339Z-465361c6.json` y `2026-10-24T06-35-12-796Z-465361c6.json` completaron las fases registradas antes de probar el bloqueo de CSS en navegador. La inspección encontró que podían mostrar una ruta ajena al Dashboard sin estilos; conservar los JSON como evidencia histórica, pero no usarlos para aceptar una mejora ni como referencia visual.

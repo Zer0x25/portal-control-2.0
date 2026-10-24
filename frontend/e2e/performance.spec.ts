@@ -681,6 +681,292 @@ test.describe.serial("Render Performance", () => {
     await page.unroute(recordsPattern);
   });
 
+  test("Time Control SPA transition after initial sync", async ({ browser, request }, testInfo) => {
+    test.setTimeout(180_000);
+    const dashboardRoute = criticalRoutes.find((route) => route.id === "dashboard");
+    const timeControlRoute = criticalRoutes.find((route) => route.id === "time-control");
+    if (
+      !dashboardRoute ||
+      !timeControlRoute ||
+      !dashboardRoute.currentPath ||
+      !timeControlRoute.currentPath
+    ) {
+      throw new Error("Dashboard and Time Control routes must exist in the performance catalog");
+    }
+
+    const samples: Array<{
+      sample: number;
+      initialSync: {
+        completedAtMs: number;
+        overlayVisibleAtMs: number | null;
+        overlayHiddenAtMs: number | null;
+      };
+      firstVisitAfterSync: {
+        elapsedMs: number;
+        sameDocument: boolean;
+        finalHash: string;
+        scriptRequests: string[];
+      };
+      repeatedVisitWithRouteChunkLoaded: {
+        elapsedMs: number;
+        sameDocument: boolean;
+        finalHash: string;
+        scriptRequests: string[];
+      };
+    }> = [];
+
+    for (let sample = 1; sample <= 3; sample += 1) {
+      const context = await browser.newContext({
+        viewport,
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        await page.addInitScript(() => {
+          type SyncAudit = {
+            initialLastSyncTime: string | null;
+            overlayVisibleAtMs: number | null;
+            overlayHiddenAtMs: number | null;
+          };
+          const windowWithAudit = window as Window & {
+            __timeControlSyncAudit?: SyncAudit;
+          };
+          const audit: SyncAudit = {
+            initialLastSyncTime: localStorage.getItem("lastSyncTime"),
+            overlayVisibleAtMs: null,
+            overlayHiddenAtMs: null,
+          };
+          windowWithAudit.__timeControlSyncAudit = audit;
+          let wasVisible = false;
+          const observeOverlay = () => {
+            const status = Array.from(document.querySelectorAll("p")).find(
+              (element) =>
+                element.textContent?.trim() ===
+                "Establishing technical handshake • Validating integrity...",
+            );
+            const style = status ? getComputedStyle(status) : null;
+            const isVisible = Boolean(
+              status &&
+              style?.display !== "none" &&
+              style?.visibility !== "hidden" &&
+              status.getClientRects().length > 0,
+            );
+            if (isVisible && !wasVisible) {
+              audit.overlayVisibleAtMs = performance.now();
+              wasVisible = true;
+            } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
+              audit.overlayHiddenAtMs = performance.now();
+            }
+          };
+          new MutationObserver(observeOverlay).observe(document, {
+            attributes: true,
+            attributeFilter: ["class", "hidden", "style"],
+            childList: true,
+            subtree: true,
+          });
+          observeOverlay();
+        });
+
+        const scriptRequests: Array<{ phase: string; file: string }> = [];
+        let scriptPhase = "initial-sync";
+        page.on("request", (browserRequest) => {
+          if (browserRequest.resourceType() !== "script") return;
+          const file = new URL(browserRequest.url()).pathname.split("/").pop();
+          if (file) scriptRequests.push({ phase: scriptPhase, file });
+        });
+
+        await page.goto(`${baseUrl}${dashboardRoute.path}`, { waitUntil: "domcontentloaded" });
+        await expect(readyLocatorForRoute(page, dashboardRoute)).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+        const syncOverlay = page.getByText(
+          "Establishing technical handshake • Validating integrity...",
+          { exact: true },
+        );
+        await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
+
+        const syncState = await page.evaluate(() => {
+          const audit = (
+            window as Window & {
+              __timeControlSyncAudit?: {
+                initialLastSyncTime: string | null;
+                overlayVisibleAtMs: number | null;
+                overlayHiddenAtMs: number | null;
+              };
+            }
+          ).__timeControlSyncAudit;
+          const lastSyncTime = localStorage.getItem("lastSyncTime");
+          if (!audit || !lastSyncTime) throw new Error("Initial sync marker is missing");
+          return {
+            initialLastSyncTime: audit.initialLastSyncTime,
+            lastSyncTime,
+            overlayVisibleAtMs: audit.overlayVisibleAtMs,
+            overlayHiddenAtMs: audit.overlayHiddenAtMs,
+            completedAtMs: performance.now(),
+          };
+        });
+        expect(syncState.initialLastSyncTime).toBeNull();
+        expect(Number(syncState.lastSyncTime)).toBeGreaterThan(0);
+        if (syncState.overlayVisibleAtMs !== null) {
+          expect(syncState.overlayHiddenAtMs).not.toBeNull();
+        }
+
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        const measureSpaTransition = async (
+          targetHash: string,
+          targetPath: string,
+          targetHeading: string | null,
+          targetTestId: string | null,
+        ) => {
+          const start = await page.evaluate((hash) => {
+            const probe = {
+              startedAtMs: performance.now(),
+              timeOrigin: performance.timeOrigin,
+              readyAtMs: null as number | null,
+            };
+            (window as Window & { __spaTransitionProbe?: typeof probe }).__spaTransitionProbe =
+              probe;
+            window.location.hash = hash;
+            return { startedAtMs: probe.startedAtMs, timeOrigin: probe.timeOrigin };
+          }, targetHash);
+
+          await page.waitForFunction(
+            ({ currentPath, heading, testId }) => {
+              const shell = document.querySelector('[data-testid="app-shell"]');
+              const mainContent = shell?.querySelector('[data-testid="main-content"]');
+              const candidate = testId
+                ? document.querySelector(`[data-testid="${testId}"]`)
+                : Array.from(document.querySelectorAll("h1")).find(
+                    (element) => element.textContent?.trim() === heading,
+                  );
+              const isVisible = (element: Element | null | undefined) => {
+                if (!element) return false;
+                const style = getComputedStyle(element);
+                return (
+                  element.isConnected &&
+                  style.display !== "none" &&
+                  style.visibility !== "hidden" &&
+                  element.getClientRects().length > 0
+                );
+              };
+              if (
+                shell?.getAttribute("data-current-path") === currentPath &&
+                isVisible(mainContent) &&
+                isVisible(candidate)
+              ) {
+                const probe = (
+                  window as Window & {
+                    __spaTransitionProbe?: { readyAtMs: number | null };
+                  }
+                ).__spaTransitionProbe;
+                if (probe && probe.readyAtMs === null) probe.readyAtMs = performance.now();
+                return true;
+              }
+              return false;
+            },
+            { currentPath: targetPath, heading: targetHeading, testId: targetTestId },
+            { polling: "raf", timeout: 30_000 },
+          );
+
+          const metrics = await page.evaluate((transitionStart) => {
+            const probe = (
+              window as Window & {
+                __spaTransitionProbe?: {
+                  startedAtMs: number;
+                  timeOrigin: number;
+                  readyAtMs: number | null;
+                };
+              }
+            ).__spaTransitionProbe;
+            if (!probe || probe.readyAtMs === null) {
+              throw new Error("SPA route readiness timestamp was not recorded");
+            }
+            return {
+              elapsedMs: Number((probe.readyAtMs - transitionStart.startedAtMs).toFixed(2)),
+              sameDocument: performance.timeOrigin === transitionStart.timeOrigin,
+              finalHash: window.location.hash,
+            };
+          }, start);
+          return { ...metrics, scriptRequests: [] as string[] };
+        };
+
+        scriptPhase = "first-spa-visit-after-sync";
+        const firstScriptRequestIndex = scriptRequests.length;
+        const firstVisit = await measureSpaTransition(
+          timeControlRoute.path.slice(timeControlRoute.path.indexOf("#")),
+          timeControlRoute.currentPath,
+          "Control de Asistencia",
+          null,
+        );
+        firstVisit.scriptRequests = scriptRequests
+          .slice(firstScriptRequestIndex)
+          .map((entry) => entry.file);
+        expect(firstVisit.sameDocument).toBe(true);
+        expect(firstVisit.finalHash).toBe("#/time-control");
+
+        await page.evaluate(() => {
+          window.location.hash = "#/dashboard";
+        });
+        await expect(readyLocatorForRoute(page, dashboardRoute)).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+
+        scriptPhase = "repeated-spa-visit-after-sync";
+        const repeatedScriptRequestIndex = scriptRequests.length;
+        const repeatedVisit = await measureSpaTransition(
+          timeControlRoute.path.slice(timeControlRoute.path.indexOf("#")),
+          timeControlRoute.currentPath,
+          "Control de Asistencia",
+          null,
+        );
+        repeatedVisit.scriptRequests = scriptRequests
+          .slice(repeatedScriptRequestIndex)
+          .map((entry) => entry.file);
+        expect(repeatedVisit.sameDocument).toBe(true);
+        expect(repeatedVisit.finalHash).toBe("#/time-control");
+        expect(firstVisit.elapsedMs).toBeLessThan(15_000);
+        expect(repeatedVisit.elapsedMs).toBeLessThan(15_000);
+
+        samples.push({
+          sample,
+          initialSync: {
+            completedAtMs: syncState.completedAtMs,
+            overlayVisibleAtMs: syncState.overlayVisibleAtMs,
+            overlayHiddenAtMs: syncState.overlayHiddenAtMs,
+          },
+          firstVisitAfterSync: firstVisit,
+          repeatedVisitWithRouteChunkLoaded: repeatedVisit,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    const firstVisitStats = summarizePerformance(
+      samples.map((sample) => sample.firstVisitAfterSync.elapsedMs),
+    );
+    const repeatedVisitStats = summarizePerformance(
+      samples.map((sample) => sample.repeatedVisitWithRouteChunkLoaded.elapsedMs),
+    );
+    await attachPerformanceReport(testInfo, "time-control-spa-transition.json", {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      startRoute: "/#/dashboard",
+      viewport,
+      cpuThrottle: 4,
+      readinessMetric:
+        "browser performance.now from SPA hash change until Time Control main content and heading are visible",
+      lcpApplicable: false,
+      initialSync:
+        "Each sample starts with a new browser context and requires lastSyncTime after the overlay is hidden.",
+      samples,
+      firstVisitStats,
+      repeatedVisitStats,
+    });
+  });
+
   test("Time Control defers the virtualized table until it enters the mobile viewport", async ({
     page,
   }, testInfo) => {

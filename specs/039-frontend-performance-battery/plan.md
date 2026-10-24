@@ -12,23 +12,24 @@ Spec: `./spec.md`. Constitución: `../constitution.md`.
 6. **Registro comparable:** cada corrida agrega un JSON bajo `evidencia/runs/` con commit, estado del checkout, contenedor de staging, versiones de Node/navegador, mapa de rutas/familias, estado de cada fase y resultados. Los archivos no se sobrescriben; cambios incompatibles incrementan `schemaVersion`.
 7. **Capas complementarias:** mantener Lighthouse para carga (LCP/FCP/CLS/score/response/TBT), Playwright para preparación de ruta e interacciones, y el verificador de bundle para tamaño/chunks/precache. No mezclar la prueba Artillery del backend con la batería de UX frontend.
 8. **Ciclos siguientes:** reconstruir staging después de cada mejora y repetir exactamente `npm run perf:staging`. Comparar el mismo host, Chromium, perfiles frío/caliente y pares de ruta/familia. No cambiar presupuestos hasta tener corridas repetidas comparables y un trace que identifique el costo principal.
+9. **Transición SPA sincronizada:** en tres contextos nuevos, esperar el marcador de sync y la desaparición del overlay antes de navegar Dashboard → Control horario dentro del mismo documento. Registrar por separado la primera visita (chunk de ruta aún no solicitado por esa sesión) y la repetición después de volver a Dashboard; usar readiness de shell + encabezado, no el LCP de carga fría.
 
 ## Archivos a tocar
 
-| Archivo                                                   | Cambio                                                                                        |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `frontend/e2e/performance.spec.ts`                        | Añadir resúmenes estadísticos, medición de frames en navegador, repeticiones y adjuntos JSON. |
-| `frontend/scripts/run-performance-battery.cjs`            | Verificar health y orquestar Playwright + LHCI usando `spawnSync` con argumentos.             |
-| `frontend/performance-routes.json`                        | Catálogo único de rutas, perfiles, familias y probes de interacción.                          |
-| `frontend/scripts/check-performance-routes.cjs`           | Comprobar coherencia entre catálogo y configuración Lighthouse.                               |
-| `specs/039-frontend-performance-battery/evidencia/runs/*` | Historial versionado, un JSON por corrida.                                                    |
-| `frontend/.lighthouserc-dashboard-cold.json`              | Repetir Dashboard tres veces con storage limpio y guardar reportes en `.lighthouseci/`.       |
-| `frontend/.lighthouserc-priority-cold.json`               | Repetir Worker Portal y Control horario tres veces cada uno con storage limpio.               |
-| `frontend/scripts/run-performance-battery.test.cjs`       | Validar tres reportes correctos por ruta fría, sin redirecciones ni omisiones.                |
-| `frontend/package.json`                                   | Añadir el comando `perf:staging`.                                                             |
-| `specs/039-frontend-performance-battery/spec.md`          | Requisitos, prioridad basada en datos y criterios medibles.                                   |
-| `specs/039-frontend-performance-battery/tasks.md`         | Tareas trazables al AC.                                                                       |
-| `specs/039-frontend-performance-battery/evidencia/*`      | Guardar diagnóstico, baseline y comparación del primer ciclo de optimización.                 |
+| Archivo                                                   | Cambio                                                                                                   |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `frontend/e2e/performance.spec.ts`                        | Añadir resúmenes, medición de frames, interacciones repetidas, adjuntos JSON y transición SPA post-sync. |
+| `frontend/scripts/run-performance-battery.cjs`            | Verificar health y orquestar Playwright + LHCI usando `spawnSync` con argumentos.                        |
+| `frontend/performance-routes.json`                        | Catálogo único de rutas, perfiles, familias y probes de interacción.                                     |
+| `frontend/scripts/check-performance-routes.cjs`           | Comprobar coherencia entre catálogo y configuración Lighthouse.                                          |
+| `specs/039-frontend-performance-battery/evidencia/runs/*` | Historial versionado, un JSON por corrida.                                                               |
+| `frontend/.lighthouserc-dashboard-cold.json`              | Repetir Dashboard tres veces con storage limpio y guardar reportes en `.lighthouseci/`.                  |
+| `frontend/.lighthouserc-priority-cold.json`               | Repetir Worker Portal y Control horario tres veces cada uno con storage limpio.                          |
+| `frontend/scripts/run-performance-battery.test.cjs`       | Validar tres reportes correctos por ruta fría, sin redirecciones ni omisiones.                           |
+| `frontend/package.json`                                   | Añadir el comando `perf:staging`.                                                                        |
+| `specs/039-frontend-performance-battery/spec.md`          | Requisitos, prioridad basada en datos y criterios medibles.                                              |
+| `specs/039-frontend-performance-battery/tasks.md`         | Tareas trazables al AC.                                                                                  |
+| `specs/039-frontend-performance-battery/evidencia/*`      | Guardar diagnóstico, baseline y comparación del primer ciclo de optimización.                            |
 
 ## Contratos afectados
 
@@ -47,6 +48,11 @@ Ninguno. No cambia HTTP, OpenAPI, SDK, Prisma, base de datos ni runtime de produ
 ```bash
 # Staging local levantado y saludable
 npm run perf:staging
+
+# Medición enfocada de la transición SPA post-sync contra staging
+E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api \
+  npm --prefix frontend exec -- playwright test e2e/performance.spec.ts \
+  --project=perf --no-deps --grep "Time Control SPA transition after initial sync"
 
 # Revisión local del código de test
 npm --prefix frontend run check

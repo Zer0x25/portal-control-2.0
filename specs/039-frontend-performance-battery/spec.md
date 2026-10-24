@@ -22,6 +22,7 @@ Dentro:
 - Repetir las mediciones de preparación de rutas y cambio de pestañas, e incluir resultados JSON adjuntos al reporte Playwright.
 - Mantener un catálogo único de rutas con familia funcional, perfil de acceso, selector de preparación e interacciones seguras; Lighthouse y Playwright consumen las mismas rutas.
 - Medir patrones compartidos de búsqueda, pestañas diferidas y apertura/cierre de paneles en rutas representativas, con tres repeticiones y sin enviar formularios.
+- Separar la carga fría de la transición SPA posterior a la sincronización inicial; medir la primera visita a Control horario y una repetición con el módulo de ruta ya cargado.
 - Guardar cada ejecución completa como JSON versionado bajo `evidencia/runs/`, con identificación del build de staging, entorno, catálogo y estado de cada fase.
 - Medir Dashboard tres veces con storage del navegador limpio para distinguir la carga fría del resultado con estado persistido.
 - Repetir tres muestras frías para Worker Portal y Control horario después del experimento de Dashboard, con el rol catalogado para cada ruta.
@@ -50,6 +51,7 @@ Fuera (explícito):
 - [x] AC12: Login permanece en Playwright, pero se excluye de Lighthouse tras reproducir `NO_FCP` con las variantes móvil y desktop mientras Chromium muestra el contenido. La limitación queda documentada en el catálogo y en evidencia; las otras 17 rutas sí generan métricas Lighthouse.
 - [x] AC13: El adaptador Lighthouse usa el contrato Puppeteer `waitForFunction(función, opciones, argumentos)`, exige un shell presente para rutas protegidas y adjunta ruta/rol observados al fallar sin exponer tokens.
 - [x] AC14: Cada registro de la batería conserva tres muestras Lighthouse frías y con ruta validada para Worker Portal y Control horario; el perfil de Worker Portal autentica el rol `worker` y el de Control horario usa `admin`.
+- [x] AC15: Tres contextos nuevos confirman que `lastSyncTime` no existía al inicio, esperan que termine la sincronización y miden Control horario desde Dashboard por transición SPA bajo CPU 4×; guardan la primera y la repetida, verifican que no hubo recarga de documento y reportan readiness por separado de LCP.
 
 ## Restricciones
 
@@ -57,6 +59,7 @@ Fuera (explícito):
 - Playwright corre sin suites funcionales/visuales concurrentes, en Chromium y con viewport fijo, para reducir contaminación por CPU.
 - El umbral de 50 ms es una señal de atención, no un gate estricto mientras se calibra la nueva métrica. El p95 solo se compara entre corridas con el mismo host, navegador y configuración.
 - No se añade dependencia ni se cambia un contrato HTTP.
+- La preparación de una ruta SPA es una métrica de interacción; no se presenta como LCP, porque la muestra de LCP de navegación no representa una transición hash dentro del mismo documento.
 
 ## Trazabilidad
 
