@@ -6,6 +6,8 @@ import performanceRouteDefinitions from "../performance-routes.json" with { type
 
 const viewport = { width: 1440, height: 900 };
 const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:5174";
+const captureActiveEmployeeFilterProbe =
+  process.env.PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE === "1";
 const autoStartSchedulingApiPaths = new Set([
   "/api/configs/global_max_hours",
   "/api/configs/area_list",
@@ -854,6 +856,7 @@ test.describe.serial("Render Performance", () => {
               pageSize: string | null;
               hasEmployeeFilter: boolean;
               hasDateRange: boolean;
+            activeEmployeeFilter: boolean | null;
             } | null;
           }
         >();
@@ -878,8 +881,16 @@ test.describe.serial("Render Performance", () => {
                     pageSize: url.searchParams.get("pageSize"),
                     hasEmployeeFilter: url.searchParams.has("employeeId"),
                     hasDateRange: url.searchParams.has("desde") && url.searchParams.has("hasta"),
+                    activeEmployeeFilter: null,
                   }
-                : null,
+                : url.pathname === "/api/employees"
+                  ? {
+                      pageSize: null,
+                      hasEmployeeFilter: false,
+                      hasDateRange: false,
+                      activeEmployeeFilter: url.searchParams.get("status") === "Activo",
+                    }
+                  : null,
           });
         });
         page.on("response", (response) => {
@@ -1021,6 +1032,19 @@ test.describe.serial("Render Performance", () => {
             syncReadyAtMs: performance.now(),
           };
         });
+        const activeEmployeeProbe = captureActiveEmployeeFilterProbe
+          ? await page.evaluate(async () => {
+              const token = sessionStorage.getItem("authToken");
+              if (!token) return { status: null, responseBodyBytes: null };
+              const response = await fetch("/api/employees?status=Activo", {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              return {
+                status: response.status,
+                responseBodyBytes: (await response.arrayBuffer()).byteLength,
+              };
+            })
+          : null;
         await Promise.all(responseBodyReads);
         expect(metrics.initialLastSyncTime).toBeNull();
         expect(metrics.lastSyncTimePresent).toBe(true);
@@ -1075,6 +1099,17 @@ test.describe.serial("Render Performance", () => {
           employeeRequests.every((timing) => timing.responseBodyBytes !== null),
           "the performance report should retain only the employee response byte count",
         ).toBe(true);
+        if (activeEmployeeProbe) {
+          expect(activeEmployeeProbe.status).toBe(200);
+          expect(activeEmployeeProbe.responseBodyBytes).not.toBeNull();
+          const activeEmployeeRequests = employeeRequests.filter(
+            (timing) => timing.queryDimensions?.activeEmployeeFilter === true,
+          );
+          expect(activeEmployeeRequests).toHaveLength(1);
+          expect(activeEmployeeRequests[0]?.responseBodyBytes).toBe(
+            activeEmployeeProbe.responseBodyBytes,
+          );
+        }
         const userDirectoryRequests = Array.from(apiRequestTimings.values()).filter(
           (timing) => timing.path === "/api/users",
         );
@@ -1156,6 +1191,7 @@ test.describe.serial("Render Performance", () => {
           statusAnimationName: metrics.statusAnimationName,
           activeAnimations: metrics.activeAnimations,
           syncReadyAtMs: metrics.syncReadyAtMs,
+          activeEmployeeProbe,
           apiRequests: Array.from(apiRequestTimings.values()).map((timing) => ({
             ...timing,
             durationMs:
@@ -1179,7 +1215,7 @@ test.describe.serial("Render Performance", () => {
       cpuThrottle: 4,
       sampleCount: samples.length,
       apiRequestPathPolicy:
-        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees and users; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
+        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees and users; /api/employees records only whether status=Activo; optional active-filter payload diagnostic uses PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE=1; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
       syncPhasePolicy:
         "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
       timingOffsetBasis: "Date.now immediately before page.goto",

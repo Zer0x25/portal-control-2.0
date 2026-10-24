@@ -306,3 +306,10 @@
 - **Límite**: las muestras son pequeñas y sus rangos se solapan. Se reduce una query sin demostrar mejora frontend ni CWV; no atribuir la variación de overlay al cambio.
 - **Siguiente**: comprobar qué campos/estados necesita Control Horario. Si el consumidor puede usar solo empleados activos o un DTO menor, medir el ahorro potencial antes de cambiar el contrato.
 - **Evidencia**: [resultado Spec 064](../specs/064-skip-unused-employee-count-on-full-list/evidencia/resultado-2026-10-24.md), [baseline](../specs/064-skip-unused-employee-count-on-full-list/evidencia/baseline/time-control-sync-phase-diagnostics.json) y [final](../specs/064-skip-unused-employee-count-on-full-list/evidencia/final/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - test(perf): Verificar filtro de empleados activos
+
+- **Diagnóstico**: la respuesta completa y `status=Activo` midieron 75.926 B en cada una de tres muestras de staging (0% de reducción). En esta base no hay filas archivadas que excluir.
+- **Decisión**: descartar la query activa; conservar solo el probe de payload bajo una variable opt-in, sin añadir requests sintéticos a la batería normal.
+- **Siguiente**: proyectar `id`, `name`, `area` y `workdayType`, los campos usados por Time Control, y comparar el tamaño antes de definir una nueva ruta.
+- **Evidencia**: [resultado Spec 065](../specs/065-time-control-active-employee-query/evidencia/resultado-2026-10-24.md) y [tres muestras](../specs/065-time-control-active-employee-query/evidencia/baseline/time-control-sync-phase-diagnostics.json).
