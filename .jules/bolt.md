@@ -379,3 +379,11 @@
 - **Medido**: Worker Portal tiene FCP frío mediano 4.001 ms, LCP 5.780 ms y 510.000 B transferidos; Control horario 3.720/5.472 ms y 461.644 B; Dashboard 2.021/2.254 ms y 449.506 B. El cold worker `react-core` consume 80.217 B transferidos; el perfil estándar warm reporta TBT 782 ms y 1.410 ms de scripting en ese chunk.
 - **Límites**: Lighthouse estándar es una muestra con estado persistido; el baseline anterior tenía árbol sucio, otra imagen y cambios funcionales intermedios, así que no demuestra mejora causal de Spec 072. Governance scroll dio p95 83,4 ms vs 33,4 ms previo; repetir antes de tocarlo.
 - **Siguiente**: atribuir los long tasks del shell y la carga fría de Worker Portal antes de elegir la optimización. Ver [resultado Spec 073](../specs/073-staging-battery-current-endpoint/evidencia/resultado-2026-10-24.md).
+
+## 2026-10-24 - test(perf): Atribuir carga fría de Worker Portal
+
+- **Medido**: tres perfiles React Vite dev, Worker, 412×823, CPU 4×. Root: 19 commits/355,1 ms `actualDuration`; `app:application`: 19/328,5 ms; ruta: 5/146,7 ms. Cero eventos perdidos; scopes anidados se solapan.
+- **Hallazgo**: Worker Portal carga `validation` (Zod) desde su primera visita: 89.113 B raw, 30.030 B transferidos. La vista importa estáticamente `CorrectionRequestModal` desde el barrel, aunque solo lo renderiza cuando el usuario abre una corrección.
+- **Límite**: perfiles React son dev y no se equiparan a LCP. El proxy API se fijó temporalmente a staging; persistieron errores websocket de Vite, fuera de la medición de fetch.
+- **Siguiente**: hacer lazy el export del modal en el barrel y comprobar que se ahorren ≥20 KB JS fríos sin afectar la apertura/validación; mantener intacta `WorkerPortal.view.tsx` protegida.
+- **Evidencia**: [resultado Spec 074](../specs/074-worker-portal-cold-load-attribution/evidencia/resultado-2026-10-24.md) y [perfil React](../specs/074-worker-portal-cold-load-attribution/evidencia/worker-portal-render-profile-2026-10-24.json).
