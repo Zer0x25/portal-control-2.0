@@ -103,8 +103,7 @@ const NotFoundPage = React.lazy(() => import("./features/not-found/pages/NotFoun
 const AccessDeniedNotifier = React.lazy(() => import("./router/AccessDeniedNotifier"));
 
 const App: React.FC = () => {
-  const { isForcePasswordChangeModalOpen, clearMustChangePassword } = useAuth();
-  const { logout } = useAuth();
+  const { isForcePasswordChangeModalOpen, clearMustChangePassword, logout } = useAuth();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
   const { data: isControlInternoEnabled = true } = useControlInternoEnabledQuery();
 
