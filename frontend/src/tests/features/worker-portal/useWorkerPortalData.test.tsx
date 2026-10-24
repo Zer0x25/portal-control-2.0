@@ -231,6 +231,43 @@ describe("useWorkerPortalData (spec 028)", () => {
     expect(result.current.status).not.toBe("en_colacion");
   });
 
+  it("AC-perf: deriva el estado de marcaje sin un render de sincronización", () => {
+    useUserClockingStatusMock.mockReturnValue({
+      lastRecord: recordR1,
+      status: "in",
+      time: "",
+      isLoading: false,
+    });
+    const onRender = vi.fn();
+
+    const { result } = renderHook(() => {
+      onRender();
+      return useWorkerPortalData();
+    });
+
+    expect(onRender).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe("en_jornada");
+  });
+
+  it("mantiene la carga visible mientras resuelve el empleado de fallback", async () => {
+    useEmployeesMock.mockReturnValue({
+      getEmployeeById: () => null,
+      allEmployees: [],
+      isLoadingEmployees: false,
+      refreshEmployees: refreshEmployeesMock,
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    await waitFor(() => {
+      expect(result.current.isLoadingEmployees).toBe(true);
+    });
+    await waitFor(() => {
+      expect(result.current.employee?.id).toBe("e1");
+    });
+    expect(result.current.isLoadingEmployees).toBe(false);
+  });
+
   it("AC-perf: pide records acotados a empleado+mes (no volcado completo)", async () => {
     const { result } = renderHook(() => useWorkerPortalData());
     await waitFor(() => {
