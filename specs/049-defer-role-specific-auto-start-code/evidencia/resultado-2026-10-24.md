@@ -24,6 +24,7 @@ El arranque del Dashboard hizo 8 solicitudes API, todas a endpoints únicos, con
 - Corrida posterior oficial, checkout limpio: [ledger `adffe1ef`](../../039-frontend-performance-battery/evidencia/runs/2026-10-24T02-28-24-357Z-adffe1ef.json), con `workingTreeDirty=false`.
 - Comparación de chunks: [baseline](baseline/dashboard-eager-chunks.json) y [post cambio](full-battery/dashboard-eager-chunks.json).
 - API al iniciar Dashboard: [captura Playwright](full-battery/dashboard-startup-api-requests.json).
+- Detalle Lighthouse del hilo principal y LCP: [diagnóstico por muestra](full-battery/dashboard-lighthouse-diagnostics.json).
 - Imagen staging: `sha256:a72d929628b12350eae8e943f276112bf1db25c19177b0efb6be3d2352a6b2b2` (gateway y API HTTP 200).
 - Commit de implementación: `546d870324cb1c8aae8417cb7b0a0d5ea896c077`. El commit de origen que guarda el ledger limpio es `adffe1ef36d9500cd89a1a983a3f3742063000e6`; entre ambos solo se registró evidencia, y la imagen frontend coincide.
 
@@ -37,4 +38,4 @@ La primera corrida posterior de las 02:16 quedó guardada en el ledger con `work
 
 ## Siguiente gap medido
 
-Los chunks exclusivos de auto-inicio ya no forman parte del arranque Admin. El Dashboard todavía transfiere 283.552 bytes de scripts y su TBT mediano es 137,5 ms. Para la siguiente iteración conviene perfilar el chunk `vendor` y las tareas de scripting de Lighthouse antes de elegir otra dependencia para diferir.
+Los chunks exclusivos de auto-inicio ya no forman parte del arranque Admin. En las muestras frías, Lighthouse atribuyó 697–829 ms de evaluación de JavaScript al chunk `react-core` (218.860 B sin comprimir, 80.217 B transferidos) y estimó 31.958–32.280 B no usados. El chunk contiene únicamente React, React DOM y Scheduler, así que esa estimación no identifica por sí sola código seguro para quitar. Lighthouse eligió el texto del reloj como LCP, con 1.562–1.570 ms de demora de render. El siguiente paso es perfilar el arranque de ese contenido y clasificar el trabajo de React antes de cambiar dependencias o el comportamiento del reloj.
