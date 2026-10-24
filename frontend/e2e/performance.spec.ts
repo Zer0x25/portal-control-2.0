@@ -67,6 +67,11 @@ test.describe.serial("Render Performance", () => {
     const eagerTimezoneChunks = scriptRequests.filter((url) =>
       /\/assets\/(date-utils|dateUtils|formatters)-[^/?]+\.js(?:[?#]|$)/.test(url),
     );
+    const eagerAutoStartSchedulingChunks = scriptRequests.filter((url) =>
+      /\/assets\/(useScheduling|useShiftManager|useAssignedShiftsQuery|useShiftPatternsQuery|useHolidaysQuery|useLeavesQuery|schedulingService|holidayService)-[^/?]+\.js(?:[?#]|$)/.test(
+        url,
+      ),
+    );
     const report = {
       capturedAt: new Date().toISOString(),
       baseUrl,
@@ -77,6 +82,7 @@ test.describe.serial("Render Performance", () => {
       eagerTimeControlChunks,
       eagerSecondaryModalChunks,
       eagerTimezoneChunks,
+      eagerAutoStartSchedulingChunks,
     };
 
     await attachPerformanceReport(testInfo, "dashboard-eager-chunks.json", report);
@@ -91,6 +97,10 @@ test.describe.serial("Render Performance", () => {
     expect(
       eagerTimezoneChunks,
       "Dashboard should load timezone helpers only when an action needs them",
+    ).toEqual([]);
+    expect(
+      eagerAutoStartSchedulingChunks,
+      "Dashboard should only load auto-start scheduling code for an eligible employee",
     ).toEqual([]);
   });
 

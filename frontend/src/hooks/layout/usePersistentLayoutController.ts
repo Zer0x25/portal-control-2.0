@@ -17,7 +17,8 @@ export const usePersistentLayoutController = () => {
   const { currentUser } = useAuth();
   const isInitialSync = useStore((state) => state.isInitialSync);
 
-  const { handoverData, isHandoverModalOpen, closeHandoverModal } = useLoginAutomations();
+  const { handoverData, isAutoStartEligible, isHandoverModalOpen, closeHandoverModal } =
+    useLoginAutomations();
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
@@ -95,6 +96,7 @@ export const usePersistentLayoutController = () => {
     closeHandoverModal,
     currentPath: location.pathname,
     currentUser,
+    isAutoStartEligible,
     goHome,
     handleSwipeTouchEnd,
     handleSwipeTouchStart,
