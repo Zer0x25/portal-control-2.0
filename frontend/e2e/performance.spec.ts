@@ -616,6 +616,51 @@ test.describe.serial("Render Performance", () => {
     });
   });
 
+  test("Worker Portal defers correction modal code until a correction is opened", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const context = await browser.newContext({ viewport });
+    const scriptRequests: string[] = [];
+    try {
+      const page = await context.newPage();
+      page.on("request", (resourceRequest) => {
+        if (resourceRequest.resourceType() === "script") {
+          scriptRequests.push(resourceRequest.url());
+        }
+      });
+
+      await loginFast(page, request, "worker");
+      await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+      await expect(page.getByRole("heading", { name: "Portal del Trabajador" })).toBeVisible({
+        timeout: 30_000,
+      });
+      await page.waitForLoadState("networkidle");
+
+      const correctionChunkRequests = scriptRequests.filter((url) =>
+        /correctionrequestmodal|\/validation-[^/?]+\.js(?:[?#]|$)/i.test(new URL(url).pathname),
+      );
+      const scriptAssets = scriptRequests.map((url) => new URL(url).pathname.split("/").pop());
+      const report = {
+        capturedAt: new Date().toISOString(),
+        baseUrl,
+        route: "/#/worker-portal",
+        role: "worker",
+        dataMutation: false,
+        scriptAssets,
+        correctionChunkRequests,
+      };
+
+      await attachPerformanceReport(testInfo, "worker-portal-deferred-correction.json", report);
+      expect(
+        correctionChunkRequests,
+        "Worker Portal must not download correction modal or validation code before opening a correction",
+      ).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  });
+
   test("Time Control initial sync records phase timings and remains blocking", async ({
     browser,
     request,

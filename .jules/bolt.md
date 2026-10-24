@@ -387,3 +387,11 @@
 - **Límite**: perfiles React son dev y no se equiparan a LCP. El proxy API se fijó temporalmente a staging; persistieron errores websocket de Vite, fuera de la medición de fetch.
 - **Siguiente**: hacer lazy el export del modal en el barrel y comprobar que se ahorren ≥20 KB JS fríos sin afectar la apertura/validación; mantener intacta `WorkerPortal.view.tsx` protegida.
 - **Evidencia**: [resultado Spec 074](../specs/074-worker-portal-cold-load-attribution/evidencia/resultado-2026-10-24.md) y [perfil React](../specs/074-worker-portal-cold-load-attribution/evidencia/worker-portal-render-profile-2026-10-24.json).
+
+## 2026-10-24 - perf(worker-portal): Diferir modal de corrección
+
+- **Cambio**: `CorrectionRequestModal` ahora usa `React.lazy` + `Suspense` desde el barrel del feature; la vista protegida se mantuvo intacta. Prueba de componente muestra el formulario real con un registro sintético y no lo envía.
+- **Medido**: regresión E2E confirmó `validation` solicitado en el baseline; con el nuevo build no descargó el modal ni `validation` en la primera visita. Lighthouse frío, tres muestras: JS mediano 348.466 → 285.779 B (−62.687 B; −18,0 %), transferencia 510.000 → 447.279 B; LCP 5.780 → 5.055 ms (−12,6 %); score 0,68 → 0,72.
+- **Límite**: TBT mediano 117,5 → 145 ms (+27,5 ms; `n=3`, muestras dispersas). El ahorro abarca el modal y dependencias, no se atribuye solo a Zod. Corrida completa aprobó 19/19 Playwright, 17 rutas Lighthouse estándar y 9 perfiles fríos; preflight 6/6 y ratchet ESLint 0/0. Registro final usa imagen de frontend identificada y árbol dirty sobre `ee638e5`.
+- **Siguiente**: atribuir el LCP restante de 5,05 s y el trabajo de `react-core` (80.217 B transferidos; 635–699 ms de scripting bajo CPU 4×) antes de elegir otra optimización.
+- **Evidencia**: [resultado Spec 075](../specs/075-lazy-worker-portal-correction-modal/evidencia/resultado-2026-10-24.md), [corrida staging](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T17-57-24-073Z-ee638e54.json) y [baseline](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T17-23-56-778Z-9e6c151b.json).
