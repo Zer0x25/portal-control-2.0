@@ -274,3 +274,11 @@
 - **Límite**: `idbIsStoreEmpty` ya usa `count()`. El intervalo incluye apertura de la base y dos transacciones; no atribuir el tiempo a `count()` aisladamente.
 - **Siguiente**: si `lastSyncTime` es nulo, omitir el chequeo: el resultado no afecta `if (isCacheEmpty && since)`. Conservarlo con una marca previa y medir el overlay de nuevo.
 - **Evidencia**: [resultado Spec 060](../specs/060-time-control-sync-step-timings/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/060-time-control-sync-step-timings/evidencia/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - perf(time-control): Omitir chequeo de stores en el primer sync
+
+- **Cambio**: omitir las lecturas de IndexedDB si no hay `lastSyncTime`; con marca previa se siguen leyendo ambas stores en paralelo y se conserva la rama de caché vacía.
+- **Medido**: tres contextos fríos staging, 412×823, CPU 4×. El overlay bajó de 935,6 ms (890,8–957,7) a 394,1 ms (357–428,9), −541,5 ms (−57,9 %). Su retiro desde navegación pasó de 1.883 a 1.298,9 ms de mediana (−584,1 ms; −31 %). Cobertura/hit-test correcto en 3/3; 20 requests por muestra y las 60 respuestas HTTP 200.
+- **Límite**: FCP mediano 708 → 744 ms, rangos solapados. El candidato LCP cambió del overlay al distintivo de la app antes de mostrarse el overlay; no atribuir mejora CWV. Las esperas de sync de Usuarios/Empleados ahora miden 132,3/71,2 ms por el solapamiento con queries activas; no se quitaron esos refrescos.
+- **Siguiente**: medir el costo y solapamiento de `validateInstanceId` (mediana actual 369,5 ms) y las queries activas de Usuarios/Empleados antes de cambiar validación o refresco.
+- **Evidencia**: [resultado Spec 061](../specs/061-skip-empty-cache-check-without-sync-marker/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/061-skip-empty-cache-check-without-sync-marker/evidencia/time-control-sync-phase-diagnostics.json).

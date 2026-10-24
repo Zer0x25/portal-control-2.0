@@ -119,14 +119,19 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         return;
       }
 
-      // 1. Smart Cache Check: If critical stores are empty, force a full sync regardless of lastSyncTime
-      const isCacheEmpty = await measureSyncPhase("cache-check", "criticalStores", async () => {
-        const [empEmpty, userEmpty] = await Promise.all([
-          idbIsStoreEmpty(STORES.EMPLOYEES),
-          idbIsStoreEmpty(STORES.USERS),
-        ]);
-        return empEmpty && userEmpty;
-      });
+      // A cache check can affect only a delta sync that has a prior marker.
+      // On the first sync there is no timestamp to preserve, so opening IndexedDB
+      // here would delay the initial overlay without changing the sync decision.
+      let isCacheEmpty = false;
+      if (since) {
+        isCacheEmpty = await measureSyncPhase("cache-check", "criticalStores", async () => {
+          const [empEmpty, userEmpty] = await Promise.all([
+            idbIsStoreEmpty(STORES.EMPLOYEES),
+            idbIsStoreEmpty(STORES.USERS),
+          ]);
+          return empEmpty && userEmpty;
+        });
+      }
 
       if (isCacheEmpty && since) {
         logger.warn("⚠️ Cache local vacía detectada. Forzando sincronización completa...");

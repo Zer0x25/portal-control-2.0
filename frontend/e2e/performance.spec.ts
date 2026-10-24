@@ -652,6 +652,12 @@ test.describe.serial("Render Performance", () => {
             overlayHiddenAtMs: number | null;
             overlayVisibleAtEpochMs: number | null;
             overlayHiddenAtEpochMs: number | null;
+            overlayCoverage: {
+              coversViewport: boolean;
+              hitTestBelongsToOverlay: boolean;
+            } | null;
+            loadingIndicatorCount: number | null;
+            progressVisible: boolean;
             syncStepChanges: Array<{
               atEpochMs: number;
               step: string;
@@ -677,6 +683,9 @@ test.describe.serial("Render Performance", () => {
             overlayHiddenAtMs: null,
             overlayVisibleAtEpochMs: null,
             overlayHiddenAtEpochMs: null,
+            overlayCoverage: null,
+            loadingIndicatorCount: null,
+            progressVisible: false,
             syncStepChanges: [],
             syncPhaseTimings: [],
             rootAnimationName: null,
@@ -769,6 +778,25 @@ test.describe.serial("Render Performance", () => {
               audit.overlayVisibleAtMs = performance.now();
               audit.overlayVisibleAtEpochMs = performance.timeOrigin + performance.now();
               if (root) {
+                const rect = root.getBoundingClientRect();
+                const centralTarget = document.elementFromPoint(
+                  window.innerWidth / 2,
+                  window.innerHeight / 2,
+                );
+                audit.overlayCoverage = {
+                  coversViewport:
+                    rect.left <= 0 &&
+                    rect.top <= 0 &&
+                    rect.right >= window.innerWidth &&
+                    rect.bottom >= window.innerHeight,
+                  hitTestBelongsToOverlay: Boolean(centralTarget && root.contains(centralTarget)),
+                };
+                audit.loadingIndicatorCount = root.querySelectorAll(
+                  '[role="status"][aria-label="Cargando"]',
+                ).length;
+                audit.progressVisible = Array.from(root.querySelectorAll("span")).some((element) =>
+                  /^\d+%$/.test(element.textContent?.trim() ?? ""),
+                );
                 const rootStyle = getComputedStyle(root);
                 audit.rootAnimationName = rootStyle.animationName;
                 audit.rootAnimationDuration = rootStyle.animationDuration;
@@ -870,35 +898,10 @@ test.describe.serial("Render Performance", () => {
           "Establishing technical handshake • Validating integrity...",
           { exact: true },
         );
-        await expect(syncOverlay).toBeVisible({ timeout: 30_000 });
-        const overlayCoverage = await syncOverlay.evaluate((status) => {
-          let overlayRoot: HTMLElement | null = status as HTMLElement;
-          while (overlayRoot && getComputedStyle(overlayRoot).position !== "fixed") {
-            overlayRoot = overlayRoot.parentElement;
-          }
-          if (!overlayRoot) throw new Error("Initial sync overlay root was not found");
-          const rect = overlayRoot.getBoundingClientRect();
-          const target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
-          return {
-            coversViewport:
-              rect.left <= 0 &&
-              rect.top <= 0 &&
-              rect.right >= window.innerWidth &&
-              rect.bottom >= window.innerHeight,
-            hitTestBelongsToOverlay: Boolean(target && overlayRoot.contains(target)),
-            topElementTag: target?.tagName ?? null,
-          };
-        });
-        expect(overlayCoverage.coversViewport).toBe(true);
-        expect(overlayCoverage.hitTestBelongsToOverlay).toBe(true);
-        const loadingIndicators = page.getByRole("status", { name: "Cargando" });
-        await expect(loadingIndicators).toHaveCount(2);
-        await expect(page.getByText(/^\d+%$/)).toBeVisible();
-
-        await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
         await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
           timeout: 30_000,
         });
+        await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
         const metrics = await page.evaluate(() => {
           const audit = (
             window as Window & {
@@ -916,6 +919,12 @@ test.describe.serial("Render Performance", () => {
                 overlayHiddenAtMs: number | null;
                 overlayVisibleAtEpochMs: number | null;
                 overlayHiddenAtEpochMs: number | null;
+                overlayCoverage: {
+                  coversViewport: boolean;
+                  hitTestBelongsToOverlay: boolean;
+                } | null;
+                loadingIndicatorCount: number | null;
+                progressVisible: boolean;
                 syncStepChanges: Array<{
                   atEpochMs: number;
                   step: string;
@@ -951,6 +960,9 @@ test.describe.serial("Render Performance", () => {
             overlayHiddenAtMs: audit.overlayHiddenAtMs,
             overlayVisibleAtEpochMs: audit.overlayVisibleAtEpochMs,
             overlayHiddenAtEpochMs: audit.overlayHiddenAtEpochMs,
+            overlayCoverage: audit.overlayCoverage,
+            loadingIndicatorCount: audit.loadingIndicatorCount,
+            progressVisible: audit.progressVisible,
             syncStepChanges: audit.syncStepChanges,
             syncPhaseTimings: audit.syncPhaseTimings,
             overlayVisibleDurationMs:
@@ -968,6 +980,13 @@ test.describe.serial("Render Performance", () => {
         expect(metrics.lastSyncTimePresent).toBe(true);
         expect(metrics.overlayVisibleAtMs).not.toBeNull();
         expect(metrics.overlayHiddenAtMs).not.toBeNull();
+        if (!metrics.overlayCoverage)
+          throw new Error("Initial sync overlay coverage was not captured");
+        const overlayCoverage = metrics.overlayCoverage;
+        expect(overlayCoverage.coversViewport).toBe(true);
+        expect(overlayCoverage.hitTestBelongsToOverlay).toBe(true);
+        expect(metrics.loadingIndicatorCount).toBe(2);
+        expect(metrics.progressVisible).toBe(true);
         if (metrics.fcpMs === null) throw new Error("First Contentful Paint was not recorded");
         expect(metrics.lcpEntries.length).toBeGreaterThan(0);
         expect(metrics.rootAnimationName).toBeTruthy();
@@ -978,7 +997,6 @@ test.describe.serial("Render Performance", () => {
         ).toBe(true);
         expect(metrics.syncPhaseTimings.map(({ phase, name }) => [phase, name])).toEqual([
           ["validation", "validateInstanceId"],
-          ["cache-check", "criticalStores"],
           ["sync-step", "Usuarios"],
           ["sync-step", "Empleados"],
           ["sync-step", "Configuraciones"],

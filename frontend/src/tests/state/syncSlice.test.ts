@@ -32,6 +32,7 @@ import { createSyncSlice } from "../../store/slices/syncSlice";
 import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
 import { healthQueryOptions } from "../../hooks/queries/useHealthQuery";
+import { STORES } from "../../utils/indexedDB";
 
 type SyncDiagnosticDetail = {
   phase: "validation" | "cache-check" | "sync-step";
@@ -40,10 +41,15 @@ type SyncDiagnosticDetail = {
   outcome: "success" | "failure";
 };
 
-const createAdminSyncState = (): AppState => {
+const createAdminSyncState = (
+  lastSyncTime: number | null = null,
+  onSet?: (partial: Partial<AppState>) => void,
+): AppState => {
+  if (lastSyncTime !== null) localStorage.setItem("lastSyncTime", lastSyncTime.toString());
+
   const state = {
     currentUser: { id: "admin-1", role: "Administrador" },
-    lastSyncTime: null,
+    lastSyncTime,
     isSyncing: false,
     syncState: "success",
     syncProgress: 0,
@@ -51,9 +57,10 @@ const createAdminSyncState = (): AppState => {
     currentSyncStep: "",
     addToast: vi.fn(),
   } as unknown as AppState;
-  const set = ((partial: Partial<AppState>) => Object.assign(state, partial)) as Parameters<
-    typeof createSyncSlice
-  >[0];
+  const set = ((partial: Partial<AppState>) => {
+    onSet?.(partial);
+    Object.assign(state, partial);
+  }) as Parameters<typeof createSyncSlice>[0];
   const get = (() => state) as Parameters<typeof createSyncSlice>[1];
   const api = {} as Parameters<typeof createSyncSlice>[2];
   Object.assign(state, createSyncSlice(set, get, api));
@@ -91,6 +98,28 @@ describe("sync de sesión ante cambio de instancia", () => {
 
     window.removeEventListener("portal:sync-phase", listener);
     expect(events).toEqual([]);
+    expect(idbIsStoreEmpty).not.toHaveBeenCalled();
+  });
+
+  it("skips critical-store reads when there is no previous sync marker", async () => {
+    await createAdminSyncState().runSync();
+
+    expect(idbIsStoreEmpty).not.toHaveBeenCalled();
+  });
+
+  it("checks both critical stores when a previous sync marker exists", async () => {
+    await createAdminSyncState(Date.now()).runSync();
+
+    expect(idbIsStoreEmpty.mock.calls).toEqual([[STORES.EMPLOYEES], [STORES.USERS]]);
+  });
+
+  it("keeps the existing full-sync branch when both stores are empty", async () => {
+    idbIsStoreEmpty.mockResolvedValue(true);
+    const stateUpdates: Partial<AppState>[] = [];
+
+    await createAdminSyncState(Date.now(), (partial) => stateUpdates.push(partial)).runSync();
+
+    expect(stateUpdates).toContainEqual({ isInitialSync: true, syncProgress: 0 });
   });
 
   it("emits only phase timings when opt-in diagnostics are enabled", async () => {
@@ -102,7 +131,7 @@ describe("sync de sesión ante cambio de instancia", () => {
     };
     window.addEventListener("portal:sync-phase", listener);
 
-    await createAdminSyncState().initializeAppData();
+    await createAdminSyncState(Date.now()).initializeAppData();
 
     window.removeEventListener("portal:sync-phase", listener);
     expect(events.map(({ phase, name }) => [phase, name])).toEqual([
@@ -133,7 +162,7 @@ describe("sync de sesión ante cambio de instancia", () => {
     };
     window.addEventListener("portal:sync-phase", listener);
 
-    await createAdminSyncState().initializeAppData();
+    await createAdminSyncState(Date.now()).initializeAppData();
 
     window.removeEventListener("portal:sync-phase", listener);
     expect(events.map(({ phase, name, outcome }) => [phase, name, outcome])).toEqual([
