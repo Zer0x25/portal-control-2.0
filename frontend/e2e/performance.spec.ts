@@ -652,6 +652,22 @@ test.describe.serial("Render Performance", () => {
               durationMs: number;
               outcome: "success" | "failure";
             };
+            type LongAnimationFrameScript = {
+              startTimeMs: number;
+              durationMs: number;
+              executionStartMs: number;
+              sourcePath: string | null;
+              functionName: string;
+              sourceCharPosition: number;
+              invokerType: string;
+              forcedStyleAndLayoutDurationMs: number;
+            };
+            type LongAnimationFrameDiagnostic = {
+              startTimeMs: number;
+              durationMs: number;
+              blockingDurationMs: number;
+              scripts: LongAnimationFrameScript[];
+            };
             type OverlayPaintAudit = {
               initialLastSyncTime: string | null;
               timeOriginEpochMs: number;
@@ -686,6 +702,8 @@ test.describe.serial("Render Performance", () => {
               readinessApiClientStages: Array<{ stage: string; atMs: number }>;
               validationStages: Array<{ stage: string; atMs: number }>;
               longTaskEntries: Array<{ startTimeMs: number; durationMs: number }>;
+              longAnimationFrameSupported: boolean;
+              longAnimationFrameEntries: LongAnimationFrameDiagnostic[];
               rootAnimationName: string | null;
               rootAnimationDuration: string | null;
               statusAnimationName: string | null;
@@ -714,6 +732,8 @@ test.describe.serial("Render Performance", () => {
               readinessApiClientStages: [],
               validationStages: [],
               longTaskEntries: [],
+              longAnimationFrameSupported: false,
+              longAnimationFrameEntries: [],
               rootAnimationName: null,
               rootAnimationDuration: null,
               statusAnimationName: null,
@@ -725,6 +745,9 @@ test.describe.serial("Render Performance", () => {
             (
               window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean }
             ).__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+            const diagnosticsEnabled =
+              (window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean })
+                .__PORTAL_SYNC_PERF_DIAGNOSTICS__ === true;
             if (probeRunId) {
               const diagnosticsWindow = window as Window & {
                 __PORTAL_SYNC_PERF_RUN_ID__?: string;
@@ -789,6 +812,71 @@ test.describe.serial("Render Performance", () => {
                   })),
                 );
               }).observe({ type: "longtask", buffered: true });
+            }
+            if (
+              diagnosticsEnabled &&
+              PerformanceObserver.supportedEntryTypes.includes("long-animation-frame")
+            ) {
+              try {
+                new PerformanceObserver((list) => {
+                  audit.longAnimationFrameEntries.push(
+                    ...list.getEntries().map((entry) => {
+                      const frame = entry as PerformanceEntry & {
+                        blockingDuration?: number;
+                        scripts?: Array<{
+                          startTime: number;
+                          duration: number;
+                          executionStart: number;
+                          sourceURL: string;
+                          sourceFunctionName: string;
+                          sourceCharPosition: number;
+                          invokerType: string;
+                          forcedStyleAndLayoutDuration: number;
+                        }>;
+                      };
+                      const scripts = (frame.scripts ?? []).map((script) => {
+                        let sourcePath: string | null = null;
+                        if (script.sourceURL) {
+                          try {
+                            sourcePath = new URL(script.sourceURL, window.location.href).pathname;
+                          } catch {
+                            sourcePath = null;
+                          }
+                        }
+                        const functionName = /^[a-z_$][\w$]{0,80}$/i.test(script.sourceFunctionName)
+                          ? script.sourceFunctionName
+                          : "";
+                        const invokerType = /^[a-z\d_-]{1,64}$/i.test(script.invokerType)
+                          ? script.invokerType
+                          : "unknown";
+                        return {
+                          startTimeMs: Number(script.startTime.toFixed(2)),
+                          durationMs: Number(script.duration.toFixed(2)),
+                          executionStartMs: Number(script.executionStart.toFixed(2)),
+                          sourcePath,
+                          functionName,
+                          sourceCharPosition: Number.isInteger(script.sourceCharPosition)
+                            ? script.sourceCharPosition
+                            : -1,
+                          invokerType,
+                          forcedStyleAndLayoutDurationMs: Number(
+                            script.forcedStyleAndLayoutDuration.toFixed(2),
+                          ),
+                        };
+                      });
+                      return {
+                        startTimeMs: Number(entry.startTime.toFixed(2)),
+                        durationMs: Number(entry.duration.toFixed(2)),
+                        blockingDurationMs: Number((frame.blockingDuration ?? 0).toFixed(2)),
+                        scripts,
+                      };
+                    }),
+                  );
+                }).observe({ type: "long-animation-frame", buffered: true });
+                audit.longAnimationFrameSupported = true;
+              } catch {
+                audit.longAnimationFrameSupported = false;
+              }
             }
 
             let wasVisible = false;
@@ -1033,6 +1121,12 @@ test.describe.serial("Render Performance", () => {
           timeout: 30_000,
         });
         await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+            }),
+        );
         const metrics = await page.evaluate(
           ({ probeRunId, sampleIndex }) => {
             const audit = (
@@ -1077,6 +1171,22 @@ test.describe.serial("Render Performance", () => {
                   readinessApiClientStages: Array<{ stage: string; atMs: number }>;
                   validationStages: Array<{ stage: string; atMs: number }>;
                   longTaskEntries: Array<{ startTimeMs: number; durationMs: number }>;
+                  longAnimationFrameSupported: boolean;
+                  longAnimationFrameEntries: Array<{
+                    startTimeMs: number;
+                    durationMs: number;
+                    blockingDurationMs: number;
+                    scripts: Array<{
+                      startTimeMs: number;
+                      durationMs: number;
+                      executionStartMs: number;
+                      sourcePath: string | null;
+                      functionName: string;
+                      sourceCharPosition: number;
+                      invokerType: string;
+                      forcedStyleAndLayoutDurationMs: number;
+                    }>;
+                  }>;
                   rootAnimationName: string | null;
                   rootAnimationDuration: string | null;
                   statusAnimationName: string | null;
@@ -1131,6 +1241,8 @@ test.describe.serial("Render Performance", () => {
               readinessApiClientStages: audit.readinessApiClientStages,
               validationStages: audit.validationStages,
               longTaskEntries: audit.longTaskEntries,
+              longAnimationFrameSupported: audit.longAnimationFrameSupported,
+              longAnimationFrameEntries: audit.longAnimationFrameEntries,
               readinessResourceTimings,
               overlayVisibleDurationMs:
                 audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
@@ -1319,6 +1431,94 @@ test.describe.serial("Render Performance", () => {
             ),
           }))
           .filter((entry) => entry.overlapMs > 0);
+        expect(metrics.longAnimationFrameSupported).toBe(true);
+        const measureOverlapMs = (
+          startTimeMs: number,
+          durationMs: number,
+          intervalStartMs: number,
+          intervalEndMs: number,
+        ): number =>
+          Number(
+            Math.max(
+              0,
+              Math.min(startTimeMs + durationMs, intervalEndMs) -
+                Math.max(startTimeMs, intervalStartMs),
+            ).toFixed(2),
+          );
+        const bodyReadStartMs = apiClientFetchResolved.atMs;
+        const bodyReadEndMs = apiClientBodyResolved.atMs;
+        const longAnimationFramesDuringValidation = metrics.longAnimationFrameEntries
+          .map((entry) => {
+            const overlapMs = measureOverlapMs(
+              entry.startTimeMs,
+              entry.durationMs,
+              validationTiming.startedAtMs,
+              validationEndMs,
+            );
+            return {
+              startTimeMs: entry.startTimeMs,
+              durationMs: entry.durationMs,
+              blockingDurationMs: entry.blockingDurationMs,
+              overlapMs,
+              scripts: entry.scripts
+                .map((script) => ({
+                  ...script,
+                  overlapMs: measureOverlapMs(
+                    script.startTimeMs,
+                    script.durationMs,
+                    validationTiming.startedAtMs,
+                    validationEndMs,
+                  ),
+                }))
+                .filter((script) => script.overlapMs > 0),
+            };
+          })
+          .filter((entry) => entry.overlapMs > 0);
+        const longAnimationFramesDuringBodyRead = metrics.longAnimationFrameEntries
+          .map((entry) => {
+            const overlapMs = measureOverlapMs(
+              entry.startTimeMs,
+              entry.durationMs,
+              bodyReadStartMs,
+              bodyReadEndMs,
+            );
+            return {
+              startTimeMs: entry.startTimeMs,
+              durationMs: entry.durationMs,
+              blockingDurationMs: entry.blockingDurationMs,
+              overlapMs,
+              scripts: entry.scripts
+                .map((script) => ({
+                  ...script,
+                  overlapMs: measureOverlapMs(
+                    script.startTimeMs,
+                    script.durationMs,
+                    bodyReadStartMs,
+                    bodyReadEndMs,
+                  ),
+                }))
+                .filter((script) => script.overlapMs > 0),
+            };
+          })
+          .filter((entry) => entry.overlapMs > 0);
+        const readinessMainThreadAttribution = {
+          longAnimationFrameSupported: metrics.longAnimationFrameSupported,
+          framesDuringValidation: longAnimationFramesDuringValidation,
+          framesDuringBodyRead: longAnimationFramesDuringBodyRead,
+        };
+        const attributedSourcePaths = [
+          ...longAnimationFramesDuringValidation,
+          ...longAnimationFramesDuringBodyRead,
+        ].flatMap((frame) => frame.scripts.map((script) => script.sourcePath).filter(Boolean));
+        expect(
+          attributedSourcePaths.every(
+            (sourcePath) =>
+              sourcePath?.startsWith("/") &&
+              !sourcePath.includes("://") &&
+              !sourcePath.includes("?") &&
+              !sourcePath.includes("#"),
+          ),
+        ).toBe(true);
         const readinessBreakdown = {
           validationStartedAtMs: validationTiming.startedAtMs,
           validationDurationMs: validationTiming.durationMs,
@@ -1480,6 +1680,7 @@ test.describe.serial("Render Performance", () => {
           })),
           syncPhaseTimings: metrics.syncPhaseTimings,
           readinessBreakdown,
+          readinessMainThreadAttribution,
           overlayVisibleDurationMs: metrics.overlayVisibleDurationMs,
           rootAnimationName: metrics.rootAnimationName,
           rootAnimationDuration: metrics.rootAnimationDuration,
@@ -1503,7 +1704,7 @@ test.describe.serial("Render Performance", () => {
       }
     }
 
-    await attachPerformanceReport(testInfo, "time-control-sync-phase-diagnostics.json", {
+    const report = {
       capturedAt: new Date().toISOString(),
       baseUrl,
       route: "/#/time-control",
@@ -1519,10 +1720,16 @@ test.describe.serial("Render Performance", () => {
       timingOffsetBasis: "Date.now immediately before page.goto",
       readinessMetric:
         "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",
+      readinessMainThreadAttributionPolicy:
+        "opt-in Long Animation Frame entries retain only pathname, bounded function/invoker type, script timing and frame blocking duration; origin, query, fragment and payload are omitted",
       samples,
       fcpStats: summarizePerformance(fcpSamples),
       observedLcpStats: summarizePerformance(lcpSamples),
-    });
+    };
+    await attachPerformanceReport(testInfo, "time-control-sync-phase-diagnostics.json", report);
+    if (process.env.PERFORMANCE_SAVE_MAIN_THREAD_ATTRIBUTION === "1") {
+      await attachPerformanceReport(testInfo, "time-control-main-thread-attribution.json", report);
+    }
   });
 
   test("Time Control shows its page shell while attendance records are pending", async ({

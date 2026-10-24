@@ -331,3 +331,12 @@
 - **Siguiente**: atribuir el trabajo del hilo principal que se solapa con readiness y separar el tiempo de espera del costo de ejecución antes de modificar código.
 - **Validación**: probe Playwright 3/3, readiness HTTP 200 y staging healthy; tests dirigidos 20/20, preflight 6/6 y ESLint 0/0.
 - **Evidencia**: [resultado Spec 067](../specs/067-time-control-instance-validation-breakdown/evidencia/resultado-2026-10-24.md), [mediciones de navegador](../specs/067-time-control-instance-validation-breakdown/evidencia/final/time-control-sync-phase-diagnostics.json) y [respuesta Fastify](../specs/067-time-control-instance-validation-breakdown/evidencia/final/fastify-response-timings.json).
+
+## 2026-10-24 - test(perf): Atribuir frames de readiness
+
+- **Diagnóstico**: `long-animation-frame` estuvo disponible en Chromium 153 en 3/3 contextos. El bundle `react-core` apareció en los tres; la posición 1715 corresponde al ciclo de trabajo `S()` del scheduler de React.
+- **Medido**: `Response.json()` tuvo mediana 283,6 ms. Scripts del scheduler se solaparon 42,0–137,8 ms con esa ventana; Fastify se mantuvo en 0,99–1,23 ms.
+- **Límite**: LoAF no identifica el componente que agenda cada trabajo, y el solapamiento no demuestra causalidad. `n=3`, CPU 4×; no se declara mejora.
+- **Siguiente**: correlacionar commits de React Profiler con readiness y fases de sync para localizar el subárbol responsable; los tiempos de desarrollo solo servirán para atribución.
+- **Validación**: Playwright 3/3, LoAF 3/3, paths verificados sin origen/query/fragmento, readiness HTTP 200, 3/3 tiempos Fastify correlacionados y preflight 6/6 con ESLint 0/0.
+- **Evidencia**: [resultado Spec 068](../specs/068-time-control-readiness-main-thread-attribution/evidencia/resultado-2026-10-24.md), [atribución](../specs/068-time-control-readiness-main-thread-attribution/evidencia/final/time-control-main-thread-attribution.json) y [respuesta Fastify](../specs/068-time-control-readiness-main-thread-attribution/evidencia/final/fastify-response-timings.json).
