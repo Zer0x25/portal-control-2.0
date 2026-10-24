@@ -5,6 +5,7 @@ const path = require("node:path");
 const process = require("node:process");
 const { chromium } = require("@playwright/test");
 const { assertPerformanceRoutes } = require("./assert-performance-routes.cjs");
+const { normalizeLighthouseReport } = require("./lighthouse-report.cjs");
 const performanceRoutes = require("../performance-routes.json");
 
 const frontendRoot = path.dirname(require.resolve("../package.json"));
@@ -173,44 +174,6 @@ const routePathFor = (url) => {
   return `${parsed.pathname}${parsed.hash}`;
 };
 
-const rounded = (value) => (Number.isFinite(value) ? Math.round(value * 100) / 100 : null);
-
-const normalizeLighthouseReport = (report, profile) => {
-  const requestedPath = routePathFor(report.requestedUrl);
-  const finalPath = routePathFor(report.finalDisplayedUrl);
-  const route = performanceRoutes.find((candidate) => candidate.path === requestedPath);
-  const audits = report.audits ?? {};
-  const resourceRows = audits["resource-summary"]?.details?.items ?? [];
-  const totalResources = resourceRows.find((row) => row.resourceType === "total") ?? {};
-  const scriptResources =
-    resourceRows.find((row) => String(row.resourceType).toLowerCase() === "script") ?? {};
-  const requestRows = audits["network-requests"]?.details?.items ?? [];
-
-  return {
-    routeId: route?.id ?? null,
-    family: route?.family ?? null,
-    role: route?.role ?? "anonymous",
-    profile,
-    requestedPath,
-    finalPath,
-    routeMatched: requestedPath === finalPath,
-    lighthouseVersion: report.lighthouseVersion,
-    userAgent: report.userAgent,
-    metrics: {
-      performanceScore: report.categories?.performance?.score ?? null,
-      fcpMs: rounded(audits["first-contentful-paint"]?.numericValue),
-      lcpMs: rounded(audits["largest-contentful-paint"]?.numericValue),
-      tbtMs: rounded(audits["total-blocking-time"]?.numericValue),
-      cls: rounded(audits["cumulative-layout-shift"]?.numericValue),
-      speedIndexMs: rounded(audits["speed-index"]?.numericValue),
-      totalTransferBytes:
-        totalResources.transferSize ?? audits["total-byte-weight"]?.numericValue ?? null,
-      scriptTransferBytes: scriptResources.transferSize ?? null,
-      requestCount: totalResources.requestCount ?? requestRows.length,
-    },
-  };
-};
-
 const collectRawLighthouseReports = (startedAtIso, completedAtIso) => {
   const startedAtMs = new Date(startedAtIso).getTime();
   const completedAtMs = new Date(completedAtIso).getTime();
@@ -324,6 +287,7 @@ const main = async () => {
         "--test",
         path.join(frontendRoot, "scripts", "lhci-puppeteer.test.cjs"),
         path.join(frontendRoot, "scripts", "assert-performance-routes.test.cjs"),
+        path.join(frontendRoot, "scripts", "lighthouse-report.test.cjs"),
       ],
       env,
     );

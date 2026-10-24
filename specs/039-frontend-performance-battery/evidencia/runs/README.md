@@ -11,6 +11,8 @@
 - `runtime`: sistema, arquitectura, Node, Chromium y viewport.
 - `routeCatalog`: rutas identificadas por id, agrupación por familia, perfil de acceso e interacciones medidas.
 - `stages`: resultado, tiempos y códigos de salida de validación del catálogo, Playwright, Lighthouse estándar y Lighthouse frío. Incluye los reportes JSON de Playwright y métricas Lighthouse resumidas por ruta. Desde spec 041, `harnessValidation` ejecuta primero las regresiones del preparador de sesión; el campo no existe en corridas anteriores.
+- Cada muestra Lighthouse conserva `metrics` del modelo simulado de Lighthouse y `observed` del trace Chromium sin throttle. No comparar ambos grupos como si midieran el mismo modo: `observed.lcpPhasesMs`, `network`, `mainThread` y `opportunities` explican el trace; `metrics` mantiene la puntuación con el perfil mobile definido por Lighthouse.
+- `network.apiRequests` y las rutas de recursos omiten query strings para no guardar filtros, identificadores o credenciales que pudieran aparecer en URLs. Tiempos de solicitudes, tareas largas y fases LCP son observaciones del trace; oportunidades de CSS/JavaScript son estimaciones del Lighthouse simulado.
 - `failure`: primera excepción del runner, si la ejecución falló fuera de una fase con código de salida.
 
 Los resultados son evidencia de una corrida, no una comparación causal. Antes de evaluar una mejora, comparar varias corridas con el mismo staging, equipo, versión de navegador y perfil. Revisar `routeMatched` en los reportes Lighthouse; un reporte redirigido no representa la ruta solicitada. Una ruta con `lighthouse: false` sigue dentro de Playwright y debe declarar `lighthouseSkipReason` en el catálogo.
