@@ -1,6 +1,6 @@
 # Spec 073: exigir el endpoint vigente en la batería de staging
 
-- Estado: En implementación
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-24
 - ADR relacionado: N/A
@@ -35,10 +35,10 @@ Fuera (explícito):
       al proceso Playwright, sin depender del entorno interactivo del usuario.
 - [x] AC2: Un test de regresión verifica que la batería fuerza el endpoint vigente,
       fija las URLs de staging y conserva otras variables heredadas.
-- [ ] AC3: Una corrida completa de staging valida las 18 rutas Playwright,
+- [x] AC3: Una corrida completa de staging valida las 18 rutas Playwright,
       Lighthouse estándar y perfiles fríos; el registro queda con estado `passed`,
       commit identificado y árbol limpio al inicio.
-- [ ] AC4: Preflight, `spec:check`, `docs:check`, formato y lint budget pasan.
+- [x] AC4: Preflight, `spec:check`, `docs:check`, formato y lint budget pasan.
 
 ## Restricciones
 
@@ -57,3 +57,5 @@ Fuera (explícito):
   `frontend/e2e/performance.spec.ts` (solo se modifica la configuración del runner).
 - Antecedentes: Specs 039 y 066; corrida fallida guardada en
   `../039-frontend-performance-battery/evidencia/runs/2026-10-24T17-18-03-710Z-2421fc68.json`.
+- Resultado: `./evidencia/resultado-2026-10-24.md` y corrida aprobada
+  `../039-frontend-performance-battery/evidencia/runs/2026-10-24T17-23-56-778Z-9e6c151b.json`.

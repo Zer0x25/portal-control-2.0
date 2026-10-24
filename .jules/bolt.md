@@ -371,3 +371,11 @@
 - **Límite**: commits en la ventana de validación permanecieron 3/3 muestras; no se atribuye mejora de producción/CWV. Vite registró errores Socket.IO/proxy durante los perfiles.
 - **Siguiente**: perfilar aparte los estados de `useControlInternoEnabledQuery` y `useAuthShellControls`; verificar el efecto con una corrida Lighthouse comparable antes de afirmar un beneficio visual.
 - **Evidencia**: [resultado Spec 072](../specs/072-narrow-app-auth-subscription/evidencia/resultado-2026-10-24.md) y [perfil React](../specs/072-narrow-app-auth-subscription/evidencia/app-auth-render-profile-2026-10-24.json).
+
+## 2026-10-24 - fix(perf): Exigir el endpoint vigente en la batería de staging
+
+- **Corrección del harness**: `perf:staging` siempre activa la aserción de `/api/employees/clocking-options`; antes fallaba al asumir `/api/employees` si la variable no estaba exportada en la terminal.
+- **Corrida**: 18/18 pruebas Playwright; 17 rutas Lighthouse estándar y nueve muestras frías aprobadas. Gateway/API 200; la consulta de opciones devolvió 207 filas. Registro: [run 9e6c151b](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T17-23-56-778Z-9e6c151b.json).
+- **Medido**: Worker Portal tiene FCP frío mediano 4.001 ms, LCP 5.780 ms y 510.000 B transferidos; Control horario 3.720/5.472 ms y 461.644 B; Dashboard 2.021/2.254 ms y 449.506 B. El cold worker `react-core` consume 80.217 B transferidos; el perfil estándar warm reporta TBT 782 ms y 1.410 ms de scripting en ese chunk.
+- **Límites**: Lighthouse estándar es una muestra con estado persistido; el baseline anterior tenía árbol sucio, otra imagen y cambios funcionales intermedios, así que no demuestra mejora causal de Spec 072. Governance scroll dio p95 83,4 ms vs 33,4 ms previo; repetir antes de tocarlo.
+- **Siguiente**: atribuir los long tasks del shell y la carga fría de Worker Portal antes de elegir la optimización. Ver [resultado Spec 073](../specs/073-staging-battery-current-endpoint/evidencia/resultado-2026-10-24.md).
