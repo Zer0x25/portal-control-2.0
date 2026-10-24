@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => {
     enabled: [] as boolean[],
     clockingEmployeeOptionsEnabled: [] as boolean[],
     fullEmployeeListEnabled: [] as boolean[],
+    employeeList: [] as never[],
+    leavesResponse: undefined as unknown,
     shiftPatternsLoading: false,
   };
   const recordEnabled = (enabled = true) => {
@@ -33,7 +35,10 @@ vi.mock("../../hooks/queries/useHolidaysQuery", () => ({
   useHolidaysQuery: mocks.recordEnabled,
 }));
 vi.mock("../../hooks/queries/useLeavesQuery", () => ({
-  useLeavesQuery: mocks.recordEnabled,
+  useLeavesQuery: (enabled = true) => {
+    mocks.state.enabled.push(enabled);
+    return { data: mocks.state.leavesResponse, isLoading: false };
+  },
 }));
 vi.mock("../../hooks/queries/useCorrectionRequestsQuery", () => ({
   useCorrectionRequestsQuery: (...args: unknown[]) => {
@@ -49,7 +54,7 @@ vi.mock("../../hooks/queries/useCorrectionRequestsQuery", () => ({
 vi.mock("../../hooks/useEmployees", () => ({
   useEmployees: (_isKiosk?: boolean, options?: { enabled?: boolean }) => {
     mocks.state.fullEmployeeListEnabled.push(options?.enabled ?? true);
-    return { allEmployees: [], isLoadingEmployees: false };
+    return { allEmployees: mocks.state.employeeList, isLoadingEmployees: false };
   },
 }));
 vi.mock("../../hooks/queries/useEmployeesQuery", () => ({
@@ -72,7 +77,12 @@ vi.mock("../../hooks/useCorrectionRequestMutations", () => ({
 import { useScheduling } from "../../hooks/useScheduling";
 
 describe("useScheduling query options", () => {
-  afterEach(() => cleanup());
+  afterEach(() => {
+    cleanup();
+    mocks.state.employeeList = [];
+    mocks.state.leavesResponse = undefined;
+    mocks.state.shiftPatternsLoading = false;
+  });
 
   it("keeps every query enabled by default for existing consumers", () => {
     mocks.state.enabled.length = 0;
@@ -120,5 +130,42 @@ describe("useScheduling query options", () => {
 
     expect(result.current.isLoadingSchedulingData).toBe(true);
     mocks.state.shiftPatternsLoading = false;
+  });
+
+  it("keeps the daily schedule lookup stable when only query loading changes", () => {
+    const { result, rerender } = renderHook(() => useScheduling());
+    const getScheduleInfo = result.current.getEmployeeDailyScheduleInfo;
+
+    mocks.state.shiftPatternsLoading = true;
+    rerender();
+
+    expect(result.current.getEmployeeDailyScheduleInfo).toBe(getScheduleInfo);
+  });
+
+  it("recreates the daily schedule lookup when its employee data changes", () => {
+    const { result, rerender } = renderHook(() => useScheduling());
+    const getScheduleInfo = result.current.getEmployeeDailyScheduleInfo;
+
+    mocks.state.employeeList = [{ id: "e1" } as never];
+    rerender();
+
+    expect(result.current.getEmployeeDailyScheduleInfo).not.toBe(getScheduleInfo);
+  });
+
+  it("recreates the daily schedule lookup when leave data changes", () => {
+    const { result, rerender } = renderHook(() => useScheduling());
+    const getScheduleInfo = result.current.getEmployeeDailyScheduleInfo;
+
+    mocks.state.leavesResponse = [
+      {
+        employeeId: "e1",
+        startDate: "2026-01-01",
+        endDate: "2026-12-31",
+        type: "Vacaciones",
+      },
+    ];
+    rerender();
+
+    expect(result.current.getEmployeeDailyScheduleInfo).not.toBe(getScheduleInfo);
   });
 });

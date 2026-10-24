@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import * as schedulingService from "../services/schedulingService";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
 import { useAssignedShiftsQuery } from "./queries/useAssignedShiftsQuery";
@@ -34,6 +35,21 @@ const formatUTCDateOnly = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+const EMPTY_LEAVES: LeaveRecord[] = [];
+
+const extractLeaves = (value: unknown): LeaveRecord[] => {
+  if (Array.isArray(value)) return value as LeaveRecord[];
+  if (
+    value &&
+    typeof value === "object" &&
+    "data" in value &&
+    Array.isArray((value as { data?: unknown }).data)
+  ) {
+    return (value as { data: LeaveRecord[] }).data;
+  }
+  return EMPTY_LEAVES;
+};
+
 export const useScheduling = (
   requestsStatus?: string,
   sinceRequests?: number,
@@ -41,18 +57,6 @@ export const useScheduling = (
 ) => {
   const schedulingQueriesEnabled = options.enabled ?? true;
   const useClockingOptions = options.useClockingOptions ?? false;
-  const extractLeaves = (value: unknown): LeaveRecord[] => {
-    if (Array.isArray(value)) return value as LeaveRecord[];
-    if (
-      value &&
-      typeof value === "object" &&
-      "data" in value &&
-      Array.isArray((value as { data?: unknown }).data)
-    ) {
-      return (value as { data: LeaveRecord[] }).data;
-    }
-    return [];
-  };
 
   // --- Config (spec 032 T4: única fuente = query hooks) ---
   const { data: globalMaxWeeklyHours = 44 } =
@@ -124,19 +128,21 @@ export const useScheduling = (
   };
 
   // --- Optimization: Memoized Lookup Maps (O(1) access) ---
-  const employeesMap = new Map(employees.map((e) => [e.id, e]));
-  const holidaysMap = new Map(holidays.map((h) => [h.date, h]));
+  const employeesMap = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
+  const holidaysMap = useMemo(() => new Map(holidays.map((h) => [h.date, h])), [holidays]);
 
-  const leavesByEmployee = (() => {
+  // Worker Portal recalcula registros del mes con este mapa en el hot path.
+  // El compilador no memoriza el Map construido por mutación dentro del bucle.
+  const leavesByEmployee = useMemo(() => {
     const map = new Map<string, typeof leaves>();
     leaves.forEach((l) => {
       if (!map.has(l.employeeId)) map.set(l.employeeId, []);
       map.get(l.employeeId)?.push(l);
     });
     return map;
-  })();
+  }, [leaves]);
 
-  const assignmentsByEmployee = (() => {
+  const assignmentsByEmployee = useMemo(() => {
     const map = new Map<string, typeof assignedShifts>();
     assignedShifts.forEach((a) => {
       if (a.isDeleted) return;
@@ -144,47 +150,72 @@ export const useScheduling = (
       map.get(a.employeeId)?.push(a);
     });
     return map;
-  })();
+  }, [assignedShifts]);
 
-  const patternsMap = new Map(shiftPatterns.map((p) => [p.id, p]));
+  const patternsMap = useMemo(() => new Map(shiftPatterns.map((p) => [p.id, p])), [shiftPatterns]);
 
   // --- Business Logic ---
-  const getEmployeeDailyScheduleInfo = (
-    employeeId: string,
-    targetDate: Date,
-  ): EmployeeDailyScheduleInfo | null => {
-    const employee = employeesMap.get(employeeId);
-    if (!employee && !useClockingOptions) return null;
+  // `enrichedRecords` consumes this callback as a memo dependency; retain its
+  // reference while the lookup collections stay unchanged.
+  const getEmployeeDailyScheduleInfo = useCallback(
+    (employeeId: string, targetDate: Date): EmployeeDailyScheduleInfo | null => {
+      const employee = employeesMap.get(employeeId);
+      if (!employee && !useClockingOptions) return null;
 
-    const targetDateString = formatUTCDateOnly(targetDate);
-    const holidayOnDate = holidaysMap.get(targetDateString);
+      const targetDateString = formatUTCDateOnly(targetDate);
+      const holidayOnDate = holidaysMap.get(targetDateString);
 
-    const employeeLeaves = leavesByEmployee.get(employeeId) || [];
-    const leaveOnDate = employeeLeaves.find(
-      (l) => targetDateString >= l.startDate && targetDateString <= l.endDate,
-    );
+      const employeeLeaves = leavesByEmployee.get(employeeId) || [];
+      const leaveOnDate = employeeLeaves.find(
+        (l) => targetDateString >= l.startDate && targetDateString <= l.endDate,
+      );
 
-    if (leaveOnDate) {
-      let planningStatus: PlanningStatus = "PermisoEspecial";
-      if (leaveOnDate.type === "Vacaciones") planningStatus = "Vacaciones";
-      if (leaveOnDate.type === "Licencia Médica") planningStatus = "LicenciaMedica";
+      if (leaveOnDate) {
+        let planningStatus: PlanningStatus = "PermisoEspecial";
+        if (leaveOnDate.type === "Vacaciones") planningStatus = "Vacaciones";
+        if (leaveOnDate.type === "Licencia Médica") planningStatus = "LicenciaMedica";
 
-      return {
-        scheduleText: leaveOnDate.type,
-        isWorkDay: false,
-        justificationType: leaveOnDate.type,
-        patternColor: "#8E44AD",
-        planningStatus,
-      };
-    }
+        return {
+          scheduleText: leaveOnDate.type,
+          isWorkDay: false,
+          justificationType: leaveOnDate.type,
+          patternColor: "#8E44AD",
+          planningStatus,
+        };
+      }
 
-    const activeAssignment = (assignmentsByEmployee.get(employeeId) || []).find((a) => {
-      if (targetDateString < a.startDate) return false;
-      return !a.endDate || targetDateString <= a.endDate;
-    });
+      const activeAssignment = (assignmentsByEmployee.get(employeeId) || []).find((a) => {
+        if (targetDateString < a.startDate) return false;
+        return !a.endDate || targetDateString <= a.endDate;
+      });
 
-    if (!activeAssignment) {
-      if (holidayOnDate) {
+      if (!activeAssignment) {
+        if (holidayOnDate) {
+          return {
+            scheduleText: `Feriado: ${holidayOnDate.name}`,
+            isWorkDay: false,
+            isHoliday: true,
+            holidayName: holidayOnDate.name,
+            planningStatus: "Feriado",
+          };
+        }
+        return {
+          scheduleText: "Sin Turno Asignado",
+          isWorkDay: false,
+          planningStatus: "SinTurnoAsignado",
+        };
+      }
+
+      const pattern = patternsMap.get(activeAssignment.shiftPatternId);
+      if (!pattern || pattern.cycleLengthDays <= 0) {
+        return {
+          scheduleText: "Patrón Inválido",
+          isWorkDay: false,
+          planningStatus: "SinTurnoAsignado",
+        };
+      }
+
+      if (holidayOnDate && !pattern.worksOnHolidays) {
         return {
           scheduleText: `Feriado: ${holidayOnDate.name}`,
           isWorkDay: false,
@@ -193,72 +224,56 @@ export const useScheduling = (
           planningStatus: "Feriado",
         };
       }
-      return {
-        scheduleText: "Sin Turno Asignado",
-        isWorkDay: false,
-        planningStatus: "SinTurnoAsignado",
-      };
-    }
 
-    const pattern = patternsMap.get(activeAssignment.shiftPatternId);
-    if (!pattern || pattern.cycleLengthDays <= 0) {
-      return {
-        scheduleText: "Patrón Inválido",
-        isWorkDay: false,
-        planningStatus: "SinTurnoAsignado",
-      };
-    }
+      const assignmentStartDate = parseISODateAtUTC(activeAssignment.startDate);
+      const targetDayUTC = parseISODateAtUTC(targetDateString);
+      const diffTime = targetDayUTC.getTime() - assignmentStartDate.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      const dayInCycleIndex = diffDays % pattern.cycleLengthDays;
 
-    if (holidayOnDate && !pattern.worksOnHolidays) {
-      return {
-        scheduleText: `Feriado: ${holidayOnDate.name}`,
-        isWorkDay: false,
-        isHoliday: true,
-        holidayName: holidayOnDate.name,
-        planningStatus: "Feriado",
-      };
-    }
+      const daySchedule = pattern.dailySchedules.find((s) => s.dayIndex === dayInCycleIndex);
 
-    const assignmentStartDate = parseISODateAtUTC(activeAssignment.startDate);
-    const targetDayUTC = parseISODateAtUTC(targetDateString);
-    const diffTime = targetDayUTC.getTime() - assignmentStartDate.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    const dayInCycleIndex = diffDays % pattern.cycleLengthDays;
+      if (!daySchedule || daySchedule.isOffDay) {
+        return {
+          scheduleText: holidayOnDate ? `Feriado: ${holidayOnDate.name}` : "Día Libre",
+          isWorkDay: false,
+          patternColor: typeof pattern.color === "string" ? pattern.color : undefined,
+          planningStatus: holidayOnDate ? "Feriado" : "DiaLibre",
+          isHoliday: !!holidayOnDate,
+          holidayName: holidayOnDate?.name,
+        };
+      }
 
-    const daySchedule = pattern.dailySchedules.find((s) => s.dayIndex === dayInCycleIndex);
-
-    if (!daySchedule || daySchedule.isOffDay) {
-      return {
-        scheduleText: holidayOnDate ? `Feriado: ${holidayOnDate.name}` : "Día Libre",
-        isWorkDay: false,
+      const result: EmployeeDailyScheduleInfo = {
+        scheduleText: `${daySchedule.startTime} - ${daySchedule.endTime}`,
+        isWorkDay: true,
+        startTime: daySchedule.startTime,
+        endTime: daySchedule.endTime,
+        hours: daySchedule.hours,
+        shiftPatternId: pattern.id,
+        shiftPatternName: pattern.name,
         patternColor: typeof pattern.color === "string" ? pattern.color : undefined,
-        planningStatus: holidayOnDate ? "Feriado" : "DiaLibre",
-        isHoliday: !!holidayOnDate,
-        holidayName: holidayOnDate?.name,
+        hasColacion: daySchedule.hasColacion,
+        colacionMinutes: daySchedule.colacionMinutes,
+        planningStatus: "Programado",
       };
-    }
 
-    const result: EmployeeDailyScheduleInfo = {
-      scheduleText: `${daySchedule.startTime} - ${daySchedule.endTime}`,
-      isWorkDay: true,
-      startTime: daySchedule.startTime,
-      endTime: daySchedule.endTime,
-      hours: daySchedule.hours,
-      shiftPatternId: pattern.id,
-      shiftPatternName: pattern.name,
-      patternColor: typeof pattern.color === "string" ? pattern.color : undefined,
-      hasColacion: daySchedule.hasColacion,
-      colacionMinutes: daySchedule.colacionMinutes,
-      planningStatus: "Programado",
-    };
+      if (holidayOnDate) {
+        result.isHoliday = true;
+        result.holidayName = holidayOnDate.name;
+      }
 
-    if (holidayOnDate) {
-      result.isHoliday = true;
-      result.holidayName = holidayOnDate.name;
-    }
-
-    return result;
-  };
+      return result;
+    },
+    [
+      employeesMap,
+      holidaysMap,
+      leavesByEmployee,
+      assignmentsByEmployee,
+      patternsMap,
+      useClockingOptions,
+    ],
+  );
 
   const isEmployeeScheduledOnDate = (employeeId: string, targetDate: Date) => {
     const scheduleInfo = getEmployeeDailyScheduleInfo(employeeId, targetDate);
