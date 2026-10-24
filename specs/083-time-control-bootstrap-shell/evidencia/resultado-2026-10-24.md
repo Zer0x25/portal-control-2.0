@@ -30,15 +30,23 @@ de sincronización confirma que el overlay cubre la pantalla y recibe el hit tes
 la medición de contenido pendiente registra el encabezado real despejado a
 **2.226 ms** mientras los registros aún cargan.
 
-### Señal pendiente: TBT
+### Seguimiento de TBT
 
-El TBT mediano de Control horario subió de **176,5 ms** a **291,5 ms** (+65,2%).
-El costo de bootup total del hilo principal tuvo medianas cercanas
-(1.051,87 → 1.068,13 ms, +1,5%), y la distribución de tareas largas varía entre
-muestras. Esto no cumple un gate de TBT de la spec —no existe uno—, pero sí es
-una señal que no debe ocultarse: el siguiente paso es repetir y atribuir las
-tareas largas antes de otra optimización. El historial del proyecto ya registra
-variación de TBT entre corridas en
+El TBT mediano de Control horario subió inicialmente de **176,5 ms** a
+**291,5 ms** (+65,2%), mientras el bootup cost cambió solo 1,5%. Una repetición
+fría de tres muestras dio **249,51 ms** de TBT mediano y **983,72 ms** de bootup
+cost mediano. Las trazas muestran que el shell adelantó FCP desde ~3,71 s a
+~2,01 s; tareas de `react-core` y `index` que antes acababan antes de FCP ahora
+quedan dentro de la ventana FCP–TTI. La atribución, los datos por muestra y los
+límites del perfil están en
+[`diagnostico-tbt-2026-10-24.md`](./diagnostico-tbt-2026-10-24.md).
+
+El TBT repetido sigue sobre 200 ms en las tres muestras, por lo que queda una
+señal de carga del hilo principal para abordar. El bootup cost no aumentó y no
+hay datos de INP de campo. El perfil con source maps encontró trabajo repetido
+de conexión Socket.IO, solicitudes y montaje de Control horario dentro de una
+tarea larga; su atribución es parcial y no explica por sí solo los +73 ms. El
+historial también registra variación de TBT entre corridas en
 [`seguimiento-css-critico-2026-10-24.md`](../../039-frontend-performance-battery/evidencia/seguimiento-css-critico-2026-10-24.md).
 
 ## Validación funcional y de cobertura
@@ -60,9 +68,11 @@ como bueno un valor de hasta 2,5 s en el percentil 75 de visitas; nuestro p50 de
 tres ejecuciones simuladas bajo esa cifra no certifica el p75 de campo.
 [Guía de LCP de web.dev](https://web.dev/articles/optimize-lcp).
 
-El próximo paso recomendado es investigar TBT con una captura repetida y
-atribución de tareas largas de Control horario. Mantener sin cambios Dashboard y
-Worker Portal, cuya no regresión quedó medida.
+El próximo paso recomendado es aislar y medir la inicialización global de
+Socket.IO: aparece en las tres tareas largas, aunque aporta solo 6,78–14,94 ms
+muestreados, así que no se espera que explique por sí sola los +73 ms. Después
+se debe medir el trabajo de consultas y montaje de ruta. Mantener sin cambios
+Dashboard y Worker Portal, cuya no regresión quedó medida.
 
 ## Registros reproducibles
 

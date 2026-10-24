@@ -436,3 +436,11 @@
 - **Límite**: los scopes son anidados y tienen distinto número de commits; no se suman ni restan. Vite registró fallos de WebSocket/EPIPE del proxy; no se atribuye esta corrida a producción o CWV. Staging no se reconstruyó.
 - **Siguiente**: revisar actualizaciones y props derivados de `useWorkerPortalData` para encontrar estado evitable dentro del container; cualquier ajuste a componentes internos de la vista necesita aprobación humana por la marca UI-protected.
 - **Evidencia**: [resultado Spec 080](../specs/080-worker-portal-view-subtree-render-profile/evidencia/resultado-2026-10-24.md) y [perfil React](../specs/080-worker-portal-view-subtree-render-profile/evidencia/worker-portal-view-render-profile-2026-10-24.json).
+
+## 2026-10-24 - test(perf): Mapear tareas TBT de Control horario
+
+- **Medido**: tres perfiles CDP con mapas locales y paridad exacta de 207/207 scripts de staging. Una tarea de 131–139 ms se repitió cerca de FCP +0,9 s. En los stacks aparecen `socketService.connect` (6,78–14,94 ms), `apiClient.performRequest` (7,94–10,85 ms en 2/3) y hooks de Control horario; `program` conserva muestras sin ubicación fuente.
+- **Hallazgo**: la actividad está repartida entre conexión global de Socket.IO, solicitudes y montaje/consultas de la ruta. No hay una función que explique por sí sola el aumento TBT de 73 ms; el shell adelantó FCP y dejó trabajo de arranque dentro de la ventana TBT.
+- **Límite**: perfil con caché fría, CPU 4× y sin throttling de red; su FCP no se compara con Lighthouse, ni el muestreo equivale a TBT. Los tasks de 94–103 ms cercanos a FCP no recibieron samples. No se modificó la app ni staging.
+- **Siguiente**: medir aisladamente el efecto de diferir `SocketService.connect`, preservando eventos en tiempo real, y repetir la batería Lighthouse. El máximo candidato observado ronda 7–15 ms; continuar después con fanout de queries y render de la ruta.
+- **Evidencia**: [diagnóstico TBT Spec 083](../specs/083-time-control-bootstrap-shell/evidencia/diagnostico-tbt-2026-10-24.md) y [perfil CPU por tarea](../specs/083-time-control-bootstrap-shell/evidencia/perfil-cpu-time-control-2026-10-24.json).
