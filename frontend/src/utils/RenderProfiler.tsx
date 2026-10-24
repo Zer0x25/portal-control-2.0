@@ -69,6 +69,16 @@ const countCommit: ProfilerOnRenderCallback = (
   metric.maxActualDurationMs = Math.max(metric.maxActualDurationMs, actualDuration);
 };
 
+/** Adds a profiler boundary in development without a wrapper component in production. */
+export const profileReactSubtree = (id: string, children: ReactNode): ReactNode => {
+  if (import.meta.env.MODE !== "development") return children;
+  return (
+    <Profiler id={id} onRender={countCommit}>
+      {children}
+    </Profiler>
+  );
+};
+
 /**
  * Development-only profiler used by scripts/measure-renders.mjs.
  * Production builds return children without adding a Profiler boundary.

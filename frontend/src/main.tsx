@@ -48,17 +48,18 @@ if (window.sessionStorage.getItem("chunk-load-reloaded")) {
   window.sessionStorage.removeItem("chunk-load-reloaded");
 }
 
-const appShell = (
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>
-);
+const appContent = <App />;
+const appShell = <ErrorBoundary>{appContent}</ErrorBoundary>;
 
 const developmentTree = (
   <RenderProfiler id="app:root">
     <RenderProfiler id="app:providers">
       <AppProviders>
-        <RenderProfiler id="app:shell">{appShell}</RenderProfiler>
+        <RenderProfiler id="app:shell">
+          <ErrorBoundary>
+            <RenderProfiler id="app:application">{appContent}</RenderProfiler>
+          </ErrorBoundary>
+        </RenderProfiler>
       </AppProviders>
     </RenderProfiler>
   </RenderProfiler>

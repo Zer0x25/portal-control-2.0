@@ -8,7 +8,7 @@ import { ROLES } from "./utils/mappings";
 import { useSocketEvents } from "./hooks/useSocketEvents";
 import { useControlInternoEnabledQuery } from "./hooks/queries/useConfigQuery";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
-import { RenderProfiler } from "./utils/RenderProfiler";
+import { profileReactSubtree, RenderProfiler } from "./utils/RenderProfiler";
 import { logger } from "./utils/logger";
 
 // Lazy loading components
@@ -133,280 +133,298 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <InitialSyncOverlay />
-      </Suspense>
+      {profileReactSubtree(
+        "app:initial-sync-overlay",
+        <Suspense fallback={null}>
+          <InitialSyncOverlay />
+        </Suspense>,
+      )}
       {isSessionExpired && (
         <Suspense fallback={null}>
           <SessionExpiredOverlay />
         </Suspense>
       )}
-      <Suspense fallback={null}>
-        <TopLoadingBar />
-      </Suspense>
-      <Suspense fallback={null}>
-        <BackgroundActivitySpinner />
-      </Suspense>
-      <Suspense fallback={null}>
-        <ToastContainer />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AccessDeniedNotifier />
-      </Suspense>
-      <Routes>
-        <Route
-          path={ROUTES.LOGIN}
-          element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
-              <LoginPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path={ROUTES.KIOSK}
-          element={
-            <Suspense fallback={<LoadingSpinner fullScreen />}>
-              <RenderProfiler id="kiosk">
-                <Kiosk />
-              </RenderProfiler>
-            </Suspense>
-          }
-        />
-
-        <Route element={protectedLayoutElement}>
-          {isControlInternoEnabled && (
-            <Route
-              path={ROUTES.DASHBOARD}
-              element={
-                <ProtectedRoute
-                  requiredRoles={[ROLES.CLOCK_CONTROL, ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}
-                >
-                  <RenderProfiler id="dashboard">
-                    <DashboardPage />
-                  </RenderProfiler>
-                </ProtectedRoute>
-              }
-            />
-          )}
-
+      {profileReactSubtree(
+        "app:top-loading",
+        <Suspense fallback={null}>
+          <TopLoadingBar />
+        </Suspense>,
+      )}
+      {profileReactSubtree(
+        "app:background-activity",
+        <Suspense fallback={null}>
+          <BackgroundActivitySpinner />
+        </Suspense>,
+      )}
+      {profileReactSubtree(
+        "app:toast-container",
+        <Suspense fallback={null}>
+          <ToastContainer />
+        </Suspense>,
+      )}
+      {profileReactSubtree(
+        "app:access-notifier",
+        <Suspense fallback={null}>
+          <AccessDeniedNotifier />
+        </Suspense>,
+      )}
+      {profileReactSubtree(
+        "app:routes",
+        <Routes>
           <Route
-            path={ROUTES.SUPERVISOR_DASHBOARD}
+            path={ROUTES.LOGIN}
             element={
-              <ProtectedRoute
-                requiredRoles={[
-                  ROLES.SUPERVISOR,
-                  ROLES.ADMIN,
-                  ROLES.SUPERVISOR_ELEVATED,
-                  ROLES.AUDITOR,
-                ]}
-              >
-                <SupervisorDashboardPage />
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner fullScreen />}>
+                <LoginPage />
+              </Suspense>
             }
           />
           <Route
-            path={ROUTES.TIME_CONTROL}
+            path={ROUTES.KIOSK}
             element={
-              <ProtectedRoute
-                requiredRoles={[
-                  ROLES.CLOCK_CONTROL,
-                  ROLES.ADMIN,
-                  ROLES.SUPERVISOR_ELEVATED,
-                  ROLES.SUPERVISOR,
-                  ROLES.AUDITOR,
-                ]}
-              >
-                <RenderProfiler id="time-control">
-                  <TimeControlPage />
+              <Suspense fallback={<LoadingSpinner fullScreen />}>
+                <RenderProfiler id="kiosk">
+                  <Kiosk />
                 </RenderProfiler>
-              </ProtectedRoute>
+              </Suspense>
             }
           />
 
-          {isControlInternoEnabled && (
-            <>
+          <Route element={protectedLayoutElement}>
+            {isControlInternoEnabled && (
               <Route
-                path={ROUTES.LOGBOOK}
-                element={
-                  <ProtectedRoute
-                    requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.CLOCK_CONTROL]}
-                  >
-                    <RenderProfiler id="logbook">
-                      <LogbookPage />
-                    </RenderProfiler>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path={ROUTES.METER_READINGS}
+                path={ROUTES.DASHBOARD}
                 element={
                   <ProtectedRoute
                     requiredRoles={[ROLES.CLOCK_CONTROL, ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}
                   >
-                    <MeterReadingsPage />
+                    <RenderProfiler id="dashboard">
+                      <DashboardPage />
+                    </RenderProfiler>
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path={ROUTES.COMMUNICATIONS}
-                element={
-                  <ProtectedRoute
-                    requiredRoles={[
-                      ROLES.CLOCK_CONTROL,
-                      ROLES.ADMIN,
-                      ROLES.SUPERVISOR_ELEVATED,
-                      ROLES.SUPERVISOR,
-                      ROLES.AUDITOR,
-                    ]}
-                  >
-                    <CommunicationsPage />
-                  </ProtectedRoute>
-                }
-              />
-            </>
-          )}
+            )}
 
-          <Route
-            path={ROUTES.CONFIGURATION}
-            element={
-              <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
-                <ConfigurationPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.USER_MANAGEMENT}
-            element={
-              <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
-                <UserManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.EMPLOYEE_MANAGEMENT}
-            element={
-              <ProtectedRoute
-                requiredRoles={[
-                  ROLES.ADMIN,
-                  ROLES.SUPERVISOR,
-                  ROLES.SUPERVISOR_ELEVATED,
-                  ROLES.CLOCK_CONTROL,
-                ]}
-              >
-                <EmployeeManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.PERSONNEL_MANAGEMENT}
-            element={
-              <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
-                <PersonnelManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.THEORETICAL_SHIFTS}
-            element={
-              <ProtectedRoute
-                requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.SUPERVISOR_ELEVATED]}
-              >
-                <TheoreticalShiftsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.MONTHLY_PLANNING}
-            element={
-              <ProtectedRoute
-                requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.SUPERVISOR_ELEVATED]}
-              >
-                <RenderProfiler id="planner">
-                  <MonthlyPlanningPage />
-                </RenderProfiler>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.SHIFT_CALENDAR}
-            element={
-              <ProtectedRoute
-                requiredRoles={[
-                  ROLES.USER,
-                  ROLES.CLOCK_CONTROL,
-                  ROLES.SUPERVISOR,
-                  ROLES.ADMIN,
-                  ROLES.SUPERVISOR_ELEVATED,
-                ]}
-              >
-                <ShiftCalendarPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.EMAIL_CENTER}
-            element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=email`} replace />}
-          />
-          <Route
-            path={ROUTES.WORKER_PORTAL}
-            element={
-              <ProtectedRoute requiredRoles={[ROLES.USER]}>
-                <RenderProfiler id="worker-portal">
-                  <WorkerPortalPage />
-                </RenderProfiler>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.GOVERNANCE_HUB}
-            element={
-              <ProtectedRoute
-                requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.AUDITOR]}
-              >
-                <GovernanceHubPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.DESIGN_SYSTEM}
-            element={
-              <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
-                <Suspense fallback={<LoadingSpinner fullScreen />}>
-                  <DesignSystemCatalogPage />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.MASTER_DATA_EXPORT}
-            element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=master-data`} replace />}
-          />
-          <Route
-            path={ROUTES.AUDIT_LOGS}
-            element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=audit`} replace />}
-          />
-          <Route
-            path={ROUTES.ADMIN_TOOLS}
-            element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />}
-          />
-          <Route
-            path={ROUTES.INTEGRITY_DASHBOARD}
-            element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
-          />
-          <Route
-            path="*"
-            element={
-              <ProtectedRoute requiredRoles={[]}>
-                <Suspense fallback={<LoadingSpinner fullScreen />}>
-                  <NotFoundPage />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-        </Route>
+            <Route
+              path={ROUTES.SUPERVISOR_DASHBOARD}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[
+                    ROLES.SUPERVISOR,
+                    ROLES.ADMIN,
+                    ROLES.SUPERVISOR_ELEVATED,
+                    ROLES.AUDITOR,
+                  ]}
+                >
+                  <SupervisorDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.TIME_CONTROL}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[
+                    ROLES.CLOCK_CONTROL,
+                    ROLES.ADMIN,
+                    ROLES.SUPERVISOR_ELEVATED,
+                    ROLES.SUPERVISOR,
+                    ROLES.AUDITOR,
+                  ]}
+                >
+                  <RenderProfiler id="time-control">
+                    <TimeControlPage />
+                  </RenderProfiler>
+                </ProtectedRoute>
+              }
+            />
 
-        <Route path="*" element={<Navigate to={ROUTES.LOGIN} />} />
-      </Routes>
+            {isControlInternoEnabled && (
+              <>
+                <Route
+                  path={ROUTES.LOGBOOK}
+                  element={
+                    <ProtectedRoute
+                      requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.CLOCK_CONTROL]}
+                    >
+                      <RenderProfiler id="logbook">
+                        <LogbookPage />
+                      </RenderProfiler>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.METER_READINGS}
+                  element={
+                    <ProtectedRoute
+                      requiredRoles={[ROLES.CLOCK_CONTROL, ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}
+                    >
+                      <MeterReadingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path={ROUTES.COMMUNICATIONS}
+                  element={
+                    <ProtectedRoute
+                      requiredRoles={[
+                        ROLES.CLOCK_CONTROL,
+                        ROLES.ADMIN,
+                        ROLES.SUPERVISOR_ELEVATED,
+                        ROLES.SUPERVISOR,
+                        ROLES.AUDITOR,
+                      ]}
+                    >
+                      <CommunicationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+              </>
+            )}
+
+            <Route
+              path={ROUTES.CONFIGURATION}
+              element={
+                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
+                  <ConfigurationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.USER_MANAGEMENT}
+              element={
+                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
+                  <UserManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.EMPLOYEE_MANAGEMENT}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[
+                    ROLES.ADMIN,
+                    ROLES.SUPERVISOR,
+                    ROLES.SUPERVISOR_ELEVATED,
+                    ROLES.CLOCK_CONTROL,
+                  ]}
+                >
+                  <EmployeeManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.PERSONNEL_MANAGEMENT}
+              element={
+                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
+                  <PersonnelManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.THEORETICAL_SHIFTS}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.SUPERVISOR_ELEVATED]}
+                >
+                  <TheoreticalShiftsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.MONTHLY_PLANNING}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.SUPERVISOR_ELEVATED]}
+                >
+                  <RenderProfiler id="planner">
+                    <MonthlyPlanningPage />
+                  </RenderProfiler>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.SHIFT_CALENDAR}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[
+                    ROLES.USER,
+                    ROLES.CLOCK_CONTROL,
+                    ROLES.SUPERVISOR,
+                    ROLES.ADMIN,
+                    ROLES.SUPERVISOR_ELEVATED,
+                  ]}
+                >
+                  <ShiftCalendarPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.EMAIL_CENTER}
+              element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=email`} replace />}
+            />
+            <Route
+              path={ROUTES.WORKER_PORTAL}
+              element={
+                <ProtectedRoute requiredRoles={[ROLES.USER]}>
+                  <RenderProfiler id="worker-portal">
+                    <WorkerPortalPage />
+                  </RenderProfiler>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.GOVERNANCE_HUB}
+              element={
+                <ProtectedRoute
+                  requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.AUDITOR]}
+                >
+                  <GovernanceHubPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.DESIGN_SYSTEM}
+              element={
+                <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                  <Suspense fallback={<LoadingSpinner fullScreen />}>
+                    <DesignSystemCatalogPage />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path={ROUTES.MASTER_DATA_EXPORT}
+              element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=master-data`} replace />}
+            />
+            <Route
+              path={ROUTES.AUDIT_LOGS}
+              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=audit`} replace />}
+            />
+            <Route
+              path={ROUTES.ADMIN_TOOLS}
+              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />}
+            />
+            <Route
+              path={ROUTES.INTEGRITY_DASHBOARD}
+              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
+            />
+            <Route
+              path="*"
+              element={
+                <ProtectedRoute requiredRoles={[]}>
+                  <Suspense fallback={<LoadingSpinner fullScreen />}>
+                    <NotFoundPage />
+                  </Suspense>
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+
+          <Route path="*" element={<Navigate to={ROUTES.LOGIN} />} />
+        </Routes>,
+      )}
       <Suspense fallback={null}>
         {/* Montaje diferido: el barrel de auth arrastra useUsers/useEmployees/dateUtils
             (~50KB) al grafo de boot; este modal solo abre en el edge case de

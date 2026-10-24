@@ -348,3 +348,10 @@
 - **Límite**: los tiempos de Vite dev son solo de atribución; lectura JSON 43,3–51,3 ms frente a 271,1–283,6 ms en Specs 067–068 de producción. La evidencia no identifica el componente/hook que dispara los updates ni demuestra mejora.
 - **Siguiente**: subdividir shell en `App` y proveedores concretos; luego perfilar componentes persistentes de `App` si concentra la actividad. No cambiar código funcional hasta localizar el origen.
 - **Evidencia**: [resultado Spec 069](../specs/069-time-control-react-readiness-correlation/evidencia/resultado-2026-10-24.md) y [perfil React correlacionado](../specs/069-time-control-react-readiness-correlation/evidencia/react-readiness-render-profile-2026-10-24.json).
+
+## 2026-10-24 - test(perf): Atribuir updates del shell durante readiness
+
+- **Medido**: tres perfiles 412×823, CPU 4×. `App` tuvo tres commits durante `validateInstanceId` por muestra (5,8–16,9 ms); persistencia de Query también tres (7,4–19,2 ms), router dos (5,0–9,5 ms). Overlay, chrome, toasts, notificador y rutas: cero en esa ventana.
+- **Límite**: scopes anidados no se suman; lectura JSON dev 25,3–66,6 ms frente a 271,1–283,6 ms en perfiles de producción previos. Aún no se identifica qué hook de `App` cambia. Vite registró errores Socket.IO/proxy que el runner no mide.
+- **Siguiente**: correlacionar snapshots mínimos de estado/status de hooks de `App` con commits, sin datos personales; no hacer una optimización funcional hasta confirmar el origen.
+- **Evidencia**: [resultado Spec 070](../specs/070-time-control-readiness-shell-attribution/evidencia/resultado-2026-10-24.md) y [perfil de scopes](../specs/070-time-control-readiness-shell-attribution/evidencia/react-shell-readiness-profile-2026-10-24.json).
