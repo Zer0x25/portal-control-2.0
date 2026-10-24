@@ -28,6 +28,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AppProviders } from "./contexts/AppProviders";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { RenderProfiler } from "./utils/RenderProfiler";
 
 // Performance mode: disables expensive visual effects unless explicitly disabled.
 const perfMode = String(import.meta.env.VITE_UI_PERF_MODE ?? "high").toLowerCase();
@@ -47,10 +48,20 @@ if (window.sessionStorage.getItem("chunk-load-reloaded")) {
   window.sessionStorage.removeItem("chunk-load-reloaded");
 }
 
-root.render(
-  <AppProviders>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </AppProviders>,
+const appShell = (
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
 );
+
+const developmentTree = (
+  <RenderProfiler id="app:root">
+    <RenderProfiler id="app:providers">
+      <AppProviders>
+        <RenderProfiler id="app:shell">{appShell}</RenderProfiler>
+      </AppProviders>
+    </RenderProfiler>
+  </RenderProfiler>
+);
+
+root.render(import.meta.env.DEV ? developmentTree : <AppProviders>{appShell}</AppProviders>);

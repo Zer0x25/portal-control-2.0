@@ -340,3 +340,11 @@
 - **Siguiente**: correlacionar commits de React Profiler con readiness y fases de sync para localizar el subárbol responsable; los tiempos de desarrollo solo servirán para atribución.
 - **Validación**: Playwright 3/3, LoAF 3/3, paths verificados sin origen/query/fragmento, readiness HTTP 200, 3/3 tiempos Fastify correlacionados y preflight 6/6 con ESLint 0/0.
 - **Evidencia**: [resultado Spec 068](../specs/068-time-control-readiness-main-thread-attribution/evidencia/resultado-2026-10-24.md), [atribución](../specs/068-time-control-readiness-main-thread-attribution/evidencia/final/time-control-main-thread-attribution.json) y [respuesta Fastify](../specs/068-time-control-readiness-main-thread-attribution/evidencia/final/fastify-response-timings.json).
+
+## 2026-10-24 - test(perf): Correlacionar commits React con readiness
+
+- **Captura**: tres contextos fríos de Time Control en Vite dev, 412×823, CPU 4×; React Profiler separado en raíz, providers, shell, ruta y vista.
+- **Medido**: durante `validateInstanceId` hubo tres commits de la app por muestra, con `actualDuration` de 9,1–12,1 ms en raíz/providers y 6,6–11,1 ms en shell. En lectura JSON hubo uno o dos commits de shell con 0,8–6,6 ms; ruta y vista, cero. Los scopes superiores son anidados y no se suman.
+- **Límite**: los tiempos de Vite dev son solo de atribución; lectura JSON 43,3–51,3 ms frente a 271,1–283,6 ms en Specs 067–068 de producción. La evidencia no identifica el componente/hook que dispara los updates ni demuestra mejora.
+- **Siguiente**: subdividir shell en `App` y proveedores concretos; luego perfilar componentes persistentes de `App` si concentra la actividad. No cambiar código funcional hasta localizar el origen.
+- **Evidencia**: [resultado Spec 069](../specs/069-time-control-react-readiness-correlation/evidencia/resultado-2026-10-24.md) y [perfil React correlacionado](../specs/069-time-control-react-readiness-correlation/evidencia/react-readiness-render-profile-2026-10-24.json).

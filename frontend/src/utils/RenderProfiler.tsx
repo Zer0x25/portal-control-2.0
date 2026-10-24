@@ -10,15 +10,47 @@ interface RenderProfileMetric {
   maxActualDurationMs: number;
 }
 
+interface RenderProfileCommit {
+  id: string;
+  phase: ProfilerPhase;
+  startTimeMs: number;
+  commitTimeMs: number;
+  actualDurationMs: number;
+}
+
+const MAX_PROFILE_COMMIT_EVENTS = 500;
+
 declare global {
   interface Window {
     __portalRenderCounts?: Record<string, number>;
     __portalRenderMetrics?: Record<string, RenderProfileMetric>;
+    __portalRenderCommitEvents?: RenderProfileCommit[];
+    __portalRenderCommitEventsDropped?: number;
   }
 }
 
-const countCommit: ProfilerOnRenderCallback = (id, phase, actualDuration, baseDuration) => {
+const countCommit: ProfilerOnRenderCallback = (
+  id,
+  phase,
+  actualDuration,
+  baseDuration,
+  startTime,
+  commitTime,
+) => {
   if (import.meta.env.MODE !== "development" || typeof window === "undefined") return;
+  const commitEvents = (window.__portalRenderCommitEvents ??= []);
+  if (commitEvents.length < MAX_PROFILE_COMMIT_EVENTS) {
+    commitEvents.push({
+      id,
+      phase,
+      startTimeMs: Number(startTime.toFixed(2)),
+      commitTimeMs: Number(commitTime.toFixed(2)),
+      actualDurationMs: Number(actualDuration.toFixed(2)),
+    });
+  } else {
+    window.__portalRenderCommitEventsDropped = (window.__portalRenderCommitEventsDropped ?? 0) + 1;
+  }
+
   window.__portalRenderCounts ??= {};
   window.__portalRenderCounts[id] = (window.__portalRenderCounts[id] ?? 0) + 1;
 
