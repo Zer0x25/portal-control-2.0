@@ -355,3 +355,11 @@
 - **Límite**: scopes anidados no se suman; lectura JSON dev 25,3–66,6 ms frente a 271,1–283,6 ms en perfiles de producción previos. Aún no se identifica qué hook de `App` cambia. Vite registró errores Socket.IO/proxy que el runner no mide.
 - **Siguiente**: correlacionar snapshots mínimos de estado/status de hooks de `App` con commits, sin datos personales; no hacer una optimización funcional hasta confirmar el origen.
 - **Evidencia**: [resultado Spec 070](../specs/070-time-control-readiness-shell-attribution/evidencia/resultado-2026-10-24.md) y [perfil de scopes](../specs/070-time-control-readiness-shell-attribution/evidencia/react-shell-readiness-profile-2026-10-24.json).
+
+## 2026-10-24 - test(perf): Medir aislamiento del loading de navegación
+
+- **Experimento**: mover `useNavigationLoading` a un controller memoizado con scope propio. Tests existentes 3/3 y typecheck aprobados.
+- **Medido**: commits medianos de `app:application` 29 → 27 (−6,9 %); durante validación permanecieron 3 o 4. El controller sumó 8 commits medianos.
+- **Decisión**: no alcanza el umbral de 20%; se revierte el cambio. `actualDuration` dev baja 13,8% en la mediana, con rangos solapados; no se declara mejora.
+- **Siguiente**: separar cambios de `useControlInternoEnabledQuery` y selector `useAuth` antes de escoger una optimización funcional.
+- **Evidencia**: [resultado Spec 071](../specs/071-isolate-navigation-loading-renders/evidencia/resultado-2026-10-24.md) y [tres perfiles](../specs/071-isolate-navigation-loading-renders/evidencia/navigation-loading-render-profile-2026-10-24.json).
