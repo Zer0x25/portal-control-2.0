@@ -20,6 +20,65 @@ export interface SyncSlice {
   validateInstanceId: () => Promise<boolean>;
 }
 
+type SyncDiagnosticPhase = "validation" | "cache-check" | "sync-step";
+type SyncDiagnosticOutcome = "success" | "failure";
+
+const isSyncDiagnosticsEnabled = (): boolean =>
+  typeof window !== "undefined" &&
+  (window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean })
+    .__PORTAL_SYNC_PERF_DIAGNOSTICS__ === true;
+
+const emitSyncDiagnostic = (
+  phase: SyncDiagnosticPhase,
+  name: string,
+  durationMs: number,
+  outcome: SyncDiagnosticOutcome,
+): void => {
+  if (!isSyncDiagnosticsEnabled()) return;
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("portal:sync-phase", {
+        detail: { phase, name, durationMs, outcome },
+      }),
+    );
+  } catch {
+    // Diagnostics are observational and must never interrupt synchronization.
+  }
+};
+
+const measureSyncPhase = <T>(
+  phase: SyncDiagnosticPhase,
+  name: string,
+  action: () => Promise<T>,
+): Promise<T> => {
+  if (!isSyncDiagnosticsEnabled()) return action();
+
+  const startedAt = performance.now();
+  const emitResult = (outcome: SyncDiagnosticOutcome): void => {
+    emitSyncDiagnostic(phase, name, Number((performance.now() - startedAt).toFixed(2)), outcome);
+  };
+
+  let result: Promise<T>;
+  try {
+    result = action();
+  } catch (error) {
+    emitResult("failure");
+    return Promise.reject(error);
+  }
+
+  return result.then(
+    (value) => {
+      emitResult("success");
+      return value;
+    },
+    (error: unknown) => {
+      emitResult("failure");
+      throw error;
+    },
+  );
+};
+
 export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, get) => ({
   syncState: "success",
   lastSyncTime: Number(localStorage.getItem("lastSyncTime")) || null,
@@ -61,13 +120,13 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
       }
 
       // 1. Smart Cache Check: If critical stores are empty, force a full sync regardless of lastSyncTime
-      const isCacheEmpty = await (async () => {
+      const isCacheEmpty = await measureSyncPhase("cache-check", "criticalStores", async () => {
         const [empEmpty, userEmpty] = await Promise.all([
           idbIsStoreEmpty(STORES.EMPLOYEES),
           idbIsStoreEmpty(STORES.USERS),
         ]);
         return empEmpty && userEmpty;
-      })();
+      });
 
       if (isCacheEmpty && since) {
         logger.warn("⚠️ Cache local vacía detectada. Forzando sincronización completa...");
@@ -144,7 +203,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
           });
         }
 
-        await step.action();
+        await measureSyncPhase("sync-step", step.name, () => step.action());
       }
 
       localStorage.setItem("lastSyncTime", now.toString());
@@ -186,7 +245,9 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
 
     try {
       // Validar instancia de DB antes de sincronizar
-      const isConsistent = await state.validateInstanceId();
+      const isConsistent = await measureSyncPhase("validation", "validateInstanceId", () =>
+        state.validateInstanceId(),
+      );
 
       if (!isConsistent) {
         logger.warn("⚠️ Mismatch de instancia detectado. Caché local invalidada.");

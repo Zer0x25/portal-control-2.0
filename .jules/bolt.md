@@ -266,3 +266,11 @@
 - **Límite**: FCP mediana 696 → 712 ms, LCP observado 1.568 → 1.608 ms y overlay 871,5 → 904,4 ms. Rangos pequeños y solapados; no se demuestra mejora visual ni causalidad.
 - **Siguiente**: instrumentar `validateInstanceId` y cada `step.action` de `runSync` para localizar el mayor tiempo de espera real.
 - **Evidencia**: [resultado Spec 059](../specs/059-time-control-lazy-clock-status-query/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/059-time-control-lazy-clock-status-query/evidencia/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - test(perf): Medir tiempos de fases de sincronización
+
+- **Captura**: tres contextos fríos con flag optativo; sin IDs, query values ni cuerpos. El flujo validó instancia, chequeo de caché y las cinco acciones de sync.
+- **Medido**: validación mediana 392,9 ms; lectura conjunta de stores críticas 956,7 ms; cada acción de sync 3,0–3,7 ms. El overlay mediano duró 935,6 ms. El chequeo de stores coincide con casi toda la espera y domina el costo de las fases instrumentadas.
+- **Límite**: `idbIsStoreEmpty` ya usa `count()`. El intervalo incluye apertura de la base y dos transacciones; no atribuir el tiempo a `count()` aisladamente.
+- **Siguiente**: si `lastSyncTime` es nulo, omitir el chequeo: el resultado no afecta `if (isCacheEmpty && since)`. Conservarlo con una marca previa y medir el overlay de nuevo.
+- **Evidencia**: [resultado Spec 060](../specs/060-time-control-sync-step-timings/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/060-time-control-sync-step-timings/evidencia/time-control-sync-phase-diagnostics.json).

@@ -33,6 +33,33 @@ import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
 import { healthQueryOptions } from "../../hooks/queries/useHealthQuery";
 
+type SyncDiagnosticDetail = {
+  phase: "validation" | "cache-check" | "sync-step";
+  name: string;
+  durationMs: number;
+  outcome: "success" | "failure";
+};
+
+const createAdminSyncState = (): AppState => {
+  const state = {
+    currentUser: { id: "admin-1", role: "Administrador" },
+    lastSyncTime: null,
+    isSyncing: false,
+    syncState: "success",
+    syncProgress: 0,
+    isInitialSync: false,
+    currentSyncStep: "",
+    addToast: vi.fn(),
+  } as unknown as AppState;
+  const set = ((partial: Partial<AppState>) => Object.assign(state, partial)) as Parameters<
+    typeof createSyncSlice
+  >[0];
+  const get = (() => state) as Parameters<typeof createSyncSlice>[1];
+  const api = {} as Parameters<typeof createSyncSlice>[2];
+  Object.assign(state, createSyncSlice(set, get, api));
+  return state;
+};
+
 describe("sync de sesión ante cambio de instancia", () => {
   let unsubscribe: (() => void) | undefined;
 
@@ -48,7 +75,71 @@ describe("sync de sesión ante cambio de instancia", () => {
   afterEach(() => {
     unsubscribe?.();
     unsubscribe = undefined;
+    delete (window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean })
+      .__PORTAL_SYNC_PERF_DIAGNOSTICS__;
     queryClient.clear();
+  });
+
+  it("does not emit sync diagnostics by default", async () => {
+    const events: SyncDiagnosticDetail[] = [];
+    const listener = (event: Event) => {
+      events.push((event as CustomEvent<SyncDiagnosticDetail>).detail);
+    };
+    window.addEventListener("portal:sync-phase", listener);
+
+    await createAdminSyncState().initializeAppData();
+
+    window.removeEventListener("portal:sync-phase", listener);
+    expect(events).toEqual([]);
+  });
+
+  it("emits only phase timings when opt-in diagnostics are enabled", async () => {
+    const diagnosticWindow = window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean };
+    diagnosticWindow.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+    const events: SyncDiagnosticDetail[] = [];
+    const listener = (event: Event) => {
+      events.push((event as CustomEvent<SyncDiagnosticDetail>).detail);
+    };
+    window.addEventListener("portal:sync-phase", listener);
+
+    await createAdminSyncState().initializeAppData();
+
+    window.removeEventListener("portal:sync-phase", listener);
+    expect(events.map(({ phase, name }) => [phase, name])).toEqual([
+      ["validation", "validateInstanceId"],
+      ["cache-check", "criticalStores"],
+      ["sync-step", "Usuarios"],
+      ["sync-step", "Empleados"],
+      ["sync-step", "Configuraciones"],
+      ["sync-step", "Horarios"],
+      ["sync-step", "Medidores"],
+    ]);
+    expect(
+      events.every(
+        ({ durationMs, outcome }) =>
+          Number.isFinite(durationMs) && durationMs >= 0 && outcome === "success",
+      ),
+    ).toBe(true);
+    expect(Object.keys(events[0] ?? {}).sort()).toEqual(["durationMs", "name", "outcome", "phase"]);
+  });
+
+  it("records a failed cache check and preserves the sync error path", async () => {
+    const diagnosticWindow = window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean };
+    diagnosticWindow.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+    idbIsStoreEmpty.mockRejectedValueOnce(new Error("IndexedDB unavailable"));
+    const events: SyncDiagnosticDetail[] = [];
+    const listener = (event: Event) => {
+      events.push((event as CustomEvent<SyncDiagnosticDetail>).detail);
+    };
+    window.addEventListener("portal:sync-phase", listener);
+
+    await createAdminSyncState().initializeAppData();
+
+    window.removeEventListener("portal:sync-phase", listener);
+    expect(events.map(({ phase, name, outcome }) => [phase, name, outcome])).toEqual([
+      ["validation", "validateInstanceId", "success"],
+      ["cache-check", "criticalStores", "failure"],
+    ]);
   });
 
   it("comparte la lectura en vuelo y fuerza el refresco si detecta otra instancia", async () => {

@@ -632,6 +632,12 @@ test.describe.serial("Render Performance", () => {
         const page = await context.newPage();
         await loginFast(page, request, "admin");
         await page.addInitScript(() => {
+          type SyncPhaseTiming = {
+            phase: "validation" | "cache-check" | "sync-step";
+            name: string;
+            durationMs: number;
+            outcome: "success" | "failure";
+          };
           type OverlayPaintAudit = {
             initialLastSyncTime: string | null;
             timeOriginEpochMs: number;
@@ -651,11 +657,7 @@ test.describe.serial("Render Performance", () => {
               step: string;
               progressPercent: number | null;
             }>;
-            syncStepChanges: Array<{
-              atMs: number;
-              step: string;
-              progressPercent: number | null;
-            }>;
+            syncPhaseTimings: SyncPhaseTiming[];
             rootAnimationName: string | null;
             rootAnimationDuration: string | null;
             statusAnimationName: string | null;
@@ -676,7 +678,7 @@ test.describe.serial("Render Performance", () => {
             overlayVisibleAtEpochMs: null,
             overlayHiddenAtEpochMs: null,
             syncStepChanges: [],
-            syncStepChanges: [],
+            syncPhaseTimings: [],
             rootAnimationName: null,
             rootAnimationDuration: null,
             statusAnimationName: null,
@@ -685,6 +687,12 @@ test.describe.serial("Render Performance", () => {
           (
             window as Window & { __syncOverlayPaintAudit?: OverlayPaintAudit }
           ).__syncOverlayPaintAudit = audit;
+          (
+            window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean }
+          ).__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+          window.addEventListener("portal:sync-phase", (event) => {
+            audit.syncPhaseTimings.push((event as CustomEvent<SyncPhaseTiming>).detail);
+          });
 
           new PerformanceObserver((list) => {
             audit.fcpEntries.push(
@@ -913,6 +921,12 @@ test.describe.serial("Render Performance", () => {
                   step: string;
                   progressPercent: number | null;
                 }>;
+                syncPhaseTimings: Array<{
+                  phase: "validation" | "cache-check" | "sync-step";
+                  name: string;
+                  durationMs: number;
+                  outcome: "success" | "failure";
+                }>;
                 rootAnimationName: string | null;
                 rootAnimationDuration: string | null;
                 statusAnimationName: string | null;
@@ -938,6 +952,7 @@ test.describe.serial("Render Performance", () => {
             overlayVisibleAtEpochMs: audit.overlayVisibleAtEpochMs,
             overlayHiddenAtEpochMs: audit.overlayHiddenAtEpochMs,
             syncStepChanges: audit.syncStepChanges,
+            syncPhaseTimings: audit.syncPhaseTimings,
             overlayVisibleDurationMs:
               audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
                 ? Number((audit.overlayHiddenAtMs - audit.overlayVisibleAtMs).toFixed(2))
@@ -960,6 +975,21 @@ test.describe.serial("Render Performance", () => {
         expect(metrics.statusAnimationName).toBeTruthy();
         expect(
           metrics.syncStepChanges.some((change) => change.step.startsWith("Sincronizando ")),
+        ).toBe(true);
+        expect(metrics.syncPhaseTimings.map(({ phase, name }) => [phase, name])).toEqual([
+          ["validation", "validateInstanceId"],
+          ["cache-check", "criticalStores"],
+          ["sync-step", "Usuarios"],
+          ["sync-step", "Empleados"],
+          ["sync-step", "Configuraciones"],
+          ["sync-step", "Horarios"],
+          ["sync-step", "Medidores"],
+        ]);
+        expect(
+          metrics.syncPhaseTimings.every(
+            ({ durationMs, outcome }) =>
+              Number.isFinite(durationMs) && durationMs >= 0 && outcome === "success",
+          ),
         ).toBe(true);
         expect(apiRequestTimings.size).toBeGreaterThan(0);
         const recordRequestTimings = Array.from(apiRequestTimings.values()).filter(
@@ -1010,6 +1040,7 @@ test.describe.serial("Render Performance", () => {
             atMs: Number((atEpochMs - navigationStartedAtEpochMs).toFixed(2)),
             ...change,
           })),
+          syncPhaseTimings: metrics.syncPhaseTimings,
           overlayVisibleDurationMs: metrics.overlayVisibleDurationMs,
           rootAnimationName: metrics.rootAnimationName,
           rootAnimationDuration: metrics.rootAnimationDuration,
@@ -1040,6 +1071,8 @@ test.describe.serial("Render Performance", () => {
       sampleCount: samples.length,
       apiRequestPathPolicy:
         "pathname only; query values and request/response bodies omitted; /api/records captures pageSize and filter-presence booleans only",
+      syncPhasePolicy:
+        "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
       timingOffsetBasis: "Date.now immediately before page.goto",
       readinessMetric:
         "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",
