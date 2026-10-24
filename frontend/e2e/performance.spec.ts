@@ -207,7 +207,7 @@ test.describe.serial("Render Performance", () => {
       "/api/employees/kiosk",
     );
     expect(apiPaths.length, "spec 042 recorded 21 Dashboard startup API requests").toBeLessThan(21);
-    expect(apiPaths.length, "Spec 047 removes one redundant metadata request").toBe(9);
+    expect(apiPaths.length, "Specs 047 and 048 remove two non-critical startup requests").toBe(8);
     expect(
       duplicateEndpoints,
       "Dashboard startup should request each API endpoint at most once",
@@ -220,7 +220,51 @@ test.describe.serial("Render Performance", () => {
       apiPaths,
       "the Dashboard uses the fixed company policy file URL and should not fetch redundant metadata",
     ).not.toContain("/api/configs/public/company-policy");
+    expect(
+      apiPaths,
+      "ambient reminders should defer notes until their prefetch window",
+    ).not.toContain("/api/notes");
     expect(apiPaths.filter((path) => path === "/api/health").length).toBeLessThanOrEqual(1);
+  });
+
+  test("Quick Notes fetches notes only after the modal opens", async ({ page }, testInfo) => {
+    let notesRequestStartedAt: number | null = null;
+    let notesResponseStatus: number | null = null;
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname === "/api/notes") {
+        notesRequestStartedAt = performance.now();
+      }
+    });
+    page.on("response", (response) => {
+      if (new URL(response.url()).pathname === "/api/notes") {
+        notesResponseStatus = response.status();
+      }
+    });
+
+    await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+    await page.waitForTimeout(1_200);
+    expect(notesRequestStartedAt, "Dashboard startup should defer notes").toBeNull();
+
+    const modalOpenedAt = performance.now();
+    await page.getByRole("button", { name: "Notas" }).click();
+    await expect.poll(() => notesResponseStatus, { timeout: 15_000 }).toBe(200);
+
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/dashboard",
+      apiPath: "/api/notes",
+      requestedBeforeModalOpen:
+        notesRequestStartedAt !== null && notesRequestStartedAt < modalOpenedAt,
+      requestOffsetFromModalOpenMs:
+        notesRequestStartedAt === null
+          ? null
+          : Number((notesRequestStartedAt - modalOpenedAt).toFixed(2)),
+      responseStatus: notesResponseStatus,
+    };
+    await attachPerformanceReport(testInfo, "quick-notes-on-demand.json", report);
+    expect(report.requestedBeforeModalOpen).toBe(false);
   });
 
   test("Audit Logs virtualized scrolling frame distribution", async ({ page }, testInfo) => {

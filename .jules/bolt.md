@@ -189,3 +189,10 @@
 - **Cambio**: quitar el fetch de metadata y el memo de sesión del `useToolsController`; preservar `VITE_COMPANY_POLICY_URL` y el endpoint de archivo predeterminado.
 - **Medido**: en tres corridas staging antes/después, solicitudes API 10 → 9 (−10%); metadata 26,52–56,73 ms → ausente; todas las respuestas restantes 200, sin duplicados. Contenido principal 564,82 → 553,08 ms y reloj 602,52 → 571,27 ms de mediana, con rangos solapados; no se declara mejora de render/CWV. Imagen `sha256:c789faa7cde0a0cf28e111c98beebbf053cb0129d286f001c386dde20828b312`.
 - **Evidencia**: [Spec 047](../specs/047-dashboard-defer-company-policy-metadata/evidencia/resultado-2026-10-24.md).
+
+## 2026-10-23 - perf(frontend): Diferir consulta de notas ambientales
+
+- **Learning**: `AmbientReminderManager` necesita las notas solo cerca de su recordatorio (10–30 minutos); la query se puede apagar en el inicio sin retrasar la apertura del modal. Si la lectura sigue pendiente al llegar la hora, no se debe descartar el disparador.
+- **Cambio**: habilitar la query un minuto antes del recordatorio y mantener habilitado el comportamiento predeterminado para Quick Notes al abrirse.
+- **Medido**: en tres arranques seriales de staging, solicitudes únicas 9 → 8 (−11,1%); `/api/notes` pasó de 3/3 solicitudes (mediana 25,96 ms) a 0/3. Abrir Notas solicita la ruta bajo demanda y recibe HTTP 200. Todas las respuestas de arranque fueron 200 y no hubo duplicados. Las medianas de contenido/reloj fueron 553/571 ms antes y 583/633 ms después; los rangos se solapan y no se demuestra una mejora estable de render/CWV. Reducción acumulada desde Spec 046: 10 → 8 (−20%).
+- **Evidencia**: [Spec 048](../specs/048-defer-ambient-notes-query/evidencia/resultado-2026-10-23.md). Imagen staging `sha256:90f244ed92908124a6635a82612179318c88604e57ccbdd4ce0474aaa216f534`.

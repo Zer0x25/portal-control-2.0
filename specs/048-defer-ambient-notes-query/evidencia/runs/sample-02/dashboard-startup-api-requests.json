@@ -1,0 +1,107 @@
+{
+  "capturedAt": "2026-10-24T01:36:51.572Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 528.75,
+  "serverClockVisibleOffsetMs": 587.97,
+  "apiRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/audit-logs",
+      "finishOffsetMs": 595.49
+    },
+    {
+      "path": "/api/shift-reports",
+      "finishOffsetMs": 595.54
+    },
+    {
+      "path": "/api/users",
+      "finishOffsetMs": 595.56
+    },
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 602.73
+    }
+  ],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/shift-reports",
+      "finishOffsetMs": 595.54
+    },
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 602.73
+    }
+  ],
+  "apiRequestCount": 8,
+  "uniqueApiEndpointCount": 8,
+  "duplicateEndpoints": [],
+  "autoStartSchedulingRequests": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 485.89,
+      "durationMs": 116.84,
+      "finishOffsetMs": 602.73,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 485.8,
+      "durationMs": 109.75,
+      "finishOffsetMs": 595.56,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 485.75,
+      "durationMs": 109.74,
+      "finishOffsetMs": 595.49,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 485.86,
+      "durationMs": 109.67,
+      "finishOffsetMs": 595.54,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 485.83,
+      "durationMs": 101.93,
+      "finishOffsetMs": 587.76,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 159.42,
+      "durationMs": 58.64,
+      "finishOffsetMs": 218.06,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 485.69,
+      "durationMs": 55.01,
+      "finishOffsetMs": 540.71,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 172.45,
+      "durationMs": 50.23,
+      "finishOffsetMs": 222.68,
+      "status": 200
+    }
+  ]
+}

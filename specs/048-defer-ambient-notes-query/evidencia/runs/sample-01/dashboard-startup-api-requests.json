@@ -1,0 +1,91 @@
+{
+  "capturedAt": "2026-10-24T01:36:45.984Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 663.67,
+  "serverClockVisibleOffsetMs": 891.02,
+  "apiRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 904.6
+    }
+  ],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 904.6
+    }
+  ],
+  "apiRequestCount": 8,
+  "uniqueApiEndpointCount": 8,
+  "duplicateEndpoints": [],
+  "autoStartSchedulingRequests": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 584.21,
+      "durationMs": 185.63,
+      "finishOffsetMs": 769.84,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 584.25,
+      "durationMs": 185.63,
+      "finishOffsetMs": 769.88,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 576.87,
+      "durationMs": 171.31,
+      "finishOffsetMs": 748.18,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 584.07,
+      "durationMs": 164.21,
+      "finishOffsetMs": 748.28,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 581.56,
+      "durationMs": 159.8,
+      "finishOffsetMs": 741.37,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 177.54,
+      "durationMs": 144.64,
+      "finishOffsetMs": 322.18,
+      "status": 200
+    },
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 852.29,
+      "durationMs": 52.31,
+      "finishOffsetMs": 904.6,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 286.5,
+      "durationMs": 35.76,
+      "finishOffsetMs": 322.26,
+      "status": 200
+    }
+  ]
+}
