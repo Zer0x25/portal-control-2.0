@@ -17,7 +17,7 @@ vi.mock("../../../features/time-control/components/TimeRecordFilters", () => ({
   ),
 }));
 
-vi.mock("../../../features/time-control/components/TimeRecordTable", () => ({
+vi.mock("../../../features/time-control/components/DeferredTimeRecordTable", () => ({
   default: (props: { onExportStreaming: (format: "csv" | "excel") => void }) => (
     <button onClick={() => props.onExportStreaming("csv")}>EXPORT-CSV</button>
   ),

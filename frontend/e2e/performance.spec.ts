@@ -610,6 +610,53 @@ test.describe.serial("Render Performance", () => {
     });
   });
 
+  test("Time Control defers the virtualized table until it enters the mobile viewport", async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 412, height: 823 });
+    const tableChunkRequests: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.resourceType() === "script" &&
+        /\/assets\/(?:TimeRecordTableViewMobile|tables)-[^/?]+\.js(?:[?#]|$)/.test(request.url())
+      ) {
+        tableChunkRequests.push(new URL(request.url()).pathname.split("/").pop() ?? "");
+      }
+    });
+
+    await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await page.waitForLoadState("networkidle");
+    const coldTableChunkRequests = [...tableChunkRequests];
+
+    await page.getByText("REGISTROS DE ASISTENCIA", { exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.getByPlaceholder("Buscar por nombre...")).toBeVisible({ timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
+
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      profile: { viewport: { width: 412, height: 823 }, deviceScaleFactor: 1 },
+      coldTableChunkRequests,
+      postScrollTableChunkRequests: [...tableChunkRequests],
+    };
+    await attachPerformanceReport(testInfo, "time-control-deferred-table.json", report);
+
+    expect(
+      coldTableChunkRequests,
+      "The mobile table and shared table chunks must stay out of the cold route",
+    ).toEqual([]);
+    expect(tableChunkRequests).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^TimeRecordTableViewMobile-/),
+        expect.stringMatching(/^tables-/),
+      ]),
+    );
+  });
+
   test("Dashboard startup avoids the kiosk list and repeated API reads", async ({
     page,
   }, testInfo) => {
