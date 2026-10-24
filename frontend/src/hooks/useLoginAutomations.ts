@@ -8,12 +8,27 @@ import { useShiftManager } from "./useShiftManager";
 import { useReportsQuery } from "./queries/useReportsQuery";
 import { ShiftHandoverData } from "../types/index";
 import { logger } from "../utils/logger";
+import { shouldLoadAutoStartSchedule } from "../utils/autoStartEligibility";
 
 export const useLoginAutomations = () => {
   const { currentUser } = useAuth();
   const { getEmployeeById } = useEmployees();
   const { users } = useUsers();
-  const { getEmployeeDailyScheduleInfo } = useScheduling();
+  const automationEmployee = currentUser?.employeeId
+    ? getEmployeeById(currentUser.employeeId)
+    : undefined;
+  const canLoadAutoStartSchedule = shouldLoadAutoStartSchedule(
+    currentUser?.role,
+    currentUser?.employeeId,
+    automationEmployee,
+  );
+  const { getEmployeeDailyScheduleInfo, isLoadingSchedulingData } = useScheduling(
+    undefined,
+    undefined,
+    {
+      enabled: canLoadAutoStartSchedule,
+    },
+  );
   const { startNewShift } = useShiftManager();
   const { data: shiftReports = [] } = useReportsQuery(); // Use Query
 
@@ -37,22 +52,19 @@ export const useLoginAutomations = () => {
 
     // --- Automation 1: Auto-start shift for Reloj Control ---
     const runShiftStartAutomation = async () => {
-      if (sessionStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_ACTIONS_DONE) || !currentUser?.employeeId)
+      if (
+        sessionStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_ACTIONS_DONE) ||
+        !currentUser?.employeeId ||
+        !canLoadAutoStartSchedule
+      )
         return;
 
-      const employee = getEmployeeById(currentUser.employeeId);
-      if (!employee) return;
-
-      const hasPermission =
-        currentUser.role === "Reloj_Control" ||
-        ((currentUser.role === "Administrador" || currentUser.role === "Supervisor_Elevado") &&
-          employee.position === "Reloj_Control");
-      if (!hasPermission) return;
+      if (!automationEmployee || isLoadingSchedulingData) return;
 
       sessionStorage.setItem(STORAGE_KEYS.AUTO_LOGIN_ACTIONS_DONE, "true");
 
       const now = new Date();
-      const scheduleInfo = getEmployeeDailyScheduleInfo(employee.id, now);
+      const scheduleInfo = getEmployeeDailyScheduleInfo(automationEmployee.id, now);
       if (!scheduleInfo?.isWorkDay || !scheduleInfo.startTime) return;
 
       const shiftStartTime = new Date(now);
@@ -109,8 +121,11 @@ export const useLoginAutomations = () => {
     runHandoverCheck();
   }, [
     currentUser,
+    automationEmployee,
+    canLoadAutoStartSchedule,
     getEmployeeById,
     getEmployeeDailyScheduleInfo,
+    isLoadingSchedulingData,
     startNewShift,
     shiftReports,
     users,

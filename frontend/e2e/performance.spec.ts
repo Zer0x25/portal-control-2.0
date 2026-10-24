@@ -6,6 +6,18 @@ import performanceRouteDefinitions from "../performance-routes.json" with { type
 
 const viewport = { width: 1440, height: 900 };
 const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:5174";
+const autoStartSchedulingApiPaths = new Set([
+  "/api/configs/global_max_hours",
+  "/api/configs/area_list",
+  "/api/configs/workday_types",
+  "/api/configs/email_recipients",
+  "/api/configs/accounting_lock_date",
+  "/api/shifts/patterns",
+  "/api/shifts/assignments",
+  "/api/holidays",
+  "/api/leaves",
+  "/api/corrections",
+]);
 
 test.describe.serial("Render Performance", () => {
   test.use({ viewport });
@@ -151,6 +163,9 @@ test.describe.serial("Render Performance", () => {
     const duplicateEndpoints = [...requestCounts.entries()]
       .filter(([, count]) => count > 1)
       .map(([path, count]) => ({ path, count }));
+    const autoStartSchedulingRequests = apiPaths.filter((path) =>
+      autoStartSchedulingApiPaths.has(path),
+    );
     const apiRequestsPendingWhenServerClockAppeared = apiRequestTimings
       .filter(
         ({ startOffsetMs, finishOffsetMs }) =>
@@ -173,6 +188,7 @@ test.describe.serial("Render Performance", () => {
       apiRequestCount: apiPaths.length,
       uniqueApiEndpointCount: requestCounts.size,
       duplicateEndpoints,
+      autoStartSchedulingRequests,
       apiPaths,
       apiRequestTimings: [...apiRequestTimings].sort((a, b) => b.durationMs - a.durationMs),
     };
@@ -190,6 +206,10 @@ test.describe.serial("Render Performance", () => {
     expect(
       duplicateEndpoints,
       "Dashboard startup should request each API endpoint at most once",
+    ).toEqual([]);
+    expect(
+      autoStartSchedulingRequests,
+      "Dashboard should not load auto-start scheduling data for an Administrator without an employee",
     ).toEqual([]);
     expect(apiPaths.filter((path) => path === "/api/health").length).toBeLessThanOrEqual(1);
   });

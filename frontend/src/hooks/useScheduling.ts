@@ -32,7 +32,12 @@ const formatUTCDateOnly = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const useScheduling = (requestsStatus?: string, sinceRequests?: number) => {
+export const useScheduling = (
+  requestsStatus?: string,
+  sinceRequests?: number,
+  options: { enabled?: boolean } = {},
+) => {
+  const schedulingQueriesEnabled = options.enabled ?? true;
   const extractLeaves = (value: unknown): LeaveRecord[] => {
     if (Array.isArray(value)) return value as LeaveRecord[];
     if (
@@ -47,12 +52,14 @@ export const useScheduling = (requestsStatus?: string, sinceRequests?: number) =
   };
 
   // --- Config (spec 032 T4: única fuente = query hooks) ---
-  const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery();
-  const { data: areaList = ["Otros"] } = useAreaListQuery();
+  const { data: globalMaxWeeklyHours = 44 } =
+    useGlobalMaxWeeklyHoursQuery(schedulingQueriesEnabled);
+  const { data: areaList = ["Otros"] } = useAreaListQuery(schedulingQueriesEnabled);
   const { data: workdayTypeList = ["Artículo 22", "Full-Time", "Part-Time"] } =
-    useWorkdayTypeListQuery();
-  const { data: emailRecipientsList = ["info@test.lan"] } = useEmailRecipientsListQuery();
-  const { data: accountingLockDate = null } = useAccountingLockDateQuery();
+    useWorkdayTypeListQuery(schedulingQueriesEnabled);
+  const { data: emailRecipientsList = ["info@test.lan"] } =
+    useEmailRecipientsListQuery(schedulingQueriesEnabled);
+  const { data: accountingLockDate = null } = useAccountingLockDateQuery(schedulingQueriesEnabled);
   const { updateConfig } = useConfigMutations();
   const updateGlobalMaxWeeklyHours = (v: number) =>
     updateConfig({ key: "global_max_hours", value: v });
@@ -64,10 +71,14 @@ export const useScheduling = (requestsStatus?: string, sinceRequests?: number) =
     updateConfig({ key: "accounting_lock_date", value: v });
 
   // --- Remote State (TanStack Query) ---
-  const { data: shiftPatterns = [] } = useShiftPatternsQuery();
-  const { data: assignedShifts = [] } = useAssignedShiftsQuery();
-  const { data: holidays = [] } = useHolidaysQuery();
-  const { data: leavesResponse } = useLeavesQuery();
+  const { data: shiftPatterns = [], isLoading: isLoadingShiftPatterns } =
+    useShiftPatternsQuery(schedulingQueriesEnabled);
+  const { data: assignedShifts = [], isLoading: isLoadingAssignedShifts } =
+    useAssignedShiftsQuery(schedulingQueriesEnabled);
+  const { data: holidays = [], isLoading: isLoadingHolidays } =
+    useHolidaysQuery(schedulingQueriesEnabled);
+  const { data: leavesResponse, isLoading: isLoadingLeaves } =
+    useLeavesQuery(schedulingQueriesEnabled);
   const leaves = extractLeaves(leavesResponse);
   const { allEmployees: employees, isLoadingEmployees } = useEmployees();
   const {
@@ -75,7 +86,7 @@ export const useScheduling = (requestsStatus?: string, sinceRequests?: number) =
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useCorrectionRequestsQuery(requestsStatus, sinceRequests);
+  } = useCorrectionRequestsQuery(requestsStatus, sinceRequests, schedulingQueriesEnabled);
 
   const requests = infiniteRequests?.pages.flatMap((page) => page.requests) || [];
 
@@ -85,7 +96,13 @@ export const useScheduling = (requestsStatus?: string, sinceRequests?: number) =
     isPending: isUpdatingRequestStatus,
   } = useCorrectionRequestMutations();
 
-  const isLoadingSchedulingData = isLoadingEmployees; // Or composite loading
+  const isLoadingSchedulingData =
+    schedulingQueriesEnabled &&
+    (isLoadingEmployees ||
+      isLoadingShiftPatterns ||
+      isLoadingAssignedShifts ||
+      isLoadingHolidays ||
+      isLoadingLeaves);
 
   const getRequestsForEmployee = (employeeId: string) => {
     return requests.filter((r) => r.employeeId === employeeId);
