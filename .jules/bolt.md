@@ -217,3 +217,11 @@
 - **Cambio**: `useShallow` agrupa los campos conservando el contrato y una llamada en `App`; el test verifica una suscripción, reactividad y ausencia de render por cambios de tema.
 - **Medido**: perfiles CPU (n=3, 4×) bajaron medianas muestreadas 7,2% en `react-core`, 4,6% en ReactDOM y 11,5% en `state`, con dispersión. Lighthouse frío (n=6) mantuvo FCP/LCP casi iguales; TBT 171 → 158,25 ms (−7,5%), sin atribución causal rígida. La segunda batería aprobó 10/10 Playwright y 85/85 aserciones en 17 rutas; se conserva una primera corrida con outlier aislado de Worker Portal.
 - **Evidencia**: [resultado Spec 051](../specs/051-auth-store-subscriptions/evidencia/resultado-2026-10-24.md), [resumen CPU](../specs/051-auth-store-subscriptions/evidencia/cpu-profile-summary.json) y [ledger staging](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T04-37-20-455Z-20a30b8c.json). Próximo foco: identificar renders/commits responsables del tiempo de `react-core`.
+
+## 2026-10-24 - perf(frontend): Diferir tabla virtualizada de Time Control
+
+- **Learning**: la tabla móvil estaba bajo el pliegue, pero su frontera `React.lazy` vivía dentro del componente tabla ya cargado; entrar a Control horario solicitaba de inmediato la vista móvil y el chunk compartido `tables` (53.525 B sin comprimir).
+- **Cambio**: introducir `DeferredTimeRecordTable` con `IntersectionObserver`, reserva de 400 px y fallback eager cuando el observer no existe. La primera intersección deja la tabla montada.
+- **Medido**: en tres muestras frías Lighthouse, JS transferido 357.482 → 296.809 B (−17,0%), transferencia total 525.073 → 462.233 B (−12,0%) y solicitudes 99 → 85. FCP/LCP simulados bajan 7,2%/7,7%; el TBT mediano sube 8,2% y el trace Chromium observado no mejora. No declarar ganancia global de CWV.
+- **Siguiente**: instrumentar el render inicial de Control horario; el retraso del candidato LCP sigue cerca de 1,66 s y TBT mediano en 258 ms. Staging sin filas, de modo que no se validó virtualización con registros vivos.
+- **Evidencia**: [resultado Spec 054](../specs/054-time-control-defer-virtualized-table/resultado.md) y [ledger staging](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T08-18-04-669Z-c6f06995.json). Imagen `sha256:4e184992f8b571d59d1a716399a6baf296e4577e983efb260b92eee5cc4c0eb1`.

@@ -1,6 +1,6 @@
 # Spec 054: Time Control Defer Virtualized Table
 
-- Estado: Aprobado
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-10-24
 - ADR relacionado: N/A
@@ -25,10 +25,10 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: En viewport móvil, la ruta fría no solicita los chunks de `TimeRecordTableViewMobile` ni `tables` mientras la tabla está fuera del viewport.
-- [ ] AC2: Al desplazarse hasta la zona de registros, se solicitan los chunks necesarios y la vista móvil de tabla aparece con sus controles o estado vacío.
-- [ ] AC3: El fallback reserva altura estable y el perfil frío de Control horario conserva tres muestras Lighthouse válidas con ruta/rol correctos; se guardan las medianas antes y después.
-- [ ] AC4: No cambian contratos ni comportamiento de tabla; pasan los checks frontend y de gobernanza.
+- [x] AC1: En viewport móvil, la ruta fría no solicita los chunks de `TimeRecordTableViewMobile` ni `tables` mientras la tabla está fuera del viewport.
+- [x] AC2: Al desplazarse hasta la zona de registros, se solicitan los chunks necesarios y la vista móvil de tabla aparece con sus controles o estado vacío.
+- [x] AC3: El fallback reserva altura estable y el perfil frío de Control horario conserva tres muestras Lighthouse válidas con ruta/rol correctos; se guardan las medianas antes y después.
+- [x] AC4: No cambian contratos ni comportamiento de tabla; pasan los checks frontend y de gobernanza.
 
 ## Restricciones
 
