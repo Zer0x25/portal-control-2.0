@@ -1032,6 +1032,33 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
         ],
         "type": "object",
       },
+      "HealthReadiness": {
+        "properties": {
+          "healthStatus": {
+            "enum": [
+              "healthy",
+              "degraded",
+            ],
+            "type": "string",
+          },
+          "instanceId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "ready",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "status",
+          "healthStatus",
+          "instanceId",
+        ],
+        "type": "object",
+      },
       "HealthStatus": {
         "properties": {
           "database": {
@@ -5018,7 +5045,40 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       "get": {
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReadiness",
+                },
+              },
+            },
             "description": "Servidor listo",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "success",
+                    "code",
+                    "message",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Base de datos no disponible",
           },
         },
         "summary": "Verificar si el servidor está listo (Readiness Probe)",

@@ -847,6 +847,7 @@ test.describe.serial("Render Performance", () => {
             responseAtMs: number | null;
             finishedAtMs: number | null;
             statusCode: number | null;
+            responseBodyBytes: number | null;
             failure: string | null;
             queryDimensions: {
               pageSize: string | null;
@@ -855,6 +856,7 @@ test.describe.serial("Render Performance", () => {
             } | null;
           }
         >();
+        const responseBodyReads: Promise<void>[] = [];
         const requestOffset = () => Number((Date.now() - navigationStartedAtEpochMs).toFixed(2));
         page.on("request", (request) => {
           const url = new URL(request.url());
@@ -866,6 +868,7 @@ test.describe.serial("Render Performance", () => {
             responseAtMs: null,
             finishedAtMs: null,
             statusCode: null,
+            responseBodyBytes: null,
             failure: null,
             queryDimensions:
               url.pathname === "/api/records"
@@ -882,6 +885,16 @@ test.describe.serial("Render Performance", () => {
           if (!timing) return;
           timing.responseAtMs = requestOffset();
           timing.statusCode = response.status();
+          if (timing.path === "/api/health" || timing.path === "/api/health/ready") {
+            responseBodyReads.push(
+              response.body().then(
+                (body) => {
+                  timing.responseBodyBytes = body.byteLength;
+                },
+                () => undefined,
+              ),
+            );
+          }
         });
         page.on("requestfinished", (request) => {
           const timing = apiRequestTimings.get(request);
@@ -976,6 +989,7 @@ test.describe.serial("Render Performance", () => {
             syncReadyAtMs: performance.now(),
           };
         });
+        await Promise.all(responseBodyReads);
         expect(metrics.initialLastSyncTime).toBeNull();
         expect(metrics.lastSyncTimePresent).toBe(true);
         expect(metrics.overlayVisibleAtMs).not.toBeNull();
@@ -1010,6 +1024,18 @@ test.describe.serial("Render Performance", () => {
           ),
         ).toBe(true);
         expect(apiRequestTimings.size).toBeGreaterThan(0);
+        const readinessRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/health/ready",
+        );
+        const detailedHealthRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/health",
+        );
+        expect(readinessRequests).toHaveLength(1);
+        expect(readinessRequests[0]?.statusCode).toBe(200);
+        expect(readinessRequests[0]?.responseBodyBytes).not.toBeNull();
+        expect(readinessRequests[0]?.responseBodyBytes ?? Infinity).toBeLessThan(512);
+        expect(detailedHealthRequests).toHaveLength(0);
+        expect(apiRequestTimings.size).toBeLessThanOrEqual(20);
         const recordRequestTimings = Array.from(apiRequestTimings.values()).filter(
           (timing) => timing.path === "/api/records",
         );
@@ -1088,7 +1114,7 @@ test.describe.serial("Render Performance", () => {
       cpuThrottle: 4,
       sampleCount: samples.length,
       apiRequestPathPolicy:
-        "pathname only; query values and request/response bodies omitted; /api/records captures pageSize and filter-presence booleans only",
+        "pathname only; request/response bodies omitted; response byte length recorded only for health endpoints; /api/records captures pageSize and filter-presence booleans only",
       syncPhasePolicy:
         "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
       timingOffsetBasis: "Date.now immediately before page.goto",

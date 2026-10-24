@@ -68,6 +68,11 @@ export interface FastifyDependencies {
   };
   health: {
     checkDbReady(): Promise<boolean>;
+    getReadiness(): {
+      status: "ready";
+      healthStatus: "healthy" | "degraded";
+      instanceId: string;
+    };
     getDetailedHealth(): Promise<{ database: { status: string } }>;
   };
   maintenance(): { type: string } | null;
@@ -250,10 +255,10 @@ export function buildFastifyApp(
   app.get("/api/health/ready", async () => {
     try {
       await deps.health.checkDbReady();
-      return { status: "ready" };
     } catch {
       throw new AppError("Database unreachable", 503, "NOT_READY");
     }
+    return deps.health.getReadiness();
   });
   app.register(async (protectedApp) => {
     await protectedApp.register(rateLimit, {

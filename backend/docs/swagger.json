@@ -882,6 +882,15 @@
         },
         "required": ["dailyAttendanceRatio", "activeShifts", "pendingLeaves", "alerts"]
       },
+      "HealthReadiness": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["ready"] },
+          "healthStatus": { "type": "string", "enum": ["healthy", "degraded"] },
+          "instanceId": { "type": "string", "minLength": 1 }
+        },
+        "required": ["status", "healthStatus", "instanceId"]
+      },
       "HealthStatus": {
         "type": "object",
         "properties": {
@@ -2860,7 +2869,30 @@
       "get": {
         "summary": "Verificar si el servidor está listo (Readiness Probe)",
         "tags": ["Health"],
-        "responses": { "200": { "description": "Servidor listo" } }
+        "responses": {
+          "200": {
+            "description": "Servidor listo",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/HealthReadiness" } }
+            }
+          },
+          "503": {
+            "description": "Base de datos no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success", "code", "message"],
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "code": { "type": "string" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/export/calendar-pdf": {

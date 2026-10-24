@@ -43,6 +43,18 @@ export interface HealthDetails {
   jobs: JobStatus;
 }
 
+export interface HealthReadiness {
+  status: "ready";
+  healthStatus: "healthy" | "degraded";
+  instanceId: string;
+}
+
+const isBackupHealthHealthy = (backupStatus: BackupStatus): boolean =>
+  !backupStatus.enabled || (!backupStatus.stale && !backupStatus.lastError);
+
+const isHealthHealthy = (databaseHealthy: boolean, backupStatus: BackupStatus): boolean =>
+  databaseHealthy && isBackupHealthHealthy(backupStatus);
+
 export class HealthService {
   /**
    * Performs a simple connectivity probe to the database.
@@ -51,6 +63,17 @@ export class HealthService {
   static async checkDbReady(): Promise<boolean> {
     await prisma.$queryRaw`SELECT 1`;
     return true;
+  }
+
+  /** Provides startup identity/status without collecting full diagnostics. */
+  static getReadiness(): HealthReadiness {
+    const backupStatus = backupHealthService.getStatus();
+
+    return {
+      status: "ready",
+      healthStatus: isHealthHealthy(true, backupStatus) ? "healthy" : "degraded",
+      instanceId: BOOT_INSTANCE_ID,
+    };
   }
 
   /**
@@ -85,9 +108,7 @@ export class HealthService {
     const integrityStatus = integrityStatusService.getSnapshot();
     const jobStatus = jobTelemetryService.getSnapshot();
 
-    const healthy =
-      dbStatus === "OK" &&
-      (!backupStatus.enabled || (!backupStatus.stale && !backupStatus.lastError));
+    const healthy = isHealthHealthy(dbStatus === "OK", backupStatus);
 
     return {
       status: healthy ? "healthy" : "degraded",

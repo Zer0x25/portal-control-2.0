@@ -2648,7 +2648,22 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "application/json": components["schemas"]["HealthReadiness"];
+          };
+        };
+        /** @description Base de datos no disponible */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              success: boolean;
+              code: string;
+              message: string;
+            };
+          };
         };
       };
     };
@@ -5315,6 +5330,13 @@ export interface components {
       activeShifts: number;
       pendingLeaves: number;
       alerts: string[];
+    };
+    HealthReadiness: {
+      /** @enum {string} */
+      status: "ready";
+      /** @enum {string} */
+      healthStatus: "healthy" | "degraded";
+      instanceId: string;
     };
     HealthStatus: {
       /** @enum {string} */

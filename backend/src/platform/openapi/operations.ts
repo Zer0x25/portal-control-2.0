@@ -1800,6 +1800,24 @@
  *     responses:
  *       200:
  *         description: Servidor listo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthReadiness'
+ *       503:
+ *         description: Base de datos no disponible
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [success, code, message]
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 code:
+ *                   type: string
+ *                 message:
+ *                   type: string
  */
 
 /**

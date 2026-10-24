@@ -60,7 +60,16 @@ export interface HealthResponse {
   data: HealthData;
 }
 
+const fetchReadiness = () =>
+  apiClient.get("/api/health/ready", {
+    timeoutMs: 5000,
+    retry: false,
+  });
+
+export type HealthReadinessData = Awaited<ReturnType<typeof fetchReadiness>>;
+
 export const HEALTH_QUERY_KEY = queryKeys.systemHealth();
+export const READINESS_QUERY_KEY = queryKeys.systemReadiness();
 
 /** Opciones compartidas para que el arranque reutilice el sondeo de salud. */
 export const healthQueryOptions = {
@@ -76,6 +85,13 @@ export const healthQueryOptions = {
   staleTime: 15000,
 };
 
+/** Startup/connection status without the detailed diagnostics payload. */
+export const readinessQueryOptions = {
+  queryKey: READINESS_QUERY_KEY,
+  queryFn: fetchReadiness,
+  staleTime: 15000,
+};
+
 /**
  * Single source of truth for backend liveness (Fase 1: shared query).
  * 30s poll replaces the former 3x10s independent fetch loops
@@ -87,6 +103,16 @@ export const healthQueryOptions = {
 export const useHealthQuery = (options: { refetchInterval?: number } = {}) => {
   return useQuery({
     ...healthQueryOptions,
+    refetchInterval: options.refetchInterval ?? 30000,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+};
+
+/** Shared small readiness query for shell status and instance validation. */
+export const useReadinessQuery = (options: { refetchInterval?: number } = {}) => {
+  return useQuery({
+    ...readinessQueryOptions,
     refetchInterval: options.refetchInterval ?? 30000,
     gcTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
@@ -108,6 +134,17 @@ export function deriveBackendStatus(
   isLoading: boolean,
 ): BackendStatus {
   if (data?.status === "degraded") return "degraded";
+  if (data) return "healthy";
+  if (isLoading) return "healthy";
+  return "offline";
+}
+
+export function deriveReadinessStatus(
+  data: HealthReadinessData | undefined,
+  error: unknown,
+  isLoading: boolean,
+): BackendStatus {
+  if (data?.healthStatus === "degraded") return "degraded";
   if (data) return "healthy";
   if (isLoading) return "healthy";
   return "offline";

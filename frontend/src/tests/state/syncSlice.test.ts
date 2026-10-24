@@ -7,16 +7,16 @@ const { getHealth, idbIsStoreEmpty, wipeAllData } = vi.hoisted(() => ({
   wipeAllData: vi.fn(),
 }));
 
-const { fetchHealthData } = vi.hoisted(() => ({ fetchHealthData: vi.fn() }));
+const { fetchReadinessData } = vi.hoisted(() => ({ fetchReadinessData: vi.fn() }));
 
 vi.mock("../../services/configService", () => ({
   configService: { getHealth: (...args: unknown[]) => getHealth(...args) },
 }));
 
 vi.mock("../../hooks/queries/useHealthQuery", () => ({
-  healthQueryOptions: {
-    queryKey: ["system", "health"],
-    queryFn: fetchHealthData,
+  readinessQueryOptions: {
+    queryKey: ["system", "readiness"],
+    queryFn: fetchReadinessData,
     staleTime: 15_000,
   },
 }));
@@ -31,7 +31,7 @@ import type { AppState } from "../../store/types";
 import { createSyncSlice } from "../../store/slices/syncSlice";
 import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
-import { healthQueryOptions } from "../../hooks/queries/useHealthQuery";
+import { readinessQueryOptions } from "../../hooks/queries/useHealthQuery";
 import { STORES } from "../../utils/indexedDB";
 
 type SyncDiagnosticDetail = {
@@ -74,7 +74,9 @@ describe("sync de sesión ante cambio de instancia", () => {
     queryClient.clear();
     localStorage.clear();
     getHealth.mockReset().mockResolvedValue({ instanceId: "db-new" });
-    fetchHealthData.mockReset().mockResolvedValue({ status: "healthy", instanceId: "db-new" });
+    fetchReadinessData
+      .mockReset()
+      .mockResolvedValue({ status: "ready", healthStatus: "healthy", instanceId: "db-new" });
     idbIsStoreEmpty.mockReset().mockResolvedValue(false);
     wipeAllData.mockReset().mockResolvedValue(undefined);
   });
@@ -174,16 +176,26 @@ describe("sync de sesión ante cambio de instancia", () => {
   it("comparte la lectura en vuelo y fuerza el refresco si detecta otra instancia", async () => {
     localStorage.setItem("db_instance_id", "db-old");
 
-    let releaseHealth: ((value: { status: string; instanceId: string }) => void) | undefined;
-    fetchHealthData.mockImplementationOnce(
+    let releaseHealth:
+      | ((value: {
+          status: "ready";
+          healthStatus: "healthy" | "degraded";
+          instanceId: string;
+        }) => void)
+      | undefined;
+    fetchReadinessData.mockImplementationOnce(
       () =>
-        new Promise<{ status: string; instanceId: string }>((resolve) => {
+        new Promise<{
+          status: "ready";
+          healthStatus: "healthy" | "degraded";
+          instanceId: string;
+        }>((resolve) => {
           releaseHealth = resolve;
         }),
     );
-    const healthObserver = new QueryObserver(queryClient, healthQueryOptions);
-    const stopHealthObserver = healthObserver.subscribe(() => undefined);
-    await vi.waitFor(() => expect(fetchHealthData).toHaveBeenCalledTimes(1));
+    const readinessObserver = new QueryObserver(queryClient, readinessQueryOptions);
+    const stopReadinessObserver = readinessObserver.subscribe(() => undefined);
+    await vi.waitFor(() => expect(fetchReadinessData).toHaveBeenCalledTimes(1));
 
     const queryFn = vi.fn().mockResolvedValueOnce("old-data").mockResolvedValueOnce("new-data");
     const observer = new QueryObserver(queryClient, {
@@ -193,7 +205,7 @@ describe("sync de sesión ante cambio de instancia", () => {
     });
     const stopEmployeeObserver = observer.subscribe(() => undefined);
     unsubscribe = () => {
-      stopHealthObserver();
+      stopReadinessObserver();
       stopEmployeeObserver();
     };
     await vi.waitFor(() => expect(observer.getCurrentResult().data).toBe("old-data"));
@@ -218,8 +230,8 @@ describe("sync de sesión ante cambio de instancia", () => {
 
     const initialization = state.initializeAppData();
     await Promise.resolve();
-    expect(fetchHealthData).toHaveBeenCalledTimes(1);
-    releaseHealth?.({ status: "healthy", instanceId: "db-new" });
+    expect(fetchReadinessData).toHaveBeenCalledTimes(1);
+    releaseHealth?.({ status: "ready", healthStatus: "healthy", instanceId: "db-new" });
     await initialization;
 
     expect(getHealth).not.toHaveBeenCalled();
@@ -230,7 +242,7 @@ describe("sync de sesión ante cambio de instancia", () => {
   });
 
   it("mantiene el fallback fail-safe si falla la query compartida de salud", async () => {
-    fetchHealthData.mockRejectedValueOnce(new TypeError("fetch failed"));
+    fetchReadinessData.mockRejectedValueOnce(new TypeError("fetch failed"));
 
     const state = {
       currentUser: null,
@@ -255,11 +267,16 @@ describe("sync de sesión ante cambio de instancia", () => {
   });
 
   it("actualiza un instanceId cacheado antes de validar la instancia", async () => {
-    queryClient.setQueryData(queryKeys.systemHealth(), {
-      status: "healthy",
+    queryClient.setQueryData(queryKeys.systemReadiness(), {
+      status: "ready",
+      healthStatus: "healthy",
       instanceId: "db-cached",
     });
-    fetchHealthData.mockResolvedValueOnce({ status: "healthy", instanceId: "db-current" });
+    fetchReadinessData.mockResolvedValueOnce({
+      status: "ready",
+      healthStatus: "healthy",
+      instanceId: "db-current",
+    });
 
     const state = {
       currentUser: null,
@@ -280,7 +297,7 @@ describe("sync de sesión ante cambio de instancia", () => {
 
     await expect(state.validateInstanceId()).resolves.toBe(true);
 
-    expect(fetchHealthData).toHaveBeenCalledTimes(1);
+    expect(fetchReadinessData).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem("db_instance_id")).toBe("db-current");
   });
 });

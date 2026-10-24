@@ -282,3 +282,11 @@
 - **Límite**: FCP mediano 708 → 744 ms, rangos solapados. El candidato LCP cambió del overlay al distintivo de la app antes de mostrarse el overlay; no atribuir mejora CWV. Las esperas de sync de Usuarios/Empleados ahora miden 132,3/71,2 ms por el solapamiento con queries activas; no se quitaron esos refrescos.
 - **Siguiente**: medir el costo y solapamiento de `validateInstanceId` (mediana actual 369,5 ms) y las queries activas de Usuarios/Empleados antes de cambiar validación o refresco.
 - **Evidencia**: [resultado Spec 061](../specs/061-skip-empty-cache-check-without-sync-marker/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/061-skip-empty-cache-check-without-sync-marker/evidencia/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - perf(time-control): Reusar readiness ligero para validar instancia
+
+- **Cambio**: `GET /api/health/ready` ahora expone identidad y estado saludable/degradado; estado del shell, indicador y validación usan la misma query. `/api/health` conserva sus diagnósticos para mantenimiento.
+- **Medido**: el cuerpo readiness tuvo 95 B frente a 2.840 B de `/api/health` en staging (−96,7 %) y se eliminó la consulta de tamaño de BD. La batería fría mantuvo 20 requests por contexto y 60/60 respuestas HTTP 200. Fastify procesó readiness en 1–6 ms.
+- **Límite**: validación 369,5 → 393,4 ms (+23,9 ms), overlay 394,1 → 440,9 ms (+46,8 ms) y retiro desde navegación 1.298,9 → 1.424,8 ms (+125,9 ms). No se demuestra mejora de latencia ni que el cambio cause estos aumentos. FCP 744 → 772 ms con rangos solapados.
+- **Siguiente**: separar request start, respuesta de Fastify y recepción en browser para ubicar el tiempo fuera del handler; perfilar `/api/users` y la fase Usuarios (mediana 281,8 ms) sin relajar validación fresca ni el bloqueo.
+- **Evidencia**: [resultado Spec 062](../specs/062-lightweight-health-readiness-for-frontend-startup/evidencia/resultado-2026-10-24.md) y [tres muestras staging](../specs/062-lightweight-health-readiness-for-frontend-startup/evidencia/time-control-sync-phase-diagnostics.json).

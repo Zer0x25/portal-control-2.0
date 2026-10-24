@@ -179,6 +179,8 @@ export const queryKeys = {
   integrityStatus: resource("integrityStatus", () => ["integrityStatus"] as const),
   /** Salud del sistema. */
   systemHealth: resource("system", () => ["system", "health"] as const),
+  /** Readiness ligero para conexión y validación de instancia al arrancar. */
+  systemReadiness: resource("system", () => ["system", "readiness"] as const),
 } as const;
 
 /**
