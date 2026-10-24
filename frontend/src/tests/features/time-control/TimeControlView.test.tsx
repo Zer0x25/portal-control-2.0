@@ -18,8 +18,14 @@ vi.mock("../../../features/time-control/components/TimeRecordFilters", () => ({
 }));
 
 vi.mock("../../../features/time-control/components/DeferredTimeRecordTable", () => ({
-  default: (props: { onExportStreaming: (format: "csv" | "excel") => void }) => (
-    <button onClick={() => props.onExportStreaming("csv")}>EXPORT-CSV</button>
+  default: (props: {
+    isLoading: boolean;
+    onExportStreaming: (format: "csv" | "excel") => void;
+  }) => (
+    <>
+      <div data-testid="records-loading-state">{props.isLoading ? "loading" : "ready"}</div>
+      <button onClick={() => props.onExportStreaming("csv")}>EXPORT-CSV</button>
+    </>
   ),
 }));
 
@@ -100,6 +106,14 @@ describe("TimeControlView", () => {
     render(<TimeControlView {...baseProps} isPageLoading={true} />);
 
     expect(screen.getByText("Optimizando registros de asistencia...")).toBeInTheDocument();
+  });
+
+  it("keeps the page header visible while the records table loads", () => {
+    render(<TimeControlView {...baseProps} isLoading={true} />);
+
+    expect(screen.getByText("Control de Asistencia")).toBeInTheDocument();
+    expect(screen.getByTestId("records-loading-state")).toHaveTextContent("loading");
+    expect(screen.queryByText("Optimizando registros de asistencia...")).not.toBeInTheDocument();
   });
 
   it("mounts the timestamp editor only when a record is selected for editing", async () => {

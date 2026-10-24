@@ -233,3 +233,11 @@
 - **Límite**: El rango inicial devolvió 2 registros; no representa carga de tabla con volumen. Los tiempos de desarrollo no se comparan con Lighthouse. No se atribuye mejora CWV ni se eligió aún una optimización.
 - **Siguiente**: capturar CPU de producción en esta ruta y localizar el LCP y el trabajo de `react-core` antes de cambiar lógica.
 - **Evidencia**: [resultado Spec 055](../specs/055-time-control-render-profile/resultado.md) y [muestras crudas](../specs/055-time-control-render-profile/evidencia/render-profile-2026-10-24.json).
+
+## 2026-10-24 - perf(frontend): Mostrar antes el contenido de Time Control
+
+- **Cambio**: `useTimeControlData` conserva el gate de configuración, pero deja visible el shell mientras carga GET `/api/records`; la tabla conserva su propio `isLoading`.
+- **Prueba funcional**: 7/7 tests hook/vista. Playwright en staging retuvo `/api/records` en móvil y confirmó la cabecera visible a 1.007 s mientras la respuesta seguía bloqueada (interceptada a 948 ms).
+- **Medido**: batería completa posterior al rebuild: 15/15 E2E, 18 rutas readiness con 3 muestras, 85/85 aserciones Lighthouse. Tres corridas frías Time Control: LCP simulado 5.486 → 5.391 s, LCP observado 1.661 → 1.618 s, TBT 257,5 → 190 ms. Los rangos se solapan; no declarar mejora CWV estable.
+- **Siguiente**: perfilar CPU de producción para ubicar el trabajo de `react-core` restante antes de otro cambio.
+- **Evidencia**: [resultado Spec 056](../specs/056-time-control-early-content/resultado.md), [prueba retenida](../specs/056-time-control-early-content/evidencia/time-control-shell-before-records.json) y [ledger](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T08-58-04-237Z-faa79842.json). Imagen staging `sha256:88fa33758435e8e667fcaea1bd6659e8b2ff161da4fb01a3f8bcc60d8fdddc4d`.

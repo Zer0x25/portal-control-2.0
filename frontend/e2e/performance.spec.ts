@@ -610,6 +610,53 @@ test.describe.serial("Render Performance", () => {
     });
   });
 
+  test("Time Control shows its page shell while attendance records are pending", async ({
+    page,
+  }, testInfo) => {
+    const mobileViewport = { width: 412, height: 823 };
+    await page.setViewportSize(mobileViewport);
+    const recordsPattern = "**/api/records**";
+    let recordsRequestPending = false;
+    let releaseRecords: (() => void) | undefined;
+    const recordsGate = new Promise<void>((resolve) => {
+      releaseRecords = resolve;
+    });
+    await page.route(recordsPattern, async (route) => {
+      recordsRequestPending = true;
+      await recordsGate;
+      await route.continue();
+    });
+
+    const navigationStartedAt = performance.now();
+    try {
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+      await expect.poll(() => recordsRequestPending, { timeout: 15_000 }).toBe(true);
+
+      const recordsPendingAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+      await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+        timeout: 10_000,
+      });
+      const headingVisibleAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+
+      expect(recordsRequestPending).toBe(true);
+      expect(await page.getByText("Optimizando registros de asistencia...").count()).toBe(0);
+      await attachPerformanceReport(testInfo, "time-control-shell-before-records.json", {
+        capturedAt: new Date().toISOString(),
+        baseUrl,
+        route: "/#/time-control",
+        viewport: mobileViewport,
+        recordsPendingAtMs,
+        headingVisibleAtMs,
+        recordsWereStillPendingAtHeading: recordsRequestPending,
+      });
+    } finally {
+      releaseRecords?.();
+    }
+
+    await page.waitForLoadState("networkidle");
+    await page.unroute(recordsPattern);
+  });
+
   test("Time Control defers the virtualized table until it enters the mobile viewport", async ({
     page,
   }, testInfo) => {

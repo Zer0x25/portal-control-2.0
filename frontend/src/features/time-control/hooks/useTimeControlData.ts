@@ -84,7 +84,8 @@ export const useTimeControlData = () => {
     return accountingLockDate > autoLockDate ? accountingLockDate : autoLockDate;
   })();
 
-  const isPageLoading = (isLoading && !filteredRecords.length) || isLoadingConfig;
+  // Keep the route shell visible while record data loads; the table receives isLoading itself.
+  const isPageLoading = isLoadingConfig;
 
   return {
     isActionDisabledForRole,
