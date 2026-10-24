@@ -14,8 +14,16 @@ const outputArg = process.argv
 const baselineArg = process.argv
   .find((arg) => arg.startsWith("--baseline="))
   ?.slice("--baseline=".length);
+const samplesArg = process.argv
+  .find((arg) => arg.startsWith("--samples="))
+  ?.slice("--samples=".length);
 const outputPath = outputArg ? resolve(frontendRoot, outputArg) : undefined;
 const baselinePath = baselineArg ? resolve(frontendRoot, baselineArg) : undefined;
+const sampleCount = samplesArg === undefined ? 3 : Number(samplesArg);
+
+if (!Number.isInteger(sampleCount) || sampleCount < 1 || sampleCount > 10) {
+  throw new Error("--samples must be an integer between 1 and 10");
+}
 
 const routes = [
   { id: "dashboard", path: "/#/dashboard", role: "admin" },
@@ -24,6 +32,8 @@ const routes = [
   { id: "logbook", path: "/#/logbook", role: "admin" },
   { id: "kiosk", path: "/#/kiosk", role: null },
 ];
+
+const viewport = { width: 1440, height: 900 };
 
 const credentials = {
   admin: {
@@ -92,18 +102,20 @@ const login = async (role) => {
   };
 };
 
-const measureRoute = async (route, sessions) => {
-  const context = await browser.newContext();
+const measureRouteSample = async (route, sessions) => {
+  const context = await browser.newContext({ viewport });
   if (route.role) {
     const session = sessions[route.role] ?? (sessions[route.role] = await login(route.role));
     await context.addInitScript(({ token, user }) => {
       sessionStorage.setItem("authToken", token);
       sessionStorage.setItem("currentUser", JSON.stringify(user));
       window.__portalRenderCounts = {};
+      window.__portalRenderMetrics = {};
     }, session);
   } else {
     await context.addInitScript(() => {
       window.__portalRenderCounts = {};
+      window.__portalRenderMetrics = {};
     });
   }
 
@@ -116,10 +128,75 @@ const measureRoute = async (route, sessions) => {
     await page.waitForTimeout(1_000);
 
     const commits = await page.evaluate((id) => window.__portalRenderCounts?.[id] ?? 0, route.id);
-    return { id: route.id, path: route.path, role: route.role, navigationCommits: commits };
+    const renderProfile = await page.evaluate((id) => {
+      const metrics = window.__portalRenderMetrics ?? {};
+      return {
+        route: metrics[id] ?? null,
+        widgets: Object.fromEntries(
+          Object.entries(metrics).filter(([metricId]) => metricId.startsWith("widget:")),
+        ),
+      };
+    }, route.id);
+
+    return { navigationCommits: commits, renderProfile };
   } finally {
     await context.close();
   }
+};
+
+const median = (values) => {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  const value =
+    sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+  return Number(value.toFixed(2));
+};
+
+const aggregateMetrics = (metrics) => {
+  const present = metrics.filter(Boolean);
+  return {
+    samplesPresent: present.length,
+    commitsMedian: median(present.map((metric) => metric.commits)),
+    actualDurationMsMedian: median(present.map((metric) => metric.actualDurationMs)),
+    baseDurationMsMedian: median(present.map((metric) => metric.baseDurationMs)),
+    maxActualDurationMsMedian: median(present.map((metric) => metric.maxActualDurationMs)),
+    phasesMedian: {
+      mount: median(present.map((metric) => metric.phases.mount)),
+      update: median(present.map((metric) => metric.phases.update)),
+      nestedUpdate: median(present.map((metric) => metric.phases["nested-update"])),
+    },
+  };
+};
+
+const measureRoute = async (route, sessions) => {
+  const samples = [];
+  for (let index = 0; index < sampleCount; index += 1) {
+    samples.push(await measureRouteSample(route, sessions));
+  }
+
+  const widgetIds = [
+    ...new Set(samples.flatMap((sample) => Object.keys(sample.renderProfile.widgets))),
+  ].sort();
+
+  return {
+    id: route.id,
+    path: route.path,
+    role: route.role,
+    navigationCommits: median(samples.map((sample) => sample.navigationCommits)),
+    sampleCount: samples.length,
+    samples,
+    renderProfile: {
+      source: "React Profiler in Vite development mode; accumulated during the first second",
+      route: aggregateMetrics(samples.map((sample) => sample.renderProfile.route)),
+      widgets: Object.fromEntries(
+        widgetIds.map((id) => [
+          id,
+          aggregateMetrics(samples.map((sample) => sample.renderProfile.widgets[id] ?? null)),
+        ]),
+      ),
+    },
+  };
 };
 
 const compareBaseline = (measurements, baseline) => {
@@ -156,11 +233,17 @@ try {
 
   const sessions = {};
   const measurements = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     measuredAt: new Date().toISOString(),
     baseUrl,
-    interaction:
-      "direct route navigation; committed React Profiler updates during the first second",
+    apiBase,
+    nodeVersion: process.version,
+    browser: { name: "Chromium", version: browser.version() },
+    viewport,
+    sampleCountPerRoute: sampleCount,
+    interaction: "direct route navigation in a fresh browser context per sample",
+    timingLimit:
+      "React Profiler timings come from Vite development mode; do not compare them to production Lighthouse or CPU profiles",
     routes: [],
   };
 

@@ -1,0 +1,674 @@
+{
+  "schemaVersion": 2,
+  "measuredAt": "2026-10-24T05:33:03.161Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "apiBase": "http://127.0.0.1:8080/api",
+  "nodeVersion": "v26.10.0",
+  "browser": {
+    "name": "Chromium",
+    "version": "153.0.8010.12"
+  },
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "sampleCountPerRoute": 3,
+  "interaction": "direct route navigation in a fresh browser context per sample",
+  "timingLimit": "React Profiler timings come from Vite development mode; do not compare them to production Lighthouse or CPU profiles",
+  "routes": [
+    {
+      "id": "dashboard",
+      "path": "/#/dashboard",
+      "role": "admin",
+      "navigationCommits": 8,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 5,
+          "renderProfile": {
+            "route": {
+              "commits": 5,
+              "phases": {
+                "mount": 1,
+                "update": 4,
+                "nested-update": 0
+              },
+              "actualDurationMs": 23.899999994784594,
+              "baseDurationMs": 60.30000001192093,
+              "maxActualDurationMs": 18.799999997019768
+            },
+            "widgets": {
+              "widget:myStatus": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3.600000001490116,
+                "baseDurationMs": 3.400000002235174,
+                "maxActualDurationMs": 3.600000001490116
+              },
+              "widget:quickActions": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.800000000745058,
+                "baseDurationMs": 2.2000000029802322,
+                "maxActualDurationMs": 2.800000000745058
+              },
+              "widget:tools": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.699999999254942,
+                "baseDurationMs": 2.099999997764826,
+                "maxActualDurationMs": 2.699999999254942
+              },
+              "widget:alerts": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1.1000000014901161,
+                "baseDurationMs": 0.9000000022351742,
+                "maxActualDurationMs": 1.1000000014901161
+              },
+              "widget:teamStatus": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.7999999970197678,
+                "baseDurationMs": 2.599999997764826,
+                "maxActualDurationMs": 2.7999999970197678
+              },
+              "widget:latestReports": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1.300000000745058,
+                "baseDurationMs": 1.199999999254942,
+                "maxActualDurationMs": 1.300000000745058
+              }
+            }
+          }
+        },
+        {
+          "navigationCommits": 9,
+          "renderProfile": {
+            "route": {
+              "commits": 9,
+              "phases": {
+                "mount": 1,
+                "update": 8,
+                "nested-update": 0
+              },
+              "actualDurationMs": 37.80000000819564,
+              "baseDurationMs": 96.09999998658895,
+              "maxActualDurationMs": 24.100000001490116
+            },
+            "widgets": {
+              "widget:myStatus": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 4,
+                "baseDurationMs": 3.7000000029802322,
+                "maxActualDurationMs": 4
+              },
+              "widget:quickActions": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3.699999999254942,
+                "baseDurationMs": 3.1999999955296516,
+                "maxActualDurationMs": 3.699999999254942
+              },
+              "widget:tools": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3,
+                "baseDurationMs": 2.099999997764826,
+                "maxActualDurationMs": 3
+              },
+              "widget:alerts": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1.199999999254942,
+                "baseDurationMs": 1.0999999977648258,
+                "maxActualDurationMs": 1.199999999254942
+              },
+              "widget:teamStatus": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3.599999997764826,
+                "baseDurationMs": 3.2999999970197678,
+                "maxActualDurationMs": 3.599999997764826
+              },
+              "widget:latestReports": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3.099999997764826,
+                "baseDurationMs": 2.800000000745058,
+                "maxActualDurationMs": 3.099999997764826
+              }
+            }
+          }
+        },
+        {
+          "navigationCommits": 8,
+          "renderProfile": {
+            "route": {
+              "commits": 8,
+              "phases": {
+                "mount": 1,
+                "update": 7,
+                "nested-update": 0
+              },
+              "actualDurationMs": 32.79999999701977,
+              "baseDurationMs": 86.00000002607703,
+              "maxActualDurationMs": 20.300000000745058
+            },
+            "widgets": {
+              "widget:myStatus": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 4.299999997019768,
+                "baseDurationMs": 3.599999997764826,
+                "maxActualDurationMs": 4.299999997019768
+              },
+              "widget:quickActions": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3.099999997764826,
+                "baseDurationMs": 2.699999999254942,
+                "maxActualDurationMs": 3.099999997764826
+              },
+              "widget:tools": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.7000000029802322,
+                "baseDurationMs": 2.2000000029802322,
+                "maxActualDurationMs": 2.7000000029802322
+              },
+              "widget:alerts": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1,
+                "baseDurationMs": 0.8000000007450581,
+                "maxActualDurationMs": 1
+              },
+              "widget:teamStatus": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.699999999254942,
+                "baseDurationMs": 2.5,
+                "maxActualDurationMs": 2.699999999254942
+              },
+              "widget:latestReports": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1.199999999254942,
+                "baseDurationMs": 0.8999999985098839,
+                "maxActualDurationMs": 1.199999999254942
+              }
+            }
+          }
+        }
+      ],
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 8,
+          "actualDurationMsMedian": 32.8,
+          "baseDurationMsMedian": 86,
+          "maxActualDurationMsMedian": 20.3,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 7,
+            "nestedUpdate": 0
+          }
+        },
+        "widgets": {
+          "widget:alerts": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 1.1,
+            "baseDurationMsMedian": 0.9,
+            "maxActualDurationMsMedian": 1.1,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          },
+          "widget:latestReports": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 1.3,
+            "baseDurationMsMedian": 1.2,
+            "maxActualDurationMsMedian": 1.3,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          },
+          "widget:myStatus": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 4,
+            "baseDurationMsMedian": 3.6,
+            "maxActualDurationMsMedian": 4,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          },
+          "widget:quickActions": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 3.1,
+            "baseDurationMsMedian": 2.7,
+            "maxActualDurationMsMedian": 3.1,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          },
+          "widget:teamStatus": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 2.8,
+            "baseDurationMsMedian": 2.6,
+            "maxActualDurationMsMedian": 2.8,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          },
+          "widget:tools": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 2.7,
+            "baseDurationMsMedian": 2.1,
+            "maxActualDurationMsMedian": 2.7,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "planner",
+      "path": "/#/planning/monthly",
+      "role": "admin",
+      "navigationCommits": 1,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 1,
+          "renderProfile": {
+            "route": {
+              "commits": 1,
+              "phases": {
+                "mount": 1,
+                "update": 0,
+                "nested-update": 0
+              },
+              "actualDurationMs": 4.100000001490116,
+              "baseDurationMs": 3.600000001490116,
+              "maxActualDurationMs": 4.100000001490116
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 1,
+          "renderProfile": {
+            "route": {
+              "commits": 1,
+              "phases": {
+                "mount": 1,
+                "update": 0,
+                "nested-update": 0
+              },
+              "actualDurationMs": 3.600000001490116,
+              "baseDurationMs": 3.2000000029802322,
+              "maxActualDurationMs": 3.600000001490116
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 1,
+          "renderProfile": {
+            "route": {
+              "commits": 1,
+              "phases": {
+                "mount": 1,
+                "update": 0,
+                "nested-update": 0
+              },
+              "actualDurationMs": 4.199999995529652,
+              "baseDurationMs": 3.7999999932944775,
+              "maxActualDurationMs": 4.199999995529652
+            },
+            "widgets": {}
+          }
+        }
+      ],
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 1,
+          "actualDurationMsMedian": 4.1,
+          "baseDurationMsMedian": 3.6,
+          "maxActualDurationMsMedian": 4.1,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 0,
+            "nestedUpdate": 0
+          }
+        },
+        "widgets": {}
+      }
+    },
+    {
+      "id": "worker-portal",
+      "path": "/#/worker-portal",
+      "role": "worker",
+      "navigationCommits": 6,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 6,
+          "renderProfile": {
+            "route": {
+              "commits": 6,
+              "phases": {
+                "mount": 1,
+                "update": 5,
+                "nested-update": 0
+              },
+              "actualDurationMs": 52.599999997764826,
+              "baseDurationMs": 66.60000000149012,
+              "maxActualDurationMs": 22.5
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 7,
+          "renderProfile": {
+            "route": {
+              "commits": 7,
+              "phases": {
+                "mount": 1,
+                "update": 6,
+                "nested-update": 0
+              },
+              "actualDurationMs": 57.29999999701977,
+              "baseDurationMs": 70.20000001043081,
+              "maxActualDurationMs": 16.199999999254942
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 5,
+          "renderProfile": {
+            "route": {
+              "commits": 5,
+              "phases": {
+                "mount": 1,
+                "update": 4,
+                "nested-update": 0
+              },
+              "actualDurationMs": 47.600000005215406,
+              "baseDurationMs": 70.80000000447035,
+              "maxActualDurationMs": 17.50000000372529
+            },
+            "widgets": {}
+          }
+        }
+      ],
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 6,
+          "actualDurationMsMedian": 52.6,
+          "baseDurationMsMedian": 70.2,
+          "maxActualDurationMsMedian": 17.5,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 5,
+            "nestedUpdate": 0
+          }
+        },
+        "widgets": {}
+      }
+    },
+    {
+      "id": "logbook",
+      "path": "/#/logbook",
+      "role": "admin",
+      "navigationCommits": 6,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 6,
+          "renderProfile": {
+            "route": {
+              "commits": 6,
+              "phases": {
+                "mount": 1,
+                "update": 3,
+                "nested-update": 2
+              },
+              "actualDurationMs": 44.099999997764826,
+              "baseDurationMs": 66.8999999947846,
+              "maxActualDurationMs": 23.599999997764826
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 6,
+          "renderProfile": {
+            "route": {
+              "commits": 6,
+              "phases": {
+                "mount": 1,
+                "update": 3,
+                "nested-update": 2
+              },
+              "actualDurationMs": 39.99999999627471,
+              "baseDurationMs": 62.50000002235174,
+              "maxActualDurationMs": 20.099999997764826
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 6,
+          "renderProfile": {
+            "route": {
+              "commits": 6,
+              "phases": {
+                "mount": 1,
+                "update": 3,
+                "nested-update": 2
+              },
+              "actualDurationMs": 41.600000001490116,
+              "baseDurationMs": 65.00000001490116,
+              "maxActualDurationMs": 21
+            },
+            "widgets": {}
+          }
+        }
+      ],
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 6,
+          "actualDurationMsMedian": 41.6,
+          "baseDurationMsMedian": 65,
+          "maxActualDurationMsMedian": 21,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 3,
+            "nestedUpdate": 2
+          }
+        },
+        "widgets": {}
+      }
+    },
+    {
+      "id": "kiosk",
+      "path": "/#/kiosk",
+      "role": null,
+      "navigationCommits": 3,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 3,
+          "renderProfile": {
+            "route": {
+              "commits": 3,
+              "phases": {
+                "mount": 1,
+                "update": 2,
+                "nested-update": 0
+              },
+              "actualDurationMs": 23.600000001490116,
+              "baseDurationMs": 35.400000013411045,
+              "maxActualDurationMs": 18.099999997764826
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 3,
+          "renderProfile": {
+            "route": {
+              "commits": 3,
+              "phases": {
+                "mount": 1,
+                "update": 2,
+                "nested-update": 0
+              },
+              "actualDurationMs": 26.899999998509884,
+              "baseDurationMs": 41.400000005960464,
+              "maxActualDurationMs": 21.5
+            },
+            "widgets": {}
+          }
+        },
+        {
+          "navigationCommits": 3,
+          "renderProfile": {
+            "route": {
+              "commits": 3,
+              "phases": {
+                "mount": 1,
+                "update": 2,
+                "nested-update": 0
+              },
+              "actualDurationMs": 23.30000000447035,
+              "baseDurationMs": 35.80000002682209,
+              "maxActualDurationMs": 17.699999999254942
+            },
+            "widgets": {}
+          }
+        }
+      ],
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 3,
+          "actualDurationMsMedian": 23.6,
+          "baseDurationMsMedian": 35.8,
+          "maxActualDurationMsMedian": 18.1,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 2,
+            "nestedUpdate": 0
+          }
+        },
+        "widgets": {}
+      }
+    }
+  ]
+}
