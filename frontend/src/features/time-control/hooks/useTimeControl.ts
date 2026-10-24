@@ -24,7 +24,9 @@ const extractKPIs = (record: AttendanceRecord) => {
 
 export const useTimeControl = () => {
   const { currentUser } = useAuth();
-  const { getEmployeeDailyScheduleInfo } = useScheduling();
+  const { getEmployeeDailyScheduleInfo } = useScheduling(undefined, undefined, {
+    useClockingOptions: true,
+  });
   useAccountingLockDateQuery();
 
   // Decomposed hooks

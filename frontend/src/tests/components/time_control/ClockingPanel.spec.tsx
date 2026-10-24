@@ -1,14 +1,16 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import ClockingPanel from "../../../features/time-control/components/ClockingPanel";
-import { useEmployees } from "../../../hooks/useEmployees";
+import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 
 // Mock de los hooks
-vi.mock("../../../hooks/useEmployees");
+vi.mock("../../../hooks/queries/useEmployeesQuery", () => ({
+  useClockingEmployeeOptionsQuery: vi.fn(),
+}));
 vi.mock("../../../hooks/useTimeRecords");
 vi.mock("../../../hooks/queries/useTimeRecordsQuery");
 vi.mock("../../../hooks/useAuth");
@@ -31,9 +33,9 @@ describe("ClockingPanel Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (useEmployees as any).mockReturnValue({
-      activeEmployees: mockActiveEmployees,
-    });
+    vi.mocked(useClockingEmployeeOptionsQuery).mockReturnValue({
+      data: mockActiveEmployees,
+    } as ReturnType<typeof useClockingEmployeeOptionsQuery>);
 
     (useTimeRecords as any).mockReturnValue({
       timeRecordsPage: [],

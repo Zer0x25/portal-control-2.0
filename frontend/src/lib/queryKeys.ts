@@ -40,6 +40,8 @@ export const queryKeys = {
   users: resource("users", () => ["users"] as const),
   /** Listado de empleados. */
   employees: resource("employees", () => ["employees"] as const),
+  /** Proyección mínima para las pantallas de Control de Horario. */
+  employeeClockingOptions: resource("employees", () => ["employees", "clockingOptions"] as const),
   /** Listado de empleados para el kiosk (unico worker). */
   employeesKiosk: resource("employees", () => ["employees", "kiosk"] as const),
 

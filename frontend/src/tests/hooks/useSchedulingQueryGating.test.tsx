@@ -2,7 +2,12 @@ import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
-  const state = { enabled: [] as boolean[], shiftPatternsLoading: false };
+  const state = {
+    enabled: [] as boolean[],
+    clockingEmployeeOptionsEnabled: [] as boolean[],
+    fullEmployeeListEnabled: [] as boolean[],
+    shiftPatternsLoading: false,
+  };
   const recordEnabled = (enabled = true) => {
     state.enabled.push(enabled);
     return { data: undefined, isLoading: enabled && state.shiftPatternsLoading };
@@ -42,7 +47,16 @@ vi.mock("../../hooks/queries/useCorrectionRequestsQuery", () => ({
   },
 }));
 vi.mock("../../hooks/useEmployees", () => ({
-  useEmployees: () => ({ allEmployees: [], isLoadingEmployees: false }),
+  useEmployees: (_isKiosk?: boolean, options?: { enabled?: boolean }) => {
+    mocks.state.fullEmployeeListEnabled.push(options?.enabled ?? true);
+    return { allEmployees: [], isLoadingEmployees: false };
+  },
+}));
+vi.mock("../../hooks/queries/useEmployeesQuery", () => ({
+  useClockingEmployeeOptionsQuery: (enabled = true) => {
+    mocks.state.clockingEmployeeOptionsEnabled.push(enabled);
+    return { data: [], isLoading: false };
+  },
 }));
 vi.mock("../../hooks/useConfigMutations", () => ({
   useConfigMutations: () => ({ updateConfig: vi.fn() }),
@@ -62,21 +76,40 @@ describe("useScheduling query options", () => {
 
   it("keeps every query enabled by default for existing consumers", () => {
     mocks.state.enabled.length = 0;
+    mocks.state.clockingEmployeeOptionsEnabled.length = 0;
+    mocks.state.fullEmployeeListEnabled.length = 0;
 
     renderHook(() => useScheduling());
 
     expect(mocks.state.enabled).toHaveLength(10);
     expect(mocks.state.enabled.every(Boolean)).toBe(true);
+    expect(mocks.state.fullEmployeeListEnabled).toEqual([true]);
+    expect(mocks.state.clockingEmployeeOptionsEnabled).toEqual([false]);
   });
 
   it("disables its queries for the shell when auto-start is ineligible", () => {
     mocks.state.enabled.length = 0;
+    mocks.state.clockingEmployeeOptionsEnabled.length = 0;
+    mocks.state.fullEmployeeListEnabled.length = 0;
 
     const { result } = renderHook(() => useScheduling(undefined, undefined, { enabled: false }));
 
     expect(mocks.state.enabled).toHaveLength(10);
     expect(mocks.state.enabled.every(Boolean)).toBe(false);
     expect(result.current.isLoadingSchedulingData).toBe(false);
+    expect(mocks.state.fullEmployeeListEnabled).toEqual([false]);
+    expect(mocks.state.clockingEmployeeOptionsEnabled).toEqual([false]);
+  });
+
+  it("uses only the clocking projection when Time Control needs scheduling data", () => {
+    mocks.state.enabled.length = 0;
+    mocks.state.clockingEmployeeOptionsEnabled.length = 0;
+    mocks.state.fullEmployeeListEnabled.length = 0;
+
+    renderHook(() => useScheduling(undefined, undefined, { useClockingOptions: true }));
+
+    expect(mocks.state.fullEmployeeListEnabled).toEqual([false]);
+    expect(mocks.state.clockingEmployeeOptionsEnabled).toEqual([true]);
   });
 
   it("reports the schedule datasets as loading while an enabled query is pending", () => {

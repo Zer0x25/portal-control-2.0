@@ -5,6 +5,7 @@ import { useLoginAutomations } from "../useLoginAutomations";
 import { STORAGE_KEYS } from "../../constants";
 import { getDefaultRouteForRole } from "../../utils/routeUtils";
 import { useStore } from "../../store/useStore";
+import { ROUTES } from "../../constants";
 
 export const usePersistentLayoutController = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -18,7 +19,7 @@ export const usePersistentLayoutController = () => {
   const isInitialSync = useStore((state) => state.isInitialSync);
 
   const { handoverData, isAutoStartEligible, isHandoverModalOpen, closeHandoverModal } =
-    useLoginAutomations();
+    useLoginAutomations({ useClockingOptions: location.pathname === ROUTES.TIME_CONTROL });
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {

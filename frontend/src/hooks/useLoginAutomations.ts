@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { useEmployees } from "./useEmployees";
+import { useClockingEmployeeOptionsQuery } from "./queries/useEmployeesQuery";
 import { useUsers } from "./useUsers";
 import { STORAGE_KEYS } from "../constants";
 import { useReportsQuery } from "./queries/useReportsQuery";
@@ -8,9 +9,12 @@ import type { ShiftHandoverData } from "../types/index";
 import { logger } from "../utils/logger";
 import { shouldLoadAutoStartSchedule } from "../utils/autoStartEligibility";
 
-export const useLoginAutomations = () => {
+export const useLoginAutomations = (options: { useClockingOptions?: boolean } = {}) => {
+  const useClockingOptions = options.useClockingOptions ?? false;
   const { currentUser } = useAuth();
-  const { getEmployeeById } = useEmployees();
+  const { getEmployeeById } = useEmployees(false, { enabled: !useClockingOptions });
+  const { data: clockingEmployeeOptions = [] } =
+    useClockingEmployeeOptionsQuery(useClockingOptions);
   const [hasViewedHandover, setHasViewedHandover] = useState(() =>
     Boolean(sessionStorage.getItem(STORAGE_KEYS.SHIFT_HANDOVER_VIEWED)),
   );
@@ -32,8 +36,15 @@ export const useLoginAutomations = () => {
   const shouldLoadUsers =
     canCheckHandover && !isLoadingReports && !!lastClosedReport && canReadUserDirectory;
   const { users, isLoadingUsers } = useUsers({ enabled: shouldLoadUsers });
+  const findEmployeeById = useCallback(
+    (id: string) =>
+      useClockingOptions
+        ? clockingEmployeeOptions.find((employee) => employee.id === id)
+        : getEmployeeById(id),
+    [clockingEmployeeOptions, getEmployeeById, useClockingOptions],
+  );
   const automationEmployee = currentUser?.employeeId
-    ? getEmployeeById(currentUser.employeeId)
+    ? findEmployeeById(currentUser.employeeId)
     : undefined;
   const isAutoStartEligible = shouldLoadAutoStartSchedule(
     currentUser?.role,
@@ -62,7 +73,7 @@ export const useLoginAutomations = () => {
     const getResponsibleDisplayName = (username: string): string => {
       const user = users.find((candidate) => candidate.username === username);
       if (user?.employeeId) {
-        const employee = getEmployeeById(user.employeeId);
+        const employee = findEmployeeById(user.employeeId);
         return employee?.name || username;
       }
       return username;
@@ -95,7 +106,7 @@ export const useLoginAutomations = () => {
     }
   }, [
     canCheckHandover,
-    getEmployeeById,
+    findEmployeeById,
     isLoadingReports,
     isLoadingUsers,
     lastClosedReport,

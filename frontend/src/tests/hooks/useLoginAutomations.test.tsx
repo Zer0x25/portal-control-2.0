@@ -13,6 +13,8 @@ const mocks = vi.hoisted(() => ({
   reportsLoading: false,
   reportsQueryEnabled: null as boolean | null,
   reportsQueryEnablement: [] as boolean[],
+  clockingEmployeeOptions: [] as unknown[],
+  clockingQueryEnablement: [] as boolean[],
   useScheduling: vi.fn(),
   getEmployeeDailyScheduleInfo: vi.fn(),
   startNewShift: vi.fn(async () => ({ success: true })),
@@ -24,6 +26,13 @@ vi.mock("../../hooks/useAuth", () => ({
 
 vi.mock("../../hooks/useEmployees", () => ({
   useEmployees: () => ({ getEmployeeById: mocks.getEmployeeById }),
+}));
+
+vi.mock("../../hooks/queries/useEmployeesQuery", () => ({
+  useClockingEmployeeOptionsQuery: (enabled = true) => {
+    mocks.clockingQueryEnablement.push(enabled);
+    return { data: mocks.clockingEmployeeOptions };
+  },
 }));
 
 vi.mock("../../hooks/useUsers", () => ({
@@ -66,6 +75,8 @@ describe("useLoginAutomations deferred scheduling gate", () => {
     mocks.reportsLoading = false;
     mocks.reportsQueryEnabled = null;
     mocks.reportsQueryEnablement = [];
+    mocks.clockingEmployeeOptions = [];
+    mocks.clockingQueryEnablement = [];
     mocks.useScheduling.mockReset();
     mocks.getEmployeeDailyScheduleInfo.mockReturnValue({ isWorkDay: true, startTime: "00:00" });
     mocks.startNewShift.mockReset();
@@ -95,6 +106,22 @@ describe("useLoginAutomations deferred scheduling gate", () => {
     const { result } = renderHook(() => useLoginAutomations());
 
     expect(result.current.isAutoStartEligible).toBe(true);
+    expect(mocks.useScheduling).not.toHaveBeenCalled();
+  });
+
+  it("uses the clocking projection for auto-start on the Time Control route", () => {
+    mocks.currentUser = {
+      username: "ana",
+      role: "Administrador",
+      employeeId: "EMP-1",
+    };
+    mocks.clockingEmployeeOptions = [{ id: "EMP-1", name: "Ana", position: "Reloj_Control" }];
+
+    const { result } = renderHook(() => useLoginAutomations({ useClockingOptions: true }));
+
+    expect(result.current.isAutoStartEligible).toBe(true);
+    expect(mocks.clockingQueryEnablement.length).toBeGreaterThan(0);
+    expect(mocks.clockingQueryEnablement.every(Boolean)).toBe(true);
     expect(mocks.useScheduling).not.toHaveBeenCalled();
   });
 

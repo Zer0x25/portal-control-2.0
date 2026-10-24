@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useEmployees } from "../../../hooks/useEmployees";
+import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
@@ -50,7 +50,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
   const businessNow = useBusinessNow({ tickMs: null });
   const maxBusinessDate = toBusinessDateChile(businessNow);
 
-  const { activeEmployees } = useEmployees();
+  const { data: activeEmployees = [] } = useClockingEmployeeOptionsQuery();
   const { allRecordsInDateRange, isLoadingRecords } = useTimeRecords();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isExpanded, setIsExpanded] = useState(!isMobile);

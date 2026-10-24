@@ -8,6 +8,7 @@ export type {
   EmployeeBulkInput,
   EmployeeQuery,
   EmployeePrincipal,
+  EmployeeClockingOption,
 } from "./application/contracts";
 export { employeesPlugin } from "./http/routes";
 export type { EmployeesHttpService } from "./http/routes";

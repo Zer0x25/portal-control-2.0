@@ -313,3 +313,12 @@
 - **Decisión**: descartar la query activa; conservar solo el probe de payload bajo una variable opt-in, sin añadir requests sintéticos a la batería normal.
 - **Siguiente**: proyectar `id`, `name`, `area` y `workdayType`, los campos usados por Time Control, y comparar el tamaño antes de definir una nueva ruta.
 - **Evidencia**: [resultado Spec 065](../specs/065-time-control-active-employee-query/evidencia/resultado-2026-10-24.md) y [tres muestras](../specs/065-time-control-active-employee-query/evidencia/baseline/time-control-sync-phase-diagnostics.json).
+
+## 2026-10-24 - perf(time-control): Usar opciones mínimas de empleados
+
+- **Cambio**: agregar `GET /api/employees/clocking-options`, autenticado y limitado por empleado para `Usuario` y por área para `Supervisor`. Control de Horario y su automatización consultan la proyección de seis campos; otras rutas mantienen la lista completa.
+- **Medido**: tres contextos fríos de staging. El payload pasó de 75.926 a 29.764 B por respuesta (−60,8%); bytes acumulados de empleados, 151.852 a 29.764 (−80,4%); requests API, 20 a 19 por contexto. La lista completa dejó de solicitarse y la proyección devolvió 207 filas en 3/3 muestras.
+- **Límite**: FCP 712→708 ms, fase Empleados 195,4→182,1 ms y retiro del overlay 1.297,1→1.249,7 ms; los rangos se solapan con `n=3`. No declarar mejora estable de latencia o Core Web Vitals.
+- **Siguiente**: estudiar `validateInstanceId`, mediana instrumentada de 358,6 ms al final, separando latencia de red, handler y recepción del navegador antes de cambiar la validación.
+- **Validación**: probe Playwright 3/3 contextos, integración Fastify 14/14, frontend dirigido 28/28, preflight 6/6 y staging healthy. No se guardan cuerpos ni identidades.
+- **Evidencia**: [resultado Spec 066](../specs/066-time-control-employee-clock-options/evidencia/resultado-2026-10-24.md), [baseline](../specs/066-time-control-employee-clock-options/evidencia/baseline/time-control-sync-phase-diagnostics.json) y [final](../specs/066-time-control-employee-clock-options/evidencia/final/time-control-sync-phase-diagnostics.json).

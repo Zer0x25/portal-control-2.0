@@ -4,12 +4,14 @@ import { useAuth } from "../../hooks/useAuth";
 import { useScheduling } from "../../hooks/useScheduling";
 import { useShiftManager } from "../../hooks/useShiftManager";
 
-const AutoStartShiftAutomation: React.FC = () => {
+const AutoStartShiftAutomation: React.FC<{ useClockingOptions?: boolean }> = ({
+  useClockingOptions = false,
+}) => {
   const { currentUser } = useAuth();
   const { getEmployeeDailyScheduleInfo, isLoadingSchedulingData } = useScheduling(
     undefined,
     undefined,
-    { enabled: true },
+    { enabled: true, useClockingOptions },
   );
   const { startNewShift } = useShiftManager();
 

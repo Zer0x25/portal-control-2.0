@@ -4,6 +4,7 @@ import { useAssignedShiftsQuery } from "./queries/useAssignedShiftsQuery";
 import { useHolidaysQuery } from "./queries/useHolidaysQuery";
 import { useLeavesQuery } from "./queries/useLeavesQuery";
 import { useEmployees } from "./useEmployees";
+import { useClockingEmployeeOptionsQuery } from "./queries/useEmployeesQuery";
 import { useCorrectionRequestsQuery } from "./queries/useCorrectionRequestsQuery";
 import {
   useGlobalMaxWeeklyHoursQuery,
@@ -21,6 +22,7 @@ import {
   MonthlyDayScheduleView,
   PlanningStatus,
   LeaveRecord,
+  Employee,
 } from "../types/index";
 import { calculateHoursBetween } from "../utils/calculations";
 import { parseISODateAtUTC } from "../utils/dateOnly";
@@ -35,9 +37,10 @@ const formatUTCDateOnly = (date: Date): string => {
 export const useScheduling = (
   requestsStatus?: string,
   sinceRequests?: number,
-  options: { enabled?: boolean } = {},
+  options: { enabled?: boolean; useClockingOptions?: boolean } = {},
 ) => {
   const schedulingQueriesEnabled = options.enabled ?? true;
+  const useClockingOptions = options.useClockingOptions ?? false;
   const extractLeaves = (value: unknown): LeaveRecord[] => {
     if (Array.isArray(value)) return value as LeaveRecord[];
     if (
@@ -80,7 +83,19 @@ export const useScheduling = (
   const { data: leavesResponse, isLoading: isLoadingLeaves } =
     useLeavesQuery(schedulingQueriesEnabled);
   const leaves = extractLeaves(leavesResponse);
-  const { allEmployees: employees, isLoadingEmployees } = useEmployees();
+  const { allEmployees: fullEmployees, isLoadingEmployees: isLoadingFullEmployeeList } =
+    useEmployees(false, {
+      enabled: schedulingQueriesEnabled && !useClockingOptions,
+    });
+  const { data: clockingEmployees = [], isLoading: isLoadingClockingEmployees } =
+    useClockingEmployeeOptionsQuery(schedulingQueriesEnabled && useClockingOptions);
+  const employees: Pick<
+    Employee,
+    "id" | "name" | "position" | "area" | "workdayType" | "status"
+  >[] = useClockingOptions ? clockingEmployees : fullEmployees;
+  const isLoadingEmployees = useClockingOptions
+    ? isLoadingClockingEmployees
+    : isLoadingFullEmployeeList;
   const {
     data: infiniteRequests,
     fetchNextPage,
@@ -139,7 +154,7 @@ export const useScheduling = (
     targetDate: Date,
   ): EmployeeDailyScheduleInfo | null => {
     const employee = employeesMap.get(employeeId);
-    if (!employee) return null;
+    if (!employee && !useClockingOptions) return null;
 
     const targetDateString = formatUTCDateOnly(targetDate);
     const holidayOnDate = holidaysMap.get(targetDateString);
@@ -283,8 +298,8 @@ export const useScheduling = (
   };
 
   const getEmployeesWithAssignedShifts = () => {
-    if (!employees || employees.length === 0) return [];
-    return employees
+    if (useClockingOptions || !fullEmployees || fullEmployees.length === 0) return [];
+    return fullEmployees
       .map((employee) => {
         const assignments = assignedShifts.filter(
           (a) => a.employeeId === employee.id && !a.isDeleted,

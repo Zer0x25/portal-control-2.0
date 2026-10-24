@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authTokenStore } from "../../../services/authToken";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
 
-const { queryArgsMock, filtersMock } = vi.hoisted(() => ({
+const { queryArgsMock, filtersMock, schedulingMock } = vi.hoisted(() => ({
   queryArgsMock: vi.fn(),
+  schedulingMock: vi.fn(),
   filtersMock: {
     name: "Ana",
     area: "Ops",
@@ -28,9 +29,10 @@ vi.mock("../../../hooks/useAuth", () => ({
 }));
 
 vi.mock("../../../hooks/useScheduling", () => ({
-  useScheduling: () => ({
-    getEmployeeDailyScheduleInfo: vi.fn(() => null),
-  }),
+  useScheduling: (...args: unknown[]) => {
+    schedulingMock(...args);
+    return { getEmployeeDailyScheduleInfo: vi.fn(() => null) };
+  },
 }));
 
 vi.mock("../../../features/time-control/hooks/useTimeRecordFilters", () => ({
@@ -136,6 +138,9 @@ describe("useTimeControl", () => {
   it("builds filtersKey and opens the local quick action modal on row double click", () => {
     const { result } = renderHook(() => useTimeControl());
 
+    expect(schedulingMock).toHaveBeenCalledWith(undefined, undefined, {
+      useClockingOptions: true,
+    });
     expect(result.current.filtersKey).toContain("2026-03-01");
     expect(result.current.filtersKey).toContain("Ana");
 

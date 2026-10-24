@@ -19,7 +19,7 @@ const loadDateUtilsForArchive = () => import("../utils/dateUtils");
  * El store deja de duplicar la colección ni a escribir IndexedDB; cada
  * acción invalida `employees` para que react-query refresque.
  */
-export const useEmployees = (_isKiosk: boolean = false) => {
+export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boolean } = {}) => {
   const {
     deleteUser: hardDeleteUser,
     addUser: recreateUser,
@@ -30,7 +30,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
 
-  const employeesQuery = useEmployeesQuery();
+  const employeesQuery = useEmployeesQuery(options.enabled);
   const kioskQuery = useKioskEmployeesQuery(_isKiosk);
 
   const invalidateEmployees = () =>

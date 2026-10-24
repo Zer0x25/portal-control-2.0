@@ -51,14 +51,17 @@ describe("AutoStartShiftAutomation", () => {
 
   it("waits for complete scheduling data before starting and marking the session", async () => {
     mocks.isLoadingSchedulingData = true;
-    const { rerender } = render(<AutoStartShiftAutomation />);
+    const { rerender } = render(<AutoStartShiftAutomation useClockingOptions />);
 
-    expect(mocks.useScheduling).toHaveBeenCalledWith(undefined, undefined, { enabled: true });
+    expect(mocks.useScheduling).toHaveBeenCalledWith(undefined, undefined, {
+      enabled: true,
+      useClockingOptions: true,
+    });
     expect(sessionStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_ACTIONS_DONE)).toBeNull();
     expect(mocks.startNewShift).not.toHaveBeenCalled();
 
     mocks.isLoadingSchedulingData = false;
-    await act(async () => rerender(<AutoStartShiftAutomation />));
+    await act(async () => rerender(<AutoStartShiftAutomation useClockingOptions />));
 
     await waitFor(() => expect(mocks.startNewShift).toHaveBeenCalledTimes(1));
     expect(sessionStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_ACTIONS_DONE)).toBe("true");

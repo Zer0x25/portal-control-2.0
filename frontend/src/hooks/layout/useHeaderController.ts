@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { ROUTES } from "../../constants";
 import { useAuth } from "../useAuth";
-import { useEmployees } from "../useEmployees";
+import { useClockingEmployeeOptionsQuery, useEmployeesQuery } from "../queries/useEmployeesQuery";
 import { useSystemStatus } from "../useSystemStatus";
 import { useStore } from "../../store/useStore";
 
 export const useHeaderController = () => {
   const { currentUser, logout } = useAuth();
-  const { employees } = useEmployees();
+  const location = useLocation();
+  const useClockingOptions = location.pathname === ROUTES.TIME_CONTROL;
+  const employeesQuery = useEmployeesQuery(!useClockingOptions);
+  const clockingOptionsQuery = useClockingEmployeeOptionsQuery(useClockingOptions);
+  const employees = useClockingOptions
+    ? (clockingOptionsQuery.data ?? [])
+    : (employeesQuery.data ?? []);
   const { status: systemStatus } = useSystemStatus();
   const soundEnabled = useStore((state) => state.soundEnabled);
   const setSoundEnabled = useStore((state) => state.setSoundEnabled);

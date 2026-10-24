@@ -4,7 +4,7 @@ import type { UserRole } from "../types/user";
 export const shouldLoadAutoStartSchedule = (
   role: UserRole | undefined,
   employeeId: string | null | undefined,
-  employee: Employee | undefined,
+  employee: Pick<Employee, "position"> | undefined,
 ): boolean => {
   if (!employeeId || !employee) return false;
   if (role === "Reloj_Control") return true;

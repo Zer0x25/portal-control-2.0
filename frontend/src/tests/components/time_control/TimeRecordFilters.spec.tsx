@@ -2,14 +2,17 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import TimeRecordFilters from "../../../features/time-control/components/TimeRecordFilters";
-import { useEmployees } from "../../../hooks/useEmployees";
+import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { QuickFilterMode } from "../../../features/time-control/hooks/useTimeRecordFilters";
-import { Employee, DailyTimeRecord } from "../../../types";
+import { DailyTimeRecord } from "../../../types";
+import type { ClockingEmployeeOption } from "../../../services/employeeService";
 
 // Mock hooks
-vi.mock("../../../hooks/useEmployees");
+vi.mock("../../../hooks/queries/useEmployeesQuery", () => ({
+  useClockingEmployeeOptionsQuery: vi.fn(),
+}));
 vi.mock("../../../hooks/useTimeRecords");
 vi.mock("../../../hooks/useMediaQuery");
 
@@ -58,16 +61,30 @@ describe("TimeRecordFilters Component", () => {
   const mockOnApplyCustomFilters = vi.fn();
   const mockOnClearFilters = vi.fn();
 
-  const mockEmployees: Partial<Employee>[] = [
-    { id: "1", name: "Juan", area: "Area 1", workdayType: "Full Time" },
-    { id: "2", name: "Maria", area: "Area 2", workdayType: "Part Time" },
+  const mockEmployees: ClockingEmployeeOption[] = [
+    {
+      id: "1",
+      name: "Juan",
+      position: "Operador",
+      area: "Area 1",
+      workdayType: "Full Time",
+      status: "Activo",
+    },
+    {
+      id: "2",
+      name: "Maria",
+      position: "Operador",
+      area: "Area 2",
+      workdayType: "Part Time",
+      status: "Activo",
+    },
   ];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useEmployees).mockReturnValue({
-      activeEmployees: mockEmployees as Employee[],
-    } as ReturnType<typeof useEmployees>);
+    vi.mocked(useClockingEmployeeOptionsQuery).mockReturnValue({
+      data: mockEmployees,
+    } as ReturnType<typeof useClockingEmployeeOptionsQuery>);
     vi.mocked(useTimeRecords).mockReturnValue({
       allRecordsInDateRange: [{ employeeId: "1", status: "Completado" } as DailyTimeRecord],
       isLoadingRecords: false,

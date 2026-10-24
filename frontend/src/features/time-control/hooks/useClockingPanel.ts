@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ClockingStatus, Employee } from "../../../types/index";
-import { useEmployees } from "../../../hooks/useEmployees";
+import { ClockingStatus } from "../../../types/index";
+import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
+import type { ClockingEmployeeOption } from "../../../services/employeeService";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useToasts } from "../../../hooks/useToasts";
@@ -13,10 +14,10 @@ import { logger } from "../../../utils/logger";
 export interface ClockingPanelState {
   searchTerm: string;
   selectedEmployeeId: string | null;
-  selectedEmployee: Employee | null;
+  selectedEmployee: ClockingEmployeeOption | null;
   clockStatus: ClockingStatus;
   isSubmitting: boolean;
-  filteredEmployees: Employee[];
+  filteredEmployees: ClockingEmployeeOption[];
   statusLabels: Record<ClockingStatus, string>;
   isLoadingRecords: boolean;
 }
@@ -31,7 +32,7 @@ export interface ClockingPanelActions {
 }
 
 export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions => {
-  const { activeEmployees } = useEmployees();
+  const { data: activeEmployees = [] } = useClockingEmployeeOptionsQuery();
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
   const { currentUser } = useAuth();

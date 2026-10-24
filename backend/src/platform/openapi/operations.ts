@@ -1977,6 +1977,25 @@
 
 /**
  * @openapi
+ * /api/employees/clocking-options:
+ *   get:
+ *     summary: Lista las opciones mínimas de empleados activos para Control de Asistencia
+ *     tags: [Employees]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Empleados activos con los campos usados por Control de Asistencia
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EmployeeClockingOptions'
+ *       401:
+ *         description: Autenticación requerida
+ */
+
+/**
+ * @openapi
  * /api/employees:
  *   get:
  *     summary: Obtiene todos los empleados

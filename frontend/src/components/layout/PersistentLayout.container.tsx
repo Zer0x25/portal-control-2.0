@@ -2,6 +2,7 @@ import React, { Fragment, Suspense } from "react";
 import { Outlet } from "react-router";
 import PersistentLayoutView from "./PersistentLayout.view";
 import { usePersistentLayoutController } from "../../hooks/layout/usePersistentLayoutController";
+import { ROUTES } from "../../constants";
 
 const AutoStartShiftAutomation = React.lazy(() => import("./AutoStartShiftAutomation"));
 
@@ -30,7 +31,9 @@ const PersistentLayoutContainer: React.FC = () => {
         <Outlet />
         {controller.isAutoStartEligible && (
           <Suspense fallback={null}>
-            <AutoStartShiftAutomation />
+            <AutoStartShiftAutomation
+              useClockingOptions={controller.currentPath === ROUTES.TIME_CONTROL}
+            />
           </Suspense>
         )}
       </Fragment>

@@ -8,6 +8,10 @@ const viewport = { width: 1440, height: 900 };
 const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:5174";
 const captureActiveEmployeeFilterProbe =
   process.env.PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE === "1";
+const captureEmployeeClockingProjectionProbe =
+  process.env.PERFORMANCE_EMPLOYEE_CLOCKING_PROJECTION_PROBE === "1";
+const requireClockingOptionsEndpoint =
+  process.env.PERFORMANCE_REQUIRE_CLOCKING_OPTIONS_ENDPOINT === "1";
 const autoStartSchedulingApiPaths = new Set([
   "/api/configs/global_max_hours",
   "/api/configs/area_list",
@@ -850,13 +854,14 @@ test.describe.serial("Render Performance", () => {
             finishedAtMs: number | null;
             statusCode: number | null;
             responseBodyBytes: number | null;
+            responseRowCount: number | null;
             responseHasClosedHandover: boolean | null;
             failure: string | null;
             queryDimensions: {
               pageSize: string | null;
               hasEmployeeFilter: boolean;
               hasDateRange: boolean;
-            activeEmployeeFilter: boolean | null;
+              activeEmployeeFilter: boolean | null;
             } | null;
           }
         >();
@@ -873,6 +878,7 @@ test.describe.serial("Render Performance", () => {
             finishedAtMs: null,
             statusCode: null,
             responseBodyBytes: null,
+            responseRowCount: null,
             responseHasClosedHandover: null,
             failure: null,
             queryDimensions:
@@ -902,6 +908,7 @@ test.describe.serial("Render Performance", () => {
             timing.path === "/api/health" ||
             timing.path === "/api/health/ready" ||
             timing.path === "/api/employees" ||
+            timing.path === "/api/employees/clocking-options" ||
             timing.path === "/api/users" ||
             timing.path === "/api/shift-reports"
           ) {
@@ -909,6 +916,14 @@ test.describe.serial("Render Performance", () => {
               response.body().then(
                 (body) => {
                   timing.responseBodyBytes = body.byteLength;
+                  if (timing.path === "/api/employees/clocking-options") {
+                    try {
+                      const payload = JSON.parse(new TextDecoder().decode(body)) as unknown;
+                      timing.responseRowCount = Array.isArray(payload) ? payload.length : null;
+                    } catch {
+                      timing.responseRowCount = null;
+                    }
+                  }
                   if (timing.path === "/api/shift-reports") {
                     try {
                       const payload = JSON.parse(new TextDecoder().decode(body)) as unknown;
@@ -1045,6 +1060,49 @@ test.describe.serial("Render Performance", () => {
               };
             })
           : null;
+        const employeeClockingProjectionProbe = captureEmployeeClockingProjectionProbe
+          ? await page.evaluate(async () => {
+              const token = sessionStorage.getItem("authToken");
+              if (!token)
+                return {
+                  status: null,
+                  employeeCount: null,
+                  responseBodyBytes: null,
+                  projectedResponseBodyBytes: null,
+                };
+              const response = await fetch("/api/employees", {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              const rows = (await response.json()) as unknown;
+              if (!Array.isArray(rows))
+                return {
+                  status: response.status,
+                  employeeCount: null,
+                  responseBodyBytes: null,
+                  projectedResponseBodyBytes: null,
+                };
+              const clockingOptions = rows.map((value: unknown) => {
+                if (!value || typeof value !== "object") return {};
+                const employee = value as Record<string, unknown>;
+                return {
+                  id: employee.id,
+                  name: employee.name,
+                  position: employee.position,
+                  area: employee.area,
+                  workdayType: employee.workdayType,
+                  status: employee.status,
+                };
+              });
+              return {
+                status: response.status,
+                employeeCount: rows.length,
+                responseBodyBytes: new TextEncoder().encode(JSON.stringify(rows)).byteLength,
+                projectedResponseBodyBytes: new TextEncoder().encode(
+                  JSON.stringify(clockingOptions),
+                ).byteLength,
+              };
+            })
+          : null;
         await Promise.all(responseBodyReads);
         expect(metrics.initialLastSyncTime).toBeNull();
         expect(metrics.lastSyncTimePresent).toBe(true);
@@ -1094,11 +1152,21 @@ test.describe.serial("Render Performance", () => {
         const employeeRequests = Array.from(apiRequestTimings.values()).filter(
           (timing) => timing.path === "/api/employees",
         );
-        expect(employeeRequests.length).toBeGreaterThan(0);
+        if (!requireClockingOptionsEndpoint) expect(employeeRequests.length).toBeGreaterThan(0);
         expect(
           employeeRequests.every((timing) => timing.responseBodyBytes !== null),
           "the performance report should retain only the employee response byte count",
         ).toBe(true);
+        const clockingOptionsRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/employees/clocking-options",
+        );
+        if (requireClockingOptionsEndpoint) {
+          expect(employeeRequests).toHaveLength(0);
+          expect(clockingOptionsRequests).toHaveLength(1);
+          expect(clockingOptionsRequests[0]?.statusCode).toBe(200);
+          expect(clockingOptionsRequests[0]?.responseBodyBytes).not.toBeNull();
+          expect(clockingOptionsRequests[0]?.responseRowCount).toBeGreaterThan(0);
+        }
         if (activeEmployeeProbe) {
           expect(activeEmployeeProbe.status).toBe(200);
           expect(activeEmployeeProbe.responseBodyBytes).not.toBeNull();
@@ -1108,6 +1176,14 @@ test.describe.serial("Render Performance", () => {
           expect(activeEmployeeRequests).toHaveLength(1);
           expect(activeEmployeeRequests[0]?.responseBodyBytes).toBe(
             activeEmployeeProbe.responseBodyBytes,
+          );
+        }
+        if (employeeClockingProjectionProbe) {
+          expect(employeeClockingProjectionProbe.status).toBe(200);
+          expect(employeeClockingProjectionProbe.responseBodyBytes).not.toBeNull();
+          expect(employeeClockingProjectionProbe.projectedResponseBodyBytes).not.toBeNull();
+          expect(employeeClockingProjectionProbe.projectedResponseBodyBytes).toBeLessThan(
+            employeeClockingProjectionProbe.responseBodyBytes ?? Infinity,
           );
         }
         const userDirectoryRequests = Array.from(apiRequestTimings.values()).filter(
@@ -1192,6 +1268,7 @@ test.describe.serial("Render Performance", () => {
           activeAnimations: metrics.activeAnimations,
           syncReadyAtMs: metrics.syncReadyAtMs,
           activeEmployeeProbe,
+          employeeClockingProjectionProbe,
           apiRequests: Array.from(apiRequestTimings.values()).map((timing) => ({
             ...timing,
             durationMs:
@@ -1215,7 +1292,7 @@ test.describe.serial("Render Performance", () => {
       cpuThrottle: 4,
       sampleCount: samples.length,
       apiRequestPathPolicy:
-        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees and users; /api/employees records only whether status=Activo; optional active-filter payload diagnostic uses PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE=1; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
+        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees, clocking options and users; clocking options also records row count; /api/employees records only whether status=Activo; optional active-filter and field-projection diagnostics use PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE=1 and PERFORMANCE_EMPLOYEE_CLOCKING_PROJECTION_PROBE=1; the projection probe reports only row count and byte lengths; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
       syncPhasePolicy:
         "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
       timingOffsetBasis: "Date.now immediately before page.goto",

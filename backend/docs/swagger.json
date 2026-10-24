@@ -82,6 +82,22 @@
         },
         "required": ["name"]
       },
+      "EmployeeClockingOption": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "position": { "type": "string" },
+          "area": { "type": "string" },
+          "workdayType": { "type": "string" },
+          "status": { "type": "string", "enum": ["Activo"] }
+        },
+        "required": ["id", "name", "position", "area", "workdayType", "status"]
+      },
+      "EmployeeClockingOptions": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/EmployeeClockingOption" }
+      },
       "EmployeeQuery": {
         "type": "object",
         "properties": {
@@ -3007,6 +3023,24 @@
     },
     "/api/employees/kiosk": {
       "get": { "summary": "Obtiene lista de empleados para modo Kiosko", "tags": ["Employees"] }
+    },
+    "/api/employees/clocking-options": {
+      "get": {
+        "summary": "Lista las opciones mínimas de empleados activos para Control de Asistencia",
+        "tags": ["Employees"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Empleados activos con los campos usados por Control de Asistencia",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EmployeeClockingOptions" }
+              }
+            }
+          },
+          "401": { "description": "Autenticación requerida" }
+        }
+      }
     },
     "/api/employees": {
       "get": {

@@ -277,6 +277,36 @@ export class EmployeeService {
     return { rawEmployees, total };
   }
 
+  async listClockingOptions(authUser?: EmployeeListAuthUser) {
+    if (authUser?.role === "Usuario" && !authUser.employeeId) return [];
+    if (authUser?.role === "Supervisor" && authUser.employeeId) {
+      const supervisor = await prisma.employee.findUnique({
+        where: { id: authUser.employeeId },
+        select: { area: true },
+      });
+      if (!supervisor) return [];
+      const employees = await prisma.employee.findMany({
+        where: { status: "Activo", area: supervisor.area },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, position: true, area: true, workdayType: true },
+      });
+      return employees.map((employee) => ({ ...employee, status: "Activo" as const }));
+    }
+
+    const where: Prisma.EmployeeWhereInput = { status: "Activo" };
+    if (authUser?.role === "Usuario" && authUser.employeeId) {
+      where.id = authUser.employeeId;
+    }
+
+    const employees = await prisma.employee.findMany({
+      where,
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, position: true, area: true, workdayType: true },
+    });
+
+    return employees.map((employee) => ({ ...employee, status: "Activo" as const }));
+  }
+
   async getEmployeeById(id: string) {
     return await prisma.employee.findUnique({ where: { id } });
   }
