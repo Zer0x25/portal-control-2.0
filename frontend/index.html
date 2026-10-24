@@ -12,7 +12,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="dns-prefetch" href="https://api.open-meteo.com" />
     <link rel="dns-prefetch" href="https://ipapi.co" />
-    <style id="dashboard-bootstrap-critical">
+    <style id="app-bootstrap-critical">
       html,
       body {
         margin: 0;
@@ -97,26 +97,26 @@
   </head>
   <body class="bg-token-surface-app text-token-text-primary antialiased">
     <div
-      id="dashboard-bootstrap-shell"
+      id="app-bootstrap-shell"
       role="status"
       aria-live="polite"
-      aria-label="Cargando Dashboard Operativo"
+      aria-label="Cargando Portal Control Interno"
       class="boot"
       hidden
     >
       <section>
         <p>Portal Control Interno</p>
-        <h1>Dashboard Operativo</h1>
+        <h1 id="app-bootstrap-title">Preparando el portal</h1>
         <div>
-          <div id="dashboard-bootstrap-date"></div>
-          <time id="dashboard-bootstrap-time"></time>
+          <div id="app-bootstrap-date"></div>
+          <time id="app-bootstrap-time"></time>
         </div>
       </section>
     </div>
     <div id="root"></div>
-    <script id="dashboard-bootstrap-script">
+    <script id="app-bootstrap-script">
       (() => {
-        const shell = document.getElementById("dashboard-bootstrap-shell");
+        const shell = document.getElementById("app-bootstrap-shell");
         const root = document.getElementById("root");
         const stylesheet = document.querySelector('link[rel="stylesheet"]');
         const enableStylesheet = () => {
@@ -170,7 +170,8 @@
           return;
         }
 
-        if (currentRoute() !== "#/dashboard") {
+        const route = currentRoute();
+        if (route !== "#/dashboard" && route !== "#/worker-portal") {
           shell.remove();
           activateOtherRouteStyles();
           return;
@@ -189,8 +190,8 @@
           second: "2-digit",
           hour12: false,
         }).format(now);
-        const dateElement = document.getElementById("dashboard-bootstrap-date");
-        const timeElement = document.getElementById("dashboard-bootstrap-time");
+        const dateElement = document.getElementById("app-bootstrap-date");
+        const timeElement = document.getElementById("app-bootstrap-time");
         if (dateElement) dateElement.textContent = date;
         if (timeElement) timeElement.textContent = time;
         shell.hidden = false;
@@ -235,7 +236,7 @@
         }
 
         onHashChange = () => {
-          if (currentRoute() !== "#/dashboard") {
+          if (currentRoute() !== route) {
             activateOtherRouteStyles();
             removeShell();
           }

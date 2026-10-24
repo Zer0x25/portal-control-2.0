@@ -395,3 +395,12 @@
 - **Límite**: TBT mediano 117,5 → 145 ms (+27,5 ms; `n=3`, muestras dispersas). El ahorro abarca el modal y dependencias, no se atribuye solo a Zod. Corrida completa aprobó 19/19 Playwright, 17 rutas Lighthouse estándar y 9 perfiles fríos; preflight 6/6 y ratchet ESLint 0/0. Registro final usa imagen de frontend identificada y árbol dirty sobre `ee638e5`.
 - **Siguiente**: atribuir el LCP restante de 5,05 s y el trabajo de `react-core` (80.217 B transferidos; 635–699 ms de scripting bajo CPU 4×) antes de elegir otra optimización.
 - **Evidencia**: [resultado Spec 075](../specs/075-lazy-worker-portal-correction-modal/evidencia/resultado-2026-10-24.md), [corrida staging](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T17-57-24-073Z-ee638e54.json) y [baseline](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T17-23-56-778Z-9e6c151b.json).
+
+## 2026-10-24 - perf(worker-portal): Pintar shell antes de React
+
+- **Cambio**: se reutilizó el shell estático de `index.html` para Worker Portal. Aparece con root React vacío y se retira al cargar CSS y montar el reloj real; la vista protegida no cambió.
+- **Medido**: Lighthouse frío, tres muestras: LCP mediano 5.055 → 2.255 ms (−55,4%), FCP 3.666 → 2.034 ms (−44,5%), score 0,72 → 0,90. El JS transferido permanece en 285.779 B y el HTML compilado mide 5.076 B. Auditoría Playwright: shell LCP en 3/3 y reloj real visible a 1.241 ms de mediana.
+- **TBT y límite**: crudo 145 → 301,5 ms (+156,5 ms); Dashboard frío, mismo ciclo, 234 → 392,5 ms (+158,5 ms). La diferencia de cambios es −2 ms; `n=3`, el dato bruto queda explícito. El LCP inicial mejora; no se afirma una mejora equivalente de interacción.
+- **Siguiente**: atribuir los long tasks de `react-core` (807–1.027 ms de scripting en las tres trazas frías) antes de elegir otra optimización.
+- **Validación**: shell Playwright 6/6; batería 20/20, Lighthouse estándar 17/17 y rutas frías 9/9; preflight aprobado, lint budget 0/0, staging gateway/API 200.
+- **Evidencia**: [resultado Spec 076](../specs/076-worker-portal-bootstrap-shell/evidencia/resultado-2026-10-24.md), [auditoría Playwright](../specs/076-worker-portal-bootstrap-shell/evidencia/worker-portal-bootstrap-shell-2026-10-24.json) y [run](../specs/039-frontend-performance-battery/evidencia/runs/2026-10-24T18-38-45-541Z-ec56eb43.json).

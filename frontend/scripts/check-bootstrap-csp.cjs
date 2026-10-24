@@ -9,18 +9,18 @@ const htmlPath = path.join(frontendRoot, useBuiltHtml ? "dist/index.html" : "ind
 const nginxConfigPath = path.join(frontendRoot, "nginx.conf");
 const html = readFileSync(htmlPath, "utf8");
 const nginxConfig = readFileSync(nginxConfigPath, "utf8");
-const inlineScript = html.match(/<script id="dashboard-bootstrap-script">([\s\S]*?)<\/script>/);
+const inlineScript = html.match(/<script id="app-bootstrap-script">([\s\S]*?)<\/script>/);
 
 if (useBuiltHtml && Buffer.byteLength(html, "utf8") > 5 * 1024) {
   throw new Error(`Built index.html exceeds 5 KiB: ${Buffer.byteLength(html, "utf8")} bytes`);
 }
 
 if (!inlineScript) {
-  throw new Error(`Dashboard bootstrap script was not found in ${htmlPath}`);
+  throw new Error(`App bootstrap script was not found in ${htmlPath}`);
 }
 
-if (!html.includes('id="dashboard-bootstrap-critical"')) {
-  throw new Error(`Dashboard critical CSS was not found in ${htmlPath}`);
+if (!html.includes('id="app-bootstrap-critical"')) {
+  throw new Error(`App critical CSS was not found in ${htmlPath}`);
 }
 
 if (useBuiltHtml) {
@@ -35,7 +35,7 @@ if (useBuiltHtml) {
 
 const scriptForHash = useBuiltHtml
   ? inlineScript[1]
-  : minifySync("dashboard-bootstrap.js", inlineScript[1], {
+  : minifySync("app-bootstrap.js", inlineScript[1], {
       compress: true,
       mangle: true,
     }).code.trim();
@@ -52,7 +52,7 @@ if (scriptPolicies.length !== 2) {
 const expectedScriptPolicy = `'self' ${allowedHash}`;
 if (scriptPolicies.some((policy) => policy.trim() !== expectedScriptPolicy)) {
   throw new Error(
-    `script-src must allow only 'self' and the exact Dashboard bootstrap hash: ${expectedScriptPolicy}`,
+    `script-src must allow only 'self' and the exact app bootstrap hash: ${expectedScriptPolicy}`,
   );
 }
 

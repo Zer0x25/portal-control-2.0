@@ -44,35 +44,35 @@ const fontPreloadPlugin = (): Plugin => ({
   },
 });
 
-const dashboardCriticalCssPlugin = (): Plugin => ({
-  name: "dashboard-critical-css-handoff",
+const bootstrapCriticalCssPlugin = (): Plugin => ({
+  name: "bootstrap-critical-css-handoff",
   apply: "build",
   transformIndexHtml: {
     order: "post",
     handler(html) {
-      const bootstrapPattern = /<script id="dashboard-bootstrap-script">([\s\S]*?)<\/script>/;
+      const bootstrapPattern = /<script id="app-bootstrap-script">([\s\S]*?)<\/script>/;
       const bootstrap = html.match(bootstrapPattern);
       const stylesheets = html.match(/<link\b(?=[^>]*\brel="stylesheet")[^>]*>/g) ?? [];
 
-      if (!bootstrap) throw new Error("Dashboard bootstrap script is missing from built HTML");
+      if (!bootstrap) throw new Error("App bootstrap script is missing from built HTML");
       if (stylesheets.length !== 1) {
         throw new Error(`Expected one built stylesheet link; found ${stylesheets.length}`);
       }
-      if (!html.includes('id="dashboard-bootstrap-critical"')) {
-        throw new Error("Dashboard critical CSS is missing from built HTML");
+      if (!html.includes('id="app-bootstrap-critical"')) {
+        throw new Error("App critical CSS is missing from built HTML");
       }
 
-      const minifiedBootstrap = minifySync("dashboard-bootstrap.js", bootstrap[1], {
+      const minifiedBootstrap = minifySync("app-bootstrap.js", bootstrap[1], {
         compress: true,
         mangle: true,
       });
       if (minifiedBootstrap.errors.length > 0) {
-        throw new Error("Could not minify the Dashboard bootstrap script");
+        throw new Error("Could not minify the app bootstrap script");
       }
       const compactBootstrap = minifiedBootstrap.code.trim();
       const compactHtml = html.replace(
         bootstrapPattern,
-        `<script id="dashboard-bootstrap-script">${compactBootstrap}</script>`,
+        `<script id="app-bootstrap-script">${compactBootstrap}</script>`,
       );
       const stylesheet = stylesheets[0];
       if (/\bmedia=/.test(stylesheet)) {
@@ -131,7 +131,7 @@ export default defineConfig(({ mode }) => {
       // Recoverable bail-outs are emitted by the plugin for auditability.
       react({ compiler: { reportDiagnostics: true } }),
       fontPreloadPlugin(),
-      dashboardCriticalCssPlugin(),
+      bootstrapCriticalCssPlugin(),
       ...(!isStorybook
         ? [
             VitePWA({

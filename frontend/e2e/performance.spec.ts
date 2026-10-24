@@ -34,6 +34,19 @@ type DashboardBootstrapAuditState = {
     isBootstrapShell: boolean;
   }[];
 };
+type WorkerPortalBootstrapAuditState = {
+  events: {
+    type: "visible" | "removed" | "clock-visible";
+    atMs: number;
+    rootChildren: number;
+  }[];
+  paints: { name: string; startTime: number }[];
+  lcpEntries: {
+    startTime: number;
+    elementTag: string | null;
+    isBootstrapShell: boolean;
+  }[];
+};
 
 test.describe.serial("Render Performance", () => {
   test.use({ viewport });
@@ -83,7 +96,7 @@ test.describe.serial("Render Performance", () => {
           let wasVisible = false;
           let wasRemoved = false;
           const recordShell = () => {
-            const shell = document.getElementById("dashboard-bootstrap-shell");
+            const shell = document.getElementById("app-bootstrap-shell");
             const isVisible =
               shell !== null &&
               !shell.hidden &&
@@ -129,9 +142,7 @@ test.describe.serial("Render Performance", () => {
                   startTime: lcpEntry.startTime,
                   size: lcpEntry.size,
                   elementTag: lcpEntry.element?.tagName ?? null,
-                  isBootstrapShell: Boolean(
-                    lcpEntry.element?.closest("#dashboard-bootstrap-shell"),
-                  ),
+                  isBootstrapShell: Boolean(lcpEntry.element?.closest("#app-bootstrap-shell")),
                 };
               }),
             );
@@ -218,6 +229,191 @@ test.describe.serial("Render Performance", () => {
     }
   });
 
+  test("Worker Portal bootstrap shell paints before React and releases after the real clock", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const coldViewport = { width: 412, height: 823 };
+    const samples: {
+      sample: number;
+      fcpMs: number | null;
+      shellLcpMs: number | null;
+      shellVisibleAtMs: number | null;
+      rootChildrenAtShellPaint: number | null;
+      clockVisibleAtMs: number | null;
+      shellRemovedAtMs: number | null;
+      lcpEntries: WorkerPortalBootstrapAuditState["lcpEntries"];
+    }[] = [];
+
+    for (let sample = 1; sample <= 3; sample++) {
+      const context = await browser.newContext({
+        viewport: coldViewport,
+        deviceScaleFactor: 1.75,
+        isMobile: true,
+        hasTouch: true,
+        timezoneId: "America/Santiago",
+        serviceWorkers: "block",
+      });
+      try {
+        const page = await context.newPage();
+        await page.addInitScript(() => {
+          const audit: WorkerPortalBootstrapAuditState = {
+            events: [],
+            paints: [],
+            lcpEntries: [],
+          };
+          (
+            window as Window & { __workerPortalBootstrapAudit?: typeof audit }
+          ).__workerPortalBootstrapAudit = audit;
+          let shellWasVisible = false;
+          let clockWasVisible = false;
+          let shellWasRemoved = false;
+          const recordState = () => {
+            const shell = document.getElementById("app-bootstrap-shell");
+            const shellIsVisible =
+              shell !== null &&
+              !shell.hidden &&
+              getComputedStyle(shell).display !== "none" &&
+              getComputedStyle(shell).visibility !== "hidden";
+            if (shellIsVisible && !shellWasVisible) {
+              audit.events.push({
+                type: "visible",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              shellWasVisible = true;
+            } else if (!shell && shellWasVisible && !shellWasRemoved) {
+              audit.events.push({
+                type: "removed",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              shellWasRemoved = true;
+            }
+
+            const clock = document.querySelector('[data-testid="server-clock"]');
+            const rect = clock?.getBoundingClientRect();
+            const clockIsVisible = Boolean(
+              clock &&
+              rect &&
+              rect.width > 0 &&
+              rect.height > 0 &&
+              getComputedStyle(clock).visibility !== "hidden",
+            );
+            if (clockIsVisible && !clockWasVisible) {
+              audit.events.push({
+                type: "clock-visible",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              clockWasVisible = true;
+            }
+          };
+          new MutationObserver(recordState).observe(document, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["hidden", "style", "class"],
+          });
+          new PerformanceObserver((list) => {
+            audit.paints.push(
+              ...list
+                .getEntries()
+                .map((entry) => ({ name: entry.name, startTime: entry.startTime })),
+            );
+          }).observe({ type: "paint", buffered: true });
+          new PerformanceObserver((list) => {
+            audit.lcpEntries.push(
+              ...list.getEntries().map((entry) => {
+                const candidate = entry as PerformanceEntry & { element: Element | null };
+                return {
+                  startTime: candidate.startTime,
+                  elementTag: candidate.element?.tagName ?? null,
+                  isBootstrapShell: Boolean(candidate.element?.closest("#app-bootstrap-shell")),
+                };
+              }),
+            );
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+        });
+
+        await loginFast(page, request, "worker");
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+        await expect(page.locator("#app-bootstrap-shell")).toBeVisible({
+          timeout: 10_000,
+        });
+        await expect(page.locator('[data-testid="server-clock"]')).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+        await page.waitForTimeout(250);
+
+        const metrics = await page.evaluate(() => {
+          const audit = (
+            window as Window & { __workerPortalBootstrapAudit?: WorkerPortalBootstrapAuditState }
+          ).__workerPortalBootstrapAudit;
+          const fcp = audit?.paints.find((entry) => entry.name === "first-contentful-paint");
+          return {
+            fcpMs: fcp?.startTime ?? null,
+            events: audit?.events ?? [],
+            lcpEntries: audit?.lcpEntries ?? [],
+          };
+        });
+        const shellVisibleEvent = metrics.events.find((event) => event.type === "visible");
+        const clockVisibleEvent = metrics.events.find((event) => event.type === "clock-visible");
+        const shellRemovedEvent = metrics.events.find((event) => event.type === "removed");
+        const shellLcp = metrics.lcpEntries.find((entry) => entry.isBootstrapShell);
+        samples.push({
+          sample,
+          fcpMs: metrics.fcpMs,
+          shellLcpMs: shellLcp?.startTime ?? null,
+          shellVisibleAtMs: shellVisibleEvent?.atMs ?? null,
+          rootChildrenAtShellPaint: shellVisibleEvent?.rootChildren ?? null,
+          clockVisibleAtMs: clockVisibleEvent?.atMs ?? null,
+          shellRemovedAtMs: shellRemovedEvent?.atMs ?? null,
+          lcpEntries: metrics.lcpEntries,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    await attachPerformanceReport(testInfo, "worker-portal-bootstrap-shell.json", {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/worker-portal",
+      profile: { viewport: coldViewport, deviceScaleFactor: 1.75, cpuThrottleRate: 4 },
+      sampleCount: samples.length,
+      samples,
+      shellLcp: summarizePerformance(
+        samples.flatMap((sample) => (sample.shellLcpMs === null ? [] : [sample.shellLcpMs])),
+      ),
+      clockVisible: summarizePerformance(
+        samples.flatMap((sample) =>
+          sample.clockVisibleAtMs === null ? [] : [sample.clockVisibleAtMs],
+        ),
+      ),
+    });
+
+    expect(samples).toHaveLength(3);
+    for (const sample of samples) {
+      expect(
+        sample.shellVisibleAtMs,
+        `sample ${sample.sample} should show the bootstrap shell`,
+      ).not.toBeNull();
+      expect(sample.rootChildrenAtShellPaint).toBe(0);
+      expect(
+        sample.shellLcpMs,
+        `sample ${sample.sample} should paint an LCP candidate in the shell`,
+      ).not.toBeNull();
+      expect(sample.clockVisibleAtMs).not.toBeNull();
+      expect(sample.shellRemovedAtMs).toBeGreaterThanOrEqual(sample.clockVisibleAtMs ?? 0);
+      expect(sample.shellLcpMs).toBeLessThan(sample.clockVisibleAtMs ?? 0);
+    }
+  });
+
   test("Dashboard critical shell stays styled until the full stylesheet is ready", async ({
     browser,
     request,
@@ -250,10 +446,10 @@ test.describe.serial("Render Performance", () => {
         });
         await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "commit" });
 
-        const shell = page.locator("#dashboard-bootstrap-shell");
+        const shell = page.locator("#app-bootstrap-shell");
         await expect(shell).toBeVisible({ timeout: 15_000 });
         const criticalStyle = await page.evaluate(() => {
-          const shellElement = document.querySelector<HTMLElement>("#dashboard-bootstrap-shell");
+          const shellElement = document.querySelector<HTMLElement>("#app-bootstrap-shell");
           const card = shellElement?.querySelector<HTMLElement>("section");
           const rect = card?.getBoundingClientRect();
           const stylesheet = document.querySelector<HTMLLinkElement>(
@@ -401,9 +597,9 @@ test.describe.serial("Render Performance", () => {
       });
       await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "commit" });
 
-      await expect(page.locator("#dashboard-bootstrap-shell")).toBeVisible();
+      await expect(page.locator("#app-bootstrap-shell")).toBeVisible();
       await page.clock.fastForward(8_001);
-      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
       await expect(page.locator("#root")).toHaveCSS("visibility", "visible");
     } finally {
       releaseCss?.();
@@ -411,7 +607,7 @@ test.describe.serial("Render Performance", () => {
     }
   });
 
-  test("Dashboard bootstrap stays absent without a Dashboard session or route", async ({
+  test("Bootstrap shell stays absent without a session or on other routes", async ({
     browser,
     request,
   }) => {
@@ -419,8 +615,10 @@ test.describe.serial("Render Performance", () => {
     try {
       const page = await unauthenticatedContext.newPage();
       await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
-      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
       await expect(page.locator("#username")).toBeVisible({ timeout: 30_000 });
+      await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
     } finally {
       await unauthenticatedContext.close();
     }
@@ -430,7 +628,7 @@ test.describe.serial("Render Performance", () => {
       const page = await authenticatedContext.newPage();
       await loginFast(page, request, "admin");
       await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
-      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
       await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
       await expect
         .poll(() =>
@@ -449,13 +647,13 @@ test.describe.serial("Render Performance", () => {
       await loginFast(page, request, "worker");
       await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
       await expect(page).toHaveURL(/#\/worker-portal/, { timeout: 30_000 });
-      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
     } finally {
       await restrictedContext.close();
     }
   });
 
-  test("Dashboard bootstrap clears after query and route changes during cold boot", async ({
+  test("Bootstrap shell clears after query and route changes during cold boot", async ({
     browser,
     request,
   }) => {
@@ -467,7 +665,7 @@ test.describe.serial("Render Performance", () => {
         route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
       );
       await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
-      const shell = page.getByRole("heading", { name: "Dashboard Operativo" });
+      const shell = page.getByRole("heading", { name: "Preparando el portal" });
       await expect(shell).toBeVisible();
 
       await page.evaluate(
@@ -486,9 +684,32 @@ test.describe.serial("Render Performance", () => {
             window.location.hash = "#/time-control";
           }),
       );
-      await expect(page.locator("#dashboard-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
     } finally {
       await context.close();
+    }
+
+    const workerContext = await browser.newContext({ viewport });
+    try {
+      const page = await workerContext.newPage();
+      await loginFast(page, request, "worker");
+      await page.route("**/assets/index-*.js", (route) =>
+        route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
+      );
+      await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+      const shell = page.getByRole("heading", { name: "Preparando el portal" });
+      await expect(shell).toBeVisible();
+
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("hashchange", () => resolve(), { once: true });
+            window.location.hash = "#/time-control";
+          }),
+      );
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+    } finally {
+      await workerContext.close();
     }
   });
 
