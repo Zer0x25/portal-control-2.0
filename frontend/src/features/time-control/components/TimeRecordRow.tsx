@@ -77,7 +77,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
       const content = (
         <div className="flex items-center gap-1.5 overflow-hidden">
           <span
-            className={`text-xs font-black font-mono italic tracking-tighter truncate ${isSinRegistro ? "text-token-status-error opacity-50" : "text-token-text-primary"}`}
+            className={`text-xs font-semibold font-mono tabular-nums tracking-normal truncate ${isSinRegistro ? "text-token-status-error opacity-50" : "text-token-text-primary"}`}
           >
             {formatDisplayDateTime(value).split(" ")[1] || "--:--"}
           </span>
