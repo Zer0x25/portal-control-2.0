@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-25T15:51:13.586Z",
+  "target": {
+    "name": "local-staging",
+    "frontendImageId": "sha256:fcdcc13af02ae5891514463b2f5bec9d8c22202417edbb1a63de7e17544e5524",
+    "imageUnchangedDuringFocusedCaptures": true,
+    "lighthouseVersion": "12.6.1",
+    "hostUserAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "settings": {
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "cpuSlowdownMultiplier": 4,
+      "viewport": {
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75
+      },
+      "storageReset": true
+    }
+  },
+  "routes": {
+    "dashboard": {
+      "path": "/#/dashboard",
+      "samples": [
+        {
+          "capturedAt": "2026-10-25T15:30:31.936Z",
+          "performanceScore": 0.93,
+          "fcpMs": 2036.5886,
+          "lcpMs": 2253.8829,
+          "tbtMs": 210.9999999999991,
+          "cls": 0,
+          "totalTransferBytes": 449948,
+          "scriptTransferBytes": 285508,
+          "requestCount": 81
+        },
+        {
+          "capturedAt": "2026-10-25T15:31:00.981Z",
+          "performanceScore": 0.9,
+          "fcpMs": 2114.32025,
+          "lcpMs": 2461.7124000000003,
+          "tbtMs": 268,
+          "cls": 0.01016361232872061,
+          "totalTransferBytes": 449957,
+          "scriptTransferBytes": 285508,
+          "requestCount": 81
+        },
+        {
+          "capturedAt": "2026-10-25T15:31:29.593Z",
+          "performanceScore": 0.94,
+          "fcpMs": 2044.2730000000001,
+          "lcpMs": 2254.9094999999998,
+          "tbtMs": 182,
+          "cls": 0,
+          "totalTransferBytes": 454704,
+          "scriptTransferBytes": 285508,
+          "requestCount": 82
+        },
+        {
+          "capturedAt": "2026-10-25T15:34:04.756Z",
+          "performanceScore": 0.93,
+          "fcpMs": 2016.1754,
+          "lcpMs": 2254.7631,
+          "tbtMs": 213,
+          "cls": 0.01016361232872061,
+          "totalTransferBytes": 449973,
+          "scriptTransferBytes": 285508,
+          "requestCount": 81
+        },
+        {
+          "capturedAt": "2026-10-25T15:34:33.854Z",
+          "performanceScore": 0.85,
+          "fcpMs": 2011.8443,
+          "lcpMs": 2255.76645,
+          "tbtMs": 466,
+          "cls": 0,
+          "totalTransferBytes": 449941,
+          "scriptTransferBytes": 285508,
+          "requestCount": 81
+        }
+      ],
+      "source": "same-image cold Lighthouse captures",
+      "sampleCount": 5,
+      "summary": {
+        "performanceScore": {
+          "median": 0.93,
+          "min": 0.85,
+          "max": 0.94
+        },
+        "fcpMs": {
+          "median": 2036.5886,
+          "min": 2011.8443,
+          "max": 2114.32025
+        },
+        "lcpMs": {
+          "median": 2254.9094999999998,
+          "min": 2253.8829,
+          "max": 2461.7124000000003
+        },
+        "tbtMs": {
+          "median": 213,
+          "min": 182,
+          "max": 466
+        },
+        "cls": {
+          "median": 0,
+          "min": 0,
+          "max": 0.01016361232872061
+        },
+        "totalTransferBytes": {
+          "median": 449957,
+          "min": 449941,
+          "max": 454704
+        },
+        "scriptTransferBytes": {
+          "median": 285508,
+          "min": 285508,
+          "max": 285508
+        },
+        "requestCount": {
+          "median": 81,
+          "min": 81,
+          "max": 82
+        }
+      }
+    },
+    "time-control": {
+      "path": "/#/time-control",
+      "samples": [
+        {
+          "capturedAt": "2026-10-25T06:38:43.751Z",
+          "performanceScore": 0.87,
+          "fcpMs": 2009.89,
+          "lcpMs": 2254.34,
+          "tbtMs": 402,
+          "cls": 0.01,
+          "speedIndexMs": 2009.89,
+          "totalTransferBytes": 463524,
+          "scriptTransferBytes": 300620,
+          "requestCount": 85
+        },
+        {
+          "capturedAt": "2026-10-25T06:39:12.425Z",
+          "performanceScore": 0.89,
+          "fcpMs": 2107.13,
+          "lcpMs": 2466.8,
+          "tbtMs": 292,
+          "cls": 0,
+          "speedIndexMs": 2107.13,
+          "totalTransferBytes": 463540,
+          "scriptTransferBytes": 300620,
+          "requestCount": 85
+        },
+        {
+          "capturedAt": "2026-10-25T06:39:41.128Z",
+          "performanceScore": 0.68,
+          "fcpMs": 2035.63,
+          "lcpMs": 5645.03,
+          "tbtMs": 375,
+          "cls": 0,
+          "speedIndexMs": 2035.63,
+          "totalTransferBytes": 502344,
+          "scriptTransferBytes": 334482,
+          "requestCount": 89
+        },
+        {
+          "capturedAt": "2026-10-25T06:40:10.992Z",
+          "performanceScore": 0.88,
+          "fcpMs": 2003.73,
+          "lcpMs": 2477.47,
+          "tbtMs": 349.5,
+          "cls": 0,
+          "speedIndexMs": 2024.62,
+          "totalTransferBytes": 502328,
+          "scriptTransferBytes": 334482,
+          "requestCount": 89
+        },
+        {
+          "capturedAt": "2026-10-25T06:40:38.945Z",
+          "performanceScore": 0.89,
+          "fcpMs": 2131.08,
+          "lcpMs": 2483.13,
+          "tbtMs": 287,
+          "cls": 0.01,
+          "speedIndexMs": 2131.08,
+          "totalTransferBytes": 463540,
+          "scriptTransferBytes": 300620,
+          "requestCount": 85
+        }
+      ],
+      "source": "./time-control-lighthouse-baseline.json",
+      "sampleCount": 5,
+      "summary": {
+        "performanceScore": {
+          "median": 0.88,
+          "min": 0.68,
+          "max": 0.89
+        },
+        "fcpMs": {
+          "median": 2035.63,
+          "min": 2003.73,
+          "max": 2131.08
+        },
+        "lcpMs": {
+          "median": 2477.47,
+          "min": 2254.34,
+          "max": 5645.03
+        },
+        "tbtMs": {
+          "median": 349.5,
+          "min": 287,
+          "max": 402
+        },
+        "cls": {
+          "median": 0,
+          "min": 0,
+          "max": 0.01
+        },
+        "totalTransferBytes": {
+          "median": 463540,
+          "min": 463524,
+          "max": 502344
+        },
+        "scriptTransferBytes": {
+          "median": 300620,
+          "min": 300620,
+          "max": 334482
+        },
+        "requestCount": {
+          "median": 85,
+          "min": 85,
+          "max": 89
+        }
+      }
+    },
+    "kiosk": {
+      "path": "/#/kiosk",
+      "samples": [
+        {
+          "capturedAt": "2026-10-25T15:35:32.132Z",
+          "performanceScore": 0.83,
+          "fcpMs": 2999.6942249999993,
+          "lcpMs": 3825.388449999999,
+          "tbtMs": 55,
+          "cls": 0,
+          "totalTransferBytes": 330330,
+          "scriptTransferBytes": 203526,
+          "requestCount": 48
+        },
+        {
+          "capturedAt": "2026-10-25T15:35:52.500Z",
+          "performanceScore": 0.83,
+          "fcpMs": 2994.9537999999993,
+          "lcpMs": 3800.9075999999986,
+          "tbtMs": 29.5,
+          "cls": 0,
+          "totalTransferBytes": 330314,
+          "scriptTransferBytes": 203526,
+          "requestCount": 48
+        },
+        {
+          "capturedAt": "2026-10-25T15:36:12.324Z",
+          "performanceScore": 0.82,
+          "fcpMs": 3035.0955999999996,
+          "lcpMs": 3905.7151000000003,
+          "tbtMs": 86,
+          "cls": 0,
+          "totalTransferBytes": 330321,
+          "scriptTransferBytes": 203526,
+          "requestCount": 48
+        },
+        {
+          "capturedAt": "2026-10-25T15:36:32.032Z",
+          "performanceScore": 0.83,
+          "fcpMs": 2990.98815,
+          "lcpMs": 3819.9763,
+          "tbtMs": 39,
+          "cls": 0,
+          "totalTransferBytes": 330346,
+          "scriptTransferBytes": 203526,
+          "requestCount": 48
+        },
+        {
+          "capturedAt": "2026-10-25T15:36:53.331Z",
+          "performanceScore": 0.83,
+          "fcpMs": 2997.6626749999996,
+          "lcpMs": 3841.325349999999,
+          "tbtMs": 49,
+          "cls": 0,
+          "totalTransferBytes": 330346,
+          "scriptTransferBytes": 203526,
+          "requestCount": 48
+        }
+      ],
+      "source": "same-image cold Lighthouse captures",
+      "sampleCount": 5,
+      "summary": {
+        "performanceScore": {
+          "median": 0.83,
+          "min": 0.82,
+          "max": 0.83
+        },
+        "fcpMs": {
+          "median": 2997.6626749999996,
+          "min": 2990.98815,
+          "max": 3035.0955999999996
+        },
+        "lcpMs": {
+          "median": 3825.388449999999,
+          "min": 3800.9075999999986,
+          "max": 3905.7151000000003
+        },
+        "tbtMs": {
+          "median": 49,
+          "min": 29.5,
+          "max": 86
+        },
+        "cls": {
+          "median": 0,
+          "min": 0,
+          "max": 0
+        },
+        "totalTransferBytes": {
+          "median": 330330,
+          "min": 330314,
+          "max": 330346
+        },
+        "scriptTransferBytes": {
+          "median": 203526,
+          "min": 203526,
+          "max": 203526
+        },
+        "requestCount": {
+          "median": 48,
+          "min": 48,
+          "max": 48
+        }
+      }
+    }
+  },
+  "interpretation": {
+    "highestMedianTbtRoute": "time-control",
+    "tbtMedianMs": {
+      "time-control": 349.5,
+      "dashboard": 213,
+      "kiosk": 49
+    },
+    "workerPortal": {
+      "status": "not-measured-on-this-image",
+      "reason": "The perf:staging Playwright stage stopped at worker test-user authentication before any Lighthouse stage."
+    },
+    "fullBatteryRun": {
+      "status": "failed-before-lighthouse",
+      "evidence": "../../039-frontend-performance-battery/evidencia/runs/2026-10-25T15-26-56-921Z-bde8f91d.json",
+      "harnessValidation": "passed",
+      "routeCatalog": "passed",
+      "playwright": "failed: 2 tests; 16 dependent tests skipped at worker auth",
+      "lighthouseStages": "not-run",
+      "stagingAccountOrBusinessDataChanged": false
+    },
+    "limitations": ["Lighthouse cold-load laboratory data only; TBT is not field INP.", "Different route content means route medians rank observed startup behavior but do not prove a route-specific code cause.", "Raw Lighthouse reports remain local under frontend/.lighthouseci; only sanitized metrics are committed."]
+  }
+}

@@ -14,6 +14,8 @@ const apiBase = (process.env.E2E_API_URL || `${stagingOrigin}/api`).replace(/\/$
 const viewport = { width: 412, height: 823 };
 const sampleCount = 3;
 const cpuThrottleRate = 4;
+const longTaskThresholdUs = 50_000;
+const traceCategories = "devtools.timeline,disabled-by-default-devtools.timeline";
 const outputArg = process.argv.find((arg) => arg.startsWith("--output="))?.slice(9);
 const routeArg = process.argv.find((arg) => arg.startsWith("--route="))?.slice(8);
 
@@ -540,6 +542,320 @@ function resolveMappedFrame(callFrame, maps) {
   };
 }
 
+export function summarizeLongTaskTrace(
+  traceEvents,
+  resolveFrame,
+  { dataLossOccurred = false } = {},
+) {
+  if (!Array.isArray(traceEvents)) throw new Error("Trace events must be an array");
+  if (typeof resolveFrame !== "function") throw new Error("A source frame resolver is required");
+
+  const rendererMainThreadIds = new Set(
+    traceEvents
+      .filter((event) => event.name === "thread_name" && event.args?.name === "CrRendererMain")
+      .map((event) => `${event.pid}:${event.tid}`),
+  );
+  const taskEvents = traceEvents.filter(
+    (event) =>
+      event.name === "RunTask" &&
+      event.ph === "X" &&
+      rendererMainThreadIds.has(`${event.pid}:${event.tid}`) &&
+      Number.isFinite(event.ts) &&
+      Number.isFinite(event.dur) &&
+      event.dur >= longTaskThresholdUs,
+  );
+  const firstTaskTimestampUs = taskEvents.reduce(
+    (minimum, event) => Math.min(minimum, event.ts),
+    Number.POSITIVE_INFINITY,
+  );
+  const scriptEventsByThread = new Map();
+  for (const event of traceEvents) {
+    if (
+      !["FunctionCall", "EvaluateScript"].includes(event.name) ||
+      event.ph !== "X" ||
+      !Number.isFinite(event.ts) ||
+      !Number.isFinite(event.dur) ||
+      event.dur <= 0
+    ) {
+      continue;
+    }
+    const key = `${event.pid}:${event.tid}`;
+    const entries = scriptEventsByThread.get(key) ?? [];
+    entries.push(event);
+    scriptEventsByThread.set(key, entries);
+  }
+
+  const tasks = taskEvents
+    .map((task) => {
+      const taskEndUs = task.ts + task.dur;
+      const scriptCalls = (scriptEventsByThread.get(`${task.pid}:${task.tid}`) ?? [])
+        .filter((event) => event.ts >= task.ts && event.ts + event.dur <= taskEndUs + 1)
+        .map((event) => {
+          const data = event.args?.data ?? {};
+          const frame = resolveFrame({
+            url: data.url,
+            lineNumber: Number.isInteger(data.lineNumber) ? data.lineNumber : 0,
+            columnNumber: Number.isInteger(data.columnNumber) ? data.columnNumber : 0,
+            functionName: data.functionName,
+          });
+          return {
+            eventKind: event.name,
+            durationMs: roundMs(event.dur / 1000),
+            sourcePath: frame?.sourcePath ?? "unmapped/unknown",
+            functionName: sanitizeFunctionName(frame?.functionName ?? data.functionName),
+            ...(Number.isInteger(frame?.sourceLine) ? { sourceLine: frame.sourceLine } : {}),
+            mapped: frame?.mapped === true,
+          };
+        })
+        .sort(
+          (left, right) =>
+            right.durationMs - left.durationMs ||
+            left.sourcePath.localeCompare(right.sourcePath) ||
+            left.functionName.localeCompare(right.functionName),
+        );
+
+      return {
+        startOffsetMs: Number.isFinite(firstTaskTimestampUs)
+          ? roundMs((task.ts - firstTaskTimestampUs) / 1000)
+          : 0,
+        durationMs: roundMs(task.dur / 1000),
+        scriptCallCount: scriptCalls.length,
+        topScriptCalls: scriptCalls.slice(0, 5),
+      };
+    })
+    .sort((left, right) => left.startOffsetMs - right.startOffsetMs);
+
+  return {
+    rendererMainThreadStatus: rendererMainThreadIds.size > 0 ? "captured" : "unavailable",
+    rendererMainThreadCount: rendererMainThreadIds.size,
+    dataLossOccurred,
+    minimumTaskDurationMs: longTaskThresholdUs / 1000,
+    taskCount: tasks.length,
+    tasks,
+  };
+}
+
+export function correlateCpuProfileWithTrace(profile, traceEvents, resolveFrame) {
+  if (!Array.isArray(profile.samples) || !Array.isArray(profile.timeDeltas)) {
+    throw new Error("CPU profile is missing samples or time deltas");
+  }
+  if (profile.samples.length !== profile.timeDeltas.length) {
+    throw new Error("CPU profile time deltas do not match samples");
+  }
+  if (!Number.isFinite(profile.startTime)) throw new Error("CPU profile start time is missing");
+
+  const rendererMainThreadIds = new Set(
+    traceEvents
+      .filter((event) => event.name === "thread_name" && event.args?.name === "CrRendererMain")
+      .map((event) => `${event.pid}:${event.tid}`),
+  );
+  const tasks = traceEvents
+    .filter(
+      (event) =>
+        event.name === "RunTask" &&
+        event.ph === "X" &&
+        rendererMainThreadIds.has(`${event.pid}:${event.tid}`) &&
+        Number.isFinite(event.ts) &&
+        Number.isFinite(event.dur) &&
+        event.dur >= longTaskThresholdUs,
+    )
+    .sort((left, right) => left.ts - right.ts);
+  const firstTaskTimestampUs = tasks.reduce(
+    (minimum, task) => Math.min(minimum, task.ts),
+    Number.POSITIVE_INFINITY,
+  );
+  const nodesById = new Map(profile.nodes.map((node) => [node.id, node]));
+  const parentById = new Map();
+  for (const node of profile.nodes) {
+    for (const childId of node.children ?? []) parentById.set(childId, node.id);
+  }
+  const mappedFramesById = new Map();
+  const appSamplesByTask = tasks.map(() => new Map());
+  const selfSamplesByTask = tasks.map(() => new Map());
+  const profileMetricsByTask = tasks.map(() => ({ sampleCount: 0, sampledMs: 0 }));
+  let sampleTimestampUs = profile.startTime;
+  let matchedSampleCount = 0;
+  let ignoredNonPositiveSampleDeltas = 0;
+
+  for (let index = 0; index < profile.samples.length; index += 1) {
+    const sampleDeltaUs = profile.timeDeltas[index];
+    if (!Number.isFinite(sampleDeltaUs)) {
+      throw new Error("CPU profile contains a non-finite time delta");
+    }
+    sampleTimestampUs += sampleDeltaUs;
+    if (sampleDeltaUs <= 0) {
+      ignoredNonPositiveSampleDeltas += 1;
+      continue;
+    }
+    const taskIndex = tasks.findIndex(
+      (task) => sampleTimestampUs >= task.ts && sampleTimestampUs < task.ts + task.dur,
+    );
+    if (taskIndex < 0) continue;
+    matchedSampleCount += 1;
+    profileMetricsByTask[taskIndex].sampleCount += 1;
+    profileMetricsByTask[taskIndex].sampledMs += sampleDeltaUs / 1000;
+
+    const stack = [];
+    let nodeId = profile.samples[index];
+    while (nodeId !== undefined && nodesById.has(nodeId) && stack.length < 2048) {
+      const node = nodesById.get(nodeId);
+      if (!mappedFramesById.has(node.id)) {
+        mappedFramesById.set(node.id, resolveFrame(node.callFrame));
+      }
+      stack.push(mappedFramesById.get(node.id));
+      nodeId = parentById.get(nodeId);
+    }
+    const selfFrame = stack[0];
+    if (selfFrame) {
+      const selfKey = `${selfFrame.sourcePath ?? "unmapped/unknown"}::${selfFrame.functionName ?? "anonymous"}@${selfFrame.sourceLine ?? "?"}`;
+      const selfAggregate = selfSamplesByTask[taskIndex].get(selfKey) ?? {
+        sourcePath: selfFrame.sourcePath ?? "unmapped/unknown",
+        functionName: sanitizeFunctionName(selfFrame.functionName),
+        ...(Number.isInteger(selfFrame.sourceLine) ? { sourceLine: selfFrame.sourceLine } : {}),
+        mapped: selfFrame.mapped === true,
+        sampledMs: 0,
+        sampleCount: 0,
+      };
+      selfAggregate.sampledMs += sampleDeltaUs / 1000;
+      selfAggregate.sampleCount += 1;
+      selfSamplesByTask[taskIndex].set(selfKey, selfAggregate);
+    }
+    const appFrame = stack.find(
+      (frame) => frame?.mapped === true && frame.sourcePath.startsWith("src/"),
+    );
+    if (!appFrame) continue;
+
+    const key = `${appFrame.sourcePath}::${appFrame.functionName}@${appFrame.sourceLine ?? "?"}`;
+    const aggregate = appSamplesByTask[taskIndex].get(key) ?? {
+      sourcePath: appFrame.sourcePath,
+      functionName: sanitizeFunctionName(appFrame.functionName),
+      ...(Number.isInteger(appFrame.sourceLine) ? { sourceLine: appFrame.sourceLine } : {}),
+      mapped: true,
+      sampledMs: 0,
+      sampleCount: 0,
+    };
+    aggregate.sampledMs += sampleDeltaUs / 1000;
+    aggregate.sampleCount += 1;
+    appSamplesByTask[taskIndex].set(key, aggregate);
+  }
+
+  return {
+    clockAlignmentStatus: matchedSampleCount > 0 ? "matched" : "no-overlap",
+    profileSampleCount: profile.samples.length,
+    samplesInsideLongTasks: matchedSampleCount,
+    ignoredNonPositiveSampleDeltas,
+    tasks: tasks.map((task, index) => ({
+      startOffsetMs: Number.isFinite(firstTaskTimestampUs)
+        ? roundMs((task.ts - firstTaskTimestampUs) / 1000)
+        : 0,
+      durationMs: roundMs(task.dur / 1000),
+      profileSampleCount: profileMetricsByTask[index].sampleCount,
+      profileSampledMs: roundMs(profileMetricsByTask[index].sampledMs),
+      selfFrames: [...selfSamplesByTask[index].values()]
+        .map((frame) => ({ ...frame, sampledMs: roundMs(frame.sampledMs) }))
+        .sort(
+          (left, right) =>
+            right.sampledMs - left.sampledMs || left.sourcePath.localeCompare(right.sourcePath),
+        )
+        .slice(0, 5),
+      appFrames: [...appSamplesByTask[index].values()]
+        .map((frame) => ({ ...frame, sampledMs: roundMs(frame.sampledMs) }))
+        .sort(
+          (left, right) =>
+            right.sampledMs - left.sampledMs || left.sourcePath.localeCompare(right.sourcePath),
+        ),
+    })),
+  };
+}
+
+export function aggregateLongTaskTraces(samples) {
+  if (samples.length === 0) throw new Error("At least one long-task trace summary is required");
+
+  const frameDurationsBySample = new Map();
+  for (const [sampleIndex, sample] of samples.entries()) {
+    const perSample = new Map();
+    for (const task of sample.cpuProfileCorrelation?.tasks ?? sample.tasks ?? []) {
+      for (const call of task.appFrames ?? task.topScriptCalls ?? []) {
+        if (!call.mapped || !call.sourcePath.startsWith("src/")) continue;
+        const key = `${call.sourcePath}::${call.functionName}@${call.sourceLine ?? "?"}`;
+        const durationMs = call.sampledMs ?? call.durationMs ?? 0;
+        perSample.set(key, Math.max(perSample.get(key) ?? 0, durationMs));
+      }
+    }
+    for (const [key, durationMs] of perSample) {
+      const durations = frameDurationsBySample.get(key) ?? [];
+      durations.push({ sampleIndex, durationMs });
+      frameDurationsBySample.set(key, durations);
+    }
+  }
+
+  const appCandidates = [...frameDurationsBySample.entries()]
+    .map(([key, durations]) => {
+      const [sourceAndFunction, linePart] = key.split("@");
+      const separator = sourceAndFunction.lastIndexOf("::");
+      const observed = durations.map((entry) => entry.durationMs);
+      return {
+        sourcePath: sourceAndFunction.slice(0, separator),
+        functionName: sourceAndFunction.slice(separator + 2),
+        ...(linePart !== "?" ? { sourceLine: Number(linePart) } : {}),
+        medianSampledMs: roundMs(median(observed)),
+        observedSamples: new Set(durations.map((entry) => entry.sampleIndex)).size,
+      };
+    })
+    .sort(
+      (left, right) =>
+        right.medianSampledMs - left.medianSampledMs ||
+        left.sourcePath.localeCompare(right.sourcePath),
+    );
+
+  return {
+    sampleCount: samples.length,
+    samplesWithRendererMainThread: samples.filter(
+      (sample) => sample.rendererMainThreadStatus === "captured",
+    ).length,
+    medianTaskCount: median(samples.map((sample) => sample.taskCount ?? sample.tasks?.length ?? 0)),
+    samplesWithCpuProfileOverlap: samples.filter(
+      (sample) => sample.cpuProfileCorrelation?.clockAlignmentStatus === "matched",
+    ).length,
+    repeatedAppCandidates: appCandidates.filter((candidate) => candidate.observedSamples >= 2),
+  };
+}
+
+async function readTraceStream(cdp, stream) {
+  const chunks = [];
+  try {
+    while (true) {
+      const chunk = await cdp.send("IO.read", { handle: stream });
+      chunks.push(Buffer.from(chunk.data, chunk.base64Encoded ? "base64" : "utf8"));
+      if (chunk.eof) break;
+    }
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } finally {
+    await cdp.send("IO.close", { handle: stream }).catch(() => {});
+  }
+}
+
+async function stopTrace(cdp, tracingComplete) {
+  await cdp.send("Tracing.end");
+  const completed = await tracingComplete;
+  if (!completed.stream) throw new Error("CDP trace did not return a readable stream");
+  return {
+    stream: completed.stream,
+    dataLossOccurred: completed.dataLossOccurred === true,
+  };
+}
+
+async function readTraceCapture(cdp, completed) {
+  return {
+    trace: await readTraceStream(cdp, completed.stream),
+    dataLossOccurred: completed.dataLossOccurred,
+  };
+}
+
+async function finishTrace(cdp, tracingComplete) {
+  return readTraceCapture(cdp, await stopTrace(cdp, tracingComplete));
+}
+
 async function loginProfileRole(request, role) {
   const response = await request.post(`${apiBase}/auth/login`, {
     data: { username: role.username, password: role.password },
@@ -581,6 +897,8 @@ async function captureSample(browser, session, maps, route) {
 
   let cdp;
   let profileStarted = false;
+  let tracingStarted = false;
+  let tracingComplete;
   try {
     const page = await context.newPage();
     let apiResponseFailures = 0;
@@ -608,6 +926,14 @@ async function captureSample(browser, session, maps, route) {
     cdp = await context.newCDPSession(page);
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottleRate });
     await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
+    tracingComplete = new Promise((resolve) => cdp.once("Tracing.tracingComplete", resolve));
+    await cdp.send("Tracing.start", {
+      categories: traceCategories,
+      transferMode: "ReturnAsStream",
+      streamFormat: "json",
+      streamCompression: "none",
+    });
+    tracingStarted = true;
     await cdp.send("Profiler.enable");
     await cdp.send("Profiler.setSamplingInterval", { interval: 1000 });
     await cdp.send("Profiler.start");
@@ -617,9 +943,8 @@ async function captureSample(browser, session, maps, route) {
     await page.goto(`${stagingOrigin}/#${route.path}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       (expectedPath) =>
-        document
-          .querySelector('[data-testid="app-shell"]')
-          ?.getAttribute("data-current-path") === expectedPath,
+        document.querySelector('[data-testid="app-shell"]')?.getAttribute("data-current-path") ===
+        expectedPath,
       route.currentPath,
       { timeout: 60_000 },
     );
@@ -627,10 +952,23 @@ async function captureSample(browser, session, maps, route) {
       .locator('#root [data-testid="server-clock"]')
       .waitFor({ state: "visible", timeout: 60_000 });
     await page.waitForTimeout(1000);
+    const completedTrace = await stopTrace(cdp, tracingComplete);
+    tracingStarted = false;
     const profileResponse = await cdp.send("Profiler.stop");
     profileStarted = false;
+    const traceCapture = await readTraceCapture(cdp, completedTrace);
     const summary = summarizeCpuProfile(profileResponse.profile, (frame) =>
       resolveMappedFrame(frame, maps),
+    );
+    const longTaskTrace = summarizeLongTaskTrace(
+      traceCapture.trace.traceEvents ?? [],
+      (frame) => resolveMappedFrame(frame, maps),
+      { dataLossOccurred: traceCapture.dataLossOccurred },
+    );
+    longTaskTrace.cpuProfileCorrelation = correlateCpuProfileWithTrace(
+      profileResponse.profile,
+      traceCapture.trace.traceEvents ?? [],
+      (frame) => resolveMappedFrame(frame, maps),
     );
 
     return {
@@ -640,6 +978,7 @@ async function captureSample(browser, session, maps, route) {
       websocketOpenCount,
       websocketErrorCount,
       websocketReceivedFrameCount,
+      longTaskTrace,
       ...summary,
       appInclusiveFrames: summary.appInclusiveFrames.slice(0, 20),
       selfFrames: summary.selfFrames.slice(0, 30),
@@ -652,6 +991,14 @@ async function captureSample(browser, session, maps, route) {
         await cdp.send("Profiler.stop");
       } catch {
         // The context is closed below even if Chrome already stopped profiling.
+      }
+    }
+    if (tracingStarted && cdp) {
+      try {
+        const completedTrace = await stopTrace(cdp, tracingComplete);
+        await readTraceCapture(cdp, completedTrace);
+      } catch {
+        // The context is closed below even if Chrome already stopped tracing.
       }
     }
     await cdp?.detach();
@@ -696,7 +1043,7 @@ async function main() {
       }
 
       const report = {
-        schemaVersion: 2,
+        schemaVersion: 3,
         capturedAt: new Date().toISOString(),
         source: {
           commit: gitValue(["rev-parse", "HEAD"]),
@@ -719,11 +1066,14 @@ async function main() {
           comparedScriptAssets,
         },
         samples,
-        summary: aggregateProfileSummaries(samples),
+        summary: {
+          ...aggregateProfileSummaries(samples),
+          longTaskTrace: aggregateLongTaskTraces(samples.map((sample) => sample.longTaskTrace)),
+        },
         interpretation: {
           performanceComparison: false,
           recommendationRule:
-            "An unattributed context is a candidate only when its closest mapped frame appears in at least two samples; native or unknown leaf frames remain separate from that context.",
+            "An unattributed context is a candidate only when its closest mapped frame appears in at least two samples; native or unknown leaf frames remain separate from that context. A mapped application frame in at least two long-task traces is a candidate, but nested call durations are not additive and CDP task durations are not Lighthouse TBT or field INP.",
         },
       };
       assertPrivacySafe(report);

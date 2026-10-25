@@ -3,10 +3,13 @@ import test from "node:test";
 
 import {
   aggregateProfileSummaries,
+  aggregateLongTaskTraces,
   assertPrivacySafe,
+  correlateCpuProfileWithTrace,
   resolveProfileRoute,
   sanitizeSourcePath,
   summarizeCpuProfile,
+  summarizeLongTaskTrace,
 } from "./profile-worker-production.mjs";
 
 test("allows only known authenticated production profile routes", () => {
@@ -213,4 +216,161 @@ test("normalizes source-map sources to repository-relative module paths", () => 
     sanitizeSourcePath("../../node_modules/react-dom/cjs/react-dom.production.js"),
     "node_modules/react-dom/cjs/react-dom.production.js",
   );
+});
+
+test("summarizes renderer long tasks and maps nested JavaScript calls", () => {
+  const traceEvents = [
+    { name: "thread_name", ph: "M", pid: 10, tid: 20, args: { name: "CrRendererMain" } },
+    { name: "thread_name", ph: "M", pid: 10, tid: 21, args: { name: "DedicatedWorker" } },
+    { name: "RunTask", ph: "X", pid: 10, tid: 20, ts: 1000, dur: 200000 },
+    {
+      name: "FunctionCall",
+      cat: "devtools.timeline",
+      ph: "X",
+      pid: 10,
+      tid: 20,
+      ts: 1010,
+      dur: 150000,
+      args: {
+        data: {
+          functionName: "renderRows",
+          url: "http://localhost/assets/app.js?secret=ignored",
+          lineNumber: 3,
+          columnNumber: 12,
+        },
+      },
+    },
+    { name: "RunTask", ph: "X", pid: 10, tid: 21, ts: 1000, dur: 250000 },
+    { name: "RunTask", ph: "X", pid: 10, tid: 20, ts: 300000, dur: 49000 },
+  ];
+  const resolveFrame = () => ({
+    sourcePath: "src/features/time-control/TimeControlTable.tsx",
+    functionName: "renderRows",
+    sourceLine: 44,
+    mapped: true,
+  });
+
+  const result = summarizeLongTaskTrace(traceEvents, resolveFrame);
+
+  assert.equal(result.rendererMainThreadStatus, "captured");
+  assert.equal(result.tasks.length, 1);
+  assert.equal(result.tasks[0].durationMs, 200);
+  assert.equal(result.tasks[0].scriptCallCount, 1);
+  assert.deepEqual(result.tasks[0].topScriptCalls[0], {
+    eventKind: "FunctionCall",
+    durationMs: 150,
+    sourcePath: "src/features/time-control/TimeControlTable.tsx",
+    functionName: "renderRows",
+    sourceLine: 44,
+    mapped: true,
+  });
+  assertPrivacySafe(result);
+  assert.doesNotMatch(JSON.stringify(result), /localhost|secret|https?:\/\//);
+});
+
+test("aggregates repeated app frames by sample rather than nested task time", () => {
+  const frame = {
+    eventKind: "FunctionCall",
+    durationMs: 80,
+    sourcePath: "src/features/time-control/TimeControlTable.tsx",
+    functionName: "renderRows",
+    sourceLine: 44,
+    mapped: true,
+  };
+  const result = aggregateLongTaskTraces([
+    { rendererMainThreadStatus: "captured", tasks: [{ topScriptCalls: [frame] }] },
+    {
+      rendererMainThreadStatus: "captured",
+      tasks: [{ topScriptCalls: [{ ...frame, durationMs: 100 }] }],
+    },
+    { rendererMainThreadStatus: "captured", tasks: [{ topScriptCalls: [] }] },
+  ]);
+
+  assert.equal(result.sampleCount, 3);
+  assert.deepEqual(result.repeatedAppCandidates, [
+    {
+      sourcePath: "src/features/time-control/TimeControlTable.tsx",
+      functionName: "renderRows",
+      sourceLine: 44,
+      medianSampledMs: 90,
+      observedSamples: 2,
+    },
+  ]);
+});
+
+test("keeps unmapped trace calls explicit without retaining their URL", () => {
+  const result = summarizeLongTaskTrace(
+    [
+      { name: "thread_name", ph: "M", pid: 4, tid: 9, args: { name: "CrRendererMain" } },
+      { name: "RunTask", ph: "X", pid: 4, tid: 9, ts: 100, dur: 60000 },
+      {
+        name: "EvaluateScript",
+        ph: "X",
+        pid: 4,
+        tid: 9,
+        ts: 110,
+        dur: 55000,
+        args: { data: { url: "http://127.0.0.1:8080/assets/private.js?key=secret" } },
+      },
+    ],
+    () => ({
+      sourcePath: "unmapped/private.js",
+      functionName: "anonymous",
+      mapped: false,
+    }),
+  );
+
+  assert.equal(result.tasks[0].topScriptCalls[0].mapped, false);
+  assert.equal(result.tasks[0].topScriptCalls[0].sourcePath, "unmapped/private.js");
+  assert.doesNotMatch(JSON.stringify(result), /127\.0\.0\.1|secret|https?:\/\//);
+  assertPrivacySafe(result);
+});
+
+test("aligns CPU samples to renderer tasks and retains nearest application frames", () => {
+  const profile = {
+    startTime: 1000,
+    endTime: 101000,
+    nodes: [
+      { id: 1, callFrame: { functionName: "(root)", url: "" }, children: [2] },
+      {
+        id: 2,
+        callFrame: {
+          functionName: "r",
+          url: "http://127.0.0.1/assets/time-control.js",
+          lineNumber: 2,
+          columnNumber: 8,
+        },
+      },
+    ],
+    samples: [2, 2, 2, 2],
+    timeDeltas: [20000, -5000, 20000, 20000],
+  };
+  const traceEvents = [
+    { name: "thread_name", ph: "M", pid: 1, tid: 7, args: { name: "CrRendererMain" } },
+    { name: "RunTask", ph: "X", pid: 1, tid: 7, ts: 10000, dur: 70000 },
+  ];
+  const resolveFrame = () => ({
+    sourcePath: "src/features/time-control/TimeControlTable.tsx",
+    functionName: "renderRows",
+    sourceLine: 88,
+    mapped: true,
+  });
+
+  const result = correlateCpuProfileWithTrace(profile, traceEvents, resolveFrame);
+
+  assert.equal(result.clockAlignmentStatus, "matched");
+  assert.equal(result.samplesInsideLongTasks, 3);
+  assert.equal(result.ignoredNonPositiveSampleDeltas, 1);
+  assert.equal(result.tasks[0].profileSampledMs, 60);
+  assert.equal(result.tasks[0].appFrames[0].sampledMs, 60);
+  assert.equal(result.tasks[0].appFrames[0].functionName, "renderRows");
+  assert.equal(result.tasks[0].selfFrames[0].functionName, "renderRows");
+  assert.equal(result.tasks[0].selfFrames[0].sampledMs, 60);
+  assert.ok(
+    result.tasks.every((task) =>
+      [...task.appFrames, ...task.selfFrames].every((frame) => frame.sampledMs >= 0),
+    ),
+  );
+  assertPrivacySafe(result);
+  assert.doesNotMatch(JSON.stringify(result), /127\.0\.0\.1|https?:\/\//);
 });

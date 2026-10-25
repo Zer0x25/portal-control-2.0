@@ -37,37 +37,58 @@ Esta medición confirma una brecha de laboratorio, no un INP de usuarios reales.
 
 ## Atribución y decisión
 
-- React representa la mayor categoría del perfil CDP: mediana de 675,7 ms de
-  muestras inclusivas dentro de una ventana de perfil de 2.758 ms; 275,6 ms son
-  muestras propias de React. El perfil no enlaza cada muestra con una tarea
-  Lighthouse concreta, por lo que esto localiza la categoría dominante, no un
-  componente culpable.
-- `apiClient.performRequest` apareció en las seis capturas con 70–84 ms
-  muestreados por perfil. Su costo no está correlacionado con una tarea TBT
-  individual y no se debe interpretar como 70–84 ms de bloqueo atribuible a una
-  sola operación.
-- `socketService.connect` consumió aproximadamente 10–16 ms por perfil. Diferir
-  el socket no tiene ganancia potencial suficiente para explicar el TBT mediano
-  de 349,5 ms.
-- El ordenamiento en `useClockingPanel.ts` apareció una sola vez (42,4 ms de
-  muestras) entre seis perfiles; no es repetible. La vista protegida tuvo cerca
-  de 8–9 ms por perfil, sin evidencia para editarla.
-- No se aplicó una optimización de runtime. No hay un componente o función
-  propia que las trazas vinculen repetidamente con las tareas largas ni una
-  medición A/B que pruebe una reducción de TBT. Evitar un cambio especulativo
-  cumple la condición de la spec.
+- Los seis perfiles CDP iniciales encontraron React como la categoría dominante
+  y `apiClient.performRequest` como actividad repetida, pero no tenían marcas
+  temporales para enlazar esos stacks con cada tarea larga.
+- La captura posterior de Spec 086 sí enlaza los perfiles CPU con límites
+  `RunTask` de Chromium: `apiClient.performRequest` aparece dentro de tareas
+  largas en las tres muestras. Su costo inclusivo mediano fue 66,3 ms; su tiempo
+  propio muestreado fue 11,5–47,5 ms (mediana 39,6 ms). También aparecen las
+  funciones lazy de `App.tsx` y la inicialización de IndexedDB.
+- Esa correlación ubica candidatos, pero no demuestra que `performRequest` sea
+  por sí solo la causa del TBT de Lighthouse. El trace registra trabajo React,
+  fetch y código de aplicación dentro de tareas de 189–288 ms; los perfiles
+  usan muestreo, y sus tiempos no se suman ni equivalen a TBT o INP.
+- No se aplicó una optimización de runtime ni se midió un A/B. La vista de
+  Control horario aporta alrededor de 6–8 ms de CPU muestreada, muy por debajo
+  de los candidatos de arranque compartidos. No hay evidencia para editar la
+  vista ni diferir Socket.IO por conjetura.
 
 La mejora concreta de esta entrega es de medición y diagnóstico: existe una
 corrida Lighthouse reproducible de cinco muestras y un perfilador reutilizable
-para Control horario y Worker Portal. **No se afirma una mejora del desempeño de
-la app**; la línea base nueva deja documentado el TBT alto para guiar el siguiente
+para Control horario y Worker Portal, más una correlación temporal entre tareas
+largas y muestras fuente. **No se afirma una mejora del desempeño de la app**;
+la línea base nueva deja documentado el TBT alto para guiar el siguiente
 experimento.
+
+## Comparación de rutas en la imagen actual
+
+Dashboard, Control horario y Kiosk se midieron en frío con Lighthouse 12.6.1,
+cinco muestras por ruta, Chrome 155, viewport 412×823, CPU 4× y red simulada a
+150 ms RTT / 1638,4 Kbps. Las capturas usaron la misma imagen de frontend
+`sha256:fcdcc13af02ae5891514463b2f5bec9d8c22202417edbb1a63de7e17544e5524`.
+
+| Ruta            | FCP mediano | LCP mediano | TBT mediano (rango) | CLS máximo | JS transferido | Solicitudes |
+| --------------- | ----------: | ----------: | ------------------: | ---------: | -------------: | ----------: |
+| Control horario |     2,036 s |     2,477 s |  349,5 ms (287–402) |     0,0102 |      300.620 B |       85–89 |
+| Dashboard       |     2,037 s |     2,255 s |    213 ms (182–466) |     0,0102 |      285.508 B |       81–82 |
+| Kiosk           |     2,998 s |     3,825 s |     49 ms (29,5–86) |          0 |      203.526 B |          48 |
+
+Control horario tiene el mayor TBT mediano confirmado: 136,5 ms más que
+Dashboard. Kiosk mantiene TBT bajo, pero su LCP mediano de 3,83 s es otro foco
+de carga. El percentil máximo de TBT de Dashboard llega a 466 ms; comparar solo
+medianas ocultaría esa variación. Worker Portal no tiene una medición actual
+comparable: la batería completa falló al autenticar su usuario de prueba antes
+de iniciar Lighthouse. El registro confirma 2 tests fallidos, 16 dependientes
+omitidos y ninguna fase Lighthouse ejecutada; no se alteraron cuentas ni datos.
 
 ## Evidencia y verificación
 
 - [Resumen de las cinco corridas Lighthouse](./time-control-lighthouse-baseline.json)
+- [Comparación actual de Dashboard, Control horario y Kiosk](./current-route-comparison-2026-10-25.json)
 - [Perfil CDP de producción](./time-control-production-cpu-2026-10-25.json)
 - [Tanda de confirmación CDP](./time-control-production-cpu-confirmation.json)
+- [Correlación de tareas largas Spec 086](../../086-time-control-long-task-trace/evidencia/resultado.md)
 - Las pruebas de perfilador, ruta/rol y privacidad pasaron; el catálogo mantiene
   sus 18 rutas y 8 familias. `spec:check`, `docs:check` y `git diff --check`
   pasaron tras registrar esta evidencia.
@@ -76,8 +97,8 @@ experimento.
 
 ## Siguiente experimento
 
-Capturar un trace de navegador que conserve los límites y marcas de las tareas
-largas junto con sus stacks fuente; luego correlacionarlo con commits React y
-consultas iniciales. El perfil actual no ofrece esa unión temporal. Empezar por
-la tarea repetida del bundle `react-core` cercana a FCP y reducir el árbol o el
-trabajo que dispara solo cuando el trace identifique el componente responsable.
+Revisar la ejecución inicial de `apiClient.performRequest` y la sincronización
+de estado local para separar el costo de `fetch`, los callbacks y los renders
+que coinciden en la misma tarea. Probar un cambio solo si reduce el TBT mediano
+al menos 20% o lo deja bajo 200 ms, mantiene LCP dentro de 5% y pasa regresión
+funcional; por ahora no hay ganancia de runtime demostrada.
