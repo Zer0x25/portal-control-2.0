@@ -94,7 +94,7 @@ describe("Responsive Viewport & Mobile-Desktop Coverage Guardrails", () => {
     // Detecta anchos rígidos incondicionales >= 330px en px sin prefijo responsivo (sm:, md:, lg:, xl:)
     // Excluye explícitamente techos elásticos (max-w-[...px])
     const unconstrainedOver320pxRegex =
-      /(?<!(?:sm|md|lg|xl|2xl):)(?<!max-)\b(?:min-w|w)-\[(?:[4-9]\d{2}|[1-9]\d{3,})px\]/g;
+      /(?<!(?:sm|md|lg|xl|2xl):)(?<!max-)(?<![\w-])(?:min-w|w)-\[(?:[4-9]\d{2}|[1-9]\d{3,})px\]/g;
 
     const violations: { file: string; match: string }[] = [];
 

@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { ReactNode } from "react";
 import ClockingPanel from "../../../features/time-control/components/ClockingPanel";
 import TimeRecordRow from "../../../features/time-control/components/TimeRecordRow";
 import { useAuth } from "../../../hooks/useAuth";
@@ -19,6 +21,14 @@ vi.mock("../../../hooks/useToasts");
 vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: () => false,
 }));
+
+const renderWithQueryClient = (ui: ReactNode) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+};
 
 describe("Supervisor Role Component Permissions", () => {
   const mockSupervisor = { id: "sup-1", username: "supervisor", role: "Supervisor" };
@@ -50,7 +60,7 @@ describe("Supervisor Role Component Permissions", () => {
     // Escenario: Supervisor intentando realizar acción cuando está deshabilitado por lógica externa
     (useAuth as any).mockReturnValue({ currentUser: mockSupervisor });
 
-    render(
+    renderWithQueryClient(
       <ClockingPanel
         isActionDisabled={true}
         roleBasedTooltip="Solo Administradores pueden fichar"
@@ -65,7 +75,7 @@ describe("Supervisor Role Component Permissions", () => {
   it("should allow actions for Admin in ClockingPanel in same scenario", () => {
     (useAuth as any).mockReturnValue({ currentUser: mockAdmin });
 
-    render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
+    renderWithQueryClient(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
 
     const input = screen.getByPlaceholderText(/Buscar empleado/i);
     expect(input).not.toBeDisabled();

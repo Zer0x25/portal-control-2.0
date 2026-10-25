@@ -411,7 +411,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           ) : (
             <table
               data-list-group="data-table"
-              className="min-w-[880px] w-full border-separate border-spacing-0"
+              className="w-full min-w-full md:min-w-[880px] border-separate border-spacing-0"
             >
               <thead className="bg-token-surface-header">
                 <tr>
