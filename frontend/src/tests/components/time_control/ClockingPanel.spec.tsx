@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import ClockingPanel from "../../../features/time-control/components/ClockingPanel";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
@@ -6,11 +6,20 @@ import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
+import { useClockingPanel } from "../../../features/time-control/hooks/useClockingPanel";
+
+const { normalizeStringMock } = vi.hoisted(() => ({
+  normalizeStringMock: vi.fn(
+    (value: string | undefined | null) =>
+      value?.normalize("NFD").replace(/[\u0300-\u036f]/g, "") ?? "",
+  ),
+}));
 
 // Mock de los hooks
 vi.mock("../../../hooks/queries/useEmployeesQuery", () => ({
   useClockingEmployeeOptionsQuery: vi.fn(),
 }));
+vi.mock("../../../utils/stringUtils", () => ({ normalizeString: normalizeStringMock }));
 vi.mock("../../../hooks/useTimeRecords");
 vi.mock("../../../hooks/queries/useTimeRecordsQuery");
 vi.mock("../../../hooks/useAuth");
@@ -26,6 +35,7 @@ describe("ClockingPanel Component", () => {
   const mockActiveEmployees = [
     { id: "1", name: "Juan Perez", area: "Logística", status: "Activo" },
     { id: "2", name: "Maria Garcia", area: "Operaciones", status: "Activo" },
+    { id: "3", name: "José Álvarez", area: "Administración", status: "Activo" },
   ];
 
   const mockCurrentUser = { id: "admin-1", username: "admin", role: "Administrador" };
@@ -65,6 +75,11 @@ describe("ClockingPanel Component", () => {
     expect(useTimeRecords).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }));
   });
 
+  it("skips deriving search results while the search is empty", () => {
+    render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
+    expect(normalizeStringMock).not.toHaveBeenCalled();
+  });
+
   it("should show results when typing in search input", async () => {
     render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
     const input = screen.getByPlaceholderText(/Buscar empleado/i);
@@ -77,13 +92,37 @@ describe("ClockingPanel Component", () => {
     expect(screen.getByText(/LOGÍSTICA/i)).toBeInTheDocument();
   });
 
+  it("keeps accent-insensitive employee search", () => {
+    render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
+    const input = screen.getByPlaceholderText(/Buscar empleado/i);
+
+    fireEvent.change(input, { target: { value: "jose" } });
+
+    expect(screen.getByText("José Álvarez")).toBeInTheDocument();
+  });
+
+  it("sorts matching employee results alphabetically", () => {
+    const { result } = renderHook(() => useClockingPanel());
+
+    act(() => result.current.setSearchTerm("a"));
+
+    expect(result.current.filteredEmployees.map((employee) => employee.name)).toEqual([
+      "José Álvarez",
+      "Juan Perez",
+      "Maria Garcia",
+    ]);
+  });
+
   it("should select an employee and enable the 'Inicio' button", async () => {
     render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
     const input = screen.getByPlaceholderText(/Buscar empleado/i);
 
     fireEvent.change(input, { target: { value: "Juan" } });
     const employeeOption = await screen.findByText(/JUAN PEREZ/i);
+    const normalizationCallsBeforeSelection = normalizeStringMock.mock.calls.length;
     fireEvent.click(employeeOption);
+
+    expect(normalizeStringMock).toHaveBeenCalledTimes(normalizationCallsBeforeSelection);
 
     await waitFor(() => {
       expect(screen.getByText(/Fuera de Jornada/i)).toBeInTheDocument();

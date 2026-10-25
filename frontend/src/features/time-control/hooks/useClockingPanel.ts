@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ClockingStatus } from "../../../types/index";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import type { ClockingEmployeeOption } from "../../../services/employeeService";
@@ -187,11 +187,16 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const filteredEmployees = activeEmployees
-    .filter((e) =>
-      normalizeString(e.name).toLowerCase().includes(normalizeString(searchTerm).toLowerCase()),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const filteredEmployees = useMemo(() => {
+    if (!searchTerm || selectedEmployeeId) return [];
+
+    const normalizedSearchTerm = normalizeString(searchTerm).toLowerCase();
+    return activeEmployees
+      .filter((employee) =>
+        normalizeString(employee.name).toLowerCase().includes(normalizedSearchTerm),
+      )
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [activeEmployees, searchTerm, selectedEmployeeId]);
 
   const statusLabels: Record<ClockingStatus, string> = {
     fuera: "Fuera de Jornada",

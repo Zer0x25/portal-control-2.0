@@ -499,3 +499,11 @@
 - **Límite**: CPU activo mediano 792,496 → 793,710 ms; Lighthouse TBT 203 → 232 ms con rangos solapados. No se afirma una mejora de TBT ni causalidad de los cambios del perfil.
 - **Siguiente**: inspeccionar `apiClient.performRequest`, mediana muestreada 40,917 ms, para separar trabajo síncrono de espera de red antes de considerar otra lectura.
 - **Evidencia**: [resultado Spec 092](../specs/092-time-policy-add-business-days/evidencia/resultado.md), [perfil CPU posterior](../specs/092-time-policy-add-business-days/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/092-time-policy-add-business-days/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Omitir derivación oculta del buscador
+
+- **Cambio**: `useClockingPanel` no normaliza, filtra ni ordena el catálogo cuando la búsqueda está vacía o hay un empleado seleccionado; memoiza resultados solo para una búsqueda activa. Se descartó aplazar la query global porque el shell la necesita para evaluar el auto inicio de jornada.
+- **Medido**: el callback de filtrado bajó de 21,505 ms muestreados en 2/3 tareas largas a no aparecer como frame repetido. Los 3 perfiles conservaron 12/12 solicitudes por navegación y 36/36 respuestas HTTP 200. TypeScript, ESLint y 8/8 tests dirigidos pasaron.
+- **Lighthouse**: TBT mediano 232 → 190 ms; rangos 133,5–269 y 134–626,03 ms se solapan. FCP/LCP variaron menos de 0,2%, CLS máximo quedó estable. No se declara mejora estable de TBT.
+- **Siguiente**: investigar los importadores lazy de `PersistentLayout` y `TimeControlPage`, repetidos en 3/3 tareas con 17,775 y 15,1 ms muestreados medianos, y comprobar si el fetch de esos chunks se serializa antes de proponer un cambio.
+- **Evidencia**: [resultado Spec 093](../specs/093-time-control-search-computation/evidencia/resultado.md), [perfiles CPU](../specs/093-time-control-search-computation/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/093-time-control-search-computation/evidencia/time-control-lighthouse-after-2026-10-25.json).
