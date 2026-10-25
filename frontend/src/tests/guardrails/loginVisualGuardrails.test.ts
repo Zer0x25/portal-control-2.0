@@ -55,6 +55,17 @@ describe("Login visual guardrails", () => {
     }
   });
 
+  it("keeps the About modal and worker portal free of ambient glows", () => {
+    for (const relativePath of [
+      "../../components/ui/AboutModal.view.tsx",
+      "../../features/worker-portal/views/WorkerPortal.view.tsx",
+    ]) {
+      expect(readFileSync(path.resolve(__dirname, relativePath), "utf8")).not.toContain(
+        "ambient-glow",
+      );
+    }
+  });
+
   it("uses the active theme colors for autofilled credential fields", () => {
     expect(css).toContain("var(--surface-stripe) inset !important");
     expect(css).toContain("-webkit-text-fill-color: var(--text-primary) !important;");

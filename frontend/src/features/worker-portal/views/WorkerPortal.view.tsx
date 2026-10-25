@@ -204,7 +204,6 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         >
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <div className="ambient-glow ambient-glow-prominent absolute inset-0 scale-125 opacity-70 transition-opacity group-hover:opacity-100" />
               <IconBox
                 icon={<UserIcon />}
                 variant="primary"
@@ -250,7 +249,6 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </div>
           </div>
         </div>
-        <div className="ambient-glow absolute top-[-50%] right-[-10%] w-64 h-64 pointer-events-none" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
