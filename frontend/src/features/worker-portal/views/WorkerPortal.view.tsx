@@ -143,8 +143,11 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
     return (
       <div key={cellKey} className="group/cell min-w-0">
         <div className="flex min-w-0 items-baseline justify-between gap-2">
-          <span className="truncate text-xs font-medium text-token-text-secondary">{label}:</span>
-          <span className="whitespace-nowrap text-sm font-semibold font-mono tabular-nums text-token-text-primary">
+          <span className="typo-list-secondary truncate text-token-text-secondary">{label}:</span>
+          <span
+            data-list-role="value"
+            className="typo-list-value whitespace-nowrap text-token-text-primary"
+          >
             {(formatDisplayDateTime && formatDisplayDateTime(value)).split(" ")[1] || "--:--"}
           </span>
         </div>
@@ -406,25 +409,28 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               )}
             </div>
           ) : (
-            <table className="min-w-[880px] w-full border-separate border-spacing-0">
+            <table
+              data-list-group="data-table"
+              className="min-w-[880px] w-full border-separate border-spacing-0"
+            >
               <thead className="bg-token-surface-header">
                 <tr>
-                  <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-token-text-secondary border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Fecha
                   </th>
-                  <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-token-text-secondary border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Turno
                   </th>
-                  <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-token-text-secondary border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Marcajes
                   </th>
-                  <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-token-text-secondary border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Horas planificadas
                   </th>
-                  <th className="whitespace-nowrap px-3 py-3 text-left text-xs font-semibold text-token-text-secondary border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Horas trabajadas
                   </th>
-                  <th className="whitespace-nowrap px-3 py-3 text-right text-xs font-semibold text-token-text-secondary border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-right typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Balance
                   </th>
                 </tr>
@@ -437,20 +443,26 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                       className={`group hover:bg-token-surface-active transition-colors animate-in fade-in ${record.scheduleInfo?.justificationType || record.justification?.type ? "bg-token-accent-brand/5" : ""}`}
                     >
                       <td className="px-3 py-4 align-top">
-                        <div className="text-sm font-semibold text-token-text-primary">
+                        <div
+                          data-list-role="value"
+                          className="typo-list-value text-token-text-primary"
+                        >
                           {formatRecordDate(record.date, {
                             day: "2-digit",
                             month: "2-digit",
                           })}
                         </div>
-                        <div className="text-xs text-token-text-tertiary mt-1">
+                        <div className="typo-list-secondary text-token-text-tertiary mt-1">
                           {formatRecordDate(record.date, {
                             weekday: "short",
                           })}
                         </div>
                       </td>
                       <td className="px-3 py-4 align-top">
-                        <span className="text-sm font-medium text-token-text-primary">
+                        <span
+                          data-list-role="primary"
+                          className="typo-list-primary text-token-text-primary"
+                        >
                           {record.scheduleInfo?.scheduleText || "Sin turno asignado"}
                         </span>
                       </td>
@@ -462,16 +474,23 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                           {renderTimestampCell(record, "salida", "Salida")}
                         </div>
                       </td>
-                      <td className="px-3 py-4 align-top text-sm font-medium font-mono tabular-nums text-token-text-secondary">
+                      <td
+                        data-list-role="value"
+                        className="px-3 py-4 align-top typo-list-value text-token-text-secondary"
+                      >
                         {formatDecimalHoursToHHMM &&
                           formatDecimalHoursToHHMM(record.scheduledHours ?? 0)}
                       </td>
-                      <td className="px-3 py-4 align-top text-sm font-semibold font-mono tabular-nums text-token-text-primary">
+                      <td
+                        data-list-role="value"
+                        className="px-3 py-4 align-top typo-list-value text-token-text-primary"
+                      >
                         {formatDecimalHoursToHHMM && formatDecimalHoursToHHMM(record.workedHours)}
                       </td>
                       <td className="px-3 py-4 align-top text-right">
                         <div
-                          className={`text-sm font-semibold font-mono tabular-nums ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-token-status-error"}`}
+                          data-list-role="value"
+                          className={`typo-list-value ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-token-status-error"}`}
                         >
                           {formatDecimalHoursToHHMM &&
                             formatDecimalHoursToHHMM(record.overtimeHours)}

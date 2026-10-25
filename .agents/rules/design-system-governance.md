@@ -45,6 +45,26 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
   - `typo-ui-meta`: Textos de detalle técnico y fechas.
 - Fuentes: `font-sans` (Inter) para UI general y narrativa, `font-mono` (Roboto Mono) para códigos, IDs, timestamps y valores numéricos tabulares.
 
+### Tipografía estándar para listas
+
+Las listas se agrupan por presentación para conservar su comportamiento y usar la misma jerarquía tipográfica:
+
+1. **Tablas de datos** (`data-table`): encabezado de columna, contenido principal, metadatos y valores numéricos.
+2. **Tablas operativas virtualizadas** (`virtualized-table`): filas compactas con marcajes y estados; misma escala y columnas alineadas.
+3. **Tarjetas responsivas de registros** (`responsive-record-cards`): los mismos roles que la tabla equivalente, apilados para lectura móvil.
+4. **Feeds y colas** (`activity-feed`, `request-queue`): contenido narrativo legible y metadatos separados.
+
+Roles comunes, definidos en `frontend/src/index.css`:
+
+- `typo-list-header`: encabezados, 12 px, sans, semibold.
+- `typo-list-primary`: contenido principal, 14 px, sans, semibold.
+- `typo-list-secondary`: etiquetas y metadatos, 12 px, sans, medium.
+- `typo-list-value`: horas, fechas, IDs y cantidades, 14 px, mono, semibold, tabular.
+- `typo-list-note`: explicación narrativa, 14 px, sans, regular.
+- `typo-list-status`: estado visible, 12 px, sans, semibold.
+
+Cada lista incorporada al estándar se registra en `frontend/src/tests/guardrails/list-typography-groups.json`. Las cuatro presentaciones pueden variar columnas, tarjetas, densidad y acciones, pero deben reutilizar estos roles; no se permite cursiva decorativa en filas ni valores operativos. Las cursivas editoriales fuera de listas quedan fuera de esta regla.
+
 ---
 
 ## 4. Micro-animaciones e Higiene de Rendimiento

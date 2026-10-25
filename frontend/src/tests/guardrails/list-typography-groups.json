@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "data-table",
+      "description": "Tablas de datos y reportes con filas y columnas.",
+      "members": [
+        {
+          "path": "src/features/worker-portal/views/WorkerPortal.view.tsx",
+          "requiredUtilities": [
+            "typo-list-header",
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value"
+          ]
+        },
+        {
+          "path": "src/components/ui/ReportTable.tsx",
+          "requiredUtilities": [
+            "typo-list-header",
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-status"
+          ]
+        },
+        {
+          "path": "src/features/employee-management/components/EmployeeListCard.tsx",
+          "requiredUtilities": [
+            "typo-list-header",
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value"
+          ]
+        },
+        {
+          "path": "src/features/governance/components/IntegrityAnomalyTable.tsx",
+          "requiredUtilities": [
+            "typo-list-header",
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "virtualized-table",
+      "description": "Tablas operativas virtualizadas con marcajes y estados.",
+      "members": [
+        {
+          "path": "src/features/time-control/components/TimeRecordTableViewDesktop.tsx",
+          "requiredUtilities": ["typo-list-header"]
+        },
+        {
+          "path": "src/features/time-control/components/TimeRecordRow.tsx",
+          "requiredUtilities": [
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-status"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "responsive-record-cards",
+      "description": "Tarjetas móviles que muestran los roles de una fila de tabla.",
+      "members": [
+        {
+          "path": "src/features/time-control/components/TimeRecordMobileCard.tsx",
+          "requiredUtilities": [
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-status"
+          ]
+        },
+        {
+          "path": "src/components/ui/ReportTableMobileSummaryCard.tsx",
+          "requiredUtilities": [
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-status"
+          ]
+        },
+        {
+          "path": "src/components/ui/ReportTableMobileDailyCard.tsx",
+          "requiredUtilities": [
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-status",
+            "typo-list-note"
+          ]
+        },
+        {
+          "path": "src/features/employee-management/components/EmployeeListCard.tsx",
+          "requiredUtilities": ["typo-list-primary", "typo-list-secondary", "typo-list-value"]
+        }
+      ]
+    },
+    {
+      "id": "activity-queue",
+      "description": "Feeds narrativos y colas virtualizadas de solicitudes.",
+      "variants": ["activity-feed", "request-queue"],
+      "members": [
+        {
+          "path": "src/features/logbook/components/LogEntriesCard.tsx",
+          "listGroup": "activity-feed",
+          "requiredUtilities": [
+            "typo-list-header",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-note"
+          ]
+        },
+        {
+          "path": "src/features/logbook/components/SupplierEntriesCard.tsx",
+          "listGroup": "activity-feed",
+          "requiredUtilities": [
+            "typo-list-header",
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-note"
+          ]
+        },
+        {
+          "path": "src/features/supervisor-dashboard/components/RequestsTabVirtualizedList.tsx",
+          "listGroup": "request-queue",
+          "requiredUtilities": ["typo-list-secondary"]
+        },
+        {
+          "path": "src/features/supervisor-dashboard/components/RequestsTabCards.tsx",
+          "listGroup": "request-queue",
+          "requiredUtilities": [
+            "typo-list-primary",
+            "typo-list-secondary",
+            "typo-list-value",
+            "typo-list-note"
+          ]
+        }
+      ]
+    }
+  ]
+}

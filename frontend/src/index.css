@@ -151,6 +151,32 @@
   @apply text-[11px] leading-tight font-semibold tracking-wide;
 }
 
+/* Shared hierarchy for data lists. List groups may vary layout and density,
+   while these roles keep labels, records, values, and notes predictable. */
+@utility typo-list-header {
+  @apply text-[12px] leading-tight font-sans font-semibold tracking-wide uppercase;
+}
+
+@utility typo-list-primary {
+  @apply text-[14px] leading-snug font-sans font-semibold;
+}
+
+@utility typo-list-secondary {
+  @apply text-[12px] leading-snug font-sans font-medium;
+}
+
+@utility typo-list-value {
+  @apply text-[14px] leading-snug font-mono font-semibold tabular-nums tracking-normal;
+}
+
+@utility typo-list-note {
+  @apply text-[14px] leading-relaxed font-sans font-normal;
+}
+
+@utility typo-list-status {
+  @apply text-[12px] leading-tight font-sans font-semibold;
+}
+
 /* --- PWA Mobile Safe Area Utilities --- */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
