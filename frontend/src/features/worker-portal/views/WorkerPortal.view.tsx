@@ -14,6 +14,7 @@ import {
   User,
 } from "../../../types/index";
 import PageHeader from "../../../components/ui/PageHeader";
+import Button from "../../../components/ui/Button";
 import LiveStatus from "../../../components/ui/LiveStatus";
 import ServerClock from "../../../components/ui/ServerClock";
 import IconBox from "../../../components/ui/IconBox";
@@ -26,6 +27,10 @@ import {
 } from "../../../components/ui/icons/index";
 import { CorrectionRequestModal } from "..";
 import { formatBusinessDate } from "../../../utils/dateUtils";
+import {
+  getClockingActionButtonClassName,
+  type ClockingActionType,
+} from "../../../utils/clockingActionButtonStyles";
 import { Z } from "../../../constants/zScale";
 
 export interface WorkerPortalViewProps {
@@ -47,9 +52,7 @@ export interface WorkerPortalViewProps {
   status: ClockingStatus;
   requestsMap: Map<string, CorrectionRequest>;
   handleExportPDF: () => Promise<void> | void;
-  handleClockingAction: (
-    t: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => Promise<void> | void;
+  handleClockingAction: (t: ClockingActionType) => Promise<void> | void;
   openCorrectionModal: (r: AugmentedTimeRecord, f: TimeRecordField) => void;
   formatDisplayDateTime?: (d: string | number | Date | undefined | null) => string;
   formatDecimalHoursToHHMM?: (h: number) => string;
@@ -94,32 +97,33 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
   // es presentacional puro (spec 033 AC1); el compilador de React (spec 037)
   // se encarga de memoizar estas constantes.
   const quickMonthOptions = monthOptions.slice(0, 3);
-  const clockingActions = [
+  const clockingActions: Array<{
+    id: ClockingActionType;
+    label: string;
+    statusGroup: ClockingStatus[];
+    action: () => Promise<void> | void;
+  }> = [
     {
       id: "jornada_inicio",
       label: "Inicio Jornada",
-      color: "green",
       statusGroup: ["fuera", "terminada", "jornada_terminada_anomalia"] as ClockingStatus[],
       action: () => handleClockingAction("jornada_inicio"),
     },
     {
       id: "colacion_inicio",
       label: "Inicio Colación",
-      color: "yellow",
       statusGroup: ["en_jornada"] as ClockingStatus[],
       action: () => handleClockingAction("colacion_inicio"),
     },
     {
       id: "colacion_fin",
       label: "Fin Colación",
-      color: "blue",
       statusGroup: ["en_colacion"] as ClockingStatus[],
       action: () => handleClockingAction("colacion_fin"),
     },
     {
       id: "jornada_fin",
       label: "Fin Jornada",
-      color: "red",
       statusGroup: ["en_jornada", "en_jornada_post_colacion", "en_colacion"] as ClockingStatus[],
       action: () => handleClockingAction("jornada_fin"),
     },
@@ -263,18 +267,21 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             {clockingActions.map((item) => {
               const isDisabled = !item.statusGroup.includes(status);
               return (
-                <button
+                <Button
                   key={item.id}
+                  variant="none"
+                  size="none"
                   onClick={item.action}
                   disabled={isDisabled}
-                  className={`h-24 rounded-md border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
+                  aria-label={item.label}
+                  className={`w-full h-24 relative overflow-hidden group flex-col gap-2 transition-all ${getClockingActionButtonClassName(item.id, isDisabled)}`}
                 >
-                  <div
+                  <span
                     className={`text-[10px] font-black uppercase tracking-[0.2em] relative ${Z.sticky}`}
                   >
                     {item.label}
-                  </div>
-                </button>
+                  </span>
+                </Button>
               );
             })}
           </div>

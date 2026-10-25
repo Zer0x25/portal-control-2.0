@@ -17,6 +17,10 @@ import {
 } from "../../../components/ui/icons/index";
 import { DailyTimeRecord, Employee, ClockingStatus } from "../../../types/index";
 import type { KioskStep } from "../hooks/useKioskData";
+import {
+  getClockingActionButtonClassName,
+  type ClockingActionType,
+} from "../../../utils/clockingActionButtonStyles";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
 
@@ -45,11 +49,10 @@ export interface KioskViewProps {
   latestOpenRecord?: DailyTimeRecord | null;
   isKioskArmed?: boolean;
   kioskActions?: Array<{
-    id: string;
+    id: ClockingActionType;
     label: string;
-    color: "green" | "yellow" | "blue" | "red";
     enabled: boolean;
-    actionType: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin";
+    actionType: ClockingActionType;
   }>;
   clockStatusConfig?: {
     label: string;
@@ -64,9 +67,7 @@ export interface KioskViewProps {
   handleEmployeeSelect?: (e: Employee) => void;
   handlePinConfirm?: () => void;
   handleSetNewPin?: () => void;
-  handleClockingAction?: (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => void;
+  handleClockingAction?: (type: ClockingActionType) => void;
   resetState?: () => void;
   onLogout?: () => void;
 }
@@ -256,22 +257,6 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       <div className="grid grid-cols-2 gap-3">
         {kioskActions.map((action) => {
           const isDisabled = !isKioskArmed || !action.enabled;
-          const colorClass =
-            action.color === "green"
-              ? isDisabled
-                ? "bg-green-500/10 text-green-700/40 border border-green-500/20 shadow-none"
-                : "bg-green-600 text-white border border-green-500 shadow-md hover:bg-green-700"
-              : action.color === "yellow"
-                ? isDisabled
-                  ? "bg-amber-500/10 text-amber-700/40 border border-amber-500/20 shadow-none"
-                  : "bg-amber-600 text-white border border-amber-500 shadow-md hover:bg-amber-700"
-                : action.color === "blue"
-                  ? isDisabled
-                    ? "bg-sky-500/10 text-sky-700/40 border border-sky-500/20 shadow-none"
-                    : "bg-sky-600 text-white border border-sky-500 shadow-md hover:bg-sky-700"
-                  : isDisabled
-                    ? "bg-rose-500/10 text-rose-700/40 border border-rose-500/20 shadow-none"
-                    : "bg-rose-600 text-white border border-rose-500 shadow-md hover:bg-rose-700";
 
           return (
             <Button
@@ -284,7 +269,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               // acciones anunciándose igual ("No disponible"). Etiqueta
               // explícita: el tooltip visual se conserva, el lector oye la acción.
               aria-label={action.label}
-              className={`w-full h-16 text-[10px] ${colorClass}`}
+              className={`w-full h-16 text-[10px] ${getClockingActionButtonClassName(action.actionType, isDisabled)}`}
             >
               {action.label}
             </Button>

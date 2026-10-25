@@ -23,6 +23,7 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { logger } from "../../../utils/logger";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import type { ClockingActionType } from "../../../utils/clockingActionButtonStyles";
 
 const getCurrentMonthYYYYMM = (now: Date) => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -269,7 +270,7 @@ export const useWorkerPortalData = () => {
   }, [employee, getPeriodDates, addToast]);
 
   const handleClockingAction = useCallback(
-    async (type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin") => {
+    async (type: ClockingActionType) => {
       if (!employee || !currentUser) {
         addToast("Empleado no encontrado.", "error");
         return;

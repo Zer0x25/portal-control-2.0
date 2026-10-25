@@ -7,6 +7,7 @@ import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQue
 import { useToasts } from "../../../hooks/useToasts";
 import { useAuth } from "../../../hooks/useAuth";
 import { normalizeString } from "../../../utils/stringUtils";
+import type { ClockingActionType } from "../../../utils/clockingActionButtonStyles";
 import { getContractClockingStatus } from "../../../utils/mappings";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { logger } from "../../../utils/logger";
@@ -26,9 +27,7 @@ export interface ClockingPanelActions {
   setSearchTerm: (term: string) => void;
   setSelectedEmployeeId: (id: string | null) => void;
   handleFocus: () => void;
-  performActionAndReset: (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => Promise<void>;
+  performActionAndReset: (type: ClockingActionType) => Promise<void>;
 }
 
 export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions => {
@@ -127,9 +126,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const handleRecordAction = async (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ): Promise<boolean> => {
+  const handleRecordAction = async (type: ClockingActionType): Promise<boolean> => {
     if (!selectedEmployeeId) {
       addToast("Por favor, seleccione un empleado.", "warning");
       return false;
@@ -174,9 +171,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const performActionAndReset = async (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => {
+  const performActionAndReset = async (type: ClockingActionType) => {
     if (!selectedEmployeeId || isSubmittingRef.current) {
       if (!selectedEmployeeId) addToast("Por favor, seleccione un empleado.", "warning");
       return;
