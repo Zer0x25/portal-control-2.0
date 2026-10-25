@@ -140,6 +140,7 @@ describe("useTimeControl", () => {
 
     expect(schedulingMock).toHaveBeenCalledWith(undefined, undefined, {
       useClockingOptions: true,
+      queryMode: "schedule-enrichment",
     });
     expect(result.current.filtersKey).toContain("2026-03-01");
     expect(result.current.filtersKey).toContain("Ana");

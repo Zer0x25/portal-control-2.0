@@ -36,6 +36,12 @@ const formatUTCDateOnly = (date: Date): string => {
 };
 
 const EMPTY_LEAVES: LeaveRecord[] = [];
+const EMPTY_EMPLOYEES: Pick<
+  Employee,
+  "id" | "name" | "position" | "area" | "workdayType" | "status"
+>[] = [];
+
+export type SchedulingQueryMode = "full" | "schedule-enrichment" | "correction-requests";
 
 const extractLeaves = (value: unknown): LeaveRecord[] => {
   if (Array.isArray(value)) return value as LeaveRecord[];
@@ -53,20 +59,28 @@ const extractLeaves = (value: unknown): LeaveRecord[] => {
 export const useScheduling = (
   requestsStatus?: string,
   sinceRequests?: number,
-  options: { enabled?: boolean; useClockingOptions?: boolean } = {},
+  options: {
+    enabled?: boolean;
+    useClockingOptions?: boolean;
+    queryMode?: SchedulingQueryMode;
+  } = {},
 ) => {
-  const schedulingQueriesEnabled = options.enabled ?? true;
+  const queriesEnabled = options.enabled ?? true;
+  const queryMode = options.queryMode ?? "full";
+  const scheduleQueriesEnabled = queriesEnabled && queryMode !== "correction-requests";
+  const includeAuxiliaryQueries = queriesEnabled && queryMode === "full";
+  const includeEmployeeDirectory = includeAuxiliaryQueries;
+  const includeCorrectionRequests = queriesEnabled && queryMode !== "schedule-enrichment";
   const useClockingOptions = options.useClockingOptions ?? false;
 
   // --- Config (spec 032 T4: única fuente = query hooks) ---
-  const { data: globalMaxWeeklyHours = 44 } =
-    useGlobalMaxWeeklyHoursQuery(schedulingQueriesEnabled);
-  const { data: areaList = ["Otros"] } = useAreaListQuery(schedulingQueriesEnabled);
+  const { data: globalMaxWeeklyHours = 44 } = useGlobalMaxWeeklyHoursQuery(includeAuxiliaryQueries);
+  const { data: areaList = ["Otros"] } = useAreaListQuery(includeAuxiliaryQueries);
   const { data: workdayTypeList = ["Artículo 22", "Full-Time", "Part-Time"] } =
-    useWorkdayTypeListQuery(schedulingQueriesEnabled);
+    useWorkdayTypeListQuery(includeAuxiliaryQueries);
   const { data: emailRecipientsList = ["info@test.lan"] } =
-    useEmailRecipientsListQuery(schedulingQueriesEnabled);
-  const { data: accountingLockDate = null } = useAccountingLockDateQuery(schedulingQueriesEnabled);
+    useEmailRecipientsListQuery(includeAuxiliaryQueries);
+  const { data: accountingLockDate = null } = useAccountingLockDateQuery(includeAuxiliaryQueries);
   const { updateConfig } = useConfigMutations();
   const updateGlobalMaxWeeklyHours = (v: number) =>
     updateConfig({ key: "global_max_hours", value: v });
@@ -79,33 +93,39 @@ export const useScheduling = (
 
   // --- Remote State (TanStack Query) ---
   const { data: shiftPatterns = [], isLoading: isLoadingShiftPatterns } =
-    useShiftPatternsQuery(schedulingQueriesEnabled);
+    useShiftPatternsQuery(scheduleQueriesEnabled);
   const { data: assignedShifts = [], isLoading: isLoadingAssignedShifts } =
-    useAssignedShiftsQuery(schedulingQueriesEnabled);
+    useAssignedShiftsQuery(scheduleQueriesEnabled);
   const { data: holidays = [], isLoading: isLoadingHolidays } =
-    useHolidaysQuery(schedulingQueriesEnabled);
+    useHolidaysQuery(scheduleQueriesEnabled);
   const { data: leavesResponse, isLoading: isLoadingLeaves } =
-    useLeavesQuery(schedulingQueriesEnabled);
+    useLeavesQuery(scheduleQueriesEnabled);
   const leaves = extractLeaves(leavesResponse);
   const { allEmployees: fullEmployees, isLoadingEmployees: isLoadingFullEmployeeList } =
     useEmployees(false, {
-      enabled: schedulingQueriesEnabled && !useClockingOptions,
+      enabled: includeEmployeeDirectory && !useClockingOptions,
     });
   const { data: clockingEmployees = [], isLoading: isLoadingClockingEmployees } =
-    useClockingEmployeeOptionsQuery(schedulingQueriesEnabled && useClockingOptions);
+    useClockingEmployeeOptionsQuery(includeEmployeeDirectory && useClockingOptions);
   const employees: Pick<
     Employee,
     "id" | "name" | "position" | "area" | "workdayType" | "status"
-  >[] = useClockingOptions ? clockingEmployees : fullEmployees;
-  const isLoadingEmployees = useClockingOptions
-    ? isLoadingClockingEmployees
-    : isLoadingFullEmployeeList;
+  >[] = !includeEmployeeDirectory
+    ? EMPTY_EMPLOYEES
+    : useClockingOptions
+      ? clockingEmployees
+      : fullEmployees;
+  const isLoadingEmployees = !includeEmployeeDirectory
+    ? false
+    : useClockingOptions
+      ? isLoadingClockingEmployees
+      : isLoadingFullEmployeeList;
   const {
     data: infiniteRequests,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useCorrectionRequestsQuery(requestsStatus, sinceRequests, schedulingQueriesEnabled);
+  } = useCorrectionRequestsQuery(requestsStatus, sinceRequests, includeCorrectionRequests);
 
   const requests = infiniteRequests?.pages.flatMap((page) => page.requests) || [];
 
@@ -116,7 +136,7 @@ export const useScheduling = (
   } = useCorrectionRequestMutations();
 
   const isLoadingSchedulingData =
-    schedulingQueriesEnabled &&
+    scheduleQueriesEnabled &&
     (isLoadingEmployees ||
       isLoadingShiftPatterns ||
       isLoadingAssignedShifts ||

@@ -122,6 +122,68 @@ describe("useScheduling query options", () => {
     expect(mocks.state.clockingEmployeeOptionsEnabled).toEqual([true]);
   });
 
+  it("loads only schedule datasets in schedule-enrichment mode", () => {
+    mocks.state.enabled.length = 0;
+    mocks.state.clockingEmployeeOptionsEnabled.length = 0;
+    mocks.state.fullEmployeeListEnabled.length = 0;
+
+    const { result } = renderHook(() =>
+      useScheduling(undefined, undefined, {
+        useClockingOptions: true,
+        queryMode: "schedule-enrichment",
+      }),
+    );
+
+    expect(mocks.state.enabled).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+    ]);
+    expect(mocks.state.fullEmployeeListEnabled).toEqual([false]);
+    expect(mocks.state.clockingEmployeeOptionsEnabled).toEqual([false]);
+    expect(
+      result.current.getEmployeeDailyScheduleInfo("unknown", new Date(Date.UTC(2026, 2, 2))),
+    ).toEqual({
+      scheduleText: "Sin Turno Asignado",
+      isWorkDay: false,
+      planningStatus: "SinTurnoAsignado",
+    });
+  });
+
+  it("loads only correction requests in correction-requests mode", () => {
+    mocks.state.enabled.length = 0;
+    mocks.state.clockingEmployeeOptionsEnabled.length = 0;
+    mocks.state.fullEmployeeListEnabled.length = 0;
+
+    renderHook(() =>
+      useScheduling(undefined, undefined, {
+        queryMode: "correction-requests",
+      }),
+    );
+
+    expect(mocks.state.enabled).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+    ]);
+    expect(mocks.state.fullEmployeeListEnabled).toEqual([false]);
+    expect(mocks.state.clockingEmployeeOptionsEnabled).toEqual([false]);
+  });
+
   it("reports the schedule datasets as loading while an enabled query is pending", () => {
     mocks.state.enabled.length = 0;
     mocks.state.shiftPatternsLoading = true;

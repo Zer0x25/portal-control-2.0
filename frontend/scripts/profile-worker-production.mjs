@@ -8,7 +8,17 @@ import { chromium, request as playwrightRequest } from "@playwright/test";
 
 const frontendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(frontendRoot, "..");
-const assetDirectory = join(frontendRoot, "dist", "assets");
+
+export function resolveProfiledAssetDirectory(assetDirectoryArg, baseDirectory = frontendRoot) {
+  return assetDirectoryArg
+    ? resolve(baseDirectory, assetDirectoryArg)
+    : join(baseDirectory, "dist", "assets");
+}
+
+const profiledAssetsArg = process.argv
+  .find((arg) => arg.startsWith("--profiled-assets-dir="))
+  ?.slice("--profiled-assets-dir=".length);
+const assetDirectory = resolveProfiledAssetDirectory(profiledAssetsArg);
 const stagingOrigin = process.env.E2E_BASE_URL || "http://127.0.0.1:8080";
 const apiBase = (process.env.E2E_API_URL || `${stagingOrigin}/api`).replace(/\/$/, "");
 const viewport = { width: 412, height: 823 };
@@ -471,11 +481,11 @@ function stagingFrontendImageId() {
   return imageId;
 }
 
-async function assertProfiledAssetsMatchStaging() {
-  const scripts = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js"));
+async function assertProfiledAssetsMatchStaging(directory = assetDirectory) {
+  const scripts = (await readdir(directory)).filter((file) => file.endsWith(".js"));
   if (scripts.length === 0) throw new Error("Profiled production build contains no scripts");
   for (const file of scripts) {
-    const localBundle = (await readFile(join(assetDirectory, file), "utf8")).replace(
+    const profiledBundle = (await readFile(join(directory, file), "utf8")).replace(
       /\n?\/\/[#@]\s*sourceMappingURL=[^\r\n]*\s*$/,
       "",
     );
@@ -488,20 +498,20 @@ async function assertProfiledAssetsMatchStaging() {
       );
     }
     const stagingBundle = await response.text();
-    if (localBundle !== stagingBundle) {
-      throw new Error(`Local source map does not match the active staging asset ${file}`);
+    if (profiledBundle !== stagingBundle) {
+      throw new Error(`Profiled source map does not match the active staging asset ${file}`);
     }
   }
   return scripts.length;
 }
 
-async function loadSourceMaps() {
-  const files = (await readdir(assetDirectory)).filter((file) => file.endsWith(".js.map"));
+async function loadSourceMaps(directory = assetDirectory) {
+  const files = (await readdir(directory)).filter((file) => file.endsWith(".js.map"));
   if (files.length === 0)
     throw new Error("Profiled production build has no JavaScript source maps");
   const maps = new Map();
   for (const file of files) {
-    const contents = JSON.parse(await readFile(join(assetDirectory, file), "utf8"));
+    const contents = JSON.parse(await readFile(join(directory, file), "utf8"));
     maps.set(file.slice(0, -4), new TraceMap(contents));
   }
   return maps;
@@ -821,6 +831,382 @@ export function aggregateLongTaskTraces(samples) {
   };
 }
 
+function openApiPathMatches(template, pathname) {
+  const expression = template
+    .split("/")
+    .map((segment) =>
+      /^\{[^/]+\}$/.test(segment) ? "[^/]+" : segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    )
+    .join("/");
+  return new RegExp(`^${expression}$`).test(pathname);
+}
+
+export function matchOpenApiRouteTemplate(pathname, method, openApiPaths) {
+  if (typeof pathname !== "string" || typeof method !== "string" || !openApiPaths) return null;
+  const normalizedMethod = method.toLowerCase();
+  return (
+    Object.entries(openApiPaths)
+      .filter(
+        ([, operations]) =>
+          operations &&
+          typeof operations === "object" &&
+          Object.hasOwn(operations, normalizedMethod),
+      )
+      .sort(([left], [right]) => {
+        const parameterCount = (path) => (path.match(/\{[^/]+\}/g) ?? []).length;
+        return parameterCount(left) - parameterCount(right) || left.localeCompare(right);
+      })
+      .find(([template]) => openApiPathMatches(template, pathname))?.[0] ?? null
+  );
+}
+
+function safeInitiatorFrames(initiator, resolveFrame) {
+  const frames = [];
+  let stack = initiator?.stack;
+  while (stack && frames.length < 5) {
+    for (const callFrame of stack.callFrames ?? []) {
+      if (frames.length >= 5) break;
+      if (typeof callFrame.url !== "string") continue;
+      let resolved;
+      try {
+        resolved = resolveFrame({
+          url: callFrame.url,
+          lineNumber: Number.isInteger(callFrame.lineNumber) ? callFrame.lineNumber : 0,
+          columnNumber: Number.isInteger(callFrame.columnNumber) ? callFrame.columnNumber : 0,
+          functionName: callFrame.functionName,
+        });
+      } catch {
+        resolved = null;
+      }
+      const sourcePath = sanitizeSourcePath(resolved?.sourcePath);
+      const functionName = sanitizeFunctionName(resolved?.functionName ?? callFrame.functionName);
+      const sourceLine = Number.isInteger(resolved?.sourceLine) ? resolved.sourceLine : null;
+      const key = `${sourcePath}::${functionName}@${sourceLine ?? "?"}`;
+      if (frames.some((frame) => frame.key === key)) continue;
+      frames.push({
+        key,
+        sourcePath,
+        functionName,
+        ...(sourceLine !== null ? { sourceLine } : {}),
+        mapped: resolved?.mapped === true,
+      });
+    }
+    stack = stack.parent;
+  }
+  return frames.map(({ key: _key, ...frame }) => frame);
+}
+
+const networkTimeToUs = (timestamp) => (Number.isFinite(timestamp) ? timestamp * 1_000_000 : null);
+const safeHttpMethod = (method) => {
+  const upper = String(method ?? "").toUpperCase();
+  return ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"].includes(upper)
+    ? upper
+    : "OTHER";
+};
+
+export function createApiRequestCollector({
+  apiOrigin,
+  apiPathPrefix,
+  openApiPaths,
+  resolveFrame,
+  maxRequests = 200,
+}) {
+  if (typeof apiOrigin !== "string" || typeof apiPathPrefix !== "string") {
+    throw new Error("API origin and path prefix are required");
+  }
+  if (typeof resolveFrame !== "function") throw new Error("A source frame resolver is required");
+
+  const activeRequests = new Map();
+  const completedRequests = [];
+  let capturedRequestCount = 0;
+  let ignoredRequestCount = 0;
+
+  const isApiPath = (pathname) =>
+    pathname === apiPathPrefix || pathname.startsWith(`${apiPathPrefix.replace(/\/$/, "")}/`);
+  const finishRedirect = (requestId, event) => {
+    const previous = activeRequests.get(requestId);
+    if (!previous) return;
+    const redirectedAtUs = networkTimeToUs(event.timestamp);
+    previous.status = Number.isInteger(event.redirectResponse?.status)
+      ? event.redirectResponse.status
+      : null;
+    previous.responseAtUs = redirectedAtUs;
+    previous.finishedAtUs = redirectedAtUs;
+    previous.completion = "redirected";
+    completedRequests.push(previous);
+    activeRequests.delete(requestId);
+  };
+
+  return {
+    onRequestWillBeSent(event) {
+      if (typeof event.requestId !== "string") {
+        ignoredRequestCount += 1;
+        return;
+      }
+      if (event.redirectResponse) finishRedirect(event.requestId, event);
+      else if (activeRequests.has(event.requestId)) {
+        const staleRequest = activeRequests.get(event.requestId);
+        staleRequest.completion = "incomplete";
+        completedRequests.push(staleRequest);
+        activeRequests.delete(event.requestId);
+      }
+
+      const startAtUs = networkTimeToUs(event.timestamp);
+      if (startAtUs === null || !event.request || typeof event.request.url !== "string") {
+        ignoredRequestCount += 1;
+        return;
+      }
+      let requestUrl;
+      try {
+        requestUrl = new URL(event.request.url);
+      } catch {
+        ignoredRequestCount += 1;
+        return;
+      }
+      if (requestUrl.origin !== apiOrigin || !isApiPath(requestUrl.pathname)) return;
+      if (capturedRequestCount >= maxRequests) {
+        ignoredRequestCount += 1;
+        return;
+      }
+
+      capturedRequestCount += 1;
+      activeRequests.set(event.requestId, {
+        endpoint:
+          matchOpenApiRouteTemplate(requestUrl.pathname, event.request.method, openApiPaths) ??
+          "unmatched-api-route",
+        method: safeHttpMethod(event.request.method),
+        startAtUs,
+        responseAtUs: null,
+        finishedAtUs: null,
+        status: null,
+        bytesReceived: null,
+        completion: "incomplete",
+        initiatorType: ["parser", "script", "preload", "other"].includes(event.initiator?.type)
+          ? event.initiator.type
+          : "unavailable",
+        initiatorFrames: safeInitiatorFrames(event.initiator, resolveFrame),
+      });
+    },
+    onResponseReceived(event) {
+      const request = activeRequests.get(event.requestId);
+      if (!request) return;
+      const responseAtUs = networkTimeToUs(event.timestamp);
+      if (responseAtUs !== null) request.responseAtUs = responseAtUs;
+      if (Number.isInteger(event.response?.status)) request.status = event.response.status;
+    },
+    onLoadingFinished(event) {
+      const request = activeRequests.get(event.requestId);
+      if (!request) return;
+      const finishedAtUs = networkTimeToUs(event.timestamp);
+      if (finishedAtUs !== null) request.finishedAtUs = finishedAtUs;
+      request.bytesReceived = Number.isFinite(event.encodedDataLength)
+        ? Math.max(0, Math.round(event.encodedDataLength))
+        : null;
+      request.completion = "completed";
+      completedRequests.push(request);
+      activeRequests.delete(event.requestId);
+    },
+    onLoadingFailed(event) {
+      const request = activeRequests.get(event.requestId);
+      if (!request) return;
+      const failedAtUs = networkTimeToUs(event.timestamp);
+      if (failedAtUs !== null) request.finishedAtUs = failedAtUs;
+      request.completion = "failed";
+      request.canceled = event.canceled === true;
+      completedRequests.push(request);
+      activeRequests.delete(event.requestId);
+    },
+    summarize(traceEvents) {
+      for (const request of activeRequests.values()) completedRequests.push(request);
+      activeRequests.clear();
+
+      const rendererMainThreadIds = new Set(
+        traceEvents
+          .filter((event) => event.name === "thread_name" && event.args?.name === "CrRendererMain")
+          .map((event) => `${event.pid}:${event.tid}`),
+      );
+      const tasks = traceEvents
+        .filter(
+          (event) =>
+            event.name === "RunTask" &&
+            event.ph === "X" &&
+            rendererMainThreadIds.has(`${event.pid}:${event.tid}`) &&
+            Number.isFinite(event.ts) &&
+            Number.isFinite(event.dur) &&
+            event.dur >= longTaskThresholdUs,
+        )
+        .sort((left, right) => left.ts - right.ts);
+      const firstTaskTimestampUs = tasks.reduce(
+        (minimum, task) => Math.min(minimum, task.ts),
+        Number.POSITIVE_INFINITY,
+      );
+      const requests = completedRequests
+        .map((request) => {
+          const startedDuringTaskIndex = tasks.findIndex(
+            (task) => request.startAtUs >= task.ts && request.startAtUs < task.ts + task.dur,
+          );
+          const eventTimesOrdered =
+            (request.responseAtUs === null || request.responseAtUs >= request.startAtUs) &&
+            (request.finishedAtUs === null || request.finishedAtUs >= request.startAtUs) &&
+            (request.responseAtUs === null ||
+              request.finishedAtUs === null ||
+              request.responseAtUs <= request.finishedAtUs);
+          const safeElapsed = (endAtUs) =>
+            Number.isFinite(endAtUs) && endAtUs >= request.startAtUs
+              ? roundMs((endAtUs - request.startAtUs) / 1000)
+              : null;
+          const timingStatus = !eventTimesOrdered
+            ? "out-of-order"
+            : request.finishedAtUs === null
+              ? "incomplete"
+              : request.responseAtUs === null
+                ? "response-unavailable"
+                : "ordered";
+          return {
+            endpoint: request.endpoint,
+            method: request.method,
+            completion: request.completion,
+            status: request.status,
+            timingStatus,
+            requestStartOffsetMs: Number.isFinite(firstTaskTimestampUs)
+              ? roundMs((request.startAtUs - firstTaskTimestampUs) / 1000)
+              : null,
+            timeToHeadersMs: eventTimesOrdered ? safeElapsed(request.responseAtUs) : null,
+            totalDurationMs: eventTimesOrdered ? safeElapsed(request.finishedAtUs) : null,
+            bytesReceived: request.bytesReceived,
+            ...(request.completion === "failed" ? { canceled: request.canceled === true } : {}),
+            startedDuringLongTask:
+              startedDuringTaskIndex >= 0
+                ? {
+                    ordinal: startedDuringTaskIndex + 1,
+                    startOffsetMs: roundMs(
+                      (tasks[startedDuringTaskIndex].ts - firstTaskTimestampUs) / 1000,
+                    ),
+                    durationMs: roundMs(tasks[startedDuringTaskIndex].dur / 1000),
+                  }
+                : null,
+            initiatorType: request.initiatorType,
+            initiatorFrames: request.initiatorFrames,
+          };
+        })
+        .sort(
+          (left, right) =>
+            (left.requestStartOffsetMs ?? Number.POSITIVE_INFINITY) -
+              (right.requestStartOffsetMs ?? Number.POSITIVE_INFINITY) ||
+            left.endpoint.localeCompare(right.endpoint),
+        );
+      const completionCounts = Object.fromEntries(
+        ["completed", "failed", "incomplete", "redirected"].map((completion) => [
+          `${completion}Count`,
+          requests.filter((request) => request.completion === completion).length,
+        ]),
+      );
+      const timingStatusCounts = Object.fromEntries(
+        [...new Set(requests.map((request) => request.timingStatus))].map((timingStatus) => [
+          timingStatus,
+          requests.filter((request) => request.timingStatus === timingStatus).length,
+        ]),
+      );
+
+      return {
+        requestCount: requests.length,
+        ...completionCounts,
+        timingStatusCounts,
+        ignoredRequestCount,
+        requestStartsInsideLongTask: requests.filter((request) => request.startedDuringLongTask)
+          .length,
+        requests,
+      };
+    },
+  };
+}
+
+export function aggregateApiRequestSamples(samples) {
+  if (samples.length === 0) throw new Error("At least one API request sample is required");
+  const groups = new Map();
+  samples.forEach((sample, sampleIndex) => {
+    for (const request of sample.requests ?? []) {
+      const key = `${request.endpoint}::${request.method}`;
+      const group = groups.get(key) ?? {
+        endpoint: request.endpoint,
+        method: request.method,
+        requestCount: 0,
+        observedSampleIndices: new Set(),
+        completedCount: 0,
+        failedCount: 0,
+        totalDurations: [],
+        headerDurations: [],
+        responseBytes: [],
+        longTaskSampleIndices: new Set(),
+        timingStatusCounts: new Map(),
+        initiators: new Map(),
+      };
+      group.requestCount += 1;
+      group.observedSampleIndices.add(sampleIndex);
+      group.timingStatusCounts.set(
+        request.timingStatus ?? "unavailable",
+        (group.timingStatusCounts.get(request.timingStatus ?? "unavailable") ?? 0) + 1,
+      );
+      if (request.completion === "completed") group.completedCount += 1;
+      if (request.completion === "failed") group.failedCount += 1;
+      if (Number.isFinite(request.totalDurationMs))
+        group.totalDurations.push(request.totalDurationMs);
+      if (Number.isFinite(request.timeToHeadersMs))
+        group.headerDurations.push(request.timeToHeadersMs);
+      if (Number.isFinite(request.bytesReceived)) group.responseBytes.push(request.bytesReceived);
+      if (request.startedDuringLongTask) group.longTaskSampleIndices.add(sampleIndex);
+      for (const frame of request.initiatorFrames ?? []) {
+        const initiatorKey = `${frame.sourcePath}::${frame.functionName}`;
+        const initiator = group.initiators.get(initiatorKey) ?? {
+          sourcePath: frame.sourcePath,
+          functionName: frame.functionName,
+          sampleIndices: new Set(),
+        };
+        initiator.sampleIndices.add(sampleIndex);
+        group.initiators.set(initiatorKey, initiator);
+      }
+      groups.set(key, group);
+    }
+  });
+
+  return {
+    sampleCount: samples.length,
+    endpointSummaries: [...groups.values()]
+      .map((group) => ({
+        endpoint: group.endpoint,
+        method: group.method,
+        requestCount: group.requestCount,
+        observedSamples: group.observedSampleIndices.size,
+        completedCount: group.completedCount,
+        failedCount: group.failedCount,
+        timingStatusCounts: Object.fromEntries(group.timingStatusCounts),
+        medianTimeToHeadersMs:
+          group.headerDurations.length > 0 ? roundMs(median(group.headerDurations)) : null,
+        medianTotalDurationMs:
+          group.totalDurations.length > 0 ? roundMs(median(group.totalDurations)) : null,
+        medianBytesReceived:
+          group.responseBytes.length > 0 ? roundMs(median(group.responseBytes)) : null,
+        samplesStartedDuringLongTask: group.longTaskSampleIndices.size,
+        repeatedInitiators: [...group.initiators.values()]
+          .map((initiator) => ({
+            sourcePath: initiator.sourcePath,
+            functionName: initiator.functionName,
+            observedSamples: initiator.sampleIndices.size,
+          }))
+          .filter((initiator) => initiator.observedSamples >= 2)
+          .sort(
+            (left, right) =>
+              right.observedSamples - left.observedSamples ||
+              left.sourcePath.localeCompare(right.sourcePath),
+          ),
+      }))
+      .sort(
+        (left, right) =>
+          right.requestCount - left.requestCount || left.endpoint.localeCompare(right.endpoint),
+      ),
+  };
+}
+
 async function readTraceStream(cdp, stream) {
   const chunks = [];
   try {
@@ -884,7 +1270,7 @@ async function loginProfileRole(request, role) {
   };
 }
 
-async function captureSample(browser, session, maps, route) {
+async function captureSample(browser, session, maps, route, apiPaths) {
   const context = await browser.newContext({
     viewport,
     deviceScaleFactor: 1.75,
@@ -926,6 +1312,17 @@ async function captureSample(browser, session, maps, route) {
     cdp = await context.newCDPSession(page);
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottleRate });
     await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
+    const apiRequestCollector = createApiRequestCollector({
+      apiOrigin: new URL(apiBase).origin,
+      apiPathPrefix: new URL(apiBase).pathname.replace(/\/$/, ""),
+      openApiPaths: apiPaths,
+      resolveFrame: (frame) => resolveMappedFrame(frame, maps),
+    });
+    cdp.on("Network.requestWillBeSent", apiRequestCollector.onRequestWillBeSent);
+    cdp.on("Network.responseReceived", apiRequestCollector.onResponseReceived);
+    cdp.on("Network.loadingFinished", apiRequestCollector.onLoadingFinished);
+    cdp.on("Network.loadingFailed", apiRequestCollector.onLoadingFailed);
+    await cdp.send("Network.enable");
     tracingComplete = new Promise((resolve) => cdp.once("Tracing.tracingComplete", resolve));
     await cdp.send("Tracing.start", {
       categories: traceCategories,
@@ -965,6 +1362,7 @@ async function captureSample(browser, session, maps, route) {
       (frame) => resolveMappedFrame(frame, maps),
       { dataLossOccurred: traceCapture.dataLossOccurred },
     );
+    const apiRequests = apiRequestCollector.summarize(traceCapture.trace.traceEvents ?? []);
     longTaskTrace.cpuProfileCorrelation = correlateCpuProfileWithTrace(
       profileResponse.profile,
       traceCapture.trace.traceEvents ?? [],
@@ -979,6 +1377,7 @@ async function captureSample(browser, session, maps, route) {
       websocketErrorCount,
       websocketReceivedFrameCount,
       longTaskTrace,
+      apiRequests,
       ...summary,
       appInclusiveFrames: summary.appInclusiveFrames.slice(0, 20),
       selfFrames: summary.selfFrames.slice(0, 30),
@@ -1028,10 +1427,18 @@ async function main() {
     const health = await fetch(`${apiBase}/health/ready`, { signal: AbortSignal.timeout(5000) });
     if (!health.ok) throw new Error(`Staging API readiness returned HTTP ${health.status}`);
 
-    profiledBuildAttempted = true;
-    await runNpm(["run", "build:profiled"]);
-    const maps = await loadSourceMaps();
-    const comparedScriptAssets = await assertProfiledAssetsMatchStaging();
+    if (!profiledAssetsArg) {
+      profiledBuildAttempted = true;
+      await runNpm(["run", "build:profiled"]);
+    }
+    const maps = await loadSourceMaps(assetDirectory);
+    const comparedScriptAssets = await assertProfiledAssetsMatchStaging(assetDirectory);
+    const openApiPaths = JSON.parse(
+      await readFile(join(repositoryRoot, "backend/docs/swagger.json"), "utf8"),
+    ).paths;
+    if (!openApiPaths || typeof openApiPaths !== "object") {
+      throw new Error("OpenAPI path catalog is missing");
+    }
 
     const request = await playwrightRequest.newContext();
     const browser = await chromium.launch({ headless: true });
@@ -1039,11 +1446,11 @@ async function main() {
       const session = await loginProfileRole(request, profileRoute);
       const samples = [];
       for (let index = 0; index < sampleCount; index += 1) {
-        samples.push(await captureSample(browser, session, maps, profileRoute));
+        samples.push(await captureSample(browser, session, maps, profileRoute, openApiPaths));
       }
 
       const report = {
-        schemaVersion: 3,
+        schemaVersion: 4,
         capturedAt: new Date().toISOString(),
         source: {
           commit: gitValue(["rev-parse", "HEAD"]),
@@ -1057,6 +1464,7 @@ async function main() {
           deviceScaleFactor: 1.75,
           cpuThrottleRate,
           samplingIntervalUs: 1000,
+          profiledAssetsSource: profiledAssetsArg ? "provided" : "host-build",
         },
         target: {
           routeId: profileRoute.id,
@@ -1069,11 +1477,12 @@ async function main() {
         summary: {
           ...aggregateProfileSummaries(samples),
           longTaskTrace: aggregateLongTaskTraces(samples.map((sample) => sample.longTaskTrace)),
+          apiRequests: aggregateApiRequestSamples(samples.map((sample) => sample.apiRequests)),
         },
         interpretation: {
           performanceComparison: false,
           recommendationRule:
-            "An unattributed context is a candidate only when its closest mapped frame appears in at least two samples; native or unknown leaf frames remain separate from that context. A mapped application frame in at least two long-task traces is a candidate, but nested call durations are not additive and CDP task durations are not Lighthouse TBT or field INP.",
+            "An unattributed context is a candidate only when its closest mapped frame appears in at least two samples; native or unknown leaf frames remain separate from that context. A mapped application frame in at least two long-task traces is a candidate, but nested call durations are not additive, request latency is not CPU time, and CDP task durations are not Lighthouse TBT or field INP.",
         },
       };
       assertPrivacySafe(report);

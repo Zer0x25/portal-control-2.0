@@ -2,15 +2,30 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  aggregateApiRequestSamples,
   aggregateProfileSummaries,
   aggregateLongTaskTraces,
   assertPrivacySafe,
+  createApiRequestCollector,
   correlateCpuProfileWithTrace,
+  matchOpenApiRouteTemplate,
+  resolveProfiledAssetDirectory,
   resolveProfileRoute,
   sanitizeSourcePath,
   summarizeCpuProfile,
   summarizeLongTaskTrace,
 } from "./profile-worker-production.mjs";
+
+test("resolves an externally built source-map directory or the default dist path", () => {
+  assert.equal(
+    resolveProfiledAssetDirectory("/tmp/staging-assets", "/workspace/frontend"),
+    "/tmp/staging-assets",
+  );
+  assert.equal(
+    resolveProfiledAssetDirectory(undefined, "/workspace/frontend"),
+    "/workspace/frontend/dist/assets",
+  );
+});
 
 test("allows only known authenticated production profile routes", () => {
   const timeControl = resolveProfileRoute("time-control");
@@ -373,4 +388,333 @@ test("aligns CPU samples to renderer tasks and retains nearest application frame
   );
   assertPrivacySafe(result);
   assert.doesNotMatch(JSON.stringify(result), /127\.0\.0\.1|https?:\/\//);
+});
+
+test("maps an API path to a method-matched OpenAPI template", () => {
+  const paths = {
+    "/api/records/{id}": { get: {}, delete: {} },
+    "/api/records/{id}/resolve-anomaly": { post: {} },
+    "/api/records/search": { get: {} },
+  };
+
+  assert.equal(
+    matchOpenApiRouteTemplate("/api/records/EMP-SECRET-9/resolve-anomaly", "POST", paths),
+    "/api/records/{id}/resolve-anomaly",
+  );
+  assert.equal(
+    matchOpenApiRouteTemplate("/api/records/search", "GET", paths),
+    "/api/records/search",
+  );
+  assert.equal(matchOpenApiRouteTemplate("/api/records/1/resolve-anomaly", "GET", paths), null);
+});
+
+test("correlates sanitized API requests with task starts and initiator source maps", () => {
+  const paths = {
+    "/api/records/{id}/resolve-anomaly": { post: {} },
+  };
+  const collector = createApiRequestCollector({
+    apiOrigin: "http://127.0.0.1:8080",
+    apiPathPrefix: "/api",
+    openApiPaths: paths,
+    resolveFrame: () => ({
+      sourcePath: "src/hooks/queries/useTimeRecordsQuery.ts",
+      functionName: "useTimeRecordsQuery",
+      sourceLine: 82,
+      mapped: true,
+    }),
+  });
+  const sensitiveUrl =
+    "http://127.0.0.1:8080/api/records/EMP-SECRET-9/resolve-anomaly?token=secret";
+  collector.onRequestWillBeSent({
+    requestId: "cdp-request-private-id",
+    timestamp: 10.02,
+    request: {
+      url: sensitiveUrl,
+      method: "POST",
+      headers: { Authorization: "Bearer secret-token" },
+      postData: "private request body",
+    },
+    initiator: {
+      type: "script",
+      stack: {
+        callFrames: [
+          {
+            url: "http://127.0.0.1:8080/assets/app.js?session=private",
+            functionName: "query",
+            lineNumber: 7,
+            columnNumber: 4,
+          },
+        ],
+      },
+    },
+  });
+  collector.onResponseReceived({
+    requestId: "cdp-request-private-id",
+    timestamp: 10.04,
+    response: { status: 200, url: sensitiveUrl, headers: { "Set-Cookie": "private" } },
+  });
+  collector.onLoadingFinished({
+    requestId: "cdp-request-private-id",
+    timestamp: 10.06,
+    encodedDataLength: 120,
+  });
+
+  const result = collector.summarize([
+    { name: "thread_name", ph: "M", pid: 4, tid: 8, args: { name: "CrRendererMain" } },
+    { name: "RunTask", ph: "X", pid: 4, tid: 8, ts: 10_000_000, dur: 70_000 },
+  ]);
+
+  assert.equal(result.requestCount, 1);
+  assert.deepEqual(result.requests[0], {
+    endpoint: "/api/records/{id}/resolve-anomaly",
+    method: "POST",
+    completion: "completed",
+    status: 200,
+    timingStatus: "ordered",
+    requestStartOffsetMs: 20,
+    timeToHeadersMs: 20,
+    totalDurationMs: 40,
+    bytesReceived: 120,
+    startedDuringLongTask: {
+      ordinal: 1,
+      startOffsetMs: 0,
+      durationMs: 70,
+    },
+    initiatorType: "script",
+    initiatorFrames: [
+      {
+        sourcePath: "src/hooks/queries/useTimeRecordsQuery.ts",
+        functionName: "useTimeRecordsQuery",
+        sourceLine: 82,
+        mapped: true,
+      },
+    ],
+  });
+  assertPrivacySafe(result);
+  assert.doesNotMatch(
+    JSON.stringify(result),
+    /EMP-SECRET|secret|private|cdp-request|127\.0\.0\.1|https?:\/\//,
+  );
+});
+
+test("keeps unknown routes generic and excludes requests outside local API", () => {
+  const collector = createApiRequestCollector({
+    apiOrigin: "http://127.0.0.1:8080",
+    apiPathPrefix: "/api",
+    openApiPaths: { "/api/health/ready": { get: {} } },
+    resolveFrame: () => null,
+  });
+  collector.onRequestWillBeSent({
+    requestId: "unknown-api",
+    timestamp: 3,
+    request: {
+      url: "http://127.0.0.1:8080/api/private-user-name/lookup?secret=value",
+      method: "GET",
+    },
+  });
+  collector.onRequestWillBeSent({
+    requestId: "external-request",
+    timestamp: 3.001,
+    request: { url: "https://example.test/api/users/secret", method: "GET" },
+  });
+
+  const result = collector.summarize([]);
+
+  assert.equal(result.requestCount, 1);
+  assert.equal(result.requests[0].endpoint, "unmatched-api-route");
+  assert.equal(result.requests[0].completion, "incomplete");
+  assert.equal(result.requests[0].requestStartOffsetMs, null);
+  assertPrivacySafe(result);
+  assert.doesNotMatch(JSON.stringify(result), /private-user-name|secret|example\.test|https?:\/\//);
+});
+
+test("marks out-of-order CDP response timestamps and omits invalid durations", () => {
+  const collector = createApiRequestCollector({
+    apiOrigin: "http://127.0.0.1:8080",
+    apiPathPrefix: "/api",
+    openApiPaths: { "/api/health/ready": { get: {} } },
+    resolveFrame: (frame) => ({
+      sourcePath: "src/hooks/useHealth.ts",
+      functionName: frame.functionName,
+      sourceLine: 12,
+      mapped: true,
+    }),
+  });
+  collector.onRequestWillBeSent({
+    requestId: "out-of-order-id",
+    timestamp: 7,
+    request: { url: "http://127.0.0.1:8080/api/health/ready", method: "GET" },
+    initiator: {
+      type: "script",
+      stack: {
+        callFrames: [
+          { functionName: "native-frame" },
+          {
+            functionName: "loadHealth",
+            url: "https://bundle.invalid/assets/index.js",
+            lineNumber: 10,
+            columnNumber: 4,
+          },
+        ],
+      },
+    },
+  });
+  collector.onResponseReceived({
+    requestId: "out-of-order-id",
+    timestamp: 7.2,
+    response: { status: 200 },
+  });
+  collector.onLoadingFinished({
+    requestId: "out-of-order-id",
+    timestamp: 7.1,
+    encodedDataLength: 32,
+  });
+
+  const result = collector.summarize([]);
+
+  assert.equal(result.requests[0].timingStatus, "out-of-order");
+  assert.equal(result.requests[0].timeToHeadersMs, null);
+  assert.equal(result.requests[0].totalDurationMs, null);
+  assert.deepEqual(result.timingStatusCounts, { "out-of-order": 1 });
+  assert.deepEqual(result.requests[0].initiatorFrames, [
+    {
+      sourcePath: "src/hooks/useHealth.ts",
+      functionName: "loadHealth",
+      sourceLine: 12,
+      mapped: true,
+    },
+  ]);
+  assertPrivacySafe(result);
+  assert.doesNotMatch(JSON.stringify(result), /out-of-order-id|bundle\.invalid|https?:\/\//);
+});
+
+test("splits redirects and reports incomplete or failed API requests without raw error data", () => {
+  const collector = createApiRequestCollector({
+    apiOrigin: "http://127.0.0.1:8080",
+    apiPathPrefix: "/api",
+    openApiPaths: { "/api/users/{id}": { get: {} } },
+    resolveFrame: () => null,
+  });
+  collector.onRequestWillBeSent({
+    requestId: "redirect-id",
+    timestamp: 5,
+    request: { url: "http://127.0.0.1:8080/api/users/secret-id?x=secret", method: "GET" },
+  });
+  collector.onRequestWillBeSent({
+    requestId: "redirect-id",
+    timestamp: 5.01,
+    request: { url: "http://127.0.0.1:8080/api/users/secret-id?x=secret", method: "GET" },
+    redirectResponse: { status: 302, url: "private-url", headers: { Location: "secret" } },
+  });
+  collector.onResponseReceived({
+    requestId: "redirect-id",
+    timestamp: 5.03,
+    response: { status: 200 },
+  });
+  collector.onLoadingFinished({ requestId: "redirect-id", timestamp: 5.04, encodedDataLength: 24 });
+  collector.onRequestWillBeSent({
+    requestId: "incomplete-id",
+    timestamp: 5.05,
+    request: { url: "http://127.0.0.1:8080/api/users/2", method: "GET" },
+  });
+  collector.onLoadingFailed({
+    requestId: "incomplete-id",
+    timestamp: 5.06,
+    canceled: true,
+    errorText: "https://private.invalid/?token=secret",
+  });
+
+  const result = collector.summarize([]);
+
+  assert.equal(result.requestCount, 3);
+  assert.deepEqual(
+    result.requests.map(({ completion, status, timingStatus, totalDurationMs }) => ({
+      completion,
+      status,
+      timingStatus,
+      totalDurationMs,
+    })),
+    [
+      { completion: "redirected", status: 302, timingStatus: "ordered", totalDurationMs: 10 },
+      { completion: "completed", status: 200, timingStatus: "ordered", totalDurationMs: 30 },
+      {
+        completion: "failed",
+        status: null,
+        timingStatus: "response-unavailable",
+        totalDurationMs: 10,
+      },
+    ],
+  );
+  assert.equal(result.failedCount, 1);
+  assertPrivacySafe(result);
+  assert.doesNotMatch(
+    JSON.stringify(result),
+    /redirect-id|incomplete-id|secret|private|https?:\/\//,
+  );
+});
+
+test("aggregates request latency and task coincidence per endpoint and sample", () => {
+  const result = aggregateApiRequestSamples([
+    {
+      requests: [
+        {
+          endpoint: "/api/health/ready",
+          method: "GET",
+          completion: "completed",
+          timingStatus: "ordered",
+          timeToHeadersMs: 2,
+          totalDurationMs: 4,
+          bytesReceived: 95,
+          startedDuringLongTask: { ordinal: 1 },
+          initiatorFrames: [
+            { sourcePath: "src/store/slices/syncSlice.ts", functionName: "validateInstanceId" },
+          ],
+        },
+      ],
+    },
+    {
+      requests: [
+        {
+          endpoint: "/api/health/ready",
+          method: "GET",
+          completion: "completed",
+          timingStatus: "ordered",
+          timeToHeadersMs: 6,
+          totalDurationMs: 8,
+          bytesReceived: 95,
+          startedDuringLongTask: null,
+          initiatorFrames: [
+            { sourcePath: "src/store/slices/syncSlice.ts", functionName: "validateInstanceId" },
+          ],
+        },
+      ],
+    },
+    { requests: [] },
+  ]);
+
+  assert.deepEqual(result, {
+    sampleCount: 3,
+    endpointSummaries: [
+      {
+        endpoint: "/api/health/ready",
+        method: "GET",
+        requestCount: 2,
+        observedSamples: 2,
+        completedCount: 2,
+        failedCount: 0,
+        timingStatusCounts: { ordered: 2 },
+        medianTimeToHeadersMs: 4,
+        medianTotalDurationMs: 6,
+        medianBytesReceived: 95,
+        samplesStartedDuringLongTask: 1,
+        repeatedInitiators: [
+          {
+            sourcePath: "src/store/slices/syncSlice.ts",
+            functionName: "validateInstanceId",
+            observedSamples: 2,
+          },
+        ],
+      },
+    ],
+  });
 });
