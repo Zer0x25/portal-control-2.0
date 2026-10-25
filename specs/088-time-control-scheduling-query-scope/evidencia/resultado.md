@@ -68,5 +68,6 @@ también llegaron con timestamps fuera de orden. Las trazas crudas de Lighthouse
 permanecen localmente en `frontend/.lighthouseci`.
 
 - [Perfil API después](./time-control-api-requests-after-2026-10-25.json)
+- [Perfil CPU de producción después](./time-control-production-cpu-after-2026-10-25.json)
 - [Cinco muestras Lighthouse después](./time-control-lighthouse-after-2026-10-25.json)
 - [Baseline Lighthouse Spec 085](../../085-time-control-tbt-optimization/evidencia/time-control-lighthouse-baseline.json)

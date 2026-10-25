@@ -467,3 +467,11 @@
 - **Límite**: FCP mediano subió 3,6%, LCP bajó 0,4% y JS transferido casi no cambió. La mediana de inicios API dentro de tareas largas siguió en 13; `react-core` aparece en 17/25 long tasks listados. El TBT aún es 211–271 ms. CDP reportó timestamps fuera de orden en 57/57 requests base y 42/42 posteriores; se omitieron duraciones de red.
 - **Siguiente**: perfilar commits y trabajo de render React de Control horario y buscar un componente que se repita dentro de las tareas `react-core`; no atribuir toda la caída de TBT a una sola función. Mantener las trazas crudas fuera del repo.
 - **Evidencia**: [resultado Spec 087](../specs/087-time-control-api-request-attribution/evidencia/resultado.md), [resultado Spec 088](../specs/088-time-control-scheduling-query-scope/evidencia/resultado.md) y sus capturas agregadas.
+
+## 2026-10-25 - perf(time-control): Diferir informes abiertos de turno
+
+- **Cambio**: la lista `status=open` de informes de turno ya no se consulta al montar Control horario; se vuelve a pedir al iniciar la acción de agregar una novedad. Se distingue un fallo de red de la ausencia de un turno y hay pruebas para ambas respuestas.
+- **Medido**: tres perfiles de producción bajaron de 14 a 13 requests API por navegación; `/api/shift-reports` bajó de dos a uno por carga y las 39/39 respuestas terminaron con HTTP 200. CPU muestreado mediano: trabajo activo 836,9 → 770,5 ms; React inclusivo 538,1 → 492,0 ms; `performRequest` 63,8 → 51,6 ms.
+- **Límite**: perfiles secuenciales de tres muestras, sin atribución causal. Lighthouse frío TBT pasó de 239 a 220 ms, pero los rangos se solapan (211–271 y 211,5–264,7); las cinco muestras siguen sobre 200 ms. No se declara ganancia causal de TBT.
+- **Siguiente**: mantener como objetivo el trabajo de `react-core`; el perfil de producción aún no lo asigna a componentes. Correlacionar trazas y commits de React con las tareas largas antes de elegir otra optimización.
+- **Evidencia**: [resultado Spec 089](../specs/089-time-control-defer-open-shift-reports/evidencia/resultado.md), [tres perfiles CPU](../specs/089-time-control-defer-open-shift-reports/evidencia/time-control-production-cpu-after-2026-10-25.json) y [cinco corridas Lighthouse](../specs/089-time-control-defer-open-shift-reports/evidencia/time-control-lighthouse-after-2026-10-25.json).
