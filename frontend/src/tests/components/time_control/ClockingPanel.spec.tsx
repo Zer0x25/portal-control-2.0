@@ -118,6 +118,31 @@ describe("ClockingPanel Component", () => {
     ]);
   });
 
+  it("blocks overlapping manual clock actions while the first mutation is pending", async () => {
+    let resolveMutation: (value: { success: boolean; action: string }) => void = () => undefined;
+    mockMutateAsync.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveMutation = resolve;
+        }),
+    );
+
+    const { result } = renderHook(() => useClockingPanel());
+    act(() => result.current.setSelectedEmployeeId("1"));
+
+    await act(async () => {
+      const firstAttempt = result.current.performActionAndReset("jornada_inicio");
+      const secondAttempt = result.current.performActionAndReset("jornada_inicio");
+
+      expect(mockMutateAsync).toHaveBeenCalledTimes(1);
+
+      resolveMutation({ success: true, action: "ENTRADA" });
+      await Promise.all([firstAttempt, secondAttempt]);
+    });
+
+    expect(mockMutateAsync).toHaveBeenCalledTimes(1);
+  });
+
   it("should select an employee and enable the 'Inicio' button", async () => {
     render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
     const input = screen.getByPlaceholderText(/Buscar empleado/i);

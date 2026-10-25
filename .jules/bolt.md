@@ -563,3 +563,11 @@
 - **Límite**: TBT candidato varió 117,5–349 ms y LCP tuvo un outlier de 4.015,85 ms. Se conserva por cumplir el umbral acordado, como señal de laboratorio; no demuestra mejora de INP de campo ni causalidad completa.
 - **Siguiente**: volver al costo de React y DOM del shell/ruta; el cliente API mezcla frames propios con `fetch` y asincronía, y `TimeControl.view.tsx` sigue protegida.
 - **Evidencia**: [resultado Spec 100](../specs/100-defer-timecontrol-indexeddb-open/evidencia/resultado.md), [perfil CPU](../specs/100-defer-timecontrol-indexeddb-open/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/100-defer-timecontrol-indexeddb-open/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - test(perf): Descartar desbloqueo del React Compiler en ClockingPanel
+
+- **Experimento**: retirar el `isSubmittingRef.current` no consumido del valor de render y la memoización manual que existía por el bail-out; el guard sincrónico de marcación permaneció intacto. React Compiler dejó de omitir `useClockingPanel`.
+- **Medido**: el React Profiler de desarrollo bajó 30,1% para `clocking-panel` (9,3 → 6,5 ms) y 29,5% en la ruta (51,1 → 36 ms). Cinco Lighthouse de staging: LCP mediano +0,03%, pero TBT 175 → 315 ms (+80%) y transferencia +610 B (+0,13%). Las corridas tuvieron alta variación; no se atribuye causalidad.
+- **Decisión**: descartado y runtime restaurado por incumplir los gates de TBT y bytes. Se mantiene una prueba del guard contra doble marcación; no hay cambio runtime por este experimento.
+- **Siguiente**: trazar `App.tsx::loadTimeControlPage` (26,249 ms mediano en 3/3 perfiles Spec 100) junto con el inicio y fin real de los chunks. No modificar `TimeControl.view.tsx` ni atribuir `apiClient.performRequest` a CPU síncrono sin separar fetch/espera.
+- **Evidencia**: [resultado Spec 101](../specs/101-time-control-clock-panel-compiler-bailout/evidencia/resultado.md), perfiles React y cinco corridas Lighthouse.
