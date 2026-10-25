@@ -32,9 +32,15 @@ const DashboardPage = React.lazy(
 const SupervisorDashboardPage = React.lazy(
   () => import("./features/supervisor-dashboard/containers/SupervisorDashboardPage.container"),
 );
-const TimeControlPage = React.lazy(
-  () => import("./features/time-control/containers/TimeControl.container"),
-);
+export const loadTimeControlPage = () =>
+  import("./features/time-control/containers/TimeControl.container");
+export const preloadTimeControlPageFromCurrentHash = () => {
+  const routePath = window.location.hash.replace(/^#/, "").split(/[?#]/, 1)[0] || "/";
+  if (routePath === ROUTES.TIME_CONTROL) {
+    void loadTimeControlPage().catch(() => undefined);
+  }
+};
+const TimeControlPage = React.lazy(loadTimeControlPage);
 const LogbookPage = React.lazy(() =>
   import("./features/logbook/containers/Logbook.container").then((m) => ({
     default: m.LogbookContainer,

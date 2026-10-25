@@ -507,3 +507,11 @@
 - **Lighthouse**: TBT mediano 232 → 190 ms; rangos 133,5–269 y 134–626,03 ms se solapan. FCP/LCP variaron menos de 0,2%, CLS máximo quedó estable. No se declara mejora estable de TBT.
 - **Siguiente**: investigar los importadores lazy de `PersistentLayout` y `TimeControlPage`, repetidos en 3/3 tareas con 17,775 y 15,1 ms muestreados medianos, y comprobar si el fetch de esos chunks se serializa antes de proponer un cambio.
 - **Evidencia**: [resultado Spec 093](../specs/093-time-control-search-computation/evidencia/resultado.md), [perfiles CPU](../specs/093-time-control-search-computation/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/093-time-control-search-computation/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Iniciar la ruta junto al layout
+
+- **Cambio**: los enlaces directos a `#/time-control` llaman el mismo loader de `React.lazy` desde `main.tsx`, antes de `root.render`. Las otras rutas mantienen lazy loading; `ProtectedRoute` no cambia.
+- **Medido**: el chunk empezó 30,9–78,3 ms antes que `PersistentLayout` y terminó 50,9–95,9 ms antes en 5/5 Lighthouse. Tres E2E fríos móviles confirmaron el solapamiento en 3/3; cada chunk se pidió una sola vez y no se descargó el editor de marcas. Los E2E registraron 11–12 requests API, todos HTTP 200; perfiles CDP registraron 12 por muestra y cero fallos.
+- **Límite**: FCP −0,15%, LCP +0,05% y CLS máximo estable. TBT mediano 190 → 217,5 ms; los rangos 134–626,03 y 168,5–367 ms se solapan, así que no se afirma mejora ni regresión causal. Transferencia JS mediana +110 B.
+- **Siguiente**: revisar los nuevos perfiles CDP de Control horario y elegir el siguiente hotspot repetido; separar trabajo de React y de `apiClient.performRequest` antes de atribuir una caída de TBT.
+- **Evidencia**: [resultado Spec 094](../specs/094-time-control-parallel-route-chunks/evidencia/resultado.md), [cascada E2E](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-route-chunk-waterfall.json), [perfil CPU](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-lighthouse-after-2026-10-25.json).

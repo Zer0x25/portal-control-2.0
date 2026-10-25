@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": {
+    "start": "2026-10-25T19:56:52.213Z",
+    "end": "2026-10-25T19:58:36.987Z"
+  },
+  "source": {
+    "commit": "2b59821",
+    "stagingFrontendImageId": "sha256:f1693ef54d39cb41973604270a77a529b2f8191a905f84d92034341f13cfc471",
+    "tool": "Lighthouse 12.6.1"
+  },
+  "environment": {
+    "route": "/#/time-control",
+    "formFactor": "mobile",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "cpuSlowdownMultiplier": 4,
+    "rttMs": 150,
+    "sampleCount": 5
+  },
+  "resources": [
+    {
+      "run": 1,
+      "layoutStartMs": 158.884,
+      "layoutEndMs": 196.345,
+      "layoutTransferBytes": 17533,
+      "routeStartMs": 289.694,
+      "routeEndMs": 308.455,
+      "routeTransferBytes": 17963
+    },
+    {
+      "run": 2,
+      "layoutStartMs": 172.396,
+      "layoutEndMs": 205.29,
+      "layoutTransferBytes": 17533,
+      "routeStartMs": 354.814,
+      "routeEndMs": 361.33,
+      "routeTransferBytes": 17963
+    },
+    {
+      "run": 3,
+      "layoutStartMs": 145.471,
+      "layoutEndMs": 180.72,
+      "layoutTransferBytes": 17533,
+      "routeStartMs": 339.934,
+      "routeEndMs": 345.946,
+      "routeTransferBytes": 17963
+    },
+    {
+      "run": 4,
+      "layoutStartMs": 173.5,
+      "layoutEndMs": 280.169,
+      "layoutTransferBytes": 17533,
+      "routeStartMs": 419.316,
+      "routeEndMs": 429.276,
+      "routeTransferBytes": 17963
+    },
+    {
+      "run": 5,
+      "layoutStartMs": 143.856,
+      "layoutEndMs": 164.283,
+      "layoutTransferBytes": 17533,
+      "routeStartMs": 296.661,
+      "routeEndMs": 314.466,
+      "routeTransferBytes": 17963
+    }
+  ],
+  "summary": {
+    "layoutToRouteStartGapMs": {
+      "median": 182.418,
+      "min": 130.81,
+      "max": 245.816
+    },
+    "layoutEndToRouteStartGapMs": {
+      "median": 139.147,
+      "min": 93.349,
+      "max": 159.214
+    }
+  }
+}

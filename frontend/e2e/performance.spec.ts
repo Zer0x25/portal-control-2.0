@@ -794,51 +794,157 @@ test.describe.serial("Render Performance", () => {
     ).toEqual([]);
   });
 
-  test("Time Control excludes the timestamp editor from its cold route", async ({
-    page,
+  test("Time Control overlaps its route chunk with the layout on three cold visits", async ({
+    browser,
+    request,
   }, testInfo) => {
-    const editModalRequests: string[] = [];
-    page.on("request", (request) => {
-      if (
-        request.resourceType() === "script" &&
-        /\/assets\/EditTimestampModal\.container-[^/?]+\.js(?:[?#]|$)/.test(request.url())
-      ) {
-        editModalRequests.push(request.url());
-      }
-    });
-
-    await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.waitForLoadState("networkidle");
-
-    const coldScriptResources = await page.evaluate(() => {
-      const resources = performance
-        .getEntriesByType("resource")
-        .filter((entry): entry is PerformanceResourceTiming => {
-          return (
-            entry.initiatorType === "script" && new URL(entry.name).pathname.includes("/assets/")
-          );
-        });
-      return {
-        assets: resources.map((resource) => new URL(resource.name).pathname.split("/").pop()),
-        transferBytes: resources.reduce((total, resource) => total + resource.transferSize, 0),
+    const samples: Array<{
+      sample: number;
+      coldEditModalRequests: string[];
+      routeChunkRequests: { persistentLayout: string[]; timeControl: string[] };
+      routeChunkTimings: {
+        persistentLayout: { path: string; startTime: number; responseEnd: number }[];
+        timeControl: { path: string; startTime: number; responseEnd: number }[];
       };
-    });
+      apiRequests: { path: string; statusCode: number | null }[];
+      scriptAssetCount: number;
+      scriptTransferBytes: number;
+    }> = [];
+    const mobileViewport = { width: 412, height: 823 };
 
-    const coldEditModalRequests = [...editModalRequests];
-    expect(
-      coldEditModalRequests,
-      "The timestamp editor chunk must stay out of the cold Time Control route",
-    ).toEqual([]);
-    await attachPerformanceReport(testInfo, "time-control-deferred-editor.json", {
+    for (let sample = 1; sample <= 3; sample += 1) {
+      const context = await browser.newContext({
+        viewport: mobileViewport,
+        deviceScaleFactor: 1.75,
+        isMobile: true,
+        hasTouch: true,
+        serviceWorkers: "block",
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+
+        const coldEditModalRequests: string[] = [];
+        const routeChunkRequests = {
+          persistentLayout: [] as string[],
+          timeControl: [] as string[],
+        };
+        const apiRequests: { path: string; statusCode: number | null }[] = [];
+        const apiRequestIndexes = new Map<Request, number>();
+        page.on("request", (pageRequest) => {
+          const url = pageRequest.url();
+          if (pageRequest.resourceType() === "script") {
+            if (/\/assets\/EditTimestampModal\.container-[^/?]+\.js(?:[?#]|$)/.test(url)) {
+              coldEditModalRequests.push(url);
+            }
+            if (/\/assets\/PersistentLayout-[^/?]+\.js(?:[?#]|$)/.test(url)) {
+              routeChunkRequests.persistentLayout.push(url);
+            }
+            if (/\/assets\/TimeControl\.container-[^/?]+\.js(?:[?#]|$)/.test(url)) {
+              routeChunkRequests.timeControl.push(url);
+            }
+          }
+          const pathname = new URL(url).pathname;
+          if (pathname.startsWith("/api/")) {
+            apiRequestIndexes.set(pageRequest, apiRequests.length);
+            apiRequests.push({ path: pathname, statusCode: null });
+          }
+        });
+        page.on("response", (response) => {
+          const index = apiRequestIndexes.get(response.request());
+          const apiRequest = index === undefined ? undefined : apiRequests[index];
+          if (apiRequest) apiRequest.statusCode = response.status();
+        });
+
+        await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+        await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+          timeout: 30_000,
+        });
+        await page.waitForLoadState("networkidle");
+
+        const browserResources = await page.evaluate(() => {
+          const resources = performance
+            .getEntriesByType("resource")
+            .filter((entry): entry is PerformanceResourceTiming => {
+              return (
+                entry.initiatorType === "script" &&
+                new URL(entry.name).pathname.includes("/assets/")
+              );
+            });
+          const routeChunks = resources.map((resource) => ({
+            path: new URL(resource.name).pathname,
+            startTime: resource.startTime,
+            responseEnd: resource.responseEnd,
+          }));
+          return {
+            scriptAssetCount: resources.length,
+            scriptTransferBytes: resources.reduce(
+              (total, resource) => total + resource.transferSize,
+              0,
+            ),
+            routeChunkTimings: {
+              persistentLayout: routeChunks.filter((resource) =>
+                /\/PersistentLayout-[^/]+\.js$/.test(resource.path),
+              ),
+              timeControl: routeChunks.filter((resource) =>
+                /\/TimeControl\.container-[^/]+\.js$/.test(resource.path),
+              ),
+            },
+          };
+        });
+
+        samples.push({
+          sample,
+          coldEditModalRequests,
+          routeChunkRequests,
+          routeChunkTimings: browserResources.routeChunkTimings,
+          apiRequests,
+          scriptAssetCount: browserResources.scriptAssetCount,
+          scriptTransferBytes: browserResources.scriptTransferBytes,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    const report = {
       capturedAt: new Date().toISOString(),
       baseUrl,
       route: "/#/time-control",
-      coldScriptResources,
-      coldEditModalRequests,
-    });
+      profile: { viewport: mobileViewport, deviceScaleFactor: 1.75, cpuThrottleRate: 4 },
+      sampleCount: samples.length,
+      samples,
+    };
+    await attachPerformanceReport(testInfo, "time-control-route-chunk-waterfall.json", report);
+
+    expect(samples).toHaveLength(3);
+    for (const sample of samples) {
+      expect(
+        sample.coldEditModalRequests,
+        "The timestamp editor chunk must stay out of the cold Time Control route",
+      ).toEqual([]);
+      expect(sample.routeChunkRequests.persistentLayout).toHaveLength(1);
+      expect(sample.routeChunkRequests.timeControl).toHaveLength(1);
+      expect(sample.routeChunkTimings.persistentLayout).toHaveLength(1);
+      expect(sample.routeChunkTimings.timeControl).toHaveLength(1);
+      expect(
+        sample.routeChunkTimings.timeControl[0].startTime,
+        `Time Control should start before the layout finishes in sample ${sample.sample}`,
+      ).toBeLessThan(sample.routeChunkTimings.persistentLayout[0].responseEnd);
+      expect(
+        sample.apiRequests.length,
+        `Sample ${sample.sample} should retain the baseline startup request range`,
+      ).toBeGreaterThanOrEqual(11);
+      expect(sample.apiRequests.length).toBeLessThanOrEqual(12);
+      expect(
+        sample.apiRequests.every((apiRequest) => apiRequest.statusCode === 200),
+        `All API requests should return HTTP 200 in sample ${sample.sample}`,
+      ).toBe(true);
+    }
   });
 
   test("Worker Portal defers correction modal code until a correction is opened", async ({
