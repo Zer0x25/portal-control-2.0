@@ -523,3 +523,11 @@
 - **Límite**: el CPU activo mediano fue 803,027 → 790,952 ms, pero hubo alta variación entre las seis muestras. No se atribuye una mejora global ni de TBT; Lighthouse no se volvió a ejecutar para este cambio de alcance reducido.
 - **Siguiente**: separar el costo de React/DOM nativo en el arranque de Control horario y encontrar una operación de producto repetida antes de elegir otra optimización. Mantener `TimeControl.view.tsx` protegida.
 - **Evidencia**: [resultado Spec 095](../specs/095-theme-bootstrap-idempotency/evidencia/resultado.md), [perfil CDP](../specs/095-theme-bootstrap-idempotency/evidencia/time-control-production-cpu-after-2026-10-25.json) y [auditoría E2E](../specs/095-theme-bootstrap-idempotency/evidencia/theme-bootstrap-audit.json).
+
+## 2026-10-25 - test(perf): Descartar diferimiento de controles móviles
+
+- **Experimento**: extraer los controles de `TimeRecordFilters` a un chunk bajo demanda, dejando cerrado y sin hooks el panel móvil inicial. La variante pasó 11/11 tests focalizados y el E2E confirmó una carga única del chunk al abrir y conservación de filtros al reabrir.
+- **Medido**: transferencia inicial 200.553 → 196.512 B (−4.041 B, −2,0%) y 67 → 66 recursos JS. 12 requests API por visita en ambas versiones; 36/36 respuestas HTTP 200.
+- **Límite/decisión**: no alcanzó los 5.000 B de AC4; CPU activo mediano CDP bajó 54,5 ms, pero rangos y React core propio se solapan/prácticamente no cambian. Sin ganancia global ni de TBT demostrada. Se revirtió el runtime y se conservó la evidencia para no mover el umbral después de medir.
+- **Siguiente**: investigar el trabajo repetido de `apiClient.performRequest` y la carga del layout/ruta con trazas correlacionadas; elegir solo si aparece trabajo propio dentro de más de una tarea larga. No tocar `TimeControl.view.tsx`.
+- **Evidencia**: [resultado Spec 096](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/resultado.md), [cascada candidata](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/time-control-route-chunk-waterfall.json) y [perfil CDP](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/time-control-production-cpu-after-2026-10-25.json).
