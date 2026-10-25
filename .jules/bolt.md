@@ -515,3 +515,11 @@
 - **Límite**: FCP −0,15%, LCP +0,05% y CLS máximo estable. TBT mediano 190 → 217,5 ms; los rangos 134–626,03 y 168,5–367 ms se solapan, así que no se afirma mejora ni regresión causal. Transferencia JS mediana +110 B.
 - **Siguiente**: revisar los nuevos perfiles CDP de Control horario y elegir el siguiente hotspot repetido; separar trabajo de React y de `apiClient.performRequest` antes de atribuir una caída de TBT.
 - **Evidencia**: [resultado Spec 094](../specs/094-time-control-parallel-route-chunks/evidencia/resultado.md), [cascada E2E](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-route-chunk-waterfall.json), [perfil CPU](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(theme): evitar reaplicar el tema inicial
+
+- **Cambio**: `_applyTheme` compara la clase `.dark` con el tema resuelto y sale sin DOM ni notificaciones redundantes cuando ya coinciden. Se conserva el bloqueo de transiciones y recálculo forzado cuando el tema cambia.
+- **Medido**: el frame de `_applyTheme` bajó de 12,165 ms muestreados en 1/3 perfiles a no aparecer en 3/3. E2E con tema oscuro detecta cero inserciones de `#disable-transitions`; Control horario conserva 12/12 respuestas HTTP 200.
+- **Límite**: el CPU activo mediano fue 803,027 → 790,952 ms, pero hubo alta variación entre las seis muestras. No se atribuye una mejora global ni de TBT; Lighthouse no se volvió a ejecutar para este cambio de alcance reducido.
+- **Siguiente**: separar el costo de React/DOM nativo en el arranque de Control horario y encontrar una operación de producto repetida antes de elegir otra optimización. Mantener `TimeControl.view.tsx` protegida.
+- **Evidencia**: [resultado Spec 095](../specs/095-theme-bootstrap-idempotency/evidencia/resultado.md), [perfil CDP](../specs/095-theme-bootstrap-idempotency/evidencia/time-control-production-cpu-after-2026-10-25.json) y [auditoría E2E](../specs/095-theme-bootstrap-idempotency/evidencia/theme-bootstrap-audit.json).

@@ -794,6 +794,63 @@ test.describe.serial("Render Performance", () => {
     ).toEqual([]);
   });
 
+  test("theme bootstrap applies the stored theme without a second DOM transition pass", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+      await loginFast(page, request, "admin");
+      await page.addInitScript(() => {
+        localStorage.setItem("app-theme", "dark");
+        const audit = { transitionStyleInsertions: 0 };
+        (
+          window as Window & {
+            __themeBootstrapAudit?: typeof audit;
+          }
+        ).__themeBootstrapAudit = audit;
+        new MutationObserver((records) => {
+          for (const record of records) {
+            for (const node of record.addedNodes) {
+              if (node instanceof HTMLStyleElement && node.id === "disable-transitions") {
+                audit.transitionStyleInsertions += 1;
+              }
+            }
+          }
+        }).observe(document, { childList: true, subtree: true });
+      });
+
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await page.evaluate(
+        () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+      );
+
+      const audit = await page.evaluate(() => ({
+        darkThemeApplied: document.documentElement.classList.contains("dark"),
+        transitionStyleInsertions: (
+          window as Window & {
+            __themeBootstrapAudit?: { transitionStyleInsertions: number };
+          }
+        ).__themeBootstrapAudit?.transitionStyleInsertions,
+      }));
+
+      await attachPerformanceReport(testInfo, "theme-bootstrap-audit.json", {
+        capturedAt: new Date().toISOString(),
+        baseUrl,
+        route: "/#/dashboard",
+        storedTheme: "dark",
+        ...audit,
+      });
+
+      expect(audit.darkThemeApplied).toBe(true);
+      expect(audit.transitionStyleInsertions).toBe(0);
+    } finally {
+      await context.close();
+    }
+  });
+
   test("Time Control overlaps its route chunk with the layout on three cold visits", async ({
     browser,
     request,
