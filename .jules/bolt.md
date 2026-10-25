@@ -444,3 +444,11 @@
 - **Límite**: perfil con caché fría, CPU 4× y sin throttling de red; su FCP no se compara con Lighthouse, ni el muestreo equivale a TBT. Los tasks de 94–103 ms cercanos a FCP no recibieron samples. No se modificó la app ni staging.
 - **Siguiente**: medir aisladamente el efecto de diferir `SocketService.connect`, preservando eventos en tiempo real, y repetir la batería Lighthouse. El máximo candidato observado ronda 7–15 ms; continuar después con fanout de queries y render de la ruta.
 - **Evidencia**: [diagnóstico TBT Spec 083](../specs/083-time-control-bootstrap-shell/evidencia/diagnostico-tbt-2026-10-24.md) y [perfil CPU por tarea](../specs/083-time-control-bootstrap-shell/evidencia/perfil-cpu-time-control-2026-10-24.json).
+
+## 2026-10-25 - test(perf): Diagnóstico TBT de Control horario en staging
+
+- **Baseline**: cinco corridas frías en una imagen (`sha256:fcdcc13a…`), CPU 4×, viewport 412×823. FCP mediano 2,036 s; LCP 2,477 s (un outlier 5,645 s); TBT 349,5 ms (rango 287–402); CLS máximo 0,01. Las cinco corridas exceden 200 ms TBT.
+- **Atribución**: tareas largas Lighthouse de 143–264 ms aparecen en `react-core`. Seis perfiles CDP con 208/208 assets coincidentes muestran 675,7 ms inclusivos de React por ventana mediana de 2.758 ms. `socketService.connect` aporta 10–16 ms; el ordenamiento de `useClockingPanel` (42 ms muestreados) apareció solo en una muestra. No se correlacionaron tareas y stacks temporalmente.
+- **Decisión**: sin cambio de runtime ni mejora de TBT demostrada. `apiClient.performRequest` y React son actividad repetida, pero el perfil actual no demuestra que una función propia cause las tareas Lighthouse. No diferir Socket.IO ni editar `TimeControl.view.tsx` por conjetura.
+- **Siguiente**: capturar un trace de navegador que correlacione marcas/stack de cada tarea larga con commits React y consultas iniciales; optimizar solo el componente que aparezca en más de una tarea.
+- **Evidencia**: [resultado Spec 085](../specs/085-time-control-tbt-optimization/evidencia/resultado.md), [cinco corridas](../specs/085-time-control-tbt-optimization/evidencia/time-control-lighthouse-baseline.json) y [seis perfiles CDP](../specs/085-time-control-tbt-optimization/evidencia/time-control-production-cpu-2026-10-25.json).

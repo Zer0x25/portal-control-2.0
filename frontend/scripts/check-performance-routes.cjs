@@ -3,6 +3,7 @@ const routes = require("../performance-routes.json");
 const standardConfig = require("../.lighthouserc.json");
 const coldConfig = require("../.lighthouserc-dashboard-cold.json");
 const priorityColdConfig = require("../.lighthouserc-priority-cold.json");
+const timeControlColdConfig = require("../.lighthouserc-time-control-cold.json");
 
 const assert = (condition, message) => {
   if (!condition) throw new Error(message);
@@ -67,6 +68,21 @@ assert(
 assert(
   priorityColdConfig.ci.collect.numberOfRuns === 3,
   "Cold priority Lighthouse profile must collect three runs per route",
+);
+const timeControlRoute = routes.find((route) => route.id === "time-control");
+assert(timeControlRoute?.lighthouse, "Time Control must remain Lighthouse eligible");
+assert(
+  JSON.stringify(timeControlColdConfig.ci.collect.url) ===
+    JSON.stringify([new URL(timeControlRoute.path, stagingUrl).toString()]),
+  "Focused cold Lighthouse profile must target only Time Control",
+);
+assert(
+  timeControlColdConfig.ci.collect.numberOfRuns === 5,
+  "Focused Time Control Lighthouse profile must collect five runs",
+);
+assert(
+  timeControlColdConfig.ci.collect.puppeteerScript === "scripts/lhci-puppeteer.cjs",
+  "Focused Time Control Lighthouse profile must use the authenticated route setup",
 );
 
 process.stdout.write(

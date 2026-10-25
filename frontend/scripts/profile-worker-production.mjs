@@ -15,13 +15,40 @@ const viewport = { width: 412, height: 823 };
 const sampleCount = 3;
 const cpuThrottleRate = 4;
 const outputArg = process.argv.find((arg) => arg.startsWith("--output="))?.slice(9);
-const defaultOutput = `../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/worker-portal-noapp-cpu-${new Date().toISOString().slice(0, 10)}.json`;
-const outputPath = resolve(frontendRoot, outputArg || defaultOutput);
+const routeArg = process.argv.find((arg) => arg.startsWith("--route="))?.slice(8);
 
-const workerCredentials = {
-  username: process.env.E2E_WORKER_USERNAME || "juan.perez",
-  password: process.env.E2E_WORKER_PASSWORD || "123456",
-};
+export function resolveProfileRoute(routeId = "worker-portal") {
+  const routes = {
+    "worker-portal": {
+      id: "worker-portal",
+      path: "/worker-portal",
+      currentPath: "/worker-portal",
+      role: "worker",
+      expectedRole: "Usuario",
+      username: process.env.E2E_WORKER_USERNAME || "juan.perez",
+      password: process.env.E2E_WORKER_PASSWORD || "123456",
+    },
+    "time-control": {
+      id: "time-control",
+      path: "/time-control",
+      currentPath: "/time-control",
+      role: "admin",
+      expectedRole: "Administrador",
+      username: process.env.E2E_ADMIN_USERNAME || "admin",
+      password: process.env.E2E_ADMIN_PASSWORD || "999.666",
+    },
+  };
+  const route = routes[routeId];
+  if (!route) throw new Error(`Unsupported production profile route: ${routeId}`);
+  return route;
+}
+
+const profileRoute = resolveProfileRoute(routeArg);
+const defaultOutput =
+  profileRoute.id === "time-control"
+    ? `../specs/085-time-control-tbt-optimization/evidencia/time-control-production-cpu-${new Date().toISOString().slice(0, 10)}.json`
+    : `../specs/079-worker-portal-noapp-cpu-stack-attribution/evidencia/worker-portal-noapp-cpu-${new Date().toISOString().slice(0, 10)}.json`;
+const outputPath = resolve(frontendRoot, outputArg || defaultOutput);
 
 const median = (values) => {
   if (values.length === 0) return null;
@@ -513,12 +540,19 @@ function resolveMappedFrame(callFrame, maps) {
   };
 }
 
-async function loginWorker(request) {
-  const response = await request.post(`${apiBase}/auth/login`, { data: workerCredentials });
-  if (!response.ok()) throw new Error(`Worker login failed with HTTP ${response.status()}`);
+async function loginProfileRole(request, role) {
+  const response = await request.post(`${apiBase}/auth/login`, {
+    data: { username: role.username, password: role.password },
+  });
+  if (!response.ok()) throw new Error(`Profile login failed with HTTP ${response.status()}`);
   const body = await response.json();
-  if (!body.token || body.role !== "Usuario" || body.mustChangePassword === true) {
-    throw new Error("Worker test session is missing or requires a password-change flow");
+  if (
+    !body.token ||
+    body.role !== role.expectedRole ||
+    body.mustChangePassword === true ||
+    typeof body.userId !== "string"
+  ) {
+    throw new Error(`Profile ${role.id} session is missing or requires password change`);
   }
   return {
     token: body.token,
@@ -534,7 +568,7 @@ async function loginWorker(request) {
   };
 }
 
-async function captureSample(browser, session, maps) {
+async function captureSample(browser, session, maps, route) {
   const context = await browser.newContext({
     viewport,
     deviceScaleFactor: 1.75,
@@ -580,7 +614,15 @@ async function captureSample(browser, session, maps) {
     profileStarted = true;
     const startedAt = Date.now();
 
-    await page.goto(`${stagingOrigin}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${stagingOrigin}/#${route.path}`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(
+      (expectedPath) =>
+        document
+          .querySelector('[data-testid="app-shell"]')
+          ?.getAttribute("data-current-path") === expectedPath,
+      route.currentPath,
+      { timeout: 60_000 },
+    );
     await page
       .locator('#root [data-testid="server-clock"]')
       .waitFor({ state: "visible", timeout: 60_000 });
@@ -647,10 +689,10 @@ async function main() {
     const request = await playwrightRequest.newContext();
     const browser = await chromium.launch({ headless: true });
     try {
-      const session = await loginWorker(request);
+      const session = await loginProfileRole(request, profileRoute);
       const samples = [];
       for (let index = 0; index < sampleCount; index += 1) {
-        samples.push(await captureSample(browser, session, maps));
+        samples.push(await captureSample(browser, session, maps, profileRoute));
       }
 
       const report = {
@@ -670,7 +712,7 @@ async function main() {
           samplingIntervalUs: 1000,
         },
         target: {
-          routeId: "worker-portal",
+          routeId: profileRoute.id,
           profile: "active-staging-production-bundle",
           stagingFrontendImageId: stagingImageBefore,
           sourceMapAssetsMatched: true,

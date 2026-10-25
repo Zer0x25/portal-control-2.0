@@ -4,9 +4,22 @@ import test from "node:test";
 import {
   aggregateProfileSummaries,
   assertPrivacySafe,
+  resolveProfileRoute,
   sanitizeSourcePath,
   summarizeCpuProfile,
 } from "./profile-worker-production.mjs";
+
+test("allows only known authenticated production profile routes", () => {
+  const timeControl = resolveProfileRoute("time-control");
+  assert.equal(timeControl.path, "/time-control");
+  assert.equal(timeControl.currentPath, "/time-control");
+  assert.equal(timeControl.expectedRole, "Administrador");
+
+  const workerPortal = resolveProfileRoute("worker-portal");
+  assert.equal(workerPortal.path, "/worker-portal");
+  assert.equal(workerPortal.expectedRole, "Usuario");
+  assert.throws(() => resolveProfileRoute("dashboard"), /Unsupported production profile route/);
+});
 
 const mappedFrames = {
   reactWork: {
