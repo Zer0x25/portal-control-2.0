@@ -571,3 +571,11 @@
 - **Decisión**: descartado y runtime restaurado por incumplir los gates de TBT y bytes. Se mantiene una prueba del guard contra doble marcación; no hay cambio runtime por este experimento.
 - **Siguiente**: trazar `App.tsx::loadTimeControlPage` (26,249 ms mediano en 3/3 perfiles Spec 100) junto con el inicio y fin real de los chunks. No modificar `TimeControl.view.tsx` ni atribuir `apiClient.performRequest` a CPU síncrono sin separar fetch/espera.
 - **Evidencia**: [resultado Spec 101](../specs/101-time-control-clock-panel-compiler-bailout/evidencia/resultado.md), perfiles React y cinco corridas Lighthouse.
+
+## 2026-10-25 - test(perf): Descartar matriz de horarios por página
+
+- **Experimento**: reemplazar cuatro catálogos de horario por `POST /api/shifts/schedule/matrix` acotado a cada página, incluyendo empleados inactivos bajo opción explícita. Pruebas Fastify, frontend y sincronía OpenAPI/SDK pasaron en el candidato.
+- **Medido**: tres perfiles fríos redujeron 12→9 requests API y 4.262→1.504 B en los catálogos reemplazados (−64,71%); cero respuestas fallidas y respuesta de registros idéntica (1.923 B). Cinco Lighthouse: TBT mediano 202→194,5 ms (−3,71%), LCP 2.255,2→2.406,1 ms (+6,69%), transferencia total −0,43%.
+- **Decisión**: descartado y runtime/API restaurados porque LCP supera el gate +5%. Rangos Lighthouse se solapan; tres muestras CPU también variaron (React propio 204,6→289,6 ms, tareas largas 7→10), sin atribución causal. Staging quedó reconstruido desde HEAD y readiness es healthy.
+- **Siguiente**: separar el costo del importador `loadTimeControlPage` del trabajo React/DOM. El importador mide ~28,7 ms de mediana frente a 204,6 ms de React propio; no partir el chunk sin evidencia de ganancia.
+- **Evidencia**: [resultado Spec 102](../specs/102-time-control-batch-schedule-enrichment/evidencia/resultado.md), [comparación Lighthouse/API/CPU](../specs/102-time-control-batch-schedule-enrichment/evidencia/comparison-2026-10-25.json) y [perfiles CPU base/candidato](../specs/102-time-control-batch-schedule-enrichment/evidencia/).
