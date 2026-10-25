@@ -1,0 +1,175 @@
+{
+  "capturedAt": "2026-10-25T22:33:39.253Z",
+  "route": "/#/time-control",
+  "sampleCount": 5,
+  "sourceCommit": "c952dfd21af593f49cb74a0dc83e4f1416353aa4",
+  "sourceWorkingTreeDirty": true,
+  "baselineStagingFrontendImageId": "sha256:504515aa80db81e3a28a45f151d8d9f09e78c8a4591569af6b041ed6672f4134",
+  "stagingFrontendImageId": "sha256:032e4976923b9820f244a510b2d468b9f13d8455fb738e16aa76de21c2fbc65d",
+  "lighthouseSettings": {
+    "version": "12.6.1",
+    "formFactor": "mobile",
+    "throttlingMethod": "simulate",
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "requestLatencyMs": 562.5,
+      "downloadThroughputKbps": 1474.5600000000002,
+      "uploadThroughputKbps": 675,
+      "cpuSlowdownMultiplier": 4
+    },
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "storageReset": true
+  },
+  "summary": {
+    "performanceScore": {
+      "median": 0.92,
+      "min": 0.8,
+      "max": 0.96
+    },
+    "fcpMs": {
+      "median": 2008.41,
+      "min": 1995.21,
+      "max": 2812.46
+    },
+    "lcpMs": {
+      "median": 2253.61,
+      "min": 2250.54,
+      "max": 4015.85
+    },
+    "tbtMs": {
+      "median": 175,
+      "min": 117.5,
+      "max": 349
+    },
+    "cls": {
+      "median": 0.01016,
+      "min": 0,
+      "max": 0.01016
+    },
+    "totalTransferBytes": {
+      "median": 457667,
+      "min": 457651,
+      "max": 493898
+    },
+    "scriptTransferBytes": {
+      "median": 294712,
+      "min": 294712,
+      "max": 328575
+    },
+    "requestCount": {
+      "median": 84,
+      "min": 84,
+      "max": 87
+    },
+    "apiRequestCount": {
+      "median": 2,
+      "min": 2,
+      "max": 3
+    },
+    "apiErrorCount": 0,
+    "tbtReductionPercent": 10.03,
+    "lcpDeltaPercent": 0.03,
+    "candidateRunsBelowBaselineMinTbt": 3,
+    "baselineTbtMs": {
+      "median": 194.5,
+      "min": 185.5,
+      "max": 307
+    },
+    "baselineLcpMs": {
+      "median": 2252.93,
+      "min": 2250.2,
+      "max": 5205.08
+    }
+  },
+  "samples": [
+    {
+      "run": 1,
+      "fetchedAt": "2026-10-25T22:30:12.265Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.8,
+        "fcpMs": 2812.46,
+        "lcpMs": 4015.85,
+        "tbtMs": 175,
+        "cls": 0,
+        "totalTransferBytes": 457651,
+        "scriptTransferBytes": 294712,
+        "requestCount": 84
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0
+    },
+    {
+      "run": 2,
+      "fetchedAt": "2026-10-25T22:30:40.728Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.92,
+        "fcpMs": 1996.36,
+        "lcpMs": 2250.54,
+        "tbtMs": 245,
+        "cls": 0.01016,
+        "totalTransferBytes": 457667,
+        "scriptTransferBytes": 294712,
+        "requestCount": 84
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0
+    },
+    {
+      "run": 3,
+      "fetchedAt": "2026-10-25T22:31:05.830Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.96,
+        "fcpMs": 1995.21,
+        "lcpMs": 2253.31,
+        "tbtMs": 134,
+        "cls": 0.01016,
+        "totalTransferBytes": 457667,
+        "scriptTransferBytes": 294712,
+        "requestCount": 84
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0
+    },
+    {
+      "run": 4,
+      "fetchedAt": "2026-10-25T22:31:32.136Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.96,
+        "fcpMs": 2082.69,
+        "lcpMs": 2255.54,
+        "tbtMs": 117.5,
+        "cls": 0.01016,
+        "totalTransferBytes": 493898,
+        "scriptTransferBytes": 328575,
+        "requestCount": 87
+      },
+      "apiRequestCount": 3,
+      "apiErrorCount": 0
+    },
+    {
+      "run": 5,
+      "fetchedAt": "2026-10-25T22:31:57.804Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.89,
+        "fcpMs": 2008.41,
+        "lcpMs": 2253.61,
+        "tbtMs": 349,
+        "cls": 0,
+        "totalTransferBytes": 457667,
+        "scriptTransferBytes": 294712,
+        "requestCount": 84
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0
+    }
+  ]
+}

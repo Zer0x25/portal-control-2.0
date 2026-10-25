@@ -555,3 +555,11 @@
 - **Límite**: el cambio quita dos llamadas del wrapper de mutaciones desde lectores, pero no demuestra una reducción global de CPU, tareas largas ni TBT. El frame ausente no significa cero CPU; la captura API varió en un request y el muestreo Lighthouse fue ruidoso.
 - **Siguiente**: correlacionar el trabajo de las tareas largas alrededor de `loadTimeControlPage` y `apiClient.performRequest`; mantener separado el costo de iniciar fetch del tiempo de respuesta. No editar `TimeControl.view.tsx`.
 - **Evidencia**: [resultado Spec 099](../specs/099-time-control-readonly-query-observers/evidencia/resultado.md), [perfil CPU](../specs/099-time-control-readonly-query-observers/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/099-time-control-readonly-query-observers/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Diferir apertura de IndexedDB
+
+- **Cambio**: retirar el `initDB()` de nivel superior en `indexedDB.ts`; todas las operaciones siguen esperando la promesa memoizada al usar una store. El esquema, versión e índices no cambian.
+- **Medido**: tres perfiles fríos: CPU activo mediano 863,860 → 764,954 ms (−11,45%), React core propio 236,114 → 201,912 ms y tareas largas medianas 8 → 7. `initDB` dejó de aparecer como frame de arranque (3/3); la creación de stores quedó en 5,954 ms en 1/3. 36/36 requests API HTTP 200. Cinco Lighthouse: TBT mediano 194,5 → 175 ms (−10,03%), con 3/5 bajo el mínimo base; LCP 2.252,93 → 2.253,61 ms (+0,03%).
+- **Límite**: TBT candidato varió 117,5–349 ms y LCP tuvo un outlier de 4.015,85 ms. Se conserva por cumplir el umbral acordado, como señal de laboratorio; no demuestra mejora de INP de campo ni causalidad completa.
+- **Siguiente**: volver al costo de React y DOM del shell/ruta; el cliente API mezcla frames propios con `fetch` y asincronía, y `TimeControl.view.tsx` sigue protegida.
+- **Evidencia**: [resultado Spec 100](../specs/100-defer-timecontrol-indexeddb-open/evidencia/resultado.md), [perfil CPU](../specs/100-defer-timecontrol-indexeddb-open/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/100-defer-timecontrol-indexeddb-open/evidencia/time-control-lighthouse-after-2026-10-25.json).
