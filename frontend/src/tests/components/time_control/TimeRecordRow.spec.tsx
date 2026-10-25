@@ -122,6 +122,14 @@ describe("TimeRecordRow Component", () => {
     expect(screen.getByText(/17:00/i)).toBeInTheDocument();
   });
 
+  it("uses tabular monospace typography without italics for timestamps", () => {
+    renderRow();
+
+    const timestamp = screen.getByText("08:00:00");
+    expect(timestamp).toHaveClass("font-mono", "tabular-nums", "font-semibold");
+    expect(timestamp).not.toHaveClass("italic");
+  });
+
   it("should show edit indicator from externalEdits", () => {
     renderRow({
       externalEdits: [
