@@ -491,3 +491,11 @@
 - **Límite**: perfiles secuenciales y microbenchmark local; el TBT Lighthouse no mejoró de forma estable (mediana 189 → 203 ms; el nuevo rango 177,5–1.099,5 se solapa con 154–677,5). No se atribuye la variación de CPU total ni TBT a esta función.
 - **Siguiente**: investigar `addBusinessDaysCL`, que registró 6,978 ms muestreados medianos en los tres perfiles posteriores, y comprobar sus invariantes antes de tocarlo.
 - **Evidencia**: [resultado Spec 091](../specs/091-time-policy-cached-business-date/evidencia/resultado.md), [perfil CPU posterior](../specs/091-time-policy-cached-business-date/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/091-time-policy-cached-business-date/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-policy): Reutilizar formatter al sumar días
+
+- **Cambio**: `addBusinessDaysCL` conserva la aritmética UTC al mediodía, pero usa el formatter compartido al producir `yyyy-MM-dd`; se retiró `formatInTimeZone` de `timePolicy.ts`.
+- **Medido**: microbenchmark Node 26, siete rondas × 50.000 operaciones y 350 combinaciones: mediana 620,00 → 219,12 ms (−64,7%). En staging, el frame de `addBusinessDaysCL` dejó de aparecer en tres muestras; 36/36 llamadas API siguieron respondiendo HTTP 200.
+- **Límite**: CPU activo mediano 792,496 → 793,710 ms; Lighthouse TBT 203 → 232 ms con rangos solapados. No se afirma una mejora de TBT ni causalidad de los cambios del perfil.
+- **Siguiente**: inspeccionar `apiClient.performRequest`, mediana muestreada 40,917 ms, para separar trabajo síncrono de espera de red antes de considerar otra lectura.
+- **Evidencia**: [resultado Spec 092](../specs/092-time-policy-add-business-days/evidencia/resultado.md), [perfil CPU posterior](../specs/092-time-policy-add-business-days/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/092-time-policy-add-business-days/evidencia/time-control-lighthouse-after-2026-10-25.json).

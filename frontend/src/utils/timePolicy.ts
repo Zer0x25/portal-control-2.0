@@ -1,4 +1,4 @@
-import { formatInTimeZone, toDate } from "date-fns-tz";
+import { toDate } from "date-fns-tz";
 import { getBusinessNow } from "../hooks/useBusinessNow";
 
 export const BUSINESS_TZ = "America/Santiago";
@@ -55,7 +55,7 @@ export const addBusinessDaysCL = (dateStr: BusinessDateCL, days: number): Busine
   const [year, month, day] = dateStr.split("-").map(Number);
   const base = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   base.setUTCDate(base.getUTCDate() + days);
-  return formatInTimeZone(base, BUSINESS_TZ, "yyyy-MM-dd");
+  return formatBusinessDateCL(base);
 };
 
 export const parseBusinessDateTimeCL = (dateStr: BusinessDateCL, time: string): Date => {

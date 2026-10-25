@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { formatInTimeZone } from "date-fns-tz";
 import { useStore } from "../store/useStore";
 import {
+  addBusinessDaysCL,
   fromInclusiveRange,
   formatBusinessDateCL,
   nowUtcInstant,
@@ -77,5 +78,31 @@ describe("timePolicy", () => {
 
   it("keeps throwing for invalid dates", () => {
     expect(() => formatBusinessDateCL(new Date("invalid"))).toThrow(RangeError);
+  });
+
+  it("matches date-fns-tz when adding business days across calendar boundaries", () => {
+    const dates = [
+      "1900-02-28",
+      "2024-02-28",
+      "2024-02-29",
+      "2025-09-06",
+      "2026-01-01",
+      "2026-04-04",
+      "2026-07-01",
+      "2099-12-31",
+    ];
+    const offsets = [-400, -60, -1, 0, 1, 60, 400];
+
+    for (const dateStr of dates) {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      for (const days of offsets) {
+        const expectedDate = new Date(Date.UTC(year, month - 1, day, 12));
+        expectedDate.setUTCDate(expectedDate.getUTCDate() + days);
+
+        expect(addBusinessDaysCL(dateStr, days)).toBe(
+          formatInTimeZone(expectedDate, "America/Santiago", "yyyy-MM-dd"),
+        );
+      }
+    }
   });
 });
