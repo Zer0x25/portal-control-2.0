@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { profileReactSubtree } from "../../../utils/RenderProfiler";
 import { useClockingPanel } from "../hooks/useClockingPanel";
 import Button from "../../../components/ui/Button";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
@@ -10,7 +11,10 @@ interface ClockingPanelProps {
   roleBasedTooltip: string;
 }
 
-const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBasedTooltip }) => {
+const ClockingPanelImpl: React.FC<ClockingPanelProps> = ({
+  isActionDisabled,
+  roleBasedTooltip,
+}) => {
   const {
     searchTerm,
     selectedEmployeeId,
@@ -165,4 +169,8 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
 
 // useClockingPanel reads refs during render and is a compiler bail-out; this
 // boundary avoids rerunning that clocking hot path for unrelated parent renders.
-export default React.memo(ClockingPanel);
+const MemoizedClockingPanel = React.memo(ClockingPanelImpl);
+const ProfiledClockingPanel: React.FC<ClockingPanelProps> = (props) =>
+  profileReactSubtree("time-control:clocking-panel", <MemoizedClockingPanel {...props} />);
+
+export default import.meta.env.DEV ? ProfiledClockingPanel : MemoizedClockingPanel;

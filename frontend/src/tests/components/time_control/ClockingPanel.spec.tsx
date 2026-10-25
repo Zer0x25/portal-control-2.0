@@ -2,8 +2,10 @@ import { render, screen, fireEvent, waitFor, renderHook, act } from "@testing-li
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import ClockingPanel from "../../../features/time-control/components/ClockingPanel";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
-import { useTimeRecords } from "../../../hooks/useTimeRecords";
-import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
+import {
+  useTimeRecordsQuery,
+  useTimeRecordMutations,
+} from "../../../hooks/queries/useTimeRecordsQuery";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 import { useClockingPanel } from "../../../features/time-control/hooks/useClockingPanel";
@@ -20,7 +22,6 @@ vi.mock("../../../hooks/queries/useEmployeesQuery", () => ({
   useClockingEmployeeOptionsQuery: vi.fn(),
 }));
 vi.mock("../../../utils/stringUtils", () => ({ normalizeString: normalizeStringMock }));
-vi.mock("../../../hooks/useTimeRecords");
 vi.mock("../../../hooks/queries/useTimeRecordsQuery");
 vi.mock("../../../hooks/useAuth");
 vi.mock("../../../hooks/useToasts");
@@ -47,10 +48,10 @@ describe("ClockingPanel Component", () => {
       data: mockActiveEmployees,
     } as ReturnType<typeof useClockingEmployeeOptionsQuery>);
 
-    (useTimeRecords as any).mockReturnValue({
-      timeRecordsPage: [],
-      isLoadingRecords: false,
-    });
+    vi.mocked(useTimeRecordsQuery).mockReturnValue({
+      data: { pages: [{ data: [] }] },
+      isLoading: false,
+    } as ReturnType<typeof useTimeRecordsQuery>);
 
     (useTimeRecordMutations as any).mockReturnValue({
       punchMutation: {
@@ -72,7 +73,11 @@ describe("ClockingPanel Component", () => {
     render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
     expect(screen.getByPlaceholderText(/Buscar empleado/i)).toBeInTheDocument();
     expect(screen.getByText(/Seleccione un empleado/i)).toBeInTheDocument();
-    expect(useTimeRecords).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }));
+    expect(useTimeRecordsQuery).toHaveBeenCalledWith({
+      pageSize: 5,
+      enabled: false,
+      filters: { desde: "", hasta: "", employeeId: undefined },
+    });
   });
 
   it("skips deriving search results while the search is empty", () => {
@@ -127,12 +132,11 @@ describe("ClockingPanel Component", () => {
     await waitFor(() => {
       expect(screen.getByText(/Fuera de Jornada/i)).toBeInTheDocument();
     });
-    expect(useTimeRecords).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        enabled: true,
-        filters: expect.objectContaining({ employeeId: "1" }),
-      }),
-    );
+    expect(useTimeRecordsQuery).toHaveBeenLastCalledWith({
+      pageSize: 5,
+      enabled: true,
+      filters: { desde: "", hasta: "", employeeId: "1" },
+    });
 
     const inicioBtn = screen.getByRole("button", { name: /^Inicio$/i });
     expect(inicioBtn).not.toBeDisabled();

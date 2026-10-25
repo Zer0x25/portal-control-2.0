@@ -1,0 +1,241 @@
+{
+  "capturedAt": "2026-10-25T22:17:01.761Z",
+  "route": "time-control",
+  "measurement": {
+    "mode": "Vite development",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "cpuThrottleRate": 4,
+    "sampleCount": 3,
+    "apiOrigin": "local staging"
+  },
+  "before": [
+    {
+      "root": {
+        "commits": 31,
+        "actualDurationMs": 403.8,
+        "maxActualDurationMs": 123.5
+      },
+      "appRoutes": {
+        "commits": 14,
+        "actualDurationMs": 255.8,
+        "maxActualDurationMs": 109.1
+      },
+      "route": {
+        "commits": 6,
+        "actualDurationMs": 95,
+        "maxActualDurationMs": 55
+      },
+      "view": {
+        "commits": 5,
+        "actualDurationMs": 68.6,
+        "maxActualDurationMs": 48.4
+      },
+      "clockingPanel": {
+        "commits": 1,
+        "actualDurationMs": 11.2,
+        "maxActualDurationMs": 11.2
+      },
+      "filters": {
+        "commits": 3,
+        "actualDurationMs": 23.9,
+        "maxActualDurationMs": 17.6
+      },
+      "records": {
+        "commits": 4,
+        "actualDurationMs": 7.2,
+        "maxActualDurationMs": 6.4
+      }
+    },
+    {
+      "root": {
+        "commits": 27,
+        "actualDurationMs": 371.3,
+        "maxActualDurationMs": 103.8
+      },
+      "appRoutes": {
+        "commits": 12,
+        "actualDurationMs": 238,
+        "maxActualDurationMs": 103.8
+      },
+      "route": {
+        "commits": 6,
+        "actualDurationMs": 95.2,
+        "maxActualDurationMs": 47.3
+      },
+      "view": {
+        "commits": 5,
+        "actualDurationMs": 60.7,
+        "maxActualDurationMs": 41.2
+      },
+      "clockingPanel": {
+        "commits": 1,
+        "actualDurationMs": 9.9,
+        "maxActualDurationMs": 9.9
+      },
+      "filters": {
+        "commits": 3,
+        "actualDurationMs": 24.7,
+        "maxActualDurationMs": 16.1
+      },
+      "records": {
+        "commits": 4,
+        "actualDurationMs": 4.6,
+        "maxActualDurationMs": 3.5
+      }
+    },
+    {
+      "root": {
+        "commits": 27,
+        "actualDurationMs": 363.8,
+        "maxActualDurationMs": 112.1
+      },
+      "appRoutes": {
+        "commits": 12,
+        "actualDurationMs": 234,
+        "maxActualDurationMs": 111.4
+      },
+      "route": {
+        "commits": 6,
+        "actualDurationMs": 82,
+        "maxActualDurationMs": 47
+      },
+      "view": {
+        "commits": 5,
+        "actualDurationMs": 56.6,
+        "maxActualDurationMs": 41.1
+      },
+      "clockingPanel": {
+        "commits": 1,
+        "actualDurationMs": 10.5,
+        "maxActualDurationMs": 10.5
+      },
+      "filters": {
+        "commits": 3,
+        "actualDurationMs": 19.2,
+        "maxActualDurationMs": 15.4
+      },
+      "records": {
+        "commits": 4,
+        "actualDurationMs": 4.3,
+        "maxActualDurationMs": 2.6
+      }
+    }
+  ],
+  "after": [
+    {
+      "root": {
+        "commits": 21,
+        "actualDurationMs": 343.9,
+        "maxActualDurationMs": 113.3
+      },
+      "appRoutes": {
+        "commits": 12,
+        "actualDurationMs": 241.1,
+        "maxActualDurationMs": 113.3
+      },
+      "route": {
+        "commits": 6,
+        "actualDurationMs": 86.3,
+        "maxActualDurationMs": 47.2
+      },
+      "view": {
+        "commits": 5,
+        "actualDurationMs": 64.8,
+        "maxActualDurationMs": 38.7
+      },
+      "clockingPanel": {
+        "commits": 1,
+        "actualDurationMs": 9.9,
+        "maxActualDurationMs": 9.9
+      },
+      "filters": {
+        "commits": 3,
+        "actualDurationMs": 23.2,
+        "maxActualDurationMs": 14.6
+      },
+      "records": {
+        "commits": 4,
+        "actualDurationMs": 4.3,
+        "maxActualDurationMs": 3.9
+      }
+    },
+    {
+      "root": {
+        "commits": 21,
+        "actualDurationMs": 330.5,
+        "maxActualDurationMs": 114.6
+      },
+      "appRoutes": {
+        "commits": 12,
+        "actualDurationMs": 239.9,
+        "maxActualDurationMs": 114.6
+      },
+      "route": {
+        "commits": 6,
+        "actualDurationMs": 89.6,
+        "maxActualDurationMs": 50.8
+      },
+      "view": {
+        "commits": 5,
+        "actualDurationMs": 60.9,
+        "maxActualDurationMs": 44.1
+      },
+      "clockingPanel": {
+        "commits": 1,
+        "actualDurationMs": 10.6,
+        "maxActualDurationMs": 10.6
+      },
+      "filters": {
+        "commits": 3,
+        "actualDurationMs": 21.6,
+        "maxActualDurationMs": 15.9
+      },
+      "records": {
+        "commits": 4,
+        "actualDurationMs": 6,
+        "maxActualDurationMs": 4.1
+      }
+    },
+    {
+      "root": {
+        "commits": 27,
+        "actualDurationMs": 380.5,
+        "maxActualDurationMs": 127
+      },
+      "appRoutes": {
+        "commits": 12,
+        "actualDurationMs": 258,
+        "maxActualDurationMs": 127
+      },
+      "route": {
+        "commits": 6,
+        "actualDurationMs": 89.7,
+        "maxActualDurationMs": 50.2
+      },
+      "view": {
+        "commits": 5,
+        "actualDurationMs": 58.8,
+        "maxActualDurationMs": 41.7
+      },
+      "clockingPanel": {
+        "commits": 1,
+        "actualDurationMs": 10.2,
+        "maxActualDurationMs": 10.2
+      },
+      "filters": {
+        "commits": 3,
+        "actualDurationMs": 22.3,
+        "maxActualDurationMs": 16.9
+      },
+      "records": {
+        "commits": 4,
+        "actualDurationMs": 6.4,
+        "maxActualDurationMs": 4.7
+      }
+    }
+  ],
+  "interpretation": "Development React timings isolate component work. The final series does not show a stable change in the scoped components; use only for attribution, not production timing, TBT, or causal comparison."
+}
