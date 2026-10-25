@@ -475,3 +475,11 @@
 - **Límite**: perfiles secuenciales de tres muestras, sin atribución causal. Lighthouse frío TBT pasó de 239 a 220 ms, pero los rangos se solapan (211–271 y 211,5–264,7); las cinco muestras siguen sobre 200 ms. No se declara ganancia causal de TBT.
 - **Siguiente**: mantener como objetivo el trabajo de `react-core`; el perfil de producción aún no lo asigna a componentes. Correlacionar trazas y commits de React con las tareas largas antes de elegir otra optimización.
 - **Evidencia**: [resultado Spec 089](../specs/089-time-control-defer-open-shift-reports/evidencia/resultado.md), [tres perfiles CPU](../specs/089-time-control-defer-open-shift-reports/evidencia/time-control-production-cpu-after-2026-10-25.json) y [cinco corridas Lighthouse](../specs/089-time-control-defer-open-shift-reports/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Diferir consulta auxiliar del filtro móvil
+
+- **Cambio**: `TimeRecordFilters` ya no carga la página auxiliar de registros mientras el panel parte colapsado en móvil. La consulta se habilita al expandir; desktop conserva la carga al montar y la tabla no cambia.
+- **Medido**: staging móvil bajó de 13 a 12 requests API y de dos a una lectura inicial de `/api/records`; tres perfiles completaron 36/36 respuestas. El navegador confirmó el segundo fetch al expandir y conservó dos lecturas en desktop.
+- **Límite**: TBT mediano Lighthouse 220 → 189 ms, pero el nuevo rango 154–677,5 incluye un valor atípico y se solapa con 211,5–264,7; no se atribuye la diferencia al cambio. FCP +1,1%, LCP estable. CPU muestreado varió al alza entre perfiles secuenciales.
+- **Siguiente**: ubicar otra consulta o subárbol que se repita en tareas largas de producción; el ahorro de una solicitud está verificado, pero aún no hay reducción estable de TBT.
+- **Evidencia**: [resultado Spec 090](../specs/090-time-control-defer-collapsed-filter-query/evidencia/resultado.md), [perfiles CPU](../specs/090-time-control-defer-collapsed-filter-query/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/090-time-control-defer-collapsed-filter-query/evidencia/time-control-lighthouse-after-2026-10-25.json).

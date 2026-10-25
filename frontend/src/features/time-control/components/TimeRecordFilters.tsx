@@ -51,9 +51,11 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
   const maxBusinessDate = toBusinessDateChile(businessNow);
 
   const { data: activeEmployees = [] } = useClockingEmployeeOptionsQuery();
-  const { allRecordsInDateRange, isLoadingRecords } = useTimeRecords();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isExpanded, setIsExpanded] = useState(!isMobile);
+  const { allRecordsInDateRange, isLoadingRecords } = useTimeRecords({
+    enabled: !isMobile || isExpanded,
+  });
 
   const employeesInDateRange = (() => {
     if (isLoadingRecords) return activeEmployees;

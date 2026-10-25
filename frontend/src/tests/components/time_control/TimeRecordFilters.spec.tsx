@@ -108,6 +108,7 @@ describe("TimeRecordFilters Component", () => {
   it("should render filter controls correctly", () => {
     render(<TimeRecordFilters {...defaultProps} />);
 
+    expect(useTimeRecords).toHaveBeenCalledWith({ enabled: true });
     expect(screen.getByRole("combobox", { name: /Tipo Jornada/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /Área Operativa/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /Estado/i })).toBeInTheDocument();
@@ -152,9 +153,11 @@ describe("TimeRecordFilters Component", () => {
     vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
     render(<TimeRecordFilters {...defaultProps} />);
 
+    expect(useTimeRecords).toHaveBeenLastCalledWith({ enabled: false });
     const toggleBtn = screen.getByText(/Mostrar Filtros/i);
     fireEvent.click(toggleBtn);
 
     expect(screen.getByText(/Ocultar Filtros/i)).toBeInTheDocument();
+    expect(useTimeRecords).toHaveBeenLastCalledWith({ enabled: true });
   });
 });
