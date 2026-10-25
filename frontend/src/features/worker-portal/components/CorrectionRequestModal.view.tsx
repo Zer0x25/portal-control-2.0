@@ -92,7 +92,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
               <EditIcon className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-black text-token-text-primary uppercase italic tracking-tighter">
+              <h3 className="text-xl font-semibold text-token-text-primary uppercase tracking-tight">
                 Solicitud de Corrección
               </h3>
               <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.3em] mt-1">
