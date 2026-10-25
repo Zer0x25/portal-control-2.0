@@ -98,8 +98,8 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
             </Button>
           </div>
 
-          {/* Decorative background blur */}
-          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+          {/* Decorative ambient glow */}
+          <div className="ambient-glow ambient-glow-subtle absolute -bottom-24 -right-24 w-64 h-64 pointer-events-none" />
         </div>
       </div>
     ),

@@ -377,7 +377,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                     key={`total-mob-${item.weekId}`}
                     className="p-8 rounded-[2.5rem] bg-linear-to-br from-token-accent-brand to-indigo-800 text-token-text-onAccent shadow-2xl relative overflow-hidden group"
                   >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-125 transition-transform duration-1000"></div>
+                    <div className="ambient-glow ambient-glow-light absolute top-0 right-0 w-32 h-32 -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-125"></div>
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] opacity-80 block text-center mb-6 italic">
                       RESUMEN CONSOLIDADO
                     </span>

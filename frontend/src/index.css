@@ -603,6 +603,35 @@ input:autofill {
   );
 }
 
+/* Decorative ambient glows must stay soft without relying on filter: blur(). */
+.ambient-glow {
+  --ambient-glow-color: var(--accent-professional);
+  --ambient-glow-strength: 12%;
+  background: radial-gradient(
+    ellipse 70% 70% at 50% 50%,
+    color-mix(in srgb, var(--ambient-glow-color) var(--ambient-glow-strength), transparent) 0%,
+    transparent 100%
+  );
+}
+
+.ambient-glow-subtle {
+  --ambient-glow-strength: 8%;
+}
+
+.ambient-glow-prominent {
+  --ambient-glow-strength: 24%;
+}
+
+.ambient-glow-danger {
+  --ambient-glow-color: var(--status-error);
+  --ambient-glow-strength: 10%;
+}
+
+.ambient-glow-light {
+  --ambient-glow-color: #fff;
+  --ambient-glow-strength: 10%;
+}
+
 /* --- Performance Overrides for Mobile and Low-Power Devices --- */
 /* Disable expensive backdrop filters and complex animations on small screens */
 @media (max-width: 768px) {

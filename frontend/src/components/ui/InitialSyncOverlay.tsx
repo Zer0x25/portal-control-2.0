@@ -33,7 +33,7 @@ const InitialSyncOverlay: React.FC = () => {
           {/* Main Animated Status Indicator */}
           <div className="relative mb-12">
             {/* Outer Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-token-accent-brand blur-3xl opacity-10 animate-pulse"></div>
+            <div className="ambient-glow ambient-glow-subtle absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 animate-pulse"></div>
 
             {/* Technical Spinner */}
             <div className="relative w-20 h-20 mx-auto">

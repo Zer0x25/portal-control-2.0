@@ -127,7 +127,7 @@ const LoginPage: React.FC = () => {
             {/* Header Section */}
             <div className="text-center mb-10 sm:mb-8">
               <div className="mb-8 sm:mb-6 relative inline-block group-hover:scale-105 transition-transform duration-500 animate-in fade-in slide-in-from-top-4 [animation-duration:600ms] [animation-delay:200ms]">
-                <div className="absolute inset-0 bg-token-accent-brand rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+                <div className="ambient-glow ambient-glow-prominent absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100"></div>
                 <BrandLogo
                   className={`h-20 sm:h-16 w-auto relative ${Z.sticky} rounded-2xl shadow-2xl`}
                 />

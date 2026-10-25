@@ -1,11 +1,25 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const INDEX_CSS = path.resolve(__dirname, "../../index.css");
 const LOGIN_PAGE = path.resolve(__dirname, "../../features/auth/pages/LoginPage.tsx");
+const SRC_DIR = path.resolve(__dirname, "../..");
 const css = readFileSync(INDEX_CSS, "utf8");
 const loginPage = readFileSync(LOGIN_PAGE, "utf8");
+
+function getTsxFilesRecursively(directory: string): string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(directory)) {
+    const fullPath = path.join(directory, entry);
+    if (statSync(fullPath).isDirectory()) {
+      files.push(...getTsxFilesRecursively(fullPath));
+    } else if (entry.endsWith(".tsx") && !entry.includes(".spec.") && !entry.includes(".test.")) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
 
 describe("Login visual guardrails", () => {
   it("keeps the login spotlight diffuse without relying on filters", () => {
@@ -16,6 +30,29 @@ describe("Login visual guardrails", () => {
     expect(gradientRule).toContain("radial-gradient(");
     expect(gradientRule).toContain("ellipse 70% 55%");
     expect(gradientRule).not.toMatch(/\bfilter\s*:/);
+  });
+
+  it("keeps ambient glows independent from blur filters in high-performance mode", () => {
+    const offenders = getTsxFilesRecursively(SRC_DIR).flatMap((file) => {
+      const tokens = readFileSync(file, "utf8").match(/\b[a-z0-9:-]*blur-[^\s"'`]+/gi) ?? [];
+      const filterTokens = tokens.filter((token) => !/(?:^|:)backdrop-blur-/.test(token));
+      return filterTokens.map((token) => `${path.relative(SRC_DIR, file)}: ${token}`);
+    });
+
+    expect(
+      offenders,
+      `Use CSS radial gradients for ambient glows instead of filter-based blur utilities:\n${offenders.join("\n")}`,
+    ).toEqual([]);
+
+    for (const variant of [
+      ".ambient-glow",
+      ".ambient-glow-subtle",
+      ".ambient-glow-prominent",
+      ".ambient-glow-danger",
+      ".ambient-glow-light",
+    ]) {
+      expect(css).toContain(variant);
+    }
   });
 
   it("uses the active theme colors for autofilled credential fields", () => {

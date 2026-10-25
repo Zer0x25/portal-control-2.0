@@ -143,7 +143,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   const renderRutInput = () => (
     <div key="rut" className="flex flex-col items-center">
       <div className="relative mb-5 sm:hidden">
-        <div className="absolute inset-0 bg-token-accent-brand/40 rounded-2xl blur-2xl animate-pulse" />
+        <div className="ambient-glow ambient-glow-prominent absolute inset-0 animate-pulse" />
         <div
           className={`w-16 h-16 rounded-2xl bg-linear-to-br from-token-accent-brand via-indigo-600 to-token-accent-brand flex items-center justify-center text-white relative ${Z.sticky} border border-white/20 shadow-2xl`}
         >
@@ -412,7 +412,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] ${Z.base}`}
         />
         <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-token-accent-brand/10 rounded-full blur-[120px] ${Z.base}`}
+          className={`ambient-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${Z.base}`}
         />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-70"></div>
@@ -476,8 +476,8 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
           {step === "change_pin" && renderChangePin()}
         </div>
 
-        <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-token-accent-brand/5 rounded-full blur-3xl" />
-        <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
+        <div className="ambient-glow ambient-glow-subtle absolute -bottom-12 -right-12 w-32 h-32" />
+        <div className="ambient-glow ambient-glow-light ambient-glow-subtle absolute -top-12 -left-12 w-32 h-32" />
       </div>
 
       <div className={`fixed bottom-6 left-6 ${Z.dropdown}`}>
