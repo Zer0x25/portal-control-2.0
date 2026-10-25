@@ -539,3 +539,11 @@
 - **Límite**: CPU activo mediano 790,952 → 795,671 ms y React core propio 189,664 → 210,726 ms; rangos solapados y siete tareas largas por visita en ambas versiones. Sin mejora de TBT demostrada. Se conserva como reducción comprobable de suscripciones redundantes, no como ganancia global.
 - **Siguiente**: profundizar en el trabajo de `apiClient.performRequest` observado en las trazas y separar costo síncrono de espera de red; no cambiar solicitudes ni afirmar beneficio antes de una medición reproducible.
 - **Evidencia**: [resultado Spec 097](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/resultado.md), [cascada](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/time-control-route-chunk-waterfall.json) y [perfil CDP](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/time-control-production-cpu-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Acotar consultas de enriquecimiento
+
+- **Cambio**: Control horario deja de montar `useScheduling` completo para usar solo `getEmployeeDailyScheduleInfo`. El nuevo hook observa patrones, asignaciones, feriados y permisos; el cálculo queda compartido con `useScheduling`.
+- **Medido**: cinco Lighthouse por versión: TBT mediano 214,5 → 163,5 ms (−23,8%) y LCP 2.253,849 → 2.255,088 ms (+0,055%). Cuatro de cinco TBT candidatos quedaron bajo todo el rango base. Transferencia inicial −4.795 B y un recurso JS menos. 36/36 requests API HTTP 200.
+- **Límite**: CPU activo CDP 802,148 → 787,922 ms; los rangos se solapan. React core propio mediano 209,326 → 214,686 ms y tareas largas no bajan consistentemente. La mejora observada es de la mediana Lighthouse y bytes, no una caída general de CPU ni una garantía causal.
+- **Siguiente**: perfilar renderizado y trabajo DOM de Control horario; React/DOM y tareas largas siguen dominando. Mantener separado el costo de CPU del resultado Lighthouse y no reabrir `TimeControl.view.tsx`.
+- **Evidencia**: [resultado Spec 098](../specs/098-time-control-slim-schedule-enrichment/evidencia/resultado.md), [Lighthouse antes/después](../specs/098-time-control-slim-schedule-enrichment/evidencia/time-control-lighthouse-before-2026-10-25.json) y [perfiles CPU](../specs/098-time-control-slim-schedule-enrichment/evidencia/time-control-production-cpu-after-2026-10-25.json).

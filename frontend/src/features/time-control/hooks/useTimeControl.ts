@@ -2,9 +2,9 @@ import { useMemo, useState } from "react";
 import { AttendanceRecord, DailyTimeRecord } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
-import { useScheduling } from "../../../hooks/useScheduling";
 import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
+import { useTimeControlScheduleEnrichment } from "./useTimeControlScheduleEnrichment";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { getContractAttendanceMetrics, getContractClockingStatus } from "../../../utils/mappings";
 import { authService } from "../../../services/authService";
@@ -23,10 +23,7 @@ const extractKPIs = (record: AttendanceRecord) => {
 
 export const useTimeControl = () => {
   const { currentUser } = useAuth();
-  const { getEmployeeDailyScheduleInfo } = useScheduling(undefined, undefined, {
-    useClockingOptions: true,
-    queryMode: "schedule-enrichment",
-  });
+  const getEmployeeDailyScheduleInfo = useTimeControlScheduleEnrichment();
   // Decomposed hooks
   const filters = useTimeRecordFilters();
   const [quickActionRecord, setQuickActionRecord] = useState<DailyTimeRecord | null>(null);
