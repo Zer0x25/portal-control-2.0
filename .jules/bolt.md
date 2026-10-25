@@ -483,3 +483,11 @@
 - **Límite**: TBT mediano Lighthouse 220 → 189 ms, pero el nuevo rango 154–677,5 incluye un valor atípico y se solapa con 211,5–264,7; no se atribuye la diferencia al cambio. FCP +1,1%, LCP estable. CPU muestreado varió al alza entre perfiles secuenciales.
 - **Siguiente**: ubicar otra consulta o subárbol que se repita en tareas largas de producción; el ahorro de una solicitud está verificado, pero aún no hay reducción estable de TBT.
 - **Evidencia**: [resultado Spec 090](../specs/090-time-control-defer-collapsed-filter-query/evidencia/resultado.md), [perfiles CPU](../specs/090-time-control-defer-collapsed-filter-query/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/090-time-control-defer-collapsed-filter-query/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Reutilizar formatter de fecha de negocio
+
+- **Cambio**: `formatBusinessDateCL` usa `Intl.DateTimeFormat` reutilizable y extrae año/mes/día por tipo de parte; conserva calendario gregoriano, dígitos latinos y `America/Santiago`.
+- **Medido**: microbenchmark Node 26 de siete rondas × 50.000 conversiones: mediana 511,96 → 137,44 ms (−73,2%). En tres perfiles CPU de staging, el frame de `formatBusinessDateCL` dejó de aparecer; CPU activo muestreado mediano 805,722 → 792,496 ms. 36/36 solicitudes API respondieron HTTP 200.
+- **Límite**: perfiles secuenciales y microbenchmark local; el TBT Lighthouse no mejoró de forma estable (mediana 189 → 203 ms; el nuevo rango 177,5–1.099,5 se solapa con 154–677,5). No se atribuye la variación de CPU total ni TBT a esta función.
+- **Siguiente**: investigar `addBusinessDaysCL`, que registró 6,978 ms muestreados medianos en los tres perfiles posteriores, y comprobar sus invariantes antes de tocarlo.
+- **Evidencia**: [resultado Spec 091](../specs/091-time-policy-cached-business-date/evidencia/resultado.md), [perfil CPU posterior](../specs/091-time-policy-cached-business-date/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/091-time-policy-cached-business-date/evidencia/time-control-lighthouse-after-2026-10-25.json).
