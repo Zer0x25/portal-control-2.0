@@ -578,20 +578,29 @@ textarea,
   /* cool-gray-400 */
 }
 
-/* --- Global Autofill Fix for Dark Theme --- */
+/* --- Theme-aware autofill styling --- */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #020617 inset !important;
-  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-stripe) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* For Firefox */
+/* Firefox and standards-based autofill. */
 input:autofill {
-  background-color: #020617 !important;
-  color: white !important;
+  background-color: var(--surface-stripe) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Keep the login spotlight diffuse even when high-performance mode disables filters. */
+.login-ambient-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 45%,
+    color-mix(in srgb, var(--accent-professional) 16%, transparent) 0%,
+    transparent 100%
+  );
 }
 
 /* --- Performance Overrides for Mobile and Low-Power Devices --- */
