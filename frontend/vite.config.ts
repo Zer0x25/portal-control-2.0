@@ -131,7 +131,7 @@ export default defineConfig(({ mode }) => {
       // Recoverable bail-outs are emitted by the plugin for auditability.
       react({ compiler: { reportDiagnostics: true } }),
       fontPreloadPlugin(),
-      bootstrapCriticalCssPlugin(),
+      ...(!isStorybook ? [bootstrapCriticalCssPlugin()] : []),
       ...(!isStorybook
         ? [
             VitePWA({
