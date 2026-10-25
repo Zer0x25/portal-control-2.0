@@ -18,6 +18,7 @@ import LiveStatus from "../../../components/ui/LiveStatus";
 import ServerClock from "../../../components/ui/ServerClock";
 import IconBox from "../../../components/ui/IconBox";
 import Container from "../../../components/ui/Container";
+import Card from "../../../components/ui/Card";
 import {
   DocumentArrowDownIcon,
   CalendarDaysIcon,
@@ -198,9 +199,9 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         />
       </div>
 
-      <div className="relative overflow-hidden p-8 rounded-[3rem] bg-token-surface-card border border-token-border-technical backdrop-blur-xl profile-card-glass">
+      <Card noPadding className="overflow-hidden">
         <div
-          className={`relative ${Z.sticky} flex flex-col md:flex-row justify-between items-center gap-8`}
+          className={`relative ${Z.sticky} flex flex-col md:flex-row justify-between items-center gap-8 p-8`}
         >
           <div className="flex items-center gap-6">
             <div className="relative group">
@@ -208,7 +209,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 icon={<UserIcon />}
                 variant="primary"
                 size="lg"
-                className="relative rounded-2xl border-2 border-white/10 w-20 h-20"
+                className="relative border-2 border-white/10 w-20 h-20"
               />
             </div>
             <div>
@@ -249,7 +250,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-12">
@@ -266,7 +267,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   key={item.id}
                   onClick={item.action}
                   disabled={isDisabled}
-                  className={`h-24 rounded-2xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
+                  className={`h-24 rounded-md border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
                 >
                   <div
                     className={`text-[10px] font-black uppercase tracking-[0.2em] relative ${Z.sticky}`}
@@ -280,7 +281,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
         </div>
       </div>
 
-      <div className="bg-token-surface-card backdrop-blur-xl rounded-[2.5rem] border border-token-border-technical shadow-2xl overflow-hidden">
+      <Card noPadding className="overflow-hidden">
         <div className="p-8 border-b border-token-border-subtle flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
             <IconBox icon={<CalendarDaysIcon />} variant="primary" size="md" />
@@ -295,12 +296,12 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex bg-token-surface-header p-1 rounded-xl border border-token-border-subtle">
+            <div className="flex bg-token-surface-header p-1 rounded-md border border-token-border-subtle">
               {quickMonthOptions.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setSelectedMonth(opt.value)}
-                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedMonth === opt.value ? "bg-token-surface-active text-token-text-primary" : "text-token-text-tertiary hover:text-token-text-secondary"}`}
+                  className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${selectedMonth === opt.value ? "bg-token-surface-active text-token-text-primary" : "text-token-text-tertiary hover:text-token-text-secondary"}`}
                 >
                   {opt.label.split(" ")[0]}
                 </button>
@@ -310,7 +311,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               aria-label="Seleccionar mes del calendario"
-              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-xl text-[10px] font-black uppercase text-token-text-secondary outline-none focus:border-token-accent-brand/50"
+              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-md text-[10px] font-black uppercase text-token-text-secondary outline-none focus:border-token-accent-brand/50"
             >
               {monthOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -320,7 +321,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </select>
             <button
               onClick={() => handleExportPDF && handleExportPDF()}
-              className="h-10 px-6 bg-token-accent-brand hover:brightness-110 text-token-text-onAccent rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
+              className="h-10 px-6 bg-token-accent-brand hover:brightness-110 text-token-text-onAccent rounded-md text-[10px] font-black uppercase tracking-widest shadow-sm transition-all flex items-center gap-2"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               Descargar PDF
@@ -343,7 +344,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 enrichedRecords.map((record) => (
                   <div
                     key={record.id}
-                    className={`p-6 rounded-2xl border backdrop-blur-xl bg-token-surface-card border-token-border-subtle shadow-sm group`}
+                    className="p-6 rounded-md border bg-token-surface-card border-token-border-subtle shadow-sm group"
                   >
                     <div className="flex justify-between items-start mb-6">
                       <div>
@@ -407,7 +408,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </div>
           ) : (
             <table className="min-w-full border-separate border-spacing-0">
-              <thead className="bg-token-surface-header backdrop-blur-md">
+              <thead className="bg-token-surface-header">
                 <tr>
                   <th className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle">
                     Fecha
@@ -493,7 +494,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </table>
           )}
         </div>
-      </div>
+      </Card>
 
       {modalState.isOpen && modalState.record && modalState.field && (
         <CorrectionRequestModal
