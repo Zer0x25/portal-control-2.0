@@ -531,3 +531,11 @@
 - **Límite/decisión**: no alcanzó los 5.000 B de AC4; CPU activo mediano CDP bajó 54,5 ms, pero rangos y React core propio se solapan/prácticamente no cambian. Sin ganancia global ni de TBT demostrada. Se revirtió el runtime y se conservó la evidencia para no mover el umbral después de medir.
 - **Siguiente**: investigar el trabajo repetido de `apiClient.performRequest` y la carga del layout/ruta con trazas correlacionadas; elegir solo si aparece trabajo propio dentro de más de una tarea larga. No tocar `TimeControl.view.tsx`.
 - **Evidencia**: [resultado Spec 096](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/resultado.md), [cascada candidata](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/time-control-route-chunk-waterfall.json) y [perfil CDP](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/time-control-production-cpu-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Quitar observador contable sin consumidor
+
+- **Cambio**: `useTimeControl` dejó de suscribirse a `accounting_lock_date` y descartar el resultado. `useTimeControlModals` y `useTimeControlData` mantienen sus consumos funcionales.
+- **Medido**: prueba de regresión roja antes y verde después; 13/13 tests de hooks, TypeScript y ESLint pasan. En tres visitas frías, 36/36 requests API respondieron HTTP 200 y se mantuvieron 12 por visita; transferencia JS 200.550 B frente a 200.553 B de base.
+- **Límite**: CPU activo mediano 790,952 → 795,671 ms y React core propio 189,664 → 210,726 ms; rangos solapados y siete tareas largas por visita en ambas versiones. Sin mejora de TBT demostrada. Se conserva como reducción comprobable de suscripciones redundantes, no como ganancia global.
+- **Siguiente**: profundizar en el trabajo de `apiClient.performRequest` observado en las trazas y separar costo síncrono de espera de red; no cambiar solicitudes ni afirmar beneficio antes de una medición reproducible.
+- **Evidencia**: [resultado Spec 097](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/resultado.md), [cascada](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/time-control-route-chunk-waterfall.json) y [perfil CDP](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/time-control-production-cpu-after-2026-10-25.json).

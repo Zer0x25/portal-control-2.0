@@ -3,17 +3,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authTokenStore } from "../../../services/authToken";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
 
-const { queryArgsMock, filtersMock, schedulingMock } = vi.hoisted(() => ({
-  queryArgsMock: vi.fn(),
-  schedulingMock: vi.fn(),
-  filtersMock: {
-    name: "Ana",
-    area: "Ops",
-    workdayType: "Full",
-    status: "Activo",
-    showAnomalies: false,
-  },
-}));
+const { queryArgsMock, filtersMock, schedulingMock, accountingLockDateQueryMock } = vi.hoisted(
+  () => ({
+    queryArgsMock: vi.fn(),
+    schedulingMock: vi.fn(),
+    accountingLockDateQueryMock: vi.fn(),
+    filtersMock: {
+      name: "Ana",
+      area: "Ops",
+      workdayType: "Full",
+      status: "Activo",
+      showAnomalies: false,
+    },
+  }),
+);
 
 vi.mock("../../../hooks/useAuth", () => ({
   useAuth: () => ({
@@ -113,7 +116,10 @@ vi.mock("../../../hooks/queries/useTimeRecordsQuery", () => ({
 }));
 
 vi.mock("../../../hooks/queries/useConfigQuery", () => ({
-  useAccountingLockDateQuery: () => ({ data: "2026-01-01" }),
+  useAccountingLockDateQuery: () => {
+    accountingLockDateQueryMock();
+    return { data: "2026-01-01" };
+  },
 }));
 
 vi.mock("../../../utils/calculations", () => ({
@@ -150,6 +156,12 @@ describe("useTimeControl", () => {
     });
 
     expect(result.current.quickActionRecord).toEqual({ id: "r1" });
+  });
+
+  it("does not subscribe to accounting lock date without consuming its result", () => {
+    renderHook(() => useTimeControl());
+
+    expect(accountingLockDateQueryMock).not.toHaveBeenCalled();
   });
 
   it("exports streaming only when token exists", () => {

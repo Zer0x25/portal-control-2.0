@@ -7,7 +7,6 @@ import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { getContractAttendanceMetrics, getContractClockingStatus } from "../../../utils/mappings";
-import { useAccountingLockDateQuery } from "../../../hooks/queries/useConfigQuery";
 import { authService } from "../../../services/authService";
 import { API_BASE_URL } from "../../../services/apiBase";
 
@@ -28,8 +27,6 @@ export const useTimeControl = () => {
     useClockingOptions: true,
     queryMode: "schedule-enrichment",
   });
-  useAccountingLockDateQuery();
-
   // Decomposed hooks
   const filters = useTimeRecordFilters();
   const [quickActionRecord, setQuickActionRecord] = useState<DailyTimeRecord | null>(null);
