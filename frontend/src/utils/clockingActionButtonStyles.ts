@@ -8,7 +8,7 @@ type ClockingActionButtonStyles = {
 
 const CLOCKING_ACTION_BUTTON_STYLES: Record<ClockingActionType, ClockingActionButtonStyles> = {
   jornada_inicio: {
-    enabled: "bg-green-600 text-white border border-green-500 shadow-md hover:bg-green-700",
+    enabled: "bg-green-700 text-white border border-green-800 shadow-md hover:bg-green-800",
     disabled:
       "bg-green-500/10 text-green-800/60 dark:text-green-200/70 border border-green-500/20 shadow-none",
   },

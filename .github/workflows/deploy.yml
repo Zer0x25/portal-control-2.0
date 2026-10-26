@@ -58,31 +58,14 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - uses: docker/setup-buildx-action@v3
-      - name: Build backend once
-        uses: docker/build-push-action@v6
+      - name: Build release images in parallel
+        uses: docker/bake-action@v6
+        env:
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
         with:
-          context: ./backend
+          files: docker-bake.hcl
+          targets: backend,frontend,gateway
           load: true
-          tags: ${{ env.BACKEND_IMAGE }}
-          cache-from: type=gha,scope=portal-control-2-0-backend
-          cache-to: type=gha,mode=max,scope=portal-control-2-0-backend
-      - name: Build frontend once
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          load: true
-          tags: ${{ env.FRONTEND_IMAGE }}
-          build-args: VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
-          cache-from: type=gha,scope=portal-control-2-0-frontend
-          cache-to: type=gha,mode=max,scope=portal-control-2-0-frontend
-      - name: Build gateway once
-        uses: docker/build-push-action@v6
-        with:
-          context: ./nginx
-          load: true
-          tags: ${{ env.GATEWAY_IMAGE }}
-          cache-from: type=gha,scope=portal-control-2-0-gateway
-          cache-to: type=gha,mode=max,scope=portal-control-2-0-gateway
       - name: Record tested images
         run: node scripts/release-images.cjs record
       - name: Create isolated staging credentials
