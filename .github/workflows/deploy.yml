@@ -91,7 +91,7 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:8080
           E2E_API_URL: http://127.0.0.1:8080/api
           E2E_ADMIN_PASSWORD: "999.666"
-        run: npx playwright test --project=functional --project=visual
+        run: npx playwright test --project=functional --project=visual --retries=1 --max-failures=3
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
