@@ -451,7 +451,15 @@ test("correlates sanitized API requests with task starts and initiator source ma
   collector.onResponseReceived({
     requestId: "cdp-request-private-id",
     timestamp: 10.04,
-    response: { status: 200, url: sensitiveUrl, headers: { "Set-Cookie": "private" } },
+    response: {
+      status: 200,
+      url: sensitiveUrl,
+      headers: { "Set-Cookie": "private" },
+      fromServiceWorker: false,
+      fromDiskCache: false,
+      fromPrefetchCache: false,
+      timing: { requestTime: 10.02, receiveHeadersEnd: 20 },
+    },
   });
   collector.onLoadingFinished({
     requestId: "cdp-request-private-id",
@@ -472,6 +480,8 @@ test("correlates sanitized API requests with task starts and initiator source ma
     status: 200,
     timingStatus: "ordered",
     timingIssues: [],
+    responseSource: "network",
+    responseTimingStatus: "valid",
     requestStartOffsetMs: 20,
     timeToHeadersMs: 20,
     totalDurationMs: 40,
@@ -529,7 +539,7 @@ test("keeps unknown routes generic and excludes requests outside local API", () 
   assert.doesNotMatch(JSON.stringify(result), /private-user-name|secret|example\.test|https?:\/\//);
 });
 
-test("marks out-of-order CDP response timestamps and omits invalid durations", () => {
+test("uses response timing and independently validates total duration", () => {
   const collector = createApiRequestCollector({
     apiOrigin: "http://127.0.0.1:8080",
     apiPathPrefix: "/api",
@@ -563,7 +573,13 @@ test("marks out-of-order CDP response timestamps and omits invalid durations", (
   collector.onResponseReceived({
     requestId: "out-of-order-id",
     timestamp: 7.2,
-    response: { status: 200 },
+    response: {
+      status: 200,
+      fromServiceWorker: false,
+      fromDiskCache: false,
+      fromPrefetchCache: false,
+      timing: { requestTime: 7.001, receiveHeadersEnd: 29 },
+    },
   });
   collector.onLoadingFinished({
     requestId: "out-of-order-id",
@@ -575,8 +591,10 @@ test("marks out-of-order CDP response timestamps and omits invalid durations", (
 
   assert.equal(result.requests[0].timingStatus, "out-of-order");
   assert.deepEqual(result.requests[0].timingIssues, ["response-after-completion"]);
-  assert.equal(result.requests[0].timeToHeadersMs, null);
-  assert.equal(result.requests[0].totalDurationMs, null);
+  assert.equal(result.requests[0].responseSource, "network");
+  assert.equal(result.requests[0].responseTimingStatus, "valid");
+  assert.equal(result.requests[0].timeToHeadersMs, 30);
+  assert.equal(result.requests[0].totalDurationMs, 100);
   assert.deepEqual(result.timingStatusCounts, { "out-of-order": 1 });
   assert.deepEqual(result.timingIssueCounts, { "response-after-completion": 1 });
   assert.deepEqual(result.requests[0].initiatorFrames, [
@@ -657,7 +675,18 @@ test("classifies every invalid CDP timestamp relation without serializing timest
   );
   assert.ok(result.requests.every((request) => request.timingStatus === "out-of-order"));
   assert.ok(result.requests.every((request) => request.timeToHeadersMs === null));
-  assert.ok(result.requests.every((request) => request.totalDurationMs === null));
+  assert.equal(
+    result.requests.find((request) => request.endpoint === "/api/health/ready").totalDurationMs,
+    100,
+  );
+  assert.equal(
+    result.requests.find((request) => request.endpoint === "/api/users/{id}").totalDurationMs,
+    null,
+  );
+  assert.equal(
+    result.requests.find((request) => request.endpoint === "/api/configs/{key}").totalDurationMs,
+    100,
+  );
   assert.equal(
     aggregateApiRequestSamples([{ requests: result.requests }]).endpointSummaries.find(
       (endpoint) => endpoint.endpoint === "/api/configs/{key}",
@@ -668,6 +697,150 @@ test("classifies every invalid CDP timestamp relation without serializing timest
   assert.doesNotMatch(
     JSON.stringify(result),
     /private-|employee-42|secret-key|timestamp|startAtUs|responseAtUs|finishedAtUs|10\.1|19\.9|30\.2|https?:\/\//,
+  );
+});
+
+test("validates response resource timing, response source, and endpoint summaries", () => {
+  const routeTemplates = [
+    "/api/health/ready",
+    "/api/users/{id}",
+    "/api/configs/{key}",
+    "/api/shifts/patterns",
+    "/api/leaves",
+    "/api/records",
+    "/api/holidays",
+    "/api/audit-logs",
+  ];
+  const collector = createApiRequestCollector({
+    apiOrigin: "http://127.0.0.1:8080",
+    apiPathPrefix: "/api",
+    openApiPaths: Object.fromEntries(routeTemplates.map((route) => [route, { get: {} }])),
+    resolveFrame: () => null,
+  });
+  const cases = [
+    {
+      route: "/api/health/ready",
+      path: "/api/health/ready",
+      start: 10,
+      finish: 10.03,
+      flags: { fromServiceWorker: false, fromDiskCache: false, fromPrefetchCache: false },
+      timing: { requestTime: 10.001, receiveHeadersEnd: 19 },
+      expected: { source: "network", status: "valid", headers: 20, total: 30 },
+    },
+    {
+      route: "/api/users/{id}",
+      path: "/api/users/private-id",
+      start: 20,
+      finish: 20.02,
+      flags: { fromDiskCache: true },
+      timing: { requestTime: 20, receiveHeadersEnd: 5 },
+      expected: { source: "disk-cache", status: "valid", headers: 5, total: 20 },
+    },
+    {
+      route: "/api/configs/{key}",
+      path: "/api/configs/private-key",
+      start: 30,
+      finish: 30.01,
+      flags: { fromPrefetchCache: true },
+      timing: { requestTime: 30.001, receiveHeadersEnd: 1 },
+      expected: { source: "prefetch-cache", status: "valid", headers: 2, total: 10 },
+    },
+    {
+      route: "/api/shifts/patterns",
+      path: "/api/shifts/patterns",
+      start: 40,
+      finish: 40.01,
+      flags: { fromServiceWorker: true },
+      timing: undefined,
+      expected: { source: "service-worker", status: "missing", headers: null, total: 10 },
+    },
+    {
+      route: "/api/leaves",
+      path: "/api/leaves",
+      start: 50,
+      finish: 50.02,
+      flags: {},
+      timing: { requestTime: 50.002, receiveHeadersEnd: 10 },
+      expected: { source: "unknown", status: "valid", headers: 12, total: 20 },
+    },
+    {
+      route: "/api/records",
+      path: "/api/records",
+      start: 60,
+      finish: 60.02,
+      flags: { fromServiceWorker: false, fromDiskCache: false, fromPrefetchCache: false },
+      timing: { requestTime: 60, receiveHeadersEnd: null },
+      expected: { source: "network", status: "invalid-fields", headers: null, total: 20 },
+    },
+    {
+      route: "/api/holidays",
+      path: "/api/holidays",
+      start: 70,
+      finish: 70.02,
+      flags: { fromServiceWorker: false, fromDiskCache: false, fromPrefetchCache: false },
+      timing: { requestTime: 69.99, receiveHeadersEnd: 1 },
+      expected: { source: "network", status: "headers-before-start", headers: null, total: 20 },
+    },
+    {
+      route: "/api/audit-logs",
+      path: "/api/audit-logs",
+      start: 80,
+      finish: 80.025,
+      flags: { fromServiceWorker: false, fromDiskCache: false, fromPrefetchCache: false },
+      timing: { requestTime: 80.02, receiveHeadersEnd: 10 },
+      expected: { source: "network", status: "headers-after-completion", headers: null, total: 25 },
+    },
+  ];
+
+  cases.forEach((item, index) => {
+    const requestId = `private-timing-${index}`;
+    collector.onRequestWillBeSent({
+      requestId,
+      timestamp: item.start,
+      request: { url: `http://127.0.0.1:8080${item.path}`, method: "GET" },
+    });
+    collector.onResponseReceived({
+      requestId,
+      timestamp: item.start + 0.005,
+      response: {
+        status: 200,
+        ...item.flags,
+        ...(item.timing ? { timing: item.timing } : {}),
+      },
+    });
+    collector.onLoadingFinished({
+      requestId,
+      timestamp: item.finish,
+      encodedDataLength: 16,
+    });
+  });
+
+  const result = collector.summarize([]);
+  const byRoute = new Map(result.requests.map((request) => [request.endpoint, request]));
+  for (const item of cases) {
+    const request = byRoute.get(item.route);
+    assert.equal(request.responseSource, item.expected.source, item.route);
+    assert.equal(request.responseTimingStatus, item.expected.status, item.route);
+    assert.equal(request.timeToHeadersMs, item.expected.headers, item.route);
+    assert.equal(request.totalDurationMs, item.expected.total, item.route);
+  }
+
+  const endpointSummaries = aggregateApiRequestSamples([{ requests: result.requests }])
+    .endpointSummaries;
+  assert.deepEqual(
+    endpointSummaries.find((endpoint) => endpoint.endpoint === "/api/shifts/patterns")
+      .responseSourceCounts,
+    { "service-worker": 1 },
+  );
+  assert.deepEqual(
+    endpointSummaries.find((endpoint) => endpoint.endpoint === "/api/records")
+      .responseTimingStatusCounts,
+    { "invalid-fields": 1 },
+  );
+  assertPrivacySafe(result);
+  assert.doesNotMatch(
+    JSON.stringify(result),
+    /private-|private-id|private-key|requestTime|receiveHeadersEnd|http:\/\/|https?:\/\//,
   );
 });
 
@@ -745,6 +918,9 @@ test("aggregates request latency and task coincidence per endpoint and sample", 
           method: "GET",
           completion: "completed",
           timingStatus: "ordered",
+        timingIssues: [],
+        responseSource: "network",
+        responseTimingStatus: "valid",
           timeToHeadersMs: 2,
           totalDurationMs: 4,
           bytesReceived: 95,
@@ -762,6 +938,9 @@ test("aggregates request latency and task coincidence per endpoint and sample", 
           method: "GET",
           completion: "completed",
           timingStatus: "ordered",
+        timingIssues: [],
+        responseSource: "network",
+        responseTimingStatus: "valid",
           timeToHeadersMs: 6,
           totalDurationMs: 8,
           bytesReceived: 95,
@@ -787,6 +966,8 @@ test("aggregates request latency and task coincidence per endpoint and sample", 
         failedCount: 0,
         timingStatusCounts: { ordered: 2 },
         timingIssueCounts: {},
+        responseSourceCounts: { network: 2 },
+        responseTimingStatusCounts: { valid: 2 },
         medianTimeToHeadersMs: 4,
         medianTotalDurationMs: 6,
         medianBytesReceived: 95,

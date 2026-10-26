@@ -595,3 +595,11 @@
 - **Límite**: no hay latencia de red válida ni cambio de runtime. Las marcas CDP `responseReceived`/`loadingFinished` se contradicen en todos los requests, por lo que no se atribuye TBT ni mejora de CPU.
 - **Siguiente**: comparar `Network.Response.timing` y el origen cache/service worker como enums; publicar tiempos solo cuando pasen las invariantes.
 - **Evidencia**: [resultado Spec 104](../specs/104-time-control-request-timing-diagnostics/evidencia/resultado.md) y [perfil saneado](../specs/104-time-control-request-timing-diagnostics/evidencia/time-control-request-timing-2026-10-26.json).
+
+## 2026-10-26 - test(perf): Validar tiempos de respuesta CDP
+
+- **Cambio**: el perfilador calcula headers con `Network.Response.timing` y duración total entre inicio y fin; agrega origen/estado por endpoint y valida cada intervalo por separado.
+- **Medido**: tres perfiles, 36/36 respuestas HTTP 200 de red y con tiempos válidos; mediana local 17,484 ms a headers y 19,251 ms total. `responseReceived.timestamp` siguió después de `loadingFinished.timestamp` en 36/36, pero no invalida estas medidas derivadas y acotadas.
+- **Límite**: staging es local; estos números no son TBT, INP ni latencia de campo. No se cambió el runtime del portal.
+- **Siguiente**: separar CPU React/DOM de las tareas largas; usar API timing para no atribuir espera local a cómputo del frontend.
+- **Evidencia**: [resultado Spec 105](../specs/105-time-control-response-resource-timing/evidencia/resultado.md) y [perfil saneado](../specs/105-time-control-response-resource-timing/evidencia/time-control-response-timing-2026-10-26.json).

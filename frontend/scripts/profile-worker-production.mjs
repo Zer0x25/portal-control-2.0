@@ -897,6 +897,19 @@ function safeInitiatorFrames(initiator, resolveFrame) {
 }
 
 const networkTimeToUs = (timestamp) => (Number.isFinite(timestamp) ? timestamp * 1_000_000 : null);
+const classifyResponseSource = (response) => {
+  if (response?.fromServiceWorker === true) return "service-worker";
+  if (response?.fromDiskCache === true) return "disk-cache";
+  if (response?.fromPrefetchCache === true) return "prefetch-cache";
+  if (
+    response?.fromServiceWorker === false &&
+    response?.fromDiskCache === false &&
+    response?.fromPrefetchCache === false
+  ) {
+    return "network";
+  }
+  return "unknown";
+};
 const safeHttpMethod = (method) => {
   const upper = String(method ?? "").toUpperCase();
   return ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"].includes(upper)
@@ -978,6 +991,10 @@ export function createApiRequestCollector({
         startAtUs,
         responseAtUs: null,
         finishedAtUs: null,
+        responseSource: "unknown",
+        responseTimingStatus: "missing",
+        responseTimingRequestAtUs: null,
+        receiveHeadersEndMs: null,
         status: null,
         bytesReceived: null,
         completion: "incomplete",
@@ -992,7 +1009,23 @@ export function createApiRequestCollector({
       if (!request) return;
       const responseAtUs = networkTimeToUs(event.timestamp);
       if (responseAtUs !== null) request.responseAtUs = responseAtUs;
-      if (Number.isInteger(event.response?.status)) request.status = event.response.status;
+      const response = event.response;
+      if (Number.isInteger(response?.status)) request.status = response.status;
+      request.responseSource = classifyResponseSource(response);
+      const resourceTiming = response?.timing;
+      if (resourceTiming === null || resourceTiming === undefined) return;
+      const requestTimeUs = networkTimeToUs(resourceTiming.requestTime);
+      if (
+        requestTimeUs === null ||
+        !Number.isFinite(resourceTiming.receiveHeadersEnd) ||
+        resourceTiming.receiveHeadersEnd < 0
+      ) {
+        request.responseTimingStatus = "invalid-fields";
+        return;
+      }
+      request.responseTimingRequestAtUs = requestTimeUs;
+      request.receiveHeadersEndMs = resourceTiming.receiveHeadersEnd;
+      request.responseTimingStatus = "pending-validation";
     },
     onLoadingFinished(event) {
       const request = activeRequests.get(event.requestId);
@@ -1059,12 +1092,29 @@ export function createApiRequestCollector({
           ) {
             timingIssues.push("response-after-completion");
           }
-          const eventTimesOrdered = timingIssues.length === 0;
           const safeElapsed = (endAtUs) =>
             Number.isFinite(endAtUs) && endAtUs >= request.startAtUs
               ? roundMs((endAtUs - request.startAtUs) / 1000)
               : null;
-          const timingStatus = !eventTimesOrdered
+          let responseTimingStatus = request.responseTimingStatus;
+          let responseHeadersAtUs = null;
+          if (responseTimingStatus === "pending-validation") {
+            responseHeadersAtUs =
+              request.responseTimingRequestAtUs + request.receiveHeadersEndMs * 1000;
+            if (responseHeadersAtUs < request.startAtUs) {
+              responseTimingStatus = "headers-before-start";
+              responseHeadersAtUs = null;
+            } else if (request.finishedAtUs === null) {
+              responseTimingStatus = "incomplete";
+              responseHeadersAtUs = null;
+            } else if (responseHeadersAtUs > request.finishedAtUs) {
+              responseTimingStatus = "headers-after-completion";
+              responseHeadersAtUs = null;
+            } else {
+              responseTimingStatus = "valid";
+            }
+          }
+          const timingStatus = timingIssues.length > 0
             ? "out-of-order"
             : request.finishedAtUs === null
               ? "incomplete"
@@ -1078,11 +1128,14 @@ export function createApiRequestCollector({
             status: request.status,
             timingStatus,
             timingIssues,
+            responseSource: request.responseSource,
+            responseTimingStatus,
             requestStartOffsetMs: Number.isFinite(firstTaskTimestampUs)
               ? roundMs((request.startAtUs - firstTaskTimestampUs) / 1000)
               : null,
-            timeToHeadersMs: eventTimesOrdered ? safeElapsed(request.responseAtUs) : null,
-            totalDurationMs: eventTimesOrdered ? safeElapsed(request.finishedAtUs) : null,
+            timeToHeadersMs:
+              responseTimingStatus === "valid" ? safeElapsed(responseHeadersAtUs) : null,
+            totalDurationMs: safeElapsed(request.finishedAtUs),
             bytesReceived: request.bytesReceived,
             ...(request.completion === "failed" ? { canceled: request.canceled === true } : {}),
             startedDuringLongTask:
@@ -1125,12 +1178,26 @@ export function createApiRequestCollector({
           requests.filter((request) => request.timingIssues.includes(timingIssue)).length,
         ]),
       );
+      const responseSourceCounts = Object.fromEntries(
+        [...new Set(requests.map((request) => request.responseSource))].map((source) => [
+          source,
+          requests.filter((request) => request.responseSource === source).length,
+        ]),
+      );
+      const responseTimingStatusCounts = Object.fromEntries(
+        [...new Set(requests.map((request) => request.responseTimingStatus))].map((status) => [
+          status,
+          requests.filter((request) => request.responseTimingStatus === status).length,
+        ]),
+      );
 
       return {
         requestCount: requests.length,
         ...completionCounts,
         timingStatusCounts,
         timingIssueCounts,
+        responseSourceCounts,
+        responseTimingStatusCounts,
         ignoredRequestCount,
         requestStartsInsideLongTask: requests.filter((request) => request.startedDuringLongTask)
           .length,
@@ -1159,6 +1226,8 @@ export function aggregateApiRequestSamples(samples) {
         longTaskSampleIndices: new Set(),
         timingStatusCounts: new Map(),
         timingIssueCounts: new Map(),
+        responseSourceCounts: new Map(),
+        responseTimingStatusCounts: new Map(),
         initiators: new Map(),
       };
       group.requestCount += 1;
@@ -1172,6 +1241,12 @@ export function aggregateApiRequestSamples(samples) {
           timingIssue,
           (group.timingIssueCounts.get(timingIssue) ?? 0) + 1,
         );
+      }
+      for (const [map, value] of [
+        [group.responseSourceCounts, request.responseSource ?? "unknown"],
+        [group.responseTimingStatusCounts, request.responseTimingStatus ?? "unavailable"],
+      ]) {
+        map.set(value, (map.get(value) ?? 0) + 1);
       }
       if (request.completion === "completed") group.completedCount += 1;
       if (request.completion === "failed") group.failedCount += 1;
@@ -1207,6 +1282,8 @@ export function aggregateApiRequestSamples(samples) {
         failedCount: group.failedCount,
         timingStatusCounts: Object.fromEntries(group.timingStatusCounts),
         timingIssueCounts: Object.fromEntries(group.timingIssueCounts),
+        responseSourceCounts: Object.fromEntries(group.responseSourceCounts),
+        responseTimingStatusCounts: Object.fromEntries(group.responseTimingStatusCounts),
         medianTimeToHeadersMs:
           group.headerDurations.length > 0 ? roundMs(median(group.headerDurations)) : null,
         medianTotalDurationMs:
