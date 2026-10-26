@@ -1045,12 +1045,21 @@ export function createApiRequestCollector({
           const startedDuringTaskIndex = tasks.findIndex(
             (task) => request.startAtUs >= task.ts && request.startAtUs < task.ts + task.dur,
           );
-          const eventTimesOrdered =
-            (request.responseAtUs === null || request.responseAtUs >= request.startAtUs) &&
-            (request.finishedAtUs === null || request.finishedAtUs >= request.startAtUs) &&
-            (request.responseAtUs === null ||
-              request.finishedAtUs === null ||
-              request.responseAtUs <= request.finishedAtUs);
+          const timingIssues = [];
+          if (request.responseAtUs !== null && request.responseAtUs < request.startAtUs) {
+            timingIssues.push("response-before-start");
+          }
+          if (request.finishedAtUs !== null && request.finishedAtUs < request.startAtUs) {
+            timingIssues.push("completion-before-start");
+          }
+          if (
+            request.responseAtUs !== null &&
+            request.finishedAtUs !== null &&
+            request.responseAtUs > request.finishedAtUs
+          ) {
+            timingIssues.push("response-after-completion");
+          }
+          const eventTimesOrdered = timingIssues.length === 0;
           const safeElapsed = (endAtUs) =>
             Number.isFinite(endAtUs) && endAtUs >= request.startAtUs
               ? roundMs((endAtUs - request.startAtUs) / 1000)
@@ -1068,6 +1077,7 @@ export function createApiRequestCollector({
             completion: request.completion,
             status: request.status,
             timingStatus,
+            timingIssues,
             requestStartOffsetMs: Number.isFinite(firstTaskTimestampUs)
               ? roundMs((request.startAtUs - firstTaskTimestampUs) / 1000)
               : null,
@@ -1107,11 +1117,20 @@ export function createApiRequestCollector({
           requests.filter((request) => request.timingStatus === timingStatus).length,
         ]),
       );
+      const timingIssueCounts = Object.fromEntries(
+        [
+          ...new Set(requests.flatMap((request) => request.timingIssues)),
+        ].map((timingIssue) => [
+          timingIssue,
+          requests.filter((request) => request.timingIssues.includes(timingIssue)).length,
+        ]),
+      );
 
       return {
         requestCount: requests.length,
         ...completionCounts,
         timingStatusCounts,
+        timingIssueCounts,
         ignoredRequestCount,
         requestStartsInsideLongTask: requests.filter((request) => request.startedDuringLongTask)
           .length,
@@ -1139,6 +1158,7 @@ export function aggregateApiRequestSamples(samples) {
         responseBytes: [],
         longTaskSampleIndices: new Set(),
         timingStatusCounts: new Map(),
+        timingIssueCounts: new Map(),
         initiators: new Map(),
       };
       group.requestCount += 1;
@@ -1147,6 +1167,12 @@ export function aggregateApiRequestSamples(samples) {
         request.timingStatus ?? "unavailable",
         (group.timingStatusCounts.get(request.timingStatus ?? "unavailable") ?? 0) + 1,
       );
+      for (const timingIssue of request.timingIssues ?? []) {
+        group.timingIssueCounts.set(
+          timingIssue,
+          (group.timingIssueCounts.get(timingIssue) ?? 0) + 1,
+        );
+      }
       if (request.completion === "completed") group.completedCount += 1;
       if (request.completion === "failed") group.failedCount += 1;
       if (Number.isFinite(request.totalDurationMs))
@@ -1180,6 +1206,7 @@ export function aggregateApiRequestSamples(samples) {
         completedCount: group.completedCount,
         failedCount: group.failedCount,
         timingStatusCounts: Object.fromEntries(group.timingStatusCounts),
+        timingIssueCounts: Object.fromEntries(group.timingIssueCounts),
         medianTimeToHeadersMs:
           group.headerDurations.length > 0 ? roundMs(median(group.headerDurations)) : null,
         medianTotalDurationMs:

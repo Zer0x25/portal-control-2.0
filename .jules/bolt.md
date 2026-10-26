@@ -587,3 +587,11 @@
 - **Límite**: los rangos Lighthouse se solapan. Los pares de CPU discrepan: el primero bajó CPU activo 1.192→804 ms y React propio 292,5→201,4 ms; la repetición alternada subió 739,5→770,2 ms y 200,5→235,1 ms. Se conserva por pasar el gate Lighthouse, como mejora observada sin atribución causal ni reducción estable de CPU.
 - **Siguiente**: atribuir las tareas largas con React/DOM y separarlas del tiempo inclusivo de `apiClient.performRequest`; elegir el próximo cambio solo con un frame repetido de trabajo síncrono propio.
 - **Evidencia**: [resultado Spec 103](../specs/103-time-control-share-shell-config-query/evidencia/resultado.md), [comparación](../specs/103-time-control-share-shell-config-query/evidencia/comparison-2026-10-25.json), [CPU base/candidato](../specs/103-time-control-share-shell-config-query/evidencia/).
+
+## 2026-10-26 - test(perf): Clasificar inversión de tiempos CDP
+
+- **Cambio**: el perfilador clasifica las relaciones temporales inválidas por request y las agrega por endpoint. Conserva nulas las duraciones fuera de orden y no serializa marcas crudas, IDs ni URLs.
+- **Medido**: tres perfiles del frontend activo, 35/35 requests completados y HTTP 200; los 35 fueron `response-after-completion`. Los otros dos motivos no aparecieron. Staging conservó su imagen y readiness saludable.
+- **Límite**: no hay latencia de red válida ni cambio de runtime. Las marcas CDP `responseReceived`/`loadingFinished` se contradicen en todos los requests, por lo que no se atribuye TBT ni mejora de CPU.
+- **Siguiente**: comparar `Network.Response.timing` y el origen cache/service worker como enums; publicar tiempos solo cuando pasen las invariantes.
+- **Evidencia**: [resultado Spec 104](../specs/104-time-control-request-timing-diagnostics/evidencia/resultado.md) y [perfil saneado](../specs/104-time-control-request-timing-diagnostics/evidencia/time-control-request-timing-2026-10-26.json).

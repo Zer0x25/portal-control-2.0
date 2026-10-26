@@ -471,6 +471,7 @@ test("correlates sanitized API requests with task starts and initiator source ma
     completion: "completed",
     status: 200,
     timingStatus: "ordered",
+    timingIssues: [],
     requestStartOffsetMs: 20,
     timeToHeadersMs: 20,
     totalDurationMs: 40,
@@ -573,9 +574,11 @@ test("marks out-of-order CDP response timestamps and omits invalid durations", (
   const result = collector.summarize([]);
 
   assert.equal(result.requests[0].timingStatus, "out-of-order");
+  assert.deepEqual(result.requests[0].timingIssues, ["response-after-completion"]);
   assert.equal(result.requests[0].timeToHeadersMs, null);
   assert.equal(result.requests[0].totalDurationMs, null);
   assert.deepEqual(result.timingStatusCounts, { "out-of-order": 1 });
+  assert.deepEqual(result.timingIssueCounts, { "response-after-completion": 1 });
   assert.deepEqual(result.requests[0].initiatorFrames, [
     {
       sourcePath: "src/hooks/useHealth.ts",
@@ -586,6 +589,86 @@ test("marks out-of-order CDP response timestamps and omits invalid durations", (
   ]);
   assertPrivacySafe(result);
   assert.doesNotMatch(JSON.stringify(result), /out-of-order-id|bundle\.invalid|https?:\/\//);
+});
+
+test("classifies every invalid CDP timestamp relation without serializing timestamps", () => {
+  const collector = createApiRequestCollector({
+    apiOrigin: "http://127.0.0.1:8080",
+    apiPathPrefix: "/api",
+    openApiPaths: {
+      "/api/configs/{key}": { get: {} },
+      "/api/health/ready": { get: {} },
+      "/api/users/{id}": { get: {} },
+    },
+    resolveFrame: () => null,
+  });
+  const start = (requestId, timestamp, url) =>
+    collector.onRequestWillBeSent({
+      requestId,
+      timestamp,
+      request: { url: `http://127.0.0.1:8080${url}`, method: "GET" },
+    });
+
+  start("private-response-before-start", 10, "/api/health/ready");
+  collector.onResponseReceived({
+    requestId: "private-response-before-start",
+    timestamp: 9.9,
+    response: { status: 200 },
+  });
+  collector.onLoadingFinished({
+    requestId: "private-response-before-start",
+    timestamp: 10.1,
+    encodedDataLength: 8,
+  });
+
+  start("private-completion-before-start", 20, "/api/users/employee-42");
+  collector.onLoadingFinished({
+    requestId: "private-completion-before-start",
+    timestamp: 19.9,
+    encodedDataLength: 9,
+  });
+
+  start("private-response-after-completion", 30, "/api/configs/secret-key");
+  collector.onResponseReceived({
+    requestId: "private-response-after-completion",
+    timestamp: 30.2,
+    response: { status: 200 },
+  });
+  collector.onLoadingFinished({
+    requestId: "private-response-after-completion",
+    timestamp: 30.1,
+    encodedDataLength: 10,
+  });
+
+  const result = collector.summarize([]);
+
+  assert.deepEqual(result.timingIssueCounts, {
+    "completion-before-start": 1,
+    "response-after-completion": 1,
+    "response-before-start": 1,
+  });
+  assert.deepEqual(
+    Object.fromEntries(result.requests.map((request) => [request.endpoint, request.timingIssues])),
+    {
+      "/api/configs/{key}": ["response-after-completion"],
+      "/api/health/ready": ["response-before-start"],
+      "/api/users/{id}": ["completion-before-start"],
+    },
+  );
+  assert.ok(result.requests.every((request) => request.timingStatus === "out-of-order"));
+  assert.ok(result.requests.every((request) => request.timeToHeadersMs === null));
+  assert.ok(result.requests.every((request) => request.totalDurationMs === null));
+  assert.equal(
+    aggregateApiRequestSamples([{ requests: result.requests }]).endpointSummaries.find(
+      (endpoint) => endpoint.endpoint === "/api/configs/{key}",
+    ).timingIssueCounts["response-after-completion"],
+    1,
+  );
+  assertPrivacySafe(result);
+  assert.doesNotMatch(
+    JSON.stringify(result),
+    /private-|employee-42|secret-key|timestamp|startAtUs|responseAtUs|finishedAtUs|10\.1|19\.9|30\.2|https?:\/\//,
+  );
 });
 
 test("splits redirects and reports incomplete or failed API requests without raw error data", () => {
@@ -703,6 +786,7 @@ test("aggregates request latency and task coincidence per endpoint and sample", 
         completedCount: 2,
         failedCount: 0,
         timingStatusCounts: { ordered: 2 },
+        timingIssueCounts: {},
         medianTimeToHeadersMs: 4,
         medianTotalDurationMs: 6,
         medianBytesReceived: 95,
