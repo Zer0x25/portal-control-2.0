@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router";
+import { Routes, Route, Navigate, Outlet } from "react-router";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROUTES } from "./constants";
 import { useAuthShellControls } from "./hooks/useAuth";
@@ -198,6 +198,46 @@ const App: React.FC = () => {
             }
           />
 
+          <Route
+            element={
+              <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
+                <Outlet />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path={ROUTES.EMAIL_CENTER}
+              element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=email`} replace />}
+            />
+            <Route
+              path={ROUTES.MASTER_DATA_EXPORT}
+              element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=master-data`} replace />}
+            />
+          </Route>
+
+          <Route
+            element={
+              <ProtectedRoute
+                requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED, ROLES.AUDITOR]}
+              >
+                <Outlet />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              path={ROUTES.AUDIT_LOGS}
+              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=audit`} replace />}
+            />
+            <Route
+              path={ROUTES.ADMIN_TOOLS}
+              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />}
+            />
+            <Route
+              path={ROUTES.INTEGRITY_DASHBOARD}
+              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
+            />
+          </Route>
+
           <Route element={protectedLayoutElement}>
             {isControlInternoEnabled && (
               <Route
@@ -372,10 +412,6 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path={ROUTES.EMAIL_CENTER}
-              element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=email`} replace />}
-            />
-            <Route
               path={ROUTES.WORKER_PORTAL}
               element={
                 <ProtectedRoute requiredRoles={[ROLES.USER]}>
@@ -404,22 +440,6 @@ const App: React.FC = () => {
                   </Suspense>
                 </ProtectedRoute>
               }
-            />
-            <Route
-              path={ROUTES.MASTER_DATA_EXPORT}
-              element={<Navigate to={`${ROUTES.CONFIGURATION}?tab=master-data`} replace />}
-            />
-            <Route
-              path={ROUTES.AUDIT_LOGS}
-              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=audit`} replace />}
-            />
-            <Route
-              path={ROUTES.ADMIN_TOOLS}
-              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />}
-            />
-            <Route
-              path={ROUTES.INTEGRITY_DASHBOARD}
-              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
             />
             <Route
               path="*"

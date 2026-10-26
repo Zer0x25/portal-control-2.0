@@ -53,7 +53,11 @@ const cachedSessions: Partial<Record<E2ERole, { token: string; user: unknown }>>
 // auth tras un login UI (`authToken` + `currentUser` → `_verifyAuth`
 // restaura sesión sin roundtrip). Reutiliza la sesión por worker para
 // evitar saturar el límite de sesiones concurrentes del rol (10).
-export async function loginFast(page: Page, request: APIRequestContext, role: E2ERole) {
+export async function loginFast(
+  page: Page,
+  request: APIRequestContext,
+  role: E2ERole,
+): Promise<string> {
   const apiBase = process.env.E2E_API_URL || "http://127.0.0.1:4000/api";
   const { username, password } = ROLE_CREDS[role];
 
@@ -93,4 +97,5 @@ export async function loginFast(page: Page, request: APIRequestContext, role: E2
     },
     { token, storedUser: user },
   );
+  return token;
 }
