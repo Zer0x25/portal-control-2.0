@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "runs": {
+    "before": {
+      "runId": "2026-10-23T13-06-33-525Z-45138318",
+      "source": {
+        "commit": "45138318f801c54307efd60d6a86a1729313caee",
+        "workingTreeDirty": true
+      },
+      "target": {
+        "name": "local-staging",
+        "baseUrl": "http://127.0.0.1:8080",
+        "frontendImageId": "sha256:ce56846f177f28b394c20ed062b61f579d057a627661d7198f113b297310ceae",
+        "health": {
+          "gatewayStatus": 200,
+          "apiStatus": 200
+        }
+      },
+      "runtime": {
+        "platform": "linux",
+        "architecture": "x64",
+        "nodeVersion": "v26.10.0",
+        "browser": "Chromium",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "status": "passed",
+      "standardReportCount": 17,
+      "standardAllMatched": true,
+      "coldSamples": [
+        {
+          "performanceScore": 0.62,
+          "fcpMs": 4246.98,
+          "lcpMs": 6245.73,
+          "tbtMs": 275,
+          "cls": 0,
+          "speedIndexMs": 4246.98,
+          "totalTransferBytes": 834170,
+          "scriptTransferBytes": 409706,
+          "requestCount": 97,
+          "fontTransferBytes": 378560,
+          "fontRequestCount": 4,
+          "fontFiles": ["Inter-Regular-gaL85XTs.woff2", "Inter-SemiBold-CG3OkvmI.woff2", "RobotoMono-Bold-5Ml4HyRU.woff2", "Inter-Bold-BqHwZ-Hp.woff2"],
+          "benchmarkIndex": 1856
+        },
+        {
+          "performanceScore": 0.57,
+          "fcpMs": 3536.18,
+          "lcpMs": 5461.41,
+          "tbtMs": 569,
+          "cls": 0,
+          "speedIndexMs": 3624.51,
+          "totalTransferBytes": 830764,
+          "scriptTransferBytes": 406337,
+          "requestCount": 97,
+          "fontTransferBytes": 378521,
+          "fontRequestCount": 4,
+          "fontFiles": ["Inter-Regular-gaL85XTs.woff2", "Inter-SemiBold-CG3OkvmI.woff2", "RobotoMono-Bold-5Ml4HyRU.woff2", "Inter-Bold-BqHwZ-Hp.woff2"],
+          "benchmarkIndex": 1845
+        },
+        {
+          "performanceScore": 0.62,
+          "fcpMs": 4957.84,
+          "lcpMs": 7214.26,
+          "tbtMs": 145.5,
+          "cls": 0,
+          "speedIndexMs": 4957.84,
+          "totalTransferBytes": 830770,
+          "scriptTransferBytes": 406337,
+          "requestCount": 97,
+          "fontTransferBytes": 378529,
+          "fontRequestCount": 4,
+          "fontFiles": ["Inter-Regular-gaL85XTs.woff2", "Inter-SemiBold-CG3OkvmI.woff2", "RobotoMono-Bold-5Ml4HyRU.woff2", "Inter-Bold-BqHwZ-Hp.woff2"],
+          "benchmarkIndex": 1820.5
+        }
+      ],
+      "medians": {
+        "fcpMs": 4246.98,
+        "lcpMs": 6245.73,
+        "tbtMs": 275,
+        "performanceScore": 0.62,
+        "totalTransferBytes": 830770,
+        "scriptTransferBytes": 406337,
+        "requestCount": 97,
+        "fontTransferBytes": 378529,
+        "fontRequestCount": 4
+      }
+    },
+    "after": {
+      "runId": "2026-10-23T13-50-47-471Z-45138318",
+      "source": {
+        "commit": "45138318f801c54307efd60d6a86a1729313caee",
+        "workingTreeDirty": true
+      },
+      "target": {
+        "name": "local-staging",
+        "baseUrl": "http://127.0.0.1:8080",
+        "frontendImageId": "sha256:c7edce32119172ba08f285660f74ffd8a37094a19a5f6bd29505df6e89b6b4ad",
+        "health": {
+          "gatewayStatus": 200,
+          "apiStatus": 200
+        }
+      },
+      "runtime": {
+        "platform": "linux",
+        "architecture": "x64",
+        "nodeVersion": "v26.10.0",
+        "browser": "Chromium",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        }
+      },
+      "status": "passed",
+      "standardReportCount": 17,
+      "standardAllMatched": true,
+      "coldSamples": [
+        {
+          "performanceScore": 0.63,
+          "fcpMs": 4405.11,
+          "lcpMs": 6218.28,
+          "tbtMs": 213.5,
+          "cls": 0,
+          "speedIndexMs": 4405.11,
+          "totalTransferBytes": 572263,
+          "scriptTransferBytes": 406334,
+          "requestCount": 97,
+          "fontTransferBytes": 119607,
+          "fontRequestCount": 4,
+          "fontFiles": ["Inter-Regular-latin-DZ2H3oP-.woff2", "Inter-SemiBold-latin-BnCj5yHe.woff2", "RobotoMono-Bold-latin-C5Vh1VjD.woff2", "Inter-Bold-latin-C-mUijkG.woff2"],
+          "benchmarkIndex": 1831.5
+        },
+        {
+          "performanceScore": 0.52,
+          "fcpMs": 4382.76,
+          "lcpMs": 6595.59,
+          "tbtMs": 560,
+          "cls": 0,
+          "speedIndexMs": 4382.76,
+          "totalTransferBytes": 598674,
+          "scriptTransferBytes": 409696,
+          "requestCount": 107,
+          "fontTransferBytes": 119614,
+          "fontRequestCount": 4,
+          "fontFiles": ["Inter-Regular-latin-DZ2H3oP-.woff2", "Inter-SemiBold-latin-BnCj5yHe.woff2", "RobotoMono-Bold-latin-C5Vh1VjD.woff2", "Inter-Bold-latin-C-mUijkG.woff2"],
+          "benchmarkIndex": 1848.5
+        },
+        {
+          "performanceScore": 0.64,
+          "fcpMs": 4067.08,
+          "lcpMs": 6114.42,
+          "tbtMs": 229.5,
+          "cls": 0,
+          "speedIndexMs": 4067.08,
+          "totalTransferBytes": 575671,
+          "scriptTransferBytes": 409696,
+          "requestCount": 97,
+          "fontTransferBytes": 119623,
+          "fontRequestCount": 4,
+          "fontFiles": ["Inter-Regular-latin-DZ2H3oP-.woff2", "Inter-SemiBold-latin-BnCj5yHe.woff2", "RobotoMono-Bold-latin-C5Vh1VjD.woff2", "Inter-Bold-latin-C-mUijkG.woff2"],
+          "benchmarkIndex": 1707
+        }
+      ],
+      "medians": {
+        "fcpMs": 4382.76,
+        "lcpMs": 6218.28,
+        "tbtMs": 229.5,
+        "performanceScore": 0.63,
+        "totalTransferBytes": 575671,
+        "scriptTransferBytes": 409696,
+        "requestCount": 97,
+        "fontTransferBytes": 119614,
+        "fontRequestCount": 4
+      }
+    }
+  },
+  "comparison": {
+    "fcpMs": {
+      "before": 4246.98,
+      "after": 4382.76,
+      "delta": 135.78,
+      "percent": 3.2
+    },
+    "lcpMs": {
+      "before": 6245.73,
+      "after": 6218.28,
+      "delta": -27.45,
+      "percent": -0.44
+    },
+    "tbtMs": {
+      "before": 275,
+      "after": 229.5,
+      "delta": -45.5,
+      "percent": -16.55
+    },
+    "performanceScore": {
+      "before": 0.62,
+      "after": 0.63,
+      "delta": 0.01,
+      "percent": 1.61
+    },
+    "totalTransferBytes": {
+      "before": 830770,
+      "after": 575671,
+      "delta": -255099,
+      "percent": -30.71
+    },
+    "scriptTransferBytes": {
+      "before": 406337,
+      "after": 409696,
+      "delta": 3359,
+      "percent": 0.83
+    },
+    "requestCount": {
+      "before": 97,
+      "after": 97,
+      "delta": 0,
+      "percent": 0.0
+    },
+    "fontTransferBytes": {
+      "before": 378529,
+      "after": 119614,
+      "delta": -258915,
+      "percent": -68.4
+    },
+    "fontRequestCount": {
+      "before": 4,
+      "after": 4,
+      "delta": 0,
+      "percent": 0.0
+    }
+  }
+}

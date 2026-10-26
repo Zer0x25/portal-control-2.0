@@ -58,3 +58,18 @@ export const EmployeeQuerySchema = z.object({
   area: z.string().optional(),
   since: z.string().optional(),
 });
+
+export const EmployeeClockingOptionSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    position: z.string(),
+    area: z.string(),
+    workdayType: z.string(),
+    status: z.literal("Activo"),
+  })
+  .openapi("EmployeeClockingOption");
+
+export const EmployeeClockingOptionsSchema = z
+  .array(EmployeeClockingOptionSchema)
+  .openapi("EmployeeClockingOptions");

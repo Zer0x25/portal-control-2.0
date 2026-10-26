@@ -14,37 +14,37 @@ export const useConfigQuery = <T = unknown>(key: string) => {
   });
 };
 
-export const useAccountingLockDateQuery = () => {
+export const useAccountingLockDateQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
   return useQuery<string | null>({
     queryKey: queryKeys.config("accounting_lock_date"),
     queryFn: () => configService.get<string>("accounting_lock_date"),
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken,
+    enabled: hasToken && enabled,
   });
 };
 
-export const useGlobalMaxWeeklyHoursQuery = () => {
+export const useGlobalMaxWeeklyHoursQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
   return useQuery<number>({
     queryKey: queryKeys.config("global_max_hours"),
     queryFn: async () => (await configService.get<number>("global_max_hours")) ?? 44,
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken,
+    enabled: hasToken && enabled,
   });
 };
 
-export const useAreaListQuery = () => {
+export const useAreaListQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
   return useQuery<string[]>({
     queryKey: queryKeys.config("area_list"),
     queryFn: async () => (await configService.get<string[]>("area_list")) ?? ["Otros"],
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken,
+    enabled: hasToken && enabled,
   });
 };
 
-export const useWorkdayTypeListQuery = () => {
+export const useWorkdayTypeListQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
   return useQuery<string[]>({
     queryKey: queryKeys.config("workday_types"),
@@ -55,18 +55,18 @@ export const useWorkdayTypeListQuery = () => {
         "Part-Time",
       ],
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken,
+    enabled: hasToken && enabled,
   });
 };
 
-export const useEmailRecipientsListQuery = () => {
+export const useEmailRecipientsListQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
   return useQuery<string[]>({
     queryKey: queryKeys.config("email_recipients"),
     queryFn: async () =>
       (await configService.get<string[]>("email_recipients")) ?? ["info@test.lan"],
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken,
+    enabled: hasToken && enabled,
   });
 };
 

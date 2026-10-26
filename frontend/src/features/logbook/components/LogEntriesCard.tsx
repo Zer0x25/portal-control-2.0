@@ -79,7 +79,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
   };
 
   const renderMobileView = () => (
-    <div className="space-y-4 pt-2">
+    <div data-list-group="activity-feed" className="space-y-4 pt-2">
       {activeShift.logEntries.length > 0 ? (
         <div className="flex flex-col gap-3">
           {activeShift.logEntries.map((le, index) => (
@@ -125,7 +125,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                 </div>
               </div>
 
-              <p className="text-[13px] font-semibold text-token-text-primary whitespace-pre-wrap leading-relaxed">
+              <p className="typo-list-note text-token-text-primary whitespace-pre-wrap">
                 {le.annotation}
               </p>
             </div>
@@ -133,7 +133,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
         </div>
       ) : (
         <div className="py-12 text-center bg-token-surface-stripe rounded-sm border border-token-border-technical p-4">
-          <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider">
+          <p className="typo-list-secondary text-token-text-tertiary uppercase">
             Sin registros operativos en este turno
           </p>
         </div>
@@ -142,18 +142,25 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
   );
 
   const renderDesktopView = () => (
-    <div className="overflow-hidden rounded-sm border border-token-border-technical bg-token-surface-card">
+    <div
+      data-list-group="activity-feed"
+      className="overflow-hidden rounded-sm border border-token-border-technical bg-token-surface-card"
+    >
       {activeShift.logEntries.length > 0 ? (
-        <table data-testid="data-table" className="min-w-full border-separate border-spacing-0">
+        <table
+          data-list-group="activity-feed"
+          data-testid="data-table"
+          className="min-w-full border-separate border-spacing-0"
+        >
           <thead>
             <tr className="bg-token-surface-stripe">
-              <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-left border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Hora
               </th>
-              <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-left border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Anotación Operativa
               </th>
-              <th className="px-6 py-4 text-right border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-right border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Acciones
               </th>
             </tr>
@@ -161,10 +168,10 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
           <tbody className="divide-y divide-token-border-subtle">
             {activeShift.logEntries.map((le) => (
               <tr key={le.id} className="group hover:bg-token-accent-brand/2 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-[13px] font-bold text-token-accent-brand font-mono w-24">
+                <td className="px-6 py-4 whitespace-nowrap typo-list-value text-token-accent-brand w-24">
                   {le.time}
                 </td>
-                <td className="px-6 py-4 text-[13px] text-token-text-primary font-semibold leading-relaxed">
+                <td className="px-6 py-4 typo-list-note text-token-text-primary">
                   {le.annotation}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
@@ -213,7 +220,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
               <h3 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
                 Bitácora de Novedades
               </h3>
-              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5">
+              <p className="typo-list-secondary text-token-text-tertiary uppercase mt-1.5">
                 Registro de eventos críticos del turno
               </p>
             </div>

@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-10-24T16:20:14.064Z",
+  "source": "Fastify request-completed logs correlated by browser Resource Timing",
+  "correlationToleranceMs": 500,
+  "samples": [
+    {
+      "sample": 1,
+      "statusCode": 200,
+      "fastifyResponseTimeMs": 1.43,
+      "serverCompleteOffsetFromBrowserResponseEndMs": -2.8
+    },
+    {
+      "sample": 2,
+      "statusCode": 200,
+      "fastifyResponseTimeMs": 0.83,
+      "serverCompleteOffsetFromBrowserResponseEndMs": -2.1
+    },
+    {
+      "sample": 3,
+      "statusCode": 200,
+      "fastifyResponseTimeMs": 1.34,
+      "serverCompleteOffsetFromBrowserResponseEndMs": -1.7
+    }
+  ]
+}

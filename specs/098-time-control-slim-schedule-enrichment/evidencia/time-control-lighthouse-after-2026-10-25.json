@@ -1,0 +1,77 @@
+{
+  "capturedAt": "2026-10-25T21:19:03.630Z",
+  "route": "time-control",
+  "sampleCount": 5,
+  "sourceCommit": "8a8c4b2",
+  "workingTreeContainsSpec098": true,
+  "stagingFrontendImageId": "sha256:b62261e2d7814b8fd2a5a759c5d2f89eb507b2edbb61e40c7815107e72dc3efe",
+  "summary": {
+    "performanceScore": {
+      "median": 0.93,
+      "min": 0.74,
+      "max": 0.95
+    },
+    "tbtMs": {
+      "median": 163.5,
+      "min": 161,
+      "max": 245
+    },
+    "lcpMs": {
+      "median": 2255.08785,
+      "min": 2250.0299999999997,
+      "max": 5492.612000000002
+    },
+    "fcpMs": {
+      "median": 2001.3919,
+      "min": 1994.02,
+      "max": 2416.939375
+    },
+    "cls": {
+      "median": 0.01016361232872061,
+      "min": 0,
+      "max": 0.01016361232872061
+    }
+  },
+  "samples": [
+    {
+      "fetchTime": "2026-10-25T21:16:51.226Z",
+      "performanceScore": 0.95,
+      "tbtMs": 163.5,
+      "lcpMs": 2255.08785,
+      "fcpMs": 2001.3919,
+      "cls": 0.01016361232872061
+    },
+    {
+      "fetchTime": "2026-10-25T21:17:16.825Z",
+      "performanceScore": 0.93,
+      "tbtMs": 162,
+      "lcpMs": 2496.1947999999998,
+      "fcpMs": 2118.8717500000002,
+      "cls": 0.01016361232872061
+    },
+    {
+      "fetchTime": "2026-10-25T21:18:07.488Z",
+      "performanceScore": 0.74,
+      "tbtMs": 190,
+      "lcpMs": 5492.612000000002,
+      "fcpMs": 2416.939375,
+      "cls": 0
+    },
+    {
+      "fetchTime": "2026-10-25T21:18:32.694Z",
+      "performanceScore": 0.95,
+      "tbtMs": 161,
+      "lcpMs": 2250.0299999999997,
+      "fcpMs": 1994.02,
+      "cls": 0.01016361232872061
+    },
+    {
+      "fetchTime": "2026-10-25T21:17:42.097Z",
+      "performanceScore": 0.92,
+      "tbtMs": 245,
+      "lcpMs": 2253.3282,
+      "fcpMs": 1997.2188,
+      "cls": 0
+    }
+  ]
+}

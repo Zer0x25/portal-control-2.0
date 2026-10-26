@@ -141,6 +141,10 @@ test.describe("Accesibilidad axe-core", () => {
       await expect(page.getByRole("heading", { name: /portal del trabajador/i })).toBeVisible({
         timeout: 30000,
       });
+      const monthSelector = page.getByRole("combobox", {
+        name: "Seleccionar mes del calendario",
+      });
+      await expect(monthSelector.locator("option")).toHaveCount(12);
       await page.waitForTimeout(2000); // setlean animaciones de entrada
       await expectNoBlockingA11y(page, "worker-light");
     });

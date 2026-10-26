@@ -1,163 +1,3127 @@
-import { test, expect } from "@playwright/test";
+import { performance } from "node:perf_hooks";
+import { expect, test, type Page, type Request } from "@playwright/test";
 import { loginFast } from "./helpers/auth-helper";
+import { attachPerformanceReport, summarizePerformance } from "./helpers/performance-metrics";
+import performanceRouteDefinitions from "../performance-routes.json" with { type: "json" };
 
-// Reescrito en spec 004 fase 3 (2026-10-03):
-// - HashRouter: la auditoría vive en `/#/admin/governance?tab=audit`
-//   (`/audit-logs` solo redirige ahí). El selector de filas virtualizadas
-//   se evalúa sobre la vista real, no sobre cualquier página con listas.
-// - El test de "OmniSearch" (Ctrl+K + `input[placeholder*='Busca']`) se
-//   elimina: esa funcionalidad no existe en el código (sin atajos
-//   globales ni placeholder "Busca"). Se reemplaza por medición del
-//   cambio de tab del Governance Hub, que sí ejercita lazy-load real.
-// - Filosofía: estos tests gatean catástrofes de rendimiento (caps
-//   generosos), no presupuestos de frames; los tiempos se reportan
-//   al terminal para seguimiento.
+const viewport = { width: 1440, height: 900 };
+const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:5174";
+const captureActiveEmployeeFilterProbe =
+  process.env.PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE === "1";
+const captureEmployeeClockingProjectionProbe =
+  process.env.PERFORMANCE_EMPLOYEE_CLOCKING_PROJECTION_PROBE === "1";
+const requireClockingOptionsEndpoint =
+  process.env.PERFORMANCE_REQUIRE_CLOCKING_OPTIONS_ENDPOINT === "1";
+const autoStartSchedulingApiPaths = new Set([
+  "/api/configs/global_max_hours",
+  "/api/configs/area_list",
+  "/api/configs/workday_types",
+  "/api/configs/email_recipients",
+  "/api/configs/accounting_lock_date",
+  "/api/shifts/patterns",
+  "/api/shifts/assignments",
+  "/api/holidays",
+  "/api/leaves",
+  "/api/corrections",
+]);
+type DashboardBootstrapAuditState = {
+  events: { type: "visible" | "removed"; atMs: number; rootChildren: number }[];
+  paints: { name: string; startTime: number }[];
+  lcpEntries: {
+    startTime: number;
+    size: number;
+    elementTag: string | null;
+    isBootstrapShell: boolean;
+  }[];
+};
+type WorkerPortalBootstrapAuditState = {
+  events: {
+    type: "visible" | "removed" | "clock-visible";
+    atMs: number;
+    rootChildren: number;
+  }[];
+  paints: { name: string; startTime: number }[];
+  lcpEntries: {
+    startTime: number;
+    elementTag: string | null;
+    isBootstrapShell: boolean;
+  }[];
+};
 
 test.describe.serial("Render Performance", () => {
-  test.setTimeout(120000);
+  test.use({ viewport });
+  test.setTimeout(180_000);
+
   test.beforeEach(async ({ page, request }) => {
     await loginFast(page, request, "admin");
   });
 
-  test("Audit Logs view load and scroll performance", async ({ page }) => {
-    // 1. Navigate and measure initial load
-    await page.goto("/#/admin/governance?tab=audit");
-    await expect(page.getByText(/visor de auditoría/i)).toBeVisible({ timeout: 30000 });
+  test("Dashboard bootstrap paints before React and releases after the live clock appears", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const coldViewport = { width: 412, height: 823 };
+    const samples: {
+      sample: number;
+      fcpMs: number | null;
+      lcpMs: number | null;
+      bootstrapLcpMs: number | null;
+      lcpElement: string | null;
+      reactRootChildrenAtShellPaint: number | null;
+      liveClockVisibleAtMs: number;
+      shellVisibleAtMs: number | null;
+      shellRemovedAtMs: number | null;
+    }[] = [];
 
-    const [loadTime, totalEntries] = await page.evaluate(() => {
-      const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
-      const displayLogs = document.querySelectorAll("div[style*='transform: translateY']").length;
-      return [navEntry ? navEntry.duration : 0, displayLogs] as const;
-    });
-
-    console.log(`\n[PERF] Audit Logs view ready (Entries rendered: ${totalEntries})`);
-
-    // 2. Measure Virtualization Scroll Performance (only if rows rendered)
-    if (totalEntries === 0) {
-      console.warn("[PERF] No audit rows rendered, scroll measurement skipped");
-      return;
-    }
-    const scrollParent = page.locator("div.overflow-y-auto.relative").first();
-    await expect(scrollParent).toBeVisible();
-
-    const scrollCount = 5;
-    let totalScrollTime = 0;
-
-    for (let i = 0; i < scrollCount; i++) {
-      const startMark = `scroll-start-${i}`;
-      const endMark = `scroll-end-${i}`;
-
-      await page.evaluate((mark) => performance.mark(mark), startMark);
-
-      // Scroll down
-      await scrollParent.evaluate((el) => (el.scrollTop += 800));
-
-      // Wait for the next animation frame to ensure React has had a chance to render
-      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
-
-      await page.evaluate((mark) => performance.mark(mark), endMark);
-      await page.evaluate(({ start, end, name }) => performance.measure(name, start, end), {
-        start: startMark,
-        end: endMark,
-        name: `Scroll-${i}`,
+    for (let sample = 1; sample <= 3; sample++) {
+      const context = await browser.newContext({
+        viewport: coldViewport,
+        deviceScaleFactor: 1.75,
+        isMobile: true,
+        hasTouch: true,
+        timezoneId: "America/Santiago",
       });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        await page.addInitScript(() => {
+          const audit: DashboardBootstrapAuditState = {
+            events: [],
+            paints: [],
+            lcpEntries: [],
+          };
+          (
+            window as Window & { __dashboardBootstrapAudit?: typeof audit }
+          ).__dashboardBootstrapAudit = audit;
+          let wasVisible = false;
+          let wasRemoved = false;
+          const recordShell = () => {
+            const shell = document.getElementById("app-bootstrap-shell");
+            const isVisible =
+              shell !== null &&
+              !shell.hidden &&
+              getComputedStyle(shell).display !== "none" &&
+              getComputedStyle(shell).visibility !== "hidden";
+            if (isVisible && !wasVisible) {
+              audit.events.push({
+                type: "visible",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              wasVisible = true;
+            } else if (!shell && wasVisible && !wasRemoved) {
+              audit.events.push({
+                type: "removed",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              wasRemoved = true;
+            }
+          };
+          new MutationObserver(recordShell).observe(document, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["hidden", "style", "class"],
+          });
+          new PerformanceObserver((list) => {
+            audit.paints.push(
+              ...list
+                .getEntries()
+                .map((entry) => ({ name: entry.name, startTime: entry.startTime })),
+            );
+          }).observe({ type: "paint", buffered: true });
+          new PerformanceObserver((list) => {
+            audit.lcpEntries.push(
+              ...list.getEntries().map((entry) => {
+                const lcpEntry = entry as PerformanceEntry & {
+                  size: number;
+                  element: Element | null;
+                };
+                return {
+                  startTime: lcpEntry.startTime,
+                  size: lcpEntry.size,
+                  elementTag: lcpEntry.element?.tagName ?? null,
+                  isBootstrapShell: Boolean(lcpEntry.element?.closest("#app-bootstrap-shell")),
+                };
+              }),
+            );
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+        });
 
-      const duration = await page.evaluate((name) => {
-        const measure = performance.getEntriesByName(name)[0];
-        return measure ? measure.duration : 0;
-      }, `Scroll-${i}`);
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+        await expect(page.locator('#root [data-testid="server-clock"]')).toBeVisible({
+          timeout: 30_000,
+        });
+        const liveClockVisibleAtMs = await page.evaluate(() => performance.now());
+        await page.waitForTimeout(250);
 
-      totalScrollTime += duration;
+        const metrics = await page.evaluate(() => {
+          const audit = (
+            window as Window & { __dashboardBootstrapAudit?: DashboardBootstrapAuditState }
+          ).__dashboardBootstrapAudit;
+          const fcp = audit?.paints.find((entry) => entry.name === "first-contentful-paint");
+          const lcp = audit?.lcpEntries.at(-1);
+          const bootstrapLcp = audit?.lcpEntries.find((entry) => entry.isBootstrapShell);
+          return {
+            fcpMs: fcp?.startTime ?? null,
+            lcpMs: lcp?.startTime ?? null,
+            bootstrapLcpMs: bootstrapLcp?.startTime ?? null,
+            lcpElement: lcp?.elementTag ?? null,
+            auditEvents: audit?.events ?? [],
+          };
+        });
+        samples.push({
+          sample,
+          fcpMs: metrics.fcpMs,
+          lcpMs: metrics.lcpMs,
+          bootstrapLcpMs: metrics.bootstrapLcpMs,
+          lcpElement: metrics.lcpElement,
+          liveClockVisibleAtMs,
+          shellVisibleAtMs:
+            metrics.auditEvents.find((event) => event.type === "visible")?.atMs ?? null,
+          reactRootChildrenAtShellPaint:
+            metrics.auditEvents.find((event) => event.type === "visible")?.rootChildren ?? null,
+          shellRemovedAtMs:
+            metrics.auditEvents.find((event) => event.type === "removed")?.atMs ?? null,
+        });
+      } finally {
+        await context.close();
+      }
     }
 
-    const avgScrollTime = totalScrollTime / scrollCount;
-    console.log(
-      `[PERF] Average Scroll Render Time (Virtualization): ${avgScrollTime.toFixed(2)}ms`,
+    const fcpSamples = samples.flatMap((sample) => (sample.fcpMs === null ? [] : [sample.fcpMs]));
+    const lcpSamples = samples.flatMap((sample) => (sample.lcpMs === null ? [] : [sample.lcpMs]));
+    const bootstrapLcpSamples = samples.flatMap((sample) =>
+      sample.bootstrapLcpMs === null ? [] : [sample.bootstrapLcpMs],
     );
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/dashboard",
+      profile: { viewport: coldViewport, deviceScaleFactor: 1.75, cpuThrottleRate: 4 },
+      sampleCount: samples.length,
+      fcp: fcpSamples.length > 0 ? summarizePerformance(fcpSamples) : null,
+      lcp: lcpSamples.length > 0 ? summarizePerformance(lcpSamples) : null,
+      bootstrapLcp:
+        bootstrapLcpSamples.length > 0 ? summarizePerformance(bootstrapLcpSamples) : null,
+      samples,
+    };
+    await attachPerformanceReport(testInfo, "dashboard-bootstrap-shell.json", report);
 
-    // Reporting to terminal
-    if (loadTime > 2000) {
-      console.warn("⚠️ Warning: Initial load exceeds 2000ms");
+    expect(samples).toHaveLength(3);
+    for (const sample of samples) {
+      expect(
+        sample.shellVisibleAtMs,
+        `sample ${sample.sample} should paint the bootstrap shell`,
+      ).not.toBeNull();
+      expect(
+        sample.shellRemovedAtMs,
+        `sample ${sample.sample} should remove the bootstrap shell`,
+      ).not.toBeNull();
+      expect(sample.shellVisibleAtMs).toBeLessThan(sample.liveClockVisibleAtMs);
+      expect(sample.reactRootChildrenAtShellPaint).toBe(0);
+      expect(sample.shellRemovedAtMs).toBeGreaterThanOrEqual(sample.shellVisibleAtMs ?? 0);
+      expect(sample.lcpMs, `sample ${sample.sample} should report LCP`).not.toBeNull();
+      expect(sample.bootstrapLcpMs).not.toBeNull();
     }
-    if (avgScrollTime > 50) {
-      console.warn("⚠️ Warning: Scroll rendering exceeds 50ms per frame");
-    }
-
-    // Basic assertions (generous caps: gate catastrophes, not frames)
-    expect(loadTime).toBeLessThan(30000);
-    expect(avgScrollTime).toBeLessThan(500);
   });
 
-  test("Governance tab switch render performance", async ({ page }) => {
-    await page.goto("/#/admin/governance?tab=integrity");
-    await expect(page.getByText(/INTEGRA|DEGRADADA/)).toBeVisible({ timeout: 30000 });
+  test("Worker Portal bootstrap shell paints before React and releases after the real clock", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const coldViewport = { width: 412, height: 823 };
+    const samples: {
+      sample: number;
+      fcpMs: number | null;
+      shellLcpMs: number | null;
+      shellVisibleAtMs: number | null;
+      rootChildrenAtShellPaint: number | null;
+      clockVisibleAtMs: number | null;
+      shellRemovedAtMs: number | null;
+      lcpEntries: WorkerPortalBootstrapAuditState["lcpEntries"];
+    }[] = [];
 
-    // Measure time to switch to the Security tab (lazy-loaded view)
-    await page.evaluate(() => performance.mark("tab-switch-start"));
+    for (let sample = 1; sample <= 3; sample++) {
+      const context = await browser.newContext({
+        viewport: coldViewport,
+        deviceScaleFactor: 1.75,
+        isMobile: true,
+        hasTouch: true,
+        timezoneId: "America/Santiago",
+        serviceWorkers: "block",
+      });
+      try {
+        const page = await context.newPage();
+        await page.addInitScript(() => {
+          const audit: WorkerPortalBootstrapAuditState = {
+            events: [],
+            paints: [],
+            lcpEntries: [],
+          };
+          (
+            window as Window & { __workerPortalBootstrapAudit?: typeof audit }
+          ).__workerPortalBootstrapAudit = audit;
+          let shellWasVisible = false;
+          let clockWasVisible = false;
+          let shellWasRemoved = false;
+          const recordState = () => {
+            const shell = document.getElementById("app-bootstrap-shell");
+            const shellIsVisible =
+              shell !== null &&
+              !shell.hidden &&
+              getComputedStyle(shell).display !== "none" &&
+              getComputedStyle(shell).visibility !== "hidden";
+            if (shellIsVisible && !shellWasVisible) {
+              audit.events.push({
+                type: "visible",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              shellWasVisible = true;
+            } else if (!shell && shellWasVisible && !shellWasRemoved) {
+              audit.events.push({
+                type: "removed",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              shellWasRemoved = true;
+            }
 
-    await page.getByRole("tab", { name: "Seguridad", exact: true }).click();
-    await expect(page.getByText(/Vigilancia & Riesgos/i)).toBeVisible({ timeout: 30000 });
+            const clock = document.querySelector('[data-testid="server-clock"]');
+            const rect = clock?.getBoundingClientRect();
+            const clockIsVisible = Boolean(
+              clock &&
+              rect &&
+              rect.width > 0 &&
+              rect.height > 0 &&
+              getComputedStyle(clock).visibility !== "hidden",
+            );
+            if (clockIsVisible && !clockWasVisible) {
+              audit.events.push({
+                type: "clock-visible",
+                atMs: performance.now(),
+                rootChildren: document.getElementById("root")?.childElementCount ?? -1,
+              });
+              clockWasVisible = true;
+            }
+          };
+          new MutationObserver(recordState).observe(document, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["hidden", "style", "class"],
+          });
+          new PerformanceObserver((list) => {
+            audit.paints.push(
+              ...list
+                .getEntries()
+                .map((entry) => ({ name: entry.name, startTime: entry.startTime })),
+            );
+          }).observe({ type: "paint", buffered: true });
+          new PerformanceObserver((list) => {
+            audit.lcpEntries.push(
+              ...list.getEntries().map((entry) => {
+                const candidate = entry as PerformanceEntry & { element: Element | null };
+                return {
+                  startTime: candidate.startTime,
+                  elementTag: candidate.element?.tagName ?? null,
+                  isBootstrapShell: Boolean(candidate.element?.closest("#app-bootstrap-shell")),
+                };
+              }),
+            );
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+        });
 
-    await page.evaluate(() => performance.mark("tab-switch-end"));
-    await page.evaluate(() =>
-      performance.measure("Tab Switch", "tab-switch-start", "tab-switch-end"),
-    );
+        await loginFast(page, request, "worker");
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+        await expect(page.locator("#app-bootstrap-shell")).toBeVisible({
+          timeout: 10_000,
+        });
+        await expect(page.locator('[data-testid="server-clock"]')).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+        await page.waitForTimeout(250);
 
-    const switchTime = await page.evaluate(() => {
-      const measure = performance.getEntriesByName("Tab Switch")[0];
-      return measure ? measure.duration : 0;
+        const metrics = await page.evaluate(() => {
+          const audit = (
+            window as Window & { __workerPortalBootstrapAudit?: WorkerPortalBootstrapAuditState }
+          ).__workerPortalBootstrapAudit;
+          const fcp = audit?.paints.find((entry) => entry.name === "first-contentful-paint");
+          return {
+            fcpMs: fcp?.startTime ?? null,
+            events: audit?.events ?? [],
+            lcpEntries: audit?.lcpEntries ?? [],
+          };
+        });
+        const shellVisibleEvent = metrics.events.find((event) => event.type === "visible");
+        const clockVisibleEvent = metrics.events.find((event) => event.type === "clock-visible");
+        const shellRemovedEvent = metrics.events.find((event) => event.type === "removed");
+        const shellLcp = metrics.lcpEntries.find((entry) => entry.isBootstrapShell);
+        samples.push({
+          sample,
+          fcpMs: metrics.fcpMs,
+          shellLcpMs: shellLcp?.startTime ?? null,
+          shellVisibleAtMs: shellVisibleEvent?.atMs ?? null,
+          rootChildrenAtShellPaint: shellVisibleEvent?.rootChildren ?? null,
+          clockVisibleAtMs: clockVisibleEvent?.atMs ?? null,
+          shellRemovedAtMs: shellRemovedEvent?.atMs ?? null,
+          lcpEntries: metrics.lcpEntries,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    await attachPerformanceReport(testInfo, "worker-portal-bootstrap-shell.json", {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/worker-portal",
+      profile: { viewport: coldViewport, deviceScaleFactor: 1.75, cpuThrottleRate: 4 },
+      sampleCount: samples.length,
+      samples,
+      shellLcp: summarizePerformance(
+        samples.flatMap((sample) => (sample.shellLcpMs === null ? [] : [sample.shellLcpMs])),
+      ),
+      clockVisible: summarizePerformance(
+        samples.flatMap((sample) =>
+          sample.clockVisibleAtMs === null ? [] : [sample.clockVisibleAtMs],
+        ),
+      ),
     });
 
-    console.log(`[PERF] Governance tab switch Time: ${switchTime.toFixed(2)}ms`);
-    expect(switchTime).toBeLessThan(15000);
+    expect(samples).toHaveLength(3);
+    for (const sample of samples) {
+      expect(
+        sample.shellVisibleAtMs,
+        `sample ${sample.sample} should show the bootstrap shell`,
+      ).not.toBeNull();
+      expect(sample.rootChildrenAtShellPaint).toBe(0);
+      expect(
+        sample.shellLcpMs,
+        `sample ${sample.sample} should paint an LCP candidate in the shell`,
+      ).not.toBeNull();
+      expect(sample.clockVisibleAtMs).not.toBeNull();
+      expect(sample.shellRemovedAtMs).toBeGreaterThanOrEqual(sample.clockVisibleAtMs ?? 0);
+      expect(sample.shellLcpMs).toBeLessThan(sample.clockVisibleAtMs ?? 0);
+    }
   });
-});
 
-const criticalRoutes = [
-  { id: "dashboard", path: "/#/dashboard", currentPath: "/dashboard", role: "admin" },
-  {
-    id: "planner",
-    path: "/#/planning/monthly",
-    currentPath: "/planning/monthly",
-    role: "admin",
-  },
-  {
-    id: "worker-portal",
-    path: "/#/worker-portal",
-    currentPath: "/worker-portal",
-    role: "worker",
-  },
-  { id: "logbook", path: "/#/logbook", currentPath: "/logbook", role: "admin" },
-  { id: "kiosk", path: "/#/kiosk", currentPath: null, role: null },
-] as const;
+  test("Dashboard critical shell stays styled until the full stylesheet is ready", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const indexResponse = await request.get(baseUrl);
+    test.skip(
+      !(await indexResponse.text()).includes('rel="stylesheet"'),
+      "Critical stylesheet handoff is verified against the production build.",
+    );
 
-test("critical route navigation baseline: ready times stay below 30 seconds", async ({
-  browser,
-  request,
-}) => {
-  test.setTimeout(120_000);
-  const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:8080";
+    for (const theme of ["light", "dark"] as const) {
+      const context = await browser.newContext({
+        viewport: { width: 412, height: 823 },
+        serviceWorkers: "block",
+      });
+      let releaseCss: (() => void) | undefined;
+      try {
+        const page = await context.newPage();
+        await page.addInitScript((storedTheme) => {
+          localStorage.setItem("app-theme", storedTheme);
+        }, theme);
+        await loginFast(page, request, "admin");
 
-  for (const route of criticalRoutes) {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+        const cssGate = new Promise<void>((resolve) => {
+          releaseCss = resolve;
+        });
+        await page.route("**/assets/index-*.css", async (route) => {
+          await cssGate;
+          await route.continue();
+        });
+        await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "commit" });
+
+        const shell = page.locator("#app-bootstrap-shell");
+        await expect(shell).toBeVisible({ timeout: 15_000 });
+        const criticalStyle = await page.evaluate(() => {
+          const shellElement = document.querySelector<HTMLElement>("#app-bootstrap-shell");
+          const card = shellElement?.querySelector<HTMLElement>("section");
+          const rect = card?.getBoundingClientRect();
+          const stylesheet = document.querySelector<HTMLLinkElement>(
+            'link[rel="stylesheet"][href*="/assets/index-"]',
+          );
+          return {
+            dark: document.documentElement.classList.contains("dark"),
+            media: stylesheet?.media ?? null,
+            background: shellElement ? getComputedStyle(shellElement).backgroundColor : null,
+            color: shellElement ? getComputedStyle(shellElement).color : null,
+            cardBackground: card ? getComputedStyle(card).backgroundColor : null,
+            cardWidth: rect?.width ?? 0,
+            cardRight: rect?.right ?? 0,
+          };
+        });
+
+        expect(criticalStyle.media).toBe("print");
+        expect(criticalStyle.dark).toBe(theme === "dark");
+        expect(criticalStyle.background).toBe(
+          theme === "dark" ? "rgb(2, 6, 23)" : "rgb(240, 242, 245)",
+        );
+        expect(criticalStyle.color).toBe(
+          theme === "dark" ? "rgb(248, 250, 252)" : "rgb(15, 23, 42)",
+        );
+        expect(criticalStyle.cardBackground).toBe(
+          theme === "dark" ? "rgb(15, 23, 42)" : "rgb(253, 251, 247)",
+        );
+        expect(criticalStyle.cardWidth).toBeGreaterThan(0);
+        expect(criticalStyle.cardRight).toBeLessThanOrEqual(412);
+        await testInfo.attach(`dashboard-critical-${theme}.png`, {
+          body: await page.screenshot(),
+          contentType: "image/png",
+        });
+
+        releaseCss();
+        await expect(page.locator('#root [data-testid="server-clock"]')).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(shell).toHaveCount(0);
+        await expect
+          .poll(() =>
+            page
+              .locator('link[rel="stylesheet"][href*="/assets/index-"]')
+              .evaluate((link) => (link as HTMLLinkElement).media),
+          )
+          .toBe("all");
+      } finally {
+        releaseCss?.();
+        await context.close();
+      }
+    }
+  });
+
+  test("non-shell content stays hidden until the full stylesheet is applied", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const indexResponse = await request.get(baseUrl);
+    test.skip(
+      !(await indexResponse.text()).includes('rel="stylesheet"'),
+      "Stylesheet handoff is verified against the production build.",
+    );
+
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      serviceWorkers: "block",
+    });
+    let releaseCss: (() => void) | undefined;
     try {
       const page = await context.newPage();
-      if (route.role) await loginFast(page, request, route.role);
+      await page.addInitScript(() => {
+        localStorage.setItem("app-theme", "dark");
+      });
+      await loginFast(page, request, "admin");
+      const cssGate = new Promise<void>((resolve) => {
+        releaseCss = resolve;
+      });
+      await page.route("**/assets/index-*.css", async (route) => {
+        await cssGate;
+        await route.continue();
+      });
+      await page.goto(`${baseUrl}/#/configuration`, { waitUntil: "commit" });
 
-      const startedAt = Date.now();
-      await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded" });
-      const ready = route.currentPath
-        ? page.locator(
-            `[data-testid="app-shell"][data-current-path="${route.currentPath}"] [data-testid="main-content"]`,
-          )
-        : page.getByTestId("kiosk-step");
-      await expect(ready).toBeVisible({ timeout: 30_000 });
+      const stylesheet = page.locator('link[rel="stylesheet"][href*="/assets/index-"]');
+      await expect(stylesheet).toHaveAttribute("media", "all");
+      await page.waitForTimeout(150);
+      const beforeStyles = await page.evaluate(() => ({
+        rootVisibility: getComputedStyle(document.getElementById("root")!).visibility,
+        bodyMargin: getComputedStyle(document.body).margin,
+        bodyBackground: getComputedStyle(document.body).backgroundColor,
+      }));
+      expect(beforeStyles).toEqual({
+        rootVisibility: "hidden",
+        bodyMargin: "0px",
+        bodyBackground: "rgb(2, 6, 23)",
+      });
+      await expect(page.getByTestId("main-content")).not.toBeVisible();
+      await testInfo.attach("configuration-before-global-css.png", {
+        body: await page.screenshot(),
+        contentType: "image/png",
+      });
 
-      const elapsedMs = Date.now() - startedAt;
-      console.log(`[PERF] ${route.id} route-ready ${elapsedMs}ms`);
-      expect(elapsedMs).toBeLessThan(30_000);
+      releaseCss();
+      await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await expect
+        .poll(() => page.locator("#root").evaluate((root) => getComputedStyle(root).visibility))
+        .toBe("visible");
+      expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(
+        true,
+      );
+    } finally {
+      releaseCss?.();
+      await context.close();
+    }
+  });
+
+  test("Dashboard bootstrap timeout reveals the app if stylesheet loading stalls", async ({
+    browser,
+    request,
+  }) => {
+    const indexResponse = await request.get(baseUrl);
+    test.skip(
+      !(await indexResponse.text()).includes('rel="stylesheet"'),
+      "Stylesheet handoff is verified against the production build.",
+    );
+
+    const context = await browser.newContext({
+      viewport: { width: 412, height: 823 },
+      serviceWorkers: "block",
+    });
+    let releaseCss: (() => void) | undefined;
+    try {
+      const page = await context.newPage();
+      await page.addInitScript(() => {
+        localStorage.setItem("app-theme", "dark");
+      });
+      await loginFast(page, request, "admin");
+      await page.clock.install();
+      const cssGate = new Promise<void>((resolve) => {
+        releaseCss = resolve;
+      });
+      await page.route("**/assets/index-*.css", async (route) => {
+        await cssGate;
+        await route.continue();
+      });
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "commit" });
+
+      await expect(page.locator("#app-bootstrap-shell")).toBeVisible();
+      await page.clock.fastForward(8_001);
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#root")).toHaveCSS("visibility", "visible");
+    } finally {
+      releaseCss?.();
+      await context.close();
+    }
+  });
+
+  test("Bootstrap shell requires a session and covers authenticated Time Control startup", async ({
+    browser,
+    request,
+  }) => {
+    const unauthenticatedContext = await browser.newContext({ viewport });
+    try {
+      const page = await unauthenticatedContext.newPage();
+      await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+      await expect(page.locator("#username")).toBeVisible({ timeout: 30_000 });
+      await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+    } finally {
+      await unauthenticatedContext.close();
+    }
+
+    const authenticatedContext = await browser.newContext({ viewport });
+    try {
+      const page = await authenticatedContext.newPage();
+      await loginFast(page, request, "admin");
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("#app-bootstrap-shell")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Preparando el portal", exact: true }),
+      ).toBeVisible();
+      await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+      await expect
+        .poll(() =>
+          page
+            .locator('link[rel="stylesheet"][href*="/assets/index-"]')
+            .evaluate((link) => (link as HTMLLinkElement).media),
+        )
+        .toBe("all");
+    } finally {
+      await authenticatedContext.close();
+    }
+
+    const restrictedContext = await browser.newContext({ viewport });
+    try {
+      const page = await restrictedContext.newPage();
+      await loginFast(page, request, "worker");
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+      await expect(page).toHaveURL(/#\/worker-portal/, { timeout: 30_000 });
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+    } finally {
+      await restrictedContext.close();
+    }
+  });
+
+  test("Bootstrap shell clears after query and route changes during cold boot", async ({
+    browser,
+    request,
+  }) => {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+      await loginFast(page, request, "admin");
+      await page.route("**/assets/index-*.js", (route) =>
+        route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
+      );
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+      const shell = page.getByRole("heading", { name: "Preparando el portal" });
+      await expect(shell).toBeVisible();
+
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("hashchange", () => resolve(), { once: true });
+            window.location.hash = "#/dashboard?boot=1";
+          }),
+      );
+      await expect(shell).toBeVisible();
+
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("hashchange", () => resolve(), { once: true });
+            window.location.hash = "#/time-control";
+          }),
+      );
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
     } finally {
       await context.close();
     }
+
+    const workerContext = await browser.newContext({ viewport });
+    try {
+      const page = await workerContext.newPage();
+      await loginFast(page, request, "worker");
+      await page.route("**/assets/index-*.js", (route) =>
+        route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
+      );
+      await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+      const shell = page.getByRole("heading", { name: "Preparando el portal" });
+      await expect(shell).toBeVisible();
+
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            window.addEventListener("hashchange", () => resolve(), { once: true });
+            window.location.hash = "#/time-control";
+          }),
+      );
+      await expect(page.locator("#app-bootstrap-shell")).toHaveCount(0);
+    } finally {
+      await workerContext.close();
+    }
+  });
+
+  test("Dashboard defers route, modal, and action-only timezone chunks", async ({
+    page,
+  }, testInfo) => {
+    const scriptRequests: string[] = [];
+    page.on("request", (request) => {
+      if (request.resourceType() === "script") scriptRequests.push(request.url());
+    });
+
+    await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+
+    const scriptResources = await page.evaluate(() => {
+      const resources = performance
+        .getEntriesByType("resource")
+        .filter((entry): entry is PerformanceResourceTiming => {
+          return (
+            entry.initiatorType === "script" && new URL(entry.name).pathname.includes("/assets/")
+          );
+        });
+      return {
+        assets: resources.map((resource) => new URL(resource.name).pathname.split("/").pop()),
+        transferBytes: resources.reduce((total, resource) => total + resource.transferSize, 0),
+        encodedBodyBytes: resources.reduce(
+          (total, resource) => total + resource.encodedBodySize,
+          0,
+        ),
+      };
+    });
+    const eagerTimeControlChunks = scriptRequests.filter((url) =>
+      /\/assets\/TimeControl\.container-[^/?]+\.js(?:[?#]|$)/.test(url),
+    );
+    const eagerSecondaryModalChunks = scriptRequests.filter((url) =>
+      /\/assets\/(QuickNotesModal\.container|ShiftReportModal|exportToPdf|forms|sanitization)-[^/?]+\.js(?:[?#]|$)/.test(
+        url,
+      ),
+    );
+    const eagerTimezoneChunks = scriptRequests.filter((url) =>
+      /\/assets\/(date-utils|dateUtils|formatters)-[^/?]+\.js(?:[?#]|$)/.test(url),
+    );
+    const eagerAutoStartSchedulingChunks = scriptRequests.filter((url) =>
+      /\/assets\/(useScheduling|useShiftManager|useAssignedShiftsQuery|useShiftPatternsQuery|useHolidaysQuery|useLeavesQuery|schedulingService|holidayService)-[^/?]+\.js(?:[?#]|$)/.test(
+        url,
+      ),
+    );
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      viewport,
+      route: "/#/dashboard",
+      scriptRequestCount: scriptRequests.length,
+      scriptResources,
+      eagerTimeControlChunks,
+      eagerSecondaryModalChunks,
+      eagerTimezoneChunks,
+      eagerAutoStartSchedulingChunks,
+    };
+
+    await attachPerformanceReport(testInfo, "dashboard-eager-chunks.json", report);
+    expect(
+      eagerTimeControlChunks,
+      "Dashboard should not download the full Time Control route for closed modals",
+    ).toEqual([]);
+    expect(
+      eagerSecondaryModalChunks,
+      "Dashboard should defer secondary modal controllers and their optional libraries",
+    ).toEqual([]);
+    expect(
+      eagerTimezoneChunks,
+      "Dashboard should load timezone helpers only when an action needs them",
+    ).toEqual([]);
+    expect(
+      eagerAutoStartSchedulingChunks,
+      "Dashboard should only load auto-start scheduling code for an eligible employee",
+    ).toEqual([]);
+  });
+
+  test("theme bootstrap applies the stored theme without a second DOM transition pass", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+      await loginFast(page, request, "admin");
+      await page.addInitScript(() => {
+        localStorage.setItem("app-theme", "dark");
+        const audit = { transitionStyleInsertions: 0 };
+        (
+          window as Window & {
+            __themeBootstrapAudit?: typeof audit;
+          }
+        ).__themeBootstrapAudit = audit;
+        new MutationObserver((records) => {
+          for (const record of records) {
+            for (const node of record.addedNodes) {
+              if (node instanceof HTMLStyleElement && node.id === "disable-transitions") {
+                audit.transitionStyleInsertions += 1;
+              }
+            }
+          }
+        }).observe(document, { childList: true, subtree: true });
+      });
+
+      await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+      await page.evaluate(
+        () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+      );
+
+      const audit = await page.evaluate(() => ({
+        darkThemeApplied: document.documentElement.classList.contains("dark"),
+        transitionStyleInsertions: (
+          window as Window & {
+            __themeBootstrapAudit?: { transitionStyleInsertions: number };
+          }
+        ).__themeBootstrapAudit?.transitionStyleInsertions,
+      }));
+
+      await attachPerformanceReport(testInfo, "theme-bootstrap-audit.json", {
+        capturedAt: new Date().toISOString(),
+        baseUrl,
+        route: "/#/dashboard",
+        storedTheme: "dark",
+        ...audit,
+      });
+
+      expect(audit.darkThemeApplied).toBe(true);
+      expect(audit.transitionStyleInsertions).toBe(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("Time Control overlaps its route chunk with the layout on three cold visits", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const samples: Array<{
+      sample: number;
+      coldEditModalRequests: string[];
+      routeChunkRequests: { persistentLayout: string[]; timeControl: string[] };
+      routeChunkTimings: {
+        persistentLayout: { path: string; startTime: number; responseEnd: number }[];
+        timeControl: { path: string; startTime: number; responseEnd: number }[];
+      };
+      apiRequests: { path: string; statusCode: number | null }[];
+      scriptAssetCount: number;
+      scriptTransferBytes: number;
+    }> = [];
+    const mobileViewport = { width: 412, height: 823 };
+
+    for (let sample = 1; sample <= 3; sample += 1) {
+      const context = await browser.newContext({
+        viewport: mobileViewport,
+        deviceScaleFactor: 1.75,
+        isMobile: true,
+        hasTouch: true,
+        serviceWorkers: "block",
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+
+        const coldEditModalRequests: string[] = [];
+        const routeChunkRequests = {
+          persistentLayout: [] as string[],
+          timeControl: [] as string[],
+        };
+        const apiRequests: { path: string; statusCode: number | null }[] = [];
+        const apiRequestIndexes = new Map<Request, number>();
+        page.on("request", (pageRequest) => {
+          const url = pageRequest.url();
+          if (pageRequest.resourceType() === "script") {
+            if (/\/assets\/EditTimestampModal\.container-[^/?]+\.js(?:[?#]|$)/.test(url)) {
+              coldEditModalRequests.push(url);
+            }
+            if (/\/assets\/PersistentLayout-[^/?]+\.js(?:[?#]|$)/.test(url)) {
+              routeChunkRequests.persistentLayout.push(url);
+            }
+            if (/\/assets\/TimeControl\.container-[^/?]+\.js(?:[?#]|$)/.test(url)) {
+              routeChunkRequests.timeControl.push(url);
+            }
+          }
+          const pathname = new URL(url).pathname;
+          if (pathname.startsWith("/api/")) {
+            apiRequestIndexes.set(pageRequest, apiRequests.length);
+            apiRequests.push({ path: pathname, statusCode: null });
+          }
+        });
+        page.on("response", (response) => {
+          const index = apiRequestIndexes.get(response.request());
+          const apiRequest = index === undefined ? undefined : apiRequests[index];
+          if (apiRequest) apiRequest.statusCode = response.status();
+        });
+
+        await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+        await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+          timeout: 30_000,
+        });
+        await page.waitForLoadState("networkidle");
+
+        const browserResources = await page.evaluate(() => {
+          const resources = performance
+            .getEntriesByType("resource")
+            .filter((entry): entry is PerformanceResourceTiming => {
+              return (
+                entry.initiatorType === "script" &&
+                new URL(entry.name).pathname.includes("/assets/")
+              );
+            });
+          const routeChunks = resources.map((resource) => ({
+            path: new URL(resource.name).pathname,
+            startTime: resource.startTime,
+            responseEnd: resource.responseEnd,
+          }));
+          return {
+            scriptAssetCount: resources.length,
+            scriptTransferBytes: resources.reduce(
+              (total, resource) => total + resource.transferSize,
+              0,
+            ),
+            routeChunkTimings: {
+              persistentLayout: routeChunks.filter((resource) =>
+                /\/PersistentLayout-[^/]+\.js$/.test(resource.path),
+              ),
+              timeControl: routeChunks.filter((resource) =>
+                /\/TimeControl\.container-[^/]+\.js$/.test(resource.path),
+              ),
+            },
+          };
+        });
+
+        samples.push({
+          sample,
+          coldEditModalRequests,
+          routeChunkRequests,
+          routeChunkTimings: browserResources.routeChunkTimings,
+          apiRequests,
+          scriptAssetCount: browserResources.scriptAssetCount,
+          scriptTransferBytes: browserResources.scriptTransferBytes,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      profile: { viewport: mobileViewport, deviceScaleFactor: 1.75, cpuThrottleRate: 4 },
+      sampleCount: samples.length,
+      samples,
+    };
+    await attachPerformanceReport(testInfo, "time-control-route-chunk-waterfall.json", report);
+
+    expect(samples).toHaveLength(3);
+    for (const sample of samples) {
+      expect(
+        sample.coldEditModalRequests,
+        "The timestamp editor chunk must stay out of the cold Time Control route",
+      ).toEqual([]);
+      expect(sample.routeChunkRequests.persistentLayout).toHaveLength(1);
+      expect(sample.routeChunkRequests.timeControl).toHaveLength(1);
+      expect(sample.routeChunkTimings.persistentLayout).toHaveLength(1);
+      expect(sample.routeChunkTimings.timeControl).toHaveLength(1);
+      expect(
+        sample.routeChunkTimings.timeControl[0].startTime,
+        `Time Control should start before the layout finishes in sample ${sample.sample}`,
+      ).toBeLessThan(sample.routeChunkTimings.persistentLayout[0].responseEnd);
+      expect(
+        sample.apiRequests.length,
+        `Sample ${sample.sample} should retain the baseline startup request range`,
+      ).toBeGreaterThanOrEqual(11);
+      expect(sample.apiRequests.length).toBeLessThanOrEqual(12);
+      expect(
+        sample.apiRequests.every((apiRequest) => apiRequest.statusCode === 200),
+        `All API requests should return HTTP 200 in sample ${sample.sample}`,
+      ).toBe(true);
+    }
+  });
+
+  test("Worker Portal defers correction modal code until a correction is opened", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const context = await browser.newContext({ viewport });
+    const scriptRequests: string[] = [];
+    try {
+      const page = await context.newPage();
+      page.on("request", (resourceRequest) => {
+        if (resourceRequest.resourceType() === "script") {
+          scriptRequests.push(resourceRequest.url());
+        }
+      });
+
+      await loginFast(page, request, "worker");
+      await page.goto(`${baseUrl}/#/worker-portal`, { waitUntil: "domcontentloaded" });
+      await expect(page.getByRole("heading", { name: "Portal del Trabajador" })).toBeVisible({
+        timeout: 30_000,
+      });
+      await page.waitForLoadState("networkidle");
+
+      const correctionChunkRequests = scriptRequests.filter((url) =>
+        /correctionrequestmodal|\/validation-[^/?]+\.js(?:[?#]|$)/i.test(new URL(url).pathname),
+      );
+      const scriptAssets = scriptRequests.map((url) => new URL(url).pathname.split("/").pop());
+      const report = {
+        capturedAt: new Date().toISOString(),
+        baseUrl,
+        route: "/#/worker-portal",
+        role: "worker",
+        dataMutation: false,
+        scriptAssets,
+        correctionChunkRequests,
+      };
+
+      await attachPerformanceReport(testInfo, "worker-portal-deferred-correction.json", report);
+      expect(
+        correctionChunkRequests,
+        "Worker Portal must not download correction modal or validation code before opening a correction",
+      ).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("Time Control initial sync records phase timings and remains blocking", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    test.setTimeout(180_000);
+    const mobileViewport = { width: 412, height: 823 };
+    const diagnosticRunId = process.env.PERFORMANCE_DIAGNOSTIC_RUN_ID ?? null;
+    if (diagnosticRunId && !/^[a-z0-9-]{1,64}$/i.test(diagnosticRunId)) {
+      throw new Error(
+        "PERFORMANCE_DIAGNOSTIC_RUN_ID must contain only letters, digits and hyphens",
+      );
+    }
+    const samples: Array<Record<string, unknown>> = [];
+    const fcpSamples: number[] = [];
+    const lcpSamples: number[] = [];
+
+    for (let sample = 1; sample <= 3; sample += 1) {
+      const context = await browser.newContext({
+        viewport: mobileViewport,
+        deviceScaleFactor: 1,
+        isMobile: true,
+        hasTouch: true,
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        await page.addInitScript(
+          ({ probeRunId, sampleIndex }) => {
+            type SyncPhaseTiming = {
+              phase: "validation" | "cache-check" | "sync-step";
+              name: string;
+              startedAtMs: number;
+              durationMs: number;
+              outcome: "success" | "failure";
+            };
+            type LongAnimationFrameScript = {
+              startTimeMs: number;
+              durationMs: number;
+              executionStartMs: number;
+              sourcePath: string | null;
+              functionName: string;
+              sourceCharPosition: number;
+              invokerType: string;
+              forcedStyleAndLayoutDurationMs: number;
+            };
+            type LongAnimationFrameDiagnostic = {
+              startTimeMs: number;
+              durationMs: number;
+              blockingDurationMs: number;
+              scripts: LongAnimationFrameScript[];
+            };
+            type OverlayPaintAudit = {
+              initialLastSyncTime: string | null;
+              timeOriginEpochMs: number;
+              fcpEntries: number[];
+              lcpEntries: Array<{
+                startTimeMs: number;
+                size: number;
+                tag: string | null;
+                className: string | null;
+              }>;
+              overlayVisibleAtMs: number | null;
+              overlayHiddenAtMs: number | null;
+              overlayVisibleAtEpochMs: number | null;
+              overlayHiddenAtEpochMs: number | null;
+              overlayCoverage: {
+                coversViewport: boolean;
+                hitTestBelongsToOverlay: boolean;
+              } | null;
+              loadingIndicatorCount: number | null;
+              progressVisible: boolean;
+              syncStepChanges: Array<{
+                atEpochMs: number;
+                step: string;
+                progressPercent: number | null;
+              }>;
+              syncPhaseTimings: SyncPhaseTiming[];
+              readinessQueryTimings: Array<{
+                startedAtMs: number;
+                resolvedAtMs: number;
+                outcome: "success" | "failure";
+              }>;
+              readinessApiClientStages: Array<{ stage: string; atMs: number }>;
+              validationStages: Array<{ stage: string; atMs: number }>;
+              longTaskEntries: Array<{ startTimeMs: number; durationMs: number }>;
+              longAnimationFrameSupported: boolean;
+              longAnimationFrameEntries: LongAnimationFrameDiagnostic[];
+              rootAnimationName: string | null;
+              rootAnimationDuration: string | null;
+              statusAnimationName: string | null;
+              activeAnimations: Array<{
+                tag: string;
+                className: string;
+                animationName: string;
+                duration: string;
+              }>;
+            };
+            const audit: OverlayPaintAudit = {
+              initialLastSyncTime: localStorage.getItem("lastSyncTime"),
+              timeOriginEpochMs: performance.timeOrigin,
+              fcpEntries: [],
+              lcpEntries: [],
+              overlayVisibleAtMs: null,
+              overlayHiddenAtMs: null,
+              overlayVisibleAtEpochMs: null,
+              overlayHiddenAtEpochMs: null,
+              overlayCoverage: null,
+              loadingIndicatorCount: null,
+              progressVisible: false,
+              syncStepChanges: [],
+              syncPhaseTimings: [],
+              readinessQueryTimings: [],
+              readinessApiClientStages: [],
+              validationStages: [],
+              longTaskEntries: [],
+              longAnimationFrameSupported: false,
+              longAnimationFrameEntries: [],
+              rootAnimationName: null,
+              rootAnimationDuration: null,
+              statusAnimationName: null,
+              activeAnimations: [],
+            };
+            (
+              window as Window & { __syncOverlayPaintAudit?: OverlayPaintAudit }
+            ).__syncOverlayPaintAudit = audit;
+            (
+              window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean }
+            ).__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+            const diagnosticsEnabled =
+              (window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean })
+                .__PORTAL_SYNC_PERF_DIAGNOSTICS__ === true;
+            if (probeRunId) {
+              const diagnosticsWindow = window as Window & {
+                __PORTAL_SYNC_PERF_RUN_ID__?: string;
+                __PORTAL_SYNC_PERF_SAMPLE__?: number;
+              };
+              diagnosticsWindow.__PORTAL_SYNC_PERF_RUN_ID__ = probeRunId;
+              diagnosticsWindow.__PORTAL_SYNC_PERF_SAMPLE__ = sampleIndex;
+            }
+            window.addEventListener("portal:sync-phase", (event) => {
+              audit.syncPhaseTimings.push((event as CustomEvent<SyncPhaseTiming>).detail);
+            });
+            window.addEventListener("portal:readiness-query", (event) => {
+              audit.readinessQueryTimings.push(
+                (event as CustomEvent<(typeof audit.readinessQueryTimings)[number]>).detail,
+              );
+            });
+            window.addEventListener("portal:readiness-api-client-stage", (event) => {
+              audit.readinessApiClientStages.push(
+                (event as CustomEvent<(typeof audit.readinessApiClientStages)[number]>).detail,
+              );
+            });
+            window.addEventListener("portal:instance-validation-stage", (event) => {
+              audit.validationStages.push(
+                (event as CustomEvent<(typeof audit.validationStages)[number]>).detail,
+              );
+            });
+
+            new PerformanceObserver((list) => {
+              audit.fcpEntries.push(
+                ...list
+                  .getEntries()
+                  .filter((entry) => entry.name === "first-contentful-paint")
+                  .map((entry) => entry.startTime),
+              );
+            }).observe({ type: "paint", buffered: true });
+            new PerformanceObserver((list) => {
+              audit.lcpEntries.push(
+                ...list.getEntries().map((entry) => {
+                  const candidate = entry as PerformanceEntry & {
+                    size: number;
+                    element: Element | null;
+                  };
+                  const elementClassName = candidate.element?.className;
+                  return {
+                    startTimeMs: candidate.startTime,
+                    size: candidate.size,
+                    tag: candidate.element?.tagName ?? null,
+                    className:
+                      typeof elementClassName === "string"
+                        ? elementClassName
+                        : (candidate.element?.getAttribute("class") ?? null),
+                  };
+                }),
+              );
+            }).observe({ type: "largest-contentful-paint", buffered: true });
+            if (PerformanceObserver.supportedEntryTypes.includes("longtask")) {
+              new PerformanceObserver((list) => {
+                audit.longTaskEntries.push(
+                  ...list.getEntries().map((entry) => ({
+                    startTimeMs: Number(entry.startTime.toFixed(2)),
+                    durationMs: Number(entry.duration.toFixed(2)),
+                  })),
+                );
+              }).observe({ type: "longtask", buffered: true });
+            }
+            if (
+              diagnosticsEnabled &&
+              PerformanceObserver.supportedEntryTypes.includes("long-animation-frame")
+            ) {
+              try {
+                new PerformanceObserver((list) => {
+                  audit.longAnimationFrameEntries.push(
+                    ...list.getEntries().map((entry) => {
+                      const frame = entry as PerformanceEntry & {
+                        blockingDuration?: number;
+                        scripts?: Array<{
+                          startTime: number;
+                          duration: number;
+                          executionStart: number;
+                          sourceURL: string;
+                          sourceFunctionName: string;
+                          sourceCharPosition: number;
+                          invokerType: string;
+                          forcedStyleAndLayoutDuration: number;
+                        }>;
+                      };
+                      const scripts = (frame.scripts ?? []).map((script) => {
+                        let sourcePath: string | null = null;
+                        if (script.sourceURL) {
+                          try {
+                            sourcePath = new URL(script.sourceURL, window.location.href).pathname;
+                          } catch {
+                            sourcePath = null;
+                          }
+                        }
+                        const functionName = /^[a-z_$][\w$]{0,80}$/i.test(script.sourceFunctionName)
+                          ? script.sourceFunctionName
+                          : "";
+                        const invokerType = /^[a-z\d_-]{1,64}$/i.test(script.invokerType)
+                          ? script.invokerType
+                          : "unknown";
+                        return {
+                          startTimeMs: Number(script.startTime.toFixed(2)),
+                          durationMs: Number(script.duration.toFixed(2)),
+                          executionStartMs: Number(script.executionStart.toFixed(2)),
+                          sourcePath,
+                          functionName,
+                          sourceCharPosition: Number.isInteger(script.sourceCharPosition)
+                            ? script.sourceCharPosition
+                            : -1,
+                          invokerType,
+                          forcedStyleAndLayoutDurationMs: Number(
+                            script.forcedStyleAndLayoutDuration.toFixed(2),
+                          ),
+                        };
+                      });
+                      return {
+                        startTimeMs: Number(entry.startTime.toFixed(2)),
+                        durationMs: Number(entry.duration.toFixed(2)),
+                        blockingDurationMs: Number((frame.blockingDuration ?? 0).toFixed(2)),
+                        scripts,
+                      };
+                    }),
+                  );
+                }).observe({ type: "long-animation-frame", buffered: true });
+                audit.longAnimationFrameSupported = true;
+              } catch {
+                audit.longAnimationFrameSupported = false;
+              }
+            }
+
+            let wasVisible = false;
+            const observeOverlay = () => {
+              const status = Array.from(document.querySelectorAll("p")).find(
+                (element) =>
+                  element.textContent?.trim() ===
+                  "Establishing technical handshake • Validating integrity...",
+              );
+              const style = status ? getComputedStyle(status) : null;
+              const isVisible = Boolean(
+                status &&
+                style?.display !== "none" &&
+                style?.visibility !== "hidden" &&
+                status.getClientRects().length > 0,
+              );
+              let root: HTMLElement | null = status ? (status as HTMLElement) : null;
+              while (root && getComputedStyle(root).position !== "fixed") {
+                root = root.parentElement;
+              }
+              if (root) {
+                const spans = Array.from(root.querySelectorAll("span"));
+                const step = spans
+                  .map((element) => element.textContent?.trim() ?? "")
+                  .find((text) =>
+                    /^(Autenticando acceso|Preparando entorno seguro|Sincronizando |Completado)/.test(
+                      text,
+                    ),
+                  );
+                const progressText = spans
+                  .map((element) => element.textContent?.trim() ?? "")
+                  .find((text) => /^\d+%$/.test(text));
+                if (step) {
+                  const progressPercent = progressText ? Number.parseInt(progressText, 10) : null;
+                  const previous = audit.syncStepChanges.at(-1);
+                  if (previous?.step !== step || previous.progressPercent !== progressPercent) {
+                    audit.syncStepChanges.push({
+                      atEpochMs: performance.timeOrigin + performance.now(),
+                      step,
+                      progressPercent,
+                    });
+                  }
+                }
+              }
+              if (isVisible && !wasVisible && status) {
+                audit.overlayVisibleAtMs = performance.now();
+                audit.overlayVisibleAtEpochMs = performance.timeOrigin + performance.now();
+                if (root) {
+                  const rect = root.getBoundingClientRect();
+                  const centralTarget = document.elementFromPoint(
+                    window.innerWidth / 2,
+                    window.innerHeight / 2,
+                  );
+                  audit.overlayCoverage = {
+                    coversViewport:
+                      rect.left <= 0 &&
+                      rect.top <= 0 &&
+                      rect.right >= window.innerWidth &&
+                      rect.bottom >= window.innerHeight,
+                    hitTestBelongsToOverlay: Boolean(centralTarget && root.contains(centralTarget)),
+                  };
+                  audit.loadingIndicatorCount = root.querySelectorAll(
+                    '[role="status"][aria-label="Cargando"]',
+                  ).length;
+                  audit.progressVisible = Array.from(root.querySelectorAll("span")).some(
+                    (element) => /^\d+%$/.test(element.textContent?.trim() ?? ""),
+                  );
+                  const rootStyle = getComputedStyle(root);
+                  audit.rootAnimationName = rootStyle.animationName;
+                  audit.rootAnimationDuration = rootStyle.animationDuration;
+                  audit.statusAnimationName = getComputedStyle(status).animationName;
+                  audit.activeAnimations = Array.from(root.querySelectorAll("*")).flatMap(
+                    (element) => {
+                      const animatedStyle = getComputedStyle(element);
+                      return animatedStyle.animationName
+                        .split(",")
+                        .map((animationName) => animationName.trim())
+                        .filter((animationName) => animationName && animationName !== "none")
+                        .map((animationName) => ({
+                          tag: element.tagName,
+                          className:
+                            typeof element.className === "string"
+                              ? element.className
+                              : (element.getAttribute("class") ?? ""),
+                          animationName,
+                          duration: animatedStyle.animationDuration,
+                        }));
+                    },
+                  );
+                }
+                wasVisible = true;
+              } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
+                audit.overlayHiddenAtMs = performance.now();
+                audit.overlayHiddenAtEpochMs = performance.timeOrigin + performance.now();
+              }
+            };
+            new MutationObserver(observeOverlay).observe(document, {
+              attributes: true,
+              attributeFilter: ["class", "hidden", "style"],
+              childList: true,
+              subtree: true,
+            });
+            observeOverlay();
+          },
+          { probeRunId: diagnosticRunId, sampleIndex: sample },
+        );
+
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        const navigationStartedAtEpochMs = Date.now();
+        const apiRequestTimings = new Map<
+          Request,
+          {
+            method: string;
+            path: string;
+            startedAtMs: number;
+            responseAtMs: number | null;
+            finishedAtMs: number | null;
+            statusCode: number | null;
+            responseBodyBytes: number | null;
+            responseRowCount: number | null;
+            responseHasClosedHandover: boolean | null;
+            diagnosticProbeMatched: boolean | null;
+            failure: string | null;
+            queryDimensions: {
+              pageSize: string | null;
+              hasEmployeeFilter: boolean;
+              hasDateRange: boolean;
+              activeEmployeeFilter: boolean | null;
+            } | null;
+          }
+        >();
+        const responseBodyReads: Promise<void>[] = [];
+        const requestOffset = () => Number((Date.now() - navigationStartedAtEpochMs).toFixed(2));
+        page.on("request", (request) => {
+          const url = new URL(request.url());
+          if (!url.pathname.startsWith("/api/")) return;
+          apiRequestTimings.set(request, {
+            method: request.method(),
+            path: url.pathname,
+            startedAtMs: requestOffset(),
+            responseAtMs: null,
+            finishedAtMs: null,
+            statusCode: null,
+            responseBodyBytes: null,
+            responseRowCount: null,
+            responseHasClosedHandover: null,
+            diagnosticProbeMatched:
+              url.pathname === "/api/health/ready" && diagnosticRunId
+                ? url.searchParams.get("performance_probe") === `${diagnosticRunId}-s${sample}`
+                : null,
+            failure: null,
+            queryDimensions:
+              url.pathname === "/api/records"
+                ? {
+                    pageSize: url.searchParams.get("pageSize"),
+                    hasEmployeeFilter: url.searchParams.has("employeeId"),
+                    hasDateRange: url.searchParams.has("desde") && url.searchParams.has("hasta"),
+                    activeEmployeeFilter: null,
+                  }
+                : url.pathname === "/api/employees"
+                  ? {
+                      pageSize: null,
+                      hasEmployeeFilter: false,
+                      hasDateRange: false,
+                      activeEmployeeFilter: url.searchParams.get("status") === "Activo",
+                    }
+                  : null,
+          });
+        });
+        page.on("response", (response) => {
+          const timing = apiRequestTimings.get(response.request());
+          if (!timing) return;
+          timing.responseAtMs = requestOffset();
+          timing.statusCode = response.status();
+          if (
+            timing.path === "/api/health" ||
+            timing.path === "/api/health/ready" ||
+            timing.path === "/api/employees" ||
+            timing.path === "/api/employees/clocking-options" ||
+            timing.path === "/api/users" ||
+            timing.path === "/api/shift-reports"
+          ) {
+            responseBodyReads.push(
+              response.body().then(
+                (body) => {
+                  timing.responseBodyBytes = body.byteLength;
+                  if (timing.path === "/api/employees/clocking-options") {
+                    try {
+                      const payload = JSON.parse(new TextDecoder().decode(body)) as unknown;
+                      timing.responseRowCount = Array.isArray(payload) ? payload.length : null;
+                    } catch {
+                      timing.responseRowCount = null;
+                    }
+                  }
+                  if (timing.path === "/api/shift-reports") {
+                    try {
+                      const payload = JSON.parse(new TextDecoder().decode(body)) as unknown;
+                      const reports = Array.isArray(payload)
+                        ? payload
+                        : payload &&
+                            typeof payload === "object" &&
+                            "data" in payload &&
+                            Array.isArray(payload.data)
+                          ? payload.data
+                          : [];
+                      timing.responseHasClosedHandover = reports.some((report: unknown) => {
+                        if (!report || typeof report !== "object") return false;
+                        return (
+                          "status" in report &&
+                          report.status === "closed" &&
+                          "endTime" in report &&
+                          Boolean(report.endTime)
+                        );
+                      });
+                    } catch {
+                      timing.responseHasClosedHandover = null;
+                    }
+                  }
+                },
+                () => undefined,
+              ),
+            );
+          }
+        });
+        page.on("requestfinished", (request) => {
+          const timing = apiRequestTimings.get(request);
+          if (timing) timing.finishedAtMs = requestOffset();
+        });
+        page.on("requestfailed", (request) => {
+          const timing = apiRequestTimings.get(request);
+          if (!timing) return;
+          timing.finishedAtMs = requestOffset();
+          timing.failure = request.failure()?.errorText ?? "request failed";
+        });
+        await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+        const syncOverlay = page.getByText(
+          "Establishing technical handshake • Validating integrity...",
+          { exact: true },
+        );
+        await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+          timeout: 30_000,
+        });
+        await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
+        await page.evaluate(
+          () =>
+            new Promise<void>((resolve) => {
+              requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+            }),
+        );
+        const metrics = await page.evaluate(
+          ({ probeRunId, sampleIndex }) => {
+            const audit = (
+              window as Window & {
+                __syncOverlayPaintAudit?: {
+                  initialLastSyncTime: string | null;
+                  timeOriginEpochMs: number;
+                  fcpEntries: number[];
+                  lcpEntries: Array<{
+                    startTimeMs: number;
+                    size: number;
+                    tag: string | null;
+                    className: string | null;
+                  }>;
+                  overlayVisibleAtMs: number | null;
+                  overlayHiddenAtMs: number | null;
+                  overlayVisibleAtEpochMs: number | null;
+                  overlayHiddenAtEpochMs: number | null;
+                  overlayCoverage: {
+                    coversViewport: boolean;
+                    hitTestBelongsToOverlay: boolean;
+                  } | null;
+                  loadingIndicatorCount: number | null;
+                  progressVisible: boolean;
+                  syncStepChanges: Array<{
+                    atEpochMs: number;
+                    step: string;
+                    progressPercent: number | null;
+                  }>;
+                  syncPhaseTimings: Array<{
+                    phase: "validation" | "cache-check" | "sync-step";
+                    name: string;
+                    startedAtMs: number;
+                    durationMs: number;
+                    outcome: "success" | "failure";
+                  }>;
+                  readinessQueryTimings: Array<{
+                    startedAtMs: number;
+                    resolvedAtMs: number;
+                    outcome: "success" | "failure";
+                  }>;
+                  readinessApiClientStages: Array<{ stage: string; atMs: number }>;
+                  validationStages: Array<{ stage: string; atMs: number }>;
+                  longTaskEntries: Array<{ startTimeMs: number; durationMs: number }>;
+                  longAnimationFrameSupported: boolean;
+                  longAnimationFrameEntries: Array<{
+                    startTimeMs: number;
+                    durationMs: number;
+                    blockingDurationMs: number;
+                    scripts: Array<{
+                      startTimeMs: number;
+                      durationMs: number;
+                      executionStartMs: number;
+                      sourcePath: string | null;
+                      functionName: string;
+                      sourceCharPosition: number;
+                      invokerType: string;
+                      forcedStyleAndLayoutDurationMs: number;
+                    }>;
+                  }>;
+                  rootAnimationName: string | null;
+                  rootAnimationDuration: string | null;
+                  statusAnimationName: string | null;
+                  activeAnimations: Array<{
+                    tag: string;
+                    className: string;
+                    animationName: string;
+                    duration: string;
+                  }>;
+                };
+              }
+            ).__syncOverlayPaintAudit;
+            const lastSyncTime = localStorage.getItem("lastSyncTime");
+            if (!audit || !lastSyncTime) throw new Error("Initial sync paint audit is incomplete");
+            const readinessResourceTimings = performance
+              .getEntriesByType("resource")
+              .flatMap((entry) => {
+                const timing = entry as PerformanceResourceTiming;
+                const url = new URL(timing.name);
+                if (url.pathname !== "/api/health/ready") return [];
+                if (probeRunId) {
+                  if (url.searchParams.get("performance_probe") !== `${probeRunId}-s${sampleIndex}`)
+                    return [];
+                } else if (url.searchParams.has("performance_probe")) {
+                  return [];
+                }
+                return [
+                  {
+                    fetchStartMs: Number(timing.fetchStart.toFixed(2)),
+                    requestStartMs: Number(timing.requestStart.toFixed(2)),
+                    responseStartMs: Number(timing.responseStart.toFixed(2)),
+                    responseEndMs: Number(timing.responseEnd.toFixed(2)),
+                  },
+                ];
+              });
+            return {
+              initialLastSyncTime: audit.initialLastSyncTime,
+              timeOriginEpochMs: audit.timeOriginEpochMs,
+              lastSyncTimePresent: Boolean(lastSyncTime),
+              fcpMs: audit.fcpEntries[0] ?? null,
+              lcpEntries: audit.lcpEntries,
+              overlayVisibleAtMs: audit.overlayVisibleAtMs,
+              overlayHiddenAtMs: audit.overlayHiddenAtMs,
+              overlayVisibleAtEpochMs: audit.overlayVisibleAtEpochMs,
+              overlayHiddenAtEpochMs: audit.overlayHiddenAtEpochMs,
+              overlayCoverage: audit.overlayCoverage,
+              loadingIndicatorCount: audit.loadingIndicatorCount,
+              progressVisible: audit.progressVisible,
+              syncStepChanges: audit.syncStepChanges,
+              syncPhaseTimings: audit.syncPhaseTimings,
+              readinessQueryTimings: audit.readinessQueryTimings,
+              readinessApiClientStages: audit.readinessApiClientStages,
+              validationStages: audit.validationStages,
+              longTaskEntries: audit.longTaskEntries,
+              longAnimationFrameSupported: audit.longAnimationFrameSupported,
+              longAnimationFrameEntries: audit.longAnimationFrameEntries,
+              readinessResourceTimings,
+              overlayVisibleDurationMs:
+                audit.overlayVisibleAtMs !== null && audit.overlayHiddenAtMs !== null
+                  ? Number((audit.overlayHiddenAtMs - audit.overlayVisibleAtMs).toFixed(2))
+                  : null,
+              rootAnimationName: audit.rootAnimationName,
+              rootAnimationDuration: audit.rootAnimationDuration,
+              statusAnimationName: audit.statusAnimationName,
+              activeAnimations: audit.activeAnimations,
+              syncReadyAtMs: performance.now(),
+            };
+          },
+          { probeRunId: diagnosticRunId, sampleIndex: sample },
+        );
+        const activeEmployeeProbe = captureActiveEmployeeFilterProbe
+          ? await page.evaluate(async () => {
+              const token = sessionStorage.getItem("authToken");
+              if (!token) return { status: null, responseBodyBytes: null };
+              const response = await fetch("/api/employees?status=Activo", {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              return {
+                status: response.status,
+                responseBodyBytes: (await response.arrayBuffer()).byteLength,
+              };
+            })
+          : null;
+        const employeeClockingProjectionProbe = captureEmployeeClockingProjectionProbe
+          ? await page.evaluate(async () => {
+              const token = sessionStorage.getItem("authToken");
+              if (!token)
+                return {
+                  status: null,
+                  employeeCount: null,
+                  responseBodyBytes: null,
+                  projectedResponseBodyBytes: null,
+                };
+              const response = await fetch("/api/employees", {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              const rows = (await response.json()) as unknown;
+              if (!Array.isArray(rows))
+                return {
+                  status: response.status,
+                  employeeCount: null,
+                  responseBodyBytes: null,
+                  projectedResponseBodyBytes: null,
+                };
+              const clockingOptions = rows.map((value: unknown) => {
+                if (!value || typeof value !== "object") return {};
+                const employee = value as Record<string, unknown>;
+                return {
+                  id: employee.id,
+                  name: employee.name,
+                  position: employee.position,
+                  area: employee.area,
+                  workdayType: employee.workdayType,
+                  status: employee.status,
+                };
+              });
+              return {
+                status: response.status,
+                employeeCount: rows.length,
+                responseBodyBytes: new TextEncoder().encode(JSON.stringify(rows)).byteLength,
+                projectedResponseBodyBytes: new TextEncoder().encode(
+                  JSON.stringify(clockingOptions),
+                ).byteLength,
+              };
+            })
+          : null;
+        await Promise.all(responseBodyReads);
+        expect(metrics.initialLastSyncTime).toBeNull();
+        expect(metrics.lastSyncTimePresent).toBe(true);
+        expect(metrics.overlayVisibleAtMs).not.toBeNull();
+        expect(metrics.overlayHiddenAtMs).not.toBeNull();
+        if (!metrics.overlayCoverage)
+          throw new Error("Initial sync overlay coverage was not captured");
+        const overlayCoverage = metrics.overlayCoverage;
+        expect(overlayCoverage.coversViewport).toBe(true);
+        expect(overlayCoverage.hitTestBelongsToOverlay).toBe(true);
+        expect(metrics.loadingIndicatorCount).toBe(2);
+        expect(metrics.progressVisible).toBe(true);
+        if (metrics.fcpMs === null) throw new Error("First Contentful Paint was not recorded");
+        expect(metrics.lcpEntries.length).toBeGreaterThan(0);
+        expect(metrics.rootAnimationName).toBeTruthy();
+        expect(metrics.rootAnimationDuration).toBeTruthy();
+        expect(metrics.statusAnimationName).toBeTruthy();
+        expect(
+          metrics.syncStepChanges.some((change) => change.step.startsWith("Sincronizando ")),
+        ).toBe(true);
+        expect(metrics.syncPhaseTimings.map(({ phase, name }) => [phase, name])).toEqual([
+          ["validation", "validateInstanceId"],
+          ["sync-step", "Usuarios"],
+          ["sync-step", "Empleados"],
+          ["sync-step", "Configuraciones"],
+          ["sync-step", "Horarios"],
+          ["sync-step", "Medidores"],
+        ]);
+        expect(
+          metrics.syncPhaseTimings.every(
+            ({ durationMs, outcome }) =>
+              Number.isFinite(durationMs) && durationMs >= 0 && outcome === "success",
+          ),
+        ).toBe(true);
+        expect(apiRequestTimings.size).toBeGreaterThan(0);
+        const readinessRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/health/ready",
+        );
+        const detailedHealthRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/health",
+        );
+        expect(readinessRequests).toHaveLength(1);
+        expect(readinessRequests[0]?.statusCode).toBe(200);
+        expect(readinessRequests[0]?.responseBodyBytes).not.toBeNull();
+        expect(readinessRequests[0]?.responseBodyBytes ?? Infinity).toBeLessThan(512);
+        expect(readinessRequests[0]?.diagnosticProbeMatched).toBe(diagnosticRunId ? true : null);
+        expect(metrics.readinessResourceTimings).toHaveLength(1);
+        expect(metrics.readinessQueryTimings).toHaveLength(1);
+        expect(metrics.readinessApiClientStages).toHaveLength(2);
+        expect(metrics.validationStages).toHaveLength(1);
+        const readinessTiming = metrics.readinessResourceTimings[0];
+        const readinessQueryTiming = metrics.readinessQueryTimings[0];
+        const apiClientFetchResolved = metrics.readinessApiClientStages.find(
+          ({ stage }) => stage === "fetch-resolved",
+        );
+        const apiClientBodyResolved = metrics.readinessApiClientStages.find(
+          ({ stage }) => stage === "read-body-resolved",
+        );
+        const validationStage = metrics.validationStages.find(
+          ({ stage }) => stage === "readiness-query-resolved",
+        );
+        const validationTiming = metrics.syncPhaseTimings.find(
+          ({ phase, name }) => phase === "validation" && name === "validateInstanceId",
+        );
+        if (
+          !readinessTiming ||
+          !readinessQueryTiming ||
+          !apiClientFetchResolved ||
+          !apiClientBodyResolved ||
+          !validationStage ||
+          !validationTiming
+        )
+          throw new Error("Validation and readiness browser timings are incomplete");
+        expect(
+          [
+            readinessTiming.fetchStartMs,
+            readinessTiming.requestStartMs,
+            readinessTiming.responseStartMs,
+            readinessTiming.responseEndMs,
+            readinessQueryTiming.startedAtMs,
+            readinessQueryTiming.resolvedAtMs,
+            apiClientFetchResolved.atMs,
+            apiClientBodyResolved.atMs,
+            validationStage.atMs,
+            validationTiming.startedAtMs,
+            validationTiming.durationMs,
+          ].every(Number.isFinite),
+        ).toBe(true);
+        expect(readinessQueryTiming.outcome).toBe("success");
+        expect(apiClientBodyResolved.atMs).toBeGreaterThanOrEqual(apiClientFetchResolved.atMs);
+        expect(readinessQueryTiming.resolvedAtMs).toBeGreaterThanOrEqual(
+          apiClientBodyResolved.atMs,
+        );
+        expect(readinessQueryTiming.resolvedAtMs).toBeGreaterThanOrEqual(
+          readinessTiming.responseEndMs,
+        );
+        expect(validationStage.atMs).toBeGreaterThanOrEqual(readinessQueryTiming.resolvedAtMs);
+        expect(readinessTiming.requestStartMs).toBeGreaterThanOrEqual(readinessTiming.fetchStartMs);
+        expect(readinessTiming.responseStartMs).toBeGreaterThanOrEqual(
+          readinessTiming.requestStartMs,
+        );
+        expect(readinessTiming.responseEndMs).toBeGreaterThanOrEqual(
+          readinessTiming.responseStartMs,
+        );
+        const validationEndMs = validationTiming.startedAtMs + validationTiming.durationMs;
+        const validationLongTasks = metrics.longTaskEntries
+          .map((entry) => ({
+            startTimeMs: entry.startTimeMs,
+            durationMs: entry.durationMs,
+            overlapMs: Number(
+              Math.max(
+                0,
+                Math.min(entry.startTimeMs + entry.durationMs, validationEndMs) -
+                  Math.max(entry.startTimeMs, validationTiming.startedAtMs),
+              ).toFixed(2),
+            ),
+          }))
+          .filter((entry) => entry.overlapMs > 0);
+        expect(metrics.longAnimationFrameSupported).toBe(true);
+        const measureOverlapMs = (
+          startTimeMs: number,
+          durationMs: number,
+          intervalStartMs: number,
+          intervalEndMs: number,
+        ): number =>
+          Number(
+            Math.max(
+              0,
+              Math.min(startTimeMs + durationMs, intervalEndMs) -
+                Math.max(startTimeMs, intervalStartMs),
+            ).toFixed(2),
+          );
+        const bodyReadStartMs = apiClientFetchResolved.atMs;
+        const bodyReadEndMs = apiClientBodyResolved.atMs;
+        const longAnimationFramesDuringValidation = metrics.longAnimationFrameEntries
+          .map((entry) => {
+            const overlapMs = measureOverlapMs(
+              entry.startTimeMs,
+              entry.durationMs,
+              validationTiming.startedAtMs,
+              validationEndMs,
+            );
+            return {
+              startTimeMs: entry.startTimeMs,
+              durationMs: entry.durationMs,
+              blockingDurationMs: entry.blockingDurationMs,
+              overlapMs,
+              scripts: entry.scripts
+                .map((script) => ({
+                  ...script,
+                  overlapMs: measureOverlapMs(
+                    script.startTimeMs,
+                    script.durationMs,
+                    validationTiming.startedAtMs,
+                    validationEndMs,
+                  ),
+                }))
+                .filter((script) => script.overlapMs > 0),
+            };
+          })
+          .filter((entry) => entry.overlapMs > 0);
+        const longAnimationFramesDuringBodyRead = metrics.longAnimationFrameEntries
+          .map((entry) => {
+            const overlapMs = measureOverlapMs(
+              entry.startTimeMs,
+              entry.durationMs,
+              bodyReadStartMs,
+              bodyReadEndMs,
+            );
+            return {
+              startTimeMs: entry.startTimeMs,
+              durationMs: entry.durationMs,
+              blockingDurationMs: entry.blockingDurationMs,
+              overlapMs,
+              scripts: entry.scripts
+                .map((script) => ({
+                  ...script,
+                  overlapMs: measureOverlapMs(
+                    script.startTimeMs,
+                    script.durationMs,
+                    bodyReadStartMs,
+                    bodyReadEndMs,
+                  ),
+                }))
+                .filter((script) => script.overlapMs > 0),
+            };
+          })
+          .filter((entry) => entry.overlapMs > 0);
+        const readinessMainThreadAttribution = {
+          longAnimationFrameSupported: metrics.longAnimationFrameSupported,
+          framesDuringValidation: longAnimationFramesDuringValidation,
+          framesDuringBodyRead: longAnimationFramesDuringBodyRead,
+        };
+        const attributedSourcePaths = [
+          ...longAnimationFramesDuringValidation,
+          ...longAnimationFramesDuringBodyRead,
+        ].flatMap((frame) => frame.scripts.map((script) => script.sourcePath).filter(Boolean));
+        expect(
+          attributedSourcePaths.every(
+            (sourcePath) =>
+              sourcePath?.startsWith("/") &&
+              !sourcePath.includes("://") &&
+              !sourcePath.includes("?") &&
+              !sourcePath.includes("#"),
+          ),
+        ).toBe(true);
+        const readinessBreakdown = {
+          validationStartedAtMs: validationTiming.startedAtMs,
+          validationDurationMs: validationTiming.durationMs,
+          browserFetchStartMs: readinessTiming.fetchStartMs,
+          browserResponseEndMs: readinessTiming.responseEndMs,
+          requestStartOffsetFromValidationMs: Number(
+            (readinessTiming.fetchStartMs - validationTiming.startedAtMs).toFixed(2),
+          ),
+          browserQueueBeforeRequestMs: Number(
+            (readinessTiming.requestStartMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          browserTimeToFirstByteMs: Number(
+            (readinessTiming.responseStartMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          apiClientFetchResolvedMs: apiClientFetchResolved.atMs,
+          apiClientFetchResolvedAfterRequestMs: Number(
+            (apiClientFetchResolved.atMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          apiClientFetchResolvedVsResponseEndMs: Number(
+            (apiClientFetchResolved.atMs - readinessTiming.responseEndMs).toFixed(2),
+          ),
+          apiClientReadBodyMs: Number(
+            (apiClientBodyResolved.atMs - apiClientFetchResolved.atMs).toFixed(2),
+          ),
+          apiClientReturnAfterBodyMs: Number(
+            (readinessQueryTiming.resolvedAtMs - apiClientBodyResolved.atMs).toFixed(2),
+          ),
+          browserRequestMs: Number(
+            (readinessTiming.responseEndMs - readinessTiming.fetchStartMs).toFixed(2),
+          ),
+          queryFunctionAfterResponseMs: Number(
+            (readinessQueryTiming.resolvedAtMs - readinessTiming.responseEndMs).toFixed(2),
+          ),
+          queryCacheWaitAfterFunctionMs: Number(
+            (validationStage.atMs - readinessQueryTiming.resolvedAtMs).toFixed(2),
+          ),
+          validationAfterQueryCacheMs: Number((validationEndMs - validationStage.atMs).toFixed(2)),
+          validationAfterResponseMs: Number(
+            (validationEndMs - readinessTiming.responseEndMs).toFixed(2),
+          ),
+          longTaskCountDuringValidation: validationLongTasks.length,
+          longTaskDurationMsDuringValidation: Number(
+            validationLongTasks.reduce((total, entry) => total + entry.overlapMs, 0).toFixed(2),
+          ),
+          longTasksDuringValidation: validationLongTasks,
+        };
+        expect(detailedHealthRequests).toHaveLength(0);
+        const employeeRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/employees",
+        );
+        if (!requireClockingOptionsEndpoint) expect(employeeRequests.length).toBeGreaterThan(0);
+        expect(
+          employeeRequests.every((timing) => timing.responseBodyBytes !== null),
+          "the performance report should retain only the employee response byte count",
+        ).toBe(true);
+        const clockingOptionsRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/employees/clocking-options",
+        );
+        if (requireClockingOptionsEndpoint) {
+          expect(employeeRequests).toHaveLength(0);
+          expect(clockingOptionsRequests).toHaveLength(1);
+          expect(clockingOptionsRequests[0]?.statusCode).toBe(200);
+          expect(clockingOptionsRequests[0]?.responseBodyBytes).not.toBeNull();
+          expect(clockingOptionsRequests[0]?.responseRowCount).toBeGreaterThan(0);
+        }
+        if (activeEmployeeProbe) {
+          expect(activeEmployeeProbe.status).toBe(200);
+          expect(activeEmployeeProbe.responseBodyBytes).not.toBeNull();
+          const activeEmployeeRequests = employeeRequests.filter(
+            (timing) => timing.queryDimensions?.activeEmployeeFilter === true,
+          );
+          expect(activeEmployeeRequests).toHaveLength(1);
+          expect(activeEmployeeRequests[0]?.responseBodyBytes).toBe(
+            activeEmployeeProbe.responseBodyBytes,
+          );
+        }
+        if (employeeClockingProjectionProbe) {
+          expect(employeeClockingProjectionProbe.status).toBe(200);
+          expect(employeeClockingProjectionProbe.responseBodyBytes).not.toBeNull();
+          expect(employeeClockingProjectionProbe.projectedResponseBodyBytes).not.toBeNull();
+          expect(employeeClockingProjectionProbe.projectedResponseBodyBytes).toBeLessThan(
+            employeeClockingProjectionProbe.responseBodyBytes ?? Infinity,
+          );
+        }
+        const userDirectoryRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/users",
+        );
+        expect(
+          userDirectoryRequests.every((timing) => timing.responseBodyBytes !== null),
+          "the performance report should retain only the user response byte count",
+        ).toBe(true);
+        const shiftReportRequests = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/shift-reports",
+        );
+        expect(
+          shiftReportRequests.every((timing) => timing.responseHasClosedHandover !== null),
+          "the performance report should record only whether a closed handover exists",
+        ).toBe(true);
+        const hasClosedHandover = shiftReportRequests.some(
+          (timing) => timing.responseHasClosedHandover === true,
+        );
+        if (!hasClosedHandover) {
+          expect(
+            userDirectoryRequests,
+            "the Time Control startup must not fetch the user directory without a closed handover",
+          ).toHaveLength(0);
+        }
+        expect(userDirectoryRequests.length).toBeLessThanOrEqual(1);
+        expect(userDirectoryRequests.every((timing) => timing.statusCode === 200)).toBe(true);
+        expect(apiRequestTimings.size).toBeLessThanOrEqual(20);
+        const recordRequestTimings = Array.from(apiRequestTimings.values()).filter(
+          (timing) => timing.path === "/api/records",
+        );
+        expect(recordRequestTimings).toHaveLength(2);
+        expect(
+          recordRequestTimings.some(
+            (timing) =>
+              timing.queryDimensions?.pageSize === "5" && !timing.queryDimensions.hasEmployeeFilter,
+          ),
+        ).toBe(false);
+        expect(
+          recordRequestTimings.some(
+            (timing) =>
+              timing.queryDimensions?.pageSize === "30" && timing.queryDimensions.hasDateRange,
+          ),
+        ).toBe(true);
+        expect(
+          recordRequestTimings.some((timing) => timing.queryDimensions?.pageSize === "50"),
+        ).toBe(true);
+        expect(
+          metrics.activeAnimations.some((animation) => animation.animationName === "spin"),
+          "The progress spinner must retain its rotation while the sync overlay is visible",
+        ).toBe(true);
+        const finalLcpCandidate = metrics.lcpEntries.at(-1);
+        if (!finalLcpCandidate)
+          throw new Error("Largest Contentful Paint candidate was not recorded");
+        fcpSamples.push(metrics.fcpMs);
+        lcpSamples.push(finalLcpCandidate.startTimeMs);
+
+        samples.push({
+          sample,
+          browserTimeOriginEpochMs: metrics.timeOriginEpochMs,
+          overlayCoverage,
+          initialLastSyncTime: metrics.initialLastSyncTime,
+          lastSyncTimePresent: metrics.lastSyncTimePresent,
+          fcpMs: metrics.fcpMs,
+          lcpEntries: metrics.lcpEntries,
+          overlayVisibleAtMs:
+            metrics.overlayVisibleAtEpochMs === null
+              ? null
+              : Number((metrics.overlayVisibleAtEpochMs - navigationStartedAtEpochMs).toFixed(2)),
+          overlayHiddenAtMs:
+            metrics.overlayHiddenAtEpochMs === null
+              ? null
+              : Number((metrics.overlayHiddenAtEpochMs - navigationStartedAtEpochMs).toFixed(2)),
+          syncStepChanges: metrics.syncStepChanges.map(({ atEpochMs, ...change }) => ({
+            atMs: Number((atEpochMs - navigationStartedAtEpochMs).toFixed(2)),
+            ...change,
+          })),
+          syncPhaseTimings: metrics.syncPhaseTimings,
+          readinessBreakdown,
+          readinessMainThreadAttribution,
+          overlayVisibleDurationMs: metrics.overlayVisibleDurationMs,
+          rootAnimationName: metrics.rootAnimationName,
+          rootAnimationDuration: metrics.rootAnimationDuration,
+          statusAnimationName: metrics.statusAnimationName,
+          activeAnimations: metrics.activeAnimations,
+          syncReadyAtMs: metrics.syncReadyAtMs,
+          activeEmployeeProbe,
+          employeeClockingProjectionProbe,
+          apiRequests: Array.from(apiRequestTimings.values()).map((timing) => ({
+            ...timing,
+            durationMs:
+              timing.finishedAtMs === null
+                ? null
+                : Number((timing.finishedAtMs - timing.startedAtMs).toFixed(2)),
+          })),
+          finalLcpCandidate,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      viewport: mobileViewport,
+      cpuThrottle: 4,
+      sampleCount: samples.length,
+      apiRequestPathPolicy:
+        "pathname only; request/response bodies omitted; byte lengths recorded for health, employees, clocking options and users; clocking options also records row count; /api/employees records only whether status=Activo; optional active-filter and field-projection diagnostics use PERFORMANCE_ACTIVE_EMPLOYEE_FILTER_PROBE=1 and PERFORMANCE_EMPLOYEE_CLOCKING_PROJECTION_PROBE=1; readiness query correlation is checked in memory and its value is omitted; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
+      syncPhasePolicy:
+        "opt-in CustomEvent records phase, name, monotonic start, duration and outcome only; user/session data omitted",
+      readinessProbePolicy:
+        "an optional unique query marker identifies the browser request; Fastify logs are correlated by the browser request interval within 500 ms; query contents and response bodies are never written to evidence",
+      timingOffsetBasis: "Date.now immediately before page.goto",
+      readinessMetric:
+        "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",
+      readinessMainThreadAttributionPolicy:
+        "opt-in Long Animation Frame entries retain only pathname, bounded function/invoker type, script timing and frame blocking duration; origin, query, fragment and payload are omitted",
+      samples,
+      fcpStats: summarizePerformance(fcpSamples),
+      observedLcpStats: summarizePerformance(lcpSamples),
+    };
+    await attachPerformanceReport(testInfo, "time-control-sync-phase-diagnostics.json", report);
+    if (process.env.PERFORMANCE_SAVE_MAIN_THREAD_ATTRIBUTION === "1") {
+      await attachPerformanceReport(testInfo, "time-control-main-thread-attribution.json", report);
+    }
+  });
+
+  test("Time Control shows its page shell while attendance records are pending", async ({
+    page,
+  }, testInfo) => {
+    const mobileViewport = { width: 412, height: 823 };
+    await page.setViewportSize(mobileViewport);
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+    const recordsPattern = "**/api/records**";
+    let recordsRequestPending = false;
+    let releaseRecords: (() => void) | undefined;
+    const recordsGate = new Promise<void>((resolve) => {
+      releaseRecords = resolve;
+    });
+    await page.route(recordsPattern, async (route) => {
+      recordsRequestPending = true;
+      await recordsGate;
+      await route.continue();
+    });
+
+    const navigationStartedAt = performance.now();
+    try {
+      await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+      await expect.poll(() => recordsRequestPending, { timeout: 15_000 }).toBe(true);
+
+      const recordsPendingAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+      const heading = page.getByRole("heading", { name: "Control de Asistencia" });
+      const syncOverlay = page.getByText(
+        "Establishing technical handshake • Validating integrity...",
+        {
+          exact: true,
+        },
+      );
+      await expect(heading).toBeVisible({ timeout: 10_000 });
+      const headingRenderedAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+      const syncOverlayWasVisible = await syncOverlay.isVisible();
+
+      await expect(syncOverlay).toBeHidden({ timeout: 15_000 });
+      const shellUnobscuredAtMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+      const headingIsUnobscured = await heading.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const topElement = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
+        return topElement === element || element.contains(topElement);
+      });
+
+      expect(recordsRequestPending).toBe(true);
+      expect(headingIsUnobscured).toBe(true);
+      expect(await page.getByText("Optimizando registros de asistencia...").count()).toBe(0);
+      await attachPerformanceReport(testInfo, "time-control-shell-before-records.json", {
+        capturedAt: new Date().toISOString(),
+        baseUrl,
+        route: "/#/time-control",
+        viewport: mobileViewport,
+        recordsPendingAtMs,
+        headingRenderedAtMs,
+        syncOverlayWasVisible,
+        shellUnobscuredAtMs,
+        headingIsUnobscured,
+        recordsWereStillPendingAtUnobscured: recordsRequestPending,
+      });
+    } finally {
+      releaseRecords?.();
+      await cdp.detach();
+    }
+
+    await page.waitForLoadState("networkidle");
+    await page.unroute(recordsPattern);
+  });
+
+  test("Time Control SPA transition after initial sync", async ({ browser, request }, testInfo) => {
+    test.setTimeout(180_000);
+    const dashboardRoute = criticalRoutes.find((route) => route.id === "dashboard");
+    const timeControlRoute = criticalRoutes.find((route) => route.id === "time-control");
+    if (
+      !dashboardRoute ||
+      !timeControlRoute ||
+      !dashboardRoute.currentPath ||
+      !timeControlRoute.currentPath
+    ) {
+      throw new Error("Dashboard and Time Control routes must exist in the performance catalog");
+    }
+
+    const samples: Array<{
+      sample: number;
+      initialSync: {
+        completedAtMs: number;
+        overlayVisibleAtMs: number | null;
+        overlayHiddenAtMs: number | null;
+      };
+      firstVisitAfterSync: {
+        elapsedMs: number;
+        sameDocument: boolean;
+        finalHash: string;
+        scriptRequests: string[];
+      };
+      repeatedVisitWithRouteChunkLoaded: {
+        elapsedMs: number;
+        sameDocument: boolean;
+        finalHash: string;
+        scriptRequests: string[];
+      };
+    }> = [];
+
+    for (let sample = 1; sample <= 3; sample += 1) {
+      const context = await browser.newContext({
+        viewport,
+        timezoneId: "America/Santiago",
+      });
+      try {
+        const page = await context.newPage();
+        await loginFast(page, request, "admin");
+        await page.addInitScript(() => {
+          type SyncAudit = {
+            initialLastSyncTime: string | null;
+            overlayVisibleAtMs: number | null;
+            overlayHiddenAtMs: number | null;
+          };
+          const windowWithAudit = window as Window & {
+            __timeControlSyncAudit?: SyncAudit;
+          };
+          const audit: SyncAudit = {
+            initialLastSyncTime: localStorage.getItem("lastSyncTime"),
+            overlayVisibleAtMs: null,
+            overlayHiddenAtMs: null,
+          };
+          windowWithAudit.__timeControlSyncAudit = audit;
+          let wasVisible = false;
+          const observeOverlay = () => {
+            const status = Array.from(document.querySelectorAll("p")).find(
+              (element) =>
+                element.textContent?.trim() ===
+                "Establishing technical handshake • Validating integrity...",
+            );
+            const style = status ? getComputedStyle(status) : null;
+            const isVisible = Boolean(
+              status &&
+              style?.display !== "none" &&
+              style?.visibility !== "hidden" &&
+              status.getClientRects().length > 0,
+            );
+            if (isVisible && !wasVisible) {
+              audit.overlayVisibleAtMs = performance.now();
+              wasVisible = true;
+            } else if (!isVisible && wasVisible && audit.overlayHiddenAtMs === null) {
+              audit.overlayHiddenAtMs = performance.now();
+            }
+          };
+          new MutationObserver(observeOverlay).observe(document, {
+            attributes: true,
+            attributeFilter: ["class", "hidden", "style"],
+            childList: true,
+            subtree: true,
+          });
+          observeOverlay();
+        });
+
+        const scriptRequests: Array<{ phase: string; file: string }> = [];
+        let scriptPhase = "initial-sync";
+        page.on("request", (browserRequest) => {
+          if (browserRequest.resourceType() !== "script") return;
+          const file = new URL(browserRequest.url()).pathname.split("/").pop();
+          if (file) scriptRequests.push({ phase: scriptPhase, file });
+        });
+
+        await page.goto(`${baseUrl}${dashboardRoute.path}`, { waitUntil: "domcontentloaded" });
+        await expect(readyLocatorForRoute(page, dashboardRoute)).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+        const syncOverlay = page.getByText(
+          "Establishing technical handshake • Validating integrity...",
+          { exact: true },
+        );
+        await expect(syncOverlay).toBeHidden({ timeout: 30_000 });
+
+        const syncState = await page.evaluate(() => {
+          const audit = (
+            window as Window & {
+              __timeControlSyncAudit?: {
+                initialLastSyncTime: string | null;
+                overlayVisibleAtMs: number | null;
+                overlayHiddenAtMs: number | null;
+              };
+            }
+          ).__timeControlSyncAudit;
+          const lastSyncTime = localStorage.getItem("lastSyncTime");
+          if (!audit || !lastSyncTime) throw new Error("Initial sync marker is missing");
+          return {
+            initialLastSyncTime: audit.initialLastSyncTime,
+            lastSyncTime,
+            overlayVisibleAtMs: audit.overlayVisibleAtMs,
+            overlayHiddenAtMs: audit.overlayHiddenAtMs,
+            completedAtMs: performance.now(),
+          };
+        });
+        expect(syncState.initialLastSyncTime).toBeNull();
+        expect(Number(syncState.lastSyncTime)).toBeGreaterThan(0);
+        if (syncState.overlayVisibleAtMs !== null) {
+          expect(syncState.overlayHiddenAtMs).not.toBeNull();
+        }
+
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+        const measureSpaTransition = async (
+          targetHash: string,
+          targetPath: string,
+          targetHeading: string | null,
+          targetTestId: string | null,
+        ) => {
+          const start = await page.evaluate((hash) => {
+            const probe = {
+              startedAtMs: performance.now(),
+              timeOrigin: performance.timeOrigin,
+              readyAtMs: null as number | null,
+            };
+            (window as Window & { __spaTransitionProbe?: typeof probe }).__spaTransitionProbe =
+              probe;
+            window.location.hash = hash;
+            return { startedAtMs: probe.startedAtMs, timeOrigin: probe.timeOrigin };
+          }, targetHash);
+
+          await page.waitForFunction(
+            ({ currentPath, heading, testId }) => {
+              const shell = document.querySelector('[data-testid="app-shell"]');
+              const mainContent = shell?.querySelector('[data-testid="main-content"]');
+              const candidate = testId
+                ? document.querySelector(`[data-testid="${testId}"]`)
+                : Array.from(document.querySelectorAll("h1")).find(
+                    (element) => element.textContent?.trim() === heading,
+                  );
+              const isVisible = (element: Element | null | undefined) => {
+                if (!element) return false;
+                const style = getComputedStyle(element);
+                return (
+                  element.isConnected &&
+                  style.display !== "none" &&
+                  style.visibility !== "hidden" &&
+                  element.getClientRects().length > 0
+                );
+              };
+              if (
+                shell?.getAttribute("data-current-path") === currentPath &&
+                isVisible(mainContent) &&
+                isVisible(candidate)
+              ) {
+                const probe = (
+                  window as Window & {
+                    __spaTransitionProbe?: { readyAtMs: number | null };
+                  }
+                ).__spaTransitionProbe;
+                if (probe && probe.readyAtMs === null) probe.readyAtMs = performance.now();
+                return true;
+              }
+              return false;
+            },
+            { currentPath: targetPath, heading: targetHeading, testId: targetTestId },
+            { polling: "raf", timeout: 30_000 },
+          );
+
+          const metrics = await page.evaluate((transitionStart) => {
+            const probe = (
+              window as Window & {
+                __spaTransitionProbe?: {
+                  startedAtMs: number;
+                  timeOrigin: number;
+                  readyAtMs: number | null;
+                };
+              }
+            ).__spaTransitionProbe;
+            if (!probe || probe.readyAtMs === null) {
+              throw new Error("SPA route readiness timestamp was not recorded");
+            }
+            return {
+              elapsedMs: Number((probe.readyAtMs - transitionStart.startedAtMs).toFixed(2)),
+              sameDocument: performance.timeOrigin === transitionStart.timeOrigin,
+              finalHash: window.location.hash,
+            };
+          }, start);
+          return { ...metrics, scriptRequests: [] as string[] };
+        };
+
+        scriptPhase = "first-spa-visit-after-sync";
+        const firstScriptRequestIndex = scriptRequests.length;
+        const firstVisit = await measureSpaTransition(
+          timeControlRoute.path.slice(timeControlRoute.path.indexOf("#")),
+          timeControlRoute.currentPath,
+          "Control de Asistencia",
+          null,
+        );
+        firstVisit.scriptRequests = scriptRequests
+          .slice(firstScriptRequestIndex)
+          .map((entry) => entry.file);
+        expect(firstVisit.sameDocument).toBe(true);
+        expect(firstVisit.finalHash).toBe("#/time-control");
+
+        await page.evaluate(() => {
+          window.location.hash = "#/dashboard";
+        });
+        await expect(readyLocatorForRoute(page, dashboardRoute)).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+
+        scriptPhase = "repeated-spa-visit-after-sync";
+        const repeatedScriptRequestIndex = scriptRequests.length;
+        const repeatedVisit = await measureSpaTransition(
+          timeControlRoute.path.slice(timeControlRoute.path.indexOf("#")),
+          timeControlRoute.currentPath,
+          "Control de Asistencia",
+          null,
+        );
+        repeatedVisit.scriptRequests = scriptRequests
+          .slice(repeatedScriptRequestIndex)
+          .map((entry) => entry.file);
+        expect(repeatedVisit.sameDocument).toBe(true);
+        expect(repeatedVisit.finalHash).toBe("#/time-control");
+        expect(firstVisit.elapsedMs).toBeLessThan(15_000);
+        expect(repeatedVisit.elapsedMs).toBeLessThan(15_000);
+
+        samples.push({
+          sample,
+          initialSync: {
+            completedAtMs: syncState.completedAtMs,
+            overlayVisibleAtMs: syncState.overlayVisibleAtMs,
+            overlayHiddenAtMs: syncState.overlayHiddenAtMs,
+          },
+          firstVisitAfterSync: firstVisit,
+          repeatedVisitWithRouteChunkLoaded: repeatedVisit,
+        });
+        await cdp.detach();
+      } finally {
+        await context.close();
+      }
+    }
+
+    const firstVisitStats = summarizePerformance(
+      samples.map((sample) => sample.firstVisitAfterSync.elapsedMs),
+    );
+    const repeatedVisitStats = summarizePerformance(
+      samples.map((sample) => sample.repeatedVisitWithRouteChunkLoaded.elapsedMs),
+    );
+    await attachPerformanceReport(testInfo, "time-control-spa-transition.json", {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      startRoute: "/#/dashboard",
+      viewport,
+      cpuThrottle: 4,
+      readinessMetric:
+        "browser performance.now from SPA hash change until Time Control main content and heading are visible",
+      lcpApplicable: false,
+      initialSync:
+        "Each sample starts with a new browser context and requires lastSyncTime after the overlay is hidden.",
+      samples,
+      firstVisitStats,
+      repeatedVisitStats,
+    });
+  });
+
+  test("Time Control defers the virtualized table until it enters the mobile viewport", async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 412, height: 823 });
+    const tableChunkRequests: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.resourceType() === "script" &&
+        /\/assets\/(?:TimeRecordTableViewMobile|tables)-[^/?]+\.js(?:[?#]|$)/.test(request.url())
+      ) {
+        tableChunkRequests.push(new URL(request.url()).pathname.split("/").pop() ?? "");
+      }
+    });
+
+    await page.goto(`${baseUrl}/#/time-control`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Control de Asistencia" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await page.waitForLoadState("networkidle");
+    const coldTableChunkRequests = [...tableChunkRequests];
+
+    await page.getByText("REGISTROS DE ASISTENCIA", { exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.getByPlaceholder("Buscar por nombre...")).toBeVisible({ timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
+
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/time-control",
+      profile: { viewport: { width: 412, height: 823 }, deviceScaleFactor: 1 },
+      coldTableChunkRequests,
+      postScrollTableChunkRequests: [...tableChunkRequests],
+    };
+    await attachPerformanceReport(testInfo, "time-control-deferred-table.json", report);
+
+    expect(
+      coldTableChunkRequests,
+      "The mobile table and shared table chunks must stay out of the cold route",
+    ).toEqual([]);
+    expect(tableChunkRequests).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/^TimeRecordTableViewMobile-/),
+        expect.stringMatching(/^tables-/),
+      ]),
+    );
+  });
+
+  test("Dashboard startup avoids the kiosk list and repeated API reads", async ({
+    page,
+  }, testInfo) => {
+    const apiPaths: string[] = [];
+    const inFlight = new Set<Request>();
+    const requestStartTimes = new Map<Request, number>();
+    const responseStatuses = new Map<Request, number>();
+    const apiRequestTimings: {
+      path: string;
+      startOffsetMs: number;
+      durationMs: number;
+      finishOffsetMs: number;
+      status: number | null;
+    }[] = [];
+    let lastApiActivity = Date.now();
+    const navigationStartedAt = performance.now();
+    const trackRequest = (request: import("@playwright/test").Request) => {
+      const url = new URL(request.url());
+      if (!url.pathname.startsWith("/api/")) return;
+      apiPaths.push(url.pathname);
+      inFlight.add(request);
+      requestStartTimes.set(request, performance.now());
+      lastApiActivity = Date.now();
+    };
+    const recordResponseStatus = (response: import("@playwright/test").Response) => {
+      const request = response.request();
+      if (requestStartTimes.has(request)) responseStatuses.set(request, response.status());
+    };
+    const finishRequest = (request: Request) => {
+      if (!inFlight.delete(request)) return;
+      const startTime = requestStartTimes.get(request);
+      if (startTime !== undefined) {
+        const finishTime = performance.now();
+        apiRequestTimings.push({
+          path: new URL(request.url()).pathname,
+          startOffsetMs: Number((startTime - navigationStartedAt).toFixed(2)),
+          durationMs: Number((finishTime - startTime).toFixed(2)),
+          finishOffsetMs: Number((finishTime - navigationStartedAt).toFixed(2)),
+          status: responseStatuses.get(request) ?? null,
+        });
+        requestStartTimes.delete(request);
+        responseStatuses.delete(request);
+      }
+      lastApiActivity = Date.now();
+    };
+    page.on("request", trackRequest);
+    page.on("response", recordResponseStatus);
+    page.on("requestfinished", finishRequest);
+    page.on("requestfailed", finishRequest);
+
+    await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+    const mainContentVisibleOffsetMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+    await expect(page.getByTestId("server-clock")).toBeVisible({ timeout: 30_000 });
+    const serverClockVisibleOffsetMs = Number((performance.now() - navigationStartedAt).toFixed(2));
+
+    const quietDeadline = Date.now() + 15_000;
+    while (Date.now() < quietDeadline) {
+      if (inFlight.size === 0 && Date.now() - lastApiActivity >= 800) break;
+      await page.waitForTimeout(100);
+    }
+
+    const requestCounts = new Map<string, number>();
+    for (const apiPath of apiPaths) {
+      requestCounts.set(apiPath, (requestCounts.get(apiPath) ?? 0) + 1);
+    }
+    const duplicateEndpoints = [...requestCounts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([path, count]) => ({ path, count }));
+    const autoStartSchedulingRequests = apiPaths.filter((path) =>
+      autoStartSchedulingApiPaths.has(path),
+    );
+    const apiRequestsPendingWhenServerClockAppeared = apiRequestTimings
+      .filter(
+        ({ startOffsetMs, finishOffsetMs }) =>
+          startOffsetMs <= serverClockVisibleOffsetMs &&
+          finishOffsetMs > serverClockVisibleOffsetMs,
+      )
+      .map(({ path, finishOffsetMs }) => ({ path, finishOffsetMs }));
+    const dashboardDataRequestsPendingWhenServerClockAppeared =
+      apiRequestsPendingWhenServerClockAppeared.filter(({ path }) =>
+        ["/api/kpis/overview", "/api/shift-reports"].includes(path),
+      );
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/dashboard",
+      mainContentVisibleOffsetMs,
+      serverClockVisibleOffsetMs,
+      apiRequestsPendingWhenServerClockAppeared,
+      dashboardDataRequestsPendingWhenServerClockAppeared,
+      apiRequestCount: apiPaths.length,
+      uniqueApiEndpointCount: requestCounts.size,
+      duplicateEndpoints,
+      autoStartSchedulingRequests,
+      apiPaths,
+      apiRequestTimings: [...apiRequestTimings].sort((a, b) => b.durationMs - a.durationMs),
+    };
+    await attachPerformanceReport(testInfo, "dashboard-startup-api-requests.json", report);
+
+    expect(inFlight.size, "Dashboard API requests should settle after startup").toBe(0);
+    expect(
+      apiRequestTimings,
+      "every API request should include a complete duration and status",
+    ).toHaveLength(apiPaths.length);
+    expect(
+      apiRequestTimings.every(({ status }) => status === 200),
+      "Dashboard startup API requests should all succeed",
+    ).toBe(true);
+    expect(apiPaths, "the public kiosk list belongs only to kiosk mode").not.toContain(
+      "/api/employees/kiosk",
+    );
+    expect(apiPaths.length, "spec 042 recorded 21 Dashboard startup API requests").toBeLessThan(21);
+    expect(apiPaths.length, "Specs 047 and 048 remove two non-critical startup requests").toBe(8);
+    expect(
+      duplicateEndpoints,
+      "Dashboard startup should request each API endpoint at most once",
+    ).toEqual([]);
+    expect(
+      autoStartSchedulingRequests,
+      "Dashboard should not load auto-start scheduling data for an Administrator without an employee",
+    ).toEqual([]);
+    expect(
+      apiPaths,
+      "the Dashboard uses the fixed company policy file URL and should not fetch redundant metadata",
+    ).not.toContain("/api/configs/public/company-policy");
+    expect(
+      apiPaths,
+      "ambient reminders should defer notes until their prefetch window",
+    ).not.toContain("/api/notes");
+    expect(apiPaths.filter((path) => path === "/api/health").length).toBeLessThanOrEqual(1);
+  });
+
+  test("Quick Notes fetches notes only after the modal opens", async ({ page }, testInfo) => {
+    let notesRequestStartedAt: number | null = null;
+    let notesResponseStatus: number | null = null;
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname === "/api/notes") {
+        notesRequestStartedAt = performance.now();
+      }
+    });
+    page.on("response", (response) => {
+      if (new URL(response.url()).pathname === "/api/notes") {
+        notesResponseStatus = response.status();
+      }
+    });
+
+    await page.goto(`${baseUrl}/#/dashboard`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("main-content")).toBeVisible({ timeout: 30_000 });
+    await page.waitForTimeout(1_200);
+    expect(notesRequestStartedAt, "Dashboard startup should defer notes").toBeNull();
+
+    const modalOpenedAt = performance.now();
+    await page.getByRole("button", { name: "Notas" }).click();
+    await expect.poll(() => notesResponseStatus, { timeout: 15_000 }).toBe(200);
+
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      route: "/#/dashboard",
+      apiPath: "/api/notes",
+      requestedBeforeModalOpen:
+        notesRequestStartedAt !== null && notesRequestStartedAt < modalOpenedAt,
+      requestOffsetFromModalOpenMs:
+        notesRequestStartedAt === null
+          ? null
+          : Number((notesRequestStartedAt - modalOpenedAt).toFixed(2)),
+      responseStatus: notesResponseStatus,
+    };
+    await attachPerformanceReport(testInfo, "quick-notes-on-demand.json", report);
+    expect(report.requestedBeforeModalOpen).toBe(false);
+  });
+
+  test("Audit Logs virtualized scrolling frame distribution", async ({ page }, testInfo) => {
+    await page.goto("/#/admin/governance?tab=audit");
+    await expect(page.getByText(/visor de auditoría/i)).toBeVisible({ timeout: 30_000 });
+
+    const scrollContainer = page.locator("div.overflow-y-auto.relative").first();
+    await expect(scrollContainer).toBeVisible();
+
+    const measurement = await scrollContainer.evaluate(async (element) => {
+      const originalScrollTop = element.scrollTop;
+      const originalScrollBehavior = element.style.scrollBehavior;
+      const frameIntervals: number[] = [];
+      let scrollEventCount = 0;
+      const onScroll = () => {
+        scrollEventCount += 1;
+      };
+
+      element.style.scrollBehavior = "auto";
+      element.scrollTop = 0;
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+      const scrollRangePx = Math.max(0, element.scrollHeight - element.clientHeight);
+      const renderedRows = element.querySelectorAll('div[style*="translateY"]').length;
+      const frameSteps = 30;
+
+      const runSweep = (direction: 1 | -1, capture: boolean) =>
+        new Promise<void>((resolve) => {
+          let previousFrame: number | undefined;
+          let step = 0;
+
+          const onFrame = (timestamp: number) => {
+            if (capture && previousFrame !== undefined) {
+              frameIntervals.push(timestamp - previousFrame);
+            }
+            previousFrame = timestamp;
+
+            if (step >= frameSteps) {
+              resolve();
+              return;
+            }
+
+            step += 1;
+            const progress = step / frameSteps;
+            element.scrollTop =
+              direction === 1 ? progress * scrollRangePx : (1 - progress) * scrollRangePx;
+            requestAnimationFrame(onFrame);
+          };
+
+          requestAnimationFrame(onFrame);
+        });
+
+      element.addEventListener("scroll", onScroll, { passive: true });
+      try {
+        // Warm the virtual list before collecting three measured sweeps.
+        await runSweep(1, false);
+        await runSweep(-1, false);
+        await runSweep(1, true);
+        await runSweep(-1, true);
+        await runSweep(1, true);
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      } finally {
+        element.removeEventListener("scroll", onScroll);
+        element.style.scrollBehavior = originalScrollBehavior;
+        element.scrollTop = originalScrollTop;
+      }
+
+      return { scrollRangePx, renderedRows, scrollEventCount, frameIntervals };
+    });
+
+    const frameStats = summarizePerformance(measurement.frameIntervals);
+    const framesOver50Ms = measurement.frameIntervals.filter((interval) => interval > 50).length;
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      viewport,
+      route: "/#/admin/governance?tab=audit",
+      scrollRangePx: Number(measurement.scrollRangePx.toFixed(2)),
+      renderedRows: measurement.renderedRows,
+      scrollEventCount: measurement.scrollEventCount,
+      frameIntervalMs: frameStats,
+      framesOver50Ms,
+      framesOver50MsPercent: Number(
+        ((framesOver50Ms / measurement.frameIntervals.length) * 100).toFixed(2),
+      ),
+      attentionP95Ms: 50,
+      failureP95Ms: 250,
+    };
+
+    await attachPerformanceReport(testInfo, "audit-scroll-frame-metrics.json", report);
+
+    expect(
+      measurement.renderedRows,
+      "Audit list must render rows to measure virtualization",
+    ).toBeGreaterThan(0);
+    expect(
+      measurement.scrollRangePx,
+      "Audit list must have vertical overflow to measure scrolling",
+    ).toBeGreaterThan(0);
+    expect(
+      measurement.scrollEventCount,
+      "Measured sweeps must dispatch scroll events",
+    ).toBeGreaterThan(0);
+    expect(measurement.frameIntervals.length).toBeGreaterThanOrEqual(60);
+
+    if (frameStats.p95Ms > 50) {
+      console.warn(
+        `[PERF] Audit scroll p95 ${frameStats.p95Ms}ms exceeds the 50ms attention target`,
+      );
+    }
+    expect(
+      frameStats.p95Ms,
+      "Audit scroll frame gaps must remain below the severe-stall limit",
+    ).toBeLessThan(250);
+  });
+
+  test("Governance tab transition timing", async ({ page }, testInfo) => {
+    await page.goto("/#/admin/governance?tab=integrity");
+    await expect(page.getByText(/INTEGRA|DEGRADADA/)).toBeVisible({ timeout: 30_000 });
+
+    const samples: Array<{ transition: string; elapsedMs: number }> = [];
+    for (let index = 0; index < 5; index += 1) {
+      const toSecurity = index % 2 === 0;
+      const targetTab = toSecurity ? "Seguridad" : "Integridad";
+      const targetContent = toSecurity
+        ? page.getByText(/Vigilancia & Riesgos/i)
+        : page.getByText(/INTEGRA|DEGRADADA/);
+      const startedAt = performance.now();
+
+      await page.getByRole("tab", { name: targetTab, exact: true }).click();
+      await expect(targetContent).toBeVisible({ timeout: 30_000 });
+
+      samples.push({
+        transition: toSecurity ? "integrity-to-security" : "security-to-integrity",
+        elapsedMs: Number((performance.now() - startedAt).toFixed(2)),
+      });
+    }
+
+    const repeatedStats = summarizePerformance(samples.slice(1).map((sample) => sample.elapsedMs));
+    const report = {
+      capturedAt: new Date().toISOString(),
+      baseUrl,
+      viewport,
+      route: "/#/admin/governance",
+      firstTransition: samples[0],
+      repeatedTransitions: samples.slice(1),
+      repeatedStats,
+    };
+
+    await attachPerformanceReport(testInfo, "governance-tab-metrics.json", report);
+    expect(Math.max(...samples.map((sample) => sample.elapsedMs))).toBeLessThan(15_000);
+  });
+});
+
+type PerformanceProbe =
+  | {
+      id: string;
+      kind: "search";
+      placeholder: string;
+      emptyText: string;
+    }
+  | {
+      id: string;
+      kind: "tabs";
+      control: "role-tab" | "button";
+      baseline: string;
+      baselineContentText?: string;
+      steps: Array<{
+        label: string;
+        contentText?: string;
+        contentTestId?: string;
+      }>;
+    }
+  | {
+      id: string;
+      kind: "modal";
+      openButton: string;
+      heading: string;
+      closeButton: string;
+      closedPanelClass: string;
+    };
+
+type PerformanceRoute = {
+  id: string;
+  path: string;
+  currentPath: string | null;
+  role: "admin" | "worker" | null;
+  family: string;
+  readiness: "shell" | "kiosk" | "login";
+  lighthouse: boolean;
+  probes?: PerformanceProbe[];
+};
+
+const criticalRoutes = performanceRouteDefinitions as PerformanceRoute[];
+
+const readyLocatorForRoute = (page: Page, route: PerformanceRoute) => {
+  if (route.readiness === "kiosk") return page.getByTestId("kiosk-step");
+  if (route.readiness === "login") return page.locator("#username");
+  if (!route.currentPath) throw new Error(`${route.id} requires a currentPath for shell readiness`);
+  return page.locator(
+    `[data-testid="app-shell"][data-current-path="${route.currentPath}"] [data-testid="main-content"]`,
+  );
+};
+
+const runInteractionProbe = async (page: Page, probe: PerformanceProbe) => {
+  const samplesMs: number[] = [];
+  const repetitions = 3;
+
+  if (probe.kind === "search") {
+    const input = page.getByPlaceholder(probe.placeholder, { exact: true });
+    const emptyState = page.getByText(probe.emptyText, { exact: true });
+    await expect(input).toBeVisible();
+
+    for (let index = 0; index < repetitions; index += 1) {
+      const startedAt = performance.now();
+      await input.fill(`__perf_no_match_${Date.now()}_${index}__`);
+      await expect(emptyState).toBeVisible();
+      samplesMs.push(Number((performance.now() - startedAt).toFixed(2)));
+      await input.fill("");
+    }
+  } else if (probe.kind === "modal") {
+    for (let index = 0; index < repetitions; index += 1) {
+      const startedAt = performance.now();
+      await page.getByRole("button", { name: probe.openButton, exact: true }).click();
+      await expect(page.getByRole("heading", { name: probe.heading, exact: true })).toBeVisible();
+      samplesMs.push(Number((performance.now() - startedAt).toFixed(2)));
+      await page.getByRole("button", { name: probe.closeButton, exact: true }).click();
+      const panel = page
+        .getByRole("heading", { name: probe.heading, exact: true })
+        .locator("xpath=../../..");
+      await expect(panel).toHaveClass(new RegExp(probe.closedPanelClass));
+    }
+  } else {
+    const getControl = (label: string) =>
+      probe.control === "role-tab"
+        ? page.getByRole("tab", { name: label, exact: true })
+        : page.getByRole("button", { name: label, exact: true });
+    const assertStepContent = async (step: (typeof probe.steps)[number]) => {
+      if (step.contentTestId)
+        await expect(page.getByTestId(step.contentTestId).first()).toBeVisible();
+      if (step.contentText)
+        await expect(page.getByText(step.contentText, { exact: true }).first()).toBeVisible();
+    };
+
+    for (const step of probe.steps) {
+      const control = getControl(step.label);
+      for (let index = 0; index < repetitions; index += 1) {
+        const startedAt = performance.now();
+        await control.click();
+        await assertStepContent(step);
+        if (probe.control === "role-tab")
+          await expect(control).toHaveAttribute("aria-selected", "true");
+        samplesMs.push(Number((performance.now() - startedAt).toFixed(2)));
+
+        const baselineControl = getControl(probe.baseline);
+        await baselineControl.click();
+        if (probe.control === "role-tab") {
+          await expect(baselineControl).toHaveAttribute("aria-selected", "true");
+        } else if (probe.baselineContentText) {
+          await expect(
+            page.getByText(probe.baselineContentText, { exact: true }).first(),
+          ).toBeVisible();
+        }
+      }
+    }
+  }
+
+  return {
+    id: probe.id,
+    kind: probe.kind,
+    samplesMs,
+    ...summarizePerformance(samplesMs),
+  };
+};
+
+test("critical route readiness samples", async ({ browser, request }, testInfo) => {
+  test.setTimeout(180_000);
+  const samplesPerRoute = 3;
+  const routeResults: Array<{
+    id: string;
+    samplesMs: number[];
+    medianMs: number;
+    maxMs: number;
+  }> = [];
+
+  for (const route of criticalRoutes) {
+    const samplesMs: number[] = [];
+    for (let sampleIndex = 0; sampleIndex < samplesPerRoute; sampleIndex += 1) {
+      const context = await browser.newContext({ viewport });
+      try {
+        const page = await context.newPage();
+        if (route.role) await loginFast(page, request, route.role);
+
+        const startedAt = performance.now();
+        await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded" });
+        const ready = readyLocatorForRoute(page, route);
+        await expect(ready).toBeVisible({ timeout: 30_000 });
+
+        samplesMs.push(Number((performance.now() - startedAt).toFixed(2)));
+      } finally {
+        await context.close();
+      }
+    }
+
+    const stats = summarizePerformance(samplesMs);
+    routeResults.push({
+      id: route.id,
+      path: route.path,
+      role: route.role ?? "anonymous",
+      family: route.family,
+      samplesMs,
+      medianMs: stats.medianMs,
+      maxMs: stats.maxMs,
+    });
+  }
+
+  const report = {
+    capturedAt: new Date().toISOString(),
+    baseUrl,
+    viewport,
+    samplesPerRoute,
+    readinessMetric: "domcontentloaded until the route's primary content is visible",
+    buildCommit: process.env.PERFORMANCE_SOURCE_SHA ?? null,
+    routes: routeResults,
+  };
+
+  await attachPerformanceReport(testInfo, "critical-route-readiness.json", report);
+  for (const route of routeResults) {
+    console.info(
+      `[PERF] ${route.id} ready median=${route.medianMs}ms max=${route.maxMs}ms samples=${route.samplesMs.join(",")}`,
+    );
+    expect(route.maxMs, `${route.id} must not exceed the severe route stall limit`).toBeLessThan(
+      15_000,
+    );
+  }
+});
+
+test("shared interaction pattern timings", async ({ browser, request }, testInfo) => {
+  test.setTimeout(180_000);
+  const routesWithProbes = criticalRoutes.filter((route) => route.probes?.length);
+  const probeResults: Array<Record<string, unknown>> = [];
+
+  for (const route of routesWithProbes) {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+      if (route.role) await loginFast(page, request, route.role);
+      await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded" });
+      await expect(readyLocatorForRoute(page, route)).toBeVisible({ timeout: 30_000 });
+
+      for (const probe of route.probes ?? []) {
+        const result = await runInteractionProbe(page, probe);
+        probeResults.push({
+          routeId: route.id,
+          path: route.path,
+          family: route.family,
+          role: route.role ?? "anonymous",
+          ...result,
+        });
+      }
+    } finally {
+      await context.close();
+    }
+  }
+
+  const report = {
+    capturedAt: new Date().toISOString(),
+    baseUrl,
+    viewport,
+    repetitionsPerInteraction: 3,
+    dataMutation: false,
+    routes: probeResults,
+  };
+  await attachPerformanceReport(testInfo, "shared-interaction-metrics.json", report);
+
+  for (const result of probeResults) {
+    const maxMs = result.maxMs as number;
+    expect(
+      maxMs,
+      `${result.routeId as string}/${result.id as string} interaction stall`,
+    ).toBeLessThan(15_000);
   }
 });

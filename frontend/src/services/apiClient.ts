@@ -273,6 +273,33 @@ interface PreparedRequest {
   cache?: RequestCache;
 }
 
+type ApiClientPerformanceDiagnosticsWindow = Window & {
+  __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean;
+};
+
+const emitReadinessApiClientStageTiming = (
+  prepared: PreparedRequest,
+  stage: "fetch-resolved" | "read-body-resolved",
+): void => {
+  if (
+    prepared.path !== "/api/health/ready" ||
+    typeof window === "undefined" ||
+    (window as ApiClientPerformanceDiagnosticsWindow).__PORTAL_SYNC_PERF_DIAGNOSTICS__ !== true
+  ) {
+    return;
+  }
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("portal:readiness-api-client-stage", {
+        detail: { stage, atMs: Number(performance.now().toFixed(2)) },
+      }),
+    );
+  } catch {
+    // Diagnostic timing must never affect the HTTP request.
+  }
+};
+
 function prepareRequest(spec: RequestSpec): PreparedRequest {
   const resolvedPath = resolvePath(spec.url, spec.path);
   const fullUrl = `${getFullUrl(resolvedPath)}${buildQuery(spec.params)}`;
@@ -368,6 +395,7 @@ async function performRequest(prepared: PreparedRequest): Promise<Response> {
         cache: prepared.cache,
       });
 
+      emitReadinessApiClientStageTiming(prepared, "fetch-resolved");
       emitAuthEvents(response, prepared);
 
       if (response.ok) return response;
@@ -458,6 +486,7 @@ async function executeRequest(prepared: PreparedRequest): Promise<ExecutionResul
   }
 
   const data = await readBody(response, prepared);
+  emitReadinessApiClientStageTiming(prepared, "read-body-resolved");
   return { ok: true, status: response.status, data };
 }
 

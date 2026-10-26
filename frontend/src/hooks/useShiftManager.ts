@@ -1,12 +1,21 @@
 import { useAuth } from "./useAuth";
 import { useToasts } from "./useToasts";
 import { ShiftReport, LogbookEntryItem } from "../types/index";
-import { formatTime } from "../utils/formatters";
 import { idFactory } from "../utils/idFactory";
 import { useReportsQuery } from "./queries/useReportsQuery";
 import { useReportMutations } from "./useReportMutations";
-import { toBusinessDateChile } from "../utils/dateUtils";
 import { logger } from "../utils/logger";
+
+const loadShiftDateFormatters = async () => {
+  const [formatters, dateUtils] = await Promise.all([
+    import("../utils/formatters"),
+    import("../utils/dateUtils"),
+  ]);
+  return {
+    formatTime: formatters.formatTime,
+    toBusinessDateChile: dateUtils.toBusinessDateChile,
+  };
+};
 
 export interface StartShiftResult {
   success: boolean;
@@ -70,6 +79,7 @@ export const useShiftManager = () => {
 
     const newFolio = String(maxFolio + 1).padStart(3, "0");
     const shiftName = now.getHours() >= 8 && now.getHours() < 20 ? "DÍA" : "NOCHE";
+    const { formatTime, toBusinessDateChile } = await loadShiftDateFormatters();
 
     const startingEntry: LogbookEntryItem = {
       id: idFactory.ulid(),

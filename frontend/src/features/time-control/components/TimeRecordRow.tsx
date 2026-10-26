@@ -77,7 +77,8 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
       const content = (
         <div className="flex items-center gap-1.5 overflow-hidden">
           <span
-            className={`text-xs font-black font-mono italic tracking-tighter truncate ${isSinRegistro ? "text-token-status-error opacity-50" : "text-token-text-primary"}`}
+            data-list-role="value"
+            className={`typo-list-value truncate ${isSinRegistro ? "text-token-status-error opacity-50" : "text-token-text-primary"}`}
           >
             {formatDisplayDateTime(value).split(" ")[1] || "--:--"}
           </span>
@@ -121,10 +122,18 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
 
     if (layoutMode === "table-row-div") {
       return (
-        <div className={`${rowClassName} flex items-center h-full`} {...commonProps}>
+        <div
+          data-testid="time-record-row"
+          data-list-group="virtualized-table"
+          className={`${rowClassName} flex items-center h-full`}
+          {...commonProps}
+        >
           {/* Área - 12% */}
           <div className="w-[12%] px-4 py-4 hidden sm:flex flex-col gap-1.5">
-            <span className="font-bold text-token-text-tertiary text-xxs uppercase tracking-wider truncate">
+            <span
+              data-list-role="secondary"
+              className="typo-list-secondary text-token-text-tertiary uppercase tracking-wider truncate"
+            >
               {record.employeeArea}
             </span>
           </div>
@@ -143,13 +152,19 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 </div>
               )}
             </div>
-            <span className="font-bold text-token-text-primary text-xs truncate">
+            <span
+              data-list-role="primary"
+              className="typo-list-primary text-token-text-primary truncate"
+            >
               {record.employeeName}
             </span>
           </div>
           {/* Fecha - 10% */}
           <div className="w-[10%] px-4 py-4">
-            <span className="text-xs font-black font-mono text-token-text-primary tracking-tighter uppercase tabular-nums truncate">
+            <span
+              data-list-role="value"
+              className="typo-list-value text-token-text-primary uppercase truncate"
+            >
               {formatDisplayDate(record.date)}
             </span>
           </div>
@@ -161,8 +176,9 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
           {/* Estado - 10% */}
           <div className="w-[10%] px-3 py-4 flex items-center">
             <span
+              data-list-role="status"
               className={`
-                 px-3 py-1 text-xxs font-black uppercase tracking-widest rounded-md border border-token-border-subtle shadow-sm truncate
+                 typo-list-status px-3 py-1 uppercase tracking-wide rounded-md border border-token-border-subtle shadow-sm truncate
                  ${statusVisualConfig.bg}
                  ${statusVisualConfig.text}
                `}
@@ -220,10 +236,18 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
     }
 
     return (
-      <tr className={rowClassName} {...commonProps}>
+      <tr
+        data-testid="time-record-row"
+        data-list-group="virtualized-table"
+        className={rowClassName}
+        {...commonProps}
+      >
         <td className="px-4 py-4 whitespace-nowrap text-sm hidden sm:table-cell">
           <div className="flex flex-col gap-1.5">
-            <span className="font-bold text-token-text-tertiary text-xxs uppercase tracking-wider">
+            <span
+              data-list-role="secondary"
+              className="typo-list-secondary text-token-text-tertiary uppercase tracking-wider"
+            >
               {record.employeeArea}
             </span>
             {["Laborando", "Colacion"].includes(record.status) && progressPercent > 0 && (
@@ -254,11 +278,16 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 </div>
               )}
             </div>
-            <span className="font-bold text-token-text-primary text-xs">{record.employeeName}</span>
+            <span data-list-role="primary" className="typo-list-primary text-token-text-primary">
+              {record.employeeName}
+            </span>
           </div>
         </td>
         <td className="px-4 py-4 whitespace-nowrap">
-          <span className="text-xs font-black font-mono text-token-text-primary tracking-tighter uppercase tabular-nums">
+          <span
+            data-list-role="value"
+            className="typo-list-value text-token-text-primary uppercase"
+          >
             {formatDisplayDate(record.date)}
           </span>
         </td>
@@ -268,8 +297,9 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
         {renderTimestampCell("salida", "")}
         <td className="px-3 py-4 whitespace-nowrap">
           <span
+            data-list-role="status"
             className={`
-          px-3 py-1 text-xxs font-black uppercase tracking-widest rounded-md border border-token-border-subtle shadow-sm
+          typo-list-status px-3 py-1 uppercase tracking-wide rounded-md border border-token-border-subtle shadow-sm
           ${statusVisualConfig.bg}
           ${statusVisualConfig.text}
         `}

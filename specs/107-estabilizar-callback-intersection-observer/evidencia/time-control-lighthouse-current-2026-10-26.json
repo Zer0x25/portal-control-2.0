@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "measurement": "cold Lighthouse baseline for the current committed staging build; not a paired before/after comparison",
+  "source": {
+    "commit": "04a05f7c36260f453404046ce0a57f0b57971150",
+    "workingTreeDirty": false
+  },
+  "target": {
+    "routeId": "time-control",
+    "frontendStagingImageId": "sha256:d0932191a96d83fa08dd042a900c234060a96d961e64e3d24c54d84eb19f29d7"
+  },
+  "runtime": {
+    "lighthouseVersion": "12.6.1",
+    "formFactor": "mobile",
+    "viewport": {
+      "width": 412,
+      "height": 823,
+      "deviceScaleFactor": 1.75
+    },
+    "cpuSlowdownMultiplier": 4,
+    "rttMs": 150,
+    "throughputKbps": 1638.4,
+    "coldStorage": true
+  },
+  "sampleCount": 5,
+  "runs": [
+    {
+      "run": 1,
+      "fetchTime": "2026-10-26T01:06:45.014Z",
+      "performanceScore": 0.91,
+      "tbtMs": 284,
+      "lcpMs": 2252.85495,
+      "fcpMs": 2018.9033,
+      "cls": 0.01016361232872061,
+      "speedIndexMs": 2034.975044100158,
+      "totalTransferBytes": 457841,
+      "longTaskAuditEntries": 12
+    },
+    {
+      "run": 2,
+      "fetchTime": "2026-10-26T01:07:12.028Z",
+      "performanceScore": 0.92,
+      "tbtMs": 237.13950000000023,
+      "lcpMs": 2253.20925,
+      "fcpMs": 2058.1395,
+      "cls": 0,
+      "speedIndexMs": 2058.1395,
+      "totalTransferBytes": 457873,
+      "longTaskAuditEntries": 9
+    },
+    {
+      "run": 3,
+      "fetchTime": "2026-10-26T01:07:38.256Z",
+      "performanceScore": 0.72,
+      "tbtMs": 321.00000000000045,
+      "lcpMs": 5190.292599999995,
+      "fcpMs": 2015.8821,
+      "cls": 0,
+      "speedIndexMs": 2139.8086628538254,
+      "totalTransferBytes": 457905,
+      "longTaskAuditEntries": 10
+    },
+    {
+      "run": 4,
+      "fetchTime": "2026-10-26T01:08:04.904Z",
+      "performanceScore": 0.85,
+      "tbtMs": 263.47835000000055,
+      "lcpMs": 3127.129900000001,
+      "fcpMs": 2445.3257750000007,
+      "cls": 0,
+      "speedIndexMs": 2445.3257750000007,
+      "totalTransferBytes": 493693,
+      "longTaskAuditEntries": 9
+    },
+    {
+      "run": 5,
+      "fetchTime": "2026-10-26T01:08:31.648Z",
+      "performanceScore": 0.89,
+      "tbtMs": 265.00000000000045,
+      "lcpMs": 2659.5744,
+      "fcpMs": 2237.8589999999995,
+      "cls": 0,
+      "speedIndexMs": 2346.8086735528223,
+      "totalTransferBytes": 457912,
+      "longTaskAuditEntries": 10
+    }
+  ],
+  "metrics": {
+    "performanceScore": {
+      "median": 0.89,
+      "min": 0.72,
+      "max": 0.92
+    },
+    "tbtMs": {
+      "median": 265.00000000000045,
+      "min": 237.13950000000023,
+      "max": 321.00000000000045
+    },
+    "lcpMs": {
+      "median": 2659.5744,
+      "min": 2252.85495,
+      "max": 5190.292599999995
+    },
+    "fcpMs": {
+      "median": 2058.1395,
+      "min": 2015.8821,
+      "max": 2445.3257750000007
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0.01016361232872061
+    },
+    "speedIndexMs": {
+      "median": 2139.8086628538254,
+      "min": 2034.975044100158,
+      "max": 2445.3257750000007
+    },
+    "totalTransferBytes": {
+      "median": 457905,
+      "min": 457841,
+      "max": 493693
+    },
+    "longTaskAuditEntries": {
+      "median": 10,
+      "min": 9,
+      "max": 12
+    }
+  }
+}

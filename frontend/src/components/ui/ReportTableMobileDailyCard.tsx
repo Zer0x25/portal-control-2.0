@@ -21,18 +21,21 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
 
   return (
     <div
+      data-list-group="responsive-record-cards"
       className={`p-4 rounded-2xl shadow-lg ${cardBg} backdrop-blur-md border-l-4 ${borderClass} relative overflow-hidden transition-shadow duration-300 hover:shadow-xl animate-in fade-in [--tw-enter-translate-x:-10px] [animation-duration:200ms]`}
     >
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-extrabold text-token-text-primary text-sm">{item.date}</p>
-          <p className="text-[10px] uppercase font-bold text-token-text-tertiary tracking-wider">
+          <p data-list-role="value" className="typo-list-value text-token-text-primary">
+            {item.date}
+          </p>
+          <p className="typo-list-secondary uppercase text-token-text-tertiary tracking-wide">
             {item.dayOfWeek}
           </p>
         </div>
         {item.justificationType && (
           <span
-            className={`px-2.5 py-1 text-[10px] rounded-lg font-black uppercase tracking-tighter shadow-sm ${justificationClass}`}
+            className={`typo-list-status px-2.5 py-1 rounded-lg uppercase tracking-wide shadow-sm ${justificationClass}`}
           >
             {item.justificationType}
           </span>
@@ -42,52 +45,52 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
       {!isJustified ? (
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-token-accent-brand/10 text-token-accent-brand rounded-md text-[10px] font-bold uppercase">
+            <span className="typo-list-secondary px-2 py-0.5 bg-token-accent-brand/10 text-token-accent-brand rounded-md uppercase">
               Turno: {item.scheduledShift}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-0.5">
-              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                 Marcaje
               </span>
-              <span className="text-xs font-black text-token-text-primary font-mono">
+              <span data-list-role="value" className="typo-list-value text-token-text-primary">
                 {item.actualClocks || "--:--"}
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                 Hrs. Prog
               </span>
-              <span className="text-xs font-black text-token-text-primary font-mono">
+              <span data-list-role="value" className="typo-list-value text-token-text-primary">
                 {formatDecimalHoursToHHMM(item.scheduledHours)}h
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                 Colación
               </span>
-              <span className="text-xs font-black text-token-text-primary font-mono">
+              <span data-list-role="value" className="typo-list-value text-token-text-primary">
                 {item.colacionMinutes.toFixed(0)} min
               </span>
             </div>
             <div className="space-y-0.5">
-              <span className="block text-xxs font-bold text-token-text-tertiary uppercase tracking-widest">
+              <span className="block typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                 Trabajadas
               </span>
-              <span className="text-xs font-black text-token-text-primary font-mono">
+              <span data-list-role="value" className="typo-list-value text-token-text-primary">
                 {formatDecimalHoursToHHMM(item.workedHours)}h
               </span>
             </div>
           </div>
 
           <div className="pt-2 border-t border-token-border-subtle flex justify-between items-center">
-            <span className="text-[10px] font-bold text-token-text-tertiary uppercase">
+            <span className="typo-list-secondary text-token-text-tertiary uppercase">
               Diferencia
             </span>
             <span
-              className={`text-sm font-black ${item.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
+              className={`typo-list-value ${item.differenceHours >= 0 ? "text-token-status-success" : "text-token-status-error"}`}
             >
               {formatDecimalHoursToHHMM(item.differenceHours)}h
             </span>
@@ -95,7 +98,7 @@ const ReportTableMobileDailyCard: React.FC<MobileDailyCardProps> = ({
         </div>
       ) : (
         <div className="mt-3 py-2 px-3 bg-token-surface-stripe rounded-xl border border-dashed border-token-border-subtle">
-          <p className="text-[10px] text-token-text-tertiary italic">
+          <p className="typo-list-note text-token-text-tertiary">
             Día no laboral o con justificación registrada.
           </p>
         </div>

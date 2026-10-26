@@ -28,7 +28,7 @@ vi.mock("../../../hooks/queries/useAuditLogsInfinite", () => ({
 }));
 
 vi.mock("../../../hooks/useCorrectionRequests", () => ({
-  useCorrectionRequests: () => useCorrectionRequestsMock(),
+  useCorrectionRequests: (...args: unknown[]) => useCorrectionRequestsMock(...args),
 }));
 
 vi.mock("../../../utils/export/index", () => ({
@@ -69,6 +69,11 @@ describe("useTimeRecordTableController", () => {
     expect(result.current.editsMapAll.get("r1")).toHaveLength(1);
     expect(result.current.pendingRequestsMap.has("r1")).toBe(true);
     expect(result.current.pendingRequestsMap.has("r2")).toBe(false);
+    expect(useCorrectionRequestsMock).toHaveBeenCalledWith(
+      undefined,
+      undefined,
+      "correction-requests",
+    );
   });
 
   it("exports csv through streaming callback", async () => {

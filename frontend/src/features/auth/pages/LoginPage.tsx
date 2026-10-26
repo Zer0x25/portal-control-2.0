@@ -99,17 +99,12 @@ const LoginPage: React.FC = () => {
       data-testid="login-page"
       className="min-h-screen flex items-center justify-center bg-token-surface-stripe p-6 overflow-hidden relative selection:bg-token-accent-brand/30 selection:text-token-accent-brand"
     >
-      {/* Crystal Clear Spotlight Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none bg-token-surface-stripe">
-        {/* Main Spotlight */}
-        <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.08)_0%,transparent_70%)] ${Z.base}`}
-        />
-
-        {/* Inner Glow behind the card */}
-        <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-token-accent-brand/10 rounded-full blur-[120px] ${Z.base}`}
-        />
+      {/* Ambient CSS gradient stays soft in high-performance mode without filters. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 overflow-hidden pointer-events-none bg-token-surface-stripe"
+      >
+        <div className={`absolute inset-0 login-ambient-glow ${Z.base}`} />
 
         {/* Technical Grid - Pure CSS & Sharp */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
@@ -132,7 +127,7 @@ const LoginPage: React.FC = () => {
             {/* Header Section */}
             <div className="text-center mb-10 sm:mb-8">
               <div className="mb-8 sm:mb-6 relative inline-block group-hover:scale-105 transition-transform duration-500 animate-in fade-in slide-in-from-top-4 [animation-duration:600ms] [animation-delay:200ms]">
-                <div className="absolute inset-0 bg-token-accent-brand rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+                <div className="ambient-glow ambient-glow-prominent absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100"></div>
                 <BrandLogo
                   className={`h-20 sm:h-16 w-auto relative ${Z.sticky} rounded-2xl shadow-2xl`}
                 />

@@ -1,4 +1,6 @@
+import React from "react";
 import { DashboardWidget, WidgetId, UserRole } from "../../../types";
+import { RenderProfiler } from "../../../utils/RenderProfiler";
 import { MyStatusPanel } from "./MyStatusPanel";
 import { AlertsPanel } from "./AlertsPanel";
 import { TeamStatusPanel } from "./TeamStatusPanel";
@@ -13,11 +15,26 @@ const ALL_DASHBOARD_ROLES: UserRole[] = [
   "Supervisor",
 ];
 
+const profileWidget = (
+  id: WidgetId,
+  Component: React.ComponentType<unknown>,
+): React.ComponentType<unknown> => {
+  if (!import.meta.env.DEV) return Component;
+
+  const ProfiledWidget: React.FC<unknown> = (props) =>
+    React.createElement(RenderProfiler, {
+      id: `widget:${id}`,
+      children: React.createElement(Component, props as Record<string, unknown>),
+    });
+  ProfiledWidget.displayName = `ProfiledDashboardWidget(${id})`;
+  return ProfiledWidget;
+};
+
 export const WIDGET_REGISTRY: DashboardWidget[] = [
   {
     id: "myStatus",
     title: "Mi Estado Actual",
-    component: MyStatusPanel,
+    component: profileWidget("myStatus", MyStatusPanel),
     defaultVisible: true,
     mobileVisible: false,
     roles: ALL_DASHBOARD_ROLES,
@@ -25,7 +42,7 @@ export const WIDGET_REGISTRY: DashboardWidget[] = [
   {
     id: "quickActions",
     title: "Acciones Rápidas",
-    component: QuickActionsPanel,
+    component: profileWidget("quickActions", QuickActionsPanel),
     defaultVisible: true,
     mobileVisible: true,
     roles: ALL_DASHBOARD_ROLES,
@@ -33,7 +50,7 @@ export const WIDGET_REGISTRY: DashboardWidget[] = [
   {
     id: "tools",
     title: "Herramientas y Recursos",
-    component: ToolsPanel,
+    component: profileWidget("tools", ToolsPanel),
     defaultVisible: true,
     mobileVisible: false,
     roles: ALL_DASHBOARD_ROLES,
@@ -41,7 +58,7 @@ export const WIDGET_REGISTRY: DashboardWidget[] = [
   {
     id: "alerts",
     title: "Alertas de Personal",
-    component: AlertsPanel,
+    component: profileWidget("alerts", AlertsPanel),
     defaultVisible: true,
     mobileVisible: true,
     roles: ALL_DASHBOARD_ROLES,
@@ -49,7 +66,7 @@ export const WIDGET_REGISTRY: DashboardWidget[] = [
   {
     id: "teamStatus",
     title: "Estado del Equipo",
-    component: TeamStatusPanel,
+    component: profileWidget("teamStatus", TeamStatusPanel),
     defaultVisible: true,
     mobileVisible: true,
     roles: ALL_DASHBOARD_ROLES,
@@ -57,7 +74,7 @@ export const WIDGET_REGISTRY: DashboardWidget[] = [
   {
     id: "latestReports",
     title: "Últimos Reportes de Turno",
-    component: LatestReportsPanel,
+    component: profileWidget("latestReports", LatestReportsPanel),
     defaultVisible: true,
     mobileVisible: false,
     roles: ALL_DASHBOARD_ROLES,

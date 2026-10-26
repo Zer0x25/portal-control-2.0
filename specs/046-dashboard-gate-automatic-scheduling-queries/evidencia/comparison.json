@@ -1,0 +1,38 @@
+{
+  "capturedOnLocal": "2026-10-24",
+  "target": "local-staging",
+  "route": "/#/dashboard",
+  "viewport": { "width": 1440, "height": 900 },
+  "before": {
+    "commit": "e3fea81",
+    "frontendImageId": "sha256:e82c07b90d7f53437a3df7f5da691a86c681e0ec878fbbc57c9cd917d1895921",
+    "sampleCount": 2,
+    "apiRequestCount": 20,
+    "uniqueApiEndpointCount": 20,
+    "mainContentVisibleOffsetMs": [519.46, 615.31],
+    "serverClockVisibleOffsetMs": [526.25, 645.75],
+    "medianMainContentVisibleOffsetMs": 567.385,
+    "medianServerClockVisibleOffsetMs": 586,
+    "autoStartSchedulingRequestCount": 10
+  },
+  "after": {
+    "commit": "e3fea81",
+    "workingTreeDirty": true,
+    "frontendImageId": "sha256:000841f7cf368c64b4e44fb9b1fd8373142c2516aa58a00f14d17e9d552ebfa9",
+    "sampleCount": 3,
+    "apiRequestCount": [10, 10, 10],
+    "uniqueApiEndpointCount": [10, 10, 10],
+    "mainContentVisibleOffsetMs": [517.45, 687.09, 564.82],
+    "medianMainContentVisibleOffsetMs": 564.82,
+    "serverClockVisibleOffsetMs": [536.73, 693.13, 602.52],
+    "medianServerClockVisibleOffsetMs": 602.52,
+    "autoStartSchedulingRequestCount": [0, 0, 0],
+    "httpStatuses": [200],
+    "duplicateEndpoints": []
+  },
+  "removedAutoStartSchedulingApiPaths": ["/api/configs/global_max_hours", "/api/configs/area_list", "/api/configs/workday_types", "/api/configs/email_recipients", "/api/configs/accounting_lock_date", "/api/shifts/patterns", "/api/shifts/assignments", "/api/holidays", "/api/leaves", "/api/corrections"],
+  "interpretation": ["The measured reduction is 10 of 20 unique Dashboard API endpoints (-50%); each after run returned 10 endpoints, all HTTP 200, without duplicates.", "Main-content and server-clock timing ranges overlap and are noisy; no UI latency or Core Web Vitals improvement is claimed.", "The after samples were collected sequentially with one worker on the same final frontend image."],
+  "limitations": ["Two baseline captures and three after captures are local-staging lab samples, not field Core Web Vitals.", "The user was the seeded Administrator without an employee association; this isolates the no-auto-start case.", "Performance change is causal for the gated request list; timing differences are not attributed to the request reduction."],
+  "rawAfterRuns": ["runs/sample-01/dashboard-startup-api-requests.json", "runs/sample-02/dashboard-startup-api-requests.json", "runs/sample-03/dashboard-startup-api-requests.json"],
+  "rawBaselineSummary": "dashboard-startup-before.json"
+}

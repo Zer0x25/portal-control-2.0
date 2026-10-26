@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-10-23T13:40:27.819Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "text": "ЖΩ",
+  "extraFontRequests": ["http://127.0.0.1:8080/assets/Inter-Regular-gaL85XTs.woff2", "http://127.0.0.1:8080/assets/RobotoMono-Bold-5Ml4HyRU.woff2"],
+  "loaded": [
+    [
+      {
+        "family": "Inter",
+        "status": "loaded"
+      }
+    ],
+    [
+      {
+        "family": "Roboto Mono",
+        "status": "loaded"
+      }
+    ]
+  ]
+}

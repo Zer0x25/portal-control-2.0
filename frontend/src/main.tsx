@@ -25,9 +25,10 @@ const updateSW = registerSW({
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App, { preloadTimeControlPageFromCurrentHash } from "./App";
 import { AppProviders } from "./contexts/AppProviders";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { RenderProfiler } from "./utils/RenderProfiler";
 
 // Performance mode: disables expensive visual effects unless explicitly disabled.
 const perfMode = String(import.meta.env.VITE_UI_PERF_MODE ?? "high").toLowerCase();
@@ -42,15 +43,28 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 
+preloadTimeControlPageFromCurrentHash();
+
 // Limpiar flag de recarga por error de chunk si la app carga bien
 if (window.sessionStorage.getItem("chunk-load-reloaded")) {
   window.sessionStorage.removeItem("chunk-load-reloaded");
 }
 
-root.render(
-  <AppProviders>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </AppProviders>,
+const appContent = <App />;
+const appShell = <ErrorBoundary>{appContent}</ErrorBoundary>;
+
+const developmentTree = (
+  <RenderProfiler id="app:root">
+    <RenderProfiler id="app:providers">
+      <AppProviders>
+        <RenderProfiler id="app:shell">
+          <ErrorBoundary>
+            <RenderProfiler id="app:application">{appContent}</RenderProfiler>
+          </ErrorBoundary>
+        </RenderProfiler>
+      </AppProviders>
+    </RenderProfiler>
+  </RenderProfiler>
 );
+
+root.render(import.meta.env.DEV ? developmentTree : <AppProviders>{appShell}</AppProviders>);

@@ -1,0 +1,370 @@
+{
+  "capturedOn": "2026-10-23",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "runner": "LHCI cold profile; .lighthouserc-dashboard-cold.json; disableStorageReset=false; three Lighthouse runs",
+  "source": {
+    "baseCommit": "3a08b122425a41320d5b1de9ebec4ce4bc1e74d6",
+    "workingTreeDirty": true,
+    "frontendImage": "sha256:dd1b9226211b3d7d0bc1a7f391c2d387eb75e54acb22012f1c2bfa42f8f7b920",
+    "dashboardViewSha256": "a81af775de29834bd8c235c9e6f60dfa4cf6b0108ab7790c4aff1ae1cfe24a11"
+  },
+  "sampleCount": 3,
+  "runs": [
+    {
+      "report": "127_0_0_1--2026_10_23_23_49_21.report.json",
+      "capturedAt": "2026-10-23T23:49:21.567Z",
+      "performanceScore": 0.67,
+      "fcpMs": 3779.05,
+      "lcpMs": 5553.1,
+      "tbtMs": 210,
+      "cls": 0,
+      "speedIndexMs": 3779.05,
+      "lcpElement": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "snippet": "<div class=\"font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabula…\">",
+        "nodeLabel": "20:49:39",
+        "phases": {
+          "TTFB": 451.85,
+          "Load Delay": 0,
+          "Load Time": 0,
+          "Render Delay": 5101.24
+        }
+      },
+      "renderBlocking": {
+        "estimatedSavingsMs": 0,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+            "transferBytes": 36084,
+            "estimatedWastedMs": 902
+          }
+        ]
+      },
+      "unusedJavaScript": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "transferBytes": 79743,
+          "estimatedUnusedBytes": 32280
+        }
+      ],
+      "javascriptCpu": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "totalCpuMs": 1226.3,
+          "scriptEvaluationMs": 882.63,
+          "parseCompileMs": 0.14
+        },
+        {
+          "url": "Unattributable",
+          "totalCpuMs": 402.8,
+          "scriptEvaluationMs": 34.01,
+          "parseCompileMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:8080/",
+          "totalCpuMs": 325.54,
+          "scriptEvaluationMs": 2.81,
+          "parseCompileMs": 0.4
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-8KjL1qRa.js",
+          "totalCpuMs": 72.78,
+          "scriptEvaluationMs": 62.86,
+          "parseCompileMs": 0.35
+        }
+      ],
+      "resourceTotals": [
+        {
+          "type": "total",
+          "requests": 88,
+          "transferBytes": 468560
+        },
+        {
+          "type": "script",
+          "requests": 76,
+          "transferBytes": 305028
+        },
+        {
+          "type": "font",
+          "requests": 4,
+          "transferBytes": 119607
+        },
+        {
+          "type": "stylesheet",
+          "requests": 1,
+          "transferBytes": 36084
+        },
+        {
+          "type": "other",
+          "requests": 6,
+          "transferBytes": 6288
+        },
+        {
+          "type": "document",
+          "requests": 1,
+          "transferBytes": 1553
+        },
+        {
+          "type": "image",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "media",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "third-party",
+          "requests": 0,
+          "transferBytes": 0
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_23_23_49_47.report.json",
+      "capturedAt": "2026-10-23T23:49:47.404Z",
+      "performanceScore": 0.71,
+      "fcpMs": 3749.5,
+      "lcpMs": 5423.07,
+      "tbtMs": 99.5,
+      "cls": 0,
+      "speedIndexMs": 3749.5,
+      "lcpElement": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "snippet": "<div class=\"font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabula…\">",
+        "nodeLabel": "20:50:05",
+        "phases": {
+          "TTFB": 451.46,
+          "Load Delay": 0,
+          "Load Time": 0,
+          "Render Delay": 4971.61
+        }
+      },
+      "renderBlocking": {
+        "estimatedSavingsMs": 0,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+            "transferBytes": 36052,
+            "estimatedWastedMs": 901
+          }
+        ]
+      },
+      "unusedJavaScript": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "transferBytes": 79743,
+          "estimatedUnusedBytes": 32280
+        }
+      ],
+      "javascriptCpu": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "totalCpuMs": 930.73,
+          "scriptEvaluationMs": 743,
+          "parseCompileMs": 0.17
+        },
+        {
+          "url": "Unattributable",
+          "totalCpuMs": 397.36,
+          "scriptEvaluationMs": 44.43,
+          "parseCompileMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:8080/",
+          "totalCpuMs": 279.28,
+          "scriptEvaluationMs": 2.59,
+          "parseCompileMs": 0.44
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-8KjL1qRa.js",
+          "totalCpuMs": 61.04,
+          "scriptEvaluationMs": 51.23,
+          "parseCompileMs": 0.41
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/storage-exKiCKfO.js",
+          "totalCpuMs": 55.69,
+          "scriptEvaluationMs": 30.72,
+          "parseCompileMs": 0.07
+        }
+      ],
+      "resourceTotals": [
+        {
+          "type": "total",
+          "requests": 88,
+          "transferBytes": 471924
+        },
+        {
+          "type": "script",
+          "requests": 76,
+          "transferBytes": 308409
+        },
+        {
+          "type": "font",
+          "requests": 4,
+          "transferBytes": 119623
+        },
+        {
+          "type": "stylesheet",
+          "requests": 1,
+          "transferBytes": 36052
+        },
+        {
+          "type": "other",
+          "requests": 6,
+          "transferBytes": 6287
+        },
+        {
+          "type": "document",
+          "requests": 1,
+          "transferBytes": 1553
+        },
+        {
+          "type": "image",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "media",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "third-party",
+          "requests": 0,
+          "transferBytes": 0
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_23_23_50_12.report.json",
+      "capturedAt": "2026-10-23T23:50:12.637Z",
+      "performanceScore": 0.71,
+      "fcpMs": 3759.76,
+      "lcpMs": 5415.74,
+      "tbtMs": 108,
+      "cls": 0,
+      "speedIndexMs": 3759.76,
+      "lcpElement": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "snippet": "<div class=\"font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabula…\">",
+        "nodeLabel": "20:50:30",
+        "phases": {
+          "TTFB": 450.89,
+          "Load Delay": 0,
+          "Load Time": 0,
+          "Render Delay": 4964.86
+        }
+      },
+      "renderBlocking": {
+        "estimatedSavingsMs": 0,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+            "transferBytes": 36052,
+            "estimatedWastedMs": 901
+          }
+        ]
+      },
+      "unusedJavaScript": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "transferBytes": 79743,
+          "estimatedUnusedBytes": 32280
+        }
+      ],
+      "javascriptCpu": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "totalCpuMs": 974.7,
+          "scriptEvaluationMs": 762.83,
+          "parseCompileMs": 0.2
+        },
+        {
+          "url": "Unattributable",
+          "totalCpuMs": 505.47,
+          "scriptEvaluationMs": 36.8,
+          "parseCompileMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:8080/",
+          "totalCpuMs": 329.15,
+          "scriptEvaluationMs": 2.94,
+          "parseCompileMs": 0.45
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-8KjL1qRa.js",
+          "totalCpuMs": 68.2,
+          "scriptEvaluationMs": 52.08,
+          "parseCompileMs": 0.34
+        }
+      ],
+      "resourceTotals": [
+        {
+          "type": "total",
+          "requests": 88,
+          "transferBytes": 471943
+        },
+        {
+          "type": "script",
+          "requests": 76,
+          "transferBytes": 308409
+        },
+        {
+          "type": "font",
+          "requests": 4,
+          "transferBytes": 119639
+        },
+        {
+          "type": "stylesheet",
+          "requests": 1,
+          "transferBytes": 36052
+        },
+        {
+          "type": "other",
+          "requests": 6,
+          "transferBytes": 6290
+        },
+        {
+          "type": "document",
+          "requests": 1,
+          "transferBytes": 1553
+        },
+        {
+          "type": "image",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "media",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "third-party",
+          "requests": 0,
+          "transferBytes": 0
+        }
+      ]
+    }
+  ],
+  "medians": {
+    "performanceScore": 0.71,
+    "fcpMs": 3759.76,
+    "lcpMs": 5423.07,
+    "tbtMs": 108,
+    "cls": 0,
+    "speedIndexMs": 3759.76,
+    "lcpElementRenderDelayMs": 4971.61
+  },
+  "interpretation": "El texto del reloj de WelcomePanel sigue como candidato LCP. Las medianas Lighthouse quedan esencialmente iguales a spec 043; no hay mejora de LCP demostrable y los rangos entre muestras se solapan. La marca DOM de Playwright es anterior, pero no equivale a LCP/pintura.",
+  "limitations": [
+    "Lighthouse local y datos semillados; no son Core Web Vitals de usuarios reales.",
+    "Los rangos LCP antes y después se solapan; no atribuir variación a este cambio.",
+    "Ahorros de auditoría son estimaciones; el recurso render-blocking conserva 0 ms de ahorro global.",
+    "La demora de render del candidato LCP fue 4971.61 ms frente a 4965.63 ms en spec 043."
+  ]
+}

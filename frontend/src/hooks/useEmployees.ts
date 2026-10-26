@@ -8,26 +8,30 @@ import { timeRecordService } from "../services/timeRecordService";
 import { employeeService } from "../services/employeeService";
 import { Employee, EmployeeStatus } from "../types";
 import { useEffect } from "react";
-import { toBusinessDateChile } from "../utils/dateUtils";
 import { UserRole } from "../types/user";
 import { queryKeys } from "../lib/queryKeys";
 
 const EMPTY_EMPLOYEES: Employee[] = [];
+const loadDateUtilsForArchive = () => import("../utils/dateUtils");
 
 /**
  * Empleados: única fuente = `useEmployeesQuery` (spec 032 T5).
  * El store deja de duplicar la colección ni a escribir IndexedDB; cada
  * acción invalida `employees` para que react-query refresque.
  */
-export const useEmployees = (_isKiosk: boolean = false) => {
-  const { users: usersData, deleteUser: hardDeleteUser, addUser: recreateUser } = useUsers();
+export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boolean } = {}) => {
+  const {
+    deleteUser: hardDeleteUser,
+    addUser: recreateUser,
+    refetchUsers,
+  } = useUsers({ enabled: false });
   const currentUser = useStore((state) => state.currentUser);
 
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
 
-  const employeesQuery = useEmployeesQuery();
-  const kioskQuery = useKioskEmployeesQuery();
+  const employeesQuery = useEmployeesQuery(options.enabled);
+  const kioskQuery = useKioskEmployeesQuery(_isKiosk);
 
   const invalidateEmployees = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.employees() });
@@ -200,6 +204,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         });
 
         // 2. Delete associated user (Hard Delete)
+        const { data: usersData = [] } = await refetchUsers();
         const linkedUser = usersData.find((u) => u.employeeId === employee.id);
         if (linkedUser) {
           await hardDeleteUser(linkedUser.id);
@@ -210,6 +215,7 @@ export const useEmployees = (_isKiosk: boolean = false) => {
         const assignmentsResponse = await shiftService.getAssignments();
         const allAssignments = assignmentsResponse.data;
         const employeeAssignments = allAssignments.filter((a) => a.employeeId === employee.id);
+        const { toBusinessDateChile } = await loadDateUtilsForArchive();
         const todayStr = toBusinessDateChile();
 
         const terminationPromises = employeeAssignments.map(async (assignment) => {

@@ -1,26 +1,28 @@
 import { useStore } from "../store/useStore";
+import { useShallow } from "zustand/react/shallow";
 
-export const useAuth = () => {
-  const currentUser = useStore((state) => state.currentUser);
-  const isAuthenticated = useStore((state) => state.isAuthenticated);
-  const isAuthLoading = useStore((state) => state.isAuthLoading);
-  const mfaRequired = useStore((state) => state.mfaRequired);
-  const mfaToken = useStore((state) => state.mfaToken);
-  const login = useStore((state) => state.login);
-  const logout = useStore((state) => state.logout);
-  const validateMFACode = useStore((state) => state.validateMFACode);
-  const clearMustChangePassword = useStore((state) => state.clearMustChangePassword);
+export const useAuth = () =>
+  useStore(
+    useShallow((state) => ({
+      currentUser: state.currentUser,
+      isAuthenticated: state.isAuthenticated,
+      isAuthLoading: state.isAuthLoading,
+      mfaRequired: state.mfaRequired,
+      mfaToken: state.mfaToken,
+      login: state.login,
+      logout: state.logout,
+      validateMFACode: state.validateMFACode,
+      isForcePasswordChangeModalOpen: state.currentUser?.mustChangePassword === true,
+      clearMustChangePassword: state.clearMustChangePassword,
+    })),
+  );
 
-  return {
-    currentUser,
-    isAuthenticated,
-    isAuthLoading,
-    mfaRequired,
-    mfaToken,
-    login,
-    logout,
-    validateMFACode,
-    isForcePasswordChangeModalOpen: currentUser?.mustChangePassword === true,
-    clearMustChangePassword,
-  };
-};
+/** Narrow auth selection for the always-mounted application shell. */
+export const useAuthShellControls = () =>
+  useStore(
+    useShallow((state) => ({
+      isForcePasswordChangeModalOpen: state.currentUser?.mustChangePassword === true,
+      clearMustChangePassword: state.clearMustChangePassword,
+      logout: state.logout,
+    })),
+  );

@@ -12,6 +12,7 @@ import { timeRecordService } from "../../../services/timeRecordService";
 import { CLOCKING_STATUS_CONFIG, getContractClockingStatus } from "../../../utils/mappings";
 import { idbGetAllBy, STORES } from "../../../utils/indexedDB";
 import { normalizeString } from "../../../utils/stringUtils";
+import type { ClockingActionType } from "../../../utils/clockingActionButtonStyles";
 import { getCurrentGeolocation } from "../../../utils/geolocation";
 import { logger } from "../../../utils/logger";
 
@@ -23,8 +24,6 @@ export type KioskStep =
   | "actions"
   | "success"
   | "change_pin";
-
-type KioskActionType = "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin";
 
 export const useKioskData = () => {
   const navigate = useNavigate();
@@ -241,7 +240,7 @@ export const useKioskData = () => {
     } else addToast("Error al actualizar el PIN.", "error");
   };
 
-  const handleClockingAction = async (type: KioskActionType) => {
+  const handleClockingAction = async (type: ClockingActionType) => {
     if (!selectedEmployee || isSubmittingRef.current) return;
     isSubmittingRef.current = true;
 
@@ -304,30 +303,26 @@ export const useKioskData = () => {
       {
         id: "jornada_inicio" as const,
         label: "Inicio Jornada",
-        color: "green" as const,
         enabled: ["fuera", "terminada", "jornada_terminada_anomalia"].includes(clockStatus),
-        actionType: "jornada_inicio" as KioskActionType,
+        actionType: "jornada_inicio" as ClockingActionType,
       },
       {
         id: "colacion_inicio" as const,
         label: "Inicio Colación",
-        color: "yellow" as const,
         enabled: clockStatus === "en_jornada",
-        actionType: "colacion_inicio" as KioskActionType,
+        actionType: "colacion_inicio" as ClockingActionType,
       },
       {
         id: "colacion_fin" as const,
         label: "Fin Colación",
-        color: "blue" as const,
         enabled: clockStatus === "en_colacion",
-        actionType: "colacion_fin" as KioskActionType,
+        actionType: "colacion_fin" as ClockingActionType,
       },
       {
         id: "jornada_fin" as const,
         label: "Fin Jornada",
-        color: "red" as const,
         enabled: ["en_jornada", "en_jornada_post_colacion", "en_colacion"].includes(clockStatus),
-        actionType: "jornada_fin" as KioskActionType,
+        actionType: "jornada_fin" as ClockingActionType,
       },
     ],
     [clockStatus],

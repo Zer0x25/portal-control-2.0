@@ -1,5 +1,5 @@
-/* Inter Font Family */
 @import "tailwindcss";
+@import "./assets/fonts/fonts.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -151,6 +151,32 @@
   @apply text-[11px] leading-tight font-semibold tracking-wide;
 }
 
+/* Shared hierarchy for data lists. List groups may vary layout and density,
+   while these roles keep labels, records, values, and notes predictable. */
+@utility typo-list-header {
+  @apply text-[12px] leading-tight font-sans font-semibold tracking-wide uppercase;
+}
+
+@utility typo-list-primary {
+  @apply text-[14px] leading-snug font-sans font-semibold;
+}
+
+@utility typo-list-secondary {
+  @apply text-[12px] leading-snug font-sans font-medium;
+}
+
+@utility typo-list-value {
+  @apply text-[14px] leading-snug font-mono font-semibold tabular-nums tracking-normal;
+}
+
+@utility typo-list-note {
+  @apply text-[14px] leading-relaxed font-sans font-normal;
+}
+
+@utility typo-list-status {
+  @apply text-[12px] leading-tight font-sans font-semibold;
+}
+
 /* --- PWA Mobile Safe Area Utilities --- */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
@@ -299,67 +325,6 @@
 @utility slide-in-from-right-4 {
   --tw-enter-translate-x: 1rem;
 }
-
-@layer base {
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-SemiBold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 800;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-style: normal;
-    font-weight: 900;
-    font-display: swap;
-    src: url("./assets/fonts/Inter-Bold.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Roboto Mono";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url("./assets/fonts/RobotoMono-Regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Roboto Mono";
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url("./assets/fonts/RobotoMono-Bold.woff2") format("woff2");
-  }
-}
-
-/* Roboto Mono Font Family */
 
 @layer utilities {
   :root {
@@ -639,20 +604,58 @@ textarea,
   /* cool-gray-400 */
 }
 
-/* --- Global Autofill Fix for Dark Theme --- */
+/* --- Theme-aware autofill styling --- */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #020617 inset !important;
-  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-stripe) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
-/* For Firefox */
+/* Firefox and standards-based autofill. */
 input:autofill {
-  background-color: #020617 !important;
-  color: white !important;
+  background-color: var(--surface-stripe) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Keep the login spotlight diffuse even when high-performance mode disables filters. */
+.login-ambient-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 45%,
+    color-mix(in srgb, var(--accent-professional) 16%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+/* Decorative ambient glows must stay soft without relying on filter: blur(). */
+.ambient-glow {
+  --ambient-glow-color: var(--accent-professional);
+  --ambient-glow-strength: 12%;
+  background: radial-gradient(
+    ellipse 70% 70% at 50% 50%,
+    color-mix(in srgb, var(--ambient-glow-color) var(--ambient-glow-strength), transparent) 0%,
+    transparent 100%
+  );
+}
+
+.ambient-glow-subtle {
+  --ambient-glow-strength: 8%;
+}
+
+.ambient-glow-prominent {
+  --ambient-glow-strength: 24%;
+}
+
+.ambient-glow-danger {
+  --ambient-glow-color: var(--status-error);
+  --ambient-glow-strength: 10%;
+}
+
+.ambient-glow-light {
+  --ambient-glow-color: #fff;
+  --ambient-glow-strength: 10%;
 }
 
 /* --- Performance Overrides for Mobile and Low-Power Devices --- */

@@ -1,4 +1,4 @@
-import { useHealthQuery, deriveBackendStatus } from "./queries/useHealthQuery";
+import { useReadinessQuery, deriveReadinessStatus } from "./queries/useHealthQuery";
 
 export type SystemStatus = "online" | "offline" | "degraded";
 
@@ -9,12 +9,11 @@ interface UseSystemStatusReturn {
 }
 
 /**
- * Thin adapter over the shared useHealthQuery (Fase 1).
- * Same return contract as before; transport now deduplicated by queryKey.
+ * Thin adapter over the shared lightweight readiness query.
  */
 export const useSystemStatus = (): UseSystemStatusReturn => {
-  const { data, error, isLoading, refetch } = useHealthQuery();
-  const backend = deriveBackendStatus(data, error, isLoading);
+  const { data, error, isLoading, refetch } = useReadinessQuery();
+  const backend = deriveReadinessStatus(data, error, isLoading);
 
   const status: SystemStatus =
     backend === "healthy" ? "online" : backend === "degraded" ? "degraded" : "offline";

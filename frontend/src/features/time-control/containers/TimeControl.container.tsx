@@ -1,4 +1,5 @@
 import React from "react";
+import { RenderProfiler } from "../../../utils/RenderProfiler";
 import TimeControlView from "../views/TimeControl.view";
 import { useTimeControlData } from "../hooks/useTimeControlData";
 
@@ -10,10 +11,22 @@ import { useTimeControlData } from "../hooks/useTimeControlData";
  * - Hook: Centraliza toda la lógica de negocio y estado.
  * - View: Renderizado puro de UI (UI-PROTECTED).
  */
-const TimeControlContainer: React.FC = () => {
-  const logic = useTimeControlData();
+interface TimeControlContainerProps {
+  isControlInternoEnabled: boolean;
+  isConfigLoading: boolean;
+}
 
-  return <TimeControlView {...logic} />;
+const TimeControlContainer: React.FC<TimeControlContainerProps> = ({
+  isControlInternoEnabled,
+  isConfigLoading,
+}) => {
+  const logic = useTimeControlData({ isControlInternoEnabled, isConfigLoading });
+
+  return (
+    <RenderProfiler id="time-control:view">
+      <TimeControlView {...logic} />
+    </RenderProfiler>
+  );
 };
 
 export default TimeControlContainer;

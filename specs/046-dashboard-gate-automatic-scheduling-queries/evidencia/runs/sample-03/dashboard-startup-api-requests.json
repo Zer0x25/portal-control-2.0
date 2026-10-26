@@ -1,0 +1,119 @@
+{
+  "capturedAt": "2026-10-24T01:01:47.293Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 564.82,
+  "serverClockVisibleOffsetMs": 602.52,
+  "apiRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/employees",
+      "finishOffsetMs": 611.15
+    },
+    {
+      "path": "/api/shift-reports",
+      "finishOffsetMs": 611.19
+    },
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 611.37
+    }
+  ],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/shift-reports",
+      "finishOffsetMs": 611.19
+    },
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 611.37
+    }
+  ],
+  "apiRequestCount": 10,
+  "uniqueApiEndpointCount": 10,
+  "duplicateEndpoints": [],
+  "autoStartSchedulingRequests": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview",
+    "/api/configs/public/company-policy",
+    "/api/notes"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 521.61,
+      "durationMs": 89.76,
+      "finishOffsetMs": 611.37,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 521.57,
+      "durationMs": 89.62,
+      "finishOffsetMs": 611.19,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 521.53,
+      "durationMs": 89.61,
+      "finishOffsetMs": 611.15,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 156.35,
+      "durationMs": 70.05,
+      "finishOffsetMs": 226.4,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 168.35,
+      "durationMs": 62.98,
+      "finishOffsetMs": 231.32,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/public/company-policy",
+      "startOffsetMs": 654.41,
+      "durationMs": 41.17,
+      "finishOffsetMs": 695.58,
+      "status": 200
+    },
+    {
+      "path": "/api/notes",
+      "startOffsetMs": 655.48,
+      "durationMs": 40.14,
+      "finishOffsetMs": 695.62,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 521.35,
+      "durationMs": 34.09,
+      "finishOffsetMs": 555.44,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 521.49,
+      "durationMs": 34.01,
+      "finishOffsetMs": 555.5,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 521.41,
+      "durationMs": 29.42,
+      "finishOffsetMs": 550.84,
+      "status": 200
+    }
+  ]
+}

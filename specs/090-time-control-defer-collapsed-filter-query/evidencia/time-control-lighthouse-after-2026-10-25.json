@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-25T18:50:17.115Z",
+  "source": {
+    "commit": "08c0c74450a2a3a447c8ed315f1a1a8a00b4ec93",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "routeId": "time-control",
+    "stagingFrontendImageId": "sha256:d759f55a9e4af066116b13567b8c0575a8e9e0d32988a5eb4ed5db99520827e6",
+    "stagingBackendImageId": "sha256:247bcb9a6cb0d0cd8ab7c15cd586be4e7ec1eaf7b31a3b2f8899fa95fcf03d27f",
+    "sampleCount": 5,
+    "lighthouseVersion": "12.6.1",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "lighthouseSettings": {
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "cpuSlowdownMultiplier": 4
+      },
+      "screenEmulation": {
+        "width": 412,
+        "height": 823
+      }
+    }
+  },
+  "comparison": {
+    "baseline": "../../089-time-control-defer-open-shift-reports/evidencia/time-control-lighthouse-after-2026-10-25.json",
+    "note": "Sequential captures with a large TBT outlier; medians are descriptive and do not establish causality.",
+    "tbtMs": {
+      "beforeMedian": 220,
+      "afterMedian": 189,
+      "changeMs": -31,
+      "changePercent": -14.1,
+      "beforeRange": {
+        "min": 211.5,
+        "max": 264.7
+      },
+      "afterRange": {
+        "min": 154,
+        "max": 677.5
+      }
+    },
+    "fcpMs": {
+      "beforeMedian": 2005.11,
+      "afterMedian": 2026.23,
+      "changeMs": 21.12,
+      "changePercent": 1.1
+    },
+    "lcpMs": {
+      "beforeMedian": 2255.19,
+      "afterMedian": 2255.37,
+      "changeMs": 0.18,
+      "changePercent": 0
+    }
+  },
+  "summary": {
+    "performanceScore": {
+      "median": 0.91,
+      "min": 0.8,
+      "max": 0.95
+    },
+    "fcpMs": {
+      "median": 2026.23,
+      "min": 1998.73,
+      "max": 2190.62
+    },
+    "lcpMs": {
+      "median": 2255.37,
+      "min": 2254.09,
+      "max": 2621.7
+    },
+    "tbtMs": {
+      "median": 189,
+      "min": 154,
+      "max": 677.5
+    },
+    "cls": {
+      "median": 0.0102,
+      "min": 0,
+      "max": 0.0102
+    },
+    "speedIndexMs": {
+      "median": 2268.33,
+      "min": 2153.66,
+      "max": 2762.18
+    },
+    "totalTransferBytes": {
+      "median": 463827,
+      "min": 457744,
+      "max": 500058
+    },
+    "scriptTransferBytes": {
+      "median": 300906,
+      "min": 294807,
+      "max": 334769
+    },
+    "requestCount": {
+      "median": 85,
+      "min": 85,
+      "max": 88
+    }
+  },
+  "samples": [
+    {
+      "report": "127_0_0_1--2026_10_25_18_50_17.report.json",
+      "fetchTime": "2026-10-25T18:50:17.115Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.9,
+        "fcpMs": 1998.73,
+        "lcpMs": 2254.09,
+        "tbtMs": 301,
+        "cls": 0.0102,
+        "speedIndexMs": 2286.19,
+        "totalTransferBytes": 463827,
+        "scriptTransferBytes": 300906,
+        "requestCount": 85
+      }
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_18_50_42.report.json",
+      "fetchTime": "2026-10-25T18:50:42.996Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.91,
+        "fcpMs": 2190.62,
+        "lcpMs": 2621.7,
+        "tbtMs": 189,
+        "cls": 0,
+        "speedIndexMs": 2762.18,
+        "totalTransferBytes": 463859,
+        "scriptTransferBytes": 300906,
+        "requestCount": 85
+      }
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_18_51_10.report.json",
+      "fetchTime": "2026-10-25T18:51:10.095Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.8,
+        "fcpMs": 2064.58,
+        "lcpMs": 2255.37,
+        "tbtMs": 677.5,
+        "cls": 0.0102,
+        "speedIndexMs": 2268.33,
+        "totalTransferBytes": 457744,
+        "scriptTransferBytes": 294807,
+        "requestCount": 85
+      }
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_18_51_36.report.json",
+      "fetchTime": "2026-10-25T18:51:36.774Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.94,
+        "fcpMs": 2026.23,
+        "lcpMs": 2257.85,
+        "tbtMs": 171.69,
+        "cls": 0.0102,
+        "speedIndexMs": 2153.66,
+        "totalTransferBytes": 500058,
+        "scriptTransferBytes": 334769,
+        "requestCount": 88
+      }
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_18_52_02.report.json",
+      "fetchTime": "2026-10-25T18:52:02.417Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.95,
+        "fcpMs": 2009.41,
+        "lcpMs": 2255.12,
+        "tbtMs": 154,
+        "cls": 0.0102,
+        "speedIndexMs": 2187.14,
+        "totalTransferBytes": 463827,
+        "scriptTransferBytes": 300906,
+        "requestCount": 85
+      }
+    }
+  ]
+}

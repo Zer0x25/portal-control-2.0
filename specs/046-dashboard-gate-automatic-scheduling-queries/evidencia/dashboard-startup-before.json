@@ -1,0 +1,35 @@
+{
+  "source": {
+    "commit": "e3fea81",
+    "frontendImageId": "sha256:e82c07b90d7f53437a3df7f5da691a86c681e0ec878fbbc57c9cd917d1895921",
+    "target": "local-staging",
+    "role": "Administrador",
+    "hasEmployeeId": false
+  },
+  "route": "/#/dashboard",
+  "viewport": { "width": 1440, "height": 900 },
+  "runs": [
+    {
+      "capturedAt": "2026-10-24T00:54:17.172Z",
+      "mainContentVisibleOffsetMs": 519.46,
+      "serverClockVisibleOffsetMs": 526.25,
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "duplicateEndpoints": [],
+      "pendingAtServerClock": ["/api/employees", "/api/users", "/api/configs/area_list", "/api/configs/global_max_hours", "/api/configs/workday_types", "/api/kpis/overview", "/api/configs/accounting_lock_date", "/api/shift-reports", "/api/shifts/patterns", "/api/configs/email_recipients", "/api/shifts/assignments", "/api/holidays", "/api/leaves", "/api/corrections"],
+      "httpStatuses": [200]
+    },
+    {
+      "capturedAt": "2026-10-24T00:56:39.675Z",
+      "mainContentVisibleOffsetMs": 615.31,
+      "serverClockVisibleOffsetMs": 645.75,
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "duplicateEndpoints": [],
+      "autoStartSchedulingRequests": ["/api/configs/global_max_hours", "/api/configs/area_list", "/api/configs/workday_types", "/api/configs/email_recipients", "/api/configs/accounting_lock_date", "/api/shifts/patterns", "/api/shifts/assignments", "/api/holidays", "/api/leaves", "/api/corrections"],
+      "httpStatuses": [200]
+    }
+  ],
+  "observedApiPaths": ["/api/health", "/api/configs/is_control_interno_enabled", "/api/corrections/stats", "/api/audit-logs", "/api/users", "/api/employees", "/api/shift-reports", "/api/kpis/overview", "/api/configs/global_max_hours", "/api/configs/area_list", "/api/configs/workday_types", "/api/configs/email_recipients", "/api/configs/accounting_lock_date", "/api/shifts/patterns", "/api/shifts/assignments", "/api/holidays", "/api/leaves", "/api/corrections", "/api/configs/public/company-policy", "/api/notes"],
+  "autoStartSchedulingApiPaths": ["/api/configs/global_max_hours", "/api/configs/area_list", "/api/configs/workday_types", "/api/configs/email_recipients", "/api/configs/accounting_lock_date", "/api/shifts/patterns", "/api/shifts/assignments", "/api/holidays", "/api/leaves", "/api/corrections"]
+}

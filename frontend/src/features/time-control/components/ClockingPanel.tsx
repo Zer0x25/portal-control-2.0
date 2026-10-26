@@ -1,7 +1,9 @@
 import React, { useRef } from "react";
+import { profileReactSubtree } from "../../../utils/RenderProfiler";
 import { useClockingPanel } from "../hooks/useClockingPanel";
 import Button from "../../../components/ui/Button";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
+import { getClockingActionButtonClassName } from "../../../utils/clockingActionButtonStyles";
 import { Z } from "../../../constants/zScale";
 
 interface ClockingPanelProps {
@@ -9,7 +11,10 @@ interface ClockingPanelProps {
   roleBasedTooltip: string;
 }
 
-const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBasedTooltip }) => {
+const ClockingPanelImpl: React.FC<ClockingPanelProps> = ({
+  isActionDisabled,
+  roleBasedTooltip,
+}) => {
   const {
     searchTerm,
     selectedEmployeeId,
@@ -25,6 +30,16 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
   } = useClockingPanel();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const jornadaInicioDisabled =
+    !selectedEmployeeId || !["fuera", "terminada"].includes(clockStatus) || isActionDisabled;
+  const colacionInicioDisabled =
+    !selectedEmployeeId || clockStatus !== "en_jornada" || isActionDisabled;
+  const colacionFinDisabled =
+    !selectedEmployeeId || clockStatus !== "en_colacion" || isActionDisabled;
+  const jornadaFinDisabled =
+    !selectedEmployeeId ||
+    !["en_jornada", "en_jornada_post_colacion", "en_colacion"].includes(clockStatus) ||
+    isActionDisabled;
 
   return (
     <div className="space-y-6">
@@ -110,62 +125,32 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
               <Button
                 variant="none"
                 onClick={() => performActionAndReset("jornada_inicio")}
-                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                  !selectedEmployeeId ||
-                  !["fuera", "terminada"].includes(clockStatus) ||
-                  isActionDisabled
-                    ? "bg-emerald-500/10 text-emerald-700/40 dark:text-emerald-400/30 border border-emerald-500/20 opacity-40 shadow-none"
-                    : "bg-emerald-600 text-white border border-emerald-500 shadow-md hover:bg-emerald-700"
-                }`}
-                disabled={
-                  isActionDisabled ||
-                  !selectedEmployeeId ||
-                  !["fuera", "terminada"].includes(clockStatus)
-                }
+                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${getClockingActionButtonClassName("jornada_inicio", jornadaInicioDisabled)}`}
+                disabled={jornadaInicioDisabled}
               >
                 Inicio
               </Button>
               <Button
                 variant="none"
                 onClick={() => performActionAndReset("colacion_inicio")}
-                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                  !selectedEmployeeId || clockStatus !== "en_jornada" || isActionDisabled
-                    ? "bg-amber-500/10 text-amber-700/40 dark:text-emerald-400/30 border border-amber-500/20 opacity-40 shadow-none"
-                    : "bg-amber-600 text-white border border-amber-500 shadow-md hover:bg-amber-700"
-                }`}
-                disabled={isActionDisabled || !selectedEmployeeId || clockStatus !== "en_jornada"}
+                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${getClockingActionButtonClassName("colacion_inicio", colacionInicioDisabled)}`}
+                disabled={colacionInicioDisabled}
               >
                 C. Inicio
               </Button>
               <Button
                 variant="none"
                 onClick={() => performActionAndReset("colacion_fin")}
-                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                  !selectedEmployeeId || clockStatus !== "en_colacion" || isActionDisabled
-                    ? "bg-sky-500/10 text-sky-700/40 dark:text-sky-400/30 border border-sky-500/20 opacity-40 shadow-none"
-                    : "bg-sky-600 text-white border border-sky-500 shadow-md hover:bg-sky-700"
-                }`}
-                disabled={isActionDisabled || !selectedEmployeeId || clockStatus !== "en_colacion"}
+                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${getClockingActionButtonClassName("colacion_fin", colacionFinDisabled)}`}
+                disabled={colacionFinDisabled}
               >
                 C. Fin
               </Button>
               <Button
                 variant="none"
                 onClick={() => performActionAndReset("jornada_fin")}
-                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                  !selectedEmployeeId ||
-                  !["en_jornada", "en_jornada_post_colacion", "en_colacion"].includes(
-                    clockStatus,
-                  ) ||
-                  isActionDisabled
-                    ? "bg-rose-500/10 text-rose-700/40 dark:text-rose-400/30 border border-rose-500/20 opacity-40 shadow-none"
-                    : "bg-rose-600 text-white border border-rose-500 shadow-md hover:bg-rose-700"
-                }`}
-                disabled={
-                  isActionDisabled ||
-                  !selectedEmployeeId ||
-                  !["en_jornada", "en_jornada_post_colacion", "en_colacion"].includes(clockStatus)
-                }
+                className={`h-11 rounded-md font-black uppercase tracking-widest text-[10px] shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${getClockingActionButtonClassName("jornada_fin", jornadaFinDisabled)}`}
+                disabled={jornadaFinDisabled}
               >
                 Fin
               </Button>
@@ -184,4 +169,8 @@ const ClockingPanel: React.FC<ClockingPanelProps> = ({ isActionDisabled, roleBas
 
 // useClockingPanel reads refs during render and is a compiler bail-out; this
 // boundary avoids rerunning that clocking hot path for unrelated parent renders.
-export default React.memo(ClockingPanel);
+const MemoizedClockingPanel = React.memo(ClockingPanelImpl);
+const ProfiledClockingPanel: React.FC<ClockingPanelProps> = (props) =>
+  profileReactSubtree("time-control:clocking-panel", <MemoizedClockingPanel {...props} />);
+
+export default import.meta.env.DEV ? ProfiledClockingPanel : MemoizedClockingPanel;

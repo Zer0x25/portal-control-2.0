@@ -17,13 +17,13 @@ import {
   DailyTimeRecord,
   TimeRecordField,
   CorrectionRequest,
-  ClockingStatus,
   AugmentedTimeRecord,
 } from "../../../types/index";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { logger } from "../../../utils/logger";
 import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import type { ClockingActionType } from "../../../utils/clockingActionButtonStyles";
 
 const getCurrentMonthYYYYMM = (now: Date) => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -32,7 +32,12 @@ const getCurrentMonthYYYYMM = (now: Date) => {
 export const useWorkerPortalData = () => {
   const businessNow = useBusinessNow({ tickMs: null });
   const { currentUser } = useAuth();
-  const { getEmployeeById, allEmployees, isLoadingEmployees, refreshEmployees } = useEmployees();
+  const {
+    getEmployeeById,
+    allEmployees,
+    isLoadingEmployees: isEmployeesQueryLoading,
+    refreshEmployees,
+  } = useEmployees();
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
   const { requests, getEmployeeDailyScheduleInfo, isLoadingSchedulingData } = useScheduling();
@@ -51,7 +56,6 @@ export const useWorkerPortalData = () => {
   );
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isResolvingEmployeeLink, setIsResolvingEmployeeLink] = useState(false);
-  const [isEmployeeResolutionFinished, setIsEmployeeResolutionFinished] = useState(false);
   const [resolvedEmployee, setResolvedEmployee] = useState<ReturnType<
     typeof getEmployeeById
   > | null>(null);
@@ -104,22 +108,19 @@ export const useWorkerPortalData = () => {
 
   useEffect(() => {
     if (!currentUser) {
-      setIsEmployeeResolutionFinished(true);
       return;
     }
 
     if (currentUser.role !== "Usuario") {
-      setIsEmployeeResolutionFinished(true);
       return;
     }
 
     if (storeEmployee) {
       hasTriedResolvingEmployeeLink.current = false;
       setResolvedEmployee(null);
-      setIsEmployeeResolutionFinished(true);
       return;
     }
-    if (isLoadingEmployees || isResolvingEmployeeLink || hasTriedResolvingEmployeeLink.current)
+    if (isEmployeesQueryLoading || isResolvingEmployeeLink || hasTriedResolvingEmployeeLink.current)
       return;
 
     // Nota: sin cleanup que cancele el vuelo. `setIsResolvingEmployeeLink(true)`
@@ -144,52 +145,43 @@ export const useWorkerPortalData = () => {
         }
       } finally {
         setIsResolvingEmployeeLink(false);
-        setIsEmployeeResolutionFinished(true);
       }
     };
 
     void resolveEmployeeLink();
-  }, [currentUser, storeEmployee, isLoadingEmployees, isResolvingEmployeeLink, refreshEmployees]);
+  }, [
+    currentUser,
+    storeEmployee,
+    isEmployeesQueryLoading,
+    isResolvingEmployeeLink,
+    refreshEmployees,
+  ]);
 
   const monthOptions = useMemo(() => {
     const options: Array<{ value: string; label: string }> = [];
     const now = businessNow;
+    const monthFormatter = new Intl.DateTimeFormat("es-CL", {
+      month: "long",
+      year: "numeric",
+    });
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = date.getFullYear();
       const month = date.getMonth();
       const value = `${year}-${String(month + 1).padStart(2, "0")}`;
-      const label = date.toLocaleString("es-CL", { month: "long", year: "numeric" });
+      const label = monthFormatter.format(date);
       const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
       options.push({ value, label: capitalizedLabel });
     }
     return options;
   }, [businessNow]);
 
-  const [status, setStatus] = useState<ClockingStatus>("fuera");
-  const [latestOpenRecord, setLatestOpenRecord] = useState<DailyTimeRecord | null>(null);
-
-  useEffect(() => {
-    if (!employee) {
-      return;
-    }
-    if (!latestEmployeeRecord) {
-      setStatus("fuera");
-      setLatestOpenRecord(null);
-      return;
-    }
-
-    // Antiregresión: el estado debe derivarse del último registro DEL empleado
-    // (query acotada por employeeId en servidor), nunca de un global sin filtrar.
-    const latest = latestEmployeeRecord;
-    const nextStatus = getContractClockingStatus(latest, () => "fuera");
-    setStatus(nextStatus);
-    if (["fuera", "terminada", "jornada_terminada_anomalia"].includes(nextStatus)) {
-      setLatestOpenRecord(null);
-    } else {
-      setLatestOpenRecord(latest as DailyTimeRecord);
-    }
-  }, [employee, latestEmployeeRecord]);
+  // Estado derivado de la última query del empleado. Mantenerlo en useState y
+  // sincronizarlo con un efecto añadía un commit tras cada cambio del registro.
+  const status =
+    employee && latestEmployeeRecord
+      ? getContractClockingStatus(latestEmployeeRecord, () => "fuera")
+      : "fuera";
 
   const requestsMap = useMemo(() => {
     const map = new Map<string, CorrectionRequest>();
@@ -278,7 +270,7 @@ export const useWorkerPortalData = () => {
   }, [employee, getPeriodDates, addToast]);
 
   const handleClockingAction = useCallback(
-    async (type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin") => {
+    async (type: ClockingActionType) => {
       if (!employee || !currentUser) {
         addToast("Empleado no encontrado.", "error");
         return;
@@ -351,7 +343,9 @@ export const useWorkerPortalData = () => {
     currentUser,
     employee,
     isLoadingEmployees:
-      !isEmployeeResolutionFinished && (isLoadingEmployees || isResolvingEmployeeLink),
+      currentUser?.role === "Usuario" &&
+      !storeEmployee &&
+      (isEmployeesQueryLoading || isResolvingEmployeeLink),
     isLoadingSchedulingData,
     modalState,
     setModalState,
@@ -361,7 +355,6 @@ export const useWorkerPortalData = () => {
     monthOptions,
     enrichedRecords,
     status,
-    latestOpenRecord,
     requestsMap,
     handleExportPDF,
     handleClockingAction,

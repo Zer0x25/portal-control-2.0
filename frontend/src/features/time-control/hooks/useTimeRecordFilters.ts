@@ -52,6 +52,11 @@ const getQuickFilterRange = (mode: QuickFilterMode, now: Date) => {
 
 const getInitialDateFilters = (now: Date) => getQuickFilterRange("24h", now);
 
+const isSameQuickFilterRange = (
+  left: ReturnType<typeof getQuickFilterRange>,
+  right: ReturnType<typeof getQuickFilterRange>,
+) => left.is24h === right.is24h && left.desde === right.desde && left.hasta === right.hasta;
+
 export const useTimeRecordFilters = () => {
   const businessNow = useBusinessNow({ tickMs: null });
   const { addToast } = useToasts();
@@ -83,6 +88,15 @@ export const useTimeRecordFilters = () => {
 
   const handleQuickFilterClick = (mode: QuickFilterMode) => {
     const newFilters = getQuickFilterRange(mode, businessNow);
+
+    if (
+      activeQuickFilter === mode &&
+      !isApplyButtonEnabled &&
+      isSameQuickFilterRange(dateFilters, newFilters) &&
+      isSameQuickFilterRange(appliedDateFilters, newFilters)
+    ) {
+      return;
+    }
 
     setDateFilters(newFilters);
     setAppliedDateFilters(newFilters);
@@ -175,10 +189,16 @@ export const useTimeRecordFilters = () => {
     }
 
     const syncedFilters = getQuickFilterRange(activeQuickFilter, businessNow);
-    setDateFilters(syncedFilters);
-    setAppliedDateFilters(syncedFilters);
-    setIsApplyButtonEnabled(false);
-  }, [activeQuickFilter, businessNow]);
+    if (!isSameQuickFilterRange(dateFilters, syncedFilters)) {
+      setDateFilters(syncedFilters);
+    }
+    if (!isSameQuickFilterRange(appliedDateFilters, syncedFilters)) {
+      setAppliedDateFilters(syncedFilters);
+    }
+    if (isApplyButtonEnabled) {
+      setIsApplyButtonEnabled(false);
+    }
+  }, [activeQuickFilter, businessNow, dateFilters, appliedDateFilters, isApplyButtonEnabled]);
 
   return {
     clientFilters,

@@ -91,6 +91,12 @@ describe("Guardrail de jerarquia tipografica (spec 031 AC10)", () => {
       "typo-ui-badge",
       "typo-ui-meta",
       "typo-ui-caption",
+      "typo-list-header",
+      "typo-list-primary",
+      "typo-list-secondary",
+      "typo-list-value",
+      "typo-list-note",
+      "typo-list-status",
       "text-xxs",
     ]) {
       expect(indexCss).toContain(`@utility ${utility}`);

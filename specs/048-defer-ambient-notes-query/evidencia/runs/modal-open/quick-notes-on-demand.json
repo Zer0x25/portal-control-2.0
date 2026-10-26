@@ -1,0 +1,9 @@
+{
+  "capturedAt": "2026-10-24T01:37:05.016Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "apiPath": "/api/notes",
+  "requestedBeforeModalOpen": false,
+  "requestOffsetFromModalOpenMs": 382.54,
+  "responseStatus": 200
+}

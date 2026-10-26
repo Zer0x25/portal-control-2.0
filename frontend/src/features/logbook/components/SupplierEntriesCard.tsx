@@ -105,13 +105,14 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
   };
 
   const renderMobileView = () => (
-    <div className="space-y-4 pt-2">
+    <div data-list-group="activity-feed" className="space-y-4 pt-2">
       {activeShift.supplierEntries.length > 0 ? (
         <div className="flex flex-col gap-3">
           {activeShift.supplierEntries.map((se, index) => (
             <div
               key={se.id}
               style={{ animationDelay: `${Math.min(index, 10) * 50}ms` }}
+              data-list-group="activity-feed"
               className="relative p-5 rounded-sm bg-token-surface-card border border-token-border-technical group shadow-sm animate-in fade-in slide-in-from-bottom-2"
             >
               <div className="flex justify-between items-start mb-4">
@@ -128,9 +129,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                     >
                       {se.licensePlate}
                     </Badge>
-                    <span className="text-[11px] text-token-text-tertiary font-semibold uppercase tracking-wider">
-                      {se.time}
-                    </span>
+                    <span className="typo-list-value text-token-text-tertiary">{se.time}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -162,29 +161,27 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
               <div className="bg-token-surface-stripe rounded-sm p-4 space-y-4 border border-token-border-subtle">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider">
+                    <span className="typo-list-secondary text-token-text-tertiary uppercase">
                       Conductor
                     </span>
-                    <span className="text-[13px] text-token-text-primary font-bold truncate">
+                    <span className="typo-list-primary text-token-text-primary truncate">
                       {se.driverName}
                     </span>
                   </div>
                   <div className="flex flex-col gap-1 text-right">
-                    <span className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider">
+                    <span className="typo-list-secondary text-token-text-tertiary uppercase">
                       Operadores
                     </span>
-                    <span className="text-[13px] text-token-text-primary font-bold">
+                    <span className="typo-list-primary text-token-text-primary">
                       {se.paxCount > 0 ? `+${se.paxCount} PAX` : "Individual"}
                     </span>
                   </div>
                 </div>
                 <div className="pt-3 border-t border-token-border-subtle">
-                  <span className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider block mb-1.5">
+                  <span className="typo-list-secondary text-token-text-tertiary uppercase block mb-1.5">
                     Motivo de Ingreso
                   </span>
-                  <p className="text-[12px] text-token-text-secondary font-semibold leading-relaxed">
-                    {se.reason}
-                  </p>
+                  <p className="typo-list-note text-token-text-secondary">{se.reason}</p>
                 </div>
               </div>
             </div>
@@ -192,7 +189,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
         </div>
       ) : (
         <div className="py-12 text-center bg-token-surface-stripe rounded-sm border border-token-border-technical p-4">
-          <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider">
+          <p className="typo-list-secondary text-token-text-tertiary uppercase">
             Sin registros de proveedores en este turno
           </p>
         </div>
@@ -201,24 +198,31 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
   );
 
   const renderDesktopView = () => (
-    <div className="overflow-hidden rounded-sm border border-token-border-technical bg-token-surface-card">
+    <div
+      data-list-group="activity-feed"
+      className="overflow-hidden rounded-sm border border-token-border-technical bg-token-surface-card"
+    >
       {activeShift.supplierEntries.length > 0 ? (
-        <table data-testid="data-table" className="min-w-full border-separate border-spacing-0">
+        <table
+          data-list-group="activity-feed"
+          data-testid="data-table"
+          className="min-w-full border-separate border-spacing-0"
+        >
           <thead>
             <tr className="bg-token-surface-stripe">
-              <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-left border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Hora
               </th>
-              <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-left border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Empresa / Patente
               </th>
-              <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-left border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Identificación
               </th>
-              <th className="px-6 py-4 text-left border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-left border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Motivo Operativo
               </th>
-              <th className="px-6 py-4 text-right border-b border-token-border-technical text-[11px] font-bold text-token-text-tertiary uppercase tracking-wider">
+              <th className="px-6 py-4 text-right border-b border-token-border-technical typo-list-header text-token-text-tertiary">
                 Acciones
               </th>
             </tr>
@@ -226,12 +230,12 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
           <tbody className="divide-y divide-token-border-subtle">
             {activeShift.supplierEntries.map((se) => (
               <tr key={se.id} className="group hover:bg-emerald-600/2 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap text-[13px] font-bold text-token-text-tertiary font-mono w-20">
+                <td className="px-6 py-4 whitespace-nowrap typo-list-value text-token-text-tertiary w-20">
                   {se.time}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-token-text-primary uppercase tracking-tight">
+                    <span className="typo-list-primary text-token-text-primary uppercase">
                       {se.company}
                     </span>
                     <Badge
@@ -246,21 +250,18 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-[13px] text-token-text-primary font-semibold">
+                    <span className="typo-list-primary text-token-text-primary">
                       {se.driverName}
                     </span>
                     {se.paxCount > 0 && (
-                      <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                      <span className="typo-list-secondary text-emerald-600 uppercase">
                         +{se.paxCount} Acompañantes
                       </span>
                     )}
                   </div>
                 </td>
                 <td className="px-6 py-4 max-w-xs">
-                  <p
-                    className="text-[13px] text-token-text-tertiary truncate font-semibold"
-                    title={se.reason}
-                  >
+                  <p className="typo-list-note text-token-text-tertiary truncate" title={se.reason}>
                     {se.reason}
                   </p>
                 </td>
@@ -310,7 +311,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
               <h3 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
                 Control de Proveedores
               </h3>
-              <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5">
+              <p className="typo-list-secondary text-token-text-tertiary uppercase mt-1.5">
                 Acceso vehicular y personal externo
               </p>
             </div>

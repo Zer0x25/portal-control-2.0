@@ -2648,7 +2648,22 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "application/json": components["schemas"]["HealthReadiness"];
+          };
+        };
+        /** @description Base de datos no disponible */
+        503: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              success: boolean;
+              code: string;
+              message: string;
+            };
+          };
         };
       };
     };
@@ -2840,6 +2855,49 @@ export interface paths {
       };
       requestBody?: never;
       responses: never;
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/employees/clocking-options": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Lista las opciones mínimas de empleados activos para Control de Asistencia */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Empleados activos con los campos usados por Control de Asistencia */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["EmployeeClockingOptions"];
+          };
+        };
+        /** @description Autenticación requerida */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
     };
     put?: never;
     post?: never;
@@ -4823,6 +4881,16 @@ export interface components {
       syncStatus?: string;
       lastModified?: number;
     };
+    EmployeeClockingOption: {
+      id: string;
+      name: string;
+      position: string;
+      area: string;
+      workdayType: string;
+      /** @enum {string} */
+      status: "Activo";
+    };
+    EmployeeClockingOptions: components["schemas"]["EmployeeClockingOption"][];
     EmployeeQuery: {
       page?: string;
       pageSize?: string;
@@ -5315,6 +5383,13 @@ export interface components {
       activeShifts: number;
       pendingLeaves: number;
       alerts: string[];
+    };
+    HealthReadiness: {
+      /** @enum {string} */
+      status: "ready";
+      /** @enum {string} */
+      healthStatus: "healthy" | "degraded";
+      instanceId: string;
     };
     HealthStatus: {
       /** @enum {string} */

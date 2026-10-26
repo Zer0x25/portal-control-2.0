@@ -269,6 +269,10 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
   it("probes readiness against actual PostgreSQL", async () => {
     const response = await app.inject({ url: "/api/health/ready" });
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ status: "ready" });
+    expect(response.json()).toMatchObject({
+      status: "ready",
+      healthStatus: expect.stringMatching(/^(healthy|degraded)$/),
+      instanceId: expect.any(String),
+    });
   });
 });

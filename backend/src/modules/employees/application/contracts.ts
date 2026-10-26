@@ -44,6 +44,14 @@ export interface EmployeePrincipal {
   role?: string;
   employeeId?: string | null;
 }
+export interface EmployeeClockingOption {
+  id: string;
+  name: string;
+  position: string;
+  area: string;
+  workdayType: string;
+  status: "Activo";
+}
 export interface LinkedUserInput {
   employeeId: string;
   fullName: string;
@@ -60,6 +68,7 @@ export interface EmployeeFlowDependencies {
       user?: EmployeePrincipal,
       kiosk?: boolean,
     ): Promise<{ rawEmployees: EmployeeRow[]; total: number }>;
+    listClockingOptions(user?: EmployeePrincipal): Promise<EmployeeClockingOption[]>;
     resolveId(input?: string): Promise<string>;
     find(id: string): Promise<EmployeeRow | null>;
     update(id: string, input: EmployeeUpdateInput): Promise<EmployeeRow>;

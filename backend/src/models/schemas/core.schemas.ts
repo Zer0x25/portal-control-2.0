@@ -49,6 +49,14 @@ export const HealthStatusSchema = z
   })
   .openapi("HealthStatus");
 
+export const HealthReadinessSchema = z
+  .object({
+    status: z.literal("ready"),
+    healthStatus: z.enum(["healthy", "degraded"]),
+    instanceId: z.string().min(1),
+  })
+  .openapi("HealthReadiness");
+
 export const KpiSummaryRequestSchema = z
   .object({
     startDate: isoDateSchema(),

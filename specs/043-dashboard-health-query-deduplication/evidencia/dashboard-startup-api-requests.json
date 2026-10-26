@@ -1,0 +1,90 @@
+{
+  "measurement": {
+    "capturedOn": "2026-10-23",
+    "baseUrl": "http://127.0.0.1:8080",
+    "route": "/#/dashboard",
+    "runner": "Playwright perf project; --no-deps --grep=startup --workers=1; three separate sequential runs",
+    "quietWindowMs": 800,
+    "sourceBaseCommit": "ce53d585b56dd696aa46840d0c63eed73c56cb1f",
+    "workingTreeDirty": true,
+    "frontendImage": "sha256:7d004a0bf3e1261d3aaeea2aeee9609628902185b999d8dc23da98fa027731b3",
+    "productionSourcePatchSha256": "c0224993a9d1c34326af9df46435315489ec859dc8a20139f7789e9d26dcfeed",
+    "testPatchSha256": "86e83f0cfc20e7b97601f817348d05ed47555d664a24529ac9c9f06e030745ff",
+    "endpointTimingSummary": "api-duration-summary.json",
+    "timingDefinition": "Playwright request event until requestfinished; includes browser, gateway, backend, and response-body transfer time; not server-only latency",
+    "offsetDefinition": "Node performance.now() captured immediately before page.goto(/#/dashboard)"
+  },
+  "baseline": {
+    "source": "specs/042-dashboard-query-startup-deduplication/evidencia/dashboard-startup-api-requests.json",
+    "capturedAt": "2026-10-23T22:55:36.560Z",
+    "apiRequestCount": 21,
+    "uniqueApiEndpointCount": 20,
+    "duplicateEndpoints": [
+      {
+        "path": "/api/health",
+        "count": 2
+      }
+    ],
+    "apiPaths": [
+      "/api/health",
+      "/api/configs/is_control_interno_enabled",
+      "/api/corrections/stats",
+      "/api/audit-logs",
+      "/api/users",
+      "/api/employees",
+      "/api/health",
+      "/api/shift-reports",
+      "/api/kpis/overview",
+      "/api/configs/global_max_hours",
+      "/api/configs/area_list",
+      "/api/configs/workday_types",
+      "/api/configs/email_recipients",
+      "/api/configs/accounting_lock_date",
+      "/api/shifts/patterns",
+      "/api/shifts/assignments",
+      "/api/holidays",
+      "/api/leaves",
+      "/api/corrections",
+      "/api/configs/public/company-policy",
+      "/api/notes"
+    ]
+  },
+  "samples": [
+    {
+      "capturedAt": "2026-10-23T23:33:04.692Z",
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "healthRequestCount": 1,
+      "duplicateEndpoints": [],
+      "allResponsesHttp200": true,
+      "mainContentVisibleOffsetMs": 515.37,
+      "serverClockVisibleOffsetMs": 674.76,
+      "apiRequestCompletionOffsetMs": 687.58,
+      "rawCapture": "runs/sample-01/dashboard-startup-api-requests.json"
+    },
+    {
+      "capturedAt": "2026-10-23T23:33:10.591Z",
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "healthRequestCount": 1,
+      "duplicateEndpoints": [],
+      "allResponsesHttp200": true,
+      "mainContentVisibleOffsetMs": 576.95,
+      "serverClockVisibleOffsetMs": 713.26,
+      "apiRequestCompletionOffsetMs": 718.11,
+      "rawCapture": "runs/sample-02/dashboard-startup-api-requests.json"
+    },
+    {
+      "capturedAt": "2026-10-23T23:33:15.777Z",
+      "apiRequestCount": 20,
+      "uniqueApiEndpointCount": 20,
+      "healthRequestCount": 1,
+      "duplicateEndpoints": [],
+      "allResponsesHttp200": true,
+      "mainContentVisibleOffsetMs": 628.54,
+      "serverClockVisibleOffsetMs": 651.63,
+      "apiRequestCompletionOffsetMs": 656.09,
+      "rawCapture": "runs/sample-03/dashboard-startup-api-requests.json"
+    }
+  ]
+}

@@ -3,13 +3,14 @@ import { shiftService } from "../../services/shiftService";
 import { AssignedShift } from "../../types/scheduling";
 import { queryKeys } from "../../lib/queryKeys";
 
-export const useAssignedShiftsQuery = () => {
+export const useAssignedShiftsQuery = (enabled = true) => {
   return useQuery<AssignedShift[]>({
     queryKey: queryKeys.assignedShifts(),
     queryFn: async () => {
       const response = await shiftService.getAssignments();
       return response.data;
     },
+    enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes fresh
     gcTime: 1000 * 60 * 60 * 24, // 24 hours cache
   });

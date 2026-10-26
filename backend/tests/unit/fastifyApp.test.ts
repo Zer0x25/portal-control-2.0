@@ -233,6 +233,11 @@ function fixture(config: Partial<FastifyConfig> = {}) {
     },
     health: {
       checkDbReady: vi.fn(async () => true),
+      getReadiness: vi.fn(() => ({
+        status: "ready" as const,
+        healthStatus: "healthy" as const,
+        instanceId: "test-instance",
+      })),
       getDetailedHealth: vi.fn(async () => ({ database: { status: "OK" } })),
     },
     maintenance: vi.fn(() => null),
@@ -457,10 +462,26 @@ describe("Fastify foundation with real JWT/session rules", () => {
   });
   it("readiness and health expose database failure", async () => {
     const f = fixture();
+    expect((await f.app.inject({ url: "/api/health/ready" })).json()).toEqual({
+      status: "ready",
+      healthStatus: "healthy",
+      instanceId: "test-instance",
+    });
+    vi.mocked(f.deps.health.getReadiness).mockResolvedValueOnce({
+      status: "ready",
+      healthStatus: "degraded",
+      instanceId: "test-instance",
+    });
+    expect((await f.app.inject({ url: "/api/health/ready" })).json()).toMatchObject({
+      status: "ready",
+      healthStatus: "degraded",
+      instanceId: "test-instance",
+    });
     vi.mocked(f.deps.health.checkDbReady).mockRejectedValue(new Error("db down"));
     expect((await f.app.inject({ url: "/api/health/ready" })).json()).toMatchObject({
       code: "NOT_READY",
     });
+    expect(f.deps.health.getReadiness).toHaveBeenCalledTimes(2);
     vi.mocked(f.deps.health.getDetailedHealth).mockResolvedValue({ database: { status: "ERROR" } });
     expect((await f.app.inject({ url: "/api/health" })).statusCode).toBe(503);
   });

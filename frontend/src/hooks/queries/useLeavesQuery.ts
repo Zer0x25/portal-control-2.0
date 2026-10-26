@@ -3,7 +3,7 @@ import { leaveService } from "../../services/leaveService";
 import { useAuth } from "../useAuth";
 import { queryKeys } from "../../lib/queryKeys";
 
-export const useLeavesQuery = () => {
+export const useLeavesQuery = (enabled = true) => {
   const { currentUser } = useAuth();
   const canReadLeaves =
     !!currentUser &&
@@ -14,7 +14,7 @@ export const useLeavesQuery = () => {
   return useQuery({
     queryKey: queryKeys.leaves(),
     queryFn: () => leaveService.getLeaves(),
-    enabled: canReadLeaves,
+    enabled: enabled && canReadLeaves,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };

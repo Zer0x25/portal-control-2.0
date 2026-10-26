@@ -1800,6 +1800,24 @@
  *     responses:
  *       200:
  *         description: Servidor listo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthReadiness'
+ *       503:
+ *         description: Base de datos no disponible
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [success, code, message]
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 code:
+ *                   type: string
+ *                 message:
+ *                   type: string
  */
 
 /**
@@ -1955,6 +1973,25 @@
  *   get:
  *     summary: Obtiene lista de empleados para modo Kiosko
  *     tags: [Employees]
+ */
+
+/**
+ * @openapi
+ * /api/employees/clocking-options:
+ *   get:
+ *     summary: Lista las opciones mínimas de empleados activos para Control de Asistencia
+ *     tags: [Employees]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Empleados activos con los campos usados por Control de Asistencia
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EmployeeClockingOptions'
+ *       401:
+ *         description: Autenticación requerida
  */
 
 /**

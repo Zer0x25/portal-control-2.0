@@ -1,0 +1,15 @@
+{
+  "capturedAt": "2026-10-24T09:23:45.734Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/time-control",
+  "viewport": {
+    "width": 412,
+    "height": 823
+  },
+  "recordsPendingAtMs": 2062.26,
+  "headingRenderedAtMs": 2150.59,
+  "syncOverlayWasVisible": false,
+  "shellUnobscuredAtMs": 2169.21,
+  "headingIsUnobscured": true,
+  "recordsWereStillPendingAtUnobscured": true
+}

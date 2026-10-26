@@ -1,9 +1,9 @@
 import React from "react";
-import { useHealthQuery, deriveBackendStatus } from "../../hooks/queries/useHealthQuery";
+import { useReadinessQuery, deriveReadinessStatus } from "../../hooks/queries/useHealthQuery";
 
 const SimpleConnectionIndicator: React.FC = () => {
-  const { data, error, isLoading } = useHealthQuery();
-  const status = deriveBackendStatus(data, error, isLoading);
+  const { data, error, isLoading } = useReadinessQuery();
+  const status = deriveReadinessStatus(data, error, isLoading);
 
   if (isLoading && !data && !error) {
     return (

@@ -58,6 +58,13 @@ function makeProps(overrides: Partial<React.ComponentProps<typeof WorkerPortalVi
 }
 
 describe("WorkerPortalView antiregresión (spec 028)", () => {
+  it("mantiene las tarjetas principales con el radio canónico del sistema", () => {
+    const { container } = render(<WorkerPortalView {...makeProps()} />);
+
+    expect(screen.getByTestId("worker-identity").closest(".rounded-md")).toBeInTheDocument();
+    expect(container.innerHTML).not.toMatch(/rounded-(?:2xl|3xl|4xl|\[)/);
+  });
+
   it("AC1: muestra Cargando y no error cuando está resolviendo sin empleado", () => {
     render(<WorkerPortalView {...makeProps({ employee: null, isLoadingEmployees: true })} />);
     expect(screen.getByText("Cargando portal del trabajador...")).toBeInTheDocument();

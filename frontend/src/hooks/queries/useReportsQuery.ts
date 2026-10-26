@@ -2,11 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { shiftReportService } from "../../services/shiftReportService";
 import { useAuth } from "../useAuth";
 import { queryKeys } from "../../lib/queryKeys";
-export const useReportsQuery = (params: { status?: "open" | "closed"; pageSize?: number } = {}) => {
+export const useReportsQuery = (
+  params: { status?: "open" | "closed"; pageSize?: number } = {},
+  options: { readonly enabled?: boolean } = {},
+) => {
   const { currentUser } = useAuth();
   const canReadReports =
     !!currentUser &&
-    ["Administrador", "Supervisor Elevado", "Supervisor", "Reloj Control"].includes(
+    ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
       currentUser.role,
     );
 
@@ -19,7 +22,7 @@ export const useReportsQuery = (params: { status?: "open" | "closed"; pageSize?:
       });
       return result.data; // Return the data array for backward compatibility where possible
     },
-    enabled: canReadReports,
+    enabled: canReadReports && options.enabled !== false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
