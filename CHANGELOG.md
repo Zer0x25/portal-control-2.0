@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.37.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.0...v8.37.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **ci:** grant Release Please actions read permission ([#133](https://github.com/Zer0x25/portal-control-2.0/issues/133)) ([432aedc](https://github.com/Zer0x25/portal-control-2.0/commit/432aedcedde8cced73bbad48d18ca260485baf25))
+
 ## [8.37.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.36.1...v8.37.0) (2026-10-26)
 
 
