@@ -11,6 +11,13 @@ import { idFactory } from "../../../utils/idFactory";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import AddNoveltyModal from "./AddNoveltyModal.container";
 
+const getLogEntryActionLabel = (action: "Editar" | "Eliminar", entry: LogbookEntryItem) => {
+  const annotation = entry.annotation.replace(/\s+/g, " ").trim();
+  const excerpt = annotation.length > 72 ? `${annotation.slice(0, 69)}…` : annotation;
+  const context = excerpt ? `: ${excerpt}` : "";
+  return `${action} novedad${context} (${entry.time})`;
+};
+
 type ItemToDelete = { id: string; type: "log" | "supplier"; name: string };
 
 interface LogEntriesCardProps {
@@ -103,8 +110,8 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                   <button
                     onClick={() => openEditLogEntryModal(le)}
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 transition-colors"
-                    aria-label="Editar Novedad"
-                    title="Editar Novedad"
+                    aria-label={getLogEntryActionLabel("Editar", le)}
+                    title={getLogEntryActionLabel("Editar", le)}
                   >
                     <EditIcon className="w-3.5 h-3.5" />
                   </button>
@@ -117,8 +124,8 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                       })
                     }
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                    aria-label="Eliminar Novedad"
-                    title="Eliminar Novedad"
+                    aria-label={getLogEntryActionLabel("Eliminar", le)}
+                    title={getLogEntryActionLabel("Eliminar", le)}
                   >
                     <DeleteIcon className="w-3.5 h-3.5" />
                   </button>
@@ -175,11 +182,12 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                   {le.annotation}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all">
                     <button
                       onClick={() => openEditLogEntryModal(le)}
                       className="p-2 rounded-sm text-token-text-tertiary hover:text-token-accent-brand hover:bg-token-accent-brand/10 transition-colors"
-                      title="Editar Novedad"
+                      aria-label={getLogEntryActionLabel("Editar", le)}
+                      title={getLogEntryActionLabel("Editar", le)}
                     >
                       <EditIcon className="w-4 h-4" />
                     </button>
@@ -192,7 +200,8 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                         })
                       }
                       className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                      title="Eliminar Novedad"
+                      aria-label={getLogEntryActionLabel("Eliminar", le)}
+                      title={getLogEntryActionLabel("Eliminar", le)}
                     >
                       <DeleteIcon className="w-4 h-4" />
                     </button>

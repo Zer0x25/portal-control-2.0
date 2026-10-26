@@ -11,6 +11,9 @@ import { idFactory } from "../../../utils/idFactory";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import AddSupplierModal from "./AddSupplierModal.container";
 
+const getSupplierActionLabel = (action: "Editar" | "Eliminar", entry: SupplierEntry) =>
+  `${action} proveedor: ${entry.company} (patente ${entry.licensePlate}, ${entry.time})`;
+
 type ItemToDelete = { id: string; type: "log" | "supplier"; name: string };
 
 interface SupplierEntriesCardProps {
@@ -136,8 +139,8 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                   <button
                     onClick={() => openEditSupplierEntryModal(se)}
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-emerald-600 hover:bg-emerald-600/10 transition-colors"
-                    aria-label="Editar"
-                    title="Editar"
+                    aria-label={getSupplierActionLabel("Editar", se)}
+                    title={getSupplierActionLabel("Editar", se)}
                   >
                     <EditIcon className="w-3.5 h-3.5" />
                   </button>
@@ -150,8 +153,8 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                       })
                     }
                     className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                    aria-label="Eliminar"
-                    title="Eliminar"
+                    aria-label={getSupplierActionLabel("Eliminar", se)}
+                    title={getSupplierActionLabel("Eliminar", se)}
                   >
                     <DeleteIcon className="w-3.5 h-3.5" />
                   </button>
@@ -266,11 +269,12 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                   </p>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all">
                     <button
                       onClick={() => openEditSupplierEntryModal(se)}
                       className="p-2 rounded-sm text-token-text-tertiary hover:text-emerald-600 hover:bg-emerald-600/10 transition-colors"
-                      title="Editar"
+                      aria-label={getSupplierActionLabel("Editar", se)}
+                      title={getSupplierActionLabel("Editar", se)}
                     >
                       <EditIcon className="w-4 h-4" />
                     </button>
@@ -283,7 +287,8 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                         })
                       }
                       className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
-                      title="Eliminar"
+                      aria-label={getSupplierActionLabel("Eliminar", se)}
+                      title={getSupplierActionLabel("Eliminar", se)}
                     >
                       <DeleteIcon className="w-4 h-4" />
                     </button>
