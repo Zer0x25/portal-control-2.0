@@ -8,7 +8,10 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useTimeRecords } from "../../../hooks/useTimeRecords";
 import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
-import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
+import {
+  useTimeRecordsQuery,
+  useTimeRecordMutations,
+} from "../../../hooks/queries/useTimeRecordsQuery";
 import { useToasts } from "../../../hooks/useToasts";
 
 // Mock hooks
@@ -40,6 +43,10 @@ describe("Supervisor Role Component Permissions", () => {
     (useToasts as any).mockReturnValue({ addToast: mockAddToast });
     (useEmployees as any).mockReturnValue({ activeEmployees: [] });
     (useTimeRecords as any).mockReturnValue({ timeRecordsPage: [], isLoadingRecords: false });
+    vi.mocked(useTimeRecordsQuery).mockReturnValue({
+      data: { pages: [{ data: [] }] },
+      isLoading: false,
+    } as ReturnType<typeof useTimeRecordsQuery>);
     (useCorrectionRequests as any).mockReturnValue({
       requests: [],
       isLoadingRequests: false,

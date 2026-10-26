@@ -1,0 +1,173 @@
+{
+  "capturedAt": "2026-10-25T22:49:57.267Z",
+  "route": "/#/time-control",
+  "sampleCount": 5,
+  "sourceCommit": "b5bcad95f9f134ee56b6aca74dab7acccc592c97",
+  "sourceWorkingTreeDirty": true,
+  "baselineStagingFrontendImageId": "sha256:032e4976923b9820f244a510b2d468b9f13d8455fb738e16aa76de21c2fbc65d",
+  "stagingFrontendImageId": "sha256:93e27895e42741ad2dfb99debdafe7e703fce67d4eabc3d55d612e7596850f1b",
+  "lighthouseVersion": "12.6.1",
+  "summary": {
+    "performanceScore": {
+      "median": 0.89,
+      "min": 0.69,
+      "max": 0.93
+    },
+    "fcpMs": {
+      "median": 2001.79,
+      "min": 1994.61,
+      "max": 2600.44
+    },
+    "lcpMs": {
+      "median": 2254.19,
+      "min": 2253.85,
+      "max": 5242.56
+    },
+    "tbtMs": {
+      "median": 315,
+      "min": 131,
+      "max": 422
+    },
+    "cls": {
+      "median": 0.01,
+      "min": 0,
+      "max": 0.01
+    },
+    "totalTransferBytes": {
+      "median": 458277,
+      "min": 458261,
+      "max": 494526
+    },
+    "scriptTransferBytes": {
+      "median": 295322,
+      "min": 295322,
+      "max": 329187
+    },
+    "requestCount": {
+      "median": 83,
+      "min": 83,
+      "max": 86
+    },
+    "apiRequestCount": {
+      "median": 2,
+      "min": 2,
+      "max": 3
+    },
+    "apiErrorCount": 0,
+    "baselineTbtMs": {
+      "median": 175,
+      "min": 117.5,
+      "max": 349
+    },
+    "baselineLcpMs": {
+      "median": 2253.61,
+      "min": 2250.54,
+      "max": 4015.85
+    },
+    "baselineTotalTransferBytes": {
+      "median": 457667,
+      "min": 457651,
+      "max": 493898
+    },
+    "baselineScriptTransferBytes": {
+      "median": 294712,
+      "min": 294712,
+      "max": 328575
+    },
+    "tbtDeltaPercent": 80,
+    "lcpDeltaPercent": 0.03,
+    "transferDeltaPercent": 0.13
+  },
+  "samples": [
+    {
+      "run": 1,
+      "fetchedAt": "2026-10-25T22:47:30.246Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.69,
+        "fcpMs": 1997.43,
+        "lcpMs": 5242.56,
+        "tbtMs": 422,
+        "cls": 0,
+        "totalTransferBytes": 458261,
+        "scriptTransferBytes": 295322,
+        "requestCount": 83
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0,
+      "apiStatusCodes": [200, 200]
+    },
+    {
+      "run": 2,
+      "fetchedAt": "2026-10-25T22:47:56.214Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.86,
+        "fcpMs": 2600.44,
+        "lcpMs": 3451.62,
+        "tbtMs": 131,
+        "cls": 0,
+        "totalTransferBytes": 458277,
+        "scriptTransferBytes": 295322,
+        "requestCount": 83
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0,
+      "apiStatusCodes": [200, 200]
+    },
+    {
+      "run": 3,
+      "fetchedAt": "2026-10-25T22:48:22.034Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.89,
+        "fcpMs": 1994.61,
+        "lcpMs": 2253.91,
+        "tbtMs": 345.3,
+        "cls": 0.01,
+        "totalTransferBytes": 458261,
+        "scriptTransferBytes": 295322,
+        "requestCount": 83
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0,
+      "apiStatusCodes": [200, 200]
+    },
+    {
+      "run": 4,
+      "fetchedAt": "2026-10-25T22:48:48.007Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.93,
+        "fcpMs": 2006.57,
+        "lcpMs": 2253.85,
+        "tbtMs": 225,
+        "cls": 0.01,
+        "totalTransferBytes": 494526,
+        "scriptTransferBytes": 329187,
+        "requestCount": 86
+      },
+      "apiRequestCount": 3,
+      "apiErrorCount": 0,
+      "apiStatusCodes": [200, 200, 200]
+    },
+    {
+      "run": 5,
+      "fetchedAt": "2026-10-25T22:49:13.697Z",
+      "lighthouseVersion": "12.6.1",
+      "metrics": {
+        "performanceScore": 0.9,
+        "fcpMs": 2001.79,
+        "lcpMs": 2254.19,
+        "tbtMs": 315,
+        "cls": 0.01,
+        "totalTransferBytes": 458277,
+        "scriptTransferBytes": 295322,
+        "requestCount": 83
+      },
+      "apiRequestCount": 2,
+      "apiErrorCount": 0,
+      "apiStatusCodes": [200, 200]
+    }
+  ]
+}

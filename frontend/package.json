@@ -25,6 +25,8 @@
     "e2e:staging": "E2E_BASE_URL=http://127.0.0.1:8080 E2E_API_URL=http://127.0.0.1:8080/api playwright test",
     "perf:staging": "node scripts/run-performance-battery.cjs",
     "perf:profile:worker": "node scripts/profile-worker-production.mjs",
+    "perf:profile:route": "node scripts/profile-worker-production.mjs",
+    "perf:time-control:cold": "lhci autorun --config=.lighthouserc-time-control-cold.json",
     "e2e:ui": "playwright test --ui",
     "e2e:visual": "playwright test --project visual",
     "e2e:visual:update": "playwright test --project visual --update-snapshots",

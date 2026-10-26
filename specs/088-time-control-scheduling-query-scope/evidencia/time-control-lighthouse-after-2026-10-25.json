@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-25T16:42:48.613Z",
+  "source": {
+    "commit": "43ca2c34ba17e7eca2239931b39d0e8936040d7b",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "routeId": "time-control",
+    "stagingFrontendImageId": "sha256:db6ba88711e801f0063484d2904126036659d97cf11465172a1863fd9afe2bac",
+    "stagingBackendImageId": "sha256:247bcb9a6cb0dcd8ab7c15cd586be4e7ec1eaf7b31a3b2f8899fa95fcf03d27f",
+    "sampleCount": 5,
+    "lighthouseVersion": "12.6.1",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "lighthouseSettings": {
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "cpuSlowdownMultiplier": 4
+      },
+      "screenEmulation": {
+        "width": 412,
+        "height": 823
+      }
+    }
+  },
+  "comparison": {
+    "baseline": "../085-time-control-tbt-optimization/evidencia/time-control-lighthouse-baseline.json",
+    "tbtMs": {
+      "beforeMedian": 349.5,
+      "afterMedian": 239,
+      "changeMs": -110.5,
+      "changePercent": -31.6
+    }
+  },
+  "summary": {
+    "performanceScore": {
+      "median": 0.91,
+      "min": 0.9,
+      "max": 0.93
+    },
+    "fcpMs": {
+      "median": 2109.12,
+      "min": 1997.98,
+      "max": 2193.05
+    },
+    "lcpMs": {
+      "median": 2468.79,
+      "min": 2252.97,
+      "max": 2628.68
+    },
+    "tbtMs": {
+      "median": 239,
+      "min": 211,
+      "max": 271
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0.01
+    },
+    "speedIndexMs": {
+      "median": 2447.36,
+      "min": 2051.15,
+      "max": 2745.71
+    },
+    "totalTransferBytes": {
+      "median": 463700,
+      "min": 463629,
+      "max": 502690
+    },
+    "scriptTransferBytes": {
+      "median": 300739,
+      "min": 300739,
+      "max": 334617
+    },
+    "requestCount": {
+      "median": 85,
+      "min": 85,
+      "max": 89
+    }
+  },
+  "samples": [
+    {
+      "report": "127_0_0_1--2026_10_25_16_38_54.report.json",
+      "fetchTime": "2026-10-25T16:38:54.765Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.93,
+        "fcpMs": 2011.66,
+        "lcpMs": 2253.98,
+        "tbtMs": 223.32,
+        "cls": 0.01,
+        "speedIndexMs": 2051.15,
+        "totalTransferBytes": 463701,
+        "scriptTransferBytes": 300747,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5048.28,
+          "durationMs": 148
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2924.98,
+          "durationMs": 129
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 4948.28,
+          "durationMs": 79
+        },
+        {
+          "path": "/assets/index-Cx_lNvoX.js",
+          "startMs": 2853.98,
+          "durationMs": 71
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 602.33,
+          "durationMs": 58
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_16_39_20.report.json",
+      "fetchTime": "2026-10-25T16:39:20.638Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.9,
+        "fcpMs": 2193.05,
+        "lcpMs": 2628.68,
+        "tbtMs": 239,
+        "cls": 0,
+        "speedIndexMs": 2745.71,
+        "totalTransferBytes": 463661,
+        "scriptTransferBytes": 300739,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2913.26,
+          "durationMs": 164
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5042.86,
+          "durationMs": 130
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 4922.93,
+          "durationMs": 86
+        },
+        {
+          "path": "/",
+          "startMs": 655.42,
+          "durationMs": 68
+        },
+        {
+          "path": "/assets/index-Cx_lNvoX.js",
+          "startMs": 2854.26,
+          "durationMs": 59
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_16_39_45.report.json",
+      "fetchTime": "2026-10-25T16:39:45.709Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.92,
+        "fcpMs": 1997.98,
+        "lcpMs": 2252.97,
+        "tbtMs": 239.5,
+        "cls": 0,
+        "speedIndexMs": 2095.53,
+        "totalTransferBytes": 463700,
+        "scriptTransferBytes": 300739,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 3063.97,
+          "durationMs": 147
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5171.84,
+          "durationMs": 144
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 601.99,
+          "durationMs": 102
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5022.83,
+          "durationMs": 98
+        },
+        {
+          "path": "/",
+          "startMs": 748.99,
+          "durationMs": 93
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_16_40_11.report.json",
+      "fetchTime": "2026-10-25T16:40:11.351Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.9,
+        "fcpMs": 2109.12,
+        "lcpMs": 2468.79,
+        "tbtMs": 271,
+        "cls": 0,
+        "speedIndexMs": 2447.36,
+        "totalTransferBytes": 502690,
+        "scriptTransferBytes": 334617,
+        "requestCount": 89
+      },
+      "apiRequestCount": 4,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5231.13,
+          "durationMs": 166
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 3067.34,
+          "durationMs": 154
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 4275.68,
+          "durationMs": 104
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 602.45,
+          "durationMs": 100
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5131.13,
+          "durationMs": 80
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_16_40_37.report.json",
+      "fetchTime": "2026-10-25T16:40:37.364Z",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.91,
+        "fcpMs": 2176.31,
+        "lcpMs": 2609.1,
+        "tbtMs": 211,
+        "cls": 0,
+        "speedIndexMs": 2733.35,
+        "totalTransferBytes": 463629,
+        "scriptTransferBytes": 300739,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2914.57,
+          "durationMs": 143
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5024.35,
+          "durationMs": 118
+        },
+        {
+          "path": "/",
+          "startMs": 648.52,
+          "durationMs": 98
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 3140.57,
+          "durationMs": 72
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 4875.87,
+          "durationMs": 68
+        }
+      ]
+    }
+  ],
+  "interpretation": "Cold Lighthouse laboratory results, five samples. TBT fell versus the Spec 085 median; TBT is not field INP. FCP, LCP, transfer size, and request count are retained to expose tradeoffs. Raw Lighthouse reports remain local under frontend/.lighthouseci."
+}

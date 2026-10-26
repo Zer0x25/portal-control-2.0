@@ -25,7 +25,7 @@ const updateSW = registerSW({
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App, { preloadTimeControlPageFromCurrentHash } from "./App";
 import { AppProviders } from "./contexts/AppProviders";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { RenderProfiler } from "./utils/RenderProfiler";
@@ -42,6 +42,8 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+preloadTimeControlPageFromCurrentHash();
 
 // Limpiar flag de recarga por error de chunk si la app carga bien
 if (window.sessionStorage.getItem("chunk-load-reloaded")) {

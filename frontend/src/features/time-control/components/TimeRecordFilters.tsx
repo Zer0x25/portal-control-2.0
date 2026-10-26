@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
-import { useTimeRecords } from "../../../hooks/useTimeRecords";
+import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { QuickFilterMode } from "../hooks/useTimeRecordFilters";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { toBusinessDateChile } from "../../../utils/dateUtils";
+import { profileReactSubtree } from "../../../utils/RenderProfiler";
 
 const CANONICAL_TIME_RECORD_STATUSES = [
   "Laborando",
@@ -35,7 +36,7 @@ interface TimeRecordFiltersProps {
   activeQuickFilter: QuickFilterMode | null;
 }
 
-const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
+const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
   clientFilters,
   dateFilters,
   onClientFilterChange,
@@ -51,9 +52,14 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
   const maxBusinessDate = toBusinessDateChile(businessNow);
 
   const { data: activeEmployees = [] } = useClockingEmployeeOptionsQuery();
-  const { allRecordsInDateRange, isLoadingRecords } = useTimeRecords();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isExpanded, setIsExpanded] = useState(!isMobile);
+  const { data: recordsQuery, isLoading: isLoadingRecords } = useTimeRecordsQuery({
+    pageSize: 50,
+    filters: {},
+    enabled: !isMobile || isExpanded,
+  });
+  const allRecordsInDateRange = recordsQuery?.pages.flatMap((page) => page.data) ?? [];
 
   const employeesInDateRange = (() => {
     if (isLoadingRecords) return activeEmployees;
@@ -267,4 +273,7 @@ const TimeRecordFilters: React.FC<TimeRecordFiltersProps> = ({
   );
 };
 
-export default TimeRecordFilters;
+const ProfiledTimeRecordFilters: React.FC<TimeRecordFiltersProps> = (props) =>
+  profileReactSubtree("time-control:filters", <TimeRecordFiltersImpl {...props} />);
+
+export default import.meta.env.DEV ? ProfiledTimeRecordFilters : TimeRecordFiltersImpl;

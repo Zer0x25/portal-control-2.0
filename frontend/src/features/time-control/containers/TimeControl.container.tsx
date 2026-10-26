@@ -11,8 +11,16 @@ import { useTimeControlData } from "../hooks/useTimeControlData";
  * - Hook: Centraliza toda la lógica de negocio y estado.
  * - View: Renderizado puro de UI (UI-PROTECTED).
  */
-const TimeControlContainer: React.FC = () => {
-  const logic = useTimeControlData();
+interface TimeControlContainerProps {
+  isControlInternoEnabled: boolean;
+  isConfigLoading: boolean;
+}
+
+const TimeControlContainer: React.FC<TimeControlContainerProps> = ({
+  isControlInternoEnabled,
+  isConfigLoading,
+}) => {
+  const logic = useTimeControlData({ isControlInternoEnabled, isConfigLoading });
 
   return (
     <RenderProfiler id="time-control:view">

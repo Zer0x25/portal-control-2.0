@@ -1,0 +1,21 @@
+{
+  "capturedAt": "2026-10-25T20:51:40.294Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/time-control",
+  "profile": {
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75
+  },
+  "collapsedState": {
+    "toggleExpanded": "false",
+    "workdayTypeControlCount": 0,
+    "filterChunkRequests": []
+  },
+  "filterChunkRequests": ["http://127.0.0.1:8080/assets/TimeRecordFilterControls-DP8-nCOd.js"],
+  "selectableWorkdayTypeValues": ["Ordinaria"],
+  "reopenedStartDate": "2026-10-25",
+  "reopenedSelection": "Ordinaria"
+}

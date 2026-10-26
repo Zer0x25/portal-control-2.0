@@ -444,3 +444,180 @@
 - **Límite**: perfil con caché fría, CPU 4× y sin throttling de red; su FCP no se compara con Lighthouse, ni el muestreo equivale a TBT. Los tasks de 94–103 ms cercanos a FCP no recibieron samples. No se modificó la app ni staging.
 - **Siguiente**: medir aisladamente el efecto de diferir `SocketService.connect`, preservando eventos en tiempo real, y repetir la batería Lighthouse. El máximo candidato observado ronda 7–15 ms; continuar después con fanout de queries y render de la ruta.
 - **Evidencia**: [diagnóstico TBT Spec 083](../specs/083-time-control-bootstrap-shell/evidencia/diagnostico-tbt-2026-10-24.md) y [perfil CPU por tarea](../specs/083-time-control-bootstrap-shell/evidencia/perfil-cpu-time-control-2026-10-24.json).
+
+## 2026-10-25 - test(perf): Diagnóstico TBT de Control horario en staging
+
+- **Baseline**: cinco corridas frías en una imagen (`sha256:fcdcc13a…`), CPU 4×, viewport 412×823. FCP mediano 2,036 s; LCP 2,477 s (un outlier 5,645 s); TBT 349,5 ms (rango 287–402); CLS máximo 0,01. Las cinco corridas exceden 200 ms TBT.
+- **Atribución**: tareas largas Lighthouse de 143–264 ms aparecen en `react-core`. Seis perfiles CDP con 208/208 assets coincidentes muestran 675,7 ms inclusivos de React por ventana mediana de 2.758 ms. `socketService.connect` aporta 10–16 ms; el ordenamiento de `useClockingPanel` (42 ms muestreados) apareció solo en una muestra. No se correlacionaron tareas y stacks temporalmente.
+- **Decisión**: sin cambio de runtime ni mejora de TBT demostrada. `apiClient.performRequest` y React son actividad repetida, pero el perfil actual no demuestra que una función propia cause las tareas Lighthouse. No diferir Socket.IO ni editar `TimeControl.view.tsx` por conjetura.
+- **Siguiente**: capturar un trace de navegador que correlacione marcas/stack de cada tarea larga con commits React y consultas iniciales; optimizar solo el componente que aparezca en más de una tarea.
+- **Evidencia**: [resultado Spec 085](../specs/085-time-control-tbt-optimization/evidencia/resultado.md), [cinco corridas](../specs/085-time-control-tbt-optimization/evidencia/time-control-lighthouse-baseline.json) y [seis perfiles CDP](../specs/085-time-control-tbt-optimization/evidencia/time-control-production-cpu-2026-10-25.json).
+
+## 2026-10-25 - test(perf): Comparar rutas y correlacionar tareas largas
+
+- **Rutas**: cinco muestras frías por ruta sobre la imagen `sha256:fcdcc13a…`. TBT mediano: Control horario 349,5 ms; Dashboard 213 ms; Kiosk 49 ms. Kiosk mantiene LCP mediano de 3,825 s. Worker Portal quedó sin muestra: `perf:staging` se detuvo en login de su usuario de prueba antes de Lighthouse.
+- **Correlación**: tres traces CDP/CPU de Control horario, 208/208 scripts coincidentes, 5/7/6 tareas `RunTask` ≥50 ms, sin pérdida de eventos y reloj CPU alineado. Se omitieron 82–91 intervalos CPU no positivos para no atribuir tiempos negativos. `apiClient.performRequest` aparece en las tres; mediana propia 16,4 ms e inclusiva 57,7 ms. También se repiten los importadores lazy de `PersistentLayout` y `TimeControlPage`.
+- **Decisión**: la vista aporta alrededor de 7,1 ms muestreados en las tareas; el trabajo se reparte entre `fetch`, React y arranque compartido. Sin A/B ni cambio de runtime; no se afirma una reducción de TBT. La siguiente prueba debe identificar qué solicitudes iniciales coinciden con `performRequest`.
+- **Evidencia**: [comparación de rutas](../specs/085-time-control-tbt-optimization/evidencia/current-route-comparison-2026-10-25.json), [resultado Spec 086](../specs/086-time-control-long-task-trace/evidencia/resultado.md) y [resumen saneado CDP](../specs/086-time-control-long-task-trace/evidencia/time-control-long-task-trace-2026-10-25.json). La traza cruda no se conserva.
+
+## 2026-10-25 - perf(time-control): Limitar consultas auxiliares de jornada
+
+- **Cambio**: `useScheduling` ahora permite los modos `schedule-enrichment` y `correction-requests`; el primero mantiene datos que usa el cálculo diario y el segundo conserva la lista que requiere la tabla. El modo `full` no cambia para otros consumidores.
+- **Medido**: en tres capturas frías, requests API 19 → 14 por navegación (−26,3%), todos HTTP 200. Se quitaron cuatro lecturas de configuración y una de correcciones. Lighthouse frío, cinco muestras con el backend igual: TBT mediano 349,5 → 239 ms (−31,6%; rangos 287–402 y 211–271); los rangos no se solapan.
+- **Límite**: FCP mediano subió 3,6%, LCP bajó 0,4% y JS transferido casi no cambió. La mediana de inicios API dentro de tareas largas siguió en 13; `react-core` aparece en 17/25 long tasks listados. El TBT aún es 211–271 ms. CDP reportó timestamps fuera de orden en 57/57 requests base y 42/42 posteriores; se omitieron duraciones de red.
+- **Siguiente**: perfilar commits y trabajo de render React de Control horario y buscar un componente que se repita dentro de las tareas `react-core`; no atribuir toda la caída de TBT a una sola función. Mantener las trazas crudas fuera del repo.
+- **Evidencia**: [resultado Spec 087](../specs/087-time-control-api-request-attribution/evidencia/resultado.md), [resultado Spec 088](../specs/088-time-control-scheduling-query-scope/evidencia/resultado.md) y sus capturas agregadas.
+
+## 2026-10-25 - perf(time-control): Diferir informes abiertos de turno
+
+- **Cambio**: la lista `status=open` de informes de turno ya no se consulta al montar Control horario; se vuelve a pedir al iniciar la acción de agregar una novedad. Se distingue un fallo de red de la ausencia de un turno y hay pruebas para ambas respuestas.
+- **Medido**: tres perfiles de producción bajaron de 14 a 13 requests API por navegación; `/api/shift-reports` bajó de dos a uno por carga y las 39/39 respuestas terminaron con HTTP 200. CPU muestreado mediano: trabajo activo 836,9 → 770,5 ms; React inclusivo 538,1 → 492,0 ms; `performRequest` 63,8 → 51,6 ms.
+- **Límite**: perfiles secuenciales de tres muestras, sin atribución causal. Lighthouse frío TBT pasó de 239 a 220 ms, pero los rangos se solapan (211–271 y 211,5–264,7); las cinco muestras siguen sobre 200 ms. No se declara ganancia causal de TBT.
+- **Siguiente**: mantener como objetivo el trabajo de `react-core`; el perfil de producción aún no lo asigna a componentes. Correlacionar trazas y commits de React con las tareas largas antes de elegir otra optimización.
+- **Evidencia**: [resultado Spec 089](../specs/089-time-control-defer-open-shift-reports/evidencia/resultado.md), [tres perfiles CPU](../specs/089-time-control-defer-open-shift-reports/evidencia/time-control-production-cpu-after-2026-10-25.json) y [cinco corridas Lighthouse](../specs/089-time-control-defer-open-shift-reports/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Diferir consulta auxiliar del filtro móvil
+
+- **Cambio**: `TimeRecordFilters` ya no carga la página auxiliar de registros mientras el panel parte colapsado en móvil. La consulta se habilita al expandir; desktop conserva la carga al montar y la tabla no cambia.
+- **Medido**: staging móvil bajó de 13 a 12 requests API y de dos a una lectura inicial de `/api/records`; tres perfiles completaron 36/36 respuestas. El navegador confirmó el segundo fetch al expandir y conservó dos lecturas en desktop.
+- **Límite**: TBT mediano Lighthouse 220 → 189 ms, pero el nuevo rango 154–677,5 incluye un valor atípico y se solapa con 211,5–264,7; no se atribuye la diferencia al cambio. FCP +1,1%, LCP estable. CPU muestreado varió al alza entre perfiles secuenciales.
+- **Siguiente**: ubicar otra consulta o subárbol que se repita en tareas largas de producción; el ahorro de una solicitud está verificado, pero aún no hay reducción estable de TBT.
+- **Evidencia**: [resultado Spec 090](../specs/090-time-control-defer-collapsed-filter-query/evidencia/resultado.md), [perfiles CPU](../specs/090-time-control-defer-collapsed-filter-query/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/090-time-control-defer-collapsed-filter-query/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Reutilizar formatter de fecha de negocio
+
+- **Cambio**: `formatBusinessDateCL` usa `Intl.DateTimeFormat` reutilizable y extrae año/mes/día por tipo de parte; conserva calendario gregoriano, dígitos latinos y `America/Santiago`.
+- **Medido**: microbenchmark Node 26 de siete rondas × 50.000 conversiones: mediana 511,96 → 137,44 ms (−73,2%). En tres perfiles CPU de staging, el frame de `formatBusinessDateCL` dejó de aparecer; CPU activo muestreado mediano 805,722 → 792,496 ms. 36/36 solicitudes API respondieron HTTP 200.
+- **Límite**: perfiles secuenciales y microbenchmark local; el TBT Lighthouse no mejoró de forma estable (mediana 189 → 203 ms; el nuevo rango 177,5–1.099,5 se solapa con 154–677,5). No se atribuye la variación de CPU total ni TBT a esta función.
+- **Siguiente**: investigar `addBusinessDaysCL`, que registró 6,978 ms muestreados medianos en los tres perfiles posteriores, y comprobar sus invariantes antes de tocarlo.
+- **Evidencia**: [resultado Spec 091](../specs/091-time-policy-cached-business-date/evidencia/resultado.md), [perfil CPU posterior](../specs/091-time-policy-cached-business-date/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/091-time-policy-cached-business-date/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-policy): Reutilizar formatter al sumar días
+
+- **Cambio**: `addBusinessDaysCL` conserva la aritmética UTC al mediodía, pero usa el formatter compartido al producir `yyyy-MM-dd`; se retiró `formatInTimeZone` de `timePolicy.ts`.
+- **Medido**: microbenchmark Node 26, siete rondas × 50.000 operaciones y 350 combinaciones: mediana 620,00 → 219,12 ms (−64,7%). En staging, el frame de `addBusinessDaysCL` dejó de aparecer en tres muestras; 36/36 llamadas API siguieron respondiendo HTTP 200.
+- **Límite**: CPU activo mediano 792,496 → 793,710 ms; Lighthouse TBT 203 → 232 ms con rangos solapados. No se afirma una mejora de TBT ni causalidad de los cambios del perfil.
+- **Siguiente**: inspeccionar `apiClient.performRequest`, mediana muestreada 40,917 ms, para separar trabajo síncrono de espera de red antes de considerar otra lectura.
+- **Evidencia**: [resultado Spec 092](../specs/092-time-policy-add-business-days/evidencia/resultado.md), [perfil CPU posterior](../specs/092-time-policy-add-business-days/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/092-time-policy-add-business-days/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Omitir derivación oculta del buscador
+
+- **Cambio**: `useClockingPanel` no normaliza, filtra ni ordena el catálogo cuando la búsqueda está vacía o hay un empleado seleccionado; memoiza resultados solo para una búsqueda activa. Se descartó aplazar la query global porque el shell la necesita para evaluar el auto inicio de jornada.
+- **Medido**: el callback de filtrado bajó de 21,505 ms muestreados en 2/3 tareas largas a no aparecer como frame repetido. Los 3 perfiles conservaron 12/12 solicitudes por navegación y 36/36 respuestas HTTP 200. TypeScript, ESLint y 8/8 tests dirigidos pasaron.
+- **Lighthouse**: TBT mediano 232 → 190 ms; rangos 133,5–269 y 134–626,03 ms se solapan. FCP/LCP variaron menos de 0,2%, CLS máximo quedó estable. No se declara mejora estable de TBT.
+- **Siguiente**: investigar los importadores lazy de `PersistentLayout` y `TimeControlPage`, repetidos en 3/3 tareas con 17,775 y 15,1 ms muestreados medianos, y comprobar si el fetch de esos chunks se serializa antes de proponer un cambio.
+- **Evidencia**: [resultado Spec 093](../specs/093-time-control-search-computation/evidencia/resultado.md), [perfiles CPU](../specs/093-time-control-search-computation/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/093-time-control-search-computation/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Iniciar la ruta junto al layout
+
+- **Cambio**: los enlaces directos a `#/time-control` llaman el mismo loader de `React.lazy` desde `main.tsx`, antes de `root.render`. Las otras rutas mantienen lazy loading; `ProtectedRoute` no cambia.
+- **Medido**: el chunk empezó 30,9–78,3 ms antes que `PersistentLayout` y terminó 50,9–95,9 ms antes en 5/5 Lighthouse. Tres E2E fríos móviles confirmaron el solapamiento en 3/3; cada chunk se pidió una sola vez y no se descargó el editor de marcas. Los E2E registraron 11–12 requests API, todos HTTP 200; perfiles CDP registraron 12 por muestra y cero fallos.
+- **Límite**: FCP −0,15%, LCP +0,05% y CLS máximo estable. TBT mediano 190 → 217,5 ms; los rangos 134–626,03 y 168,5–367 ms se solapan, así que no se afirma mejora ni regresión causal. Transferencia JS mediana +110 B.
+- **Siguiente**: revisar los nuevos perfiles CDP de Control horario y elegir el siguiente hotspot repetido; separar trabajo de React y de `apiClient.performRequest` antes de atribuir una caída de TBT.
+- **Evidencia**: [resultado Spec 094](../specs/094-time-control-parallel-route-chunks/evidencia/resultado.md), [cascada E2E](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-route-chunk-waterfall.json), [perfil CPU](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/094-time-control-parallel-route-chunks/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(theme): evitar reaplicar el tema inicial
+
+- **Cambio**: `_applyTheme` compara la clase `.dark` con el tema resuelto y sale sin DOM ni notificaciones redundantes cuando ya coinciden. Se conserva el bloqueo de transiciones y recálculo forzado cuando el tema cambia.
+- **Medido**: el frame de `_applyTheme` bajó de 12,165 ms muestreados en 1/3 perfiles a no aparecer en 3/3. E2E con tema oscuro detecta cero inserciones de `#disable-transitions`; Control horario conserva 12/12 respuestas HTTP 200.
+- **Límite**: el CPU activo mediano fue 803,027 → 790,952 ms, pero hubo alta variación entre las seis muestras. No se atribuye una mejora global ni de TBT; Lighthouse no se volvió a ejecutar para este cambio de alcance reducido.
+- **Siguiente**: separar el costo de React/DOM nativo en el arranque de Control horario y encontrar una operación de producto repetida antes de elegir otra optimización. Mantener `TimeControl.view.tsx` protegida.
+- **Evidencia**: [resultado Spec 095](../specs/095-theme-bootstrap-idempotency/evidencia/resultado.md), [perfil CDP](../specs/095-theme-bootstrap-idempotency/evidencia/time-control-production-cpu-after-2026-10-25.json) y [auditoría E2E](../specs/095-theme-bootstrap-idempotency/evidencia/theme-bootstrap-audit.json).
+
+## 2026-10-25 - test(perf): Descartar diferimiento de controles móviles
+
+- **Experimento**: extraer los controles de `TimeRecordFilters` a un chunk bajo demanda, dejando cerrado y sin hooks el panel móvil inicial. La variante pasó 11/11 tests focalizados y el E2E confirmó una carga única del chunk al abrir y conservación de filtros al reabrir.
+- **Medido**: transferencia inicial 200.553 → 196.512 B (−4.041 B, −2,0%) y 67 → 66 recursos JS. 12 requests API por visita en ambas versiones; 36/36 respuestas HTTP 200.
+- **Límite/decisión**: no alcanzó los 5.000 B de AC4; CPU activo mediano CDP bajó 54,5 ms, pero rangos y React core propio se solapan/prácticamente no cambian. Sin ganancia global ni de TBT demostrada. Se revirtió el runtime y se conservó la evidencia para no mover el umbral después de medir.
+- **Siguiente**: investigar el trabajo repetido de `apiClient.performRequest` y la carga del layout/ruta con trazas correlacionadas; elegir solo si aparece trabajo propio dentro de más de una tarea larga. No tocar `TimeControl.view.tsx`.
+- **Evidencia**: [resultado Spec 096](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/resultado.md), [cascada candidata](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/time-control-route-chunk-waterfall.json) y [perfil CDP](../specs/096-time-control-defer-collapsed-mobile-filter-content/evidencia/time-control-production-cpu-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Quitar observador contable sin consumidor
+
+- **Cambio**: `useTimeControl` dejó de suscribirse a `accounting_lock_date` y descartar el resultado. `useTimeControlModals` y `useTimeControlData` mantienen sus consumos funcionales.
+- **Medido**: prueba de regresión roja antes y verde después; 13/13 tests de hooks, TypeScript y ESLint pasan. En tres visitas frías, 36/36 requests API respondieron HTTP 200 y se mantuvieron 12 por visita; transferencia JS 200.550 B frente a 200.553 B de base.
+- **Límite**: CPU activo mediano 790,952 → 795,671 ms y React core propio 189,664 → 210,726 ms; rangos solapados y siete tareas largas por visita en ambas versiones. Sin mejora de TBT demostrada. Se conserva como reducción comprobable de suscripciones redundantes, no como ganancia global.
+- **Siguiente**: profundizar en el trabajo de `apiClient.performRequest` observado en las trazas y separar costo síncrono de espera de red; no cambiar solicitudes ni afirmar beneficio antes de una medición reproducible.
+- **Evidencia**: [resultado Spec 097](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/resultado.md), [cascada](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/time-control-route-chunk-waterfall.json) y [perfil CDP](../specs/097-time-control-remove-unused-accounting-lock-observer/evidencia/time-control-production-cpu-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Acotar consultas de enriquecimiento
+
+- **Cambio**: Control horario deja de montar `useScheduling` completo para usar solo `getEmployeeDailyScheduleInfo`. El nuevo hook observa patrones, asignaciones, feriados y permisos; el cálculo queda compartido con `useScheduling`.
+- **Medido**: cinco Lighthouse por versión: TBT mediano 214,5 → 163,5 ms (−23,8%) y LCP 2.253,849 → 2.255,088 ms (+0,055%). Cuatro de cinco TBT candidatos quedaron bajo todo el rango base. Transferencia inicial −4.795 B y un recurso JS menos. 36/36 requests API HTTP 200.
+- **Límite**: CPU activo CDP 802,148 → 787,922 ms; los rangos se solapan. React core propio mediano 209,326 → 214,686 ms y tareas largas no bajan consistentemente. La mejora observada es de la mediana Lighthouse y bytes, no una caída general de CPU ni una garantía causal.
+- **Siguiente**: perfilar renderizado y trabajo DOM de Control horario; React/DOM y tareas largas siguen dominando. Mantener separado el costo de CPU del resultado Lighthouse y no reabrir `TimeControl.view.tsx`.
+- **Evidencia**: [resultado Spec 098](../specs/098-time-control-slim-schedule-enrichment/evidencia/resultado.md), [Lighthouse antes/después](../specs/098-time-control-slim-schedule-enrichment/evidencia/time-control-lighthouse-before-2026-10-25.json) y [perfiles CPU](../specs/098-time-control-slim-schedule-enrichment/evidencia/time-control-production-cpu-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Evitar mutaciones en consumidores de lectura
+
+- **Cambio**: `TimeRecordFilters` y `useClockingPanel` usan `useTimeRecordsQuery` directamente. Dejan de montar observadores de mutación que no consumían; el panel conserva su mutación de marcación. Se añadieron scopes React de desarrollo y `E2E_VITE_PORT` al medidor de render.
+- **Medido**: `useTimeRecordMutations` fue frame repetido en 3/3 perfiles base (11,47 ms) y no apareció como frame mapeado en 3 perfiles finales. El CPU activo mediano final fue 863,860 ms (765,164–1.887,768), React core propio 236,114 ms (200,882–316,829) y tareas largas 15, 8, 7; los rangos se solapan con Spec 098 y no muestran mejora global. Se capturaron 11–12 requests por visita, todas las respuestas HTTP fueron 200. Lighthouse TBT mediano final 194,5 ms (185,5–307), frente a 163,5 ms (161–245) en Spec 098; sin conclusión causal.
+- **Límite**: el cambio quita dos llamadas del wrapper de mutaciones desde lectores, pero no demuestra una reducción global de CPU, tareas largas ni TBT. El frame ausente no significa cero CPU; la captura API varió en un request y el muestreo Lighthouse fue ruidoso.
+- **Siguiente**: correlacionar el trabajo de las tareas largas alrededor de `loadTimeControlPage` y `apiClient.performRequest`; mantener separado el costo de iniciar fetch del tiempo de respuesta. No editar `TimeControl.view.tsx`.
+- **Evidencia**: [resultado Spec 099](../specs/099-time-control-readonly-query-observers/evidencia/resultado.md), [perfil CPU](../specs/099-time-control-readonly-query-observers/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/099-time-control-readonly-query-observers/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - perf(time-control): Diferir apertura de IndexedDB
+
+- **Cambio**: retirar el `initDB()` de nivel superior en `indexedDB.ts`; todas las operaciones siguen esperando la promesa memoizada al usar una store. El esquema, versión e índices no cambian.
+- **Medido**: tres perfiles fríos: CPU activo mediano 863,860 → 764,954 ms (−11,45%), React core propio 236,114 → 201,912 ms y tareas largas medianas 8 → 7. `initDB` dejó de aparecer como frame de arranque (3/3); la creación de stores quedó en 5,954 ms en 1/3. 36/36 requests API HTTP 200. Cinco Lighthouse: TBT mediano 194,5 → 175 ms (−10,03%), con 3/5 bajo el mínimo base; LCP 2.252,93 → 2.253,61 ms (+0,03%).
+- **Límite**: TBT candidato varió 117,5–349 ms y LCP tuvo un outlier de 4.015,85 ms. Se conserva por cumplir el umbral acordado, como señal de laboratorio; no demuestra mejora de INP de campo ni causalidad completa.
+- **Siguiente**: volver al costo de React y DOM del shell/ruta; el cliente API mezcla frames propios con `fetch` y asincronía, y `TimeControl.view.tsx` sigue protegida.
+- **Evidencia**: [resultado Spec 100](../specs/100-defer-timecontrol-indexeddb-open/evidencia/resultado.md), [perfil CPU](../specs/100-defer-timecontrol-indexeddb-open/evidencia/time-control-production-cpu-after-2026-10-25.json) y [Lighthouse](../specs/100-defer-timecontrol-indexeddb-open/evidencia/time-control-lighthouse-after-2026-10-25.json).
+
+## 2026-10-25 - test(perf): Descartar desbloqueo del React Compiler en ClockingPanel
+
+- **Experimento**: retirar el `isSubmittingRef.current` no consumido del valor de render y la memoización manual que existía por el bail-out; el guard sincrónico de marcación permaneció intacto. React Compiler dejó de omitir `useClockingPanel`.
+- **Medido**: el React Profiler de desarrollo bajó 30,1% para `clocking-panel` (9,3 → 6,5 ms) y 29,5% en la ruta (51,1 → 36 ms). Cinco Lighthouse de staging: LCP mediano +0,03%, pero TBT 175 → 315 ms (+80%) y transferencia +610 B (+0,13%). Las corridas tuvieron alta variación; no se atribuye causalidad.
+- **Decisión**: descartado y runtime restaurado por incumplir los gates de TBT y bytes. Se mantiene una prueba del guard contra doble marcación; no hay cambio runtime por este experimento.
+- **Siguiente**: trazar `App.tsx::loadTimeControlPage` (26,249 ms mediano en 3/3 perfiles Spec 100) junto con el inicio y fin real de los chunks. No modificar `TimeControl.view.tsx` ni atribuir `apiClient.performRequest` a CPU síncrono sin separar fetch/espera.
+- **Evidencia**: [resultado Spec 101](../specs/101-time-control-clock-panel-compiler-bailout/evidencia/resultado.md), perfiles React y cinco corridas Lighthouse.
+
+## 2026-10-25 - test(perf): Descartar matriz de horarios por página
+
+- **Experimento**: reemplazar cuatro catálogos de horario por `POST /api/shifts/schedule/matrix` acotado a cada página, incluyendo empleados inactivos bajo opción explícita. Pruebas Fastify, frontend y sincronía OpenAPI/SDK pasaron en el candidato.
+- **Medido**: tres perfiles fríos redujeron 12→9 requests API y 4.262→1.504 B en los catálogos reemplazados (−64,71%); cero respuestas fallidas y respuesta de registros idéntica (1.923 B). Cinco Lighthouse: TBT mediano 202→194,5 ms (−3,71%), LCP 2.255,2→2.406,1 ms (+6,69%), transferencia total −0,43%.
+- **Decisión**: descartado y runtime/API restaurados porque LCP supera el gate +5%. Rangos Lighthouse se solapan; tres muestras CPU también variaron (React propio 204,6→289,6 ms, tareas largas 7→10), sin atribución causal. Staging quedó reconstruido desde HEAD y readiness es healthy.
+- **Siguiente**: separar el costo del importador `loadTimeControlPage` del trabajo React/DOM. El importador mide ~28,7 ms de mediana frente a 204,6 ms de React propio; no partir el chunk sin evidencia de ganancia.
+- **Evidencia**: [resultado Spec 102](../specs/102-time-control-batch-schedule-enrichment/evidencia/resultado.md), [comparación Lighthouse/API/CPU](../specs/102-time-control-batch-schedule-enrichment/evidencia/comparison-2026-10-25.json) y [perfiles CPU base/candidato](../specs/102-time-control-batch-schedule-enrichment/evidencia/).
+
+## 2026-10-25 - perf(time-control): Compartir consulta de configuración del shell
+
+- **Cambio**: `App` pasa `is_control_interno_enabled` y su estado de carga al contenedor de Control horario; `useTimeControlData` deja de observar la misma query otra vez. La prueba de regresión falló primero con dos llamadas bajo StrictMode y quedó en cero al compartir el dato.
+- **Medido**: cinco Lighthouse de staging, recapturados con el mismo backend, dieron TBT mediano 216,5→184 ms (−15,01%), LCP +0,02%, FCP −0,02% y transferencia +160 B (+0,03%). CLS mediano estable. Todos los perfiles CPU completaron 12/12 requests API sin errores.
+- **Límite**: los rangos Lighthouse se solapan. Los pares de CPU discrepan: el primero bajó CPU activo 1.192→804 ms y React propio 292,5→201,4 ms; la repetición alternada subió 739,5→770,2 ms y 200,5→235,1 ms. Se conserva por pasar el gate Lighthouse, como mejora observada sin atribución causal ni reducción estable de CPU.
+- **Siguiente**: atribuir las tareas largas con React/DOM y separarlas del tiempo inclusivo de `apiClient.performRequest`; elegir el próximo cambio solo con un frame repetido de trabajo síncrono propio.
+- **Evidencia**: [resultado Spec 103](../specs/103-time-control-share-shell-config-query/evidencia/resultado.md), [comparación](../specs/103-time-control-share-shell-config-query/evidencia/comparison-2026-10-25.json), [CPU base/candidato](../specs/103-time-control-share-shell-config-query/evidencia/).
+
+## 2026-10-26 - test(perf): Clasificar inversión de tiempos CDP
+
+- **Cambio**: el perfilador clasifica las relaciones temporales inválidas por request y las agrega por endpoint. Conserva nulas las duraciones fuera de orden y no serializa marcas crudas, IDs ni URLs.
+- **Medido**: tres perfiles del frontend activo, 35/35 requests completados y HTTP 200; los 35 fueron `response-after-completion`. Los otros dos motivos no aparecieron. Staging conservó su imagen y readiness saludable.
+- **Límite**: no hay latencia de red válida ni cambio de runtime. Las marcas CDP `responseReceived`/`loadingFinished` se contradicen en todos los requests, por lo que no se atribuye TBT ni mejora de CPU.
+- **Siguiente**: comparar `Network.Response.timing` y el origen cache/service worker como enums; publicar tiempos solo cuando pasen las invariantes.
+- **Evidencia**: [resultado Spec 104](../specs/104-time-control-request-timing-diagnostics/evidencia/resultado.md) y [perfil saneado](../specs/104-time-control-request-timing-diagnostics/evidencia/time-control-request-timing-2026-10-26.json).
+
+## 2026-10-26 - test(perf): Validar tiempos de respuesta CDP
+
+- **Cambio**: el perfilador calcula headers con `Network.Response.timing` y duración total entre inicio y fin; agrega origen/estado por endpoint y valida cada intervalo por separado.
+- **Medido**: tres perfiles, 36/36 respuestas HTTP 200 de red y con tiempos válidos; mediana local 17,484 ms a headers y 19,251 ms total. `responseReceived.timestamp` siguió después de `loadingFinished.timestamp` en 36/36, pero no invalida estas medidas derivadas y acotadas.
+- **Límite**: staging es local; estos números no son TBT, INP ni latencia de campo. No se cambió el runtime del portal.
+- **Siguiente**: separar CPU React/DOM de las tareas largas; usar API timing para no atribuir espera local a cómputo del frontend.
+- **Evidencia**: [resultado Spec 105](../specs/105-time-control-response-resource-timing/evidencia/resultado.md) y [perfil saneado](../specs/105-time-control-response-resource-timing/evidencia/time-control-response-timing-2026-10-26.json).
+
+## 2026-10-26 - perf(time-control): evitar sincronizaciones redundantes del filtro rápido
+
+- **Cambio**: el hook omite escrituras cuando el rango activo ya coincide con la fecha de negocio y cuando el usuario vuelve a pulsar el filtro ya aplicado. Se conserva la resincronización al cambiar de fecha y el flujo de filtros personalizados.
+- **Medido**: test de hook rojo antes de cada guard; 5/5 pasa después. En 3 perfiles React de desarrollo con CPU 4×, `time-control:filters` bajó de 3 a 2 commits en 3/3 muestras. Staging reconstruido healthy con imagen `sha256:c7f1e1e96724046e2034089e4b0778d9dd4eea27d377e1024fbb17c1f777c652`; Playwright seleccionó 7d, 31d y 24h dos veces sin page errors ni fallos API. Preflight completo pasó con lint 0/0.
+- **Límite**: la duración React del scope no bajó de forma demostrable (mediana 39,7→52,5 ms; rango candidato 33,5–95,5 ms) y la duración de ruta tuvo variación amplia. No se declara mejora de TBT, INP ni Lighthouse. Los perfiles Vite mostraron EPIPE del proxy WebSocket en ambos grupos.
+- **Siguiente**: separar el costo restante de `time-control:view` (protegida) entre shell y contenedor sin modificar esa vista; priorizar solo un frame repetido fuera de la UI protegida.
+- **Evidencia**: [Spec 106](../specs/106-time-control-filter-sync-guard/evidencia/resultado.md), perfiles antes/después.
+
+## 2026-10-25 - perf(time-control): estabilizar callback de IntersectionObserver
+
+- **Cambio**: `useIntersectionObserver` guarda el callback vigente en un ref, quita su identidad de las dependencias del observer y normaliza `frozen` para no reiniciarlo con la primera entrada cuando `freezeOnceVisible` está apagado. La regresión fallaba al crear un segundo observer; 2/2 casos pasan después.
+- **Medido**: tres perfiles React de escritorio, CPU 4×. `time-control:records` bajó de 16, 8, 15 a 4, 14, 10 commits (mediana 15→10); ruta 17, 9, 16 a 4, 15, 11 (mediana 16→11). Se reconstruyó solo frontend de staging; health y E2E de fila virtualizada pasan.
+- **Límite**: los conteos individuales se solapan, el root React quedó en mediana 32→34 y la duración del scope de registros subió 90,1→113,7 ms con rango más amplio. Vite registró EPIPE en ambos grupos. No hay mejora estable de CPU ni evidencia de TBT/Lighthouse/INP.
+- **Lighthouse actual**: cinco visitas frías del build `sha256:d0932191a96d83fa08dd042a900c234060a96d961e64e3d24c54d84eb19f29d7`; TBT mediano 265 ms (237–321), LCP 2.659,6 ms (2.252,9–5.190,3) y score 0,89 (0,72–0,92). Todas las muestras exceden 200 ms de TBT; esta línea base no es comparación causal del fix.
+- **Atribución CDP**: tres perfiles con 210/210 assets mapeados y 7/9/9 tareas largas. React core propio mediano 235,8 ms; `App.loadTimeControlPage` aparece en 3/3 tareas con 16,9–27,4 ms. `apiClient.performRequest` inclusivo cruza `fetch` y no equivale a CPU síncrona. No se halló una función propia aislada que explique el TBT.
+- **Decisión**: no cambiar runtime; mantener la puerta de Spec 085 (misma causa repetida y reducción TBT ≥20% o <200 ms), no diferir Socket.IO por conjetura y no modificar `TimeControl.view.tsx`.
+- **Evidencia**: [resultado Spec 107](../specs/107-estabilizar-callback-intersection-observer/evidencia/resultado.md), perfiles React antes/después y resúmenes [Lighthouse](../specs/107-estabilizar-callback-intersection-observer/evidencia/time-control-lighthouse-current-2026-10-26.json) y [CDP](../specs/107-estabilizar-callback-intersection-observer/evidencia/time-control-source-mapped-profile-current-2026-10-26.json).

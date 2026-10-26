@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { ClockingStatus } from "../../../types/index";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import type { ClockingEmployeeOption } from "../../../services/employeeService";
-import { useTimeRecords } from "../../../hooks/useTimeRecords";
-import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
+import {
+  useTimeRecordsQuery,
+  useTimeRecordMutations,
+} from "../../../hooks/queries/useTimeRecordsQuery";
 import { useToasts } from "../../../hooks/useToasts";
 import { useAuth } from "../../../hooks/useAuth";
 import { normalizeString } from "../../../utils/stringUtils";
@@ -58,8 +60,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
   const isSubmittingRef = useRef(false);
 
   // Query for the selected employee's latest record
-  const { timeRecordsPage: employeeRecordsData, isLoadingRecords } = useTimeRecords({
-    page: 1,
+  const { data: employeeRecordsQuery, isLoading: isLoadingRecords } = useTimeRecordsQuery({
     pageSize: 5,
     enabled: Boolean(selectedEmployeeId),
     filters: {
@@ -68,6 +69,10 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
       employeeId: selectedEmployeeId || undefined,
     },
   });
+  const employeeRecordsData = useMemo(
+    () => employeeRecordsQuery?.pages[0]?.data ?? [],
+    [employeeRecordsQuery?.pages],
+  );
 
   // Update clock status when employee or records change
   useEffect(() => {
@@ -187,11 +192,16 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const filteredEmployees = activeEmployees
-    .filter((e) =>
-      normalizeString(e.name).toLowerCase().includes(normalizeString(searchTerm).toLowerCase()),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const filteredEmployees = useMemo(() => {
+    if (!searchTerm || selectedEmployeeId) return [];
+
+    const normalizedSearchTerm = normalizeString(searchTerm).toLowerCase();
+    return activeEmployees
+      .filter((employee) =>
+        normalizeString(employee.name).toLowerCase().includes(normalizedSearchTerm),
+      )
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [activeEmployees, searchTerm, selectedEmployeeId]);
 
   const statusLabels: Record<ClockingStatus, string> = {
     fuera: "Fuera de Jornada",

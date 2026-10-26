@@ -1,10 +1,11 @@
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
+import { profileReactSubtree } from "../../../utils/RenderProfiler";
 import type { TimeRecordTableProps } from "./TimeRecordTable";
 
 const TimeRecordTable = React.lazy(() => import("./TimeRecordTable"));
 
-const DeferredTimeRecordTable: React.FC<TimeRecordTableProps> = (props) => {
+const DeferredTimeRecordTableImpl: React.FC<TimeRecordTableProps> = (props) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
 
@@ -51,4 +52,7 @@ const DeferredTimeRecordTable: React.FC<TimeRecordTableProps> = (props) => {
   );
 };
 
-export default DeferredTimeRecordTable;
+const ProfiledDeferredTimeRecordTable: React.FC<TimeRecordTableProps> = (props) =>
+  profileReactSubtree("time-control:records", <DeferredTimeRecordTableImpl {...props} />);
+
+export default import.meta.env.DEV ? ProfiledDeferredTimeRecordTable : DeferredTimeRecordTableImpl;

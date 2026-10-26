@@ -1,6 +1,10 @@
-import { useScheduling } from "./useScheduling";
+import { useScheduling, type SchedulingQueryMode } from "./useScheduling";
 
-export const useCorrectionRequests = (status?: string, since?: number) => {
+export const useCorrectionRequests = (
+  status?: string,
+  since?: number,
+  queryMode: SchedulingQueryMode = "full",
+) => {
   const {
     requests,
     addCorrectionRequest,
@@ -11,7 +15,7 @@ export const useCorrectionRequests = (status?: string, since?: number) => {
     hasNextPage,
     isFetchingNextPage,
     isLoadingSchedulingData: isLoadingRequests,
-  } = useScheduling(status, since);
+  } = useScheduling(status, since, { queryMode });
 
   return {
     requests,

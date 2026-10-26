@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 import { chromium, request as playwrightRequest } from "@playwright/test";
 
 const frontendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:5173";
+const vitePort = Number(process.env.E2E_VITE_PORT ?? 5173);
+if (!Number.isInteger(vitePort) || vitePort < 1024 || vitePort > 65535) {
+  throw new Error("E2E_VITE_PORT must be an integer between 1024 and 65535");
+}
+const baseUrl = process.env.E2E_BASE_URL || `http://127.0.0.1:${vitePort}`;
 const apiBase = (process.env.E2E_API_URL || "http://127.0.0.1:4000/api").replace(/\/$/, "");
 const outputArg = process.argv
   .find((arg) => arg.startsWith("--output="))
@@ -87,7 +91,7 @@ const wait = (durationMs) =>
 const startDevServer = () => {
   devServer = spawn(
     "npm",
-    ["run", "dev", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
+    ["run", "dev", "--", "--host", "127.0.0.1", "--port", String(vitePort), "--strictPort"],
     { cwd: frontendRoot, env: process.env, stdio: "inherit" },
   );
 };

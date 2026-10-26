@@ -25,7 +25,11 @@ export const useTimeRecordTableController = ({
     sortOrder: "desc",
   });
   const logsPage = logsData?.pages[0] || { data: [], total: 0 };
-  const { requests: correctionRequests } = useCorrectionRequests();
+  const { requests: correctionRequests } = useCorrectionRequests(
+    undefined,
+    undefined,
+    "correction-requests",
+  );
 
   const editsMapAll = (() => {
     const globalLogMap = new Map<string, AuditLog[]>();

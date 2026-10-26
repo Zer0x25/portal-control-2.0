@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import TimeRecordFilters from "../../../features/time-control/components/TimeRecordFilters";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
-import { useTimeRecords } from "../../../hooks/useTimeRecords";
+import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { QuickFilterMode } from "../../../features/time-control/hooks/useTimeRecordFilters";
 import { DailyTimeRecord } from "../../../types";
@@ -13,7 +13,9 @@ import type { ClockingEmployeeOption } from "../../../services/employeeService";
 vi.mock("../../../hooks/queries/useEmployeesQuery", () => ({
   useClockingEmployeeOptionsQuery: vi.fn(),
 }));
-vi.mock("../../../hooks/useTimeRecords");
+vi.mock("../../../hooks/queries/useTimeRecordsQuery", () => ({
+  useTimeRecordsQuery: vi.fn(),
+}));
 vi.mock("../../../hooks/useMediaQuery");
 
 // Mock UI components
@@ -85,10 +87,10 @@ describe("TimeRecordFilters Component", () => {
     vi.mocked(useClockingEmployeeOptionsQuery).mockReturnValue({
       data: mockEmployees,
     } as ReturnType<typeof useClockingEmployeeOptionsQuery>);
-    vi.mocked(useTimeRecords).mockReturnValue({
-      allRecordsInDateRange: [{ employeeId: "1", status: "Completado" } as DailyTimeRecord],
-      isLoadingRecords: false,
-    } as ReturnType<typeof useTimeRecords>);
+    vi.mocked(useTimeRecordsQuery).mockReturnValue({
+      data: { pages: [{ data: [{ employeeId: "1", status: "Completado" } as DailyTimeRecord] }] },
+      isLoading: false,
+    } as ReturnType<typeof useTimeRecordsQuery>);
     vi.mocked(useMediaQuery).mockReturnValue(false); // Desktop by default
   });
 
@@ -108,6 +110,11 @@ describe("TimeRecordFilters Component", () => {
   it("should render filter controls correctly", () => {
     render(<TimeRecordFilters {...defaultProps} />);
 
+    expect(useTimeRecordsQuery).toHaveBeenCalledWith({
+      pageSize: 50,
+      filters: {},
+      enabled: true,
+    });
     expect(screen.getByRole("combobox", { name: /Tipo Jornada/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /Área Operativa/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /Estado/i })).toBeInTheDocument();
@@ -152,9 +159,19 @@ describe("TimeRecordFilters Component", () => {
     vi.mocked(useMediaQuery).mockReturnValue(true); // Mobile
     render(<TimeRecordFilters {...defaultProps} />);
 
+    expect(useTimeRecordsQuery).toHaveBeenLastCalledWith({
+      pageSize: 50,
+      filters: {},
+      enabled: false,
+    });
     const toggleBtn = screen.getByText(/Mostrar Filtros/i);
     fireEvent.click(toggleBtn);
 
     expect(screen.getByText(/Ocultar Filtros/i)).toBeInTheDocument();
+    expect(useTimeRecordsQuery).toHaveBeenLastCalledWith({
+      pageSize: 50,
+      filters: {},
+      enabled: true,
+    });
   });
 });

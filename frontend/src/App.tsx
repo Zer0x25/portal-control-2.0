@@ -32,9 +32,15 @@ const DashboardPage = React.lazy(
 const SupervisorDashboardPage = React.lazy(
   () => import("./features/supervisor-dashboard/containers/SupervisorDashboardPage.container"),
 );
-const TimeControlPage = React.lazy(
-  () => import("./features/time-control/containers/TimeControl.container"),
-);
+export const loadTimeControlPage = () =>
+  import("./features/time-control/containers/TimeControl.container");
+export const preloadTimeControlPageFromCurrentHash = () => {
+  const routePath = window.location.hash.replace(/^#/, "").split(/[?#]/, 1)[0] || "/";
+  if (routePath === ROUTES.TIME_CONTROL) {
+    void loadTimeControlPage().catch(() => undefined);
+  }
+};
+const TimeControlPage = React.lazy(loadTimeControlPage);
 const LogbookPage = React.lazy(() =>
   import("./features/logbook/containers/Logbook.container").then((m) => ({
     default: m.LogbookContainer,
@@ -106,7 +112,8 @@ const App: React.FC = () => {
   const { isForcePasswordChangeModalOpen, clearMustChangePassword, logout } =
     useAuthShellControls();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const { data: isControlInternoEnabled = true } = useControlInternoEnabledQuery();
+  const { data: isControlInternoEnabled = true, isLoading: isControlInternoEnabledLoading } =
+    useControlInternoEnabledQuery();
 
   useNavigationLoading();
   useSocketEvents();
@@ -235,7 +242,10 @@ const App: React.FC = () => {
                   ]}
                 >
                   <RenderProfiler id="time-control">
-                    <TimeControlPage />
+                    <TimeControlPage
+                      isControlInternoEnabled={isControlInternoEnabled}
+                      isConfigLoading={isControlInternoEnabledLoading}
+                    />
                   </RenderProfiler>
                 </ProtectedRoute>
               }
