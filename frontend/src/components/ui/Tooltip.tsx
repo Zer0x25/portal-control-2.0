@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { Z } from "../../constants/zScale";
 
 interface TooltipProps {
   content: string;
-  children: React.ReactNode;
+  children: React.ReactElement;
   position?: "top" | "bottom" | "left" | "right";
   className?: string;
 }
@@ -14,7 +14,30 @@ const Tooltip: React.FC<TooltipProps> = ({
   position = "top",
   className = "",
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const tooltipId = useId();
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const isVisible = isHovered || isFocused;
+  const child = React.Children.only(children);
+  const childProps = child.props as React.HTMLAttributes<HTMLElement>;
+  const descriptionIds = new Set(
+    (childProps["aria-describedby"] ?? "").split(/\s+/).filter(Boolean),
+  );
+  descriptionIds.add(tooltipId);
+  const trigger = React.cloneElement(
+    child as React.ReactElement<React.HTMLAttributes<HTMLElement>>,
+    {
+      "aria-describedby": Array.from(descriptionIds).join(" "),
+      onFocus: (event) => {
+        childProps.onFocus?.(event);
+        setIsFocused(true);
+      },
+      onBlur: (event) => {
+        childProps.onBlur?.(event);
+        setIsFocused(false);
+      },
+    },
+  );
 
   const positionStyles = {
     top: "-top-2 left-1/2 -translate-x-1/2 -translate-y-full mb-2",
@@ -26,27 +49,25 @@ const Tooltip: React.FC<TooltipProps> = ({
   return (
     <div
       className={`relative inline-block ${className}`}
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onFocus={() => setIsVisible(true)}
-      onBlur={() => setIsVisible(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {children}
-      {isVisible && (
-        <div
-          role="tooltip"
-          className={`
+      {trigger}
+      <div
+        id={tooltipId}
+        role="tooltip"
+        className={`
               absolute ${Z.modal} px-4 py-2.5
               bg-token-surface-card text-token-text-primary text-[11px] font-mono tracking-tight
               rounded-md border border-token-border-technical shadow-2xl
               max-w-[400px] w-max whitespace-normal wrap-break-word pointer-events-none
-              animate-in fade-in zoom-in-95
+              transition-opacity duration-150
+              ${isVisible ? "visible opacity-100" : "invisible opacity-0"}
               ${positionStyles[position]}
             `}
-        >
-          {content}
-        </div>
-      )}
+      >
+        {content}
+      </div>
     </div>
   );
 };
