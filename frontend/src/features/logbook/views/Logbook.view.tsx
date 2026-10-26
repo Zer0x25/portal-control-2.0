@@ -271,6 +271,8 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                     setShowFabMenu(false);
                   }}
                   className="w-12 h-12 rounded-sm bg-(--status-success) text-white flex items-center justify-center shadow-lg shadow-(--status-success)/20 border border-(--status-success)/20 transition-transform active:scale-90"
+                  aria-label="Agregar Proveedor"
+                  title="Agregar Proveedor"
                 >
                   <PlusCircleIcon className="w-6 h-6" />
                 </button>
@@ -287,6 +289,8 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                     setShowFabMenu(false);
                   }}
                   className="w-12 h-12 rounded-sm bg-(--sidebar-text-active) text-white flex items-center justify-center shadow-lg shadow-(--sidebar-text-active)/20 border border-(--sidebar-text-active)/20 transition-transform active:scale-90"
+                  aria-label="Agregar Novedad"
+                  title="Agregar Novedad"
                 >
                   <PlusCircleIcon className="w-6 h-6" />
                 </button>
