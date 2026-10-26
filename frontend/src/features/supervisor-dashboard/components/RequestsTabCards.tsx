@@ -20,17 +20,20 @@ export const PendingRequestCard: FC<{
   isProcessing?: boolean;
 }> = ({ req, employeeName, onApprove, onReject, onViewAttachment, isProcessing = false }) => {
   return (
-    <div className="p-6 rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm group hover:border-token-accent-brand transition duration-300">
+    <div
+      data-list-group="request-queue"
+      className="p-6 rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm group hover:border-token-accent-brand transition duration-300"
+    >
       <div className="flex flex-col md:flex-row justify-between items-start gap-5">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-sm bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20 flex items-center justify-center shrink-0">
             <UserIcon className="w-6 h-6 text-white" />
           </div>
           <div>
-            <p className="text-[14px] font-bold text-token-text-primary uppercase tracking-tight">
+            <p className="typo-list-primary text-token-text-primary uppercase tracking-tight">
               {employeeName || "Operario Técnico"}
             </p>
-            <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1">
+            <p className="typo-list-secondary text-token-text-tertiary uppercase mt-1">
               Modificación:{" "}
               <span className="text-token-accent-brand">
                 {TIME_RECORD_FIELD_LABELS[req.recordField]}
@@ -46,26 +49,26 @@ export const PendingRequestCard: FC<{
 
       <div className="mt-6 grid grid-cols-2 gap-5">
         <div className="p-3.5 rounded-sm bg-token-surface-stripe border border-token-border-subtle group-hover:border-token-border-technical transition-colors">
-          <p className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider mb-1.5 opacity-70">
+          <p className="typo-list-secondary text-token-text-tertiary uppercase mb-1.5 opacity-70">
             Valor Original
           </p>
-          <p className="text-[11px] font-bold text-token-text-tertiary line-through opacity-50 tabular-nums">
+          <p className="typo-list-value text-token-text-tertiary line-through opacity-60">
             {formatDisplayDateTime(req.originalValue)}
           </p>
         </div>
         <div className="p-3.5 rounded-sm bg-token-accent-brand/3 border border-token-accent-brand/20 relative overflow-hidden group-hover:border-token-accent-brand/40 transition-colors">
           <div className="absolute top-0 right-0 w-8 h-8 bg-token-accent-brand/5 rounded-bl-full" />
-          <p className="text-[10px] font-semibold text-token-accent-brand uppercase tracking-wider mb-1.5">
+          <p className="typo-list-secondary text-token-accent-brand uppercase mb-1.5">
             Valor Solicitado
           </p>
-          <p className="text-[11px] font-bold text-token-accent-brand tabular-nums">
+          <p className="typo-list-value text-token-accent-brand">
             {formatDisplayDateTime(req.requestedValue)}
           </p>
         </div>
       </div>
 
       <div className="mt-6 pt-6 border-t border-token-border-subtle flex flex-col gap-4">
-        <p className="text-[11px] font-bold text-token-text-secondary leading-relaxed italic px-4 py-3 bg-token-surface-stripe border-l-2 border-token-accent-brand rounded-sm">
+        <p className="typo-list-note text-token-text-secondary px-4 py-3 bg-token-surface-stripe border-l-2 border-token-accent-brand rounded-sm">
           "{req.reason}"
         </p>
         {req.attachment && (
@@ -107,17 +110,18 @@ export const ApprovedRequestCard: FC<{
   onViewAttachment: (att: CorrectionRequest["attachment"]) => void;
 }> = ({ req, employeeName, onViewAttachment }) => {
   return (
-    <div className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-emerald-500 shadow-sm transition group flex flex-col justify-between">
+    <div
+      data-list-group="request-queue"
+      className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-emerald-500 shadow-sm transition group flex flex-col justify-between"
+    >
       <div className="flex justify-between items-start mb-2">
         <div>
-          <p className="text-[12px] font-bold text-token-text-primary uppercase tracking-tight">
+          <p className="typo-list-primary text-token-text-primary uppercase tracking-tight">
             {employeeName}
           </p>
           <div className="flex items-center gap-2 mt-1">
             <CheckCircleIcon className="w-3 h-3 text-emerald-500" />
-            <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-widest">
-              Solicitud validada
-            </p>
+            <p className="typo-list-secondary text-emerald-600 uppercase">Solicitud validada</p>
           </div>
         </div>
 
@@ -132,11 +136,11 @@ export const ApprovedRequestCard: FC<{
       </div>
 
       <div className="flex items-center gap-3 py-1.5 px-3 bg-emerald-500/5 rounded-sm border border-emerald-500/10 w-fit my-2">
-        <span className="text-[11px] font-semibold text-token-text-tertiary line-through opacity-50">
+        <span className="typo-list-value text-token-text-tertiary line-through opacity-60">
           {formatDisplayDateTime(req.originalValue)}
         </span>
         <span className="text-emerald-600 font-bold">→</span>
-        <span className="text-[11px] font-bold text-emerald-700 tabular-nums">
+        <span className="typo-list-value text-emerald-700">
           {formatDisplayDateTime(req.requestedValue)}
         </span>
       </div>
@@ -161,17 +165,18 @@ export const RejectedRequestCard: FC<{
   onViewAttachment: (att: CorrectionRequest["attachment"]) => void;
 }> = ({ req, employeeName, onViewAttachment }) => {
   return (
-    <div className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-rose-500 shadow-sm transition group flex flex-col justify-between">
+    <div
+      data-list-group="request-queue"
+      className="h-full p-4 rounded-sm bg-token-surface-card border border-token-border-technical border-l-4 border-l-rose-500 shadow-sm transition group flex flex-col justify-between"
+    >
       <div className="flex justify-between items-start mb-2">
         <div>
-          <p className="text-[12px] font-bold text-token-text-primary uppercase tracking-tight">
+          <p className="typo-list-primary text-token-text-primary uppercase tracking-tight">
             {employeeName}
           </p>
           <div className="flex items-center gap-2 mt-1">
             <XCircleIcon className="w-3 h-3 text-rose-500" />
-            <p className="text-[10px] font-semibold text-rose-600 uppercase tracking-widest">
-              Solicitud rechazada
-            </p>
+            <p className="typo-list-secondary text-rose-600 uppercase">Solicitud rechazada</p>
           </div>
         </div>
 
@@ -186,9 +191,7 @@ export const RejectedRequestCard: FC<{
       </div>
 
       <div className="flex items-start gap-2 py-2 px-3 bg-rose-500/5 rounded-sm border border-rose-500/10 w-full my-2">
-        <p className="text-[11px] text-rose-700 font-bold italic line-clamp-2 leading-tight">
-          "{req.rejectionReason}"
-        </p>
+        <p className="typo-list-note text-rose-700 line-clamp-2">"{req.rejectionReason}"</p>
       </div>
 
       {req.attachment && (

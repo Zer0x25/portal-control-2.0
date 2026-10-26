@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { formatInTimeZone } from "date-fns-tz";
 import { useStore } from "../store/useStore";
 import {
+  addBusinessDaysCL,
   fromInclusiveRange,
+  formatBusinessDateCL,
   nowUtcInstant,
   toEndExclusive,
   toEndInclusive,
@@ -44,5 +47,62 @@ describe("timePolicy", () => {
     useStore.setState({ serverTimeOffset: 2 * 60 * 60 * 1000 });
 
     expect(nowUtcInstant()).toBe("2026-03-06T05:00:00.000Z");
+  });
+
+  it("formats business dates across Chilean summer and winter midnight boundaries", () => {
+    expect(formatBusinessDateCL(new Date("2026-01-01T02:59:59.999Z"))).toBe("2025-12-31");
+    expect(formatBusinessDateCL(new Date("2026-01-01T03:00:00.000Z"))).toBe("2026-01-01");
+    expect(formatBusinessDateCL(new Date("2026-07-01T03:59:59.999Z"))).toBe("2026-06-30");
+    expect(formatBusinessDateCL(new Date("2026-07-01T04:00:00.000Z"))).toBe("2026-07-01");
+  });
+
+  it("matches date-fns-tz for deterministic instants, including an early year", () => {
+    const dates = [new Date("0099-12-31T23:00:00.000Z")];
+    for (let day = 0; day < 370; day++) {
+      dates.push(new Date(Date.UTC(2025, 0, 1 + day, (day * 7) % 24, (day * 13) % 60)));
+    }
+
+    for (const date of dates) {
+      expect(formatBusinessDateCL(date)).toBe(
+        formatInTimeZone(date, "America/Santiago", "yyyy-MM-dd"),
+      );
+    }
+  });
+
+  it("uses the synchronized business now as the default date", () => {
+    vi.setSystemTime(new Date("2026-03-06T05:00:00.000Z"));
+    useStore.setState({ serverTimeOffset: -3 * 60 * 60 * 1000 });
+
+    expect(formatBusinessDateCL()).toBe("2026-03-05");
+  });
+
+  it("keeps throwing for invalid dates", () => {
+    expect(() => formatBusinessDateCL(new Date("invalid"))).toThrow(RangeError);
+  });
+
+  it("matches date-fns-tz when adding business days across calendar boundaries", () => {
+    const dates = [
+      "1900-02-28",
+      "2024-02-28",
+      "2024-02-29",
+      "2025-09-06",
+      "2026-01-01",
+      "2026-04-04",
+      "2026-07-01",
+      "2099-12-31",
+    ];
+    const offsets = [-400, -60, -1, 0, 1, 60, 400];
+
+    for (const dateStr of dates) {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      for (const days of offsets) {
+        const expectedDate = new Date(Date.UTC(year, month - 1, day, 12));
+        expectedDate.setUTCDate(expectedDate.getUTCDate() + days);
+
+        expect(addBusinessDaysCL(dateStr, days)).toBe(
+          formatInTimeZone(expectedDate, "America/Santiago", "yyyy-MM-dd"),
+        );
+      }
+    }
   });
 });

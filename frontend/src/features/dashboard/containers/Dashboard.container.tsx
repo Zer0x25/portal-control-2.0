@@ -13,7 +13,10 @@ import { useDashboardData } from "../hooks/useDashboardData";
 
 import DashboardView from "../views/Dashboard.view";
 import { WIDGET_REGISTRY } from "../components/widgetRegistry";
-import { EditTimestampModal, QuickActionModal } from "../../time-control";
+import {
+  DashboardEditTimestampModal,
+  DashboardQuickActionModal,
+} from "../components/DashboardTimeControlModals";
 
 const DashboardContainer: React.FC = () => {
   const { currentUser } = useStore(
@@ -145,9 +148,8 @@ const DashboardContainer: React.FC = () => {
     },
   };
 
-  const quickActionModal = (
-    <QuickActionModal
-      isOpen={Boolean(modals.quickActionRecord)}
+  const quickActionModal = modals.quickActionRecord ? (
+    <DashboardQuickActionModal
       onClose={actions.closeQuickActionModal}
       record={modals.quickActionRecord}
       clockStatus={quickActionClockStatus}
@@ -158,15 +160,14 @@ const DashboardContainer: React.FC = () => {
       isActionDisabled={false}
       disabledTooltip=""
     />
-  );
+  ) : null;
 
-  const editTimestampModal = (
-    <EditTimestampModal
-      isOpen={Boolean(editingRecordInfo)}
+  const editTimestampModal = editingRecordInfo ? (
+    <DashboardEditTimestampModal
       onClose={actions.closeEditTimestampModal}
       editingInfo={editingRecordInfo}
     />
-  );
+  ) : null;
 
   return (
     <DashboardView

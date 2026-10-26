@@ -1,0 +1,256 @@
+{
+  "capturedAt": "2026-10-25T21:01:39.912Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/time-control",
+  "profile": {
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75,
+    "cpuThrottleRate": 4
+  },
+  "sampleCount": 3,
+  "samples": [
+    {
+      "sample": 1,
+      "coldEditModalRequests": [],
+      "routeChunkRequests": {
+        "persistentLayout": [
+          "http://127.0.0.1:8080/assets/PersistentLayout-BoqP9mia.js"
+        ],
+        "timeControl": [
+          "http://127.0.0.1:8080/assets/TimeControl.container-c-PCeCMW.js"
+        ]
+      },
+      "routeChunkTimings": {
+        "persistentLayout": [
+          {
+            "path": "/assets/PersistentLayout-BoqP9mia.js",
+            "startTime": 542.5,
+            "responseEnd": 551.9000000059605
+          }
+        ],
+        "timeControl": [
+          {
+            "path": "/assets/TimeControl.container-c-PCeCMW.js",
+            "startTime": 358.40000000596046,
+            "responseEnd": 392.59999999403954
+          }
+        ]
+      },
+      "apiRequests": [
+        {
+          "path": "/api/health/ready",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/configs/is_control_interno_enabled",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/corrections/stats",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/audit-logs",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/employees/clocking-options",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shift-reports",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shifts/patterns",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shifts/assignments",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/holidays",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/leaves",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/configs/accounting_lock_date",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/records",
+          "statusCode": 200
+        }
+      ],
+      "scriptAssetCount": 67,
+      "scriptTransferBytes": 200550
+    },
+    {
+      "sample": 2,
+      "coldEditModalRequests": [],
+      "routeChunkRequests": {
+        "persistentLayout": [
+          "http://127.0.0.1:8080/assets/PersistentLayout-BoqP9mia.js"
+        ],
+        "timeControl": [
+          "http://127.0.0.1:8080/assets/TimeControl.container-c-PCeCMW.js"
+        ]
+      },
+      "routeChunkTimings": {
+        "persistentLayout": [
+          {
+            "path": "/assets/PersistentLayout-BoqP9mia.js",
+            "startTime": 384,
+            "responseEnd": 411.5
+          }
+        ],
+        "timeControl": [
+          {
+            "path": "/assets/TimeControl.container-c-PCeCMW.js",
+            "startTime": 258.80000001192093,
+            "responseEnd": 275.90000000596046
+          }
+        ]
+      },
+      "apiRequests": [
+        {
+          "path": "/api/health/ready",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/configs/is_control_interno_enabled",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/corrections/stats",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/audit-logs",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/employees/clocking-options",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shift-reports",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shifts/patterns",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shifts/assignments",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/holidays",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/leaves",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/configs/accounting_lock_date",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/records",
+          "statusCode": 200
+        }
+      ],
+      "scriptAssetCount": 67,
+      "scriptTransferBytes": 200550
+    },
+    {
+      "sample": 3,
+      "coldEditModalRequests": [],
+      "routeChunkRequests": {
+        "persistentLayout": [
+          "http://127.0.0.1:8080/assets/PersistentLayout-BoqP9mia.js"
+        ],
+        "timeControl": [
+          "http://127.0.0.1:8080/assets/TimeControl.container-c-PCeCMW.js"
+        ]
+      },
+      "routeChunkTimings": {
+        "persistentLayout": [
+          {
+            "path": "/assets/PersistentLayout-BoqP9mia.js",
+            "startTime": 418,
+            "responseEnd": 424.90000000596046
+          }
+        ],
+        "timeControl": [
+          {
+            "path": "/assets/TimeControl.container-c-PCeCMW.js",
+            "startTime": 248,
+            "responseEnd": 251.7000000178814
+          }
+        ]
+      },
+      "apiRequests": [
+        {
+          "path": "/api/health/ready",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/configs/is_control_interno_enabled",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/corrections/stats",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/audit-logs",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/employees/clocking-options",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shift-reports",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shifts/patterns",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/shifts/assignments",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/holidays",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/leaves",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/configs/accounting_lock_date",
+          "statusCode": 200
+        },
+        {
+          "path": "/api/records",
+          "statusCode": 200
+        }
+      ],
+      "scriptAssetCount": 67,
+      "scriptTransferBytes": 200550
+    }
+  ]
+}

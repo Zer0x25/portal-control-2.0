@@ -183,6 +183,24 @@ describe("useWorkerPortalData (spec 028)", () => {
     authTokenStore.removeToken();
     server.resetHandlers();
   });
+
+  it("AC-perf: mantiene las 12 etiquetas localizadas al cambiar de año", () => {
+    const now = new Date("2026-03-15T12:00:00.000Z");
+    const { result } = renderHook(() => useWorkerPortalData());
+    const expected = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+      const label = date.toLocaleString("es-CL", { month: "long", year: "numeric" });
+
+      return {
+        value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+      };
+    });
+
+    expect(result.current.monthOptions).toEqual(expected);
+    expect(result.current.monthOptions[0]?.value).toBe("2026-03");
+    expect(result.current.monthOptions[11]?.value).toBe("2025-04");
+  });
   it("AC2: enrichedRecords filtra por empleado y por selectedMonth", async () => {
     const { result } = renderHook(() => useWorkerPortalData());
 
@@ -211,6 +229,43 @@ describe("useWorkerPortalData (spec 028)", () => {
       expect(result.current.status).toBe("en_jornada");
     });
     expect(result.current.status).not.toBe("en_colacion");
+  });
+
+  it("AC-perf: deriva el estado de marcaje sin un render de sincronización", () => {
+    useUserClockingStatusMock.mockReturnValue({
+      lastRecord: recordR1,
+      status: "in",
+      time: "",
+      isLoading: false,
+    });
+    const onRender = vi.fn();
+
+    const { result } = renderHook(() => {
+      onRender();
+      return useWorkerPortalData();
+    });
+
+    expect(onRender).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe("en_jornada");
+  });
+
+  it("mantiene la carga visible mientras resuelve el empleado de fallback", async () => {
+    useEmployeesMock.mockReturnValue({
+      getEmployeeById: () => null,
+      allEmployees: [],
+      isLoadingEmployees: false,
+      refreshEmployees: refreshEmployeesMock,
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    await waitFor(() => {
+      expect(result.current.isLoadingEmployees).toBe(true);
+    });
+    await waitFor(() => {
+      expect(result.current.employee?.id).toBe("e1");
+    });
+    expect(result.current.isLoadingEmployees).toBe(false);
   });
 
   it("AC-perf: pide records acotados a empleado+mes (no volcado completo)", async () => {

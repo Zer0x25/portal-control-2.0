@@ -1,0 +1,16 @@
+{
+  "frontendImage": "sha256:292bc2e70eee55398cc04d7f214eff19ece18ca8ea9b384c887ddf85ea7a803c",
+  "measurements": {
+    "reactCoreBytes": 218860,
+    "chartsBytes": 145613,
+    "precacheBytes": 2039745,
+    "precacheEntries": 192
+  },
+  "limits": {
+    "reactCoreBytes": 266240,
+    "chartsBytes": 184320,
+    "precacheBytes": 2097152
+  },
+  "failures": [],
+  "htmlBytes": 1639
+}

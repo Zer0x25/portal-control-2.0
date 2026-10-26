@@ -9,7 +9,7 @@ const SessionExpiredOverlay: React.FC = () => {
     >
       <div className="bg-token-surface-card rounded-2xl p-8 shadow-2xl max-w-md w-full text-center border border-token-border-subtle relative overflow-hidden animate-in fade-in zoom-in-90">
         {/* Decorative background pulse */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-red-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="ambient-glow ambient-glow-danger absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 animate-pulse" />
 
         <div className={`relative ${Z.sticky} flex flex-col items-center`}>
           <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6 animate-in fade-in zoom-in-95 [animation-delay:100ms]">

@@ -3,7 +3,7 @@ import { noteService } from "../../services/noteService";
 import { useAuth } from "../useAuth";
 import { queryKeys } from "../../lib/queryKeys";
 
-export const useNotesQuery = () => {
+export const useNotesQuery = (enabled = true) => {
   const { currentUser } = useAuth();
 
   return useQuery({
@@ -12,7 +12,7 @@ export const useNotesQuery = () => {
       if (!currentUser) return [];
       return await noteService.getAll();
     },
-    enabled: !!currentUser,
+    enabled: !!currentUser && enabled,
     staleTime: 1000 * 60 * 5, // 5 mins
   });
 };

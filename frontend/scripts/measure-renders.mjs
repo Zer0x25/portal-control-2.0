@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 import { chromium, request as playwrightRequest } from "@playwright/test";
 
 const frontendRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const baseUrl = process.env.E2E_BASE_URL || "http://127.0.0.1:5173";
+const vitePort = Number(process.env.E2E_VITE_PORT ?? 5173);
+if (!Number.isInteger(vitePort) || vitePort < 1024 || vitePort > 65535) {
+  throw new Error("E2E_VITE_PORT must be an integer between 1024 and 65535");
+}
+const baseUrl = process.env.E2E_BASE_URL || `http://127.0.0.1:${vitePort}`;
 const apiBase = (process.env.E2E_API_URL || "http://127.0.0.1:4000/api").replace(/\/$/, "");
 const outputArg = process.argv
   .find((arg) => arg.startsWith("--output="))
@@ -14,16 +18,57 @@ const outputArg = process.argv
 const baselineArg = process.argv
   .find((arg) => arg.startsWith("--baseline="))
   ?.slice("--baseline=".length);
+const samplesArg = process.argv
+  .find((arg) => arg.startsWith("--samples="))
+  ?.slice("--samples=".length);
+const viewportArg = process.argv
+  .find((arg) => arg.startsWith("--viewport="))
+  ?.slice("--viewport=".length);
+const cpuThrottleArg = process.argv
+  .find((arg) => arg.startsWith("--cpu-throttle="))
+  ?.slice("--cpu-throttle=".length);
 const outputPath = outputArg ? resolve(frontendRoot, outputArg) : undefined;
 const baselinePath = baselineArg ? resolve(frontendRoot, baselineArg) : undefined;
+const sampleCount = samplesArg === undefined ? 3 : Number(samplesArg);
+const cpuThrottleRate = cpuThrottleArg === undefined ? 1 : Number(cpuThrottleArg);
+
+if (!Number.isInteger(sampleCount) || sampleCount < 1 || sampleCount > 10) {
+  throw new Error("--samples must be an integer between 1 and 10");
+}
+
+if (!Number.isInteger(cpuThrottleRate) || cpuThrottleRate < 1 || cpuThrottleRate > 8) {
+  throw new Error("--cpu-throttle must be an integer between 1 and 8");
+}
 
 const routes = [
   { id: "dashboard", path: "/#/dashboard", role: "admin" },
   { id: "planner", path: "/#/planning/monthly", role: "admin" },
   { id: "worker-portal", path: "/#/worker-portal", role: "worker" },
+  { id: "time-control", path: "/#/time-control", role: "admin" },
   { id: "logbook", path: "/#/logbook", role: "admin" },
   { id: "kiosk", path: "/#/kiosk", role: null },
 ];
+
+const routeArg = process.argv.find((arg) => arg.startsWith("--route="))?.slice("--route=".length);
+const selectedRoutes = routeArg ? routes.filter((route) => route.id === routeArg) : routes;
+
+if (routeArg && selectedRoutes.length === 0) {
+  throw new Error(
+    `Unknown route "${routeArg}". Available routes: ${routes.map((route) => route.id).join(", ")}`,
+  );
+}
+
+const viewportPresets = {
+  desktop: { width: 1440, height: 900 },
+  mobile: { width: 412, height: 823 },
+};
+
+if (viewportArg && !Object.hasOwn(viewportPresets, viewportArg)) {
+  throw new Error('--viewport must be "desktop" or "mobile"');
+}
+
+const viewportName = viewportArg ?? "desktop";
+const viewport = viewportPresets[viewportName];
 
 const credentials = {
   admin: {
@@ -46,7 +91,7 @@ const wait = (durationMs) =>
 const startDevServer = () => {
   devServer = spawn(
     "npm",
-    ["run", "dev", "--", "--host", "127.0.0.1", "--port", "5173", "--strictPort"],
+    ["run", "dev", "--", "--host", "127.0.0.1", "--port", String(vitePort), "--strictPort"],
     { cwd: frontendRoot, env: process.env, stdio: "inherit" },
   );
 };
@@ -92,23 +137,51 @@ const login = async (role) => {
   };
 };
 
-const measureRoute = async (route, sessions) => {
-  const context = await browser.newContext();
+const measureRouteSample = async (route, sessions) => {
+  const context = await browser.newContext({ viewport });
   if (route.role) {
     const session = sessions[route.role] ?? (sessions[route.role] = await login(route.role));
-    await context.addInitScript(({ token, user }) => {
+    await context.addInitScript(({ token, user, captureReadinessDiagnostics }) => {
       sessionStorage.setItem("authToken", token);
       sessionStorage.setItem("currentUser", JSON.stringify(user));
       window.__portalRenderCounts = {};
-    }, session);
+      window.__portalRenderMetrics = {};
+      window.__portalRenderCommitEvents = [];
+      window.__portalRenderCommitEventsDropped = 0;
+      if (captureReadinessDiagnostics) {
+        window.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+        window.__portalReadinessRenderAudit = {
+          syncPhases: [],
+          apiClientStages: [],
+          queryTimings: [],
+        };
+        window.addEventListener("portal:sync-phase", (event) => {
+          window.__portalReadinessRenderAudit.syncPhases.push(event.detail);
+        });
+        window.addEventListener("portal:readiness-api-client-stage", (event) => {
+          window.__portalReadinessRenderAudit.apiClientStages.push(event.detail);
+        });
+        window.addEventListener("portal:readiness-query", (event) => {
+          window.__portalReadinessRenderAudit.queryTimings.push(event.detail);
+        });
+      }
+    }, { ...session, captureReadinessDiagnostics: route.id === "time-control" });
   } else {
     await context.addInitScript(() => {
       window.__portalRenderCounts = {};
+      window.__portalRenderMetrics = {};
+      window.__portalRenderCommitEvents = [];
+      window.__portalRenderCommitEventsDropped = 0;
     });
   }
 
-  const page = await context.newPage();
+  let cdp;
   try {
+    const page = await context.newPage();
+    cdp = await context.newCDPSession(page);
+    if (cpuThrottleRate > 1) {
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottleRate });
+    }
     await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction((id) => (window.__portalRenderCounts?.[id] ?? 0) > 0, route.id, {
       timeout: 60_000,
@@ -116,10 +189,272 @@ const measureRoute = async (route, sessions) => {
     await page.waitForTimeout(1_000);
 
     const commits = await page.evaluate((id) => window.__portalRenderCounts?.[id] ?? 0, route.id);
-    return { id: route.id, path: route.path, role: route.role, navigationCommits: commits };
+    const renderProfile = await page.evaluate((id) => {
+      const metrics = window.__portalRenderMetrics ?? {};
+      return {
+        root: metrics["app:root"] ?? null,
+        appProfiles: Object.fromEntries(
+          Object.entries(metrics).filter(
+            ([metricId]) => metricId.startsWith("app:") && metricId !== "app:root",
+          ),
+        ),
+        route: metrics[id] ?? null,
+        widgets: Object.fromEntries(
+          Object.entries(metrics).filter(([metricId]) => metricId.startsWith("widget:")),
+        ),
+        scopedProfiles: Object.fromEntries(
+          Object.entries(metrics).filter(([metricId]) => metricId.startsWith(`${id}:`)),
+        ),
+        commitEvents: window.__portalRenderCommitEvents ?? [],
+        commitEventsDropped: window.__portalRenderCommitEventsDropped ?? 0,
+        readinessAudit: window.__portalReadinessRenderAudit ?? null,
+      };
+    }, route.id);
+
+    return { navigationCommits: commits, renderProfile };
   } finally {
+    await cdp?.detach();
     await context.close();
   }
+};
+
+const median = (values) => {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  const value =
+    sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
+  return Number(value.toFixed(2));
+};
+
+const aggregateMetrics = (metrics) => {
+  const present = metrics.filter(Boolean);
+  return {
+    samplesPresent: present.length,
+    commitsMedian: median(present.map((metric) => metric.commits)),
+    actualDurationMsMedian: median(present.map((metric) => metric.actualDurationMs)),
+    baseDurationMsMedian: median(present.map((metric) => metric.baseDurationMs)),
+    maxActualDurationMsMedian: median(present.map((metric) => metric.maxActualDurationMs)),
+    phasesMedian: {
+      mount: median(present.map((metric) => metric.phases.mount)),
+      update: median(present.map((metric) => metric.phases.update)),
+      nestedUpdate: median(present.map((metric) => metric.phases["nested-update"])),
+    },
+  };
+};
+
+const rangeStats = (values) => {
+  const sorted = values.filter(Number.isFinite).sort((left, right) => left - right);
+  if (sorted.length === 0) return { sampleCount: 0, min: null, median: null, max: null };
+  return {
+    sampleCount: sorted.length,
+    min: Number(sorted[0].toFixed(2)),
+    median: median(sorted),
+    max: Number(sorted.at(-1).toFixed(2)),
+  };
+};
+
+const correlateReadinessCommits = (routeId, renderProfile) => {
+  if (routeId !== "time-control") return null;
+  const audit = renderProfile.readinessAudit;
+  if (!audit) throw new Error("Time Control readiness render audit is missing");
+  const validation = audit.syncPhases.find(
+    ({ phase, name }) => phase === "validation" && name === "validateInstanceId",
+  );
+  const fetchResolved = audit.apiClientStages.find(({ stage }) => stage === "fetch-resolved");
+  const bodyResolved = audit.apiClientStages.find(({ stage }) => stage === "read-body-resolved");
+  const queryTiming = audit.queryTimings[0];
+  if (!validation || !fetchResolved || !bodyResolved || !queryTiming) {
+    throw new Error("Time Control readiness timing events are incomplete");
+  }
+
+  const validationStartMs = validation.startedAtMs;
+  const validationEndMs = validation.startedAtMs + validation.durationMs;
+  const bodyReadStartMs = fetchResolved.atMs;
+  const bodyReadEndMs = bodyResolved.atMs;
+  const scopeIds = [
+    "app:root",
+    ...Object.keys(renderProfile.appProfiles),
+    routeId,
+    `${routeId}:view`,
+  ];
+  const scopes = Object.fromEntries(
+    scopeIds.map((scopeId) => {
+      const commits = renderProfile.commitEvents.filter(({ id }) => id === scopeId);
+      const validationOverlappingCommits = commits.filter(
+        ({ startTimeMs, commitTimeMs }) =>
+          startTimeMs <= validationEndMs && commitTimeMs >= validationStartMs,
+      );
+      const bodyReadOverlappingCommits = commits.filter(
+        ({ startTimeMs, commitTimeMs }) =>
+          startTimeMs <= bodyReadEndMs && commitTimeMs >= bodyReadStartMs,
+      );
+      return [
+        scopeId,
+        {
+          totalCommitCount: commits.length,
+          totalActualDurationMs: Number(
+            commits.reduce((total, commit) => total + commit.actualDurationMs, 0).toFixed(2),
+          ),
+          validationOverlappingCommitCount: validationOverlappingCommits.length,
+          validationOverlappingActualDurationMs: Number(
+            validationOverlappingCommits
+              .reduce((total, commit) => total + commit.actualDurationMs, 0)
+              .toFixed(2),
+          ),
+          maxValidationOverlappingActualDurationMs: Number(
+            Math.max(
+              0,
+              ...validationOverlappingCommits.map((commit) => commit.actualDurationMs),
+            ).toFixed(2),
+          ),
+          validationOverlappingCommits,
+          bodyReadOverlappingCommitCount: bodyReadOverlappingCommits.length,
+          bodyReadOverlappingActualDurationMs: Number(
+            bodyReadOverlappingCommits
+              .reduce((total, commit) => total + commit.actualDurationMs, 0)
+              .toFixed(2),
+          ),
+          maxBodyReadOverlappingActualDurationMs: Number(
+            Math.max(
+              0,
+              ...bodyReadOverlappingCommits.map((commit) => commit.actualDurationMs),
+            ).toFixed(2),
+          ),
+          bodyReadOverlappingCommits,
+        },
+      ];
+    }),
+  );
+
+  return {
+    validation: {
+      startedAtMs: validation.startedAtMs,
+      finishedAtMs: Number(validationEndMs.toFixed(2)),
+      durationMs: validation.durationMs,
+    },
+    readinessQuery: queryTiming,
+    bodyRead: {
+      startedAtMs: bodyReadStartMs,
+      finishedAtMs: bodyReadEndMs,
+      durationMs: Number((bodyReadEndMs - bodyReadStartMs).toFixed(2)),
+    },
+    commitEventsDropped: renderProfile.commitEventsDropped,
+    scopes,
+  };
+};
+
+const measureRoute = async (route, sessions) => {
+  const samples = [];
+  for (let index = 0; index < sampleCount; index += 1) {
+    samples.push(await measureRouteSample(route, sessions));
+  }
+
+  const widgetIds = [
+    ...new Set(samples.flatMap((sample) => Object.keys(sample.renderProfile.widgets))),
+  ].sort();
+  const scopedProfileIds = [
+    ...new Set(samples.flatMap((sample) => Object.keys(sample.renderProfile.scopedProfiles))),
+  ].sort();
+  const appProfileIds = [
+    ...new Set(samples.flatMap((sample) => Object.keys(sample.renderProfile.appProfiles))),
+  ].sort();
+  const readinessCorrelations = samples
+    .map((sample) => correlateReadinessCommits(route.id, sample.renderProfile))
+    .filter(Boolean);
+  const readinessScopeIds = [
+    ...new Set(readinessCorrelations.flatMap((sample) => Object.keys(sample.scopes))),
+  ].sort();
+  const readinessCorrelation =
+    readinessCorrelations.length > 0
+      ? {
+          source:
+            "React Profiler timestamps from Vite development mode; use for component attribution, not production timing",
+          sampleCount: readinessCorrelations.length,
+          validationDurationMs: rangeStats(
+            readinessCorrelations.map((sample) => sample.validation.durationMs),
+          ),
+          bodyReadDurationMs: rangeStats(
+            readinessCorrelations.map((sample) => sample.bodyRead.durationMs),
+          ),
+          scopes: Object.fromEntries(
+            readinessScopeIds.map((scopeId) => [
+              scopeId,
+              {
+                totalCommitCount: rangeStats(
+                  readinessCorrelations.map((sample) => sample.scopes[scopeId].totalCommitCount),
+                ),
+                validationOverlappingCommitCount: rangeStats(
+                  readinessCorrelations.map(
+                    (sample) => sample.scopes[scopeId].validationOverlappingCommitCount,
+                  ),
+                ),
+                validationOverlappingActualDurationMs: rangeStats(
+                  readinessCorrelations.map(
+                    (sample) => sample.scopes[scopeId].validationOverlappingActualDurationMs,
+                  ),
+                ),
+                bodyReadOverlappingCommitCount: rangeStats(
+                  readinessCorrelations.map(
+                    (sample) => sample.scopes[scopeId].bodyReadOverlappingCommitCount,
+                  ),
+                ),
+                totalActualDurationMs: rangeStats(
+                  readinessCorrelations.map(
+                    (sample) => sample.scopes[scopeId].totalActualDurationMs,
+                  ),
+                ),
+                bodyReadOverlappingActualDurationMs: rangeStats(
+                  readinessCorrelations.map(
+                    (sample) => sample.scopes[scopeId].bodyReadOverlappingActualDurationMs,
+                  ),
+                ),
+                maxBodyReadOverlappingActualDurationMs: rangeStats(
+                  readinessCorrelations.map(
+                    (sample) => sample.scopes[scopeId].maxBodyReadOverlappingActualDurationMs,
+                  ),
+                ),
+              },
+            ]),
+          ),
+        }
+      : null;
+
+  return {
+    id: route.id,
+    path: route.path,
+    role: route.role,
+    navigationCommits: median(samples.map((sample) => sample.navigationCommits)),
+    sampleCount: samples.length,
+    samples,
+    readinessCorrelations,
+    readinessCorrelation,
+    renderProfile: {
+      source: "React Profiler in Vite development mode; accumulated during the first second",
+      root: aggregateMetrics(samples.map((sample) => sample.renderProfile.root)),
+      appProfiles: Object.fromEntries(
+        appProfileIds.map((id) => [
+          id,
+          aggregateMetrics(samples.map((sample) => sample.renderProfile.appProfiles[id] ?? null)),
+        ]),
+      ),
+      route: aggregateMetrics(samples.map((sample) => sample.renderProfile.route)),
+      widgets: Object.fromEntries(
+        widgetIds.map((id) => [
+          id,
+          aggregateMetrics(samples.map((sample) => sample.renderProfile.widgets[id] ?? null)),
+        ]),
+      ),
+      scopedProfiles: Object.fromEntries(
+        scopedProfileIds.map((id) => [
+          id,
+          aggregateMetrics(
+            samples.map((sample) => sample.renderProfile.scopedProfiles[id] ?? null),
+          ),
+        ]),
+      ),
+    },
+  };
 };
 
 const compareBaseline = (measurements, baseline) => {
@@ -156,15 +491,23 @@ try {
 
   const sessions = {};
   const measurements = {
-    schemaVersion: 1,
+    schemaVersion: 3,
     measuredAt: new Date().toISOString(),
     baseUrl,
-    interaction:
-      "direct route navigation; committed React Profiler updates during the first second",
+    apiBase,
+    nodeVersion: process.version,
+    browser: { name: "Chromium", version: browser.version() },
+    viewport,
+    cpuThrottleRate,
+    sampleCountPerRoute: sampleCount,
+    viewportName,
+    interaction: "direct route navigation in a fresh browser context per sample",
+    timingLimit:
+      "React Profiler timings come from Vite development mode with the recorded CDP CPU throttle; use only for component attribution, not production timing comparisons",
     routes: [],
   };
 
-  for (const route of routes) {
+  for (const route of selectedRoutes) {
     measurements.routes.push(await measureRoute(route, sessions));
   }
 

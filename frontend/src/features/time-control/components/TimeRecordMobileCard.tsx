@@ -47,6 +47,8 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
 
     return (
       <div
+        data-testid="time-record-card"
+        data-list-group="responsive-record-cards"
         className={`p-4 mb-3 rounded-md shadow-sm border border-token-border-technical ${
           isLocked
             ? "bg-token-surface-stripe cursor-not-allowed mx-2 opacity-80"
@@ -62,33 +64,44 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
               {pendingRequest && (
                 <ExclamationTriangleIcon className="w-3.5 h-3.5 text-token-status-warning" />
               )}
-              <p className="text-[11px] font-black text-token-text-primary uppercase tracking-tight">
+              <p
+                data-list-role="primary"
+                className="typo-list-primary text-token-text-primary uppercase tracking-tight"
+              >
                 {record.employeeName}
               </p>
             </div>
-            <p className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest">
+            <p
+              data-list-role="secondary"
+              className="typo-list-secondary text-token-text-tertiary uppercase tracking-wider"
+            >
               {record.employeeArea}
             </p>
           </div>
           <span
-            className={`px-3 py-1 text-[10px] font-black rounded-md uppercase tracking-widest border border-token-border-subtle ${statusConfig.bg} ${statusConfig.text}`}
+            data-list-role="status"
+            className={`typo-list-status px-3 py-1 rounded-md uppercase tracking-wide border border-token-border-subtle ${statusConfig.bg} ${statusConfig.text}`}
           >
             {statusConfig.label}
           </span>
         </div>
         <div className="mt-3 pt-3 border-t border-token-border-subtle">
-          <div className="grid grid-cols-2 gap-x-4 text-xs text-token-text-secondary">
-            <p>
-              <strong>Entrada:</strong> {formatDisplayDateTime(record.entrada)}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-token-text-secondary">
+            <p className="typo-list-value">
+              <span className="typo-list-secondary">Entrada:</span>{" "}
+              {formatDisplayDateTime(record.entrada)}
             </p>
-            <p>
-              <strong>Salida:</strong> {formatDisplayDateTime(record.salida)}
+            <p className="typo-list-value">
+              <span className="typo-list-secondary">Salida:</span>{" "}
+              {formatDisplayDateTime(record.salida)}
             </p>
-            <p>
-              <strong>Ini. Colación:</strong> {formatDisplayDateTime(record.inicioColacion)}
+            <p className="typo-list-value">
+              <span className="typo-list-secondary">Ini. Colación:</span>{" "}
+              {formatDisplayDateTime(record.inicioColacion)}
             </p>
-            <p>
-              <strong>Fin Colación:</strong> {formatDisplayDateTime(record.finColacion)}
+            <p className="typo-list-value">
+              <span className="typo-list-secondary">Fin Colación:</span>{" "}
+              {formatDisplayDateTime(record.finColacion)}
             </p>
           </div>
         </div>

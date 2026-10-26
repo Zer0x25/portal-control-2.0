@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv, type Plugin } from "vite";
+import { defineConfig, loadEnv, minifySync, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -17,17 +17,16 @@ const appVersion = (
 ).version;
 const buildVersion = process.env.VITE_BUILD_VERSION || appVersion || "dev";
 
-// Preload de la fuente del cuerpo (Inter-Regular, pesos 400/500) con su URL
-// hasheada del bundle: sin esto el navegador la descubre tarde vía CSS y el
-// primer paint de texto espera ~110KB. Solo Regular: SemiBold/Bold llegan
-// por CSS para encabezados sin competir con el JS crítico en el preload.
+// Preload solo del subconjunto latino Regular (pesos 400/500).
+// Los rangos complementarios conservan las fuentes originales bajo demanda;
+// SemiBold/Bold se descubren desde CSS sin competir en el preload.
 const fontPreloadPlugin = (): Plugin => ({
   name: "font-preload-inter-regular",
   apply: "build",
   transformIndexHtml(html, ctx) {
     const files = Object.keys(ctx.bundle ?? {});
     const regular = files.find(
-      (f) => f.startsWith("assets/Inter-Regular-") && f.endsWith(".woff2"),
+      (f) => f.startsWith("assets/Inter-Regular-latin-") && f.endsWith(".woff2"),
     );
     if (!regular) return html;
     const tag = {
@@ -42,6 +41,49 @@ const fontPreloadPlugin = (): Plugin => ({
       injectTo: "head-prepend" as const,
     };
     return { html, tags: [tag] };
+  },
+});
+
+const bootstrapCriticalCssPlugin = (): Plugin => ({
+  name: "bootstrap-critical-css-handoff",
+  apply: "build",
+  transformIndexHtml: {
+    order: "post",
+    handler(html) {
+      const bootstrapPattern = /<script id="app-bootstrap-script">([\s\S]*?)<\/script>/;
+      const bootstrap = html.match(bootstrapPattern);
+      const stylesheets = html.match(/<link\b(?=[^>]*\brel="stylesheet")[^>]*>/g) ?? [];
+
+      if (!bootstrap) throw new Error("App bootstrap script is missing from built HTML");
+      if (stylesheets.length !== 1) {
+        throw new Error(`Expected one built stylesheet link; found ${stylesheets.length}`);
+      }
+      if (!html.includes('id="app-bootstrap-critical"')) {
+        throw new Error("App critical CSS is missing from built HTML");
+      }
+
+      const minifiedBootstrap = minifySync("app-bootstrap.js", bootstrap[1], {
+        compress: true,
+        mangle: true,
+      });
+      if (minifiedBootstrap.errors.length > 0) {
+        throw new Error("Could not minify the app bootstrap script");
+      }
+      const compactBootstrap = minifiedBootstrap.code.trim();
+      const compactHtml = html.replace(
+        bootstrapPattern,
+        `<script id="app-bootstrap-script">${compactBootstrap}</script>`,
+      );
+      const stylesheet = stylesheets[0];
+      if (/\bmedia=/.test(stylesheet)) {
+        throw new Error("Built stylesheet must not define a media attribute before handoff");
+      }
+
+      return compactHtml.replace(
+        stylesheet,
+        stylesheet.replace(/>$/, ' media="print" fetchpriority="high">'),
+      );
+    },
   },
 });
 
@@ -89,79 +131,84 @@ export default defineConfig(({ mode }) => {
       // Recoverable bail-outs are emitted by the plugin for auditability.
       react({ compiler: { reportDiagnostics: true } }),
       fontPreloadPlugin(),
-      ...(!isStorybook ? [VitePWA({
-        registerType: "autoUpdate",
-        includeAssets: ["favicon.svg"],
-        workbox: {
-          navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
-          globIgnores: [
-            "**/*.mp3",
-            "**/*.woff2",
-            "**/assets/charts-*.js",
-            "**/assets/framer-motion-*.js",
-            "**/assets/realtime-*.js",
-            "**/assets/socketService-*.js",
-            "**/assets/PersistentLayout-*.js",
-            "**/assets/AnalyticsTab-*.js",
-            "**/assets/KpisTab-*.js",
-            "**/assets/ReportsTab-*.js",
-            "**/assets/RequestsTab-*.js",
-            "**/assets/AccountingClosureTab-*.js",
-            // Solo rutas post-login (store global ya no los importa en boot):
-            // runtimeCaching StaleWhileRevalidate los trae bajo demanda.
-            "**/assets/date-utils-*.js",
-            "**/assets/dateUtils-*.js",
-            "**/assets/formatters-*.js",
-            // Validación zod de IndexedDB: solo se importa en writes de caché.
-            "**/assets/validation-*.js",
-            "**/assets/idbValidation-*.js",
-          ],
-          runtimeCaching: [
-            {
-              urlPattern: ({ request }) =>
-                request.destination === "script" || request.destination === "style",
-              handler: "StaleWhileRevalidate",
-              options: {
-                cacheName: "portal-assets-dynamic",
-                expiration: {
-                  maxEntries: 80,
-                  maxAgeSeconds: 60 * 60 * 24 * 7,
-                },
+      ...(!isStorybook ? [bootstrapCriticalCssPlugin()] : []),
+      ...(!isStorybook
+        ? [
+            VitePWA({
+              registerType: "autoUpdate",
+              includeAssets: ["favicon.svg"],
+              workbox: {
+                navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
+                globIgnores: [
+                  "**/*.mp3",
+                  "**/*.woff2",
+                  "**/assets/charts-*.js",
+                  "**/assets/framer-motion-*.js",
+                  "**/assets/realtime-*.js",
+                  "**/assets/socketService-*.js",
+                  "**/assets/PersistentLayout-*.js",
+                  "**/assets/AnalyticsTab-*.js",
+                  "**/assets/KpisTab-*.js",
+                  "**/assets/ReportsTab-*.js",
+                  "**/assets/RequestsTab-*.js",
+                  "**/assets/AccountingClosureTab-*.js",
+                  // Solo rutas post-login (store global ya no los importa en boot):
+                  // runtimeCaching StaleWhileRevalidate los trae bajo demanda.
+                  "**/assets/date-utils-*.js",
+                  "**/assets/dateUtils-*.js",
+                  "**/assets/formatters-*.js",
+                  // Validación zod de IndexedDB: solo se importa en writes de caché.
+                  "**/assets/validation-*.js",
+                  "**/assets/idbValidation-*.js",
+                ],
+                runtimeCaching: [
+                  {
+                    urlPattern: ({ request }) =>
+                      request.destination === "script" || request.destination === "style",
+                    handler: "StaleWhileRevalidate",
+                    options: {
+                      cacheName: "portal-assets-dynamic",
+                      expiration: {
+                        maxEntries: 80,
+                        maxAgeSeconds: 60 * 60 * 24 * 7,
+                      },
+                    },
+                  },
+                  {
+                    // Fuentes woff2 hasheadas (immutable): primer uso va a red,
+                    // luego 1 año en caché. Se excluyen del precache (globIgnores)
+                    // para no inflar la instalación del SW en ~350KB.
+                    urlPattern: ({ request }) => request.destination === "font",
+                    handler: "CacheFirst",
+                    options: {
+                      cacheName: "portal-fonts",
+                      expiration: {
+                        maxEntries: 10,
+                        maxAgeSeconds: 60 * 60 * 24 * 365,
+                      },
+                    },
+                  },
+                ],
               },
-            },
-            {
-              // Fuentes woff2 hasheadas (immutable): primer uso va a red,
-              // luego 1 año en caché. Se excluyen del precache (globIgnores)
-              // para no inflar la instalación del SW en ~350KB.
-              urlPattern: ({ request }) => request.destination === "font",
-              handler: "CacheFirst",
-              options: {
-                cacheName: "portal-fonts",
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
+              manifest: {
+                name: "PORTAL - Enterprise Studio",
+                short_name: "PORTAL",
+                description: "Sistema de Gestión de Operaciones Industrial",
+                theme_color: "#030305",
+                background_color: "#030305",
+                display: "standalone",
+                icons: [
+                  {
+                    src: "favicon.svg",
+                    sizes: "any",
+                    type: "image/svg+xml",
+                    purpose: "any maskable",
+                  },
+                ],
               },
-            },
-          ],
-        },
-        manifest: {
-          name: "PORTAL - Enterprise Studio",
-          short_name: "PORTAL",
-          description: "Sistema de Gestión de Operaciones Industrial",
-          theme_color: "#030305",
-          background_color: "#030305",
-          display: "standalone",
-          icons: [
-            {
-              src: "favicon.svg",
-              sizes: "any",
-              type: "image/svg+xml",
-              purpose: "any maskable",
-            },
-          ],
-        },
-      })] : []),
+            }),
+          ]
+        : []),
     ],
     build: {
       rollupOptions: {
@@ -188,7 +235,22 @@ export default defineConfig(({ mode }) => {
               },
               {
                 name: "state",
-                test: /[\\/]node_modules[\\/](@tanstack[\\/]react-query|zustand)[\\/]/,
+                test: /[\\/]node_modules[\\/](@tanstack[\\/](react-query|query-core|react-query-persist-client|query-persist-client-core|query-async-storage-persister)|zustand)[\\/]/,
+              },
+              // Keep optional forms out of the vendor chunk used by Query at boot.
+              {
+                name: "forms",
+                test: /[\\/]node_modules[\\/](@tanstack[\\/](react-form|form-core|react-store|store|pacer-lite|devtools-event-client)|use-sync-external-store)[\\/]/,
+              },
+              {
+                name: "sanitization",
+                test: /[\\/]node_modules[\\/]dompurify[\\/]/,
+              },
+              // Table/virtual cores share Store with Form; never coalesce them
+              // with Query persistence or Workbox in the boot vendor chunk.
+              {
+                name: "tables",
+                test: /[\\/]node_modules[\\/]@tanstack[\\/](react-table|table-core|react-virtual|virtual-core)[\\/]/,
               },
               // Solo la lib de charting: la usa AttendanceChart tras
               // React.lazy, nunca debe ir en el preload del entry.

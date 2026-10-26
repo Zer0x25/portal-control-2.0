@@ -1,0 +1,76 @@
+{
+  "capturedAt": "2026-10-24T18:39:00.772Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/worker-portal",
+  "profile": {
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75,
+    "cpuThrottleRate": 4
+  },
+  "sampleCount": 3,
+  "samples": [
+    {
+      "sample": 1,
+      "fcpMs": 228,
+      "shellLcpMs": 228,
+      "shellVisibleAtMs": 184.90000000596046,
+      "rootChildrenAtShellPaint": 0,
+      "clockVisibleAtMs": 1254,
+      "shellRemovedAtMs": 1255,
+      "lcpEntries": [
+        {
+          "startTime": 228,
+          "elementTag": "H1",
+          "isBootstrapShell": true
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "fcpMs": 212,
+      "shellLcpMs": 212,
+      "shellVisibleAtMs": 155.09999999403954,
+      "rootChildrenAtShellPaint": 0,
+      "clockVisibleAtMs": 1241.2999999970198,
+      "shellRemovedAtMs": 1242.3999999910593,
+      "lcpEntries": [
+        {
+          "startTime": 212,
+          "elementTag": "H1",
+          "isBootstrapShell": true
+        }
+      ]
+    },
+    {
+      "sample": 3,
+      "fcpMs": 188,
+      "shellLcpMs": 188,
+      "shellVisibleAtMs": 113.29999999701977,
+      "rootChildrenAtShellPaint": 0,
+      "clockVisibleAtMs": 1131.2999999970198,
+      "shellRemovedAtMs": 1132.5,
+      "lcpEntries": [
+        {
+          "startTime": 188,
+          "elementTag": "H1",
+          "isBootstrapShell": true
+        }
+      ]
+    }
+  ],
+  "shellLcp": {
+    "sampleCount": 3,
+    "medianMs": 212,
+    "p95Ms": 228,
+    "maxMs": 228
+  },
+  "clockVisible": {
+    "sampleCount": 3,
+    "medianMs": 1241.3,
+    "p95Ms": 1254,
+    "maxMs": 1254
+  }
+}

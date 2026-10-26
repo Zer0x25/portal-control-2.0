@@ -1,0 +1,4824 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-24T06-17-37-339Z-465361c6",
+  "status": "passed",
+  "startedAt": "2026-10-24T06:17:37.339Z",
+  "completedAt": "2026-10-24T06:28:06.970Z",
+  "source": {
+    "commit": "465361c6bc3b751a9c74a50dfe97efcab18d655e",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "name": "local-staging",
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontendImageId": "sha256:add3b72a161357d2dc8b25c39661cfb3de7dc6a19ff894bd2940b380591228b6",
+    "health": {
+      "gatewayStatus": 200,
+      "apiStatus": 200
+    }
+  },
+  "runtime": {
+    "platform": "linux",
+    "architecture": "x64",
+    "nodeVersion": "v26.10.0",
+    "browser": "Chromium",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "routeCatalog": {
+    "count": 18,
+    "families": {
+      "access": [
+        "login"
+      ],
+      "administration": [
+        "configuration",
+        "governance-audit",
+        "design-system"
+      ],
+      "communications": [
+        "communications"
+      ],
+      "dashboard": [
+        "dashboard",
+        "supervisor-dashboard"
+      ],
+      "directory-management": [
+        "employee-management",
+        "personnel-management",
+        "user-management"
+      ],
+      "operational-data": [
+        "time-control",
+        "logbook",
+        "meter-readings"
+      ],
+      "planning": [
+        "planner",
+        "theoretical-shifts",
+        "shift-calendar"
+      ],
+      "worker-experience": [
+        "worker-portal",
+        "kiosk"
+      ]
+    },
+    "routes": [
+      {
+        "id": "login",
+        "path": "/#/",
+        "currentPath": "/",
+        "role": "anonymous",
+        "family": "access",
+        "lighthouse": false,
+        "lighthouseSkipReason": "Chromium displays the login screen but emits no First Contentful Paint; Lighthouse exits with NO_FCP in mobile and desktop presets. Playwright still measures route readiness.",
+        "probes": []
+      },
+      {
+        "id": "dashboard",
+        "path": "/#/dashboard",
+        "currentPath": "/dashboard",
+        "role": "admin",
+        "family": "dashboard",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "supervisor-dashboard",
+        "path": "/#/dashboard-supervisor",
+        "currentPath": "/dashboard-supervisor",
+        "role": "admin",
+        "family": "dashboard",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "time-control",
+        "path": "/#/time-control",
+        "currentPath": "/time-control",
+        "role": "admin",
+        "family": "operational-data",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "planner",
+        "path": "/#/planning/monthly",
+        "currentPath": "/planning/monthly",
+        "role": "admin",
+        "family": "planning",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "theoretical-shifts",
+        "path": "/#/theoretical-shifts",
+        "currentPath": "/theoretical-shifts",
+        "role": "admin",
+        "family": "planning",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "lazy-tab-transitions",
+            "kind": "tabs"
+          }
+        ]
+      },
+      {
+        "id": "shift-calendar",
+        "path": "/#/shift-calendar",
+        "currentPath": "/shift-calendar",
+        "role": "admin",
+        "family": "planning",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "configuration",
+        "path": "/#/configuration",
+        "currentPath": "/configuration",
+        "role": "admin",
+        "family": "administration",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "lazy-settings-tabs",
+            "kind": "tabs"
+          }
+        ]
+      },
+      {
+        "id": "worker-portal",
+        "path": "/#/worker-portal",
+        "currentPath": "/worker-portal",
+        "role": "worker",
+        "family": "worker-experience",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "logbook",
+        "path": "/#/logbook",
+        "currentPath": "/logbook",
+        "role": "admin",
+        "family": "operational-data",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "kiosk",
+        "path": "/#/kiosk",
+        "currentPath": null,
+        "role": "anonymous",
+        "family": "worker-experience",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "governance-audit",
+        "path": "/#/admin/governance?tab=audit",
+        "currentPath": "/admin/governance",
+        "role": "admin",
+        "family": "administration",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "meter-readings",
+        "path": "/#/meter-readings",
+        "currentPath": "/meter-readings",
+        "role": "admin",
+        "family": "operational-data",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "reading-form-open-close",
+            "kind": "modal"
+          }
+        ]
+      },
+      {
+        "id": "communications",
+        "path": "/#/communications",
+        "currentPath": "/communications",
+        "role": "admin",
+        "family": "communications",
+        "lighthouse": true,
+        "probes": []
+      },
+      {
+        "id": "employee-management",
+        "path": "/#/employee-management",
+        "currentPath": "/employee-management",
+        "role": "admin",
+        "family": "directory-management",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "directory-search",
+            "kind": "search"
+          }
+        ]
+      },
+      {
+        "id": "personnel-management",
+        "path": "/#/personnel-management",
+        "currentPath": "/personnel-management",
+        "role": "admin",
+        "family": "directory-management",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "personnel-access-tab",
+            "kind": "tabs"
+          }
+        ]
+      },
+      {
+        "id": "user-management",
+        "path": "/#/user-management",
+        "currentPath": "/user-management",
+        "role": "admin",
+        "family": "directory-management",
+        "lighthouse": true,
+        "probes": [
+          {
+            "id": "directory-search",
+            "kind": "search"
+          }
+        ]
+      },
+      {
+        "id": "design-system",
+        "path": "/#/design-system",
+        "currentPath": "/design-system",
+        "role": "admin",
+        "family": "administration",
+        "lighthouse": true,
+        "probes": []
+      }
+    ]
+  },
+  "stages": {
+    "harnessValidation": {
+      "status": "passed",
+      "startedAt": "2026-10-24T06:17:37.501Z",
+      "completedAt": "2026-10-24T06:17:37.651Z",
+      "exitCode": 0
+    },
+    "catalog": {
+      "status": "passed",
+      "startedAt": "2026-10-24T06:17:37.651Z",
+      "completedAt": "2026-10-24T06:17:37.685Z",
+      "exitCode": 0
+    },
+    "playwright": {
+      "status": "passed",
+      "reports": [
+        {
+          "capturedAt": "2026-10-24T06:17:59.242Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "route": "/#/admin/governance?tab=audit",
+          "scrollRangePx": 4200,
+          "renderedRows": 23,
+          "scrollEventCount": 150,
+          "frameIntervalMs": {
+            "sampleCount": 90,
+            "medianMs": 16.7,
+            "p95Ms": 33.4,
+            "maxMs": 33.4
+          },
+          "framesOver50Ms": 0,
+          "framesOver50MsPercent": 0,
+          "attentionP95Ms": 50,
+          "failureP95Ms": 250
+        },
+        {
+          "capturedAt": "2026-10-24T06:18:41.495Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "samplesPerRoute": 3,
+          "readinessMetric": "domcontentloaded until the route's primary content is visible",
+          "buildCommit": "465361c6bc3b751a9c74a50dfe97efcab18d655e",
+          "routes": [
+            {
+              "id": "login",
+              "path": "/#/",
+              "role": "anonymous",
+              "family": "access",
+              "samplesMs": [
+                479.05,
+                473.26,
+                952.36
+              ],
+              "medianMs": 479.05,
+              "maxMs": 952.36
+            },
+            {
+              "id": "dashboard",
+              "path": "/#/dashboard",
+              "role": "admin",
+              "family": "dashboard",
+              "samplesMs": [
+                526.74,
+                511.43,
+                541.84
+              ],
+              "medianMs": 526.74,
+              "maxMs": 541.84
+            },
+            {
+              "id": "supervisor-dashboard",
+              "path": "/#/dashboard-supervisor",
+              "role": "admin",
+              "family": "dashboard",
+              "samplesMs": [
+                516.42,
+                516.32,
+                541.54
+              ],
+              "medianMs": 516.42,
+              "maxMs": 541.54
+            },
+            {
+              "id": "time-control",
+              "path": "/#/time-control",
+              "role": "admin",
+              "family": "operational-data",
+              "samplesMs": [
+                516.45,
+                219.65,
+                494.61
+              ],
+              "medianMs": 494.61,
+              "maxMs": 516.45
+            },
+            {
+              "id": "planner",
+              "path": "/#/planning/monthly",
+              "role": "admin",
+              "family": "planning",
+              "samplesMs": [
+                530.02,
+                336.77,
+                292
+              ],
+              "medianMs": 336.77,
+              "maxMs": 530.02
+            },
+            {
+              "id": "theoretical-shifts",
+              "path": "/#/theoretical-shifts",
+              "role": "admin",
+              "family": "planning",
+              "samplesMs": [
+                599.25,
+                547.29,
+                247.26
+              ],
+              "medianMs": 547.29,
+              "maxMs": 599.25
+            },
+            {
+              "id": "shift-calendar",
+              "path": "/#/shift-calendar",
+              "role": "admin",
+              "family": "planning",
+              "samplesMs": [
+                499.93,
+                509.22,
+                272.98
+              ],
+              "medianMs": 499.93,
+              "maxMs": 509.22
+            },
+            {
+              "id": "configuration",
+              "path": "/#/configuration",
+              "role": "admin",
+              "family": "administration",
+              "samplesMs": [
+                531.21,
+                521.6,
+                519.21
+              ],
+              "medianMs": 521.6,
+              "maxMs": 531.21
+            },
+            {
+              "id": "worker-portal",
+              "path": "/#/worker-portal",
+              "role": "worker",
+              "family": "worker-experience",
+              "samplesMs": [
+                499.7,
+                561.82,
+                543.39
+              ],
+              "medianMs": 543.39,
+              "maxMs": 561.82
+            },
+            {
+              "id": "logbook",
+              "path": "/#/logbook",
+              "role": "admin",
+              "family": "operational-data",
+              "samplesMs": [
+                231.56,
+                497.59,
+                510.51
+              ],
+              "medianMs": 497.59,
+              "maxMs": 510.51
+            },
+            {
+              "id": "kiosk",
+              "path": "/#/kiosk",
+              "role": "anonymous",
+              "family": "worker-experience",
+              "samplesMs": [
+                237.9,
+                301.34,
+                932.44
+              ],
+              "medianMs": 301.34,
+              "maxMs": 932.44
+            },
+            {
+              "id": "governance-audit",
+              "path": "/#/admin/governance?tab=audit",
+              "role": "admin",
+              "family": "administration",
+              "samplesMs": [
+                544.47,
+                547.97,
+                532.41
+              ],
+              "medianMs": 544.47,
+              "maxMs": 547.97
+            },
+            {
+              "id": "meter-readings",
+              "path": "/#/meter-readings",
+              "role": "admin",
+              "family": "operational-data",
+              "samplesMs": [
+                531.45,
+                534.1,
+                520.85
+              ],
+              "medianMs": 531.45,
+              "maxMs": 534.1
+            },
+            {
+              "id": "communications",
+              "path": "/#/communications",
+              "role": "admin",
+              "family": "communications",
+              "samplesMs": [
+                501.13,
+                511.42,
+                225.86
+              ],
+              "medianMs": 501.13,
+              "maxMs": 511.42
+            },
+            {
+              "id": "employee-management",
+              "path": "/#/employee-management",
+              "role": "admin",
+              "family": "directory-management",
+              "samplesMs": [
+                596.17,
+                225.86,
+                506.55
+              ],
+              "medianMs": 506.55,
+              "maxMs": 596.17
+            },
+            {
+              "id": "personnel-management",
+              "path": "/#/personnel-management",
+              "role": "admin",
+              "family": "directory-management",
+              "samplesMs": [
+                538.86,
+                550.55,
+                515.36
+              ],
+              "medianMs": 538.86,
+              "maxMs": 550.55
+            },
+            {
+              "id": "user-management",
+              "path": "/#/user-management",
+              "role": "admin",
+              "family": "directory-management",
+              "samplesMs": [
+                527.24,
+                489.99,
+                503.94
+              ],
+              "medianMs": 503.94,
+              "maxMs": 527.24
+            },
+            {
+              "id": "design-system",
+              "path": "/#/design-system",
+              "role": "admin",
+              "family": "administration",
+              "samplesMs": [
+                234.63,
+                523.63,
+                549.04
+              ],
+              "medianMs": 523.63,
+              "maxMs": 549.04
+            }
+          ]
+        },
+        {
+          "capturedAt": "2026-10-24T06:17:44.418Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "route": "/#/dashboard",
+          "profile": {
+            "viewport": {
+              "width": 412,
+              "height": 823
+            },
+            "deviceScaleFactor": 1.75,
+            "cpuThrottleRate": 4
+          },
+          "sampleCount": 3,
+          "fcp": {
+            "sampleCount": 3,
+            "medianMs": 284,
+            "p95Ms": 300,
+            "maxMs": 300
+          },
+          "lcp": {
+            "sampleCount": 3,
+            "medianMs": 1272,
+            "p95Ms": 1304,
+            "maxMs": 1304
+          },
+          "bootstrapLcp": {
+            "sampleCount": 3,
+            "medianMs": 284,
+            "p95Ms": 300,
+            "maxMs": 300
+          },
+          "samples": [
+            {
+              "sample": 1,
+              "fcpMs": 284,
+              "lcpMs": 1304,
+              "bootstrapLcpMs": 284,
+              "lcpElement": "P",
+              "liveClockVisibleAtMs": 1330.699999999255,
+              "shellVisibleAtMs": 115.30000000074506,
+              "reactRootChildrenAtShellPaint": 0,
+              "shellRemovedAtMs": 1209.699999999255
+            },
+            {
+              "sample": 2,
+              "fcpMs": 300,
+              "lcpMs": 1204,
+              "bootstrapLcpMs": 300,
+              "lcpElement": "P",
+              "liveClockVisibleAtMs": 1229.7999999970198,
+              "shellVisibleAtMs": 119.5,
+              "reactRootChildrenAtShellPaint": 0,
+              "shellRemovedAtMs": 1131.199999999255
+            },
+            {
+              "sample": 3,
+              "fcpMs": 284,
+              "lcpMs": 1272,
+              "bootstrapLcpMs": 284,
+              "lcpElement": "P",
+              "liveClockVisibleAtMs": 1360.8999999985099,
+              "shellVisibleAtMs": 122.79999999701977,
+              "reactRootChildrenAtShellPaint": 0,
+              "shellRemovedAtMs": 1199.2999999970198
+            }
+          ]
+        },
+        {
+          "capturedAt": "2026-10-24T06:17:50.262Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "route": "/#/dashboard",
+          "scriptRequestCount": 69,
+          "scriptResources": {
+            "assets": [
+              "index-C8X6imYg.js",
+              "vendor-15MWHJyx.js",
+              "InitialSyncOverlay-uu08ZA_z.js",
+              "TopLoadingBar-BjTSB40W.js",
+              "BackgroundActivitySpinner-BYDSlRU9.js",
+              "ArrowPathIcon-DjaUgXQO.js",
+              "ToastContainer-DOqR85t7.js",
+              "CloseIcon-B-extsPE.js",
+              "InformationCircleIcon-CJ6A_RAs.js",
+              "CheckCircleIcon-B7F6dVvJ.js",
+              "XCircleIcon-qYrVDFGz.js",
+              "useToasts-Pfyvpd-w.js",
+              "AccessDeniedNotifier-btrbGtmJ.js",
+              "PersistentLayout-B4qzLj8C.js",
+              "HomeIcon--s95XYUN.js",
+              "ClockIcon-DBGXec8U.js",
+              "BookOpenIcon--EwDa11P.js",
+              "CogIcon-Dn1uFZfA.js",
+              "SunIcon-WeA9IBwH.js",
+              "UserPlusIcon-CKOs7trP.js",
+              "DocumentChartBarIcon-B2bJpk6V.js",
+              "UsersIcon-DNJryQiZ.js",
+              "CalendarDaysIcon-DFDbjO-p.js",
+              "ChatBubbleLeftRightIcon-DbGwGsSp.js",
+              "CalculatorIcon-BaNS82dH.js",
+              "SparklesIcon-ClmLRkft.js",
+              "ShieldIcon-txWMKwZp.js",
+              "BellIcon-C6EpezsA.js",
+              "useUsers-KkbSzMaf.js",
+              "shiftService-Dm_SacUv.js",
+              "useEmployees-C1cs9D21.js",
+              "timeRecordService-DGM8h_WP.js",
+              "useReportsQuery-CisrpLYx.js",
+              "IndustrialIndicator-BLP78HkA.js",
+              "useCorrectionRequestsStatsQuery-DQqQJxiS.js",
+              "correctionService-uEsVKm9R.js",
+              "auditLogService-6zHSoiD8.js",
+              "socketService-C3bDjxys.js",
+              "realtime-C7QaxhyT.js",
+              "Dashboard.container-CM_E8gON.js",
+              "ClipboardIcon-dim4KORh.js",
+              "DocumentTextIcon-ColF15Fq.js",
+              "MinusCircleIcon-DnhYt2rT.js",
+              "CheckIcon-BpGqftcf.js",
+              "CinematicModal-CAWDOMsG.js",
+              "ConfirmationModal-ByDQREy6.js",
+              "IconBox-BSfEH36O.js",
+              "Card-DamvMvkh.js",
+              "Container-DCofuNTF.js",
+              "useTimeRecordsQuery-Dxq0ha4B.js",
+              "EmptyState-BXPrb3Qu.js",
+              "leaveService-BGfqfDa4.js",
+              "useTimeRecordActions-C1nlT1cB.js",
+              "useMediaQuery-DxtJ_Ym3.js",
+              "useDashboardQueries-Dq5mzFij.js",
+              "kpiService-MOUnmk8Q.js",
+              "ServerClock-B32mhqEu.js",
+              "useBusinessNow-Cq6w1hHn.js",
+              "WidgetContainer-DqUb9Blo.js",
+              "MetricCard-Dv1lwLNs.js"
+            ],
+            "transferBytes": 147071,
+            "encodedBodyBytes": 132262
+          },
+          "eagerTimeControlChunks": [],
+          "eagerSecondaryModalChunks": [],
+          "eagerTimezoneChunks": [],
+          "eagerAutoStartSchedulingChunks": []
+        },
+        {
+          "capturedAt": "2026-10-24T06:17:51.940Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "route": "/#/dashboard",
+          "mainContentVisibleOffsetMs": 553.47,
+          "serverClockVisibleOffsetMs": 564.93,
+          "apiRequestsPendingWhenServerClockAppeared": [],
+          "dashboardDataRequestsPendingWhenServerClockAppeared": [],
+          "apiRequestCount": 8,
+          "uniqueApiEndpointCount": 8,
+          "duplicateEndpoints": [],
+          "autoStartSchedulingRequests": [],
+          "apiPaths": [
+            "/api/health",
+            "/api/configs/is_control_interno_enabled",
+            "/api/corrections/stats",
+            "/api/audit-logs",
+            "/api/users",
+            "/api/employees",
+            "/api/shift-reports",
+            "/api/kpis/overview"
+          ],
+          "apiRequestTimings": [
+            {
+              "path": "/api/kpis/overview",
+              "startOffsetMs": 490.46,
+              "durationMs": 72.58,
+              "finishOffsetMs": 563.03,
+              "status": 200
+            },
+            {
+              "path": "/api/employees",
+              "startOffsetMs": 487.81,
+              "durationMs": 62.71,
+              "finishOffsetMs": 550.52,
+              "status": 200
+            },
+            {
+              "path": "/api/shift-reports",
+              "startOffsetMs": 490.43,
+              "durationMs": 60.31,
+              "finishOffsetMs": 550.74,
+              "status": 200
+            },
+            {
+              "path": "/api/corrections/stats",
+              "startOffsetMs": 487.71,
+              "durationMs": 58.03,
+              "finishOffsetMs": 545.75,
+              "status": 200
+            },
+            {
+              "path": "/api/audit-logs",
+              "startOffsetMs": 487.75,
+              "durationMs": 58.03,
+              "finishOffsetMs": 545.78,
+              "status": 200
+            },
+            {
+              "path": "/api/users",
+              "startOffsetMs": 487.79,
+              "durationMs": 57.84,
+              "finishOffsetMs": 545.63,
+              "status": 200
+            },
+            {
+              "path": "/api/health",
+              "startOffsetMs": 169.06,
+              "durationMs": 52.58,
+              "finishOffsetMs": 221.65,
+              "status": 200
+            },
+            {
+              "path": "/api/configs/is_control_interno_enabled",
+              "startOffsetMs": 172.32,
+              "durationMs": 49.48,
+              "finishOffsetMs": 221.8,
+              "status": 200
+            }
+          ]
+        },
+        {
+          "capturedAt": "2026-10-24T06:18:01.337Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "route": "/#/admin/governance",
+          "firstTransition": {
+            "transition": "integrity-to-security",
+            "elapsedMs": 546.85
+          },
+          "repeatedTransitions": [
+            {
+              "transition": "security-to-integrity",
+              "elapsedMs": 156.63
+            },
+            {
+              "transition": "integrity-to-security",
+              "elapsedMs": 187.71
+            },
+            {
+              "transition": "security-to-integrity",
+              "elapsedMs": 138.22
+            },
+            {
+              "transition": "integrity-to-security",
+              "elapsedMs": 165.1
+            }
+          ],
+          "repeatedStats": {
+            "sampleCount": 4,
+            "medianMs": 160.87,
+            "p95Ms": 187.71,
+            "maxMs": 187.71
+          }
+        },
+        {
+          "capturedAt": "2026-10-24T06:17:54.400Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "route": "/#/dashboard",
+          "apiPath": "/api/notes",
+          "requestedBeforeModalOpen": false,
+          "requestOffsetFromModalOpenMs": 387.94,
+          "responseStatus": 200
+        },
+        {
+          "capturedAt": "2026-10-24T06:18:51.702Z",
+          "baseUrl": "http://127.0.0.1:8080",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "repetitionsPerInteraction": 3,
+          "dataMutation": false,
+          "routes": [
+            {
+              "routeId": "theoretical-shifts",
+              "path": "/#/theoretical-shifts",
+              "family": "planning",
+              "role": "admin",
+              "id": "lazy-tab-transitions",
+              "kind": "tabs",
+              "samplesMs": [
+                496.77,
+                66.57,
+                58.53,
+                397.24,
+                53.25,
+                64.76,
+                372.31,
+                57.71,
+                60.87
+              ],
+              "sampleCount": 9,
+              "medianMs": 64.76,
+              "p95Ms": 496.77,
+              "maxMs": 496.77
+            },
+            {
+              "routeId": "configuration",
+              "path": "/#/configuration",
+              "family": "administration",
+              "role": "admin",
+              "id": "lazy-settings-tabs",
+              "kind": "tabs",
+              "samplesMs": [
+                499.03,
+                101.13,
+                107.86,
+                416.71,
+                49.14,
+                62.3
+              ],
+              "sampleCount": 6,
+              "medianMs": 104.5,
+              "p95Ms": 499.03,
+              "maxMs": 499.03
+            },
+            {
+              "routeId": "meter-readings",
+              "path": "/#/meter-readings",
+              "family": "operational-data",
+              "role": "admin",
+              "id": "reading-form-open-close",
+              "kind": "modal",
+              "samplesMs": [
+                86.05,
+                52.81,
+                50.19
+              ],
+              "sampleCount": 3,
+              "medianMs": 52.81,
+              "p95Ms": 86.05,
+              "maxMs": 86.05
+            },
+            {
+              "routeId": "employee-management",
+              "path": "/#/employee-management",
+              "family": "directory-management",
+              "role": "admin",
+              "id": "directory-search",
+              "kind": "search",
+              "samplesMs": [
+                359.34,
+                19.05,
+                19.77
+              ],
+              "sampleCount": 3,
+              "medianMs": 19.77,
+              "p95Ms": 359.34,
+              "maxMs": 359.34
+            },
+            {
+              "routeId": "personnel-management",
+              "path": "/#/personnel-management",
+              "family": "directory-management",
+              "role": "admin",
+              "id": "personnel-access-tab",
+              "kind": "tabs",
+              "samplesMs": [
+                145.45,
+                86.43,
+                79.93
+              ],
+              "sampleCount": 3,
+              "medianMs": 86.43,
+              "p95Ms": 145.45,
+              "maxMs": 145.45
+            },
+            {
+              "routeId": "user-management",
+              "path": "/#/user-management",
+              "family": "directory-management",
+              "role": "admin",
+              "id": "directory-search",
+              "kind": "search",
+              "samplesMs": [
+                378.75,
+                18.28,
+                31.68
+              ],
+              "sampleCount": 3,
+              "medianMs": 31.68,
+              "p95Ms": 378.75,
+              "maxMs": 378.75
+            }
+          ]
+        }
+      ],
+      "startedAt": "2026-10-24T06:17:37.686Z",
+      "completedAt": "2026-10-24T06:18:51.845Z",
+      "exitCode": 0
+    },
+    "lighthouseStandard": {
+      "status": "passed",
+      "routes": [
+        {
+          "routeId": "governance-audit",
+          "family": "administration",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/admin/governance?tab=audit",
+          "finalPath": "/#/admin/governance?tab=audit",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 404.09,
+            "lcpMs": 936.63,
+            "tbtMs": 61.5,
+            "cls": 0,
+            "speedIndexMs": 1130.36,
+            "totalTransferBytes": 9164,
+            "scriptTransferBytes": 0,
+            "requestCount": 92
+          },
+          "observed": {
+            "fcpMs": 323,
+            "lcpMs": 642,
+            "speedIndexMs": 608,
+            "domContentLoadedMs": 85,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.57,
+              "elementRenderDelay": 638.52
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 59,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 8.11,
+                "transferBytes": 2273
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 14,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 17.59,
+                "transferBytes": 1561
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 13.11,
+                "transferBytes": 2157
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 14.46,
+                "transferBytes": 2161
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2273,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 2161,
+                "resourceBytes": 6766
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 2157,
+                "resourceBytes": 7132
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 4633.82,
+            "scriptCpu": [
+              {
+                "path": "/",
+                "totalCpuMs": 4451.67,
+                "scriptingMs": 3781.59,
+                "parseCompileMs": 0.76
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 868.86,
+                "scriptingMs": 689.86,
+                "parseCompileMs": 0.16
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 711.97,
+                "scriptingMs": 111.4,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 62.65,
+                "scriptingMs": 49.68,
+                "parseCompileMs": 0.37
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 160.09,
+                "durationMs": 149
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 334.09,
+                "durationMs": 104
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 548.09,
+                "durationMs": 66
+              },
+              {
+                "path": "/",
+                "startMs": 672.09,
+                "durationMs": 63
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 438.09,
+                "durationMs": 61
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "communications",
+          "family": "communications",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/communications",
+          "finalPath": "/#/communications",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 238.87,
+            "lcpMs": 769.42,
+            "tbtMs": 78,
+            "cls": 0,
+            "speedIndexMs": 1187.25,
+            "totalTransferBytes": 4845,
+            "scriptTransferBytes": 0,
+            "requestCount": 66
+          },
+          "observed": {
+            "fcpMs": 568,
+            "lcpMs": 568,
+            "speedIndexMs": 656,
+            "domContentLoadedMs": 110,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 6.22,
+              "elementRenderDelay": 561.92
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 77,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 8.74,
+                "transferBytes": 2272
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.21,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 13.58,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2272,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 669.72,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 705.88,
+                "scriptingMs": 576.07,
+                "parseCompileMs": 0.22
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 434.43,
+                "scriptingMs": 36.8,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 198.16,
+                "scriptingMs": 2.84,
+                "parseCompileMs": 0.54
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 66.31,
+                "scriptingMs": 52.88,
+                "parseCompileMs": 0.38
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 260.09,
+                "durationMs": 172
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 68.09,
+                "durationMs": 67
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 194.09,
+                "durationMs": 66
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 9.09,
+                "durationMs": 59
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 614.09,
+                "durationMs": 59
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "configuration",
+          "family": "administration",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/configuration",
+          "finalPath": "/#/configuration",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 235.94,
+            "lcpMs": 793.35,
+            "tbtMs": 106.5,
+            "cls": 0,
+            "speedIndexMs": 1214.55,
+            "totalTransferBytes": 5771,
+            "scriptTransferBytes": 0,
+            "requestCount": 79
+          },
+          "observed": {
+            "fcpMs": 599,
+            "lcpMs": 599,
+            "speedIndexMs": 660,
+            "domContentLoadedMs": 117,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 6.88,
+              "elementRenderDelay": 592.58
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 85,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 9.47,
+                "transferBytes": 2271
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 10.34,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 15.15,
+                "transferBytes": 1561
+              },
+              {
+                "path": "/api/configs/public/company-policy",
+                "statusCode": 200,
+                "durationMs": 11.02,
+                "transferBytes": 927
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2271,
+                "resourceBytes": 8170
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/api/configs/public/company-policy",
+                "resourceType": "Fetch",
+                "transferBytes": 927,
+                "resourceBytes": 4
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 837.53,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 935.01,
+                "scriptingMs": 694.37,
+                "parseCompileMs": 0.21
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 453.79,
+                "scriptingMs": 31.82,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 220.97,
+                "scriptingMs": 2.76,
+                "parseCompileMs": 0.39
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 70.02,
+                "scriptingMs": 55.3,
+                "parseCompileMs": 0.38
+              },
+              {
+                "path": "/assets/storage-exKiCKfO.js",
+                "totalCpuMs": 59.2,
+                "scriptingMs": 52.24,
+                "parseCompileMs": 0.07
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 247.09,
+                "durationMs": 134
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 679.09,
+                "durationMs": 99
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 95
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 181.09,
+                "durationMs": 66
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 103.09,
+                "durationMs": 65
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.96,
+            "fcpMs": 105.09,
+            "lcpMs": 122.09,
+            "tbtMs": 234,
+            "cls": 0.01,
+            "speedIndexMs": 1077.93,
+            "totalTransferBytes": 4842,
+            "scriptTransferBytes": 0,
+            "requestCount": 80
+          },
+          "observed": {
+            "fcpMs": 90,
+            "lcpMs": 90,
+            "speedIndexMs": 584,
+            "domContentLoadedMs": 119,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 8.24,
+              "elementRenderDelay": 81.36
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 86,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 11.42,
+                "transferBytes": 2269
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.85,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 15.56,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2269,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 782.14,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 799.74,
+                "scriptingMs": 667.88,
+                "parseCompileMs": 0.21
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 471.35,
+                "scriptingMs": 14.59,
+                "parseCompileMs": 0.42
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 460.89,
+                "scriptingMs": 44.46,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 74.75,
+                "scriptingMs": 54.14,
+                "parseCompileMs": 0.44
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 297.09,
+                "durationMs": 211
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 561.09,
+                "durationMs": 148
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 223.09,
+                "durationMs": 74
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 49.09,
+                "durationMs": 53
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "supervisor-dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/dashboard-supervisor",
+          "finalPath": "/#/dashboard-supervisor",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 303.72,
+            "lcpMs": 751.06,
+            "tbtMs": 146.88,
+            "cls": 0,
+            "speedIndexMs": 1162.82,
+            "totalTransferBytes": 4842,
+            "scriptTransferBytes": 0,
+            "requestCount": 77
+          },
+          "observed": {
+            "fcpMs": 306,
+            "lcpMs": 306,
+            "speedIndexMs": 643,
+            "domContentLoadedMs": 87,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 4.3,
+              "elementRenderDelay": 302.18
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 53,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 10.71,
+                "transferBytes": 2269
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 10.89,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 14.42,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2269,
+                "resourceBytes": 8172
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 726.9,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 799.01,
+                "scriptingMs": 628.13,
+                "parseCompileMs": 0.19
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 392.52,
+                "scriptingMs": 39.44,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 375.74,
+                "scriptingMs": 6.32,
+                "parseCompileMs": 0.5
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 63.75,
+                "scriptingMs": 51.92,
+                "parseCompileMs": 0.39
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 394.09,
+                "durationMs": 187
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 140.09,
+                "durationMs": 167
+              },
+              {
+                "path": "/",
+                "startMs": 581.09,
+                "durationMs": 62
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 79.09,
+                "durationMs": 61
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 55
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "design-system",
+          "family": "administration",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/design-system",
+          "finalPath": "/#/design-system",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 210.29,
+            "lcpMs": 764.28,
+            "tbtMs": 116.89,
+            "cls": 0,
+            "speedIndexMs": 1010.43,
+            "totalTransferBytes": 4845,
+            "scriptTransferBytes": 0,
+            "requestCount": 63
+          },
+          "observed": {
+            "fcpMs": 540,
+            "lcpMs": 540,
+            "speedIndexMs": 544,
+            "domContentLoadedMs": 117,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.49,
+              "elementRenderDelay": 536.43
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 76,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 11.14,
+                "transferBytes": 2272
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 19.61,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 18,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2272,
+                "resourceBytes": 8170
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 575.45,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 690.95,
+                "scriptingMs": 475.65,
+                "parseCompileMs": 0.21
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 404.12,
+                "scriptingMs": 39.64,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 177.27,
+                "scriptingMs": 3.35,
+                "parseCompileMs": 0.45
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 68.81,
+                "scriptingMs": 55.76,
+                "parseCompileMs": 0.38
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 256.09,
+                "durationMs": 163
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 545.09,
+                "durationMs": 89
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 74
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 192.09,
+                "durationMs": 64
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 82.09,
+                "durationMs": 55
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "employee-management",
+          "family": "directory-management",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/employee-management",
+          "finalPath": "/#/employee-management",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.98,
+            "fcpMs": 246.44,
+            "lcpMs": 842.93,
+            "tbtMs": 161.5,
+            "cls": 0,
+            "speedIndexMs": 1231.9,
+            "totalTransferBytes": 5809,
+            "scriptTransferBytes": 0,
+            "requestCount": 88
+          },
+          "observed": {
+            "fcpMs": 629,
+            "lcpMs": 629,
+            "speedIndexMs": 661,
+            "domContentLoadedMs": 114,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 5.93,
+              "elementRenderDelay": 623.02
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 79,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 10.92,
+                "transferBytes": 2273
+              },
+              {
+                "path": "/api/corrections/stats",
+                "statusCode": 200,
+                "durationMs": 12.18,
+                "transferBytes": 963
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 14.82,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 17.62,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2273,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/api/corrections/stats",
+                "resourceType": "Fetch",
+                "transferBytes": 963,
+                "resourceBytes": 39
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 808.54,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 950.47,
+                "scriptingMs": 679.74,
+                "parseCompileMs": 0.24
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 455.98,
+                "scriptingMs": 50.28,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 254.82,
+                "scriptingMs": 3.2,
+                "parseCompileMs": 0.52
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 65.02,
+                "scriptingMs": 51.96,
+                "parseCompileMs": 0.44
+              },
+              {
+                "path": "/assets/storage-exKiCKfO.js",
+                "totalCpuMs": 60.28,
+                "scriptingMs": 22.11,
+                "parseCompileMs": 0.07
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 193.09,
+                "durationMs": 152
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 633.09,
+                "durationMs": 123
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 491.09,
+                "durationMs": 76
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 68
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 132.09,
+                "durationMs": 61
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "kiosk",
+          "family": "worker-experience",
+          "role": "anonymous",
+          "profile": "warm",
+          "requestedPath": "/#/kiosk",
+          "finalPath": "/#/kiosk",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 1,
+            "fcpMs": 184.34,
+            "lcpMs": 927.62,
+            "tbtMs": 75.25,
+            "cls": 0,
+            "speedIndexMs": 994.18,
+            "totalTransferBytes": 2272,
+            "scriptTransferBytes": 0,
+            "requestCount": 46
+          },
+          "observed": {
+            "fcpMs": 542,
+            "lcpMs": 542,
+            "speedIndexMs": 568,
+            "domContentLoadedMs": 104,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.24,
+              "elementRenderDelay": 538.28
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 77,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 8.61,
+                "transferBytes": 2272
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2272,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              },
+              {
+                "path": "/assets/state-Dphgqsfg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 45519
+              },
+              {
+                "path": "/assets/apiClient-DO9coY89.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 5669
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 315.06,
+            "scriptCpu": [
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 416.3,
+                "scriptingMs": 15.3,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 390.62,
+                "scriptingMs": 296.18,
+                "parseCompileMs": 0.2
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 169.03,
+                "scriptingMs": 2.91,
+                "parseCompileMs": 0.47
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 269.09,
+                "durationMs": 129
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 88
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "logbook",
+          "family": "operational-data",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/logbook",
+          "finalPath": "/#/logbook",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.96,
+            "fcpMs": 287.12,
+            "lcpMs": 892.49,
+            "tbtMs": 224.5,
+            "cls": 0,
+            "speedIndexMs": 1372.84,
+            "totalTransferBytes": 4843,
+            "scriptTransferBytes": 0,
+            "requestCount": 96
+          },
+          "observed": {
+            "fcpMs": 589,
+            "lcpMs": 589,
+            "speedIndexMs": 679,
+            "domContentLoadedMs": 123,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.24,
+              "elementRenderDelay": 585.43
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 87,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 10.38,
+                "transferBytes": 2270
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.31,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 13.29,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2270,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 978.62,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1122.96,
+                "scriptingMs": 885.6,
+                "parseCompileMs": 0.23
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 499.55,
+                "scriptingMs": 34.51,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 239.79,
+                "scriptingMs": 2.74,
+                "parseCompileMs": 0.4
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 67.17,
+                "scriptingMs": 54.67,
+                "parseCompileMs": 0.46
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 306.09,
+                "durationMs": 180
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 574.09,
+                "durationMs": 128
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 9.09,
+                "durationMs": 101
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 781.09,
+                "durationMs": 93
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 937.09,
+                "durationMs": 84
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "meter-readings",
+          "family": "operational-data",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/meter-readings",
+          "finalPath": "/#/meter-readings",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 255.44,
+            "lcpMs": 820.99,
+            "tbtMs": 135.5,
+            "cls": 0,
+            "speedIndexMs": 1247.56,
+            "totalTransferBytes": 4845,
+            "scriptTransferBytes": 0,
+            "requestCount": 81
+          },
+          "observed": {
+            "fcpMs": 597,
+            "lcpMs": 597,
+            "speedIndexMs": 681,
+            "domContentLoadedMs": 82,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.72,
+              "elementRenderDelay": 592.88
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 52,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 9.25,
+                "transferBytes": 2272
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.44,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 13.54,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2272,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 700.28,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 826.13,
+                "scriptingMs": 609.86,
+                "parseCompileMs": 0.18
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 343.14,
+                "scriptingMs": 32.7,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 165.07,
+                "scriptingMs": 2.8,
+                "parseCompileMs": 0.4
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 72.53,
+                "scriptingMs": 53.94,
+                "parseCompileMs": 0.39
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 197.09,
+                "durationMs": 159
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 701.09,
+                "durationMs": 82
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 530.09,
+                "durationMs": 78
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 356.09,
+                "durationMs": 72
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 127.09,
+                "durationMs": 70
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "personnel-management",
+          "family": "directory-management",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/personnel-management",
+          "finalPath": "/#/personnel-management",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.93,
+            "fcpMs": 342.94,
+            "lcpMs": 1039.28,
+            "tbtMs": 304,
+            "cls": 0,
+            "speedIndexMs": 1351.13,
+            "totalTransferBytes": 4844,
+            "scriptTransferBytes": 0,
+            "requestCount": 96
+          },
+          "observed": {
+            "fcpMs": 646,
+            "lcpMs": 646,
+            "speedIndexMs": 691,
+            "domContentLoadedMs": 118,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 5.49,
+              "elementRenderDelay": 640.89
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 85,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 10.12,
+                "transferBytes": 2271
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.09,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 21.54,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2271,
+                "resourceBytes": 8170
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 865.47,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1113.98,
+                "scriptingMs": 757.4,
+                "parseCompileMs": 0.2
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 522.35,
+                "scriptingMs": 39.42,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 288.83,
+                "scriptingMs": 2.98,
+                "parseCompileMs": 0.49
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 87.9,
+                "scriptingMs": 64.62,
+                "parseCompileMs": 0.37
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 301.09,
+                "durationMs": 171
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 855.09,
+                "durationMs": 162
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 577.09,
+                "durationMs": 122
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 53.09,
+                "durationMs": 109
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 720.09,
+                "durationMs": 94
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "planner",
+          "family": "planning",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/planning/monthly",
+          "finalPath": "/#/planning/monthly",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 218.62,
+            "lcpMs": 768.45,
+            "tbtMs": 93.5,
+            "cls": 0,
+            "speedIndexMs": 847.64,
+            "totalTransferBytes": 4844,
+            "scriptTransferBytes": 0,
+            "requestCount": 64
+          },
+          "observed": {
+            "fcpMs": 547,
+            "lcpMs": 547,
+            "speedIndexMs": 432,
+            "domContentLoadedMs": 92,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 4.37,
+              "elementRenderDelay": 542.52
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 59,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 8.45,
+                "transferBytes": 2271
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 9.71,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 14.12,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2271,
+                "resourceBytes": 8172
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 553.1,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 647.6,
+                "scriptingMs": 463.14,
+                "parseCompileMs": 0.18
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 402.43,
+                "scriptingMs": 33.11,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 167.63,
+                "scriptingMs": 3.02,
+                "parseCompileMs": 0.45
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 65.3,
+                "scriptingMs": 52.79,
+                "parseCompileMs": 0.41
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 193.09,
+                "durationMs": 141
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 514.09,
+                "durationMs": 92
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 66
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 131.09,
+                "durationMs": 62
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "shift-calendar",
+          "family": "planning",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/shift-calendar",
+          "finalPath": "/#/shift-calendar",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 233.94,
+            "lcpMs": 782.88,
+            "tbtMs": 97,
+            "cls": 0,
+            "speedIndexMs": 1160.12,
+            "totalTransferBytes": 4842,
+            "scriptTransferBytes": 0,
+            "requestCount": 74
+          },
+          "observed": {
+            "fcpMs": 604,
+            "lcpMs": 604,
+            "speedIndexMs": 633,
+            "domContentLoadedMs": 111,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.85,
+              "elementRenderDelay": 600.36
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 81,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 9.12,
+                "transferBytes": 2269
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 41.54,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 36.03,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2269,
+                "resourceBytes": 8170
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 4708.18,
+            "scriptCpu": [
+              {
+                "path": "/",
+                "totalCpuMs": 4306.31,
+                "scriptingMs": 3775.75,
+                "parseCompileMs": 0.72
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 949.2,
+                "scriptingMs": 756.84,
+                "parseCompileMs": 0.23
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 665.81,
+                "scriptingMs": 78.63,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 66.46,
+                "scriptingMs": 52.48,
+                "parseCompileMs": 0.4
+              },
+              {
+                "path": "/assets/storage-exKiCKfO.js",
+                "totalCpuMs": 51.59,
+                "scriptingMs": 43.02,
+                "parseCompileMs": 0.12
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 212.09,
+                "durationMs": 150
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 747.09,
+                "durationMs": 100
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 148.09,
+                "durationMs": 64
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 451.09,
+                "durationMs": 58
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 532.09,
+                "durationMs": 57
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "theoretical-shifts",
+          "family": "planning",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/theoretical-shifts",
+          "finalPath": "/#/theoretical-shifts",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 437.54,
+            "lcpMs": 798.03,
+            "tbtMs": 92.46,
+            "cls": 0,
+            "speedIndexMs": 1032.54,
+            "totalTransferBytes": 4843,
+            "scriptTransferBytes": 0,
+            "requestCount": 89
+          },
+          "observed": {
+            "fcpMs": 358,
+            "lcpMs": 358,
+            "speedIndexMs": 512,
+            "domContentLoadedMs": 108,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 4.22,
+              "elementRenderDelay": 354.08
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 77,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 17.79,
+                "transferBytes": 2270
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.4,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 15.89,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2270,
+                "resourceBytes": 8170
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 4562.52,
+            "scriptCpu": [
+              {
+                "path": "/",
+                "totalCpuMs": 4407.09,
+                "scriptingMs": 3773.32,
+                "parseCompileMs": 0.89
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 804.58,
+                "scriptingMs": 634.08,
+                "parseCompileMs": 0.15
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 803.38,
+                "scriptingMs": 103.3,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 68.83,
+                "scriptingMs": 50.4,
+                "parseCompileMs": 0.38
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 251.09,
+                "durationMs": 188
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 484.09,
+                "durationMs": 84
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 81
+              },
+              {
+                "path": "/",
+                "startMs": 871.09,
+                "durationMs": 74
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 733.09,
+                "durationMs": 68
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "time-control",
+          "family": "operational-data",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/time-control",
+          "finalPath": "/#/time-control",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 240.45,
+            "lcpMs": 912.21,
+            "tbtMs": 148.5,
+            "cls": 0,
+            "speedIndexMs": 1342.49,
+            "totalTransferBytes": 6994,
+            "scriptTransferBytes": 0,
+            "requestCount": 106
+          },
+          "observed": {
+            "fcpMs": 606,
+            "lcpMs": 1542,
+            "speedIndexMs": 630,
+            "domContentLoadedMs": 103,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 3.31,
+              "elementRenderDelay": 1538.52
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 70,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 8.92,
+                "transferBytes": 2270
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 9.83,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 11.39,
+                "transferBytes": 1561
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.58,
+                "transferBytes": 2151
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2270,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 2151,
+                "resourceBytes": 7133
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 1383.57,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1571.87,
+                "scriptingMs": 1258.17,
+                "parseCompileMs": 0.19
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 604.04,
+                "scriptingMs": 31.53,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 214.28,
+                "scriptingMs": 3.1,
+                "parseCompileMs": 0.49
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 64.43,
+                "scriptingMs": 51.16,
+                "parseCompileMs": 0.39
+              },
+              {
+                "path": "/assets/useIntersectionObserver-DVMchMqZ.js",
+                "totalCpuMs": 62.31,
+                "scriptingMs": 38.46,
+                "parseCompileMs": 0.08
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 942.09,
+                "durationMs": 200
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 252.09,
+                "durationMs": 140
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 9.09,
+                "durationMs": 72
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 593.09,
+                "durationMs": 69
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 191.09,
+                "durationMs": 61
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "user-management",
+          "family": "directory-management",
+          "role": "admin",
+          "profile": "warm",
+          "requestedPath": "/#/user-management",
+          "finalPath": "/#/user-management",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.99,
+            "fcpMs": 237.44,
+            "lcpMs": 800.9,
+            "tbtMs": 125.5,
+            "cls": 0,
+            "speedIndexMs": 1174.7,
+            "totalTransferBytes": 4846,
+            "scriptTransferBytes": 0,
+            "requestCount": 80
+          },
+          "observed": {
+            "fcpMs": 579,
+            "lcpMs": 628,
+            "speedIndexMs": 642,
+            "domContentLoadedMs": 86,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 4.26,
+              "elementRenderDelay": 623.88
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 55,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 9.4,
+                "transferBytes": 2273
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 31.41,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 26.44,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2273,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1561,
+                "resourceBytes": 636
+              },
+              {
+                "path": "/api/audit-logs",
+                "resourceType": "Fetch",
+                "transferBytes": 1012,
+                "resourceBytes": 88
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 721.2,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 819.03,
+                "scriptingMs": 617.12,
+                "parseCompileMs": 0.22
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 365.73,
+                "scriptingMs": 44.41,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 224.74,
+                "scriptingMs": 2.58,
+                "parseCompileMs": 0.45
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 68.62,
+                "scriptingMs": 56.02,
+                "parseCompileMs": 0.4
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 186.09,
+                "durationMs": 174
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 636.09,
+                "durationMs": 89
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 496.09,
+                "durationMs": 67
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 121.09,
+                "durationMs": 65
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 56
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "worker-portal",
+          "family": "worker-experience",
+          "role": "worker",
+          "profile": "warm",
+          "requestedPath": "/#/worker-portal",
+          "finalPath": "/#/worker-portal",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.98,
+            "fcpMs": 245.44,
+            "lcpMs": 837.33,
+            "tbtMs": 152.12,
+            "cls": 0,
+            "speedIndexMs": 1175.22,
+            "totalTransferBytes": 5244,
+            "scriptTransferBytes": 0,
+            "requestCount": 89
+          },
+          "observed": {
+            "fcpMs": 585,
+            "lcpMs": 1530,
+            "speedIndexMs": 589,
+            "domContentLoadedMs": 92,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 5.76,
+              "elementRenderDelay": 1524.34
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 59,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 10.08,
+                "transferBytes": 2270
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 403,
+                "durationMs": 13.15,
+                "transferBytes": 1036
+              },
+              {
+                "path": "/api/records",
+                "statusCode": 200,
+                "durationMs": 9.83,
+                "transferBytes": 969
+              },
+              {
+                "path": "/api/records",
+                "statusCode": 200,
+                "durationMs": 18.02,
+                "transferBytes": 969
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/api/health",
+                "resourceType": "Fetch",
+                "transferBytes": 2270,
+                "resourceBytes": 8171
+              },
+              {
+                "path": "/api/users",
+                "resourceType": "Fetch",
+                "transferBytes": 1036,
+                "resourceBytes": 104
+              },
+              {
+                "path": "/api/records",
+                "resourceType": "Fetch",
+                "transferBytes": 969,
+                "resourceBytes": 45
+              },
+              {
+                "path": "/api/records",
+                "resourceType": "Fetch",
+                "transferBytes": 969,
+                "resourceBytes": 45
+              },
+              {
+                "path": "/",
+                "resourceType": "Document",
+                "transferBytes": 0,
+                "resourceBytes": 4967
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 0,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/rolldown-runtime-hePW80VL.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 716
+              },
+              {
+                "path": "/assets/logger-DwWgPlWV.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 969
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 0,
+                "resourceBytes": 218860
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 959.98,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1009.07,
+                "scriptingMs": 799.07,
+                "parseCompileMs": 0.23
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 404.43,
+                "scriptingMs": 51.89,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 176,
+                "scriptingMs": 2.74,
+                "parseCompileMs": 0.44
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 69.51,
+                "scriptingMs": 56.34,
+                "parseCompileMs": 0.38
+              },
+              {
+                "path": "/assets/storage-exKiCKfO.js",
+                "totalCpuMs": 55.41,
+                "scriptingMs": 48.84,
+                "parseCompileMs": 0.06
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 194.09,
+                "durationMs": 147
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 761.09,
+                "durationMs": 114
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 573.09,
+                "durationMs": 89
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 127.09,
+                "durationMs": 67
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 8.09,
+                "durationMs": 59
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 0,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        }
+      ],
+      "startedAt": "2026-10-24T06:18:51.846Z",
+      "completedAt": "2026-10-24T06:26:44.777Z",
+      "exitCode": 0,
+      "routeAssertions": {
+        "urlCount": 17,
+        "assertionCount": 85,
+        "passedCount": 85,
+        "failures": []
+      }
+    },
+    "lighthouseColdDashboard": {
+      "status": "passed",
+      "samples": [
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "cold",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.93,
+            "fcpMs": 2146.8,
+            "lcpMs": 2404.2,
+            "tbtMs": 170,
+            "cls": 0.01,
+            "speedIndexMs": 2227.17,
+            "totalTransferBytes": 448718,
+            "scriptTransferBytes": 283374,
+            "requestCount": 81
+          },
+          "observed": {
+            "fcpMs": 183,
+            "lcpMs": 183,
+            "speedIndexMs": 815,
+            "domContentLoadedMs": 213,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 5.36,
+              "elementRenderDelay": 177.27
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 221,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 12.49,
+                "transferBytes": 2272
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 13.88,
+                "transferBytes": 1012
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 16.74,
+                "transferBytes": 1561
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 80217,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/index-BLWPPX_X.css",
+                "resourceType": "Stylesheet",
+                "transferBytes": 36084,
+                "resourceBytes": 220561
+              },
+              {
+                "path": "/assets/Inter-SemiBold-latin-BnCj5yHe.woff2",
+                "resourceType": "Font",
+                "transferBytes": 35104,
+                "resourceBytes": 34656
+              },
+              {
+                "path": "/assets/Inter-Bold-latin-C-mUijkG.woff2",
+                "resourceType": "Font",
+                "transferBytes": 35095,
+                "resourceBytes": 34608
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 33929,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 24799,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/Dashboard.container-CM_E8gON.js",
+                "resourceType": "Script",
+                "transferBytes": 22935,
+                "resourceBytes": 61448
+              },
+              {
+                "path": "/assets/state-Dphgqsfg.js",
+                "resourceType": "Script",
+                "transferBytes": 16832,
+                "resourceBytes": 45519
+              },
+              {
+                "path": "/assets/PersistentLayout-B4qzLj8C.js",
+                "resourceType": "Script",
+                "transferBytes": 16820,
+                "resourceBytes": 44010
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 16281,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 884.74,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1006.44,
+                "scriptingMs": 733.38,
+                "parseCompileMs": 0.22
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 709.09,
+                "scriptingMs": 42.04,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 564.23,
+                "scriptingMs": 4.22,
+                "parseCompileMs": 0.42
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 100.14,
+                "scriptingMs": 60.19,
+                "parseCompileMs": 0.51
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 72.64,
+                "scriptingMs": 41.87,
+                "parseCompileMs": 1.78
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "Unattributable",
+                "startMs": 605.4,
+                "durationMs": 190
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 3083.2,
+                "durationMs": 139
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 4281.99,
+                "durationMs": 102
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 3004.2,
+                "durationMs": 79
+              },
+              {
+                "path": "/assets/useReportsQuery-CisrpLYx.js",
+                "startMs": 1001.4,
+                "durationMs": 72
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 31985,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "cold",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.93,
+            "fcpMs": 2016.73,
+            "lcpMs": 2252.6,
+            "tbtMs": 232,
+            "cls": 0,
+            "speedIndexMs": 2168.57,
+            "totalTransferBytes": 448676,
+            "scriptTransferBytes": 283374,
+            "requestCount": 81
+          },
+          "observed": {
+            "fcpMs": 131,
+            "lcpMs": 131,
+            "speedIndexMs": 598,
+            "domContentLoadedMs": 140,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 4.19,
+              "elementRenderDelay": 127.28
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 106,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 14.38,
+                "transferBytes": 2272
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 16.37,
+                "transferBytes": 1011
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 17.06,
+                "transferBytes": 1560
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 80217,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/index-BLWPPX_X.css",
+                "resourceType": "Stylesheet",
+                "transferBytes": 36052,
+                "resourceBytes": 220561
+              },
+              {
+                "path": "/assets/Inter-SemiBold-latin-BnCj5yHe.woff2",
+                "resourceType": "Font",
+                "transferBytes": 35088,
+                "resourceBytes": 34656
+              },
+              {
+                "path": "/assets/Inter-Bold-latin-C-mUijkG.woff2",
+                "resourceType": "Font",
+                "transferBytes": 35087,
+                "resourceBytes": 34608
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 33945,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 24799,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/Dashboard.container-CM_E8gON.js",
+                "resourceType": "Script",
+                "transferBytes": 22935,
+                "resourceBytes": 61448
+              },
+              {
+                "path": "/assets/state-Dphgqsfg.js",
+                "resourceType": "Script",
+                "transferBytes": 16832,
+                "resourceBytes": 45519
+              },
+              {
+                "path": "/assets/PersistentLayout-B4qzLj8C.js",
+                "resourceType": "Script",
+                "transferBytes": 16820,
+                "resourceBytes": 44010
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 16281,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 4761.58,
+            "scriptCpu": [
+              {
+                "path": "/",
+                "totalCpuMs": 4415.05,
+                "scriptingMs": 3767.66,
+                "parseCompileMs": 0.96
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1049.03,
+                "scriptingMs": 837.78,
+                "parseCompileMs": 0.15
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 694.18,
+                "scriptingMs": 88.78,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 96.22,
+                "scriptingMs": 65.87,
+                "parseCompileMs": 0.38
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 2937.6,
+                "durationMs": 191
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 5113.06,
+                "durationMs": 124
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 2852.6,
+                "durationMs": 85
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 4087.2,
+                "durationMs": 69
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 600.87,
+                "durationMs": 65
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 32280,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        },
+        {
+          "routeId": "dashboard",
+          "family": "dashboard",
+          "role": "admin",
+          "profile": "cold",
+          "requestedPath": "/#/dashboard",
+          "finalPath": "/#/dashboard",
+          "routeMatched": true,
+          "lighthouseVersion": "12.6.1",
+          "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+          "lighthouseSettings": {
+            "formFactor": "mobile",
+            "throttlingMethod": "simulate",
+            "throttling": {
+              "rttMs": 150,
+              "throughputKbps": 1638.4,
+              "cpuSlowdownMultiplier": 4
+            },
+            "screenEmulation": {
+              "width": 412,
+              "height": 823
+            }
+          },
+          "metrics": {
+            "performanceScore": 0.92,
+            "fcpMs": 2026.47,
+            "lcpMs": 2256.7,
+            "tbtMs": 257,
+            "cls": 0.01,
+            "speedIndexMs": 2060.37,
+            "totalTransferBytes": 448665,
+            "scriptTransferBytes": 283374,
+            "requestCount": 81
+          },
+          "observed": {
+            "fcpMs": 111,
+            "lcpMs": 111,
+            "speedIndexMs": 604,
+            "domContentLoadedMs": 128,
+            "lcpPhasesMs": {
+              "timeToFirstByte": 4.03,
+              "elementRenderDelay": 106.58
+            }
+          },
+          "network": {
+            "longestDependencyChainMs": 93,
+            "apiRequests": [
+              {
+                "path": "/api/health",
+                "statusCode": 200,
+                "durationMs": 8.2,
+                "transferBytes": 2269
+              },
+              {
+                "path": "/api/audit-logs",
+                "statusCode": 200,
+                "durationMs": 11.61,
+                "transferBytes": 1011
+              },
+              {
+                "path": "/api/users",
+                "statusCode": 200,
+                "durationMs": 17.11,
+                "transferBytes": 1560
+              }
+            ],
+            "largestTransfers": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "resourceType": "Script",
+                "transferBytes": 80217,
+                "resourceBytes": 218860
+              },
+              {
+                "path": "/assets/index-BLWPPX_X.css",
+                "resourceType": "Stylesheet",
+                "transferBytes": 36052,
+                "resourceBytes": 220561
+              },
+              {
+                "path": "/assets/Inter-SemiBold-latin-BnCj5yHe.woff2",
+                "resourceType": "Font",
+                "transferBytes": 35104,
+                "resourceBytes": 34656
+              },
+              {
+                "path": "/assets/Inter-Bold-latin-C-mUijkG.woff2",
+                "resourceType": "Font",
+                "transferBytes": 35079,
+                "resourceBytes": 34608
+              },
+              {
+                "path": "/assets/Inter-Regular-latin-DZ2H3oP-.woff2",
+                "resourceType": "Font",
+                "transferBytes": 33929,
+                "resourceBytes": 33476
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "resourceType": "Script",
+                "transferBytes": 24799,
+                "resourceBytes": 65534
+              },
+              {
+                "path": "/assets/Dashboard.container-CM_E8gON.js",
+                "resourceType": "Script",
+                "transferBytes": 22935,
+                "resourceBytes": 61448
+              },
+              {
+                "path": "/assets/state-Dphgqsfg.js",
+                "resourceType": "Script",
+                "transferBytes": 16832,
+                "resourceBytes": 45519
+              },
+              {
+                "path": "/assets/PersistentLayout-B4qzLj8C.js",
+                "resourceType": "Script",
+                "transferBytes": 16820,
+                "resourceBytes": 44010
+              },
+              {
+                "path": "/assets/router-BRIQhtRw.js",
+                "resourceType": "Script",
+                "transferBytes": 16281,
+                "resourceBytes": 38746
+              }
+            ]
+          },
+          "mainThread": {
+            "bootupCostMs": 1009.7,
+            "scriptCpu": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "totalCpuMs": 1167.02,
+                "scriptingMs": 898.16,
+                "parseCompileMs": 0.18
+              },
+              {
+                "path": "Unattributable",
+                "totalCpuMs": 498.09,
+                "scriptingMs": 54.83,
+                "parseCompileMs": 0
+              },
+              {
+                "path": "/",
+                "totalCpuMs": 380.13,
+                "scriptingMs": 4.03,
+                "parseCompileMs": 0.42
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "totalCpuMs": 75.43,
+                "scriptingMs": 51.6,
+                "parseCompileMs": 0.48
+              }
+            ],
+            "longTasks": [
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 3082.7,
+                "durationMs": 153
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 3318.7,
+                "durationMs": 137
+              },
+              {
+                "path": "/assets/react-core-k-iqGWxC.js",
+                "startMs": 5125.33,
+                "durationMs": 92
+              },
+              {
+                "path": "/assets/index-C8X6imYg.js",
+                "startMs": 3006.7,
+                "durationMs": 76
+              },
+              {
+                "path": "Unattributable",
+                "startMs": 603.23,
+                "durationMs": 71
+              }
+            ]
+          },
+          "opportunities": {
+            "unusedJavaScriptBytes": 31958,
+            "renderBlockingMetricSavingsMs": null,
+            "renderBlockingResources": []
+          }
+        }
+      ],
+      "startedAt": "2026-10-24T06:26:44.777Z",
+      "completedAt": "2026-10-24T06:28:06.969Z",
+      "exitCode": 0
+    }
+  },
+  "failure": null
+}

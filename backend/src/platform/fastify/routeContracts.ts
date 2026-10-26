@@ -68,6 +68,7 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
   if (!employees.length) throw new Error("Employees route manifest is empty");
   const expectedEmployees = [
     "GET /api/employees",
+    "GET /api/employees/clocking-options",
     "GET /api/employees/kiosk",
     "POST /api/employees",
     "PUT /api/employees/:id",
@@ -81,9 +82,10 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     throw new Error("Employees route manifest differs from the API contract");
   for (const route of employees) {
     const kiosk = route.url === "/api/employees/kiosk";
+    const responseOnly = route.url === "/api/employees/clocking-options";
     if (route.authenticated === kiosk)
       throw new Error(`Incorrect authentication contract: ${route.url}`);
-    if (!kiosk && !route.validated)
+    if (!kiosk && !responseOnly && !route.validated)
       throw new Error(`Unvalidated employees route: ${route.method} ${route.url}`);
   }
   const configs = routes.filter(

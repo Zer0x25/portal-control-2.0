@@ -1,0 +1,283 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-25T06:44:24.570Z",
+  "source": {
+    "commit": "8eec1f5bdf01119a6799f47223e9966772893dcf",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "routeId": "time-control",
+    "stagingFrontendImageId": "sha256:fcdcc13af02ae5891514463b2f5bec9d8c22202417edbb1a63de7e17544e5524",
+    "sampleCount": 5,
+    "lighthouseVersion": "12.6.1",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "lighthouseSettings": {
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "cpuSlowdownMultiplier": 4
+      },
+      "screenEmulation": {
+        "width": 412,
+        "height": 823
+      }
+    }
+  },
+  "summary": {
+    "fcpMs": {
+      "median": 2035.63,
+      "min": 2003.73,
+      "max": 2131.08
+    },
+    "lcpMs": {
+      "median": 2477.47,
+      "min": 2254.34,
+      "max": 5645.03
+    },
+    "tbtMs": {
+      "median": 349.5,
+      "min": 287,
+      "max": 402
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0.01
+    },
+    "totalTransferBytes": {
+      "median": 463540,
+      "min": 463524,
+      "max": 502344
+    },
+    "scriptTransferBytes": {
+      "median": 300620,
+      "min": 300620,
+      "max": 334482
+    },
+    "requestCount": {
+      "median": 85,
+      "min": 85,
+      "max": 89
+    }
+  },
+  "samples": [
+    {
+      "report": "127_0_0_1--2026_10_25_06_38_43.report.json",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.87,
+        "fcpMs": 2009.89,
+        "lcpMs": 2254.34,
+        "tbtMs": 402,
+        "cls": 0.01,
+        "speedIndexMs": 2009.89,
+        "totalTransferBytes": 463524,
+        "scriptTransferBytes": 300620,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2950.34,
+          "durationMs": 202
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5116.82,
+          "durationMs": 173
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 4968.26,
+          "durationMs": 97
+        },
+        {
+          "path": "/assets/index-DUbWgeaW.js",
+          "startMs": 2854.34,
+          "durationMs": 96
+        },
+        {
+          "path": "/",
+          "startMs": 730.45,
+          "durationMs": 88
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_06_39_12.report.json",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.89,
+        "fcpMs": 2107.13,
+        "lcpMs": 2466.8,
+        "tbtMs": 292,
+        "cls": 0,
+        "speedIndexMs": 2107.13,
+        "totalTransferBytes": 463540,
+        "scriptTransferBytes": 300620,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2915.35,
+          "durationMs": 263
+        },
+        {
+          "path": "/",
+          "startMs": 945.45,
+          "durationMs": 176
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 601.45,
+          "durationMs": 96
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5144.31,
+          "durationMs": 93
+        },
+        {
+          "path": "/",
+          "startMs": 863.45,
+          "durationMs": 82
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_06_39_41.report.json",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.68,
+        "fcpMs": 2035.63,
+        "lcpMs": 5645.03,
+        "tbtMs": 375,
+        "cls": 0,
+        "speedIndexMs": 2035.63,
+        "totalTransferBytes": 502344,
+        "scriptTransferBytes": 334482,
+        "requestCount": 89
+      },
+      "apiRequestCount": 4,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5114.14,
+          "durationMs": 264
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2927.94,
+          "durationMs": 143
+        },
+        {
+          "path": "/",
+          "startMs": 696.31,
+          "durationMs": 89
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 602.31,
+          "durationMs": 82
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5014.14,
+          "durationMs": 79
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_06_40_10.report.json",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.88,
+        "fcpMs": 2003.73,
+        "lcpMs": 2477.47,
+        "tbtMs": 349.5,
+        "cls": 0,
+        "speedIndexMs": 2024.62,
+        "totalTransferBytes": 502328,
+        "scriptTransferBytes": 334482,
+        "requestCount": 89
+      },
+      "apiRequestCount": 4,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 3076.1,
+          "durationMs": 216
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5257.13,
+          "durationMs": 193
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 3443.47,
+          "durationMs": 115
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 876.37,
+          "durationMs": 94
+        },
+        {
+          "path": "/assets/index-DUbWgeaW.js",
+          "startMs": 3004.1,
+          "durationMs": 72
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_25_06_40_38.report.json",
+      "routeMatched": true,
+      "metrics": {
+        "performanceScore": 0.89,
+        "fcpMs": 2131.08,
+        "lcpMs": 2483.13,
+        "tbtMs": 287,
+        "cls": 0.01,
+        "speedIndexMs": 2131.08,
+        "totalTransferBytes": 463540,
+        "scriptTransferBytes": 300620,
+        "requestCount": 85
+      },
+      "apiRequestCount": 2,
+      "longTasks": [
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 5086.44,
+          "durationMs": 176
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 2930.09,
+          "durationMs": 173
+        },
+        {
+          "path": "/assets/index-DUbWgeaW.js",
+          "startMs": 2859.09,
+          "durationMs": 71
+        },
+        {
+          "path": "/assets/react-core-k-iqGWxC.js",
+          "startMs": 4959.22,
+          "durationMs": 67
+        },
+        {
+          "path": "Unattributable",
+          "startMs": 605.03,
+          "durationMs": 61
+        }
+      ]
+    }
+  ],
+  "interpretation": "Cold Lighthouse laboratory measurements only; TBT is not field INP. The individual raw reports remain in local .lighthouseci and are not committed."
+}

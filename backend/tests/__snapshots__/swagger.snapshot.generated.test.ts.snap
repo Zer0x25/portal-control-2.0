@@ -967,6 +967,46 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "EmployeeClockingOption": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "name": {
+            "type": "string",
+          },
+          "position": {
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "Activo",
+            ],
+            "type": "string",
+          },
+          "workdayType": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "name",
+          "position",
+          "area",
+          "workdayType",
+          "status",
+        ],
+        "type": "object",
+      },
+      "EmployeeClockingOptions": {
+        "items": {
+          "$ref": "#/components/schemas/EmployeeClockingOption",
+        },
+        "type": "array",
+      },
       "EmployeeQuery": {
         "properties": {
           "area": {
@@ -1029,6 +1069,33 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "required": [
           "startDate",
           "endDate",
+        ],
+        "type": "object",
+      },
+      "HealthReadiness": {
+        "properties": {
+          "healthStatus": {
+            "enum": [
+              "healthy",
+              "degraded",
+            ],
+            "type": "string",
+          },
+          "instanceId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "ready",
+            ],
+            "type": "string",
+          },
+        },
+        "required": [
+          "status",
+          "healthStatus",
+          "instanceId",
         ],
         "type": "object",
       },
@@ -4646,6 +4713,34 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
       },
     },
+    "/api/employees/clocking-options": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeClockingOptions",
+                },
+              },
+            },
+            "description": "Empleados activos con los campos usados por Control de Asistencia",
+          },
+          "401": {
+            "description": "Autenticación requerida",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Lista las opciones mínimas de empleados activos para Control de Asistencia",
+        "tags": [
+          "Employees",
+        ],
+      },
+    },
     "/api/employees/export": {
       "get": {
         "parameters": [
@@ -5018,7 +5113,40 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "get": {
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthReadiness",
+                },
+              },
+            },
             "description": "Servidor listo",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                    "success": {
+                      "type": "boolean",
+                    },
+                  },
+                  "required": [
+                    "success",
+                    "code",
+                    "message",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Base de datos no disponible",
           },
         },
         "summary": "Verificar si el servidor está listo (Readiness Probe)",

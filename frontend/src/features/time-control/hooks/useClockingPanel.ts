@@ -1,11 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { ClockingStatus, Employee } from "../../../types/index";
-import { useEmployees } from "../../../hooks/useEmployees";
-import { useTimeRecords } from "../../../hooks/useTimeRecords";
-import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQuery";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { ClockingStatus } from "../../../types/index";
+import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
+import type { ClockingEmployeeOption } from "../../../services/employeeService";
+import {
+  useTimeRecordsQuery,
+  useTimeRecordMutations,
+} from "../../../hooks/queries/useTimeRecordsQuery";
 import { useToasts } from "../../../hooks/useToasts";
 import { useAuth } from "../../../hooks/useAuth";
 import { normalizeString } from "../../../utils/stringUtils";
+import type { ClockingActionType } from "../../../utils/clockingActionButtonStyles";
 import { getContractClockingStatus } from "../../../utils/mappings";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { logger } from "../../../utils/logger";
@@ -13,10 +17,10 @@ import { logger } from "../../../utils/logger";
 export interface ClockingPanelState {
   searchTerm: string;
   selectedEmployeeId: string | null;
-  selectedEmployee: Employee | null;
+  selectedEmployee: ClockingEmployeeOption | null;
   clockStatus: ClockingStatus;
   isSubmitting: boolean;
-  filteredEmployees: Employee[];
+  filteredEmployees: ClockingEmployeeOption[];
   statusLabels: Record<ClockingStatus, string>;
   isLoadingRecords: boolean;
 }
@@ -25,13 +29,11 @@ export interface ClockingPanelActions {
   setSearchTerm: (term: string) => void;
   setSelectedEmployeeId: (id: string | null) => void;
   handleFocus: () => void;
-  performActionAndReset: (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => Promise<void>;
+  performActionAndReset: (type: ClockingActionType) => Promise<void>;
 }
 
 export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions => {
-  const { activeEmployees } = useEmployees();
+  const { data: activeEmployees = [] } = useClockingEmployeeOptionsQuery();
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
   const { currentUser } = useAuth();
@@ -58,15 +60,19 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
   const isSubmittingRef = useRef(false);
 
   // Query for the selected employee's latest record
-  const { timeRecordsPage: employeeRecordsData, isLoadingRecords } = useTimeRecords({
-    page: 1,
+  const { data: employeeRecordsQuery, isLoading: isLoadingRecords } = useTimeRecordsQuery({
     pageSize: 5,
+    enabled: Boolean(selectedEmployeeId),
     filters: {
       desde: "",
       hasta: "",
       employeeId: selectedEmployeeId || undefined,
     },
   });
+  const employeeRecordsData = useMemo(
+    () => employeeRecordsQuery?.pages[0]?.data ?? [],
+    [employeeRecordsQuery?.pages],
+  );
 
   // Update clock status when employee or records change
   useEffect(() => {
@@ -125,9 +131,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const handleRecordAction = async (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ): Promise<boolean> => {
+  const handleRecordAction = async (type: ClockingActionType): Promise<boolean> => {
     if (!selectedEmployeeId) {
       addToast("Por favor, seleccione un empleado.", "warning");
       return false;
@@ -172,9 +176,7 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const performActionAndReset = async (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => {
+  const performActionAndReset = async (type: ClockingActionType) => {
     if (!selectedEmployeeId || isSubmittingRef.current) {
       if (!selectedEmployeeId) addToast("Por favor, seleccione un empleado.", "warning");
       return;
@@ -190,11 +192,16 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     }
   };
 
-  const filteredEmployees = activeEmployees
-    .filter((e) =>
-      normalizeString(e.name).toLowerCase().includes(normalizeString(searchTerm).toLowerCase()),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const filteredEmployees = useMemo(() => {
+    if (!searchTerm || selectedEmployeeId) return [];
+
+    const normalizedSearchTerm = normalizeString(searchTerm).toLowerCase();
+    return activeEmployees
+      .filter((employee) =>
+        normalizeString(employee.name).toLowerCase().includes(normalizedSearchTerm),
+      )
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [activeEmployees, searchTerm, selectedEmployeeId]);
 
   const statusLabels: Record<ClockingStatus, string> = {
     fuera: "Fuera de Jornada",

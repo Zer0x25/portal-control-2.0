@@ -19,6 +19,9 @@ describe("contrato HTTP de apiClient (spec 035 T8)", () => {
 
   afterEach(() => {
     authTokenStore.removeToken();
+    (
+      window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean }
+    ).__PORTAL_SYNC_PERF_DIAGNOSTICS__ = false;
     server.resetHandlers();
   });
 
@@ -75,5 +78,44 @@ describe("contrato HTTP de apiClient (spec 035 T8)", () => {
     // (SyntaxError), no un fallo silencioso.
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).name).toBe("SyntaxError");
+  });
+
+  it("emite marcas internas de readiness solo con el diagnóstico optativo", async () => {
+    const diagnosticsWindow = window as Window & {
+      __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean;
+    };
+    diagnosticsWindow.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = true;
+    const stages: Array<{ stage: string; atMs: number }> = [];
+    const captureStage = (event: Event): void => {
+      stages.push((event as CustomEvent<(typeof stages)[number]>).detail);
+    };
+    window.addEventListener("portal:readiness-api-client-stage", captureStage);
+    server.use(
+      http.get("http://localhost:4000/api/health/ready", () =>
+        HttpResponse.json({ success: true, data: { status: "healthy" } }),
+      ),
+    );
+
+    try {
+      await apiRequest({
+        method: "GET",
+        url: "/api/health/ready",
+        retry: false,
+      });
+      expect(stages.map(({ stage }) => stage)).toEqual(["fetch-resolved", "read-body-resolved"]);
+      expect(stages.every(({ atMs }) => Number.isFinite(atMs))).toBe(true);
+
+      diagnosticsWindow.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = false;
+      stages.length = 0;
+      await apiRequest({
+        method: "GET",
+        url: "/api/health/ready",
+        retry: false,
+      });
+      expect(stages).toHaveLength(0);
+    } finally {
+      window.removeEventListener("portal:readiness-api-client-stage", captureStage);
+      diagnosticsWindow.__PORTAL_SYNC_PERF_DIAGNOSTICS__ = false;
+    }
   });
 });

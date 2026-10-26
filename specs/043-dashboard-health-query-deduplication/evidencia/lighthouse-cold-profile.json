@@ -1,0 +1,393 @@
+{
+  "capturedOn": "2026-10-23",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "runner": "LHCI cold profile; .lighthouserc-dashboard-cold.json; storage reset enabled; three Lighthouse runs",
+  "source": {
+    "baseCommit": "ce53d585b56dd696aa46840d0c63eed73c56cb1f",
+    "productionSourcePatchSha256": "c0224993a9d1c34326af9df46435315489ec859dc8a20139f7789e9d26dcfeed",
+    "frontendImage": "sha256:7d004a0bf3e1261d3aaeea2aeee9609628902185b999d8dc23da98fa027731b3",
+    "workingTreeDirty": true
+  },
+  "sampleCount": 3,
+  "runs": [
+    {
+      "report": "127_0_0_1--2026_10_23_23_33_54.report.json",
+      "capturedAt": "2026-10-23T23:33:54.668Z",
+      "performanceScore": 0.69,
+      "fcpMs": 3778.49,
+      "lcpMs": 5475.34,
+      "tbtMs": 153,
+      "cls": 0,
+      "speedIndexMs": 3778.49,
+      "lcpElement": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "snippet": "<div class=\"font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabula…\">",
+        "nodeLabel": "20:34:12",
+        "phases": {
+          "TTFB": 451.64,
+          "Load Delay": 0,
+          "Load Time": 0,
+          "Render Delay": 5023.69
+        }
+      },
+      "renderBlocking": {
+        "estimatedSavingsMs": 0,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+            "transferBytes": 36084,
+            "estimatedWastedMs": 902
+          }
+        ]
+      },
+      "unusedJavaScript": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "transferBytes": 79743,
+          "estimatedUnusedBytes": 31958
+        }
+      ],
+      "javascriptCpu": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "totalCpuMs": 1103.72,
+          "scriptEvaluationMs": 823.8,
+          "parseCompileMs": 0.14
+        },
+        {
+          "url": "Unattributable",
+          "totalCpuMs": 374.93,
+          "scriptEvaluationMs": 41.42,
+          "parseCompileMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:8080/",
+          "totalCpuMs": 300.15,
+          "scriptEvaluationMs": 3.06,
+          "parseCompileMs": 0.38
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-BRf4wnNg.js",
+          "totalCpuMs": 63.86,
+          "scriptEvaluationMs": 54.47,
+          "parseCompileMs": 0.36
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+          "totalCpuMs": 56.2,
+          "scriptEvaluationMs": 0,
+          "parseCompileMs": 0
+        }
+      ],
+      "mainThreadMs": {
+        "Script Evaluation": 960.1,
+        "Other": 802.08,
+        "Style & Layout": 297.6,
+        "Parse HTML & CSS": 49.48,
+        "Rendering": 39.09,
+        "Script Parsing & Compilation": 6.4
+      },
+      "resourceTotals": [
+        {
+          "type": "Total",
+          "requests": 88,
+          "transferBytes": 467435
+        },
+        {
+          "type": "Script",
+          "requests": 76,
+          "transferBytes": 303928
+        },
+        {
+          "type": "Font",
+          "requests": 4,
+          "transferBytes": 119623
+        },
+        {
+          "type": "Stylesheet",
+          "requests": 1,
+          "transferBytes": 36084
+        },
+        {
+          "type": "Other",
+          "requests": 6,
+          "transferBytes": 6249
+        },
+        {
+          "type": "Document",
+          "requests": 1,
+          "transferBytes": 1551
+        },
+        {
+          "type": "Image",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "Media",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "Third-party",
+          "requests": 0,
+          "transferBytes": 0
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_23_23_34_21.report.json",
+      "capturedAt": "2026-10-23T23:34:21.301Z",
+      "performanceScore": 0.71,
+      "fcpMs": 3747.36,
+      "lcpMs": 5411.53,
+      "tbtMs": 94.5,
+      "cls": 0,
+      "speedIndexMs": 3747.36,
+      "lcpElement": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "snippet": "<div class=\"font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabula…\">",
+        "nodeLabel": "20:34:39",
+        "phases": {
+          "TTFB": 450.59,
+          "Load Delay": 0,
+          "Load Time": 0,
+          "Render Delay": 4960.93
+        }
+      },
+      "renderBlocking": {
+        "estimatedSavingsMs": 0,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+            "transferBytes": 36084,
+            "estimatedWastedMs": 901
+          }
+        ]
+      },
+      "unusedJavaScript": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "transferBytes": 79743,
+          "estimatedUnusedBytes": 31958
+        }
+      ],
+      "javascriptCpu": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "totalCpuMs": 924.82,
+          "scriptEvaluationMs": 740.76,
+          "parseCompileMs": 0.16
+        },
+        {
+          "url": "Unattributable",
+          "totalCpuMs": 359.67,
+          "scriptEvaluationMs": 38.48,
+          "parseCompileMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:8080/",
+          "totalCpuMs": 224.2,
+          "scriptEvaluationMs": 2.59,
+          "parseCompileMs": 0.46
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-BRf4wnNg.js",
+          "totalCpuMs": 63.24,
+          "scriptEvaluationMs": 44.6,
+          "parseCompileMs": 0.38
+        }
+      ],
+      "mainThreadMs": {
+        "Script Evaluation": 878.32,
+        "Other": 725.82,
+        "Style & Layout": 183.2,
+        "Rendering": 36.05,
+        "Parse HTML & CSS": 18.92,
+        "Script Parsing & Compilation": 14.03,
+        "Garbage Collection": 7.86
+      },
+      "resourceTotals": [
+        {
+          "type": "Total",
+          "requests": 88,
+          "transferBytes": 471904
+        },
+        {
+          "type": "Script",
+          "requests": 76,
+          "transferBytes": 308397
+        },
+        {
+          "type": "Font",
+          "requests": 4,
+          "transferBytes": 119623
+        },
+        {
+          "type": "Stylesheet",
+          "requests": 1,
+          "transferBytes": 36084
+        },
+        {
+          "type": "Other",
+          "requests": 6,
+          "transferBytes": 6249
+        },
+        {
+          "type": "Document",
+          "requests": 1,
+          "transferBytes": 1551
+        },
+        {
+          "type": "Image",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "Media",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "Third-party",
+          "requests": 0,
+          "transferBytes": 0
+        }
+      ]
+    },
+    {
+      "report": "127_0_0_1--2026_10_23_23_34_47.report.json",
+      "capturedAt": "2026-10-23T23:34:47.601Z",
+      "performanceScore": 0.71,
+      "fcpMs": 3725.41,
+      "lcpMs": 5415.69,
+      "tbtMs": 91,
+      "cls": 0,
+      "speedIndexMs": 3725.41,
+      "lcpElement": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "snippet": "<div class=\"font-bold text-2xl sm:text-4xl text-token-text-primary leading-none tabula…\">",
+        "nodeLabel": "20:35:06",
+        "phases": {
+          "TTFB": 450.06,
+          "Load Delay": 0,
+          "Load Time": 0,
+          "Render Delay": 4965.63
+        }
+      },
+      "renderBlocking": {
+        "estimatedSavingsMs": 0,
+        "resources": [
+          {
+            "url": "http://127.0.0.1:8080/assets/index-BLWPPX_X.css",
+            "transferBytes": 36084,
+            "estimatedWastedMs": 900
+          }
+        ]
+      },
+      "unusedJavaScript": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "transferBytes": 79743,
+          "estimatedUnusedBytes": 31958
+        }
+      ],
+      "javascriptCpu": [
+        {
+          "url": "http://127.0.0.1:8080/assets/react-core-k-iqGWxC.js",
+          "totalCpuMs": 952.1,
+          "scriptEvaluationMs": 716.32,
+          "parseCompileMs": 0.14
+        },
+        {
+          "url": "Unattributable",
+          "totalCpuMs": 347.25,
+          "scriptEvaluationMs": 49.76,
+          "parseCompileMs": 0
+        },
+        {
+          "url": "http://127.0.0.1:8080/",
+          "totalCpuMs": 240.01,
+          "scriptEvaluationMs": 2.86,
+          "parseCompileMs": 0.38
+        },
+        {
+          "url": "http://127.0.0.1:8080/assets/index-BRf4wnNg.js",
+          "totalCpuMs": 63.39,
+          "scriptEvaluationMs": 44.96,
+          "parseCompileMs": 0.44
+        }
+      ],
+      "mainThreadMs": {
+        "Script Evaluation": 857.51,
+        "Other": 649.66,
+        "Style & Layout": 219.72,
+        "Rendering": 35.55,
+        "Parse HTML & CSS": 13.48,
+        "Script Parsing & Compilation": 7.11
+      },
+      "resourceTotals": [
+        {
+          "type": "Total",
+          "requests": 88,
+          "transferBytes": 471901
+        },
+        {
+          "type": "Script",
+          "requests": 76,
+          "transferBytes": 308397
+        },
+        {
+          "type": "Font",
+          "requests": 4,
+          "transferBytes": 119623
+        },
+        {
+          "type": "Stylesheet",
+          "requests": 1,
+          "transferBytes": 36084
+        },
+        {
+          "type": "Other",
+          "requests": 6,
+          "transferBytes": 6246
+        },
+        {
+          "type": "Document",
+          "requests": 1,
+          "transferBytes": 1551
+        },
+        {
+          "type": "Image",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "Media",
+          "requests": 0,
+          "transferBytes": 0
+        },
+        {
+          "type": "Third-party",
+          "requests": 0,
+          "transferBytes": 0
+        }
+      ]
+    }
+  ],
+  "medians": {
+    "performanceScore": 0.71,
+    "fcpMs": 3747.36,
+    "lcpMs": 5415.69,
+    "tbtMs": 94.5,
+    "cls": 0,
+    "speedIndexMs": 3747.36
+  },
+  "interpretation": "Diagnóstico frío del Dashboard después de reconstruir staging; no es una comparación causal controlada antes/después de spec 043. Lighthouse atribuye el LCP a un texto del reloj con render delay alto. El CSS muestra ~900 ms estimados por fila pero 0 ms de ahorro global; no priorizar su extracción basándose en la duración por fila. El audit estima 31.9 KB de JavaScript no usado, concentrado en react-core, y su bootup reporta la mayor ejecución; investigar primero renderizado inicial y partición/carga del JavaScript.",
+  "limitations": [
+    "Muestras de laboratorio local/semillado; no son Core Web Vitals de usuarios reales.",
+    "Los valores Lighthouse son diagnósticos de un lote de tres corridas y no aíslan causalmente el cambio de deduplicación API.",
+    "El ahorro por recurso render-blocking es una estimación; el ahorro global reportado por Lighthouse para CSS fue 0 ms."
+  ]
+}

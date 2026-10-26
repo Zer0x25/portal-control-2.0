@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": {
+    "start": "2026-10-25T19:56:52.213Z",
+    "end": "2026-10-25T19:58:36.987Z"
+  },
+  "comparison": {
+    "baseline": "../../092-time-policy-add-business-days/evidencia/time-control-lighthouse-after-2026-10-25.json",
+    "sampleCount": 5
+  },
+  "summary": {
+    "performanceScore": {
+      "median": 0.92,
+      "min": 0.75,
+      "max": 0.96
+    },
+    "fcpMs": {
+      "median": 2012.02,
+      "min": 2000.58,
+      "max": 2131.58
+    },
+    "lcpMs": {
+      "median": 2253.92,
+      "min": 2253.03,
+      "max": 5584.3
+    },
+    "tbtMs": {
+      "median": 190,
+      "min": 134,
+      "max": 626.03
+    },
+    "cls": {
+      "median": 0,
+      "min": 0,
+      "max": 0.01
+    },
+    "speedIndexMs": {
+      "median": 2137.92,
+      "min": 2003.57,
+      "max": 2154.15
+    },
+    "totalTransferBytes": {
+      "median": 463987,
+      "min": 457885,
+      "max": 500242
+    },
+    "scriptTransferBytes": {
+      "median": 301065,
+      "min": 294963,
+      "max": 334929
+    },
+    "requestCount": {
+      "median": 85,
+      "min": 85,
+      "max": 88
+    }
+  },
+  "target": {
+    "formFactor": "mobile",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "cpuSlowdownMultiplier": 4,
+    "rttMs": 150,
+    "throttlingMethod": "simulate"
+  },
+  "source": {
+    "tool": "Lighthouse",
+    "version": "12.6.1",
+    "route": "#/time-control",
+    "stagingImage": "sha256:f1693ef54d39cb41973604270a77a529b2f8191a905f84d92034341f13cfc471"
+  },
+  "samples": [
+    {
+      "run": 1,
+      "performanceScore": 0.96,
+      "fcpMs": 2000.58,
+      "lcpMs": 2253.87,
+      "tbtMs": 134,
+      "cls": 0.01,
+      "speedIndexMs": 2154.15,
+      "totalTransferBytes": 463987,
+      "scriptTransferBytes": 301065,
+      "requestCount": 85
+    },
+    {
+      "run": 2,
+      "performanceScore": 0.81,
+      "fcpMs": 2012.02,
+      "lcpMs": 2253.03,
+      "tbtMs": 626.03,
+      "cls": 0,
+      "speedIndexMs": 2153.84,
+      "totalTransferBytes": 463955,
+      "scriptTransferBytes": 301065,
+      "requestCount": 85
+    },
+    {
+      "run": 3,
+      "performanceScore": 0.75,
+      "fcpMs": 2003.57,
+      "lcpMs": 5584.3,
+      "tbtMs": 190,
+      "cls": 0,
+      "speedIndexMs": 2003.57,
+      "totalTransferBytes": 500242,
+      "scriptTransferBytes": 334929,
+      "requestCount": 88
+    },
+    {
+      "run": 4,
+      "performanceScore": 0.92,
+      "fcpMs": 2131.58,
+      "lcpMs": 2493.93,
+      "tbtMs": 217.5,
+      "cls": 0,
+      "speedIndexMs": 2137.92,
+      "totalTransferBytes": 464002,
+      "scriptTransferBytes": 301065,
+      "requestCount": 85
+    },
+    {
+      "run": 5,
+      "performanceScore": 0.96,
+      "fcpMs": 2013.61,
+      "lcpMs": 2253.92,
+      "tbtMs": 134,
+      "cls": 0,
+      "speedIndexMs": 2039.73,
+      "totalTransferBytes": 457885,
+      "scriptTransferBytes": 294963,
+      "requestCount": 85
+    }
+  ]
+}

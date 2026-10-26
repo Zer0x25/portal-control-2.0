@@ -1,0 +1,226 @@
+[
+  {
+    "id": "login",
+    "path": "/#/",
+    "currentPath": "/",
+    "role": null,
+    "family": "access",
+    "readiness": "login",
+    "lighthouse": false,
+    "lighthouseSkipReason": "Chromium displays the login screen but emits no First Contentful Paint; Lighthouse exits with NO_FCP in mobile and desktop presets. Playwright still measures route readiness."
+  },
+  {
+    "id": "dashboard",
+    "path": "/#/dashboard",
+    "currentPath": "/dashboard",
+    "role": "admin",
+    "family": "dashboard",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "supervisor-dashboard",
+    "path": "/#/dashboard-supervisor",
+    "currentPath": "/dashboard-supervisor",
+    "role": "admin",
+    "family": "dashboard",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "time-control",
+    "path": "/#/time-control",
+    "currentPath": "/time-control",
+    "role": "admin",
+    "family": "operational-data",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "planner",
+    "path": "/#/planning/monthly",
+    "currentPath": "/planning/monthly",
+    "role": "admin",
+    "family": "planning",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "theoretical-shifts",
+    "path": "/#/theoretical-shifts",
+    "currentPath": "/theoretical-shifts",
+    "role": "admin",
+    "family": "planning",
+    "readiness": "shell",
+    "lighthouse": true,
+    "probes": [
+      {
+        "id": "lazy-tab-transitions",
+        "kind": "tabs",
+        "control": "button",
+        "baseline": "Patrones",
+        "baselineContentText": "Patrones de Turno",
+        "steps": [
+          { "label": "Asignación", "contentText": "Asignaciones de Turnos" },
+          { "label": "Permisos", "contentText": "Gestión de Ausencias" },
+          { "label": "Festivos", "contentText": "Gestión de Feriados" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shift-calendar",
+    "path": "/#/shift-calendar",
+    "currentPath": "/shift-calendar",
+    "role": "admin",
+    "family": "planning",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "configuration",
+    "path": "/#/configuration",
+    "currentPath": "/configuration",
+    "role": "admin",
+    "family": "administration",
+    "readiness": "shell",
+    "lighthouse": true,
+    "probes": [
+      {
+        "id": "lazy-settings-tabs",
+        "kind": "tabs",
+        "control": "role-tab",
+        "baseline": "Variables Globales",
+        "steps": [
+          { "label": "Centro de Correos", "contentText": "Cierres Masivos de Turno" },
+          { "label": "Exportación de Datos", "contentText": "Configuración del Periodo" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "worker-portal",
+    "path": "/#/worker-portal",
+    "currentPath": "/worker-portal",
+    "role": "worker",
+    "family": "worker-experience",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "logbook",
+    "path": "/#/logbook",
+    "currentPath": "/logbook",
+    "role": "admin",
+    "family": "operational-data",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "kiosk",
+    "path": "/#/kiosk",
+    "currentPath": null,
+    "role": null,
+    "family": "worker-experience",
+    "readiness": "kiosk",
+    "lighthouse": true
+  },
+  {
+    "id": "governance-audit",
+    "path": "/#/admin/governance?tab=audit",
+    "currentPath": "/admin/governance",
+    "role": "admin",
+    "family": "administration",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "meter-readings",
+    "path": "/#/meter-readings",
+    "currentPath": "/meter-readings",
+    "role": "admin",
+    "family": "operational-data",
+    "readiness": "shell",
+    "lighthouse": true,
+    "probes": [
+      {
+        "id": "reading-form-open-close",
+        "kind": "modal",
+        "openButton": "Ingresar Lecturas",
+        "heading": "Ingresar Nuevas Lecturas",
+        "closeButton": "Cerrar formulario de lecturas",
+        "closedPanelClass": "translate-x-full"
+      }
+    ]
+  },
+  {
+    "id": "communications",
+    "path": "/#/communications",
+    "currentPath": "/communications",
+    "role": "admin",
+    "family": "communications",
+    "readiness": "shell",
+    "lighthouse": true
+  },
+  {
+    "id": "employee-management",
+    "path": "/#/employee-management",
+    "currentPath": "/employee-management",
+    "role": "admin",
+    "family": "directory-management",
+    "readiness": "shell",
+    "lighthouse": true,
+    "probes": [
+      {
+        "id": "directory-search",
+        "kind": "search",
+        "placeholder": "Buscar por nombre, RUT o cargo...",
+        "emptyText": "No se encontraron expedientes coincidentes con los criterios de búsqueda."
+      }
+    ]
+  },
+  {
+    "id": "personnel-management",
+    "path": "/#/personnel-management",
+    "currentPath": "/personnel-management",
+    "role": "admin",
+    "family": "directory-management",
+    "readiness": "shell",
+    "lighthouse": true,
+    "probes": [
+      {
+        "id": "personnel-access-tab",
+        "kind": "tabs",
+        "control": "role-tab",
+        "baseline": "Empleados",
+        "steps": [{ "label": "Accesos", "contentTestId": "data-table" }]
+      }
+    ]
+  },
+  {
+    "id": "user-management",
+    "path": "/#/user-management",
+    "currentPath": "/user-management",
+    "role": "admin",
+    "family": "directory-management",
+    "readiness": "shell",
+    "lighthouse": true,
+    "probes": [
+      {
+        "id": "directory-search",
+        "kind": "search",
+        "placeholder": "Buscar por usuario o personal...",
+        "emptyText": "Sin usuarios para mostrar. Verifique su conexión o sus permisos."
+      }
+    ]
+  },
+  {
+    "id": "design-system",
+    "path": "/#/design-system",
+    "currentPath": "/design-system",
+    "role": "admin",
+    "family": "administration",
+    "readiness": "shell",
+    "lighthouse": true
+  }
+]

@@ -1,0 +1,165 @@
+{
+  "evidenceSchemaVersion": 1,
+  "capturedAt": "2026-10-24T09:35:42.531Z",
+  "source": {
+    "commit": "333e0846a4311159cd7e5819edc088b868d2af2b",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontendImageId": "sha256:88fa33758435e8e667fcaea1bd6659e8b2ff161da4fb01a3f8bcc60d8fdddc4d",
+    "health": {
+      "gatewayStatus": 200,
+      "apiStatus": 200
+    }
+  },
+  "interpretation": {
+    "firstVisitMedianMs": 448.1,
+    "repeatedVisitMedianMs": 132.1,
+    "repeatedVisitReductionMs": 316,
+    "repeatedVisitReductionPercent": 70.5,
+    "note": "The repeated transition reuses the already-loaded route modules after returning to Dashboard. This is a within-session diagnostic, not a product-code improvement or a direct comparison with cold Lighthouse LCP."
+  },
+  "measurement": {
+    "capturedAt": "2026-10-24T09:35:42.531Z",
+    "baseUrl": "http://127.0.0.1:8080",
+    "route": "/#/time-control",
+    "startRoute": "/#/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "cpuThrottle": 4,
+    "readinessMetric": "browser performance.now from SPA hash change until Time Control main content and heading are visible",
+    "lcpApplicable": false,
+    "initialSync": "Each sample starts with a new browser context and requires lastSyncTime after the overlay is hidden.",
+    "samples": [
+      {
+        "sample": 1,
+        "initialSync": {
+          "completedAtMs": 595.3000000044703,
+          "overlayVisibleAtMs": 212.30000000447035,
+          "overlayHiddenAtMs": 305
+        },
+        "firstVisitAfterSync": {
+          "elapsedMs": 374.4,
+          "sameDocument": true,
+          "finalHash": "#/time-control",
+          "scriptRequests": [
+            "TimeControl.container-A4GRPcwX.js",
+            "PremiumSearchInput-Bp3rHwA1.js",
+            "useScheduling-BcxLMdAy.js",
+            "useAssignedShiftsQuery-qCh4AysY.js",
+            "holidayService-Cs5HyN7i.js",
+            "useConfigMutations-0qi0fav8.js",
+            "calculations-45lHEIxu.js",
+            "dateUtils-2xpdvx3v.js",
+            "date-utils-DTu9wXYq.js",
+            "Input-B-uLkfWb.js",
+            "PageHeader-F-dBlSXN.js",
+            "LazySectionFallback-BStECpQB.js",
+            "validation-aG9s20Rb.js",
+            "useDebounce-CMsimjea.js",
+            "formatters-Dliy4pRt.js",
+            "stringUtils-hr4-FK_6.js",
+            "useTimeRecords-BIQ1-soM.js"
+          ]
+        },
+        "repeatedVisitWithRouteChunkLoaded": {
+          "elapsedMs": 136,
+          "sameDocument": true,
+          "finalHash": "#/time-control",
+          "scriptRequests": []
+        }
+      },
+      {
+        "sample": 2,
+        "initialSync": {
+          "completedAtMs": 677.8999999985099,
+          "overlayVisibleAtMs": 314.79999999701977,
+          "overlayHiddenAtMs": 427.3999999985099
+        },
+        "firstVisitAfterSync": {
+          "elapsedMs": 490.3,
+          "sameDocument": true,
+          "finalHash": "#/time-control",
+          "scriptRequests": [
+            "TimeControl.container-A4GRPcwX.js",
+            "PremiumSearchInput-Bp3rHwA1.js",
+            "useScheduling-BcxLMdAy.js",
+            "useAssignedShiftsQuery-qCh4AysY.js",
+            "holidayService-Cs5HyN7i.js",
+            "useConfigMutations-0qi0fav8.js",
+            "calculations-45lHEIxu.js",
+            "dateUtils-2xpdvx3v.js",
+            "date-utils-DTu9wXYq.js",
+            "Input-B-uLkfWb.js",
+            "PageHeader-F-dBlSXN.js",
+            "LazySectionFallback-BStECpQB.js",
+            "validation-aG9s20Rb.js",
+            "useDebounce-CMsimjea.js",
+            "formatters-Dliy4pRt.js",
+            "stringUtils-hr4-FK_6.js",
+            "useTimeRecords-BIQ1-soM.js"
+          ]
+        },
+        "repeatedVisitWithRouteChunkLoaded": {
+          "elapsedMs": 114.4,
+          "sameDocument": true,
+          "finalHash": "#/time-control",
+          "scriptRequests": []
+        }
+      },
+      {
+        "sample": 3,
+        "initialSync": {
+          "completedAtMs": 604.7999999970198,
+          "overlayVisibleAtMs": 224.60000000149012,
+          "overlayHiddenAtMs": 309.1000000014901
+        },
+        "firstVisitAfterSync": {
+          "elapsedMs": 448.1,
+          "sameDocument": true,
+          "finalHash": "#/time-control",
+          "scriptRequests": [
+            "TimeControl.container-A4GRPcwX.js",
+            "PremiumSearchInput-Bp3rHwA1.js",
+            "useScheduling-BcxLMdAy.js",
+            "useAssignedShiftsQuery-qCh4AysY.js",
+            "holidayService-Cs5HyN7i.js",
+            "useConfigMutations-0qi0fav8.js",
+            "calculations-45lHEIxu.js",
+            "dateUtils-2xpdvx3v.js",
+            "date-utils-DTu9wXYq.js",
+            "Input-B-uLkfWb.js",
+            "PageHeader-F-dBlSXN.js",
+            "LazySectionFallback-BStECpQB.js",
+            "validation-aG9s20Rb.js",
+            "useDebounce-CMsimjea.js",
+            "formatters-Dliy4pRt.js",
+            "stringUtils-hr4-FK_6.js",
+            "useTimeRecords-BIQ1-soM.js"
+          ]
+        },
+        "repeatedVisitWithRouteChunkLoaded": {
+          "elapsedMs": 132.1,
+          "sameDocument": true,
+          "finalHash": "#/time-control",
+          "scriptRequests": []
+        }
+      }
+    ],
+    "firstVisitStats": {
+      "sampleCount": 3,
+      "medianMs": 448.1,
+      "p95Ms": 490.3,
+      "maxMs": 490.3
+    },
+    "repeatedVisitStats": {
+      "sampleCount": 3,
+      "medianMs": 132.1,
+      "p95Ms": 136,
+      "maxMs": 136
+    }
+  }
+}

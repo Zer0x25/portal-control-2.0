@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "spec": "049-defer-role-specific-auto-start-code",
+  "baselineRunId": "2026-10-24T01-42-28-474Z-b49d6915",
+  "afterRunId": "2026-10-24T02-28-24-357Z-adffe1ef",
+  "implementationCommit": "546d870324cb1c8aae8417cb7b0a0d5ea896c077",
+  "runSourceCommit": "adffe1ef36d9500cd89a1a983a3f3742063000e6",
+  "workingTreeDirty": false,
+  "stagingFrontendImage": "sha256:a72d929628b12350eae8e943f276112bf1db25c19177b0efb6be3d2352a6b2b2",
+  "health": {
+    "gatewayStatus": 200,
+    "apiStatus": 200
+  },
+  "lighthouse": {
+    "coldDashboardSampleCount": 3,
+    "standardRouteCount": 17,
+    "standardAssertions": {
+      "total": 85,
+      "passed": 85,
+      "failed": 0
+    },
+    "dashboardColdMedian": {
+      "performanceScore": {
+        "baseline": 0.69,
+        "after": 0.72,
+        "delta": 0.03
+      },
+      "fcpMs": {
+        "baseline": 3709.64,
+        "after": 3642.41,
+        "delta": -67.23,
+        "deltaPercent": -1.81
+      },
+      "lcpMs": {
+        "baseline": 5329.67,
+        "after": 5179.54,
+        "delta": -150.13,
+        "deltaPercent": -2.82
+      },
+      "tbtMs": {
+        "baseline": 174,
+        "after": 137.5,
+        "delta": -36.5,
+        "deltaPercent": -20.98
+      },
+      "totalTransferBytes": {
+        "baseline": 459522,
+        "after": 447388,
+        "delta": -12134,
+        "deltaPercent": -2.64
+      },
+      "scriptTransferBytes": {
+        "baseline": 295739,
+        "after": 283552,
+        "delta": -12187,
+        "deltaPercent": -4.12
+      },
+      "requestCount": {
+        "baseline": 86,
+        "after": 81,
+        "delta": -5,
+        "deltaPercent": -5.81
+      }
+    }
+  },
+  "playwrightDashboardScripts": {
+    "scriptRequestCount": {
+      "baseline": 74,
+      "after": 69,
+      "delta": -5,
+      "deltaPercent": -6.76
+    },
+    "transferBytes": {
+      "baseline": 161774,
+      "after": 150418,
+      "delta": -11356,
+      "deltaPercent": -7.02
+    },
+    "encodedBodyBytes": {
+      "baseline": 142274,
+      "after": 132418,
+      "delta": -9856,
+      "deltaPercent": -6.93
+    },
+    "eagerAutoStartSchedulingChunksAfter": []
+  },
+  "dashboardStartupApi": {
+    "requestCount": 8,
+    "uniqueEndpointCount": 8,
+    "duplicateEndpoints": [],
+    "autoStartSchedulingRequests": [],
+    "allResponsesHttp200": true
+  },
+  "functionalRoutes": {
+    "count": 18,
+    "readinessSamplesPerRoute": 3,
+    "playwrightPerformanceTests": 7,
+    "passed": 7
+  }
+}

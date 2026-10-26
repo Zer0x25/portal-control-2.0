@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-10-24T02-28-24-357Z-adffe1ef",
+  "route": "/#/dashboard",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "formFactor": "mobile",
+  "lighthouseVersion": "12.6.1",
+  "reactCoreAsset": {
+    "file": "react-core-k-iqGWxC.js",
+    "rawBytes": 218860,
+    "compressedBytesIncludingHeaders": 80217,
+    "contents": "react, react-dom, scheduler"
+  },
+  "samples": [
+    {
+      "reportFile": "127_0_0_1--2026_10_24_02_37_24.report.json",
+      "performanceScore": 0.71,
+      "fcpMs": 3642.4096750000003,
+      "lcpMs": 5212.8193500000025,
+      "tbtMs": 143.92169999999987,
+      "reactCore": {
+        "totalCpuMs": 986.939999999996,
+        "scriptEvaluationMs": 696.723999999996,
+        "estimatedUnusedTransferBytes": 32280,
+        "estimatedUnusedPercent": 40.4802156629809
+      },
+      "mainThreadMsByCategory": {
+        "Other": 841.623999999986,
+        "Script Evaluation": 828.5399999999909,
+        "Style & Layout": 274.5919999999997,
+        "Rendering": 36.59600000000007,
+        "Parse HTML & CSS": 21.516,
+        "Garbage Collection": 18.799999999999997,
+        "Script Parsing & Compilation": 7.515999999999996
+      },
+      "lcpRenderDelayMs": 1561.5750000019073,
+      "lcpCandidate": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "description": "Server clock text"
+      }
+    },
+    {
+      "reportFile": "127_0_0_1--2026_10_24_02_37_50.report.json",
+      "performanceScore": 0.72,
+      "fcpMs": 3626.149999999999,
+      "lcpMs": 5143.793750000003,
+      "tbtMs": 112,
+      "reactCore": {
+        "totalCpuMs": 946.1559999999957,
+        "scriptEvaluationMs": 713.9919999999956,
+        "estimatedUnusedTransferBytes": 31958,
+        "estimatedUnusedPercent": 40.07676139998173
+      },
+      "mainThreadMsByCategory": {
+        "Other": 903.5479999999831,
+        "Script Evaluation": 864.4039999999911,
+        "Style & Layout": 202.62400000000005,
+        "Rendering": 42.920000000000016,
+        "Garbage Collection": 20.32399999999997,
+        "Parse HTML & CSS": 17.188000000000002,
+        "Script Parsing & Compilation": 8.195999999999996
+      },
+      "lcpRenderDelayMs": 1569.7559999980926,
+      "lcpCandidate": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "description": "Server clock text"
+      }
+    },
+    {
+      "reportFile": "127_0_0_1--2026_10_24_02_38_14.report.json",
+      "performanceScore": 0.72,
+      "fcpMs": 3644.08975,
+      "lcpMs": 5179.5365,
+      "tbtMs": 137.5,
+      "reactCore": {
+        "totalCpuMs": 1058.3239999999937,
+        "scriptEvaluationMs": 829.4599999999937,
+        "estimatedUnusedTransferBytes": 32280,
+        "estimatedUnusedPercent": 40.4802156629809
+      },
+      "mainThreadMsByCategory": {
+        "Script Evaluation": 972.3319999999926,
+        "Other": 878.3759999999861,
+        "Style & Layout": 221.92399999999995,
+        "Rendering": 38.86399999999997,
+        "Garbage Collection": 28.127999999999957,
+        "Script Parsing & Compilation": 15.815999999999999,
+        "Parse HTML & CSS": 15.024000000000001
+      },
+      "lcpRenderDelayMs": 1564.0629999999999,
+      "lcpCandidate": {
+        "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+        "description": "Server clock text"
+      }
+    }
+  ]
+}

@@ -24,6 +24,16 @@ function fixture() {
   const deps: EmployeeFlowDependencies = {
     repository: {
       list: vi.fn(async () => ({ rawEmployees: [row], total: 1 })),
+      listClockingOptions: vi.fn(async () => [
+        {
+          id: row.id,
+          name: row.name,
+          position: row.position,
+          area: row.area,
+          workdayType: row.workdayType,
+          status: "Activo" as const,
+        },
+      ]),
       resolveId: vi.fn(async () => row.id),
       find: vi.fn(async () => row),
       update: vi.fn(async () => ({ ...row, status: "Archivado" as const, pin: null })),
@@ -39,6 +49,23 @@ function fixture() {
   return { deps, tx, flows: createEmployeeFlows(deps) };
 }
 describe("Employee application contracts", () => {
+  it("returns the minimal clocking employee projection from its repository", async () => {
+    const f = fixture();
+    const user = { role: "Usuario", employeeId: row.id };
+
+    await expect(f.flows.listClockingOptions(user)).resolves.toEqual([
+      {
+        id: row.id,
+        name: row.name,
+        position: row.position,
+        area: row.area,
+        workdayType: row.workdayType,
+        status: "Activo",
+      },
+    ]);
+    expect(f.deps.repository.listClockingOptions).toHaveBeenCalledWith(user);
+  });
+
   it("limits kiosk projection and omits PIN in authenticated sync response", async () => {
     const f = fixture();
     expect(await f.flows.list({}, undefined)).toEqual([

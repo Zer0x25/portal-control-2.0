@@ -83,16 +83,16 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
       />
 
       <div
-        className="relative w-full max-w-lg bg-token-surface-card backdrop-blur-md rounded-2xl border border-token-border-technical shadow-4xl overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
+        className="relative w-full max-w-lg bg-token-surface-card rounded-md border border-token-border-technical shadow-xl overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8 pb-4 flex justify-between items-start">
           <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand">
+            <div className="w-12 h-12 rounded-md bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand">
               <EditIcon className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-black text-token-text-primary uppercase italic tracking-tighter">
+              <h3 className="text-xl font-semibold text-token-text-primary uppercase tracking-tight">
                 Solicitud de Corrección
               </h3>
               <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.3em] mt-1">
@@ -112,7 +112,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
         </div>
 
         <form {...formProps} className="p-8 pt-4 space-y-6">
-          <div className="p-5 rounded-2xl bg-token-accent-brand/5 border border-token-accent-brand/10">
+          <div className="p-5 rounded-md bg-token-accent-brand/5 border border-token-accent-brand/10">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
                 Campo a corregir

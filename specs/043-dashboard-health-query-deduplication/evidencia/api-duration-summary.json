@@ -1,0 +1,527 @@
+{
+  "capturedOn": "2026-10-23",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "sampleCount": 3,
+  "navigation": {
+    "offsetOrigin": "Node performance.now() captured immediately before page.goto(/#/dashboard)",
+    "requestDuration": "Playwright request event until requestfinished; includes browser, gateway, backend, and response-body transfer time; not server-only latency",
+    "mainContentVisibleOffsetMs": [
+      515.37,
+      576.95,
+      628.54
+    ],
+    "serverClockVisibleOffsetMs": [
+      674.76,
+      713.26,
+      651.63
+    ],
+    "apiRequestCompletionOffsetMs": [
+      687.58,
+      718.11,
+      656.09
+    ],
+    "requestsStartingAfterMainContentPerSample": [
+      2,
+      2,
+      0
+    ],
+    "requestsFinishingAfterServerClockPerSample": [
+      6,
+      7,
+      10
+    ]
+  },
+  "endpointMedians": [
+    {
+      "path": "/api/leaves",
+      "medianDurationMs": 162.8,
+      "durationMs": [
+        202.87,
+        162.8,
+        136.4
+      ],
+      "startOffsetMs": [
+        483.88,
+        553.91,
+        519.66
+      ],
+      "finishOffsetMs": [
+        686.75,
+        716.7,
+        656.06
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/holidays",
+      "medianDurationMs": 162.49,
+      "durationMs": [
+        203.66,
+        162.49,
+        136.4
+      ],
+      "startOffsetMs": [
+        483.86,
+        553.88,
+        519.64
+      ],
+      "finishOffsetMs": [
+        687.52,
+        716.37,
+        656.04
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/corrections",
+      "medianDurationMs": 162.39,
+      "durationMs": [
+        203.66,
+        162.39,
+        136.28
+      ],
+      "startOffsetMs": [
+        483.91,
+        553.93,
+        519.68
+      ],
+      "finishOffsetMs": [
+        687.56,
+        716.32,
+        655.96
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/shifts/assignments",
+      "medianDurationMs": 160.24,
+      "durationMs": [
+        203.72,
+        160.24,
+        135.84
+      ],
+      "startOffsetMs": [
+        483.83,
+        553.86,
+        519.62
+      ],
+      "finishOffsetMs": [
+        687.55,
+        714.09,
+        655.45
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/email_recipients",
+      "medianDurationMs": 148.48,
+      "durationMs": [
+        148.48,
+        155.24,
+        135.81
+      ],
+      "startOffsetMs": [
+        482.19,
+        551.85,
+        519.55
+      ],
+      "finishOffsetMs": [
+        630.68,
+        707.1,
+        655.36
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/shifts/patterns",
+      "medianDurationMs": 148.44,
+      "durationMs": [
+        148.44,
+        160.22,
+        135.85
+      ],
+      "startOffsetMs": [
+        482.25,
+        553.83,
+        519.6
+      ],
+      "finishOffsetMs": [
+        630.69,
+        714.05,
+        655.44
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/accounting_lock_date",
+      "medianDurationMs": 148.36,
+      "durationMs": [
+        148.36,
+        155.38,
+        135.85
+      ],
+      "startOffsetMs": [
+        482.23,
+        553.8,
+        519.57
+      ],
+      "finishOffsetMs": [
+        630.59,
+        709.18,
+        655.42
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/global_max_hours",
+      "medianDurationMs": 143.99,
+      "durationMs": [
+        144.33,
+        143.99,
+        130.82
+      ],
+      "startOffsetMs": [
+        477.67,
+        551.42,
+        519.48
+      ],
+      "finishOffsetMs": [
+        622,
+        695.41,
+        650.3
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/workday_types",
+      "medianDurationMs": 143.6,
+      "durationMs": [
+        152.58,
+        143.6,
+        133.26
+      ],
+      "startOffsetMs": [
+        477.97,
+        551.83,
+        519.53
+      ],
+      "finishOffsetMs": [
+        630.55,
+        695.43,
+        652.79
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/area_list",
+      "medianDurationMs": 143.58,
+      "durationMs": [
+        144.02,
+        143.58,
+        130.83
+      ],
+      "startOffsetMs": [
+        477.94,
+        551.8,
+        519.5
+      ],
+      "finishOffsetMs": [
+        621.96,
+        695.38,
+        650.33
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/health",
+      "medianDurationMs": 85.39,
+      "durationMs": [
+        90.15,
+        85.39,
+        63.53
+      ],
+      "startOffsetMs": [
+        146.23,
+        166.75,
+        188.77
+      ],
+      "finishOffsetMs": [
+        236.38,
+        252.14,
+        252.3
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/public/company-policy",
+      "medianDurationMs": 57.89,
+      "durationMs": [
+        45.91,
+        74.81,
+        57.89
+      ],
+      "startOffsetMs": [
+        641.66,
+        642,
+        598.18
+      ],
+      "finishOffsetMs": [
+        687.57,
+        716.8,
+        656.07
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/notes",
+      "medianDurationMs": 54.39,
+      "durationMs": [
+        45.89,
+        74.39,
+        54.39
+      ],
+      "startOffsetMs": [
+        641.69,
+        643.73,
+        601.7
+      ],
+      "finishOffsetMs": [
+        687.58,
+        718.11,
+        656.09
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "medianDurationMs": 48.44,
+      "durationMs": [
+        46.88,
+        48.44,
+        106.86
+      ],
+      "startOffsetMs": [
+        192.59,
+        203.75,
+        219.57
+      ],
+      "finishOffsetMs": [
+        239.47,
+        252.2,
+        326.43
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/kpis/overview",
+      "medianDurationMs": 47.57,
+      "durationMs": [
+        137.53,
+        47.57,
+        34.36
+      ],
+      "startOffsetMs": [
+        477.65,
+        551.4,
+        519.46
+      ],
+      "finishOffsetMs": [
+        615.18,
+        598.97,
+        553.82
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/employees",
+      "medianDurationMs": 46.06,
+      "durationMs": [
+        70.39,
+        46.06,
+        30.89
+      ],
+      "startOffsetMs": [
+        473.98,
+        548.65,
+        519.38
+      ],
+      "finishOffsetMs": [
+        544.36,
+        594.71,
+        550.27
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/shift-reports",
+      "medianDurationMs": 43.31,
+      "durationMs": [
+        72.2,
+        43.31,
+        30.83
+      ],
+      "startOffsetMs": [
+        477.6,
+        551.36,
+        519.42
+      ],
+      "finishOffsetMs": [
+        549.8,
+        594.67,
+        550.25
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/corrections/stats",
+      "medianDurationMs": 41.8,
+      "durationMs": [
+        56.47,
+        25.6,
+        41.8
+      ],
+      "startOffsetMs": [
+        471.71,
+        547.39,
+        506.46
+      ],
+      "finishOffsetMs": [
+        528.18,
+        573,
+        548.26
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/audit-logs",
+      "medianDurationMs": 34.18,
+      "durationMs": [
+        56.71,
+        24.9,
+        34.18
+      ],
+      "startOffsetMs": [
+        471.75,
+        548.6,
+        515.96
+      ],
+      "finishOffsetMs": [
+        528.46,
+        573.5,
+        550.14
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/api/users",
+      "medianDurationMs": 29.36,
+      "durationMs": [
+        54.06,
+        25.14,
+        29.36
+      ],
+      "startOffsetMs": [
+        473.95,
+        548.63,
+        518.96
+      ],
+      "finishOffsetMs": [
+        528.01,
+        573.77,
+        548.32
+      ],
+      "statuses": [
+        200,
+        200,
+        200
+      ]
+    }
+  ],
+  "rawSamples": [
+    "runs/sample-01/dashboard-startup-api-requests.json",
+    "runs/sample-02/dashboard-startup-api-requests.json",
+    "runs/sample-03/dashboard-startup-api-requests.json"
+  ],
+  "limitations": [
+    "Tres capturas locales, semilladas y secuenciales; no describen datos de campo.",
+    "Duraciones incluyen browser/gateway/backend y no aíslan tiempo de servicio del backend.",
+    "Los offsets de visibilidad miden cuando Playwright observó el selector visible, no una marca de pintura exacta del navegador."
+  ]
+}

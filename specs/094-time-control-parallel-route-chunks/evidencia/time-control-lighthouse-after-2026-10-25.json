@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-25T20:19:54.357Z",
+  "source": {
+    "commit": "working-tree-after-2b59821",
+    "stagingFrontendImageId": "sha256:f30c8645d15e8bf3ecc3e4cdc41c27321debcaa9992c45f394cc44c921693678",
+    "tool": "Lighthouse 12.6.1"
+  },
+  "environment": {
+    "route": "/#/time-control",
+    "formFactor": "mobile",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "cpuSlowdownMultiplier": 4,
+    "rttMs": 150,
+    "throttlingMethod": "simulate",
+    "sampleCount": 5
+  },
+  "comparison": {
+    "baseline": "../../093-time-control-search-computation/evidencia/time-control-lighthouse-after-2026-10-25.json",
+    "lighthouseMetrics": {
+      "performanceScore": {
+        "baseline": {
+          "median": 0.92,
+          "min": 0.75,
+          "max": 0.96
+        },
+        "after": {
+          "median": 0.88,
+          "min": 0.81,
+          "max": 0.95
+        }
+      },
+      "fcpMs": {
+        "baseline": {
+          "median": 2012.02,
+          "min": 2000.58,
+          "max": 2131.58
+        },
+        "after": {
+          "median": 2008.96,
+          "min": 2000.98,
+          "max": 2648.7
+        }
+      },
+      "lcpMs": {
+        "baseline": {
+          "median": 2253.92,
+          "min": 2253.03,
+          "max": 5584.3
+        },
+        "after": {
+          "median": 2254.98,
+          "min": 2252.93,
+          "max": 3709.94
+        }
+      },
+      "tbtMs": {
+        "baseline": {
+          "median": 190,
+          "min": 134,
+          "max": 626.03
+        },
+        "after": {
+          "median": 217.5,
+          "min": 168.5,
+          "max": 367
+        }
+      },
+      "cls": {
+        "baseline": {
+          "median": 0,
+          "min": 0,
+          "max": 0.01
+        },
+        "after": {
+          "median": 0.01016,
+          "min": 0,
+          "max": 0.01016
+        }
+      },
+      "scriptTransferBytes": {
+        "baseline": {
+          "median": 301065,
+          "min": 294963,
+          "max": 334929
+        },
+        "after": {
+          "median": 301175,
+          "min": 301160,
+          "max": 335023
+        }
+      },
+      "requestCount": {
+        "baseline": {
+          "median": 85,
+          "min": 85,
+          "max": 88
+        },
+        "after": {
+          "median": 86,
+          "min": 86,
+          "max": 89
+        }
+      }
+    },
+    "routeChunkWaterfall": {
+      "afterRouteStartBeforeLayoutMs": {
+        "median": 74.12,
+        "min": 30.906,
+        "max": 78.318
+      },
+      "afterRouteCompleteBeforeLayoutMs": {
+        "median": 92.01,
+        "min": 50.907,
+        "max": 95.919
+      },
+      "afterSignedGapFromLayoutEndToRouteStartMs": {
+        "median": -106.751,
+        "min": -117.031,
+        "max": -74.565
+      },
+      "baselineRouteStartAfterLayoutEndMs": {
+        "median": 139.147,
+        "min": 93.349,
+        "max": 159.214
+      },
+      "baselineStagingFrontendImageId": "sha256:f1693ef54d39cb41973604270a77a529b2f8191a905f84d92034341f13cfc471"
+    }
+  },
+  "summary": {
+    "performanceScore": {
+      "median": 0.88,
+      "min": 0.81,
+      "max": 0.95
+    },
+    "fcpMs": {
+      "median": 2008.96,
+      "min": 2000.98,
+      "max": 2648.7
+    },
+    "lcpMs": {
+      "median": 2254.98,
+      "min": 2252.93,
+      "max": 3709.94
+    },
+    "tbtMs": {
+      "median": 217.5,
+      "min": 168.5,
+      "max": 367
+    },
+    "cls": {
+      "median": 0.01016,
+      "min": 0,
+      "max": 0.01016
+    },
+    "speedIndexMs": {
+      "median": 2048.21,
+      "min": 2003.23,
+      "max": 2648.7
+    },
+    "totalTransferBytes": {
+      "median": 464080,
+      "min": 464064,
+      "max": 500327
+    },
+    "scriptTransferBytes": {
+      "median": 301175,
+      "min": 301160,
+      "max": 335023
+    },
+    "requestCount": {
+      "median": 86,
+      "min": 86,
+      "max": 89
+    }
+  },
+  "samples": [
+    {
+      "run": 1,
+      "performanceScore": 0.95,
+      "fcpMs": 2003.32,
+      "lcpMs": 2254.98,
+      "tbtMs": 168.5,
+      "cls": 0.01016,
+      "speedIndexMs": 2003.32,
+      "totalTransferBytes": 464080,
+      "scriptTransferBytes": 301160,
+      "requestCount": 86,
+      "layout": {
+        "path": "/assets/PersistentLayout-DkPR0Q1I.js",
+        "startMs": 182.571,
+        "endMs": 226.23,
+        "transferBytes": 17529
+      },
+      "route": {
+        "path": "/assets/TimeControl.container-B3S_TLy1.js",
+        "startMs": 151.665,
+        "endMs": 175.323,
+        "transferBytes": 17958
+      }
+    },
+    {
+      "run": 2,
+      "performanceScore": 0.83,
+      "fcpMs": 2648.7,
+      "lcpMs": 3709.94,
+      "tbtMs": 178.5,
+      "cls": 0,
+      "speedIndexMs": 2648.7,
+      "totalTransferBytes": 464064,
+      "scriptTransferBytes": 301160,
+      "requestCount": 86,
+      "layout": {
+        "path": "/assets/PersistentLayout-DkPR0Q1I.js",
+        "startMs": 158.207,
+        "endMs": 190.141,
+        "transferBytes": 17529
+      },
+      "route": {
+        "path": "/assets/TimeControl.container-B3S_TLy1.js",
+        "startMs": 83.39,
+        "endMs": 98.131,
+        "transferBytes": 17958
+      }
+    },
+    {
+      "run": 3,
+      "performanceScore": 0.81,
+      "fcpMs": 2577.13,
+      "lcpMs": 3415.42,
+      "tbtMs": 293.76,
+      "cls": 0,
+      "speedIndexMs": 2577.13,
+      "totalTransferBytes": 500327,
+      "scriptTransferBytes": 335023,
+      "requestCount": 89,
+      "layout": {
+        "path": "/assets/PersistentLayout-DkPR0Q1I.js",
+        "startMs": 171.749,
+        "endMs": 214.66,
+        "transferBytes": 17529
+      },
+      "route": {
+        "path": "/assets/TimeControl.container-B3S_TLy1.js",
+        "startMs": 97.629,
+        "endMs": 118.741,
+        "transferBytes": 17958
+      }
+    },
+    {
+      "run": 4,
+      "performanceScore": 0.88,
+      "fcpMs": 2000.98,
+      "lcpMs": 2252.97,
+      "tbtMs": 367,
+      "cls": 0.01016,
+      "speedIndexMs": 2003.23,
+      "totalTransferBytes": 464079,
+      "scriptTransferBytes": 301175,
+      "requestCount": 86,
+      "layout": {
+        "path": "/assets/PersistentLayout-DkPR0Q1I.js",
+        "startMs": 188.646,
+        "endMs": 222.995,
+        "transferBytes": 17529
+      },
+      "route": {
+        "path": "/assets/TimeControl.container-B3S_TLy1.js",
+        "startMs": 110.328,
+        "endMs": 128.68,
+        "transferBytes": 17958
+      }
+    },
+    {
+      "run": 5,
+      "performanceScore": 0.93,
+      "fcpMs": 2008.96,
+      "lcpMs": 2252.93,
+      "tbtMs": 217.5,
+      "cls": 0.01016,
+      "speedIndexMs": 2048.21,
+      "totalTransferBytes": 464136,
+      "scriptTransferBytes": 301184,
+      "requestCount": 86,
+      "layout": {
+        "path": "/assets/PersistentLayout-DkPR0Q1I.js",
+        "startMs": 183.293,
+        "endMs": 200.892,
+        "transferBytes": 17529
+      },
+      "route": {
+        "path": "/assets/TimeControl.container-B3S_TLy1.js",
+        "startMs": 121.556,
+        "endMs": 136.152,
+        "transferBytes": 17958
+      }
+    }
+  ]
+}

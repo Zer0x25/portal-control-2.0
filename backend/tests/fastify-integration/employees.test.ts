@@ -131,6 +131,90 @@ describe("Spec 013 employees on Fastify", () => {
     // Kiosk ignores supplied bearer and always uses its public projection.
     expect((await http("GET", "/api/employees/kiosk")).body).toEqual(response.body);
   });
+  it("returns minimal active clocking options and scopes Usuario to its own employee", async () => {
+    await prismaDirect.employee.create({ data: input });
+    await prismaDirect.employee.create({
+      data: {
+        ...input,
+        id: "EMP-archived",
+        name: "Archived Operator",
+        rut: "99999999-9",
+        status: "Archivado",
+      },
+    });
+    await prismaDirect.employee.create({
+      data: {
+        ...input,
+        id: "EMP-other-area",
+        name: "Other Area Operator",
+        rut: "88888888-8",
+        area: "Other",
+      },
+    });
+
+    expect((await http("GET", "/api/employees/clocking-options", undefined, null)).status).toBe(
+      401,
+    );
+    const response = await http("GET", "/api/employees/clocking-options");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([
+      {
+        id: input.id,
+        name: input.name,
+        position: input.position,
+        area: input.area,
+        workdayType: input.workdayType,
+        status: "Activo",
+      },
+      {
+        id: "EMP-other-area",
+        name: "Other Area Operator",
+        position: input.position,
+        area: "Other",
+        workdayType: input.workdayType,
+        status: "Activo",
+      },
+    ]);
+    expect(Object.keys(response.body[0]).sort()).toEqual(
+      ["area", "id", "name", "position", "status", "workdayType"].sort(),
+    );
+
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Supervisor", employeeId: input.id },
+    });
+    expect((await http("GET", "/api/employees/clocking-options")).body).toEqual([
+      {
+        id: input.id,
+        name: input.name,
+        position: input.position,
+        area: input.area,
+        workdayType: input.workdayType,
+        status: "Activo",
+      },
+    ]);
+
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Usuario", employeeId: input.id },
+    });
+    expect((await http("GET", "/api/employees/clocking-options")).body).toEqual([
+      {
+        id: input.id,
+        name: input.name,
+        position: input.position,
+        area: input.area,
+        workdayType: input.workdayType,
+        status: "Activo",
+      },
+    ]);
+
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { employeeId: null },
+    });
+    expect((await http("GET", "/api/employees/clocking-options")).body).toEqual([]);
+  });
   it("keeps filters, pagination, delta and persisted Usuario row scoping", async () => {
     await prismaDirect.employee.create({ data: input });
     await prismaDirect.employee.create({

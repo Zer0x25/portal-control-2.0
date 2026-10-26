@@ -17,6 +17,10 @@ import {
 } from "../../../components/ui/icons/index";
 import { DailyTimeRecord, Employee, ClockingStatus } from "../../../types/index";
 import type { KioskStep } from "../hooks/useKioskData";
+import {
+  getClockingActionButtonClassName,
+  type ClockingActionType,
+} from "../../../utils/clockingActionButtonStyles";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
 
@@ -45,11 +49,10 @@ export interface KioskViewProps {
   latestOpenRecord?: DailyTimeRecord | null;
   isKioskArmed?: boolean;
   kioskActions?: Array<{
-    id: string;
+    id: ClockingActionType;
     label: string;
-    color: "green" | "yellow" | "blue" | "red";
     enabled: boolean;
-    actionType: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin";
+    actionType: ClockingActionType;
   }>;
   clockStatusConfig?: {
     label: string;
@@ -64,9 +67,7 @@ export interface KioskViewProps {
   handleEmployeeSelect?: (e: Employee) => void;
   handlePinConfirm?: () => void;
   handleSetNewPin?: () => void;
-  handleClockingAction?: (
-    type: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => void;
+  handleClockingAction?: (type: ClockingActionType) => void;
   resetState?: () => void;
   onLogout?: () => void;
 }
@@ -143,7 +144,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   const renderRutInput = () => (
     <div key="rut" className="flex flex-col items-center">
       <div className="relative mb-5 sm:hidden">
-        <div className="absolute inset-0 bg-token-accent-brand/40 rounded-2xl blur-2xl animate-pulse" />
+        <div className="ambient-glow ambient-glow-prominent absolute inset-0 animate-pulse" />
         <div
           className={`w-16 h-16 rounded-2xl bg-linear-to-br from-token-accent-brand via-indigo-600 to-token-accent-brand flex items-center justify-center text-white relative ${Z.sticky} border border-white/20 shadow-2xl`}
         >
@@ -256,22 +257,6 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       <div className="grid grid-cols-2 gap-3">
         {kioskActions.map((action) => {
           const isDisabled = !isKioskArmed || !action.enabled;
-          const colorClass =
-            action.color === "green"
-              ? isDisabled
-                ? "bg-green-500/10 text-green-700/40 border border-green-500/20 shadow-none"
-                : "bg-green-600 text-white border border-green-500 shadow-md hover:bg-green-700"
-              : action.color === "yellow"
-                ? isDisabled
-                  ? "bg-amber-500/10 text-amber-700/40 border border-amber-500/20 shadow-none"
-                  : "bg-amber-600 text-white border border-amber-500 shadow-md hover:bg-amber-700"
-                : action.color === "blue"
-                  ? isDisabled
-                    ? "bg-sky-500/10 text-sky-700/40 border border-sky-500/20 shadow-none"
-                    : "bg-sky-600 text-white border border-sky-500 shadow-md hover:bg-sky-700"
-                  : isDisabled
-                    ? "bg-rose-500/10 text-rose-700/40 border border-rose-500/20 shadow-none"
-                    : "bg-rose-600 text-white border border-rose-500 shadow-md hover:bg-rose-700";
 
           return (
             <Button
@@ -284,7 +269,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               // acciones anunciándose igual ("No disponible"). Etiqueta
               // explícita: el tooltip visual se conserva, el lector oye la acción.
               aria-label={action.label}
-              className={`w-full h-16 text-[10px] ${colorClass}`}
+              className={`w-full h-16 text-[10px] ${getClockingActionButtonClassName(action.actionType, isDisabled)}`}
             >
               {action.label}
             </Button>
@@ -412,7 +397,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.08)_0%,transparent_70%)] ${Z.base}`}
         />
         <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-token-accent-brand/10 rounded-full blur-[120px] ${Z.base}`}
+          className={`ambient-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${Z.base}`}
         />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-size-[40px_40px] mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-50"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] opacity-70"></div>
@@ -476,8 +461,8 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
           {step === "change_pin" && renderChangePin()}
         </div>
 
-        <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-token-accent-brand/5 rounded-full blur-3xl" />
-        <div className="absolute -top-12 -left-12 w-32 h-32 bg-white/5 rounded-full blur-3xl" />
+        <div className="ambient-glow ambient-glow-subtle absolute -bottom-12 -right-12 w-32 h-32" />
+        <div className="ambient-glow ambient-glow-light ambient-glow-subtle absolute -top-12 -left-12 w-32 h-32" />
       </div>
 
       <div className={`fixed bottom-6 left-6 ${Z.dropdown}`}>

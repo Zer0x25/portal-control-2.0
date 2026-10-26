@@ -1,0 +1,13 @@
+{
+  "runId": "2026-10-23T15-01-52-304Z-45138318",
+  "postCaptureValidation": true,
+  "source": "Actual runner validateLighthouseStage against the original measured reports; no browser remeasurement or ledger overwrite",
+  "standard": {
+    "urlCount": 17,
+    "assertionCount": 85,
+    "passedCount": 85,
+    "failures": []
+  },
+  "coldSamples": 3,
+  "allDestinationsMatched": true
+}

@@ -84,7 +84,7 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
                   </p>
                 </div>
               </div>
-              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-token-accent-brand/5 rounded-full blur-2xl group-hover:bg-token-accent-brand/10 transition-all" />
+              <div className="ambient-glow ambient-glow-subtle absolute -right-8 -bottom-8 w-32 h-32 transition-opacity group-hover:opacity-75" />
             </div>
 
             {/* Automatic Closures / Alerts */}
@@ -155,8 +155,8 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
             </Button>
           </div>
 
-          {/* Decorative background blur */}
-          <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-token-accent-brand/5 rounded-full blur-3xl pointer-events-none" />
+          {/* Decorative ambient glow */}
+          <div className="ambient-glow ambient-glow-subtle absolute -bottom-24 -right-24 w-64 h-64 pointer-events-none" />
         </div>
       </div>
     ),

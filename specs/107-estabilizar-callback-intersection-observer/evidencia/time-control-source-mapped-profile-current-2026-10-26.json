@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-26T01:11:59.513Z",
+  "source": {
+    "commit": "04a05f7c36260f453404046ce0a57f0b57971150",
+    "workingTreeDirty": false
+  },
+  "target": {
+    "routeId": "time-control",
+    "profile": "active-staging-production-bundle",
+    "stagingFrontendImageId": "sha256:d0932191a96d83fa08dd042a900c234060a96d961e64e3d24c54d84eb19f29d7",
+    "sourceMapAssetsMatched": true,
+    "comparedScriptAssets": 210
+  },
+  "runtime": {
+    "nodeVersion": "v26.10.0",
+    "browser": "Chromium",
+    "browserVersion": "153.0.8010.12",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75,
+    "cpuThrottleRate": 4,
+    "samplingIntervalUs": 1000,
+    "profiledAssetsSource": "host-build"
+  },
+  "sampleCount": 3,
+  "metrics": {
+    "profileWindowMs": {
+      "median": 2745.153,
+      "min": 2677.958,
+      "max": 3160.161
+    },
+    "activeSampledMs": {
+      "median": 865.144,
+      "min": 765.847,
+      "max": 1227.552
+    },
+    "reactCoreInclusiveSampledMs": {
+      "median": 529.852,
+      "min": 461.263,
+      "max": 779.095
+    },
+    "reactCoreSelfSampledMs": {
+      "median": 235.781,
+      "min": 214.238,
+      "max": 348.881
+    },
+    "noAppFrameSampledMs": {
+      "median": 535.975,
+      "min": 484.489,
+      "max": 732.815
+    },
+    "longTaskCount": {
+      "median": 9,
+      "min": 7,
+      "max": 9
+    },
+    "totalLongTaskDurationMs": {
+      "median": 717.997,
+      "min": 679.335,
+      "max": 1055.076
+    },
+    "wallWindowMs": {
+      "median": 2962,
+      "min": 2841,
+      "max": 3334
+    }
+  },
+  "runs": [
+    {
+      "sample": 1,
+      "profileWindowMs": 2745.153,
+      "activeSampledMs": 865.144,
+      "reactCoreInclusiveSampledMs": 529.852,
+      "reactCoreSelfSampledMs": 235.781,
+      "noAppFrameSampledMs": 535.975,
+      "longTaskCount": 7,
+      "totalLongTaskDurationMs": 679.335,
+      "wallWindowMs": 2962
+    },
+    {
+      "sample": 2,
+      "profileWindowMs": 2677.958,
+      "activeSampledMs": 765.847,
+      "reactCoreInclusiveSampledMs": 461.263,
+      "reactCoreSelfSampledMs": 214.238,
+      "noAppFrameSampledMs": 484.489,
+      "longTaskCount": 9,
+      "totalLongTaskDurationMs": 717.997,
+      "wallWindowMs": 2841
+    },
+    {
+      "sample": 3,
+      "profileWindowMs": 3160.161,
+      "activeSampledMs": 1227.552,
+      "reactCoreInclusiveSampledMs": 779.095,
+      "reactCoreSelfSampledMs": 348.881,
+      "noAppFrameSampledMs": 732.815,
+      "longTaskCount": 9,
+      "totalLongTaskDurationMs": 1055.076,
+      "wallWindowMs": 3334
+    }
+  ],
+  "appFramesRepeatedInLongTasks": [
+    {
+      "key": "src/App.tsx::loadTimeControlPage@35",
+      "observedSamples": 3,
+      "perSample": [
+        {
+          "sample": 1,
+          "sampledMs": 27.394,
+          "taskCount": 1
+        },
+        {
+          "sample": 2,
+          "sampledMs": 16.915,
+          "taskCount": 2
+        },
+        {
+          "sample": 3,
+          "sampledMs": 22.757,
+          "taskCount": 1
+        }
+      ]
+    },
+    {
+      "key": "src/services/apiClient.ts::performRequest@384",
+      "observedSamples": 3,
+      "perSample": [
+        {
+          "sample": 1,
+          "sampledMs": 27.39,
+          "taskCount": 1
+        },
+        {
+          "sample": 2,
+          "sampledMs": 19.475,
+          "taskCount": 1
+        },
+        {
+          "sample": 3,
+          "sampledMs": 88.21,
+          "taskCount": 2
+        }
+      ]
+    },
+    {
+      "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+      "observedSamples": 3,
+      "perSample": [
+        {
+          "sample": 1,
+          "sampledMs": 7.709,
+          "taskCount": 1
+        },
+        {
+          "sample": 2,
+          "sampledMs": 7.526,
+          "taskCount": 1
+        },
+        {
+          "sample": 3,
+          "sampledMs": 13.07,
+          "taskCount": 3
+        }
+      ]
+    },
+    {
+      "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+      "observedSamples": 3,
+      "perSample": [
+        {
+          "sample": 1,
+          "sampledMs": 5.641,
+          "taskCount": 1
+        },
+        {
+          "sample": 2,
+          "sampledMs": 8.869,
+          "taskCount": 1
+        },
+        {
+          "sample": 3,
+          "sampledMs": 11.233,
+          "taskCount": 1
+        }
+      ]
+    }
+  ],
+  "interpretation": {
+    "apiClientPerformRequest": "inclusive stack includes the async fetch boundary; its aggregate is not attributable to synchronous app CPU",
+    "lighthouseCorrelation": "these CDP visits are not temporally paired with the five Lighthouse runs"
+  },
+  "windowAppFrameMedians": [
+    {
+      "key": "src/services/apiClient.ts::performRequest@384",
+      "medianSampledMs": 42.011,
+      "observedSamples": 3
+    },
+    {
+      "key": "src/App.tsx::loadTimeControlPage@35",
+      "medianSampledMs": 22.757,
+      "observedSamples": 3
+    },
+    {
+      "key": "src/App.tsx::anonymous@16",
+      "medianSampledMs": 14.238,
+      "observedSamples": 3
+    },
+    {
+      "key": "src/services/socketService.ts::connect@11",
+      "medianSampledMs": 10.28,
+      "observedSamples": 3
+    },
+    {
+      "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+      "medianSampledMs": 9.178,
+      "observedSamples": 3
+    },
+    {
+      "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+      "medianSampledMs": 8.869,
+      "observedSamples": 3
+    },
+    {
+      "key": "src/utils/sentryMiddlewares.ts::config@52",
+      "medianSampledMs": 7.941,
+      "observedSamples": 2
+    },
+    {
+      "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+      "medianSampledMs": 7.867,
+      "observedSamples": 2
+    }
+  ]
+}

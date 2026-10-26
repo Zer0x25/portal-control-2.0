@@ -1,0 +1,233 @@
+{
+  "capturedDate": "2026-10-25",
+  "route": "/#/time-control",
+  "lighthouse": {
+    "version": "12.6.1",
+    "profile": "cold mobile, CPU 4x, RTT 150ms, viewport 412x823, five serial runs",
+    "baseline": {
+      "frontendImage": "sha256:004b3a981ecfabe21e30e553e7feb546e8c164b0e248812b620080f7c634a81f",
+      "runs": [
+        {
+          "run": 1,
+          "performanceScore": 0.72,
+          "tbtMs": 310,
+          "lcpMs": 5345.5603999999985,
+          "fcpMs": 1999.0934,
+          "cls": 0.000006949121662018889,
+          "totalTransferBytes": 457619
+        },
+        {
+          "run": 2,
+          "performanceScore": 0.96,
+          "tbtMs": 122.5,
+          "lcpMs": 2253.25005,
+          "fcpMs": 1998.1667,
+          "cls": 0.01016361232872061,
+          "totalTransferBytes": 457667
+        },
+        {
+          "run": 3,
+          "performanceScore": 0.96,
+          "tbtMs": 134,
+          "lcpMs": 2253.8781,
+          "fcpMs": 1997.5854,
+          "cls": 0,
+          "totalTransferBytes": 493421
+        },
+        {
+          "run": 4,
+          "performanceScore": 0.84,
+          "tbtMs": 223.49999999999955,
+          "lcpMs": 3397.547200000001,
+          "fcpMs": 2570.4269000000004,
+          "cls": 0,
+          "totalTransferBytes": 457651
+        },
+        {
+          "run": 5,
+          "performanceScore": 0.94,
+          "tbtMs": 202,
+          "lcpMs": 2255.21385,
+          "fcpMs": 2000.4759,
+          "cls": 0.01016361232872061,
+          "totalTransferBytes": 457651
+        }
+      ],
+      "summary": {
+        "performanceScore": {
+          "median": 0.94,
+          "min": 0.72,
+          "max": 0.96
+        },
+        "tbtMs": {
+          "median": 202,
+          "min": 122.5,
+          "max": 310
+        },
+        "lcpMs": {
+          "median": 2255.21385,
+          "min": 2253.25005,
+          "max": 5345.5603999999985
+        },
+        "fcpMs": {
+          "median": 1999.0934,
+          "min": 1997.5854,
+          "max": 2570.4269000000004
+        },
+        "cls": {
+          "median": 0.000006949121662018889,
+          "min": 0,
+          "max": 0.01016361232872061
+        },
+        "totalTransferBytes": {
+          "median": 457651,
+          "min": 457619,
+          "max": 493421
+        }
+      }
+    },
+    "candidate": {
+      "sourceCommit": "3a6cd4c3d896082d143bc5c763f6aef698b1afae",
+      "frontendImage": "sha256:192e888741f8b5c19b0ee191a7420351b7fa7f23ac3d3bd50b463da67afa43f6",
+      "runs": [
+        {
+          "run": 1,
+          "performanceScore": 0.82,
+          "tbtMs": 570.5000000000005,
+          "lcpMs": 2411.3796,
+          "fcpMs": 2015.5864000000001,
+          "cls": 0,
+          "totalTransferBytes": 455685
+        },
+        {
+          "run": 2,
+          "performanceScore": 0.86,
+          "tbtMs": 155.5,
+          "lcpMs": 3392.6237500000007,
+          "fcpMs": 2494.0687500000004,
+          "cls": 0,
+          "totalTransferBytes": 455693
+        },
+        {
+          "run": 3,
+          "performanceScore": 0.93,
+          "tbtMs": 237.5,
+          "lcpMs": 2254.5567,
+          "fcpMs": 2004.0378,
+          "cls": 0,
+          "totalTransferBytes": 455693
+        },
+        {
+          "run": 4,
+          "performanceScore": 0.93,
+          "tbtMs": 194.50000000000045,
+          "lcpMs": 2404.32075,
+          "fcpMs": 1995.8805,
+          "cls": 0.01016361232872061,
+          "totalTransferBytes": 491449
+        },
+        {
+          "run": 5,
+          "performanceScore": 0.94,
+          "tbtMs": 150.00000000000045,
+          "lcpMs": 2406.1203,
+          "fcpMs": 1997.0801999999999,
+          "cls": 0.01016361232872061,
+          "totalTransferBytes": 455708
+        }
+      ],
+      "summary": {
+        "performanceScore": {
+          "median": 0.93,
+          "min": 0.82,
+          "max": 0.94
+        },
+        "tbtMs": {
+          "median": 194.50000000000045,
+          "min": 150.00000000000045,
+          "max": 570.5000000000005
+        },
+        "lcpMs": {
+          "median": 2406.1203,
+          "min": 2254.5567,
+          "max": 3392.6237500000007
+        },
+        "fcpMs": {
+          "median": 2004.0378,
+          "min": 1995.8805,
+          "max": 2494.0687500000004
+        },
+        "cls": {
+          "median": 0,
+          "min": 0,
+          "max": 0.01016361232872061
+        },
+        "totalTransferBytes": {
+          "median": 455693,
+          "min": 455685,
+          "max": 491449
+        }
+      }
+    },
+    "deltaPercent": {
+      "performanceScore": -1.06,
+      "tbtMs": -3.71,
+      "lcpMs": 6.69,
+      "fcpMs": 0.25,
+      "cls": -100,
+      "totalTransferBytes": -0.43
+    },
+    "gates": {
+      "tbtMaxRegressionPercent": 5,
+      "lcpMaxRegressionPercent": 5,
+      "tbtPassed": true,
+      "lcpPassed": false,
+      "decision": "discard-runtime"
+    }
+  },
+  "apiProfiles": {
+    "sampleCount": 3,
+    "baseline": {
+      "requestCount": 12,
+      "failedResponses": 0,
+      "recordResponseBytes": 1923,
+      "catalogResponseBytes": {
+        "patterns": 925,
+        "assignments": 991,
+        "holidays": 1339,
+        "leaves": 1007
+      },
+      "totalReplacedCatalogBytes": 4262
+    },
+    "candidate": {
+      "requestCount": 9,
+      "failedResponses": 0,
+      "recordResponseBytes": 1923,
+      "matrixResponseBytes": 1504,
+      "bytesSaved": 2758,
+      "bytesSavedPercent": 64.71
+    }
+  },
+  "cpuProfiles": {
+    "sampleCount": 3,
+    "baseline": {
+      "frontendImage": "sha256:004b3a981ecfabe21e30e553e7feb546e8c164b0e248812b620080f7c634a81f",
+      "medianActiveSampledMs": 828.837,
+      "medianReactCoreInclusiveSampledMs": 497.853,
+      "medianReactCoreSelfSampledMs": 204.646,
+      "medianLongTaskCount": 7
+    },
+    "candidate": {
+      "frontendImage": "sha256:192e888741f8b5c19b0ee191a7420351b7fa7f23ac3d3bd50b463da67afa43f6",
+      "medianActiveSampledMs": 1002.912,
+      "medianReactCoreInclusiveSampledMs": 626.344,
+      "medianReactCoreSelfSampledMs": 289.614,
+      "medianLongTaskCount": 10
+    }
+  },
+  "comparisonNotes": [
+    "The baseline and candidate were profiled against the same existing staging database and backend; /api/records response size was 1,923 bytes in all six CPU captures.",
+    "API counts and catalog/matrix transfer sizes are observations from three cold route CPU profiles, not Lighthouse early-request counts.",
+    "The candidate failed the predefined LCP gate; the experimental runtime is reverted."
+  ]
+}

@@ -17,7 +17,7 @@ import { Z } from "../../../constants/zScale";
 const TimeRecordTableViewDesktop = React.lazy(() => import("./TimeRecordTableViewDesktop"));
 const TimeRecordTableViewMobile = React.lazy(() => import("./TimeRecordTableViewMobile"));
 
-interface TimeRecordTableProps {
+export interface TimeRecordTableProps {
   records: AugmentedTimeRecord[];
   // Infinite Scroll Props
   fetchNextPage: () => void;

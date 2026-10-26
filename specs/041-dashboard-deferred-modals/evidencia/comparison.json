@@ -1,0 +1,740 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "runId": "2026-10-23T13-50-47-471Z-45138318",
+    "image": "sha256:c7edce32119172ba08f285660f74ffd8a37094a19a5f6bd29505df6e89b6b4ad",
+    "source": {
+      "commit": "45138318f801c54307efd60d6a86a1729313caee",
+      "workingTreeDirty": true
+    },
+    "runtime": {
+      "platform": "linux",
+      "architecture": "x64",
+      "nodeVersion": "v26.10.0",
+      "browser": "Chromium",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    }
+  },
+  "after": {
+    "runId": "2026-10-23T15-01-52-304Z-45138318",
+    "image": "sha256:292bc2e70eee55398cc04d7f214eff19ece18ca8ea9b384c887ddf85ea7a803c",
+    "source": {
+      "commit": "45138318f801c54307efd60d6a86a1729313caee",
+      "workingTreeDirty": true
+    },
+    "runtime": {
+      "platform": "linux",
+      "architecture": "x64",
+      "nodeVersion": "v26.10.0",
+      "browser": "Chromium",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    }
+  },
+  "methodology": {
+    "coldSamplesPerVersion": 3,
+    "lighthouseProfile": "mobile, simulated throttling, storage reset enabled",
+    "playwrightViewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "limitations": [
+      "Local laboratory runs, not field Core Web Vitals.",
+      "Three samples per version; compare ranges and medians, not statistical significance.",
+      "Previous baseline measured image c7ed; final 040 image39cf is byte-identical, documented in spec040 final-build-equivalence.",
+      "Whole Query/Table vendor isolation also affects other routes; warm routes have only one Lighthouse sample each.",
+      "CPU profile is diagnostic and instrumented, not used to quantify the timing gain.",
+      "The setup helper now navigates directly instead of visiting root first; both cold profiles reset storage, but timing changes are not an isolated attribution to the code split."
+    ]
+  },
+  "coldDashboard": {
+    "performanceScore": {
+      "baseline": {
+        "samples": [
+          0.52,
+          0.63,
+          0.64
+        ],
+        "median": 0.63,
+        "min": 0.52,
+        "max": 0.64
+      },
+      "after": {
+        "samples": [
+          0.68,
+          0.69,
+          0.66
+        ],
+        "median": 0.68,
+        "min": 0.66,
+        "max": 0.69
+      },
+      "changePercent": 7.94
+    },
+    "fcpMs": {
+      "baseline": {
+        "samples": [
+          4382.76,
+          4405.11,
+          4067.08
+        ],
+        "median": 4382.76,
+        "min": 4067.08,
+        "max": 4405.11
+      },
+      "after": {
+        "samples": [
+          3787.51,
+          3780.14,
+          3784.73
+        ],
+        "median": 3784.73,
+        "min": 3780.14,
+        "max": 3787.51
+      },
+      "changePercent": -13.65
+    },
+    "lcpMs": {
+      "baseline": {
+        "samples": [
+          6595.59,
+          6218.28,
+          6114.42
+        ],
+        "median": 6218.28,
+        "min": 6114.42,
+        "max": 6595.59
+      },
+      "after": {
+        "samples": [
+          5508.43,
+          5463.28,
+          5567.46
+        ],
+        "median": 5508.43,
+        "min": 5463.28,
+        "max": 5567.46
+      },
+      "changePercent": -11.42
+    },
+    "tbtMs": {
+      "baseline": {
+        "samples": [
+          560,
+          213.5,
+          229.5
+        ],
+        "median": 229.5,
+        "min": 213.5,
+        "max": 560
+      },
+      "after": {
+        "samples": [
+          190,
+          151,
+          239
+        ],
+        "median": 190,
+        "min": 151,
+        "max": 239
+      },
+      "changePercent": -17.21
+    },
+    "cls": {
+      "baseline": {
+        "samples": [
+          0,
+          0,
+          0
+        ],
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "after": {
+        "samples": [
+          0,
+          0,
+          0
+        ],
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "changePercent": null
+    },
+    "speedIndexMs": {
+      "baseline": {
+        "samples": [
+          4382.76,
+          4405.11,
+          4067.08
+        ],
+        "median": 4382.76,
+        "min": 4067.08,
+        "max": 4405.11
+      },
+      "after": {
+        "samples": [
+          3787.51,
+          3780.14,
+          3784.73
+        ],
+        "median": 3784.73,
+        "min": 3780.14,
+        "max": 3787.51
+      },
+      "changePercent": -13.65
+    },
+    "totalTransferBytes": {
+      "baseline": {
+        "samples": [
+          598674,
+          572263,
+          575671
+        ],
+        "median": 575671,
+        "min": 572263,
+        "max": 598674
+      },
+      "after": {
+        "samples": [
+          474266,
+          469811,
+          470917
+        ],
+        "median": 470917,
+        "min": 469811,
+        "max": 474266
+      },
+      "changePercent": -18.2
+    },
+    "scriptTransferBytes": {
+      "baseline": {
+        "samples": [
+          409696,
+          406334,
+          409696
+        ],
+        "median": 409696,
+        "min": 406334,
+        "max": 409696
+      },
+      "after": {
+        "samples": [
+          308287,
+          303831,
+          304922
+        ],
+        "median": 304922,
+        "min": 303831,
+        "max": 308287
+      },
+      "changePercent": -25.57
+    },
+    "requestCount": {
+      "baseline": {
+        "samples": [
+          107,
+          97,
+          97
+        ],
+        "median": 97,
+        "min": 97,
+        "max": 107
+      },
+      "after": {
+        "samples": [
+          89,
+          89,
+          89
+        ],
+        "median": 89,
+        "min": 89,
+        "max": 89
+      },
+      "changePercent": -8.25
+    }
+  },
+  "warmRoutes": [
+    {
+      "routeId": "governance-audit",
+      "family": "administration",
+      "baseline": {
+        "performanceScore": 0.85,
+        "fcpMs": 413.67,
+        "lcpMs": 1727.58,
+        "tbtMs": 573.93,
+        "cls": 0,
+        "speedIndexMs": 1725.4,
+        "totalTransferBytes": 34309,
+        "scriptTransferBytes": 0,
+        "requestCount": 106
+      },
+      "after": {
+        "performanceScore": 0.95,
+        "fcpMs": 254.72,
+        "lcpMs": 1387.09,
+        "tbtMs": 252,
+        "cls": 0,
+        "speedIndexMs": 1397.25,
+        "totalTransferBytes": 34365,
+        "scriptTransferBytes": 0,
+        "requestCount": 108
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "communications",
+      "family": "communications",
+      "baseline": {
+        "performanceScore": 0.98,
+        "fcpMs": 252.76,
+        "lcpMs": 847.45,
+        "tbtMs": 156.77,
+        "cls": 0,
+        "speedIndexMs": 1284.81,
+        "totalTransferBytes": 6987,
+        "scriptTransferBytes": 0,
+        "requestCount": 75
+      },
+      "after": {
+        "performanceScore": 0.97,
+        "fcpMs": 211.98,
+        "lcpMs": 1227.33,
+        "tbtMs": 186.05,
+        "cls": 0,
+        "speedIndexMs": 1362.21,
+        "totalTransferBytes": 30022,
+        "scriptTransferBytes": 0,
+        "requestCount": 86
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "configuration",
+      "family": "administration",
+      "baseline": {
+        "performanceScore": 0.95,
+        "fcpMs": 227.55,
+        "lcpMs": 1430.88,
+        "tbtMs": 271.91,
+        "cls": 0,
+        "speedIndexMs": 1475.07,
+        "totalTransferBytes": 31839,
+        "scriptTransferBytes": 0,
+        "requestCount": 99
+      },
+      "after": {
+        "performanceScore": 0.98,
+        "fcpMs": 268.88,
+        "lcpMs": 904.68,
+        "tbtMs": 173.82,
+        "cls": 0,
+        "speedIndexMs": 1279.9,
+        "totalTransferBytes": 7929,
+        "scriptTransferBytes": 0,
+        "requestCount": 88
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "dashboard",
+      "family": "dashboard",
+      "baseline": {
+        "performanceScore": 0.96,
+        "fcpMs": 336.06,
+        "lcpMs": 998.15,
+        "tbtMs": 231.5,
+        "cls": 0,
+        "speedIndexMs": 1422.18,
+        "totalTransferBytes": 6990,
+        "scriptTransferBytes": 0,
+        "requestCount": 96
+      },
+      "after": {
+        "performanceScore": 0.9,
+        "fcpMs": 293.79,
+        "lcpMs": 1441.15,
+        "tbtMs": 402.23,
+        "cls": 0,
+        "speedIndexMs": 1758.86,
+        "totalTransferBytes": 30008,
+        "scriptTransferBytes": 0,
+        "requestCount": 98
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "supervisor-dashboard",
+      "family": "dashboard",
+      "baseline": {
+        "performanceScore": 0.95,
+        "fcpMs": 215.92,
+        "lcpMs": 1373.96,
+        "tbtMs": 270.7,
+        "cls": 0,
+        "speedIndexMs": 1362.35,
+        "totalTransferBytes": 30008,
+        "scriptTransferBytes": 0,
+        "requestCount": 91
+      },
+      "after": {
+        "performanceScore": 0.96,
+        "fcpMs": 229.83,
+        "lcpMs": 1293.39,
+        "tbtMs": 234.5,
+        "cls": 0,
+        "speedIndexMs": 1243.94,
+        "totalTransferBytes": 30021,
+        "scriptTransferBytes": 0,
+        "requestCount": 93
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "design-system",
+      "family": "administration",
+      "baseline": {
+        "performanceScore": 0.98,
+        "fcpMs": 208.05,
+        "lcpMs": 834.89,
+        "tbtMs": 173.41,
+        "cls": 0,
+        "speedIndexMs": 1145.8,
+        "totalTransferBytes": 6974,
+        "scriptTransferBytes": 0,
+        "requestCount": 73
+      },
+      "after": {
+        "performanceScore": 0.95,
+        "fcpMs": 893.45,
+        "lcpMs": 1269.23,
+        "tbtMs": 268.59,
+        "cls": 0,
+        "speedIndexMs": 1652.76,
+        "totalTransferBytes": 7009,
+        "scriptTransferBytes": 0,
+        "requestCount": 73
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "employee-management",
+      "family": "directory-management",
+      "baseline": {
+        "performanceScore": 0.96,
+        "fcpMs": 291.56,
+        "lcpMs": 982.64,
+        "tbtMs": 224.91,
+        "cls": 0,
+        "speedIndexMs": 1413.4,
+        "totalTransferBytes": 6965,
+        "scriptTransferBytes": 0,
+        "requestCount": 96
+      },
+      "after": {
+        "performanceScore": 0.91,
+        "fcpMs": 756.54,
+        "lcpMs": 1485.87,
+        "tbtMs": 368,
+        "cls": 0,
+        "speedIndexMs": 1596.28,
+        "totalTransferBytes": 30988,
+        "scriptTransferBytes": 0,
+        "requestCount": 108
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "kiosk",
+      "family": "worker-experience",
+      "baseline": {
+        "performanceScore": 0.99,
+        "fcpMs": 184.05,
+        "lcpMs": 950.58,
+        "tbtMs": 142.41,
+        "cls": 0,
+        "speedIndexMs": 1213.72,
+        "totalTransferBytes": 2210,
+        "scriptTransferBytes": 0,
+        "requestCount": 48
+      },
+      "after": {
+        "performanceScore": 1,
+        "fcpMs": 185.05,
+        "lcpMs": 965.67,
+        "tbtMs": 59.5,
+        "cls": 0,
+        "speedIndexMs": 965.77,
+        "totalTransferBytes": 2214,
+        "scriptTransferBytes": 0,
+        "requestCount": 48
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "logbook",
+      "family": "operational-data",
+      "baseline": {
+        "performanceScore": 0.91,
+        "fcpMs": 291.38,
+        "lcpMs": 1015.6,
+        "tbtMs": 385.5,
+        "cls": 0,
+        "speedIndexMs": 1951.39,
+        "totalTransferBytes": 6992,
+        "scriptTransferBytes": 0,
+        "requestCount": 100
+      },
+      "after": {
+        "performanceScore": 0.94,
+        "fcpMs": 272.38,
+        "lcpMs": 1312.98,
+        "tbtMs": 278,
+        "cls": 0,
+        "speedIndexMs": 1432.96,
+        "totalTransferBytes": 30018,
+        "scriptTransferBytes": 0,
+        "requestCount": 112
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "meter-readings",
+      "family": "operational-data",
+      "baseline": {
+        "performanceScore": 0.89,
+        "fcpMs": 246.88,
+        "lcpMs": 1520.73,
+        "tbtMs": 433,
+        "cls": 0,
+        "speedIndexMs": 1474.28,
+        "totalTransferBytes": 32887,
+        "scriptTransferBytes": 0,
+        "requestCount": 101
+      },
+      "after": {
+        "performanceScore": 0.99,
+        "fcpMs": 242.06,
+        "lcpMs": 820.9,
+        "tbtMs": 110.5,
+        "cls": 0,
+        "speedIndexMs": 1312.34,
+        "totalTransferBytes": 7003,
+        "scriptTransferBytes": 0,
+        "requestCount": 88
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "personnel-management",
+      "family": "directory-management",
+      "baseline": {
+        "performanceScore": 0.95,
+        "fcpMs": 236.06,
+        "lcpMs": 951.79,
+        "tbtMs": 266.91,
+        "cls": 0,
+        "speedIndexMs": 1316.66,
+        "totalTransferBytes": 6973,
+        "scriptTransferBytes": 0,
+        "requestCount": 105
+      },
+      "after": {
+        "performanceScore": 0.98,
+        "fcpMs": 271.56,
+        "lcpMs": 915.21,
+        "tbtMs": 167.13,
+        "cls": 0,
+        "speedIndexMs": 1222.39,
+        "totalTransferBytes": 7005,
+        "scriptTransferBytes": 0,
+        "requestCount": 106
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "planner",
+      "family": "planning",
+      "baseline": {
+        "performanceScore": 0.98,
+        "fcpMs": 226.05,
+        "lcpMs": 863.09,
+        "tbtMs": 168.51,
+        "cls": 0,
+        "speedIndexMs": 1008.41,
+        "totalTransferBytes": 6990,
+        "scriptTransferBytes": 0,
+        "requestCount": 74
+      },
+      "after": {
+        "performanceScore": 0.98,
+        "fcpMs": 231.23,
+        "lcpMs": 814.17,
+        "tbtMs": 163.89,
+        "cls": 0,
+        "speedIndexMs": 972.09,
+        "totalTransferBytes": 7002,
+        "scriptTransferBytes": 0,
+        "requestCount": 74
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "shift-calendar",
+      "family": "planning",
+      "baseline": {
+        "performanceScore": 0.97,
+        "fcpMs": 228.72,
+        "lcpMs": 877.58,
+        "tbtMs": 188.82,
+        "cls": 0,
+        "speedIndexMs": 1286.98,
+        "totalTransferBytes": 6982,
+        "scriptTransferBytes": 0,
+        "requestCount": 80
+      },
+      "after": {
+        "performanceScore": 0.94,
+        "fcpMs": 292.22,
+        "lcpMs": 1395.46,
+        "tbtMs": 286.5,
+        "cls": 0,
+        "speedIndexMs": 1332.59,
+        "totalTransferBytes": 30022,
+        "scriptTransferBytes": 0,
+        "requestCount": 90
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "theoretical-shifts",
+      "family": "planning",
+      "baseline": {
+        "performanceScore": 0.96,
+        "fcpMs": 243.62,
+        "lcpMs": 1014.71,
+        "tbtMs": 241.41,
+        "cls": 0,
+        "speedIndexMs": 1194.91,
+        "totalTransferBytes": 7948,
+        "scriptTransferBytes": 0,
+        "requestCount": 96
+      },
+      "after": {
+        "performanceScore": 0.94,
+        "fcpMs": 266.62,
+        "lcpMs": 1491.99,
+        "tbtMs": 299,
+        "cls": 0,
+        "speedIndexMs": 1276.32,
+        "totalTransferBytes": 31975,
+        "scriptTransferBytes": 0,
+        "requestCount": 109
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "time-control",
+      "family": "operational-data",
+      "baseline": {
+        "performanceScore": 0.87,
+        "fcpMs": 264.06,
+        "lcpMs": 1693.29,
+        "tbtMs": 513.99,
+        "cls": 0,
+        "speedIndexMs": 1732.69,
+        "totalTransferBytes": 32160,
+        "scriptTransferBytes": 0,
+        "requestCount": 114
+      },
+      "after": {
+        "performanceScore": 0.9,
+        "fcpMs": 269.06,
+        "lcpMs": 1567.75,
+        "tbtMs": 416.5,
+        "cls": 0,
+        "speedIndexMs": 1647.47,
+        "totalTransferBytes": 32192,
+        "scriptTransferBytes": 0,
+        "requestCount": 116
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "user-management",
+      "family": "directory-management",
+      "baseline": {
+        "performanceScore": 0.95,
+        "fcpMs": 219.06,
+        "lcpMs": 1278.74,
+        "tbtMs": 259.06,
+        "cls": 0,
+        "speedIndexMs": 1384.22,
+        "totalTransferBytes": 29986,
+        "scriptTransferBytes": 0,
+        "requestCount": 99
+      },
+      "after": {
+        "performanceScore": 0.97,
+        "fcpMs": 262.38,
+        "lcpMs": 1267.95,
+        "tbtMs": 204.15,
+        "cls": 0,
+        "speedIndexMs": 1319.66,
+        "totalTransferBytes": 30016,
+        "scriptTransferBytes": 0,
+        "requestCount": 100
+      },
+      "routeMatched": true
+    },
+    {
+      "routeId": "worker-portal",
+      "family": "worker-experience",
+      "baseline": {
+        "performanceScore": 0.96,
+        "fcpMs": 256.56,
+        "lcpMs": 978.24,
+        "tbtMs": 245.52,
+        "cls": 0,
+        "speedIndexMs": 1278.26,
+        "totalTransferBytes": 8355,
+        "scriptTransferBytes": 0,
+        "requestCount": 89
+      },
+      "after": {
+        "performanceScore": 0.94,
+        "fcpMs": 387.88,
+        "lcpMs": 1107.47,
+        "tbtMs": 296,
+        "cls": 0,
+        "speedIndexMs": 1407.96,
+        "totalTransferBytes": 7402,
+        "scriptTransferBytes": 0,
+        "requestCount": 89
+      },
+      "routeMatched": true
+    }
+  ],
+  "validation": {
+    "battery": "passed",
+    "playwright": "passed",
+    "lighthouseStandard": "passed",
+    "standardRoutes": 17,
+    "coldStatus": "passed",
+    "coldSamples": 3,
+    "hashAwareRouteBudgets": {
+      "postCaptureValidation": true,
+      "routes": 17,
+      "assertionsPassed": 85,
+      "failures": 0,
+      "evidence": "per-route-assertions.json"
+    }
+  }
+}

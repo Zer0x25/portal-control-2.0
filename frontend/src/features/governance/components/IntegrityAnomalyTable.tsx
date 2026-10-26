@@ -45,7 +45,7 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
     if (!details) return null;
 
     return (
-      <div className="mt-2 p-3 bg-token-surface-stripe rounded-sm border border-token-border-subtle font-mono text-[10px] space-y-1">
+      <div className="mt-2 p-3 bg-token-surface-stripe rounded-sm border border-token-border-subtle typo-list-secondary font-mono space-y-1">
         {details.message && (
           <p className="font-semibold text-token-text-secondary">{String(details.message)}</p>
         )}
@@ -74,21 +74,20 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
   return (
     <div
       data-testid="governance-integrity-table"
+      data-list-group="data-table"
       className="overflow-x-auto rounded-sm border token-border-technical"
     >
       <table className="w-full text-left border-collapse bg-token-surface-card">
         <thead>
           <tr className="bg-token-surface-stripe border-b token-border-technical">
-            <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary">
-              Fecha / Hora
-            </th>
-            <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary">
+            <th className="px-4 py-3 typo-list-header text-token-text-secondary">Fecha / Hora</th>
+            <th className="px-4 py-3 typo-list-header text-token-text-secondary">
               Acción / Severidad
             </th>
-            <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary">
+            <th className="px-4 py-3 typo-list-header text-token-text-secondary">
               Empleado / Referencia
             </th>
-            <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-token-text-secondary">
+            <th className="px-4 py-3 typo-list-header text-token-text-secondary">
               Detalles Técnicos
             </th>
           </tr>
@@ -103,16 +102,16 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
             : logs.map((log) => (
                 <tr key={log.id} className="hover:bg-token-surface-stripe/40 transition-colors">
                   <td className="px-4 py-3 align-top whitespace-nowrap">
-                    <div className="text-[12px] font-medium text-token-text-primary">
+                    <div data-list-role="value" className="typo-list-value text-token-text-primary">
                       {format(new Date(log.timestamp), "dd MMM yyyy", { locale: es })}
                     </div>
-                    <div className="text-[10px] text-token-text-tertiary">
+                    <div className="typo-list-secondary text-token-text-tertiary">
                       {format(new Date(log.timestamp), "HH:mm:ss")}
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top">
                     <div className="flex flex-col gap-1.5 items-start">
-                      <div className="flex items-center gap-2 text-[11px] font-semibold text-token-text-primary uppercase tracking-tight">
+                      <div className="flex items-center gap-2 typo-list-primary text-token-text-primary uppercase tracking-tight">
                         {getAnomalyIcon(log.action)}
                         {log.action.replace(/_/g, " ")}
                       </div>
@@ -122,11 +121,11 @@ const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isL
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top">
-                    <div className="text-[12px] text-token-text-secondary">
+                    <div className="typo-list-secondary text-token-text-secondary">
                       {((log.details as Record<string, unknown>)?.employeeName as string) ||
                         "Sistema / Global"}
                     </div>
-                    <div className="text-[10px] text-token-text-tertiary font-mono">
+                    <div className="typo-list-value text-token-text-tertiary">
                       {((log.details as Record<string, unknown>)?.recordId as string) || "-"}
                     </div>
                   </td>

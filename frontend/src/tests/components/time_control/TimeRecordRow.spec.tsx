@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import TimeRecordRow from "../../../features/time-control/components/TimeRecordRow";
+import TimeRecordMobileCard from "../../../features/time-control/components/TimeRecordMobileCard";
 
 // Mock UI components
 vi.mock("../../../components/ui/Button", () => ({
@@ -120,6 +121,53 @@ describe("TimeRecordRow Component", () => {
     expect(screen.getByText(/LOGÍSTICA/i)).toBeInTheDocument();
     expect(screen.getByText(/08:00/i)).toBeInTheDocument();
     expect(screen.getByText(/17:00/i)).toBeInTheDocument();
+  });
+
+  it("uses the list typography roles for names and timestamps", () => {
+    renderRow();
+
+    const timestamp = screen.getByText("08:00:00");
+    expect(timestamp).toHaveClass("typo-list-value");
+    expect(timestamp).not.toHaveClass("italic");
+
+    const employeeName = screen.getByText("JUAN PEREZ");
+    expect(employeeName).toHaveClass("typo-list-primary");
+    expect(employeeName).not.toHaveClass("italic");
+  });
+
+  it("keeps the same readable list roles in the virtualized row layout", () => {
+    renderRow({ layoutMode: "table-row-div" }, "div");
+
+    expect(screen.getByText("JUAN PEREZ")).toHaveClass("typo-list-primary");
+    expect(screen.getByText("08:00:00")).toHaveClass("typo-list-value");
+  });
+
+  it("uses the same typography roles in responsive time-record cards", () => {
+    render(
+      <TimeRecordMobileCard
+        record={recordFactory()}
+        onRowDoubleClick={mockOnRowDoubleClick}
+        onAddComment={mockOnAddComment}
+        onDelete={mockOnDelete}
+        isActionDisabledForRole={false}
+        accountingLockDate={null}
+        isControlInternoEnabled={true}
+      />,
+    );
+
+    const card = screen.getByTestId("time-record-card");
+    expect(card).toHaveAttribute("data-list-group", "responsive-record-cards");
+
+    const employeeName = screen.getByText("JUAN PEREZ");
+    expect(employeeName).toHaveClass("typo-list-primary");
+    expect(employeeName).not.toHaveClass("italic");
+
+    const entryValue = screen.getByText(/2026-02-17 08:00:00/);
+    expect(entryValue).toHaveClass("typo-list-value");
+    expect(entryValue).not.toHaveClass("italic");
+
+    const status = screen.getByText("Completado");
+    expect(status).toHaveClass("typo-list-status");
   });
 
   it("should show edit indicator from externalEdits", () => {

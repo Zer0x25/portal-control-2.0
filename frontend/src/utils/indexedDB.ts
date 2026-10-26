@@ -136,9 +136,6 @@ const initDB = (): Promise<IDBPDatabase<unknown>> => {
   });
   return dbPromise;
 };
-// Ensure initDB is called once when the module loads to trigger upgrade if needed.
-initDB();
-
 // Generic CRUD operations
 export const idbGetAll = async <T>(storeName: string): Promise<T[]> => {
   const db = await initDB();

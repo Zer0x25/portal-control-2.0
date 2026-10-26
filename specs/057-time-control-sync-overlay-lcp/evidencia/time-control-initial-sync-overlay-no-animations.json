@@ -1,0 +1,182 @@
+{
+  "capturedAt": "2026-10-24T10:01:13.447Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/time-control",
+  "viewport": {
+    "width": 412,
+    "height": 823
+  },
+  "cpuThrottle": 4,
+  "sampleCount": 3,
+  "readinessMetric": "Initial sync overlay LCP candidate and hit-test under a clean authenticated context",
+  "samples": [
+    {
+      "sample": 1,
+      "overlayCoverage": {
+        "coversViewport": true,
+        "hitTestBelongsToOverlay": true,
+        "topElementTag": "H2"
+      },
+      "initialLastSyncTime": null,
+      "lastSyncTimePresent": true,
+      "fcpMs": 788,
+      "lcpEntries": [
+        {
+          "startTimeMs": 788,
+          "size": 242,
+          "tag": "DIV",
+          "className": "w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical"
+        },
+        {
+          "startTimeMs": 1056,
+          "size": 8424,
+          "tag": "P",
+          "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        }
+      ],
+      "overlayVisibleAtMs": 1001,
+      "overlayHiddenAtMs": 1912,
+      "overlayVisibleDurationMs": 911,
+      "rootAnimationName": "none",
+      "rootAnimationDuration": "0s",
+      "statusAnimationName": "none",
+      "activeAnimations": [
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-accent-brand animate-spin h-8 w-8",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-text-tertiary animate-spin h-4 w-4",
+          "animationName": "spin",
+          "duration": "1s"
+        }
+      ],
+      "syncReadyAtMs": 1995.7000000029802,
+      "finalLcpCandidate": {
+        "startTimeMs": 1056,
+        "size": 8424,
+        "tag": "P",
+        "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+      }
+    },
+    {
+      "sample": 2,
+      "overlayCoverage": {
+        "coversViewport": true,
+        "hitTestBelongsToOverlay": true,
+        "topElementTag": "H2"
+      },
+      "initialLastSyncTime": null,
+      "lastSyncTimePresent": true,
+      "fcpMs": 696,
+      "lcpEntries": [
+        {
+          "startTimeMs": 696,
+          "size": 242,
+          "tag": "DIV",
+          "className": "w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical"
+        },
+        {
+          "startTimeMs": 980,
+          "size": 8424,
+          "tag": "P",
+          "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        }
+      ],
+      "overlayVisibleAtMs": 918.3999999985099,
+      "overlayHiddenAtMs": 1801.6000000014901,
+      "overlayVisibleDurationMs": 883.2,
+      "rootAnimationName": "none",
+      "rootAnimationDuration": "0s",
+      "statusAnimationName": "none",
+      "activeAnimations": [
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-accent-brand animate-spin h-8 w-8",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-text-tertiary animate-spin h-4 w-4",
+          "animationName": "spin",
+          "duration": "1s"
+        }
+      ],
+      "syncReadyAtMs": 1840.6000000014901,
+      "finalLcpCandidate": {
+        "startTimeMs": 980,
+        "size": 8424,
+        "tag": "P",
+        "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+      }
+    },
+    {
+      "sample": 3,
+      "overlayCoverage": {
+        "coversViewport": true,
+        "hitTestBelongsToOverlay": true,
+        "topElementTag": "H2"
+      },
+      "initialLastSyncTime": null,
+      "lastSyncTimePresent": true,
+      "fcpMs": 688,
+      "lcpEntries": [
+        {
+          "startTimeMs": 688,
+          "size": 242,
+          "tag": "DIV",
+          "className": "w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical"
+        },
+        {
+          "startTimeMs": 968,
+          "size": 8424,
+          "tag": "P",
+          "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        }
+      ],
+      "overlayVisibleAtMs": 917,
+      "overlayHiddenAtMs": 1857.1000000014901,
+      "overlayVisibleDurationMs": 940.1,
+      "rootAnimationName": "none",
+      "rootAnimationDuration": "0s",
+      "statusAnimationName": "none",
+      "activeAnimations": [
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-accent-brand animate-spin h-8 w-8",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-text-tertiary animate-spin h-4 w-4",
+          "animationName": "spin",
+          "duration": "1s"
+        }
+      ],
+      "syncReadyAtMs": 1936.6000000014901,
+      "finalLcpCandidate": {
+        "startTimeMs": 968,
+        "size": 8424,
+        "tag": "P",
+        "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+      }
+    }
+  ],
+  "fcpStats": {
+    "sampleCount": 3,
+    "medianMs": 696,
+    "p95Ms": 788,
+    "maxMs": 788
+  },
+  "observedLcpStats": {
+    "sampleCount": 3,
+    "medianMs": 980,
+    "p95Ms": 1056,
+    "maxMs": 1056
+  }
+}

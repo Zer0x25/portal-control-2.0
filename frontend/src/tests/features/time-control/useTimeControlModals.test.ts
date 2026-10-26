@@ -2,13 +2,21 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useTimeControlModals } from "../../../features/time-control/hooks/useTimeControlModals";
 
-const { addToastMock, closeQuickActionModalMock, mutateDeleteAsyncMock, mutateResolveAsyncMock } =
-  vi.hoisted(() => ({
-    addToastMock: vi.fn(),
-    closeQuickActionModalMock: vi.fn(),
-    mutateDeleteAsyncMock: vi.fn(),
-    mutateResolveAsyncMock: vi.fn(),
-  }));
+const {
+  addToastMock,
+  closeQuickActionModalMock,
+  mutateDeleteAsyncMock,
+  mutateResolveAsyncMock,
+  refetchOpenShiftReportsMock,
+  useReportsQueryMock,
+} = vi.hoisted(() => ({
+  addToastMock: vi.fn(),
+  closeQuickActionModalMock: vi.fn(),
+  mutateDeleteAsyncMock: vi.fn(),
+  mutateResolveAsyncMock: vi.fn(),
+  refetchOpenShiftReportsMock: vi.fn(),
+  useReportsQueryMock: vi.fn(),
+}));
 
 vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => ({ addToast: addToastMock }),
@@ -39,34 +47,36 @@ vi.mock("../../../hooks/queries/useConfigQuery", () => ({
 }));
 
 vi.mock("../../../hooks/queries/useReportsQuery", () => ({
-  useReportsQuery: () => ({
-    data: [
-      {
-        id: "r1",
-        folio: "100",
-        date: "2026-03-03",
-        shiftName: "Turno Día",
-        responsibleUser: "admin",
-        startTime: "2026-03-03T08:00:00.000Z",
-        status: "open",
-        logEntries: [],
-        supplierEntries: [],
-        reportCreatedAt: "2026-03-03T08:00:00.000Z",
-        updatedAt: "2026-03-03T08:00:00.000Z",
-        lastModified: 0,
-        syncStatus: "synced",
-        isDeleted: false,
-      },
-    ],
-  }),
+  useReportsQuery: (...args: unknown[]) => {
+    useReportsQueryMock(...args);
+    return { refetch: refetchOpenShiftReportsMock };
+  },
 }));
+
+const openShiftReport = {
+  id: "r1",
+  folio: "100",
+  date: "2026-03-03",
+  shiftName: "Turno Día",
+  responsibleUser: "admin",
+  startTime: "2026-03-03T08:00:00.000Z",
+  status: "open",
+  logEntries: [],
+  supplierEntries: [],
+  reportCreatedAt: "2026-03-03T08:00:00.000Z",
+  updatedAt: "2026-03-03T08:00:00.000Z",
+  lastModified: 0,
+  syncStatus: "synced",
+  isDeleted: false,
+};
 
 describe("useTimeControlModals", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    refetchOpenShiftReportsMock.mockResolvedValue({ data: [openShiftReport] });
   });
 
-  it("blocks delete/comment on records before accounting lock date", () => {
+  it("blocks delete/comment on records before accounting lock date", async () => {
     const { result } = renderHook(() =>
       useTimeControlModals({ closeQuickActionModal: closeQuickActionModalMock }),
     );
@@ -87,13 +97,14 @@ describe("useTimeControlModals", () => {
       "error",
     );
 
-    act(() => {
-      result.current.handleAddCommentClick(blockedRecord as never);
+    await act(async () => {
+      await result.current.handleAddCommentClick(blockedRecord as never);
     });
     expect(addToastMock).toHaveBeenCalledWith(
       "No se pueden agregar comentarios a registros bloqueados.",
       "warning",
     );
+    expect(refetchOpenShiftReportsMock).not.toHaveBeenCalled();
   });
 
   it("opens novelty flow and resolves anomalies", async () => {
@@ -109,10 +120,13 @@ describe("useTimeControlModals", () => {
       entrada: "2026-03-03T08:00:00.000Z",
     };
 
-    act(() => {
-      result.current.handleAddCommentClick(editableRecord as never);
+    expect(refetchOpenShiftReportsMock).not.toHaveBeenCalled();
+    await act(async () => {
+      await result.current.handleAddCommentClick(editableRecord as never);
     });
 
+    expect(useReportsQueryMock).toHaveBeenCalledWith({ status: "open" }, { enabled: false });
+    expect(refetchOpenShiftReportsMock).toHaveBeenCalledWith({ throwOnError: true });
     expect(result.current.isAddNoveltyModalOpen).toBe(true);
     expect(result.current.noveltyInitialText).toContain("Novedad sobre Luis");
     expect(closeQuickActionModalMock).toHaveBeenCalled();
@@ -129,5 +143,44 @@ describe("useTimeControlModals", () => {
       id: "t2",
       resolution: "SHIFT_HOURS_ACK",
     });
+  });
+
+  it("keeps the no-active-shift warning when the fresh list is empty", async () => {
+    refetchOpenShiftReportsMock.mockResolvedValueOnce({ data: [] });
+    const { result } = renderHook(() =>
+      useTimeControlModals({ closeQuickActionModal: closeQuickActionModalMock }),
+    );
+
+    await act(async () => {
+      await result.current.handleAddCommentClick({ date: "2026-03-03" } as never);
+    });
+
+    expect(addToastMock).toHaveBeenCalledWith(
+      "No hay un turno activo para agregar una novedad.",
+      "warning",
+    );
+    expect(result.current.isAddNoveltyModalOpen).toBe(false);
+    expect(closeQuickActionModalMock).not.toHaveBeenCalled();
+  });
+
+  it("shows a load error instead of reporting that no shift is active", async () => {
+    refetchOpenShiftReportsMock.mockRejectedValueOnce(new Error("network error"));
+    const { result } = renderHook(() =>
+      useTimeControlModals({ closeQuickActionModal: closeQuickActionModalMock }),
+    );
+
+    await act(async () => {
+      await result.current.handleAddCommentClick({ date: "2026-03-03" } as never);
+    });
+
+    expect(addToastMock).toHaveBeenCalledWith(
+      "No se pudo verificar el turno activo. Inténtalo nuevamente.",
+      "error",
+    );
+    expect(addToastMock).not.toHaveBeenCalledWith(
+      "No hay un turno activo para agregar una novedad.",
+      "warning",
+    );
+    expect(result.current.isAddNoveltyModalOpen).toBe(false);
   });
 });

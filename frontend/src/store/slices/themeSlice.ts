@@ -22,6 +22,12 @@ export const createThemeSlice: StateCreator<AppState, [], [], ThemeSlice> = (set
       effective = theme;
     }
 
+    const shouldBeDark = effective === "dark";
+    if (document.documentElement.classList.contains("dark") === shouldBeDark) {
+      if (get().effectiveTheme !== effective) set({ effectiveTheme: effective });
+      return;
+    }
+
     // Disable transitions temporarily to avoid "dirty" color blending during the switch
     const disableTransitions = () => {
       const css = document.createElement("style");
@@ -37,7 +43,7 @@ export const createThemeSlice: StateCreator<AppState, [], [], ThemeSlice> = (set
 
     disableTransitions();
 
-    document.documentElement.classList.toggle("dark", effective === "dark");
+    document.documentElement.classList.toggle("dark", shouldBeDark);
 
     // Force a paint record
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions

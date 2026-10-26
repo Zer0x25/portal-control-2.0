@@ -1,0 +1,209 @@
+{
+  "capturedAt": "2026-10-23T23:53:04.515Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 557.37,
+  "serverClockVisibleOffsetMs": 621.42,
+  "apiRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/configs/accounting_lock_date",
+      "finishOffsetMs": 633.52
+    },
+    {
+      "path": "/api/shifts/patterns",
+      "finishOffsetMs": 633.56
+    },
+    {
+      "path": "/api/shifts/assignments",
+      "finishOffsetMs": 633.68
+    },
+    {
+      "path": "/api/holidays",
+      "finishOffsetMs": 633.69
+    },
+    {
+      "path": "/api/leaves",
+      "finishOffsetMs": 633.7
+    },
+    {
+      "path": "/api/corrections",
+      "finishOffsetMs": 633.71
+    },
+    {
+      "path": "/api/configs/public/company-policy",
+      "finishOffsetMs": 633.72
+    },
+    {
+      "path": "/api/notes",
+      "finishOffsetMs": 633.74
+    }
+  ],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [],
+  "apiRequestCount": 20,
+  "uniqueApiEndpointCount": 20,
+  "duplicateEndpoints": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview",
+    "/api/configs/global_max_hours",
+    "/api/configs/area_list",
+    "/api/configs/workday_types",
+    "/api/configs/email_recipients",
+    "/api/configs/accounting_lock_date",
+    "/api/shifts/patterns",
+    "/api/shifts/assignments",
+    "/api/holidays",
+    "/api/leaves",
+    "/api/corrections",
+    "/api/configs/public/company-policy",
+    "/api/notes"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/configs/accounting_lock_date",
+      "startOffsetMs": 501.36,
+      "durationMs": 132.16,
+      "finishOffsetMs": 633.52,
+      "status": 200
+    },
+    {
+      "path": "/api/shifts/assignments",
+      "startOffsetMs": 502.21,
+      "durationMs": 131.47,
+      "finishOffsetMs": 633.68,
+      "status": 200
+    },
+    {
+      "path": "/api/holidays",
+      "startOffsetMs": 502.24,
+      "durationMs": 131.46,
+      "finishOffsetMs": 633.69,
+      "status": 200
+    },
+    {
+      "path": "/api/leaves",
+      "startOffsetMs": 502.26,
+      "durationMs": 131.44,
+      "finishOffsetMs": 633.7,
+      "status": 200
+    },
+    {
+      "path": "/api/shifts/patterns",
+      "startOffsetMs": 502.13,
+      "durationMs": 131.43,
+      "finishOffsetMs": 633.56,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections",
+      "startOffsetMs": 502.28,
+      "durationMs": 131.43,
+      "finishOffsetMs": 633.71,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/email_recipients",
+      "startOffsetMs": 501.31,
+      "durationMs": 94.2,
+      "finishOffsetMs": 595.51,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 190.67,
+      "durationMs": 89.54,
+      "finishOffsetMs": 280.21,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/global_max_hours",
+      "startOffsetMs": 496.01,
+      "durationMs": 83.23,
+      "finishOffsetMs": 579.25,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 491.53,
+      "durationMs": 79.61,
+      "finishOffsetMs": 571.14,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 495.92,
+      "durationMs": 79.56,
+      "finishOffsetMs": 575.47,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 495.88,
+      "durationMs": 79.53,
+      "finishOffsetMs": 575.4,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 495.97,
+      "durationMs": 79.52,
+      "finishOffsetMs": 575.48,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 495.94,
+      "durationMs": 79.5,
+      "finishOffsetMs": 575.44,
+      "status": 200
+    },
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 495.99,
+      "durationMs": 79.47,
+      "finishOffsetMs": 575.46,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/area_list",
+      "startOffsetMs": 496.03,
+      "durationMs": 79.47,
+      "finishOffsetMs": 575.51,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/workday_types",
+      "startOffsetMs": 496.06,
+      "durationMs": 79.44,
+      "finishOffsetMs": 575.5,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/public/company-policy",
+      "startOffsetMs": 595.05,
+      "durationMs": 38.68,
+      "finishOffsetMs": 633.72,
+      "status": 200
+    },
+    {
+      "path": "/api/notes",
+      "startOffsetMs": 595.49,
+      "durationMs": 38.24,
+      "finishOffsetMs": 633.74,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 175.62,
+      "durationMs": 26.99,
+      "finishOffsetMs": 202.61,
+      "status": 200
+    }
+  ]
+}

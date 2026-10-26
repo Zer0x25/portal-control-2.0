@@ -1,0 +1,71 @@
+{
+  "metric": "authenticated Dashboard startup requests and readiness markers",
+  "baselineSpec": "042-dashboard-query-startup-deduplication",
+  "baselineSampleCount": 1,
+  "baseline": {
+    "apiRequestCount": 21,
+    "uniqueApiEndpointCount": 20,
+    "duplicateEndpointCount": 1,
+    "healthRequestCount": 2,
+    "kioskRequests": 0
+  },
+  "after": {
+    "sampleCount": 3,
+    "apiRequestCountPerSample": [20, 20, 20],
+    "uniqueApiEndpointCountPerSample": [20, 20, 20],
+    "duplicateEndpointCountPerSample": [0, 0, 0],
+    "healthRequestCountPerSample": [1, 1, 1],
+    "kioskRequestsPerSample": [0, 0, 0],
+    "mainContentVisibleOffsetMs": [515.37, 576.95, 628.54],
+    "mainContentVisibleMedianMs": 576.95,
+    "serverClockVisibleOffsetMs": [674.76, 713.26, 651.63],
+    "serverClockVisibleMedianMs": 674.76,
+    "lastApiRequestFinishedOffsetMs": [687.58, 718.11, 656.09],
+    "lastApiRequestFinishedMedianMs": 687.58,
+    "requestsStartingAfterMainContentVisiblePerSample": [2, 2, 0],
+    "requestsFinishingAfterServerClockVisiblePerSample": [6, 7, 10],
+    "http200PerSample": [20, 20, 20]
+  },
+  "delta": {
+    "apiRequestCount": -1,
+    "apiRequestCountPercent": -4.76,
+    "duplicateEndpointCount": -1,
+    "healthRequestCount": -1
+  },
+  "apiDurationSummary": {
+    "file": "api-duration-summary.json",
+    "topMedianRequestLifecycleMs": [
+      { "path": "/api/leaves", "medianMs": 162.8 },
+      { "path": "/api/holidays", "medianMs": 162.49 },
+      { "path": "/api/corrections", "medianMs": 162.39 },
+      { "path": "/api/shifts/assignments", "medianMs": 160.24 },
+      { "path": "/api/configs/email_recipients", "medianMs": 148.48 }
+    ]
+  },
+  "lighthouseColdDiagnostics": {
+    "file": "lighthouse-cold-profile.json",
+    "sampleCount": 3,
+    "medians": {
+      "performanceScore": 0.71,
+      "fcpMs": 3747.36,
+      "lcpMs": 5415.69,
+      "tbtMs": 94.5,
+      "cls": 0
+    },
+    "observations": [
+      "El candidato LCP fue el texto del reloj dentro de WelcomePanel; mediana de render delay: 4965.63ms.",
+      "El JavaScript no usado estimado fue 31958 bytes en react-core; bootup-time reportó 952.1ms de CPU mediano para ese chunk.",
+      "La fila de CSS render-blocking estimó 900ms, pero el ahorro global reportado para la auditoría fue 0ms."
+    ],
+    "interpretation": "Perfil diagnóstico post-rebuild, no comparación causal antes/después de la deduplicación API. Priorizar investigación del renderizado/JS inicial y su espera de datos; no priorizar CSS solo por su estimación por recurso."
+  },
+  "interpretation": "La query de salud se comparte y elimina el único endpoint repetido de spec 042. Las tres muestras completaron 20 requests HTTP 200; main-content apareció en mediana 577ms y el último request terminó en mediana 688ms. Entre seis y diez requests terminaron después de observar server-clock, pero las mediciones no prueban que bloqueen FCP/LCP. Lighthouse aporta un perfil frío y una pista de renderizado inicial; no se atribuye al cambio una mejora temporal de Lighthouse.",
+  "methodLimitations": [
+    "El baseline de spec 042 tuvo una captura; después se tomaron tres muestras secuenciales.",
+    "La duración es request-to-finish observada por Playwright; incluye browser, gateway, backend y transferencia, no aísla tiempo del servidor.",
+    "Los offsets de visibilidad corresponden a cuando Playwright observó el selector visible, no a una marca de pintura exacta del browser.",
+    "El staging es local y semillado; los resultados no representan datos de campo.",
+    "El Lighthouse frío está guardado como diagnóstico post-rebuild y no permite aislar un efecto causal de la deduplicación API."
+  ],
+  "requestEvidence": "dashboard-startup-api-requests.json"
+}
