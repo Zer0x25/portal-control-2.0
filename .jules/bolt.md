@@ -621,3 +621,10 @@
 - **Atribución CDP**: tres perfiles con 210/210 assets mapeados y 7/9/9 tareas largas. React core propio mediano 235,8 ms; `App.loadTimeControlPage` aparece en 3/3 tareas con 16,9–27,4 ms. `apiClient.performRequest` inclusivo cruza `fetch` y no equivale a CPU síncrona. No se halló una función propia aislada que explique el TBT.
 - **Decisión**: no cambiar runtime; mantener la puerta de Spec 085 (misma causa repetida y reducción TBT ≥20% o <200 ms), no diferir Socket.IO por conjetura y no modificar `TimeControl.view.tsx`.
 - **Evidencia**: [resultado Spec 107](../specs/107-estabilizar-callback-intersection-observer/evidencia/resultado.md), perfiles React antes/después y resúmenes [Lighthouse](../specs/107-estabilizar-callback-intersection-observer/evidencia/time-control-lighthouse-current-2026-10-26.json) y [CDP](../specs/107-estabilizar-callback-intersection-observer/evidencia/time-control-source-mapped-profile-current-2026-10-26.json).
+
+## 2026-10-25 - perf(kpi): limitar cálculo de horarios por lote
+
+- **Hallazgo**: `getDashboardOverview` y `getDailyPlanningSummary` cargan un `SchedulingContext` indexado antes de recorrer empleados. `getEmployeeDailyScheduleInfo` lee ese contexto en memoria; en esta ruta no consulta la base de datos por empleado. El beneficio posible es reducir el tramo síncrono que bloquea el event loop, no aliviar el pool.
+- **Medición sintética local**: 9 muestras con el mismo servicio/contexto vacío, dos búsquedas por empleado. Con 195 empleados (390 búsquedas), mediana total 5,351 → 5,372 ms y primer turno libre del event loop 5,368 → 0,680 ms. Con 5.000 empleados (10.000 búsquedas), total 120,667 → 122,475 ms y primer turno libre 120,692 → 0,613 ms.
+- **Límite de la evidencia**: es una prueba local con datos sintéticos, no una medición HTTP en staging ni una prueba de carga de PostgreSQL. No demuestra reducción de presión del pool.
+- **Acción**: mantener lotes de 50 para ceder control cada lote y probar el máximo de concurrencia; describir la mejora como protección de event-loop y no como reducción de consultas o conexiones.

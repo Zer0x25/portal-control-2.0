@@ -33,6 +33,7 @@ routes.push(
 routes.push(
   ...[
     ["GET", "/api/employees"],
+    ["GET", "/api/employees/clocking-options"],
     ["GET", "/api/employees/kiosk"],
     ["POST", "/api/employees"],
     ["PUT", "/api/employees/:id"],

@@ -5,6 +5,7 @@ import { KpiCache } from "./KpiCache";
 import { KpiStatsService } from "./KpiStatsService";
 import { KpiAggregationService } from "./KpiAggregationService";
 import { KpiFormattingService } from "./KpiFormattingService";
+import { mapInChunks } from "./mapInChunks";
 import { KpiFilters, DashboardOverview, PeriodStats, AnomalyRecord } from "./types";
 import {
   addBusinessDaysChile,
@@ -187,34 +188,34 @@ export class KpiReportService {
       todayStr,
     );
 
-    const employeeStatuses = await Promise.all(
-      activeEmployees.map(async (emp) => {
-        const record = latestByEmployee.get(emp.id);
-        let status = this.kpiFormattingService.getEmployeeClockingStatus(record);
+    // These per-employee lookups use the already-loaded context; yield between batches
+    // to keep large rosters from holding the event loop for one long synchronous turn.
+    const employeeStatuses = await mapInChunks(activeEmployees, async (emp) => {
+      const record = latestByEmployee.get(emp.id);
+      let status = this.kpiFormattingService.getEmployeeClockingStatus(record);
 
-        if (status === "fuera") {
-          const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
-            emp.id,
-            today,
-            schedulingContext,
-            emp,
-          );
-          if (!schedule || !schedule.isWorkDay) {
-            status = "no_programado";
-          } else if (schedule.startTime && record?.status === "Ausente") {
-            status = "ausente";
-          } else {
-            status = "por_iniciar";
-          }
+      if (status === "fuera") {
+        const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
+          emp.id,
+          today,
+          schedulingContext,
+          emp,
+        );
+        if (!schedule || !schedule.isWorkDay) {
+          status = "no_programado";
+        } else if (schedule.startTime && record?.status === "Ausente") {
+          status = "ausente";
+        } else {
+          status = "por_iniciar";
         }
+      }
 
-        return {
-          employee: emp,
-          status,
-          lastRecord: record ? this.kpiFormattingService.enrichRecord(record) : null,
-        };
-      }),
-    );
+      return {
+        employee: emp,
+        status,
+        lastRecord: record ? this.kpiFormattingService.enrichRecord(record) : null,
+      };
+    });
 
     const presentRecords = employeeStatuses
       .filter((s) => ["en_jornada", "en_colacion", "en_jornada_post_colacion"].includes(s.status))
@@ -224,21 +225,19 @@ export class KpiReportService {
     // Build anomalies list
     const anomalies: AnomalyRecord[] = [];
 
-    // ⚡ Bolt Optimization: Parallelize schedule lookups for missing marks
-    // Why: The previous sequential `for...of` loop awaited each promise individually, blocking the event loop (N+1 delay).
-    // Impact: Reduces total latency of missing marks check from O(N) to O(1) concurrent requests.
     const missingYesterdayCandidates = employeeStatuses.filter(
       (s) => !yesterdayEmployees.has(s.employee.id),
     );
 
-    const yesterdaySchedules = await Promise.all(
-      missingYesterdayCandidates.map((s) =>
-        schedulingService.getEmployeeDailyScheduleInfo(
-          s.employee.id,
-          new Date(parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000),
-          schedulingContext,
-          s.employee,
-        ),
+    const yesterdayTargetDate = new Date(
+      parseDateOnlyUTC(yesterdayStr).getTime() + 12 * 60 * 60 * 1000,
+    );
+    const yesterdaySchedules = await mapInChunks(missingYesterdayCandidates, (status) =>
+      schedulingService.getEmployeeDailyScheduleInfo(
+        status.employee.id,
+        yesterdayTargetDate,
+        schedulingContext,
+        status.employee,
       ),
     );
 
@@ -327,12 +326,12 @@ export class KpiReportService {
       activeCount: activeEmployees.length,
     };
 
-    // ⚡ Bolt Optimization: Parallelize schedule lookups
-    // Why: The previous sequential `for...of` loop awaited each promise individually, blocking the event loop (N+1 delay).
-    // Impact: Reduces total latency of schedule lookup from O(N) to O(1) concurrent requests.
-    const scheduleInfos = await Promise.all(
-      activeEmployees.map((emp) =>
-        schedulingService.getEmployeeDailyScheduleInfo(emp.id, today, schedulingContext, emp),
+    const scheduleInfos = await mapInChunks(activeEmployees, (employee) =>
+      schedulingService.getEmployeeDailyScheduleInfo(
+        employee.id,
+        today,
+        schedulingContext,
+        employee,
       ),
     );
 
