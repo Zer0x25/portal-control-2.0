@@ -21,6 +21,7 @@ on:
 permissions:
   contents: write
   packages: write
+  actions: read
 
 concurrency:
   group: deploy-release
@@ -31,191 +32,126 @@ env:
   IMAGE_OWNER: ${{ github.repository_owner }}
 
 jobs:
-  e2e-tests:
-    name: E2E Tests (staging release validation)
+  release:
+    name: Build once, test and publish
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
+    env:
+      BACKEND_IMAGE: portal-backend:${{ github.run_id }}-${{ github.run_attempt }}
+      FRONTEND_IMAGE: portal-frontend:${{ github.run_id }}-${{ github.run_attempt }}
+      GATEWAY_IMAGE: portal-gateway:${{ github.run_id }}-${{ github.run_attempt }}
+      COMPOSE_FILE: compose.staging.yaml:compose.images.yaml
+      COMPOSE_PROJECT_NAME: release-${{ github.run_id }}-${{ github.run_attempt }}
+      COMPOSE_ENV_FILES: .env.staging
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name && inputs.tag_name != 'latest' && inputs.tag_name || github.ref }}
+      - name: Resolve source
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
         with:
           node-version: 26
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-
-      - name: Install frontend dependencies
+      - uses: docker/setup-buildx-action@v3
+      - name: Build backend once
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          load: true
+          tags: ${{ env.BACKEND_IMAGE }}
+          cache-from: type=gha,scope=portal-control-2-0-backend
+          cache-to: type=gha,mode=max,scope=portal-control-2-0-backend
+      - name: Build frontend once
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          load: true
+          tags: ${{ env.FRONTEND_IMAGE }}
+          build-args: VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}
+          cache-from: type=gha,scope=portal-control-2-0-frontend
+          cache-to: type=gha,mode=max,scope=portal-control-2-0-frontend
+      - name: Build gateway once
+        uses: docker/build-push-action@v6
+        with:
+          context: ./nginx
+          load: true
+          tags: ${{ env.GATEWAY_IMAGE }}
+          cache-from: type=gha,scope=portal-control-2-0-gateway
+          cache-to: type=gha,mode=max,scope=portal-control-2-0-gateway
+      - name: Record tested images
+        run: node scripts/release-images.cjs record
+      - name: Create isolated staging credentials
+        run: |
+          cp .env.staging.example .env.staging
+          printf '\nJWT_SECRET=%s\nSEED_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 32)" '999.666' >> .env.staging
+      - name: Start exact images
+        run: docker compose up -d --no-build --wait --wait-timeout 180
+      - name: Install test dependencies
         working-directory: frontend
         run: npm ci --no-audit --no-fund --prefer-offline --loglevel=error
-
-      - name: Cache Playwright browsers
-        id: playwright-cache
+      - name: Cache Chromium
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            playwright-${{ runner.os }}-
-
-      - name: Create staging env
-        run: |
-          cp .env.staging.example .env.staging
-          printf '\nJWT_SECRET=%s\nSEED_ADMIN_PASSWORD=%s\n' \
-            "${{ secrets.JWT_SECRET || github.run_id }}" \
-            "${{ secrets.SEED_ADMIN_PASSWORD || '999.666' }}" \
-            >> .env.staging
-
-      - name: Start compose.staging stack
-        run: docker compose --env-file .env.staging -f compose.staging.yaml up -d --build
-
-      - name: Install Playwright chromium
+      - name: Install Chromium
         working-directory: frontend
-        run: |
-          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
-            npx playwright install-deps chromium
-            npx playwright install chromium
-          else
-            npx playwright install --with-deps chromium
-          fi
-
-      - name: Wait for gateway health
-        run: |
-          for i in $(seq 1 60); do
-            if curl -sf http://127.0.0.1:8080 > /dev/null; then
-              echo "gateway healthy"
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "::error::gateway no alcanzó http://127.0.0.1:8080 en ~3 min"
-          docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
-          exit 1
-
-      - name: Run E2E test suite
+        run: npx playwright install --with-deps chromium
+      - name: Functional and visual release gate
         working-directory: frontend
         env:
           E2E_BASE_URL: http://127.0.0.1:8080
           E2E_API_URL: http://127.0.0.1:8080/api
-          E2E_ADMIN_USERNAME: admin
-          E2E_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD || '999.666' }}
-        # Orden de los proyectos (spec 035 T15): `functional` -> `visual` ->
-        # `perf`. `perf` depende de `visual` en `playwright.config.ts`, asi que
-        # las mediciones de render no se contaminan con la carga de la
-        # regresion visual.
-        run: npx playwright test --project=functional --project=visual --project=perf
-
-      - name: Upload Playwright report on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
+          E2E_ADMIN_PASSWORD: "999.666"
+        run: npx playwright test --project=functional --project=visual
+      - uses: docker/login-action@v3
         with:
-          name: playwright-report
-          path: frontend/playwright-report/
-          retention-days: 7
-
-      - name: Dump stack logs on failure
-        if: failure()
-        run: docker compose --env-file .env.staging -f compose.staging.yaml logs --tail=200
-
-      - name: Stop stack
-        if: always()
-        run: docker compose --env-file .env.staging -f compose.staging.yaml down
-
-  publish-images:
-    name: Publish images
-    needs: e2e-tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - image_name: portal-control-2-0-backend
-            context: ./backend
-            dockerfile: ./backend/Dockerfile
-          - image_name: portal-control-2-0-frontend
-            context: ./frontend
-            dockerfile: ./frontend/Dockerfile
-          - image_name: portal-control-2-0-gateway
-            context: ./nginx
-            dockerfile: ./nginx/Dockerfile
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract image metadata
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Publish tested images without rebuilding
+        env:
+          TAG_INPUT: ${{ inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
+        run: node scripts/release-images.cjs publish
+      - name: Save test reports and image manifest
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ matrix.image_name }}
-          tags: |
-            type=raw,value=latest
-            type=sha,format=short
-            ${{ (inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name)) && format('type=raw,value={0}', inputs.tag_name || github.ref_name) || '' }}
-
-      - name: Build and push image
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
-          build-args: ${{ matrix.image_name == 'portal-control-2-0-frontend' && format('VITE_SENTRY_DSN={0}', secrets.VITE_SENTRY_DSN) || '' }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.image_name }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image_name }}
-
+          name: release-validation-${{ github.run_id }}
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            release-images.json
+          retention-days: 7
+      - name: Stack logs
+        if: failure()
+        run: docker compose logs --tail=200
+      - name: Clean isolated stack
+        if: always()
+        run: docker compose down -v --remove-orphans
   pin-stack-images:
-    name: Pin stack images
-    needs: [e2e-tests, publish-images]
+    needs: release
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: main
-
-      - name: Pin compose images to published tag
-        env:
-          HEAD_SHA: ${{ github.sha }}
-          TAG_INPUT: ${{ inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
-          OWNER: ${{ github.repository_owner }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-validation-${{ github.run_id }}
+          path: release-validation
+      - name: Pin published digests
+        run: node scripts/release-images.cjs pin release-validation/release-images.json
+      - name: Commit pinned stack
         run: |
-          SHORT_SHA="${HEAD_SHA::7}"
-          TAG="${TAG_INPUT:-sha-${SHORT_SHA}}"
-          OWNER_LC="$(tr '[:upper:]' '[:lower:]' <<<"$OWNER")"
-
-          sed -i \
-            -e "s|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-backend}:.*|image: \${BACKEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-backend}:${TAG}|" \
-            -e "s|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-frontend}:.*|image: \${FRONTEND_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-frontend}:${TAG}|" \
-            -e "s|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-gateway}:.*|image: \${GATEWAY_IMAGE:-ghcr.io/${OWNER_LC}/portal-control-2-0-gateway}:${TAG}|" \
-            compose.yaml
-
-      - name: Commit pinned compose
-        env:
-          HEAD_SHA: ${{ github.sha }}
-          TAG_INPUT: ${{ inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
-        run: |
-          if git diff --quiet -- compose.yaml; then
-            echo "compose.yaml already pinned to target tag"
-            exit 0
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- compose.yaml; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add compose.yaml
-          COMMIT_TAG="${TAG_INPUT:-${HEAD_SHA::7}}"
-          git commit -m "chore(deploy): pin portal images to ${COMMIT_TAG} [skip ci]"
+          git commit -m 'chore(deploy): pin validated image digests [skip ci]'
           git push origin HEAD:main

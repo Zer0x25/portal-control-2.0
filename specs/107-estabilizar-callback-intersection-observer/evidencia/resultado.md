@@ -70,9 +70,23 @@ No hay una función síncrona de aplicación aislada que explique el TBT medido.
 
 Por eso no se inicia otra optimización de runtime con estos datos. La Spec 085
 exige atribución repetida y un experimento que baje TBT al menos 20% o lo deje
-por debajo de 200 ms; también descarta diferir Socket.IO por conjetura. El
-siguiente foco debe identificar una porción de render repetida que pueda
-reducirse sin tocar `TimeControl.view.tsx`.
+por debajo de 200 ms; también descarta diferir Socket.IO por conjetura.
+
+## Cierre de la campaña: 2026-10-26
+
+Por decisión del usuario, se cierra la campaña de optimización y se conserva el
+runtime validado. No se programan nuevos perfiles, benchmarks ni experimentos
+exploratorios: el beneficio esperado no justifica seguir invirtiendo cómputo.
+Las propuestas de siguiente investigación de los informes anteriores quedan
+como antecedentes, sin trabajo activo asociado.
+
+Se acepta el pendiente de laboratorio de esta línea base: TBT mediano de
+265 ms, LCP mediano de 2,66 s y variación de LCP hasta 5,19 s. No se declara
+cumplido un objetivo de rendimiento de campo. Se conservan pruebas, evidencia
+y umbrales existentes; el cierre no modifica los workflows de CI/CD.
+
+La campaña se podrá reabrir ante lentitud reproducible en uso real o una causa
+concreta que permita probar una mejora, respetando los criterios de Spec 085.
 
 ## Verificación
 
