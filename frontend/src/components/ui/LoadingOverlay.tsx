@@ -11,13 +11,16 @@ interface LoadingOverlayProps {
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ message, fullScreen = true }) => {
   const content = (
     <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
       className={`${Z.modal} flex flex-col items-center justify-center p-12 bg-token-surface-card border border-token-border-technical rounded-sm shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95`}
     >
       {/* Subtle tech background for the card */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,87,146,0.03)_0%,transparent_100%)] pointer-events-none" />
 
       <div className={`relative ${Z.sticky} flex flex-col items-center`}>
-        <div className="relative w-10 h-10 mb-8">
+        <div aria-hidden="true" className="relative w-10 h-10 mb-8">
           <div className="absolute inset-0 border-2 border-token-border-subtle rounded-full opacity-20"></div>
           <LoadingSpinner size="md" variant="default" />
           <div className="absolute inset-2 rounded-full bg-token-accent-brand/5 flex items-center justify-center">

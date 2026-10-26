@@ -134,7 +134,11 @@ const AuditLogsViewView: FC<AuditLogsController> = (controller) => {
             position="top"
             className="w-full"
           >
-            <span className="truncate block opacity-90">{log.action}</span>
+            {/* Supplemental details are otherwise hover-only; include the action text in keyboard order. */}
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+            <span tabIndex={0} className="truncate block opacity-90">
+              {log.action}
+            </span>
           </Tooltip>
         </div>
         <div style={{ width: "12%" }} className="px-6 py-3 whitespace-nowrap">

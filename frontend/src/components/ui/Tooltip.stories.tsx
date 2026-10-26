@@ -5,7 +5,10 @@ const meta = {
   id: "certified-components-ui-tooltip",
   title: "Design System/components/ui/Tooltip",
   component: StoryComponent,
-  args: { content: "Detalle de la acción", children: "Pasa el cursor" },
+  args: {
+    content: "Detalle de la acción",
+    children: <button type="button">Pasa el cursor</button>,
+  },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Tooltip.tsx" } },
