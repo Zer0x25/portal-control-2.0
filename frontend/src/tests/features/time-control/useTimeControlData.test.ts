@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { useTimeControlData } from "../../../features/time-control/hooks/useTimeControlData";
 
-const configQueryState = vi.hoisted(() => ({ isLoading: false }));
+const configQueryState = vi.hoisted(() => ({ observerCalls: 0 }));
 
 vi.mock("../../../features/time-control/hooks/useTimeControl", () => ({
   useTimeControl: () => ({
@@ -59,32 +59,55 @@ vi.mock("../../../hooks/useTimeRecordActions", () => ({
 }));
 
 vi.mock("../../../hooks/queries/useConfigQuery", () => ({
-  useControlInternoEnabledQuery: () => ({ data: true, isLoading: configQueryState.isLoading }),
+  useControlInternoEnabledQuery: () => {
+    configQueryState.observerCalls += 1;
+    return { data: true, isLoading: false };
+  },
   useAccountingLockDateQuery: () => ({ data: "2026-01-01" }),
 }));
 
 describe("useTimeControlData", () => {
   afterEach(() => {
-    configQueryState.isLoading = false;
+    configQueryState.observerCalls = 0;
+  });
+
+  it("does not create a duplicate shell configuration observer", () => {
+    renderHook(() => useTimeControlData({ isControlInternoEnabled: true, isConfigLoading: false }));
+
+    expect(configQueryState.observerCalls).toBe(0);
   });
 
   it("does not block the page shell while records load", () => {
-    const { result } = renderHook(() => useTimeControlData());
+    const { result } = renderHook(() =>
+      useTimeControlData({ isControlInternoEnabled: true, isConfigLoading: false }),
+    );
 
     expect(result.current.isPageLoading).toBe(false);
     expect(result.current.isControlInternoEnabled).toBe(true);
   });
 
   it("keeps the page blocked while control configuration loads", () => {
-    configQueryState.isLoading = true;
-    const { result } = renderHook(() => useTimeControlData());
+    const { result } = renderHook(() =>
+      useTimeControlData({ isControlInternoEnabled: true, isConfigLoading: true }),
+    );
 
     expect(result.current.isPageLoading).toBe(true);
   });
 
   it("returns an effective lock date with expected format", () => {
-    const { result } = renderHook(() => useTimeControlData());
+    const { result } = renderHook(() =>
+      useTimeControlData({ isControlInternoEnabled: true, isConfigLoading: false }),
+    );
 
     expect(result.current.effectiveLockDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("preserves a disabled configuration after loading", () => {
+    const { result } = renderHook(() =>
+      useTimeControlData({ isControlInternoEnabled: false, isConfigLoading: false }),
+    );
+
+    expect(result.current.isControlInternoEnabled).toBe(false);
+    expect(result.current.isPageLoading).toBe(false);
   });
 });

@@ -579,3 +579,11 @@
 - **Decisión**: descartado y runtime/API restaurados porque LCP supera el gate +5%. Rangos Lighthouse se solapan; tres muestras CPU también variaron (React propio 204,6→289,6 ms, tareas largas 7→10), sin atribución causal. Staging quedó reconstruido desde HEAD y readiness es healthy.
 - **Siguiente**: separar el costo del importador `loadTimeControlPage` del trabajo React/DOM. El importador mide ~28,7 ms de mediana frente a 204,6 ms de React propio; no partir el chunk sin evidencia de ganancia.
 - **Evidencia**: [resultado Spec 102](../specs/102-time-control-batch-schedule-enrichment/evidencia/resultado.md), [comparación Lighthouse/API/CPU](../specs/102-time-control-batch-schedule-enrichment/evidencia/comparison-2026-10-25.json) y [perfiles CPU base/candidato](../specs/102-time-control-batch-schedule-enrichment/evidencia/).
+
+## 2026-10-25 - perf(time-control): Compartir consulta de configuración del shell
+
+- **Cambio**: `App` pasa `is_control_interno_enabled` y su estado de carga al contenedor de Control horario; `useTimeControlData` deja de observar la misma query otra vez. La prueba de regresión falló primero con dos llamadas bajo StrictMode y quedó en cero al compartir el dato.
+- **Medido**: cinco Lighthouse de staging, recapturados con el mismo backend, dieron TBT mediano 216,5→184 ms (−15,01%), LCP +0,02%, FCP −0,02% y transferencia +160 B (+0,03%). CLS mediano estable. Todos los perfiles CPU completaron 12/12 requests API sin errores.
+- **Límite**: los rangos Lighthouse se solapan. Los pares de CPU discrepan: el primero bajó CPU activo 1.192→804 ms y React propio 292,5→201,4 ms; la repetición alternada subió 739,5→770,2 ms y 200,5→235,1 ms. Se conserva por pasar el gate Lighthouse, como mejora observada sin atribución causal ni reducción estable de CPU.
+- **Siguiente**: atribuir las tareas largas con React/DOM y separarlas del tiempo inclusivo de `apiClient.performRequest`; elegir el próximo cambio solo con un frame repetido de trabajo síncrono propio.
+- **Evidencia**: [resultado Spec 103](../specs/103-time-control-share-shell-config-query/evidencia/resultado.md), [comparación](../specs/103-time-control-share-shell-config-query/evidencia/comparison-2026-10-25.json), [CPU base/candidato](../specs/103-time-control-share-shell-config-query/evidencia/).

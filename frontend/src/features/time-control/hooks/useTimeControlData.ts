@@ -1,10 +1,12 @@
 import { useTimeControl } from "./useTimeControl";
 import { useTimeRecordActions } from "../../../hooks/useTimeRecordActions";
-import {
-  useAccountingLockDateQuery,
-  useControlInternoEnabledQuery,
-} from "../../../hooks/queries/useConfigQuery";
+import { useAccountingLockDateQuery } from "../../../hooks/queries/useConfigQuery";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
+
+interface UseTimeControlDataConfig {
+  isControlInternoEnabled: boolean;
+  isConfigLoading: boolean;
+}
 
 /**
  * useTimeControlData - Hook de orquestación para TimeControl
@@ -12,7 +14,10 @@ import { useBusinessNow } from "../../../hooks/useBusinessNow";
  * Centraliza toda la lógica de negocio, filtros, acciones y configuración
  * para la página de Control de Tiempos.
  */
-export const useTimeControlData = () => {
+export const useTimeControlData = ({
+  isControlInternoEnabled,
+  isConfigLoading,
+}: UseTimeControlDataConfig) => {
   const businessNow = useBusinessNow({ tickMs: null });
   const {
     isActionDisabledForRole,
@@ -60,8 +65,6 @@ export const useTimeControlData = () => {
     isProcessingResolution,
   } = useTimeControl();
 
-  const { data: isControlInternoEnabled = true, isLoading: isLoadingConfig } =
-    useControlInternoEnabledQuery();
   const { startBreak, endBreak, clockOut } = useTimeRecordActions();
   const { data: accountingLockDate } = useAccountingLockDateQuery();
 
@@ -85,7 +88,7 @@ export const useTimeControlData = () => {
   })();
 
   // Keep the route shell visible while record data loads; the table receives isLoading itself.
-  const isPageLoading = isLoadingConfig;
+  const isPageLoading = isConfigLoading;
 
   return {
     isActionDisabledForRole,

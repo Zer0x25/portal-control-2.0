@@ -112,7 +112,8 @@ const App: React.FC = () => {
   const { isForcePasswordChangeModalOpen, clearMustChangePassword, logout } =
     useAuthShellControls();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const { data: isControlInternoEnabled = true } = useControlInternoEnabledQuery();
+  const { data: isControlInternoEnabled = true, isLoading: isControlInternoEnabledLoading } =
+    useControlInternoEnabledQuery();
 
   useNavigationLoading();
   useSocketEvents();
@@ -241,7 +242,10 @@ const App: React.FC = () => {
                   ]}
                 >
                   <RenderProfiler id="time-control">
-                    <TimeControlPage />
+                    <TimeControlPage
+                      isControlInternoEnabled={isControlInternoEnabled}
+                      isConfigLoading={isControlInternoEnabledLoading}
+                    />
                   </RenderProfiler>
                 </ProtectedRoute>
               }
