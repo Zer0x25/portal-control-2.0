@@ -1,5 +1,63 @@
 # Changelog
 
+## [8.37.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.36.1...v8.37.0) (2026-10-26)
+
+
+### Features
+
+* **ui:** Add ARIA labels to icon-only buttons in Logbook ([#129](https://github.com/Zer0x25/portal-control-2.0/issues/129)) ([8844a50](https://github.com/Zer0x25/portal-control-2.0/commit/8844a5045fb7cc936e3b9c518df3f28625153487))
+* **ui:** improve tooltip and loading overlay accessibility ([#128](https://github.com/Zer0x25/portal-control-2.0/issues/128)) ([62130c8](https://github.com/Zer0x25/portal-control-2.0/commit/62130c8745ff3aaa1cf728e6a7dcf9119d41c52b))
+* **ui:** standardize list typography ([5093d4c](https://github.com/Zer0x25/portal-control-2.0/commit/5093d4c880b9484ec28e03ff2f5adefbe959d8a9))
+
+
+### Bug Fixes
+
+* **auth:** preserve login styling in performance mode ([3062f9b](https://github.com/Zer0x25/portal-control-2.0/commit/3062f9b367259882b55e54d5fbd5608ed95af34b))
+* **frontend:** satisfy responsive and query test gates ([bf05e59](https://github.com/Zer0x25/portal-control-2.0/commit/bf05e59d09278fb16977ea5f5b351a22ea339a95))
+* **frontend:** scope bootstrap handoff to app builds ([8eec1f5](https://github.com/Zer0x25/portal-control-2.0/commit/8eec1f5bdf01119a6799f47223e9966772893dcf))
+* **perf:** require current readiness endpoint ([9e6c151](https://github.com/Zer0x25/portal-control-2.0/commit/9e6c151b9b5a727b6bfe1b71d6f1a8cf59ffbf64))
+* **ui:** align clocking action colors ([ff0f521](https://github.com/Zer0x25/portal-control-2.0/commit/ff0f521ebc7a1cbb4b7db2d1a1588b209d4b0eba))
+* **ui:** align worker portal surfaces with design system ([280d394](https://github.com/Zer0x25/portal-control-2.0/commit/280d39488bc4851203b995e6eb7b4f1413db9dab))
+* **ui:** improve worker portal readability ([ce96bd2](https://github.com/Zer0x25/portal-control-2.0/commit/ce96bd263cd1790e8609c19c93d9609c6d888294))
+* **ui:** preserve ambient glows in performance mode ([081e8fb](https://github.com/Zer0x25/portal-control-2.0/commit/081e8fbc93f108fa5ffbf2c7e9f2e1b9c8af9288))
+* **ui:** remove ambient glows from worker and about views ([9bebf0b](https://github.com/Zer0x25/portal-control-2.0/commit/9bebf0b46df9af62a95d67bd08070da48e133862))
+* **ui:** remove italic time control timestamps ([bc58b13](https://github.com/Zer0x25/portal-control-2.0/commit/bc58b133d94f302e3b9bc7bb2c937479202dee5f))
+
+
+### Performance Improvements
+
+* **app:** narrow shell auth subscription ([2421fc6](https://github.com/Zer0x25/portal-control-2.0/commit/2421fc684fab0c8ae67cde49420c12be51da06d2))
+* **employees:** skip unused count for full lists ([71026a5](https://github.com/Zer0x25/portal-control-2.0/commit/71026a5197022ae283c523538ba58a1d8a058656))
+* **frontend:** add measured Dashboard bootstrap shell ([20a30b8](https://github.com/Zer0x25/portal-control-2.0/commit/20a30b8cbb957b2026aca36d7f6698ef73b2f88f))
+* **frontend:** add route baselines and optimize dashboard startup ([ce53d58](https://github.com/Zer0x25/portal-control-2.0/commit/ce53d585b56dd696aa46840d0c63eed73c56cb1f))
+* **frontend:** defer ambient notes query ([b49d691](https://github.com/Zer0x25/portal-control-2.0/commit/b49d6915e58f44928a5a0dabed595b8d4a1599ca))
+* **frontend:** defer Dashboard CSS and expand cold route metrics ([0ab420f](https://github.com/Zer0x25/portal-control-2.0/commit/0ab420f233817e3246f1735d8a6e707bfacb6715))
+* **frontend:** defer timezone helpers from dashboard startup ([e3fea81](https://github.com/Zer0x25/portal-control-2.0/commit/e3fea8191a3aefafa1da969e79b14ca8a4969998))
+* **frontend:** gate automatic scheduling queries by eligibility ([d9d41e7](https://github.com/Zer0x25/portal-control-2.0/commit/d9d41e756724ef426f80b0eb3ac59d6b079b2309))
+* **frontend:** lazy-load eligible auto-start logic ([546d870](https://github.com/Zer0x25/portal-control-2.0/commit/546d870324cb1c8aae8417cb7b0a0d5ea896c077))
+* **frontend:** reduce auth store subscriptions ([ef42e40](https://github.com/Zer0x25/portal-control-2.0/commit/ef42e40812a7321d53ab046dfd3adda9cdbd1f11))
+* **frontend:** remove redundant dashboard policy request ([3db6278](https://github.com/Zer0x25/portal-control-2.0/commit/3db6278c7d8722c57e5cab5e19ffc32edea4b4c7))
+* **frontend:** render dashboard welcome during loading ([f1d515b](https://github.com/Zer0x25/portal-control-2.0/commit/f1d515b9bfbc4567c48ca096aa5aecce3511f0a1))
+* **frontend:** render time-control bootstrap shell ([f6d8ff2](https://github.com/Zer0x25/portal-control-2.0/commit/f6d8ff259b06c46abd0a7e1fa7b08888afcec478))
+* **frontend:** share startup health query safely ([3a08b12](https://github.com/Zer0x25/portal-control-2.0/commit/3a08b122425a41320d5b1de9ebec4ce4bc1e74d6))
+* **kpi:** yield between cached schedule batches ([#127](https://github.com/Zer0x25/portal-control-2.0/issues/127)) ([1fa82af](https://github.com/Zer0x25/portal-control-2.0/commit/1fa82afc8258e2b56fa6cab7af87d67c1239ee84))
+* **scheduling:** stabilize daily schedule lookup ([5e3ff76](https://github.com/Zer0x25/portal-control-2.0/commit/5e3ff76e9445e09ac102bbcdf1ac8611e5496f32))
+* **startup:** use lightweight readiness query ([e85708c](https://github.com/Zer0x25/portal-control-2.0/commit/e85708c2c5c5195acd0abe371e33e73a1b795aab))
+* **time-control:** defer clock status query ([8eca6c1](https://github.com/Zer0x25/portal-control-2.0/commit/8eca6c107db766d92c72a51f6b713c9b467d3cd7))
+* **time-control:** defer edit timestamp modal ([5829f10](https://github.com/Zer0x25/portal-control-2.0/commit/5829f1049bea999c9001a93932c6f97365aa566c))
+* **time-control:** defer user directory lookup ([7a809ef](https://github.com/Zer0x25/portal-control-2.0/commit/7a809eff90c59c2acf5088bf29815379d085f826))
+* **time-control:** defer virtualized table until visible ([c6f0699](https://github.com/Zer0x25/portal-control-2.0/commit/c6f069955baa065c8ea7e0d8b50a4361657a63cc))
+* **time-control:** diagnose and reduce startup work ([#131](https://github.com/Zer0x25/portal-control-2.0/issues/131)) ([97c3053](https://github.com/Zer0x25/portal-control-2.0/commit/97c3053e7d4c95aa8c4a49f6a0112dc82474c3d8))
+* **time-control:** record sync overlay LCP experiment ([b55b0c0](https://github.com/Zer0x25/portal-control-2.0/commit/b55b0c07ce2d7af73fc228933d874a6d31d0fcbd))
+* **time-control:** render page shell while records load ([3b24d35](https://github.com/Zer0x25/portal-control-2.0/commit/3b24d35fe72819210836694e06fd4d3660d77135))
+* **time-control:** skip cache check without sync marker ([ab77e14](https://github.com/Zer0x25/portal-control-2.0/commit/ab77e14db1b3a5d0a4c0805b4dfd6351ee03e16b))
+* **time-control:** use minimal employee clocking options ([723c4ba](https://github.com/Zer0x25/portal-control-2.0/commit/723c4baecd860e096635a8744fa18055184a8036))
+* **worker-portal:** add production CPU attribution ([6936a2f](https://github.com/Zer0x25/portal-control-2.0/commit/6936a2fd54fad6959c51721516e55f523512eeaa))
+* **worker-portal:** defer correction modal bundle ([ec56eb4](https://github.com/Zer0x25/portal-control-2.0/commit/ec56eb43c0eb510c86963a8fab4887b2b37f46c9))
+* **worker-portal:** paint bootstrap shell before React ([8a23028](https://github.com/Zer0x25/portal-control-2.0/commit/8a23028930cb7ff8ee75ff2a9006e2d92d68c0ee))
+* **worker-portal:** remove derived state renders ([5bf9943](https://github.com/Zer0x25/portal-control-2.0/commit/5bf9943ccc869566b935775533db1428fc141807))
+* **worker-portal:** reuse month date formatter ([db51a6e](https://github.com/Zer0x25/portal-control-2.0/commit/db51a6ed23a6284df3de47a09adcf2caf80e728a))
+
 ## [8.36.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.36.0...v8.36.1) (2026-10-23)
 
 
