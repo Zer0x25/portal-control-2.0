@@ -603,3 +603,11 @@
 - **Límite**: staging es local; estos números no son TBT, INP ni latencia de campo. No se cambió el runtime del portal.
 - **Siguiente**: separar CPU React/DOM de las tareas largas; usar API timing para no atribuir espera local a cómputo del frontend.
 - **Evidencia**: [resultado Spec 105](../specs/105-time-control-response-resource-timing/evidencia/resultado.md) y [perfil saneado](../specs/105-time-control-response-resource-timing/evidencia/time-control-response-timing-2026-10-26.json).
+
+## 2026-10-26 - perf(time-control): evitar sincronizaciones redundantes del filtro rápido
+
+- **Cambio**: el hook omite escrituras cuando el rango activo ya coincide con la fecha de negocio y cuando el usuario vuelve a pulsar el filtro ya aplicado. Se conserva la resincronización al cambiar de fecha y el flujo de filtros personalizados.
+- **Medido**: test de hook rojo antes de cada guard; 5/5 pasa después. En 3 perfiles React de desarrollo con CPU 4×, `time-control:filters` bajó de 3 a 2 commits en 3/3 muestras. Staging reconstruido healthy con imagen `sha256:c7f1e1e96724046e2034089e4b0778d9dd4eea27d377e1024fbb17c1f777c652`; Playwright seleccionó 7d, 31d y 24h dos veces sin page errors ni fallos API. Preflight completo pasó con lint 0/0.
+- **Límite**: la duración React del scope no bajó de forma demostrable (mediana 39,7→52,5 ms; rango candidato 33,5–95,5 ms) y la duración de ruta tuvo variación amplia. No se declara mejora de TBT, INP ni Lighthouse. Los perfiles Vite mostraron EPIPE del proxy WebSocket en ambos grupos.
+- **Siguiente**: separar el costo restante de `time-control:view` (protegida) entre shell y contenedor sin modificar esa vista; priorizar solo un frame repetido fuera de la UI protegida.
+- **Evidencia**: [Spec 106](../specs/106-time-control-filter-sync-guard/evidencia/resultado.md), perfiles antes/después.
