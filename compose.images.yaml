@@ -1,0 +1,11 @@
+# Usar junto a compose.staging.yaml: nunca construye imágenes.
+services:
+  backend:
+    build: !reset null
+    image: ${BACKEND_IMAGE:?Define BACKEND_IMAGE}
+  frontend:
+    build: !reset null
+    image: ${FRONTEND_IMAGE:?Define FRONTEND_IMAGE}
+  gateway:
+    build: !reset null
+    image: ${GATEWAY_IMAGE:?Define GATEWAY_IMAGE}

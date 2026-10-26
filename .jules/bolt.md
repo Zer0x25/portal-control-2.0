@@ -628,3 +628,10 @@
 - **Medición sintética local**: 9 muestras con el mismo servicio/contexto vacío, dos búsquedas por empleado. Con 195 empleados (390 búsquedas), mediana total 5,351 → 5,372 ms y primer turno libre del event loop 5,368 → 0,680 ms. Con 5.000 empleados (10.000 búsquedas), total 120,667 → 122,475 ms y primer turno libre 120,692 → 0,613 ms.
 - **Límite de la evidencia**: es una prueba local con datos sintéticos, no una medición HTTP en staging ni una prueba de carga de PostgreSQL. No demuestra reducción de presión del pool.
 - **Acción**: mantener lotes de 50 para ceder control cada lote y probar el máximo de concurrencia; describir la mejora como protección de event-loop y no como reducción de consultas o conexiones.
+
+## 2026-10-26 - Cierre de la campaña de rendimiento por decisión del usuario
+
+- **Decisión**: conservar el runtime validado y cerrar la investigación exploratoria para no invertir más cómputo. Los siguientes focos de entradas anteriores quedan como antecedentes, sin tarea activa.
+- **Pendiente aceptado**: la última línea base de Control horario registra TBT mediano de 265 ms, LCP de 2,66 s y score 0,89; no certifica rendimiento de campo.
+- **Continuidad**: se conservan pruebas, evidencia y umbrales. Este cierre no modifica CI/CD ni inicia perfiles o benchmarks adicionales. Reabrir ante lentitud reproducible en uso real o una causa concreta con una mejora verificable.
+- **Evidencia**: [cierre en el resultado de Spec 107](../specs/107-estabilizar-callback-intersection-observer/evidencia/resultado.md#cierre-de-la-campaña-2026-10-26).

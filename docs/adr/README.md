@@ -66,3 +66,4 @@ Reglas:
 - `README.md`: cómo desplegar. Los ADR explican por qué se despliega así.
 - `OBSERVABILITY.md`: señales actuales. Detalle operativo de ADR-0009.
 - `backend/docs/swagger.json`: contrato generado. Ver ADR-0003.
+  | [0029](0029-release-build-once-manual-performance.md) | Aceptado | Release Build Once Manual Performance |

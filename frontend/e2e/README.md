@@ -120,3 +120,25 @@ rompe en cada ejecución: un test que miente. Por eso:
 
 El resto de la página (jerarquía, tipografía, color, espaciado, estados vacíos)
 **sí** se compara: es lo que la regresión visual debe proteger.
+
+## Release y rendimiento manual
+
+CI no levanta staging ni ejecuta Lighthouse. CD construye las imágenes una vez,
+ejecuta los proyectos `functional` y `visual` y publica los mismos artefactos.
+`startup-regressions.spec.ts` conserva las regresiones de arranque, overlays,
+carga diferida y solicitudes redundantes con una visita por caso. `perf`
+conserva series y diagnósticos para uso manual.
+
+Para medir una release, abrir Actions → **Rendimiento manual** → Run workflow.
+Copiar `backend_image`, `frontend_image` y `gateway_image` desde el manifiesto
+`release-images.json` del artefacto `release-validation-<run_id>` de CD.
+Las referencias deben ser del repositorio GHCR correspondiente y terminar en
+`@sha256:<64 caracteres hexadecimales>`; no se aceptan tags como `latest`.
+Elegir un ref del workflow cuyo harness sea compatible con la release medida.
+El workflow descarga las imágenes, crea una base aislada con seed de pruebas,
+ejecuta Lighthouse sobre 17 rutas y elimina stack y volúmenes al terminar.
+No realiza builds, pushes ni cambios en producción. El artefacto de siete días
+incluye HTML/JSON, imágenes de entrada, métricas y aserciones por ruta.
+
+La batería local `npm run perf:staging` sigue disponible bajo demanda. No hay
+benchmarks automáticos por PR, release o calendario.
