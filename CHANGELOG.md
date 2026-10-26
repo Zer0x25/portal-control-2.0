@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.37.3](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.2...v8.37.3) (2026-10-26)
+
+
+### Bug Fixes
+
+* **cd:** isolate release e2e fixtures ([#137](https://github.com/Zer0x25/portal-control-2.0/issues/137)) ([4331bdc](https://github.com/Zer0x25/portal-control-2.0/commit/4331bdccb9107894b98ec1767cb53108e31ef0bd))
+
 ## [8.37.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.1...v8.37.2) (2026-10-26)
 
 
