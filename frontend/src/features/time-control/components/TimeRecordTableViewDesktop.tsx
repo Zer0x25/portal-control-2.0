@@ -10,6 +10,8 @@ import TimeRecordRow from "./TimeRecordRow";
 import { useInfiniteVirtualizedList } from "../hooks/useInfiniteVirtualizedList";
 import { Z } from "../../../constants/zScale";
 
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- Design-system rule requires focusable scroll regions. */
+
 interface TimeRecordTableViewDesktopProps {
   records: AugmentedTimeRecord[];
   fetchNextPage: () => void;
@@ -84,31 +86,31 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
         >
           <thead className={`bg-token-surface-header sticky top-0 ${Z.dropdown} shadow-sm`}>
             <tr>
-              <th className="w-[12%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical hidden sm:table-cell">
+              <th className="w-[12%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical hidden sm:table-cell">
                 Área
               </th>
-              <th className="w-[20%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[20%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Nombre
               </th>
-              <th className="w-[10%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[10%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Fecha
               </th>
-              <th className="w-[8%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[8%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Inicio
               </th>
-              <th className="w-[8%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[8%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Ini Col
               </th>
-              <th className="w-[8%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[8%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Fin Col
               </th>
-              <th className="w-[8%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[8%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Fin
               </th>
-              <th className="w-[10%] px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[10%] px-4 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Estado
               </th>
-              <th className="w-[16%] px-4 py-3 text-right text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary border-b border-token-border-technical">
+              <th className="w-[16%] px-4 py-3 text-right typo-list-header text-token-text-secondary border-b border-token-border-technical">
                 Acciones
               </th>
             </tr>
@@ -116,7 +118,12 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
         </table>
         <div
           ref={parentRef}
-          className="overflow-y-auto h-[500px] custom-scrollbar"
+          data-testid="time-record-list"
+          data-list-group="virtualized-table"
+          role="region"
+          aria-label="Registros de horario"
+          tabIndex={0}
+          className="overflow-y-auto h-[500px] custom-scrollbar focus:outline-hidden"
           style={{ contain: "strict" }}
         >
           <div

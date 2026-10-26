@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import { ROUTES, STORAGE_KEYS } from "../../../constants";
+import { ROUTES } from "../../../constants";
 import {
   ClipboardIcon,
   ChatBubbleLeftRightIcon,
@@ -8,43 +7,13 @@ import {
   CalculatorIcon,
 } from "../../../components/ui/icons/index";
 import { ToolConfig, ColorTheme } from "../types";
-import { configService } from "../../../services/configService";
 
 export const useToolsController = (onOpenQuickNotes: () => void, hasUnreadNotes: boolean) => {
   const navigate = useNavigate();
-  const [policyUrl, setPolicyUrl] = useState(
-    import.meta.env.VITE_COMPANY_POLICY_URL ||
-      sessionStorage.getItem(STORAGE_KEYS.POLICY_URL_CHECKED) ||
-      "/api/configs/public/company-policy/file",
-  );
-
-  useEffect(() => {
-    // El href por defecto ya resuelve el archivo; la metadata solo refina la URL.
-    // Memo por sesión: un solo fetch aunque el dashboard se monte N veces
-    // (el 404 "sin reglamento" es estado esperado, no debe repetirse en consola).
-    if (sessionStorage.getItem(STORAGE_KEYS.POLICY_URL_CHECKED) !== null) return;
-    let mounted = true;
-    configService
-      .getPublicCompanyPolicy()
-      .then((policy) => {
-        if (!mounted) return;
-        const url = policy?.url || "/api/configs/public/company-policy/file";
-        sessionStorage.setItem(STORAGE_KEYS.POLICY_URL_CHECKED, url);
-        if (policy?.url) setPolicyUrl(policy.url);
-      })
-      .catch(() => {
-        if (mounted) {
-          sessionStorage.setItem(
-            STORAGE_KEYS.POLICY_URL_CHECKED,
-            "/api/configs/public/company-policy/file",
-          );
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  // El endpoint de metadata siempre devuelve esta ruta fija; evitar la lectura
+  // en el arranque mantiene el enlace del reglamento sin trabajo de red extra.
+  const policyUrl =
+    import.meta.env.VITE_COMPANY_POLICY_URL || "/api/configs/public/company-policy/file";
 
   const tools: ToolConfig[] = [
     {

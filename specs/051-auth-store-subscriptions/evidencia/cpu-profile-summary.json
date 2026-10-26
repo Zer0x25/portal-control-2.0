@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-24",
+  "target": "local staging Dashboard cold start",
+  "runtime": {
+    "node": "26.10.0",
+    "chrome": "153",
+    "viewport": "1440x900",
+    "cpuThrottle": "4x",
+    "samplesPerPhase": 3
+  },
+  "before": {
+    "reactCoreSampledMs": [392.58, 297.87, 303.29],
+    "reactDomSourceSampledMs": [372.65, 267.74, 265.11],
+    "stateChunkSampledMs": [137.78, 113.74, 90.88],
+    "longTaskEstimatedBlockingMs": [296, 251, 200]
+  },
+  "after": {
+    "reactCoreSampledMs": [288.44, 281.51, 272.2],
+    "reactDomSourceSampledMs": [266.85, 255.08, 255.54],
+    "stateChunkSampledMs": [100.66, 87.75, 151.78],
+    "longTaskEstimatedBlockingMs": [445, 191, 110]
+  },
+  "interpretation": {
+    "reactCoreMedianChangePercent": -7.2,
+    "reactDomSourceMedianChangePercent": -4.6,
+    "stateChunkMedianChangePercent": -11.5,
+    "limitations": "Sampled source/chunk time is not exclusive hook cost or end-to-end latency. Long-task estimated blocking is not Lighthouse TBT. One after sample is a clear long-task outlier; treat these small CPU-profile shifts as directional only."
+  }
+}

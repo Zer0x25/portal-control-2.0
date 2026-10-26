@@ -4,12 +4,12 @@ import { useNotesQuery } from "./queries/useNotesQuery";
 import { idFactory } from "../utils/idFactory";
 import { QuickNote } from "../types/index";
 
-export const useQuickNotes = () => {
+export const useQuickNotes = ({ enabled = true }: { enabled?: boolean } = {}) => {
   // Current user from store
   const currentUser = useStore((state) => state.currentUser);
 
   // Data from TanStack Query
-  const { data: notes = [], isLoading: isLoadingQuery } = useNotesQuery();
+  const { data: notes = [], isLoading: isLoadingQuery } = useNotesQuery(enabled);
 
   const {
     createNote: createNoteMutation,

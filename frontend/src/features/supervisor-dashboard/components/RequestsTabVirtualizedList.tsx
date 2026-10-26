@@ -4,6 +4,8 @@ import { ClockIcon } from "../../../components/ui/icons/index";
 import { PendingRequestCard, ApprovedRequestCard, RejectedRequestCard } from "./RequestsTabCards";
 import { useRequestsTabVirtualizer } from "../hooks/useRequestsTabVirtualizer";
 
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- Design-system rule requires focusable scroll regions. */
+
 export const VirtualizedRequestList: FC<{
   requests: CorrectionRequest[];
   itemHeight: number;
@@ -38,7 +40,11 @@ export const VirtualizedRequestList: FC<{
   return (
     <div
       ref={parentRef}
-      className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-6 -mr-6 min-h-[450px]"
+      data-list-group="request-queue"
+      role="region"
+      aria-label="Solicitudes de corrección"
+      tabIndex={0}
+      className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-6 -mr-6 min-h-[450px] focus:outline-hidden"
       style={{ contain: "strict" }}
     >
       <div
@@ -98,7 +104,7 @@ export const VirtualizedRequestList: FC<{
             <div className="w-20 h-20 rounded-sm bg-token-surface-stripe flex items-center justify-center mb-6 border border-token-border-technical shadow-inner">
               <ClockIcon className="w-10 h-10 text-token-text-tertiary" />
             </div>
-            <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest text-center">
+            <p className="typo-list-secondary text-token-text-tertiary uppercase text-center">
               NO SE IDENTIFICARON REGISTROS
               <br />
               EN ESTE SEGMENTO

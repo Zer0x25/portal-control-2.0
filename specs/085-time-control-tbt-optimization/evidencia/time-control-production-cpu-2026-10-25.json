@@ -1,0 +1,4225 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-10-25T06:41:34.295Z",
+  "source": {
+    "commit": "8eec1f5bdf01119a6799f47223e9966772893dcf",
+    "workingTreeDirty": true
+  },
+  "runtime": {
+    "nodeVersion": "v26.10.0",
+    "browser": "Chromium",
+    "browserVersion": "153.0.8010.12",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75,
+    "cpuThrottleRate": 4,
+    "samplingIntervalUs": 1000
+  },
+  "target": {
+    "routeId": "time-control",
+    "profile": "active-staging-production-bundle",
+    "stagingFrontendImageId": "sha256:fcdcc13af02ae5891514463b2f5bec9d8c22202417edbb1a63de7e17544e5524",
+    "sourceMapAssetsMatched": true,
+    "comparedScriptAssets": 208
+  },
+  "samples": [
+    {
+      "wallWindowMs": 3271,
+      "clockVisible": true,
+      "apiResponseFailures": 0,
+      "websocketOpenCount": 1,
+      "websocketErrorCount": 0,
+      "websocketReceivedFrameCount": 2,
+      "sampleCount": 2103,
+      "profileWindowMs": 3105.889,
+      "activeSampledMs": 1294.157,
+      "idleSampledMs": 774.454,
+      "programSampledMs": 1037.278,
+      "reactCoreInclusiveSampledMs": 749.466,
+      "reactCoreSelfSampledMs": 290.766,
+      "reactCoreSourceMappedSampledMs": 749.466,
+      "reactCoreSourceMapCoverage": 1,
+      "noAppFrameSampledMs": 748.345,
+      "noAppLeafCategorySampledMs": {
+        "browser-native-or-unknown": 320.206,
+        "mapped-dependency": 406.076,
+        "other-mapped-source": 2.597,
+        "unmapped-bundle": 19.466
+      },
+      "appInclusiveFrames": [
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 77.138
+        },
+        {
+          "key": "src/features/time-control/hooks/useClockingPanel.ts::anonymous@194",
+          "sourcePath": "src/features/time-control/hooks/useClockingPanel.ts",
+          "functionName": "anonymous",
+          "sourceLine": 194,
+          "sampledMs": 42.392
+        },
+        {
+          "key": "src/App.tsx::anonymous@16",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 16,
+          "sampledMs": 23.265
+        },
+        {
+          "key": "src/App.tsx::anonymous@35",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 35,
+          "sampledMs": 21.705
+        },
+        {
+          "key": "src/services/socketService.ts::connect@11",
+          "sourcePath": "src/services/socketService.ts",
+          "functionName": "connect",
+          "sourceLine": 11,
+          "sampledMs": 15.965
+        },
+        {
+          "key": "src/utils/indexedDB.ts::initDB@37",
+          "sourcePath": "src/utils/indexedDB.ts",
+          "functionName": "initDB",
+          "sourceLine": 37,
+          "sampledMs": 15.159
+        },
+        {
+          "key": "src/utils/timePolicy.ts::formatBusinessDateCL@26",
+          "sourcePath": "src/utils/timePolicy.ts",
+          "functionName": "formatBusinessDateCL",
+          "sourceLine": 26,
+          "sampledMs": 12.846
+        },
+        {
+          "key": "src/services/holidayService.ts::getAll@15",
+          "sourcePath": "src/services/holidayService.ts",
+          "functionName": "getAll",
+          "sourceLine": 15,
+          "sampledMs": 12.122
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "useControlInternoEnabledQuery",
+          "sourceLine": 73,
+          "sampledMs": 10.194
+        },
+        {
+          "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+          "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+          "functionName": "de",
+          "sourceLine": 102,
+          "sampledMs": 10.093
+        },
+        {
+          "key": "src/services/apiClient.ts::readBody@436",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "readBody",
+          "sourceLine": 436,
+          "sampledMs": 9.815
+        },
+        {
+          "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+          "sourcePath": "src/utils/idbValidation.ts",
+          "functionName": "filterValidIdbItems",
+          "sourceLine": 63,
+          "sampledMs": 9.299
+        },
+        {
+          "key": "src/hooks/useAuth.ts::useAuth@4",
+          "sourcePath": "src/hooks/useAuth.ts",
+          "functionName": "useAuth",
+          "sourceLine": 4,
+          "sampledMs": 8.8
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::theme@22",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "theme",
+          "sourceLine": 22,
+          "sampledMs": 7.416
+        },
+        {
+          "key": "src/utils/indexedDB.ts::createStoreWithSyncIndexes@43",
+          "sourcePath": "src/utils/indexedDB.ts",
+          "functionName": "createStoreWithSyncIndexes",
+          "sourceLine": 43,
+          "sampledMs": 6.975
+        },
+        {
+          "key": "src/hooks/queries/useTimeRecordsQuery.ts::_@33",
+          "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+          "functionName": "_",
+          "sourceLine": 33,
+          "sampledMs": 6.735
+        },
+        {
+          "key": "src/hooks/queries/useAssignedShiftsQuery.ts::s@6",
+          "sourcePath": "src/hooks/queries/useAssignedShiftsQuery.ts",
+          "functionName": "s",
+          "sourceLine": 6,
+          "sampledMs": 6.627
+        },
+        {
+          "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+          "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+          "functionName": "useTimeRecordMutations",
+          "sourceLine": 203,
+          "sampledMs": 6.564
+        },
+        {
+          "key": "src/hooks/useSocketEvents.ts::d@41",
+          "sourcePath": "src/hooks/useSocketEvents.ts",
+          "functionName": "d",
+          "sourceLine": 41,
+          "sampledMs": 6.529
+        },
+        {
+          "key": "src/utils/sentryMiddlewares.ts::config@52",
+          "sourcePath": "src/utils/sentryMiddlewares.ts",
+          "functionName": "config",
+          "sourceLine": 52,
+          "sampledMs": 6.111
+        }
+      ],
+      "selfFrames": [
+        {
+          "key": "mapped/unmapped/unknown.js::anonymous",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "sampledMs": 224.897,
+          "sampleCount": 101
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::fetch",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "fetch",
+          "sampledMs": 64.194,
+          "sampleCount": 21
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::appendChild",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "sampledMs": 50.197,
+          "sampleCount": 38
+        },
+        {
+          "key": "src/features/time-control/hooks/useClockingPanel.ts::anonymous@194",
+          "sourcePath": "src/features/time-control/hooks/useClockingPanel.ts",
+          "functionName": "anonymous",
+          "sourceLine": 194,
+          "sampledMs": 42.392,
+          "sampleCount": 11
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "sourceLine": 4627,
+          "sampledMs": 34.177,
+          "sampleCount": 30
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::garbage collector",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "sampledMs": 24.933,
+          "sampleCount": 11
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "sampledMs": 20.807,
+          "sampleCount": 16
+        },
+        {
+          "key": "node_modules/idb/build/index.js::anonymous@118",
+          "sourcePath": "node_modules/idb/build/index.js",
+          "functionName": "anonymous",
+          "sourceLine": 118,
+          "sampledMs": 19.223,
+          "sampleCount": 11
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::initInput@1315",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "initInput",
+          "sourceLine": 1315,
+          "sampledMs": 18.65,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::clearIfContinuousEvent@18130",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "clearIfContinuousEvent",
+          "sourceLine": 18130,
+          "sampledMs": 15.673,
+          "sampleCount": 1
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setValueForAttribute@1125",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForAttribute",
+          "sourceLine": 1125,
+          "sampledMs": 15.372,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/idb/build/index.js::openDB@163",
+          "sourcePath": "node_modules/idb/build/index.js",
+          "functionName": "openDB",
+          "sourceLine": 163,
+          "sampledMs": 14.221,
+          "sampleCount": 4
+        },
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 12.944,
+          "sampleCount": 10
+        },
+        {
+          "key": "src/services/holidayService.ts::getAll@15",
+          "sourcePath": "src/services/holidayService.ts",
+          "functionName": "getAll",
+          "sourceLine": 15,
+          "sampledMs": 12.122,
+          "sampleCount": 1
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "sourceLine": 7768,
+          "sampledMs": 11.828,
+          "sampleCount": 7
+        },
+        {
+          "key": "node_modules/zod/v4/core/core.js::init@50",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "sourceLine": 50,
+          "sampledMs": 11.309,
+          "sampleCount": 10
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "sourceLine": 8359,
+          "sampledMs": 11.07,
+          "sampleCount": 6
+        },
+        {
+          "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+          "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+          "functionName": "de",
+          "sourceLine": 102,
+          "sampledMs": 10.093,
+          "sampleCount": 9
+        },
+        {
+          "key": "src/services/apiClient.ts::readBody@436",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "readBody",
+          "sourceLine": 436,
+          "sampledMs": 9.815,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::createElement",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "createElement",
+          "sampledMs": 8.848,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/zustand/esm/vanilla/shallow.mjs::compareEntries@6",
+          "sourcePath": "node_modules/zustand/esm/vanilla/shallow.mjs",
+          "functionName": "compareEntries",
+          "sourceLine": 6,
+          "sampledMs": 7.698,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "sourceLine": 1,
+          "sampledMs": 7.559,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::getElementById",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "getElementById",
+          "sampledMs": 7.474,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/queryObserver.js::getOptimisticResult@132",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "getOptimisticResult",
+          "sourceLine": 132,
+          "sampledMs": 7.167,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::d",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "d",
+          "sampledMs": 6.645,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::popHydrationState@3066",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "popHydrationState",
+          "sourceLine": 3066,
+          "sampledMs": 6.617,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::query",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "sampledMs": 6.543,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/date-fns/format.js::format@329",
+          "sourcePath": "node_modules/date-fns/format.js",
+          "functionName": "format",
+          "sourceLine": 329,
+          "sampledMs": 6.172,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/queryObserver.js::shouldFetchOptionally@444",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "shouldFetchOptionally",
+          "sourceLine": 444,
+          "sampledMs": 5.822,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setValueForKnownAttribute@1145",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForKnownAttribute",
+          "sourceLine": 1145,
+          "sampledMs": 5.735,
+          "sampleCount": 6
+        }
+      ],
+      "noAppLeafFrames": [
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::anonymous",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "scriptName": "unknown.js",
+          "sampledMs": 224.897,
+          "sampleCount": 101
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4627,
+          "sampledMs": 34.177,
+          "sampleCount": 30
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::garbage collector",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "scriptName": "unknown.js",
+          "sampledMs": 24.933,
+          "sampleCount": 11
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::initInput@1315",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "initInput",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 1315,
+          "sampledMs": 18.65,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::clearIfContinuousEvent@18130",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "clearIfContinuousEvent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 18130,
+          "sampledMs": 15.673,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setValueForAttribute@1125",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForAttribute",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 1125,
+          "sampledMs": 15.372,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 7768,
+          "sampledMs": 11.828,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 50,
+          "sampledMs": 11.309,
+          "sampleCount": 10
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 8359,
+          "sampledMs": 11.07,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "scriptName": "date-utils-DTu9wXYq.js",
+          "sourceLine": 1,
+          "sampledMs": 7.559,
+          "sampleCount": 5
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::getElementById",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "getElementById",
+          "scriptName": "unknown.js",
+          "sampledMs": 7.474,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::popHydrationState@3066",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "popHydrationState",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 3066,
+          "sampledMs": 6.617,
+          "sampleCount": 2
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::query",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "scriptName": "unknown.js",
+          "sampledMs": 6.543,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setValueForKnownAttribute@1145",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForKnownAttribute",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 1145,
+          "sampledMs": 5.735,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12815,
+          "sampledMs": 5.645,
+          "sampleCount": 3
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::appendChild",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "scriptName": "unknown.js",
+          "sampledMs": 5.528,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::createCache@3337",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "createCache",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 3337,
+          "sampledMs": 5.461,
+          "sampleCount": 1
+        },
+        {
+          "key": "unmapped-bundle:mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "category": "unmapped-bundle",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "scriptName": "router-BRIQhtRw.js",
+          "sampledMs": 5.316,
+          "sampleCount": 5
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::createElementNS",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "createElementNS",
+          "scriptName": "unknown.js",
+          "sampledMs": 5.281,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14803,
+          "sampledMs": 5.114,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::performWorkUntilDeadline@121",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "performWorkUntilDeadline",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 121,
+          "sampledMs": 5.077,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::e.unstable_now@63",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "e.unstable_now",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 63,
+          "sampledMs": 4.956,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/utils.js::computeScore@327",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/router/utils.js",
+          "functionName": "computeScore",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 327,
+          "sampledMs": 4.861,
+          "sampleCount": 1
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::InjectedScript",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "InjectedScript",
+          "scriptName": "unknown.js",
+          "sampledMs": 4.845,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/workbox-window/build/workbox-window.prod.es5.mjs::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/workbox-window/build/workbox-window.prod.es5.mjs",
+          "functionName": "anonymous",
+          "scriptName": "vendor-15MWHJyx.js",
+          "sourceLine": 1,
+          "sampledMs": 4.734,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react/cjs/react.production.js::mapChildren@256",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react/cjs/react.production.js",
+          "functionName": "mapChildren",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 256,
+          "sampledMs": 4.71,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::flushPendingEffects@13221",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "flushPendingEffects",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13221,
+          "sampledMs": 4.68,
+          "sampleCount": 2
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::createElement",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "createElement",
+          "scriptName": "unknown.js",
+          "sampledMs": 4.652,
+          "sampleCount": 2
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::computeElementStyleVisibilityVisible",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "computeElementStyleVisibilityVisible",
+          "scriptName": "unknown.js",
+          "sampledMs": 4.624,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14406,
+          "sampledMs": 4.599,
+          "sampleCount": 2
+        }
+      ],
+      "noAppContextFrames": [
+        {
+          "key": "unresolved-context",
+          "category": "unresolved-context",
+          "sourcePath": "unresolved-context",
+          "functionName": "unresolved-context",
+          "sampledMs": 308.237,
+          "sampleCount": 156
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateFunctionComponent@6791",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateFunctionComponent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 6791,
+          "sampledMs": 33.285,
+          "sampleCount": 29
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 8359,
+          "sampledMs": 26.141,
+          "sampleCount": 15
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14803,
+          "sampledMs": 23.249,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14406,
+          "sampledMs": 22.043,
+          "sampleCount": 13
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::dispatchEvent@17907",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "dispatchEvent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 17907,
+          "sampledMs": 17.505,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12706,
+          "sampledMs": 17.473,
+          "sampleCount": 10
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12815,
+          "sampledMs": 11.07,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitRoot@12906",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitRoot",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12906,
+          "sampledMs": 11.022,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 50,
+          "sampledMs": 8.849,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRootViaSchedulerTask@13555",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performWorkOnRootViaSchedulerTask",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13555,
+          "sampledMs": 8.599,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::processRootScheduleInMicrotask@13456",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "processRootScheduleInMicrotask",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13456,
+          "sampledMs": 8.264,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::performWorkUntilDeadline@121",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "performWorkUntilDeadline",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 121,
+          "sampledMs": 7.647,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "scriptName": "date-utils-DTu9wXYq.js",
+          "sourceLine": 1,
+          "sampledMs": 7.559,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4627,
+          "sampledMs": 6.588,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/util.js::anonymous@17",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/util.js",
+          "functionName": "anonymous",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 17,
+          "sampledMs": 5.934,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/workbox-window/build/workbox-window.prod.es5.mjs::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/workbox-window/build/workbox-window.prod.es5.mjs",
+          "functionName": "anonymous",
+          "scriptName": "vendor-15MWHJyx.js",
+          "sourceLine": 1,
+          "sampledMs": 5.833,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/utils.js::flattenRoute@264",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/router/utils.js",
+          "functionName": "flattenRoute",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 264,
+          "sampledMs": 5.658,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::createFiberRoot@17777",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "createFiberRoot",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 17777,
+          "sampledMs": 5.461,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@18611",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "anonymous",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 18611,
+          "sampledMs": 5.221,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRoot@12069",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performWorkOnRoot",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12069,
+          "sampledMs": 4.932,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::v@266",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "v",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 266,
+          "sampledMs": 4.794,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/socket.io-client/build/esm/manager.js::onopen@168",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/socket.io-client/build/esm/manager.js",
+          "functionName": "onopen",
+          "scriptName": "realtime-C7QaxhyT.js",
+          "sourceLine": 168,
+          "sampledMs": 4.725,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react/cjs/react.production.js::forEach@356",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react/cjs/react.production.js",
+          "functionName": "forEach",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 356,
+          "sampledMs": 4.71,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitDeletionEffectsOnFiber@10201",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitDeletionEffectsOnFiber",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 10201,
+          "sampledMs": 4.432,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/util.js::get value@38",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/util.js",
+          "functionName": "get value",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 38,
+          "sampledMs": 4.309,
+          "sampleCount": 2
+        },
+        {
+          "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::register@25",
+          "category": "other-mapped-source",
+          "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+          "functionName": "register",
+          "scriptName": "index-DUbWgeaW.js",
+          "sourceLine": 25,
+          "sampledMs": 4.25,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::anonymous@340",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "anonymous",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 340,
+          "sampledMs": 4.026,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 7768,
+          "sampledMs": 3.832,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::reconcileChildFibersImpl@4078",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "reconcileChildFibersImpl",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4078,
+          "sampledMs": 3.701,
+          "sampleCount": 3
+        }
+      ]
+    },
+    {
+      "wallWindowMs": 2853,
+      "clockVisible": true,
+      "apiResponseFailures": 0,
+      "websocketOpenCount": 1,
+      "websocketErrorCount": 0,
+      "websocketReceivedFrameCount": 2,
+      "sampleCount": 1937,
+      "profileWindowMs": 2757.519,
+      "activeSampledMs": 1039.546,
+      "idleSampledMs": 807.403,
+      "programSampledMs": 910.57,
+      "reactCoreInclusiveSampledMs": 642.026,
+      "reactCoreSelfSampledMs": 275.589,
+      "reactCoreSourceMappedSampledMs": 642.026,
+      "reactCoreSourceMapCoverage": 1,
+      "noAppFrameSampledMs": 618.505,
+      "noAppLeafCategorySampledMs": {
+        "browser-native-or-unknown": 228.957,
+        "mapped-dependency": 360.129,
+        "other-mapped-source": 4.563,
+        "unmapped-bundle": 24.856
+      },
+      "appInclusiveFrames": [
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 58.343
+        },
+        {
+          "key": "src/App.tsx::anonymous@16",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 16,
+          "sampledMs": 20.158
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 17.018
+        },
+        {
+          "key": "src/services/socketService.ts::connect@11",
+          "sourcePath": "src/services/socketService.ts",
+          "functionName": "connect",
+          "sourceLine": 11,
+          "sampledMs": 15.995
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "useControlInternoEnabledQuery",
+          "sourceLine": 73,
+          "sampledMs": 14.952
+        },
+        {
+          "key": "src/App.tsx::anonymous@35",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 35,
+          "sampledMs": 11.956
+        },
+        {
+          "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+          "sourcePath": "src/utils/idbValidation.ts",
+          "functionName": "filterValidIdbItems",
+          "sourceLine": 63,
+          "sampledMs": 11.866
+        },
+        {
+          "key": "src/utils/timePolicy.ts::formatBusinessDateCL@26",
+          "sourcePath": "src/utils/timePolicy.ts",
+          "functionName": "formatBusinessDateCL",
+          "sourceLine": 26,
+          "sampledMs": 10.519
+        },
+        {
+          "key": "src/App.tsx::anonymous@17",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 17,
+          "sampledMs": 8.222
+        },
+        {
+          "key": "src/utils/sentryMiddlewares.ts::config@52",
+          "sourcePath": "src/utils/sentryMiddlewares.ts",
+          "functionName": "config",
+          "sourceLine": 52,
+          "sampledMs": 7.66
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 7.418
+        },
+        {
+          "key": "src/features/time-control/hooks/useTimeRecordFilters.ts::useTimeRecordFilters@55",
+          "sourcePath": "src/features/time-control/hooks/useTimeRecordFilters.ts",
+          "functionName": "useTimeRecordFilters",
+          "sourceLine": 55,
+          "sampledMs": 7.244
+        },
+        {
+          "key": "src/hooks/useAudio.ts::useAudio@65",
+          "sourcePath": "src/hooks/useAudio.ts",
+          "functionName": "useAudio",
+          "sourceLine": 65,
+          "sampledMs": 6.969
+        },
+        {
+          "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+          "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+          "functionName": "d",
+          "sourceLine": 14,
+          "sampledMs": 6.954
+        },
+        {
+          "key": "src/hooks/useAuth.ts::useAuthShellControls@21",
+          "sourcePath": "src/hooks/useAuth.ts",
+          "functionName": "useAuthShellControls",
+          "sourceLine": 21,
+          "sampledMs": 6.456
+        },
+        {
+          "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+          "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+          "functionName": "de",
+          "sourceLine": 102,
+          "sampledMs": 6.131
+        },
+        {
+          "key": "src/hooks/useConfigMutations.ts::useConfigMutations@6",
+          "sourcePath": "src/hooks/useConfigMutations.ts",
+          "functionName": "useConfigMutations",
+          "sourceLine": 6,
+          "sampledMs": 5.834
+        },
+        {
+          "key": "src/hooks/useSocketEvents.ts::d@41",
+          "sourcePath": "src/hooks/useSocketEvents.ts",
+          "functionName": "d",
+          "sourceLine": 41,
+          "sampledMs": 5.474
+        },
+        {
+          "key": "src/hooks/layout/useNotificationCenterController.ts::useNotificationCenterController@6",
+          "sourcePath": "src/hooks/layout/useNotificationCenterController.ts",
+          "functionName": "useNotificationCenterController",
+          "sourceLine": 6,
+          "sampledMs": 5.405
+        },
+        {
+          "key": "src/components/ui/InitialSyncOverlay.tsx::InitialSyncOverlay@10",
+          "sourcePath": "src/components/ui/InitialSyncOverlay.tsx",
+          "functionName": "InitialSyncOverlay",
+          "sourceLine": 10,
+          "sampledMs": 5.311
+        }
+      ],
+      "selfFrames": [
+        {
+          "key": "mapped/unmapped/unknown.js::anonymous",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "sampledMs": 125.866,
+          "sampleCount": 79
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::appendChild",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "sampledMs": 41.67,
+          "sampleCount": 24
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::fetch",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "fetch",
+          "sampledMs": 34.261,
+          "sampleCount": 21
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "sourceLine": 4627,
+          "sampledMs": 33.706,
+          "sampleCount": 26
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::garbage collector",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "sampledMs": 25.36,
+          "sampleCount": 20
+        },
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 24.082,
+          "sampleCount": 16
+        },
+        {
+          "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+          "sourcePath": "src/store/slices/themeSlice.ts",
+          "functionName": "_applyTheme",
+          "sourceLine": 17,
+          "sampledMs": 17.018,
+          "sampleCount": 13
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::d",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "d",
+          "sampledMs": 11.627,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::InjectedScript",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "InjectedScript",
+          "sampledMs": 11.326,
+          "sampleCount": 10
+        },
+        {
+          "key": "node_modules/zod/v4/core/core.js::init@50",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "sourceLine": 50,
+          "sampledMs": 10.386,
+          "sampleCount": 8
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "sourceLine": 8359,
+          "sampledMs": 10.237,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/idb/build/index.js::anonymous@118",
+          "sourcePath": "node_modules/idb/build/index.js",
+          "functionName": "anonymous",
+          "sourceLine": 118,
+          "sampledMs": 8.909,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::query",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "sampledMs": 8.839,
+          "sampleCount": 7
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "sourceLine": 9011,
+          "sampledMs": 8.783,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "sourceLine": 14406,
+          "sampledMs": 8.767,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "sourceLine": 14803,
+          "sampledMs": 8.673,
+          "sampleCount": 7
+        },
+        {
+          "key": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "sourceLine": 1,
+          "sampledMs": 8.18,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "sourceLine": 7768,
+          "sampledMs": 7.828,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::createFiberFromTypeAndProps@2737",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "createFiberFromTypeAndProps",
+          "sourceLine": 2737,
+          "sampledMs": 7.588,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::createElement",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "createElement",
+          "sampledMs": 7.467,
+          "sampleCount": 4
+        },
+        {
+          "key": "src/components/ui/ServerClock.tsx::a@16",
+          "sourcePath": "src/components/ui/ServerClock.tsx",
+          "functionName": "a",
+          "sourceLine": 16,
+          "sampledMs": 7.418,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/queryClient.js::defaultQueryOptions@604",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryClient.js",
+          "functionName": "defaultQueryOptions",
+          "sourceLine": 604,
+          "sampledMs": 6.874,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js::useBaseQuery@10",
+          "sourcePath": "node_modules/@tanstack/react-query/build/modern/useBaseQuery.js",
+          "functionName": "useBaseQuery",
+          "sourceLine": 10,
+          "sampledMs": 6.758,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "sampledMs": 6.678,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped/unmapped/rolldown-runtime-hePW80VL.js::anonymous",
+          "sourcePath": "mapped/unmapped/rolldown-runtime-hePW80VL.js",
+          "functionName": "anonymous",
+          "sampledMs": 6.382,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/zustand/esm/react.mjs::useStore@5",
+          "sourcePath": "node_modules/zustand/esm/react.mjs",
+          "functionName": "useStore",
+          "sourceLine": 5,
+          "sampledMs": 6.178,
+          "sampleCount": 3
+        },
+        {
+          "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+          "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+          "functionName": "de",
+          "sourceLine": 102,
+          "sampledMs": 6.131,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/utils.js::shallowEqualObjects@143",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/utils.js",
+          "functionName": "shallowEqualObjects",
+          "sourceLine": 143,
+          "sampledMs": 6.056,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/queryCache.js::getAll@143",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryCache.js",
+          "functionName": "getAll",
+          "sourceLine": 143,
+          "sampledMs": 5.997,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setValueForStyles@1457",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForStyles",
+          "sourceLine": 1457,
+          "sampledMs": 5.996,
+          "sampleCount": 1
+        }
+      ],
+      "noAppLeafFrames": [
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::anonymous",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "scriptName": "unknown.js",
+          "sampledMs": 125.866,
+          "sampleCount": 79
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4627,
+          "sampledMs": 33.706,
+          "sampleCount": 26
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::garbage collector",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "scriptName": "unknown.js",
+          "sampledMs": 25.36,
+          "sampleCount": 20
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::InjectedScript",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "InjectedScript",
+          "scriptName": "unknown.js",
+          "sampledMs": 11.326,
+          "sampleCount": 10
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 50,
+          "sampledMs": 10.386,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 8359,
+          "sampledMs": 10.237,
+          "sampleCount": 6
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::query",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "scriptName": "unknown.js",
+          "sampledMs": 8.839,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9011,
+          "sampledMs": 8.783,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14406,
+          "sampledMs": 8.767,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14803,
+          "sampledMs": 8.673,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "scriptName": "date-utils-DTu9wXYq.js",
+          "sourceLine": 1,
+          "sampledMs": 8.18,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 7768,
+          "sampledMs": 7.828,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::createFiberFromTypeAndProps@2737",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "createFiberFromTypeAndProps",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 2737,
+          "sampledMs": 7.588,
+          "sampleCount": 3
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::createElement",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "createElement",
+          "scriptName": "unknown.js",
+          "sampledMs": 7.467,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/utils.js::shallowEqualObjects@143",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/utils.js",
+          "functionName": "shallowEqualObjects",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 143,
+          "sampledMs": 6.056,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryCache.js::getAll@143",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryCache.js",
+          "functionName": "getAll",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 143,
+          "sampledMs": 5.997,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setValueForStyles@1457",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setValueForStyles",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 1457,
+          "sampledMs": 5.996,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/dom/lib.js::anonymous@287",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/dom/lib.js",
+          "functionName": "anonymous",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 287,
+          "sampledMs": 5.832,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::flushPendingEffects@13221",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "flushPendingEffects",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13221,
+          "sampledMs": 5.817,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateProperties@15035",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 15035,
+          "sampledMs": 5.314,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/schemas.js::D.standard@8",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/schemas.js",
+          "functionName": "D.standard",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 8,
+          "sampledMs": 5.312,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::batchedUpdates$1@1663",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "batchedUpdates$1",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 1663,
+          "sampledMs": 5.139,
+          "sampleCount": 3
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::o",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "o",
+          "scriptName": "unknown.js",
+          "sampledMs": 4.855,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::subscribeToStore@5036",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "subscribeToStore",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 5036,
+          "sampledMs": 4.843,
+          "sampleCount": 1
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::parentElementOrShadowHostInContext",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "parentElementOrShadowHostInContext",
+          "scriptName": "unknown.js",
+          "sampledMs": 4.44,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::reconcileChildFibersImpl@4078",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "reconcileChildFibersImpl",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4078,
+          "sampledMs": 4.415,
+          "sampleCount": 4
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::queueMicrotask",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "queueMicrotask",
+          "scriptName": "unknown.js",
+          "sampledMs": 4.407,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/utils.js::matchRoutes@236",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/router/utils.js",
+          "functionName": "matchRoutes",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 236,
+          "sampledMs": 4.273,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12706,
+          "sampledMs": 4.064,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::bailoutOffscreenComponent@6614",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "bailoutOffscreenComponent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 6614,
+          "sampledMs": 3.891,
+          "sampleCount": 1
+        }
+      ],
+      "noAppContextFrames": [
+        {
+          "key": "unresolved-context",
+          "category": "unresolved-context",
+          "sourcePath": "unresolved-context",
+          "functionName": "unresolved-context",
+          "sampledMs": 224.015,
+          "sampleCount": 154
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateFunctionComponent@6791",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateFunctionComponent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 6791,
+          "sampledMs": 28.65,
+          "sampleCount": 24
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 8359,
+          "sampledMs": 21.046,
+          "sampleCount": 14
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 50,
+          "sampledMs": 13.09,
+          "sampleCount": 9
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4627,
+          "sampledMs": 12.431,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14406,
+          "sampledMs": 10.662,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 7768,
+          "sampledMs": 10.56,
+          "sampleCount": 9
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14803,
+          "sampledMs": 10.458,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12815,
+          "sampledMs": 10.237,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12706,
+          "sampledMs": 9.831,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9011,
+          "sampledMs": 9.776,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::updateResult@383",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "updateResult",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 383,
+          "sampledMs": 9.482,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitMutationEffectsOnFiber@10497",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitMutationEffectsOnFiber",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 10497,
+          "sampledMs": 9.167,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "scriptName": "date-utils-DTu9wXYq.js",
+          "sourceLine": 1,
+          "sampledMs": 8.18,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseReconnectPassiveEffects@11596",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "recursivelyTraverseReconnectPassiveEffects",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 11596,
+          "sampledMs": 7.803,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::reconcileChildFibersImpl@4078",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "reconcileChildFibersImpl",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4078,
+          "sampledMs": 6.183,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateForwardRef@6425",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateForwardRef",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 6425,
+          "sampledMs": 6.13,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@4249",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "anonymous",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4249,
+          "sampledMs": 6.023,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::performWorkUntilDeadline@121",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "performWorkUntilDeadline",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 121,
+          "sampledMs": 5.553,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHostUpdate@9218",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHostUpdate",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9218,
+          "sampledMs": 5.314,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::_@94",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "_",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 94,
+          "sampledMs": 5.295,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::dispatchEventForPluginEventSystem@13884",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "dispatchEventForPluginEventSystem",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13884,
+          "sampledMs": 5.139,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::e.createRoot@18577",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "e.createRoot",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 18577,
+          "sampledMs": 5.049,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateSuspenseComponent@7136",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateSuspenseComponent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 7136,
+          "sampledMs": 4.907,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseMutationEffects@10454",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "recursivelyTraverseMutationEffects",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 10454,
+          "sampledMs": 4.874,
+          "sampleCount": 3
+        },
+        {
+          "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::register@25",
+          "category": "other-mapped-source",
+          "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+          "functionName": "register",
+          "scriptName": "index-DUbWgeaW.js",
+          "sourceLine": 25,
+          "sampledMs": 4.687,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::insertOrAppendPlacementNodeIntoContainer@9256",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "insertOrAppendPlacementNodeIntoContainer",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9256,
+          "sampledMs": 4.587,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRootViaSchedulerTask@13555",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performWorkOnRootViaSchedulerTask",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13555,
+          "sampledMs": 4.525,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::scheduleImmediateRootScheduleTask@13578",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "scheduleImmediateRootScheduleTask",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13578,
+          "sampledMs": 4.407,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/hooks.js::useRoutesImpl@579",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/hooks.js",
+          "functionName": "useRoutesImpl",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 579,
+          "sampledMs": 4.273,
+          "sampleCount": 1
+        }
+      ]
+    },
+    {
+      "wallWindowMs": 2655,
+      "clockVisible": true,
+      "apiResponseFailures": 0,
+      "websocketOpenCount": 1,
+      "websocketErrorCount": 0,
+      "websocketReceivedFrameCount": 2,
+      "sampleCount": 1923,
+      "profileWindowMs": 2537.234,
+      "activeSampledMs": 1028.566,
+      "idleSampledMs": 728.091,
+      "programSampledMs": 780.577,
+      "reactCoreInclusiveSampledMs": 675.703,
+      "reactCoreSelfSampledMs": 269.971,
+      "reactCoreSourceMappedSampledMs": 675.703,
+      "reactCoreSourceMapCoverage": 1,
+      "noAppFrameSampledMs": 567.193,
+      "noAppLeafCategorySampledMs": {
+        "browser-native-or-unknown": 156.314,
+        "mapped-dependency": 376.524,
+        "other-mapped-source": 6.933,
+        "unmapped-bundle": 27.422
+      },
+      "appInclusiveFrames": [
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 70.408
+        },
+        {
+          "key": "src/App.tsx::anonymous@35",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 35,
+          "sampledMs": 21.726
+        },
+        {
+          "key": "src/App.tsx::anonymous@16",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 16,
+          "sampledMs": 20.936
+        },
+        {
+          "key": "src/utils/indexedDB.ts::he@219",
+          "sourcePath": "src/utils/indexedDB.ts",
+          "functionName": "he",
+          "sourceLine": 219,
+          "sampledMs": 13.821
+        },
+        {
+          "key": "src/utils/indexedDB.ts::loadValidation@32",
+          "sourcePath": "src/utils/indexedDB.ts",
+          "functionName": "loadValidation",
+          "sourceLine": 32,
+          "sampledMs": 12.086
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "useControlInternoEnabledQuery",
+          "sourceLine": 73,
+          "sampledMs": 11.43
+        },
+        {
+          "key": "src/hooks/queries/useEmployeesQuery.ts::h@28",
+          "sourcePath": "src/hooks/queries/useEmployeesQuery.ts",
+          "functionName": "h",
+          "sourceLine": 28,
+          "sampledMs": 10.558
+        },
+        {
+          "key": "src/features/time-control/hooks/useTimeControl.ts::useTimeControl@25",
+          "sourcePath": "src/features/time-control/hooks/useTimeControl.ts",
+          "functionName": "useTimeControl",
+          "sourceLine": 25,
+          "sampledMs": 10.113
+        },
+        {
+          "key": "src/utils/timePolicy.ts::formatBusinessDateCL@26",
+          "sourcePath": "src/utils/timePolicy.ts",
+          "functionName": "formatBusinessDateCL",
+          "sourceLine": 26,
+          "sampledMs": 9.963
+        },
+        {
+          "key": "src/services/socketService.ts::connect@11",
+          "sourcePath": "src/services/socketService.ts",
+          "functionName": "connect",
+          "sourceLine": 11,
+          "sampledMs": 9.924
+        },
+        {
+          "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+          "sourcePath": "src/utils/idbValidation.ts",
+          "functionName": "filterValidIdbItems",
+          "sourceLine": 63,
+          "sampledMs": 8.848
+        },
+        {
+          "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+          "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+          "functionName": "de",
+          "sourceLine": 102,
+          "sampledMs": 8.22
+        },
+        {
+          "key": "src/App.tsx::App@105",
+          "sourcePath": "src/App.tsx",
+          "functionName": "App",
+          "sourceLine": 105,
+          "sampledMs": 7.763
+        },
+        {
+          "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+          "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+          "functionName": "usePersistentLayoutController",
+          "sourceLine": 10,
+          "sampledMs": 7.291
+        },
+        {
+          "key": "src/services/apiClient.ts::readBody@436",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "readBody",
+          "sourceLine": 436,
+          "sampledMs": 7.237
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 7.199
+        },
+        {
+          "key": "src/hooks/queries/useConfigQuery.ts::Ft@17",
+          "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+          "functionName": "Ft",
+          "sourceLine": 17,
+          "sampledMs": 7.057
+        },
+        {
+          "key": "src/hooks/useAuth.ts::useAuth@4",
+          "sourcePath": "src/hooks/useAuth.ts",
+          "functionName": "useAuth",
+          "sourceLine": 4,
+          "sampledMs": 6.642
+        },
+        {
+          "key": "src/App.tsx::anonymous@17",
+          "sourcePath": "src/App.tsx",
+          "functionName": "anonymous",
+          "sourceLine": 17,
+          "sampledMs": 6.409
+        },
+        {
+          "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+          "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+          "functionName": "useTimeRecordMutations",
+          "sourceLine": 203,
+          "sampledMs": 6.073
+        }
+      ],
+      "selfFrames": [
+        {
+          "key": "mapped/unmapped/unknown.js::anonymous",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "sampledMs": 87.445,
+          "sampleCount": 74
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::appendChild",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "appendChild",
+          "sampledMs": 52.357,
+          "sampleCount": 32
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "sourceLine": 4627,
+          "sampledMs": 46.057,
+          "sampleCount": 34
+        },
+        {
+          "key": "src/services/apiClient.ts::performRequest@384",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "performRequest",
+          "sourceLine": 384,
+          "sampledMs": 36.399,
+          "sampleCount": 17
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::fetch",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "fetch",
+          "sampledMs": 34.009,
+          "sampleCount": 22
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::garbage collector",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "sampledMs": 27.745,
+          "sampleCount": 18
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "sourceLine": 8359,
+          "sampledMs": 19.089,
+          "sampleCount": 14
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "sourceLine": 7768,
+          "sampledMs": 15.454,
+          "sampleCount": 9
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "sampledMs": 13.976,
+          "sampleCount": 10
+        },
+        {
+          "key": "node_modules/zod/v4/core/core.js::init@50",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "sourceLine": 50,
+          "sampledMs": 12.13,
+          "sampleCount": 11
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/queryObserver.js::getOptimisticResult@132",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "getOptimisticResult",
+          "sourceLine": 132,
+          "sampledMs": 11.695,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/idb/build/index.js::anonymous@118",
+          "sourcePath": "node_modules/idb/build/index.js",
+          "functionName": "anonymous",
+          "sourceLine": 118,
+          "sampledMs": 11.436,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped/unmapped/router-BRIQhtRw.js::d",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "d",
+          "sampledMs": 11.234,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "sourceLine": 14803,
+          "sampledMs": 10.837,
+          "sampleCount": 5
+        },
+        {
+          "key": "src/features/time-control/hooks/useTimeControl.ts::useTimeControl@25",
+          "sourcePath": "src/features/time-control/hooks/useTimeControl.ts",
+          "functionName": "useTimeControl",
+          "sourceLine": 25,
+          "sampledMs": 10.113,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/@tanstack/query-core/build/modern/queryObserver.js::createResult@290",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "createResult",
+          "sourceLine": 290,
+          "sampledMs": 8.72,
+          "sampleCount": 6
+        },
+        {
+          "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+          "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+          "functionName": "de",
+          "sourceLine": 102,
+          "sampledMs": 8.22,
+          "sampleCount": 8
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::popHostContext@442",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "popHostContext",
+          "sourceLine": 442,
+          "sampledMs": 7.743,
+          "sampleCount": 1
+        },
+        {
+          "key": "node_modules/react-dom/index.js::anonymous@35",
+          "sourcePath": "node_modules/react-dom/index.js",
+          "functionName": "anonymous",
+          "sourceLine": 35,
+          "sampledMs": 7.506,
+          "sampleCount": 5
+        },
+        {
+          "key": "src/services/apiClient.ts::readBody@436",
+          "sourcePath": "src/services/apiClient.ts",
+          "functionName": "readBody",
+          "sourceLine": 436,
+          "sampledMs": 7.237,
+          "sampleCount": 6
+        },
+        {
+          "key": "src/hooks/useLoginAutomations.ts::Be@12",
+          "sourcePath": "src/hooks/useLoginAutomations.ts",
+          "functionName": "Be",
+          "sourceLine": 12,
+          "sampledMs": 7.199,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/idbValidation-PfWceqkD.js::anonymous",
+          "sourcePath": "mapped/unmapped/idbValidation-PfWceqkD.js",
+          "functionName": "anonymous",
+          "sampledMs": 7.178,
+          "sampleCount": 6
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::batchedUpdates$1@1663",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "batchedUpdates$1",
+          "sourceLine": 1663,
+          "sampledMs": 6.698,
+          "sampleCount": 3
+        },
+        {
+          "key": "node_modules/zustand/esm/react.mjs::useStore@5",
+          "sourcePath": "node_modules/zustand/esm/react.mjs",
+          "functionName": "useStore",
+          "sourceLine": 5,
+          "sampledMs": 6.222,
+          "sampleCount": 2
+        },
+        {
+          "key": "node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "sourceLine": 9011,
+          "sampledMs": 6.156,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::InjectedScript",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "InjectedScript",
+          "sampledMs": 5.782,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/zod/v4/core/util.js::anonymous@17",
+          "sourcePath": "node_modules/zod/v4/core/util.js",
+          "functionName": "anonymous",
+          "sourceLine": 17,
+          "sampledMs": 5.776,
+          "sampleCount": 5
+        },
+        {
+          "key": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "sourceLine": 1,
+          "sampledMs": 5.592,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped/unmapped/unknown.js::addEventListener",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "addEventListener",
+          "sampledMs": 5.58,
+          "sampleCount": 4
+        },
+        {
+          "key": "node_modules/zustand/esm/vanilla/shallow.mjs::compareEntries@6",
+          "sourcePath": "node_modules/zustand/esm/vanilla/shallow.mjs",
+          "functionName": "compareEntries",
+          "sourceLine": 6,
+          "sampledMs": 5.444,
+          "sampleCount": 6
+        }
+      ],
+      "noAppLeafFrames": [
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::anonymous",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "anonymous",
+          "scriptName": "unknown.js",
+          "sampledMs": 87.445,
+          "sampleCount": 74
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4627,
+          "sampledMs": 46.057,
+          "sampleCount": 34
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::garbage collector",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "garbage collector",
+          "scriptName": "unknown.js",
+          "sampledMs": 27.745,
+          "sampleCount": 18
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 8359,
+          "sampledMs": 19.089,
+          "sampleCount": 14
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "beginWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 7768,
+          "sampledMs": 15.454,
+          "sampleCount": 9
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 50,
+          "sampledMs": 12.13,
+          "sampleCount": 11
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14803,
+          "sampledMs": 10.837,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::popHostContext@442",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "popHostContext",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 442,
+          "sampledMs": 7.743,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/index.js::anonymous@35",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/index.js",
+          "functionName": "anonymous",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 35,
+          "sampledMs": 7.506,
+          "sampleCount": 5
+        },
+        {
+          "key": "unmapped-bundle:mapped/unmapped/router-BRIQhtRw.js::anonymous",
+          "category": "unmapped-bundle",
+          "sourcePath": "mapped/unmapped/router-BRIQhtRw.js",
+          "functionName": "anonymous",
+          "scriptName": "router-BRIQhtRw.js",
+          "sampledMs": 7.337,
+          "sampleCount": 5
+        },
+        {
+          "key": "unmapped-bundle:mapped/unmapped/idbValidation-PfWceqkD.js::anonymous",
+          "category": "unmapped-bundle",
+          "sourcePath": "mapped/unmapped/idbValidation-PfWceqkD.js",
+          "functionName": "anonymous",
+          "scriptName": "idbValidation-PfWceqkD.js",
+          "sampledMs": 7.178,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::batchedUpdates$1@1663",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "batchedUpdates$1",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 1663,
+          "sampledMs": 6.698,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9011,
+          "sampledMs": 6.156,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::createResult@290",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "createResult",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 290,
+          "sampledMs": 6.117,
+          "sampleCount": 3
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::InjectedScript",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "InjectedScript",
+          "scriptName": "unknown.js",
+          "sampledMs": 5.782,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/util.js::anonymous@17",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/util.js",
+          "functionName": "anonymous",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 17,
+          "sampledMs": 5.776,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "scriptName": "date-utils-DTu9wXYq.js",
+          "sourceLine": 1,
+          "sampledMs": 5.592,
+          "sampleCount": 5
+        },
+        {
+          "key": "browser-native-or-unknown:mapped/unmapped/unknown.js::query",
+          "category": "browser-native-or-unknown",
+          "sourcePath": "mapped/unmapped/unknown.js",
+          "functionName": "query",
+          "scriptName": "unknown.js",
+          "sampledMs": 5.355,
+          "sampleCount": 5
+        },
+        {
+          "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::anonymous@27",
+          "category": "other-mapped-source",
+          "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+          "functionName": "anonymous",
+          "scriptName": "index-DUbWgeaW.js",
+          "sourceLine": 27,
+          "sampledMs": 5.344,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/query.js::fetch@297",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/query.js",
+          "functionName": "fetch",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 297,
+          "sampledMs": 5.299,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/query.js::fetchFn@323",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/query.js",
+          "functionName": "fetchFn",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 323,
+          "sampledMs": 5.288,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/schemas.js::D.standard@8",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/schemas.js",
+          "functionName": "D.standard",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 8,
+          "sampledMs": 5.084,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::notifyListeners@403",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "notifyListeners",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 403,
+          "sampledMs": 4.858,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14406,
+          "sampledMs": 4.471,
+          "sampleCount": 3
+        },
+        {
+          "key": "unmapped-bundle:mapped/unmapped/rolldown-runtime-hePW80VL.js::c",
+          "category": "unmapped-bundle",
+          "sourcePath": "mapped/unmapped/rolldown-runtime-hePW80VL.js",
+          "functionName": "c",
+          "scriptName": "rolldown-runtime-hePW80VL.js",
+          "sampledMs": 4.323,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/history.js::createBrowserURLImpl@368",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/router/history.js",
+          "functionName": "createBrowserURLImpl",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 368,
+          "sampledMs": 4.25,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::_@94",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "_",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 94,
+          "sampledMs": 4.065,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::getHostSibling@9236",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "getHostSibling",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9236,
+          "sampledMs": 3.859,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::createWorkInProgress@2668",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "createWorkInProgress",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 2668,
+          "sampledMs": 3.763,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::shouldFetchOptionally@444",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "shouldFetchOptionally",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 444,
+          "sampledMs": 3.575,
+          "sampleCount": 2
+        }
+      ],
+      "noAppContextFrames": [
+        {
+          "key": "unresolved-context",
+          "category": "unresolved-context",
+          "sourcePath": "unresolved-context",
+          "functionName": "unresolved-context",
+          "sampledMs": 167.228,
+          "sampleCount": 136
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateFunctionComponent@6791",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "updateFunctionComponent",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 6791,
+          "sampledMs": 43.523,
+          "sampleCount": 32
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 8359,
+          "sampledMs": 24.409,
+          "sampleCount": 13
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "completeUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12815,
+          "sampledMs": 19.089,
+          "sampleCount": 14
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performUnitOfWork",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12706,
+          "sampledMs": 16.635,
+          "sampleCount": 10
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::updateResult@383",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "updateResult",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 383,
+          "sampledMs": 12.359,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "init",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 50,
+          "sampledMs": 10.428,
+          "sampleCount": 8
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@18611",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "anonymous",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 18611,
+          "sampledMs": 7.506,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "renderWithHooks",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 4627,
+          "sampledMs": 7.386,
+          "sampleCount": 7
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitRoot@12906",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitRoot",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12906,
+          "sampledMs": 7.296,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::dispatchEventForPluginEventSystem@13884",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "dispatchEventForPluginEventSystem",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13884,
+          "sampledMs": 6.698,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/util.js::anonymous@17",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/util.js",
+          "functionName": "anonymous",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 17,
+          "sampledMs": 6.468,
+          "sampleCount": 6
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setInitialProperties",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14803,
+          "sampledMs": 5.627,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+          "functionName": "anonymous",
+          "scriptName": "date-utils-DTu9wXYq.js",
+          "sourceLine": 1,
+          "sampledMs": 5.592,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitHookEffectListMount",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 9011,
+          "sampledMs": 5.363,
+          "sampleCount": 2
+        },
+        {
+          "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::anonymous@27",
+          "category": "other-mapped-source",
+          "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+          "functionName": "anonymous",
+          "scriptName": "index-DUbWgeaW.js",
+          "sourceLine": 27,
+          "sampledMs": 5.344,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::m@245",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "m",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 245,
+          "sampledMs": 5.299,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/retryer.js::run@96",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/retryer.js",
+          "functionName": "run",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 96,
+          "sampledMs": 5.288,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRootViaSchedulerTask@13555",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "performWorkOnRootViaSchedulerTask",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13555,
+          "sampledMs": 5.148,
+          "sampleCount": 6
+        },
+        {
+          "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::register@25",
+          "category": "other-mapped-source",
+          "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+          "functionName": "register",
+          "scriptName": "index-DUbWgeaW.js",
+          "sourceLine": 25,
+          "sampledMs": 4.861,
+          "sampleCount": 5
+        },
+        {
+          "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::performWorkUntilDeadline@121",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+          "functionName": "performWorkUntilDeadline",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 121,
+          "sampledMs": 4.559,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseReconnectPassiveEffects@11596",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "recursivelyTraverseReconnectPassiveEffects",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 11596,
+          "sampledMs": 4.529,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/history.js::createURL@329",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-router/dist/production/lib/router/history.js",
+          "functionName": "createURL",
+          "scriptName": "router-BRIQhtRw.js",
+          "sourceLine": 329,
+          "sampledMs": 4.25,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "setProp",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 14406,
+          "sampledMs": 4.195,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@13579",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "anonymous",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 13579,
+          "sampledMs": 4.048,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitReconciliationEffects@10909",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitReconciliationEffects",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 10909,
+          "sampledMs": 3.859,
+          "sampleCount": 1
+        },
+        {
+          "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::createResult@290",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+          "functionName": "createResult",
+          "scriptName": "state-Dphgqsfg.js",
+          "sourceLine": 290,
+          "sampledMs": 3.575,
+          "sampleCount": 2
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::workLoopSync@12583",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "workLoopSync",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 12583,
+          "sampledMs": 3.558,
+          "sampleCount": 3
+        },
+        {
+          "key": "mapped-dependency:node_modules/zod/v4/core/core.js::_@94",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/zod/v4/core/core.js",
+          "functionName": "_",
+          "scriptName": "validation-Cu6zMesj.js",
+          "sourceLine": 94,
+          "sampledMs": 3.317,
+          "sampleCount": 4
+        },
+        {
+          "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitMutationEffectsOnFiber@10497",
+          "category": "mapped-dependency",
+          "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "functionName": "commitMutationEffectsOnFiber",
+          "scriptName": "react-core-k-iqGWxC.js",
+          "sourceLine": 10497,
+          "sampledMs": 3.264,
+          "sampleCount": 3
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "sampleCount": 3,
+    "medianProfileWindowMs": 2757.519,
+    "medianActiveSampledMs": 1039.546,
+    "medianIdleSampledMs": 774.454,
+    "medianProgramSampledMs": 910.57,
+    "medianReactCoreInclusiveSampledMs": 675.703,
+    "medianReactCoreSelfSampledMs": 275.589,
+    "medianReactCoreSourceMapCoverage": 1,
+    "medianNoAppFrameSampledMs": 618.505,
+    "appFrameMedians": [
+      {
+        "key": "src/services/apiClient.ts::performRequest@384",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "performRequest",
+        "sourceLine": 384,
+        "medianSampledMs": 70.408,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@35",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 35,
+        "medianSampledMs": 21.705,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@16",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 16,
+        "medianSampledMs": 20.936,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/services/socketService.ts::connect@11",
+        "sourcePath": "src/services/socketService.ts",
+        "functionName": "connect",
+        "sourceLine": 11,
+        "medianSampledMs": 15.965,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+        "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+        "functionName": "useControlInternoEnabledQuery",
+        "sourceLine": 73,
+        "medianSampledMs": 11.43,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/utils/timePolicy.ts::formatBusinessDateCL@26",
+        "sourcePath": "src/utils/timePolicy.ts",
+        "functionName": "formatBusinessDateCL",
+        "sourceLine": 26,
+        "medianSampledMs": 10.519,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+        "sourcePath": "src/utils/idbValidation.ts",
+        "functionName": "filterValidIdbItems",
+        "sourceLine": 63,
+        "medianSampledMs": 9.299,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+        "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+        "functionName": "de",
+        "sourceLine": 102,
+        "medianSampledMs": 8.22,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/services/apiClient.ts::readBody@436",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "readBody",
+        "sourceLine": 436,
+        "medianSampledMs": 7.237,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useAuth.ts::useAuth@4",
+        "sourcePath": "src/hooks/useAuth.ts",
+        "functionName": "useAuth",
+        "sourceLine": 4,
+        "medianSampledMs": 6.642,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/App.tsx::anonymous@17",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 17,
+        "medianSampledMs": 6.409,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/utils/sentryMiddlewares.ts::config@52",
+        "sourcePath": "src/utils/sentryMiddlewares.ts",
+        "functionName": "config",
+        "sourceLine": 52,
+        "medianSampledMs": 6.111,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+        "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+        "functionName": "useTimeRecordMutations",
+        "sourceLine": 203,
+        "medianSampledMs": 6.073,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useSocketEvents.ts::d@41",
+        "sourcePath": "src/hooks/useSocketEvents.ts",
+        "functionName": "d",
+        "sourceLine": 41,
+        "medianSampledMs": 5.474,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/App.tsx::App@105",
+        "sourcePath": "src/App.tsx",
+        "functionName": "App",
+        "sourceLine": 105,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/components/ui/InitialSyncOverlay.tsx::InitialSyncOverlay@10",
+        "sourcePath": "src/components/ui/InitialSyncOverlay.tsx",
+        "functionName": "InitialSyncOverlay",
+        "sourceLine": 10,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/components/ui/ServerClock.tsx::a@16",
+        "sourcePath": "src/components/ui/ServerClock.tsx",
+        "functionName": "a",
+        "sourceLine": 16,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/features/time-control/hooks/useClockingPanel.ts::anonymous@194",
+        "sourcePath": "src/features/time-control/hooks/useClockingPanel.ts",
+        "functionName": "anonymous",
+        "sourceLine": 194,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/features/time-control/hooks/useTimeControl.ts::useTimeControl@25",
+        "sourcePath": "src/features/time-control/hooks/useTimeControl.ts",
+        "functionName": "useTimeControl",
+        "sourceLine": 25,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/features/time-control/hooks/useTimeRecordFilters.ts::useTimeRecordFilters@55",
+        "sourcePath": "src/features/time-control/hooks/useTimeRecordFilters.ts",
+        "functionName": "useTimeRecordFilters",
+        "sourceLine": 55,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/layout/useNotificationCenterController.ts::useNotificationCenterController@6",
+        "sourcePath": "src/hooks/layout/useNotificationCenterController.ts",
+        "functionName": "useNotificationCenterController",
+        "sourceLine": 6,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/layout/usePersistentLayoutController.ts::usePersistentLayoutController@10",
+        "sourcePath": "src/hooks/layout/usePersistentLayoutController.ts",
+        "functionName": "usePersistentLayoutController",
+        "sourceLine": 10,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useAssignedShiftsQuery.ts::s@6",
+        "sourcePath": "src/hooks/queries/useAssignedShiftsQuery.ts",
+        "functionName": "s",
+        "sourceLine": 6,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useConfigQuery.ts::Ft@17",
+        "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+        "functionName": "Ft",
+        "sourceLine": 17,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useEmployeesQuery.ts::h@28",
+        "sourcePath": "src/hooks/queries/useEmployeesQuery.ts",
+        "functionName": "h",
+        "sourceLine": 28,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useTimeRecordsQuery.ts::_@33",
+        "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+        "functionName": "_",
+        "sourceLine": 33,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/queries/useUsersQuery.ts::d@14",
+        "sourcePath": "src/hooks/queries/useUsersQuery.ts",
+        "functionName": "d",
+        "sourceLine": 14,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useAudio.ts::useAudio@65",
+        "sourcePath": "src/hooks/useAudio.ts",
+        "functionName": "useAudio",
+        "sourceLine": 65,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useAuth.ts::useAuthShellControls@21",
+        "sourcePath": "src/hooks/useAuth.ts",
+        "functionName": "useAuthShellControls",
+        "sourceLine": 21,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useConfigMutations.ts::useConfigMutations@6",
+        "sourcePath": "src/hooks/useConfigMutations.ts",
+        "functionName": "useConfigMutations",
+        "sourceLine": 6,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/hooks/useLoginAutomations.ts::Be@12",
+        "sourcePath": "src/hooks/useLoginAutomations.ts",
+        "functionName": "Be",
+        "sourceLine": 12,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/services/holidayService.ts::getAll@15",
+        "sourcePath": "src/services/holidayService.ts",
+        "functionName": "getAll",
+        "sourceLine": 15,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/store/slices/themeSlice.ts::_applyTheme@17",
+        "sourcePath": "src/store/slices/themeSlice.ts",
+        "functionName": "_applyTheme",
+        "sourceLine": 17,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/store/slices/themeSlice.ts::theme@22",
+        "sourcePath": "src/store/slices/themeSlice.ts",
+        "functionName": "theme",
+        "sourceLine": 22,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/utils/indexedDB.ts::createStoreWithSyncIndexes@43",
+        "sourcePath": "src/utils/indexedDB.ts",
+        "functionName": "createStoreWithSyncIndexes",
+        "sourceLine": 43,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/utils/indexedDB.ts::he@219",
+        "sourcePath": "src/utils/indexedDB.ts",
+        "functionName": "he",
+        "sourceLine": 219,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/utils/indexedDB.ts::initDB@37",
+        "sourcePath": "src/utils/indexedDB.ts",
+        "functionName": "initDB",
+        "sourceLine": 37,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "src/utils/indexedDB.ts::loadValidation@32",
+        "sourcePath": "src/utils/indexedDB.ts",
+        "functionName": "loadValidation",
+        "sourceLine": 32,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      }
+    ],
+    "repeatedAppCandidates": [
+      {
+        "key": "src/services/apiClient.ts::performRequest@384",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "performRequest",
+        "sourceLine": 384,
+        "medianSampledMs": 70.408,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@35",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 35,
+        "medianSampledMs": 21.705,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/App.tsx::anonymous@16",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 16,
+        "medianSampledMs": 20.936,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/services/socketService.ts::connect@11",
+        "sourcePath": "src/services/socketService.ts",
+        "functionName": "connect",
+        "sourceLine": 11,
+        "medianSampledMs": 15.965,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/hooks/queries/useConfigQuery.ts::useControlInternoEnabledQuery@73",
+        "sourcePath": "src/hooks/queries/useConfigQuery.ts",
+        "functionName": "useControlInternoEnabledQuery",
+        "sourceLine": 73,
+        "medianSampledMs": 11.43,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/utils/timePolicy.ts::formatBusinessDateCL@26",
+        "sourcePath": "src/utils/timePolicy.ts",
+        "functionName": "formatBusinessDateCL",
+        "sourceLine": 26,
+        "medianSampledMs": 10.519,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/utils/idbValidation.ts::filterValidIdbItems@63",
+        "sourcePath": "src/utils/idbValidation.ts",
+        "functionName": "filterValidIdbItems",
+        "sourceLine": 63,
+        "medianSampledMs": 9.299,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/features/time-control/views/TimeControl.view.tsx::de@102",
+        "sourcePath": "src/features/time-control/views/TimeControl.view.tsx",
+        "functionName": "de",
+        "sourceLine": 102,
+        "medianSampledMs": 8.22,
+        "observedSamples": 3
+      },
+      {
+        "key": "src/services/apiClient.ts::readBody@436",
+        "sourcePath": "src/services/apiClient.ts",
+        "functionName": "readBody",
+        "sourceLine": 436,
+        "medianSampledMs": 7.237,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useAuth.ts::useAuth@4",
+        "sourcePath": "src/hooks/useAuth.ts",
+        "functionName": "useAuth",
+        "sourceLine": 4,
+        "medianSampledMs": 6.642,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/App.tsx::anonymous@17",
+        "sourcePath": "src/App.tsx",
+        "functionName": "anonymous",
+        "sourceLine": 17,
+        "medianSampledMs": 6.409,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/utils/sentryMiddlewares.ts::config@52",
+        "sourcePath": "src/utils/sentryMiddlewares.ts",
+        "functionName": "config",
+        "sourceLine": 52,
+        "medianSampledMs": 6.111,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/queries/useTimeRecordsQuery.ts::useTimeRecordMutations@203",
+        "sourcePath": "src/hooks/queries/useTimeRecordsQuery.ts",
+        "functionName": "useTimeRecordMutations",
+        "sourceLine": 203,
+        "medianSampledMs": 6.073,
+        "observedSamples": 2
+      },
+      {
+        "key": "src/hooks/useSocketEvents.ts::d@41",
+        "sourcePath": "src/hooks/useSocketEvents.ts",
+        "functionName": "d",
+        "sourceLine": 41,
+        "medianSampledMs": 5.474,
+        "observedSamples": 2
+      }
+    ],
+    "noAppLeafCategoryMedians": [
+      {
+        "category": "mapped-dependency",
+        "medianSampledMs": 376.524,
+        "observedSamples": 3
+      },
+      {
+        "category": "browser-native-or-unknown",
+        "medianSampledMs": 228.957,
+        "observedSamples": 3
+      },
+      {
+        "category": "unmapped-bundle",
+        "medianSampledMs": 24.856,
+        "observedSamples": 3
+      },
+      {
+        "category": "other-mapped-source",
+        "medianSampledMs": 4.563,
+        "observedSamples": 3
+      }
+    ],
+    "noAppContextFrameMedians": [
+      {
+        "key": "unresolved-context",
+        "category": "unresolved-context",
+        "sourcePath": "unresolved-context",
+        "functionName": "unresolved-context",
+        "medianSampledMs": 224.015,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateFunctionComponent@6791",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "updateFunctionComponent",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 6791,
+        "medianSampledMs": 33.285,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "completeWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 8359,
+        "medianSampledMs": 24.409,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "performUnitOfWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12706,
+        "medianSampledMs": 16.635,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "completeUnitOfWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12815,
+        "medianSampledMs": 11.07,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "setProp",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 14406,
+        "medianSampledMs": 10.662,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "setInitialProperties",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 14803,
+        "medianSampledMs": 10.458,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/core.js",
+        "functionName": "init",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 50,
+        "medianSampledMs": 10.428,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::updateResult@383",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+        "functionName": "updateResult",
+        "scriptName": "state-Dphgqsfg.js",
+        "sourceLine": 383,
+        "medianSampledMs": 9.482,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+        "functionName": "anonymous",
+        "scriptName": "date-utils-DTu9wXYq.js",
+        "sourceLine": 1,
+        "medianSampledMs": 7.559,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "renderWithHooks",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 4627,
+        "medianSampledMs": 7.386,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitRoot@12906",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitRoot",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12906,
+        "medianSampledMs": 7.296,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/util.js::anonymous@17",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/util.js",
+        "functionName": "anonymous",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 17,
+        "medianSampledMs": 5.934,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::performWorkUntilDeadline@121",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+        "functionName": "performWorkUntilDeadline",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 121,
+        "medianSampledMs": 5.553,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitHookEffectListMount",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 9011,
+        "medianSampledMs": 5.363,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@18611",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "anonymous",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 18611,
+        "medianSampledMs": 5.221,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRootViaSchedulerTask@13555",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "performWorkOnRootViaSchedulerTask",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13555,
+        "medianSampledMs": 5.148,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::dispatchEventForPluginEventSystem@13884",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "dispatchEventForPluginEventSystem",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13884,
+        "medianSampledMs": 5.139,
+        "observedSamples": 2
+      },
+      {
+        "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::register@25",
+        "category": "other-mapped-source",
+        "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+        "functionName": "register",
+        "scriptName": "index-DUbWgeaW.js",
+        "sourceLine": 25,
+        "medianSampledMs": 4.687,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseReconnectPassiveEffects@11596",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "recursivelyTraverseReconnectPassiveEffects",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 11596,
+        "medianSampledMs": 4.529,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "beginWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 7768,
+        "medianSampledMs": 3.832,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::reconcileChildFibersImpl@4078",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "reconcileChildFibersImpl",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 4078,
+        "medianSampledMs": 3.701,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/core.js::_@94",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/core.js",
+        "functionName": "_",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 94,
+        "medianSampledMs": 3.317,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitMutationEffectsOnFiber@10497",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitMutationEffectsOnFiber",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 10497,
+        "medianSampledMs": 3.264,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::createResult@290",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+        "functionName": "createResult",
+        "scriptName": "state-Dphgqsfg.js",
+        "sourceLine": 290,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::m@245",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+        "functionName": "m",
+        "scriptName": "state-Dphgqsfg.js",
+        "sourceLine": 245,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::v@266",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+        "functionName": "v",
+        "scriptName": "state-Dphgqsfg.js",
+        "sourceLine": 266,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/retryer.js::run@96",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/@tanstack/query-core/build/modern/retryer.js",
+        "functionName": "run",
+        "scriptName": "state-Dphgqsfg.js",
+        "sourceLine": 96,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@13579",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "anonymous",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13579,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@4249",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "anonymous",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 4249,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitDeletionEffectsOnFiber@10201",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitDeletionEffectsOnFiber",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 10201,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHostUpdate@9218",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitHostUpdate",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 9218,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitReconciliationEffects@10909",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitReconciliationEffects",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 10909,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::createFiberRoot@17777",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "createFiberRoot",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 17777,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::dispatchEvent@17907",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "dispatchEvent",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 17907,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::e.createRoot@18577",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "e.createRoot",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 18577,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::insertOrAppendPlacementNodeIntoContainer@9256",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "insertOrAppendPlacementNodeIntoContainer",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 9256,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRoot@12069",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "performWorkOnRoot",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12069,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::processRootScheduleInMicrotask@13456",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "processRootScheduleInMicrotask",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13456,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseMutationEffects@10454",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "recursivelyTraverseMutationEffects",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 10454,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::scheduleImmediateRootScheduleTask@13578",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "scheduleImmediateRootScheduleTask",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13578,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateForwardRef@6425",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "updateForwardRef",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 6425,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateSuspenseComponent@7136",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "updateSuspenseComponent",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 7136,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::workLoopSync@12583",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "workLoopSync",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12583,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-router/dist/production/lib/hooks.js::useRoutesImpl@579",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-router/dist/production/lib/hooks.js",
+        "functionName": "useRoutesImpl",
+        "scriptName": "router-BRIQhtRw.js",
+        "sourceLine": 579,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/history.js::createURL@329",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-router/dist/production/lib/router/history.js",
+        "functionName": "createURL",
+        "scriptName": "router-BRIQhtRw.js",
+        "sourceLine": 329,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-router/dist/production/lib/router/utils.js::flattenRoute@264",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-router/dist/production/lib/router/utils.js",
+        "functionName": "flattenRoute",
+        "scriptName": "router-BRIQhtRw.js",
+        "sourceLine": 264,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/react/cjs/react.production.js::forEach@356",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react/cjs/react.production.js",
+        "functionName": "forEach",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 356,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::anonymous@340",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+        "functionName": "anonymous",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 340,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/socket.io-client/build/esm/manager.js::onopen@168",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/socket.io-client/build/esm/manager.js",
+        "functionName": "onopen",
+        "scriptName": "realtime-C7QaxhyT.js",
+        "sourceLine": 168,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/workbox-window/build/workbox-window.prod.es5.mjs::anonymous@1",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/workbox-window/build/workbox-window.prod.es5.mjs",
+        "functionName": "anonymous",
+        "scriptName": "vendor-15MWHJyx.js",
+        "sourceLine": 1,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/util.js::get value@38",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/util.js",
+        "functionName": "get value",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 38,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      },
+      {
+        "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::anonymous@27",
+        "category": "other-mapped-source",
+        "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+        "functionName": "anonymous",
+        "scriptName": "index-DUbWgeaW.js",
+        "sourceLine": 27,
+        "medianSampledMs": 0,
+        "observedSamples": 1
+      }
+    ],
+    "repeatedNoAppContextCandidates": [
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::updateFunctionComponent@6791",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "updateFunctionComponent",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 6791,
+        "medianSampledMs": 33.285,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeWork@8359",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "completeWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 8359,
+        "medianSampledMs": 24.409,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performUnitOfWork@12706",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "performUnitOfWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12706,
+        "medianSampledMs": 16.635,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::completeUnitOfWork@12815",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "completeUnitOfWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12815,
+        "medianSampledMs": 11.07,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setProp@14406",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "setProp",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 14406,
+        "medianSampledMs": 10.662,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::setInitialProperties@14803",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "setInitialProperties",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 14803,
+        "medianSampledMs": 10.458,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/core.js::init@50",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/core.js",
+        "functionName": "init",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 50,
+        "medianSampledMs": 10.428,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/@tanstack/query-core/build/modern/queryObserver.js::updateResult@383",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+        "functionName": "updateResult",
+        "scriptName": "state-Dphgqsfg.js",
+        "sourceLine": 383,
+        "medianSampledMs": 9.482,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/date-fns/locale/en-US/_lib/formatDistance.js::anonymous@1",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+        "functionName": "anonymous",
+        "scriptName": "date-utils-DTu9wXYq.js",
+        "sourceLine": 1,
+        "medianSampledMs": 7.559,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::renderWithHooks@4627",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "renderWithHooks",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 4627,
+        "medianSampledMs": 7.386,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitRoot@12906",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitRoot",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 12906,
+        "medianSampledMs": 7.296,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/util.js::anonymous@17",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/util.js",
+        "functionName": "anonymous",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 17,
+        "medianSampledMs": 5.934,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/scheduler/cjs/scheduler.production.js::performWorkUntilDeadline@121",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/scheduler/cjs/scheduler.production.js",
+        "functionName": "performWorkUntilDeadline",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 121,
+        "medianSampledMs": 5.553,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitHookEffectListMount@9011",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitHookEffectListMount",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 9011,
+        "medianSampledMs": 5.363,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::anonymous@18611",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "anonymous",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 18611,
+        "medianSampledMs": 5.221,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::performWorkOnRootViaSchedulerTask@13555",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "performWorkOnRootViaSchedulerTask",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13555,
+        "medianSampledMs": 5.148,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::dispatchEventForPluginEventSystem@13884",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "dispatchEventForPluginEventSystem",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 13884,
+        "medianSampledMs": 5.139,
+        "observedSamples": 2
+      },
+      {
+        "key": "other-mapped-source:mapped/mapped/@vite-plugin-pwa/virtual:pwa-register::register@25",
+        "category": "other-mapped-source",
+        "sourcePath": "mapped/mapped/@vite-plugin-pwa/virtual:pwa-register",
+        "functionName": "register",
+        "scriptName": "index-DUbWgeaW.js",
+        "sourceLine": 25,
+        "medianSampledMs": 4.687,
+        "observedSamples": 3
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::recursivelyTraverseReconnectPassiveEffects@11596",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "recursivelyTraverseReconnectPassiveEffects",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 11596,
+        "medianSampledMs": 4.529,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::beginWork@7768",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "beginWork",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 7768,
+        "medianSampledMs": 3.832,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::reconcileChildFibersImpl@4078",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "reconcileChildFibersImpl",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 4078,
+        "medianSampledMs": 3.701,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/zod/v4/core/core.js::_@94",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/zod/v4/core/core.js",
+        "functionName": "_",
+        "scriptName": "validation-Cu6zMesj.js",
+        "sourceLine": 94,
+        "medianSampledMs": 3.317,
+        "observedSamples": 2
+      },
+      {
+        "key": "mapped-dependency:node_modules/react-dom/cjs/react-dom-client.production.js::commitMutationEffectsOnFiber@10497",
+        "category": "mapped-dependency",
+        "sourcePath": "node_modules/react-dom/cjs/react-dom-client.production.js",
+        "functionName": "commitMutationEffectsOnFiber",
+        "scriptName": "react-core-k-iqGWxC.js",
+        "sourceLine": 10497,
+        "medianSampledMs": 3.264,
+        "observedSamples": 2
+      }
+    ]
+  },
+  "interpretation": {
+    "performanceComparison": false,
+    "recommendationRule": "An unattributed context is a candidate only when its closest mapped frame appears in at least two samples; native or unknown leaf frames remain separate from that context."
+  }
+}

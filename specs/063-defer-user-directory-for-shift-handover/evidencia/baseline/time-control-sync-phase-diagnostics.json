@@ -1,0 +1,1211 @@
+{
+  "capturedAt": "2026-10-24T14:58:49.601Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/time-control",
+  "viewport": {
+    "width": 412,
+    "height": 823
+  },
+  "cpuThrottle": 4,
+  "sampleCount": 3,
+  "apiRequestPathPolicy": "pathname only; request/response bodies omitted; byte lengths recorded for health and users; /api/shift-reports records only closed-handover presence; /api/records captures pageSize and filter-presence booleans only",
+  "syncPhasePolicy": "opt-in CustomEvent records phase, name, duration and outcome only; user/session data omitted",
+  "timingOffsetBasis": "Date.now immediately before page.goto",
+  "readinessMetric": "Sync step and API request timeline, initial sync overlay LCP candidate and hit-test under a clean authenticated context",
+  "samples": [
+    {
+      "sample": 1,
+      "overlayCoverage": {
+        "coversViewport": true,
+        "hitTestBelongsToOverlay": true
+      },
+      "initialLastSyncTime": null,
+      "lastSyncTimePresent": true,
+      "fcpMs": 872,
+      "lcpEntries": [
+        {
+          "startTimeMs": 872,
+          "size": 2996,
+          "tag": null,
+          "className": null
+        }
+      ],
+      "overlayVisibleAtMs": 1328.9,
+      "overlayHiddenAtMs": 1863.1,
+      "syncStepChanges": [
+        {
+          "atMs": 1328.9,
+          "step": "Sincronizando Usuarios...",
+          "progressPercent": 0
+        },
+        {
+          "atMs": 1674,
+          "step": "Sincronizando Empleados...",
+          "progressPercent": 20
+        },
+        {
+          "atMs": 1699,
+          "step": "Sincronizando Configuraciones...",
+          "progressPercent": 40
+        },
+        {
+          "atMs": 1705.4,
+          "step": "Sincronizando Horarios...",
+          "progressPercent": 60
+        },
+        {
+          "atMs": 1707.1,
+          "step": "Sincronizando Medidores...",
+          "progressPercent": 80
+        }
+      ],
+      "syncPhaseTimings": [
+        {
+          "phase": "validation",
+          "name": "validateInstanceId",
+          "durationMs": 753,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Usuarios",
+          "durationMs": 428.2,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Empleados",
+          "durationMs": 24.2,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Configuraciones",
+          "durationMs": 3.4,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Horarios",
+          "durationMs": 6.4,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Medidores",
+          "durationMs": 1.3,
+          "outcome": "success"
+        }
+      ],
+      "overlayVisibleDurationMs": 534.2,
+      "rootAnimationName": "enter",
+      "rootAnimationDuration": "0.8s",
+      "statusAnimationName": "none",
+      "activeAnimations": [
+        {
+          "tag": "DIV",
+          "className": "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-token-accent-brand blur-3xl opacity-10 animate-pulse",
+          "animationName": "pulse",
+          "duration": "2s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-accent-brand animate-spin h-8 w-8",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-text-tertiary animate-spin h-4 w-4",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "P",
+          "className": "text-[11px] font-semibold text-token-text-tertiary uppercase tracking-[0.4em] animate-pulse",
+          "animationName": "pulse",
+          "duration": "2s"
+        }
+      ],
+      "syncReadyAtMs": 2201.2999999970198,
+      "apiRequests": [
+        {
+          "method": "GET",
+          "path": "/api/health/ready",
+          "startedAtMs": 498,
+          "responseAtMs": 867,
+          "finishedAtMs": 1185,
+          "statusCode": 200,
+          "responseBodyBytes": 95,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 687
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/is_control_interno_enabled",
+          "startedAtMs": 1112,
+          "responseAtMs": 1186,
+          "finishedAtMs": 1413,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 301
+        },
+        {
+          "method": "GET",
+          "path": "/api/corrections/stats",
+          "startedAtMs": 1112,
+          "responseAtMs": 1392,
+          "finishedAtMs": 1482,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 370
+        },
+        {
+          "method": "GET",
+          "path": "/api/audit-logs",
+          "startedAtMs": 1123,
+          "responseAtMs": 1413,
+          "finishedAtMs": 1565,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 442
+        },
+        {
+          "method": "GET",
+          "path": "/api/users",
+          "startedAtMs": 1123,
+          "responseAtMs": 1431,
+          "finishedAtMs": 1567,
+          "statusCode": 200,
+          "responseBodyBytes": 636,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 444
+        },
+        {
+          "method": "GET",
+          "path": "/api/employees",
+          "startedAtMs": 1123,
+          "responseAtMs": 1431,
+          "finishedAtMs": 1626,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 503
+        },
+        {
+          "method": "GET",
+          "path": "/api/shift-reports",
+          "startedAtMs": 1131,
+          "responseAtMs": 1431,
+          "finishedAtMs": 1568,
+          "statusCode": 200,
+          "responseBodyBytes": 691,
+          "responseHasClosedHandover": false,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 437
+        },
+        {
+          "method": "GET",
+          "path": "/api/records",
+          "startedAtMs": 1864,
+          "responseAtMs": 2101,
+          "finishedAtMs": 2124,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": {
+            "pageSize": "50",
+            "hasEmployeeFilter": false,
+            "hasDateRange": false
+          },
+          "durationMs": 260
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/global_max_hours",
+          "startedAtMs": 1867,
+          "responseAtMs": 2103,
+          "finishedAtMs": 2145,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 278
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/area_list",
+          "startedAtMs": 1870,
+          "responseAtMs": 2101,
+          "finishedAtMs": 2124,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 254
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/workday_types",
+          "startedAtMs": 1871,
+          "responseAtMs": 2102,
+          "finishedAtMs": 2145,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 274
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/email_recipients",
+          "startedAtMs": 1871,
+          "responseAtMs": 2102,
+          "finishedAtMs": 2124,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 253
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/accounting_lock_date",
+          "startedAtMs": 1871,
+          "responseAtMs": 2105,
+          "finishedAtMs": 2145,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 274
+        },
+        {
+          "method": "GET",
+          "path": "/api/shifts/patterns",
+          "startedAtMs": 1875,
+          "responseAtMs": 2107,
+          "finishedAtMs": 2148,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 273
+        },
+        {
+          "method": "GET",
+          "path": "/api/shifts/assignments",
+          "startedAtMs": 1875,
+          "responseAtMs": 2109,
+          "finishedAtMs": 2148,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 273
+        },
+        {
+          "method": "GET",
+          "path": "/api/holidays",
+          "startedAtMs": 1875,
+          "responseAtMs": 2108,
+          "finishedAtMs": 2148,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 273
+        },
+        {
+          "method": "GET",
+          "path": "/api/leaves",
+          "startedAtMs": 1877,
+          "responseAtMs": 2111,
+          "finishedAtMs": 2154,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 277
+        },
+        {
+          "method": "GET",
+          "path": "/api/corrections",
+          "startedAtMs": 1877,
+          "responseAtMs": 2111,
+          "finishedAtMs": 2152,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 275
+        },
+        {
+          "method": "GET",
+          "path": "/api/shift-reports",
+          "startedAtMs": 1877,
+          "responseAtMs": 2109,
+          "finishedAtMs": 2149,
+          "statusCode": 200,
+          "responseBodyBytes": 691,
+          "responseHasClosedHandover": false,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 272
+        },
+        {
+          "method": "GET",
+          "path": "/api/records",
+          "startedAtMs": 1878,
+          "responseAtMs": 2113,
+          "finishedAtMs": 2156,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": {
+            "pageSize": "30",
+            "hasEmployeeFilter": false,
+            "hasDateRange": true
+          },
+          "durationMs": 278
+        }
+      ],
+      "finalLcpCandidate": {
+        "startTimeMs": 872,
+        "size": 2996,
+        "tag": null,
+        "className": null
+      }
+    },
+    {
+      "sample": 2,
+      "overlayCoverage": {
+        "coversViewport": true,
+        "hitTestBelongsToOverlay": true
+      },
+      "initialLastSyncTime": null,
+      "lastSyncTimePresent": true,
+      "fcpMs": 740,
+      "lcpEntries": [
+        {
+          "startTimeMs": 740,
+          "size": 242,
+          "tag": "DIV",
+          "className": "w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical"
+        }
+      ],
+      "overlayVisibleAtMs": 911.7,
+      "overlayHiddenAtMs": 1346.8,
+      "syncStepChanges": [
+        {
+          "atMs": 911.7,
+          "step": "Sincronizando Usuarios...",
+          "progressPercent": 0
+        },
+        {
+          "atMs": 1134.9,
+          "step": "Sincronizando Empleados...",
+          "progressPercent": 20
+        },
+        {
+          "atMs": 1140.9,
+          "step": "Sincronizando Configuraciones...",
+          "progressPercent": 40
+        },
+        {
+          "atMs": 1146.4,
+          "step": "Sincronizando Horarios...",
+          "progressPercent": 60
+        },
+        {
+          "atMs": 1155,
+          "step": "Sincronizando Medidores...",
+          "progressPercent": 80
+        }
+      ],
+      "syncPhaseTimings": [
+        {
+          "phase": "validation",
+          "name": "validateInstanceId",
+          "durationMs": 356.4,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Usuarios",
+          "durationMs": 263.1,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Empleados",
+          "durationMs": 3.3,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Configuraciones",
+          "durationMs": 5.8,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Horarios",
+          "durationMs": 5.5,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Medidores",
+          "durationMs": 7.2,
+          "outcome": "success"
+        }
+      ],
+      "overlayVisibleDurationMs": 435.1,
+      "rootAnimationName": "enter",
+      "rootAnimationDuration": "0.8s",
+      "statusAnimationName": "none",
+      "activeAnimations": [
+        {
+          "tag": "DIV",
+          "className": "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-token-accent-brand blur-3xl opacity-10 animate-pulse",
+          "animationName": "pulse",
+          "duration": "2s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-accent-brand animate-spin h-8 w-8",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-text-tertiary animate-spin h-4 w-4",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "P",
+          "className": "text-[11px] font-semibold text-token-text-tertiary uppercase tracking-[0.4em] animate-pulse",
+          "animationName": "pulse",
+          "duration": "2s"
+        }
+      ],
+      "syncReadyAtMs": 1670.3000000044703,
+      "apiRequests": [
+        {
+          "method": "GET",
+          "path": "/api/health/ready",
+          "startedAtMs": 547,
+          "responseAtMs": 727,
+          "finishedAtMs": 823,
+          "statusCode": 200,
+          "responseBodyBytes": 95,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 276
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/is_control_interno_enabled",
+          "startedAtMs": 794,
+          "responseAtMs": 852,
+          "finishedAtMs": 932,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 138
+        },
+        {
+          "method": "GET",
+          "path": "/api/corrections/stats",
+          "startedAtMs": 795,
+          "responseAtMs": 856,
+          "finishedAtMs": 933,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 138
+        },
+        {
+          "method": "GET",
+          "path": "/api/audit-logs",
+          "startedAtMs": 795,
+          "responseAtMs": 931,
+          "finishedAtMs": 967,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 172
+        },
+        {
+          "method": "GET",
+          "path": "/api/users",
+          "startedAtMs": 795,
+          "responseAtMs": 930,
+          "finishedAtMs": 963,
+          "statusCode": 200,
+          "responseBodyBytes": 636,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 168
+        },
+        {
+          "method": "GET",
+          "path": "/api/employees",
+          "startedAtMs": 795,
+          "responseAtMs": 931,
+          "finishedAtMs": 971,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 176
+        },
+        {
+          "method": "GET",
+          "path": "/api/shift-reports",
+          "startedAtMs": 795,
+          "responseAtMs": 931,
+          "finishedAtMs": 972,
+          "statusCode": 200,
+          "responseBodyBytes": 691,
+          "responseHasClosedHandover": false,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 177
+        },
+        {
+          "method": "GET",
+          "path": "/api/records",
+          "startedAtMs": 1351,
+          "responseAtMs": 1539,
+          "finishedAtMs": 1574,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": {
+            "pageSize": "50",
+            "hasEmployeeFilter": false,
+            "hasDateRange": false
+          },
+          "durationMs": 223
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/global_max_hours",
+          "startedAtMs": 1355,
+          "responseAtMs": 1541,
+          "finishedAtMs": 1577,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 222
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/area_list",
+          "startedAtMs": 1355,
+          "responseAtMs": 1542,
+          "finishedAtMs": 1593,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 238
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/workday_types",
+          "startedAtMs": 1355,
+          "responseAtMs": 1543,
+          "finishedAtMs": 1597,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 242
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/email_recipients",
+          "startedAtMs": 1356,
+          "responseAtMs": 1544,
+          "finishedAtMs": 1597,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 241
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/accounting_lock_date",
+          "startedAtMs": 1356,
+          "responseAtMs": 1547,
+          "finishedAtMs": 1599,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 243
+        },
+        {
+          "method": "GET",
+          "path": "/api/shifts/patterns",
+          "startedAtMs": 1356,
+          "responseAtMs": 1546,
+          "finishedAtMs": 1597,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 241
+        },
+        {
+          "method": "GET",
+          "path": "/api/shifts/assignments",
+          "startedAtMs": 1356,
+          "responseAtMs": 1548,
+          "finishedAtMs": 1600,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 244
+        },
+        {
+          "method": "GET",
+          "path": "/api/holidays",
+          "startedAtMs": 1357,
+          "responseAtMs": 1549,
+          "finishedAtMs": 1605,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 248
+        },
+        {
+          "method": "GET",
+          "path": "/api/leaves",
+          "startedAtMs": 1357,
+          "responseAtMs": 1548,
+          "finishedAtMs": 1604,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 247
+        },
+        {
+          "method": "GET",
+          "path": "/api/corrections",
+          "startedAtMs": 1357,
+          "responseAtMs": 1563,
+          "finishedAtMs": 1617,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 260
+        },
+        {
+          "method": "GET",
+          "path": "/api/shift-reports",
+          "startedAtMs": 1357,
+          "responseAtMs": 1564,
+          "finishedAtMs": 1621,
+          "statusCode": 200,
+          "responseBodyBytes": 691,
+          "responseHasClosedHandover": false,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 264
+        },
+        {
+          "method": "GET",
+          "path": "/api/records",
+          "startedAtMs": 1360,
+          "responseAtMs": 1565,
+          "finishedAtMs": 1624,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": {
+            "pageSize": "30",
+            "hasEmployeeFilter": false,
+            "hasDateRange": true
+          },
+          "durationMs": 264
+        }
+      ],
+      "finalLcpCandidate": {
+        "startTimeMs": 740,
+        "size": 242,
+        "tag": "DIV",
+        "className": "w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical"
+      }
+    },
+    {
+      "sample": 3,
+      "overlayCoverage": {
+        "coversViewport": true,
+        "hitTestBelongsToOverlay": true
+      },
+      "initialLastSyncTime": null,
+      "lastSyncTimePresent": true,
+      "fcpMs": 696,
+      "lcpEntries": [
+        {
+          "startTimeMs": 696,
+          "size": 242,
+          "tag": "DIV",
+          "className": "w-12 h-12 rounded-md bg-token-accent-brand flex items-center justify-center text-token-text-onAccent font-bold text-xl shadow-lg hover:brightness-110 active:scale-95 transition border border-token-border-technical"
+        },
+        {
+          "startTimeMs": 1080,
+          "size": 2568,
+          "tag": "P",
+          "className": "text-[10px] font-bold text-token-text-tertiary uppercase tracking-[0.3em] animate-pulse"
+        }
+      ],
+      "overlayVisibleAtMs": 922.1,
+      "overlayHiddenAtMs": 1059.1,
+      "syncStepChanges": [
+        {
+          "atMs": 922,
+          "step": "Sincronizando Usuarios...",
+          "progressPercent": 0
+        },
+        {
+          "atMs": 992.2,
+          "step": "Sincronizando Empleados...",
+          "progressPercent": 20
+        },
+        {
+          "atMs": 1000.2,
+          "step": "Sincronizando Configuraciones...",
+          "progressPercent": 40
+        },
+        {
+          "atMs": 1008.6,
+          "step": "Sincronizando Horarios...",
+          "progressPercent": 60
+        },
+        {
+          "atMs": 1015.9,
+          "step": "Sincronizando Medidores...",
+          "progressPercent": 80
+        }
+      ],
+      "syncPhaseTimings": [
+        {
+          "phase": "validation",
+          "name": "validateInstanceId",
+          "durationMs": 378.4,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Usuarios",
+          "durationMs": 99.1,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Empleados",
+          "durationMs": 8.7,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Configuraciones",
+          "durationMs": 3.5,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Horarios",
+          "durationMs": 6.9,
+          "outcome": "success"
+        },
+        {
+          "phase": "sync-step",
+          "name": "Medidores",
+          "durationMs": 5.3,
+          "outcome": "success"
+        }
+      ],
+      "overlayVisibleDurationMs": 137,
+      "rootAnimationName": "enter",
+      "rootAnimationDuration": "0.8s",
+      "statusAnimationName": "none",
+      "activeAnimations": [
+        {
+          "tag": "DIV",
+          "className": "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-token-accent-brand blur-3xl opacity-10 animate-pulse",
+          "animationName": "pulse",
+          "duration": "2s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-accent-brand animate-spin h-8 w-8",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "DIV",
+          "className": "absolute inset-0 rounded-full border-2 border-t-token-text-tertiary animate-spin h-4 w-4",
+          "animationName": "spin",
+          "duration": "1s"
+        },
+        {
+          "tag": "P",
+          "className": "text-[11px] font-semibold text-token-text-tertiary uppercase tracking-[0.4em] animate-pulse",
+          "animationName": "pulse",
+          "duration": "2s"
+        }
+      ],
+      "syncReadyAtMs": 1610.6000000014901,
+      "apiRequests": [
+        {
+          "method": "GET",
+          "path": "/api/health/ready",
+          "startedAtMs": 533,
+          "responseAtMs": 693,
+          "finishedAtMs": 808,
+          "statusCode": 200,
+          "responseBodyBytes": 95,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 275
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/is_control_interno_enabled",
+          "startedAtMs": 774,
+          "responseAtMs": 870,
+          "finishedAtMs": 929,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 155
+        },
+        {
+          "method": "GET",
+          "path": "/api/corrections/stats",
+          "startedAtMs": 775,
+          "responseAtMs": 876,
+          "finishedAtMs": 931,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 156
+        },
+        {
+          "method": "GET",
+          "path": "/api/audit-logs",
+          "startedAtMs": 776,
+          "responseAtMs": 877,
+          "finishedAtMs": 933,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 157
+        },
+        {
+          "method": "GET",
+          "path": "/api/users",
+          "startedAtMs": 776,
+          "responseAtMs": 877,
+          "finishedAtMs": 936,
+          "statusCode": 200,
+          "responseBodyBytes": 636,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 160
+        },
+        {
+          "method": "GET",
+          "path": "/api/employees",
+          "startedAtMs": 776,
+          "responseAtMs": 878,
+          "finishedAtMs": 940,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 164
+        },
+        {
+          "method": "GET",
+          "path": "/api/shift-reports",
+          "startedAtMs": 776,
+          "responseAtMs": 878,
+          "finishedAtMs": 943,
+          "statusCode": 200,
+          "responseBodyBytes": 691,
+          "responseHasClosedHandover": false,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 167
+        },
+        {
+          "method": "GET",
+          "path": "/api/records",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1585,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": {
+            "pageSize": "50",
+            "hasEmployeeFilter": false,
+            "hasDateRange": false
+          },
+          "durationMs": 87
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/global_max_hours",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1588,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/area_list",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1588,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/workday_types",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1588,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/email_recipients",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1588,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/configs/accounting_lock_date",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1588,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 90
+        },
+        {
+          "method": "GET",
+          "path": "/api/shifts/patterns",
+          "startedAtMs": 1498,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1591,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 93
+        },
+        {
+          "method": "GET",
+          "path": "/api/shifts/assignments",
+          "startedAtMs": 1500,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1592,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 92
+        },
+        {
+          "method": "GET",
+          "path": "/api/holidays",
+          "startedAtMs": 1500,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1595,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 95
+        },
+        {
+          "method": "GET",
+          "path": "/api/leaves",
+          "startedAtMs": 1509,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1597,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 88
+        },
+        {
+          "method": "GET",
+          "path": "/api/corrections",
+          "startedAtMs": 1509,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1597,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 88
+        },
+        {
+          "method": "GET",
+          "path": "/api/shift-reports",
+          "startedAtMs": 1509,
+          "responseAtMs": 1575,
+          "finishedAtMs": 1600,
+          "statusCode": 200,
+          "responseBodyBytes": 691,
+          "responseHasClosedHandover": false,
+          "failure": null,
+          "queryDimensions": null,
+          "durationMs": 91
+        },
+        {
+          "method": "GET",
+          "path": "/api/records",
+          "startedAtMs": 1509,
+          "responseAtMs": 1577,
+          "finishedAtMs": 1601,
+          "statusCode": 200,
+          "responseBodyBytes": null,
+          "responseHasClosedHandover": null,
+          "failure": null,
+          "queryDimensions": {
+            "pageSize": "30",
+            "hasEmployeeFilter": false,
+            "hasDateRange": true
+          },
+          "durationMs": 92
+        }
+      ],
+      "finalLcpCandidate": {
+        "startTimeMs": 1080,
+        "size": 2568,
+        "tag": "P",
+        "className": "text-[10px] font-bold text-token-text-tertiary uppercase tracking-[0.3em] animate-pulse"
+      }
+    }
+  ],
+  "fcpStats": {
+    "sampleCount": 3,
+    "medianMs": 740,
+    "p95Ms": 872,
+    "maxMs": 872
+  },
+  "observedLcpStats": {
+    "sampleCount": 3,
+    "medianMs": 872,
+    "p95Ms": 1080,
+    "maxMs": 1080
+  }
+}

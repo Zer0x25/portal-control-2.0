@@ -18,7 +18,7 @@ import Card from "../../../components/ui/Card";
 import Container from "../../../components/ui/Container";
 import ClockingPanel from "../components/ClockingPanel";
 import TimeRecordFilters from "../components/TimeRecordFilters";
-import TimeRecordTable from "../components/TimeRecordTable";
+import DeferredTimeRecordTable from "../components/DeferredTimeRecordTable";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 const RecordHistoryModal = React.lazy(() => import("../components/RecordHistoryModal"));
 const ConfirmationModal = React.lazy(() => import("../../../components/ui/ConfirmationModal"));
@@ -26,9 +26,7 @@ const QuickActionModal = React.lazy(() =>
   import("..").then((m) => ({ default: m.QuickActionModal })),
 );
 const AnomalyResolutionModal = React.lazy(() => import("../components/AnomalyResolutionModal"));
-const EditTimestampModal = React.lazy(() =>
-  import("..").then((m) => ({ default: m.EditTimestampModal })),
-);
+const EditTimestampModal = React.lazy(() => import("../components/EditTimestampModal.container"));
 
 /* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
    Presentational layer for TimeControl page.
@@ -186,7 +184,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
         className="border-token-border-technical overflow-hidden"
       >
         <div className="p-4 sm:p-8">
-          <TimeRecordTable
+          <DeferredTimeRecordTable
             records={props.filteredRecords}
             fetchNextPage={props.fetchNextPage}
             hasNextPage={props.hasNextPage}
@@ -271,13 +269,15 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
         </React.Suspense>
       )}
 
-      <React.Suspense fallback={null}>
-        <EditTimestampModal
-          isOpen={Boolean(props.editingRecordInfo)}
-          onClose={props.closeEditTimestampModal}
-          editingInfo={props.editingRecordInfo}
-        />
-      </React.Suspense>
+      {props.editingRecordInfo && (
+        <React.Suspense fallback={null}>
+          <EditTimestampModal
+            isOpen={true}
+            onClose={props.closeEditTimestampModal}
+            editingInfo={props.editingRecordInfo}
+          />
+        </React.Suspense>
+      )}
     </Container>
   );
 };

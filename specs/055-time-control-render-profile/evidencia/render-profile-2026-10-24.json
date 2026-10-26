@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 3,
+  "measuredAt": "2026-10-24T08:46:57.374Z",
+  "baseUrl": "http://127.0.0.1:5173",
+  "apiBase": "http://127.0.0.1:8080/api",
+  "nodeVersion": "v26.10.0",
+  "browser": {
+    "name": "Chromium",
+    "version": "153.0.8010.12"
+  },
+  "viewport": {
+    "width": 412,
+    "height": 823
+  },
+  "sampleCountPerRoute": 3,
+  "viewportName": "mobile",
+  "interaction": "direct route navigation in a fresh browser context per sample",
+  "timingLimit": "React Profiler timings come from Vite development mode; do not compare them to production Lighthouse or CPU profiles",
+  "routes": [
+    {
+      "id": "time-control",
+      "path": "/#/time-control",
+      "role": "admin",
+      "navigationCommits": 12,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 12,
+          "renderProfile": {
+            "route": {
+              "commits": 12,
+              "phases": {
+                "mount": 1,
+                "update": 9,
+                "nested-update": 2
+              },
+              "actualDurationMs": 63.50000000745058,
+              "baseDurationMs": 109.09999998658895,
+              "maxActualDurationMs": 24.100000001490116
+            },
+            "widgets": {},
+            "scopedProfiles": {
+              "time-control:view": {
+                "commits": 12,
+                "phases": {
+                  "mount": 1,
+                  "update": 9,
+                  "nested-update": 2
+                },
+                "actualDurationMs": 33,
+                "baseDurationMs": 72.29999997466803,
+                "maxActualDurationMs": 22
+              }
+            }
+          }
+        },
+        {
+          "navigationCommits": 12,
+          "renderProfile": {
+            "route": {
+              "commits": 12,
+              "phases": {
+                "mount": 1,
+                "update": 9,
+                "nested-update": 2
+              },
+              "actualDurationMs": 64.29999998956919,
+              "baseDurationMs": 98.80000003427267,
+              "maxActualDurationMs": 22.399999998509884
+            },
+            "widgets": {},
+            "scopedProfiles": {
+              "time-control:view": {
+                "commits": 12,
+                "phases": {
+                  "mount": 1,
+                  "update": 9,
+                  "nested-update": 2
+                },
+                "actualDurationMs": 27.200000002980232,
+                "baseDurationMs": 56.40000005811453,
+                "maxActualDurationMs": 20.5
+              }
+            }
+          }
+        },
+        {
+          "navigationCommits": 13,
+          "renderProfile": {
+            "route": {
+              "commits": 13,
+              "phases": {
+                "mount": 1,
+                "update": 10,
+                "nested-update": 2
+              },
+              "actualDurationMs": 71.5,
+              "baseDurationMs": 117.40000005811453,
+              "maxActualDurationMs": 26.600000001490116
+            },
+            "widgets": {},
+            "scopedProfiles": {
+              "time-control:view": {
+                "commits": 13,
+                "phases": {
+                  "mount": 1,
+                  "update": 10,
+                  "nested-update": 2
+                },
+                "actualDurationMs": 32.900000005960464,
+                "baseDurationMs": 66.30000007152557,
+                "maxActualDurationMs": 22.400000005960464
+              }
+            }
+          }
+        }
+      ],
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 12,
+          "actualDurationMsMedian": 64.3,
+          "baseDurationMsMedian": 109.1,
+          "maxActualDurationMsMedian": 24.1,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 9,
+            "nestedUpdate": 2
+          }
+        },
+        "widgets": {},
+        "scopedProfiles": {
+          "time-control:view": {
+            "samplesPresent": 3,
+            "commitsMedian": 12,
+            "actualDurationMsMedian": 32.9,
+            "baseDurationMsMedian": 66.3,
+            "maxActualDurationMsMedian": 22,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 9,
+              "nestedUpdate": 2
+            }
+          }
+        }
+      }
+    }
+  ]
+}

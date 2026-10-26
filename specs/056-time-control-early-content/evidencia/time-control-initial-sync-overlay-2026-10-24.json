@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "capturedOn": "2026-10-24",
+  "sourceCommit": "3b24d35",
+  "stagingFrontendImageId": "sha256:88fa33758435e8e667fcaea1bd6659e8b2ff161da4fb01a3f8bcc60d8fdddc4d",
+  "browser": {
+    "name": "Chromium",
+    "version": "153.0.8010.12"
+  },
+  "viewport": {
+    "width": 412,
+    "height": 823
+  },
+  "cpuThrottle": "4x",
+  "probes": {
+    "largestContentfulPaint": {
+      "sampleCount": 3,
+      "samples": [
+        {
+          "startTimeMs": 1612,
+          "size": 8424,
+          "tag": "P",
+          "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        },
+        {
+          "startTimeMs": 1560,
+          "size": 8424,
+          "tag": "P",
+          "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        },
+        {
+          "startTimeMs": 1784,
+          "size": 8424,
+          "tag": "P",
+          "className": "text-xxs font-medium text-token-text-tertiary uppercase tracking-widest opacity-40"
+        }
+      ],
+      "sourceComponent": "InitialSyncOverlay"
+    },
+    "overlayCoverageWhileRecordsPending": {
+      "sampleCount": 3,
+      "samples": [
+        {
+          "headingRenderedAtMs": 1681,
+          "overlayVisibleAtMs": 1698.2,
+          "overlayHitTestTarget": "DIV",
+          "overlayClass": "fixed inset-0 z-60 flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]",
+          "overlayClearedAtMs": 1958,
+          "hitTestTargetAfterClear": "H1",
+          "recordsWereStillPending": true
+        },
+        {
+          "headingRenderedAtMs": 2061,
+          "overlayVisibleAtMs": 2110.5,
+          "overlayHitTestTarget": "DIV",
+          "overlayClass": "fixed inset-0 z-60 flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]",
+          "overlayClearedAtMs": 2381,
+          "hitTestTargetAfterClear": "H1",
+          "recordsWereStillPending": true
+        },
+        {
+          "headingRenderedAtMs": 1784,
+          "overlayVisibleAtMs": 1798.2,
+          "overlayHitTestTarget": "DIV",
+          "overlayClass": "fixed inset-0 z-60 flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]",
+          "overlayClearedAtMs": 2057,
+          "hitTestTargetAfterClear": "H1",
+          "recordsWereStillPending": true
+        }
+      ]
+    }
+  },
+  "interpretation": "The cold-route LCP candidate belongs to the global initial-sync overlay. Separate hit-test captures confirmed that the overlay can cover the rendered route heading and then disappear while GET /api/records remains pending. These probes describe different runs and must not be combined into a single timing sample."
+}

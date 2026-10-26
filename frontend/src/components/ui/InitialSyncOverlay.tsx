@@ -11,10 +11,13 @@ const InitialSyncOverlay: React.FC = () => {
   const isInitialSync = useStore((state) => state.isInitialSync);
   const syncProgress = useStore((state) => state.syncProgress);
   const currentSyncStep = useStore((state) => state.currentSyncStep);
+  const isTimeControlRoute = window.location.hash.split("?")[0] === "#/time-control";
 
   return (
     isInitialSync && (
       <div
+        id="initial-sync-overlay"
+        style={isTimeControlRoute ? { zIndex: 10_000 } : undefined}
         className={`fixed inset-0 ${Z.toast} flex flex-col items-center justify-center bg-token-surface-app overflow-hidden animate-in fade-in [animation-duration:800ms]`}
       >
         {/* Decorative Technical Background - Unified with Login */}
@@ -30,7 +33,7 @@ const InitialSyncOverlay: React.FC = () => {
           {/* Main Animated Status Indicator */}
           <div className="relative mb-12">
             {/* Outer Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-token-accent-brand blur-3xl opacity-10 animate-pulse"></div>
+            <div className="ambient-glow ambient-glow-subtle absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 animate-pulse"></div>
 
             {/* Technical Spinner */}
             <div className="relative w-20 h-20 mx-auto">

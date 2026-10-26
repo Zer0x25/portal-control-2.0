@@ -2,12 +2,18 @@ import { Employee } from "../types/index";
 import { apiClient, Schema } from "./apiClient";
 
 type EmployeeSchema = Schema<"Employee">;
+export type ClockingEmployeeOption = Schema<"EmployeeClockingOption">;
 type PaginatedEmployeeResponse = {
   data: EmployeeSchema[];
   pagination: { total: number; page: number; totalPages: number };
 };
 
 export const employeeService = {
+  /** Obtiene la proyección activa mínima usada por Control de Horario. */
+  async getClockingOptions(): Promise<ClockingEmployeeOption[]> {
+    return apiClient.get("/api/employees/clocking-options");
+  },
+
   /**
    * Obtiene todos los empleados, soportando filtro 'since'.
    */

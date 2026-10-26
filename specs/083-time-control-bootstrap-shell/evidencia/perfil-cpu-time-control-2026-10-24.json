@@ -1,0 +1,740 @@
+{
+  "capturedAt": "2026-10-24T23:38:12.976Z",
+  "source": {
+    "commit": "f6d8ff259b06c46abd0a7e1fa7b08888afcec478",
+    "workingTreeDirty": true
+  },
+  "runtime": {
+    "nodeVersion": "v26.10.0",
+    "chromiumVersion": "153.0.8010.12",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "deviceScaleFactor": 1.75,
+    "cpuThrottleRate": 4,
+    "samplingIntervalUs": 1000,
+    "networkThrottle": "none",
+    "browserCache": "disabled",
+    "serviceWorkers": "blocked"
+  },
+  "target": {
+    "route": "/#/time-control",
+    "stagingFrontendImageId": "sha256:e427ecd64de0cd1d55081654a32646edf0b7553c76fb588c8d1b417bb8522938",
+    "activeStagingAssetsMatched": true,
+    "comparedJavascriptAssets": 207,
+    "sampledWindow": "first 1900 ms after FCP; task intervals aligned to browser Long Tasks API"
+  },
+  "samples": [
+    {
+      "sample": 1,
+      "fcpMs": 280,
+      "profileStartAfterFcpMs": 453.9,
+      "profileEndAfterFcpMs": 2356.9,
+      "profilerTimeMs": 2135.478,
+      "longTasksAfterFcp": [
+        {
+          "startAfterFcpMs": -10.5,
+          "durationMs": 86,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 461.2,
+          "durationMs": 103,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 891.5,
+          "durationMs": 139,
+          "name": "self"
+        }
+      ],
+      "taskAttribution": [
+        {
+          "startAfterFcpMs": 461.19999998807907,
+          "durationMs": 103,
+          "name": "self",
+          "profileSampleCount": 0,
+          "sampledWindowMs": 0,
+          "mappedSampledMs": 0,
+          "topAppFrames": [],
+          "topSelfFrames": []
+        },
+        {
+          "startAfterFcpMs": 891.5,
+          "durationMs": 139,
+          "name": "self",
+          "profileSampleCount": 124,
+          "sampledWindowMs": 139.42,
+          "mappedSampledMs": 80.51,
+          "topAppFrames": [
+            {
+              "source": "src/services/socketService.ts",
+              "functionName": "connect",
+              "sourceLine": 11,
+              "sampledMs": 14.94,
+              "samples": 13
+            },
+            {
+              "source": "src/utils/timePolicy.ts",
+              "functionName": "formatBusinessDateCL",
+              "sourceLine": 26,
+              "sampledMs": 6.77,
+              "samples": 7
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControl.ts",
+              "functionName": "useTimeControl",
+              "sourceLine": 25,
+              "sampledMs": 6.38,
+              "samples": 7
+            },
+            {
+              "source": "src/lib/querySync.ts",
+              "functionName": "refreshActiveQueriesForSync",
+              "sourceLine": 11,
+              "sampledMs": 4.55,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/queries/useTimeRecordsQuery.ts",
+              "functionName": "useTimeRecordMutations",
+              "sourceLine": 203,
+              "sampledMs": 3.17,
+              "samples": 3
+            },
+            {
+              "source": "src/hooks/useScheduling.ts",
+              "functionName": "useScheduling",
+              "sourceLine": 53,
+              "sampledMs": 2.55,
+              "samples": 3
+            },
+            {
+              "source": "src/hooks/useConfigMutations.ts",
+              "functionName": "useConfigMutations",
+              "sourceLine": 6,
+              "sampledMs": 2.18,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControlData.ts",
+              "functionName": "useTimeControlData",
+              "sourceLine": 15,
+              "sampledMs": 2.15,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/useEmployees.ts",
+              "functionName": "useEmployees",
+              "sourceLine": 22,
+              "sampledMs": 1.5,
+              "samples": 1
+            },
+            {
+              "source": "src/utils/mappings.ts",
+              "functionName": "getContractClockingStatus",
+              "sourceLine": 246,
+              "sampledMs": 1.29,
+              "samples": 1
+            },
+            {
+              "source": "src/hooks/useToasts.ts",
+              "functionName": "useToasts",
+              "sourceLine": 5,
+              "sampledMs": 1.26,
+              "samples": 1
+            },
+            {
+              "source": "src/components/ui/InitialSyncOverlay.tsx",
+              "functionName": "InitialSyncOverlay",
+              "sourceLine": 10,
+              "sampledMs": 0.93,
+              "samples": 1
+            }
+          ],
+          "topSelfFrames": [
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "(program)",
+              "sampledMs": 51.21,
+              "samples": 43
+            },
+            {
+              "source": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+              "functionName": "anonymous",
+              "sourceLine": 1,
+              "sampledMs": 8.38,
+              "samples": 5
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControl.ts",
+              "functionName": "useTimeControl",
+              "sourceLine": 25,
+              "sampledMs": 6.38,
+              "samples": 7
+            },
+            {
+              "source": "node_modules/@tanstack/query-core/build/modern/utils.js",
+              "functionName": "partialMatchKey",
+              "sourceLine": 95,
+              "sampledMs": 4.55,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/engine.io-client/build/esm/transport.js",
+              "functionName": "E",
+              "sourceLine": 20,
+              "sampledMs": 3.07,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/engine.io-client/build/esm/transports/websocket.js",
+              "functionName": "doOpen",
+              "sourceLine": 13,
+              "sampledMs": 2.88,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+              "functionName": "updateResult",
+              "sourceLine": 383,
+              "sampledMs": 2.82,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/socket.io-client/build/esm/manager.js",
+              "functionName": "open",
+              "sourceLine": 108,
+              "sampledMs": 2.74,
+              "samples": 3
+            },
+            {
+              "source": "unmapped/unknown",
+              "functionName": "anonymous",
+              "sampledMs": 2.73,
+              "samples": 3
+            },
+            {
+              "source": "src/hooks/useScheduling.ts",
+              "functionName": "useScheduling",
+              "sourceLine": 53,
+              "sampledMs": 2.55,
+              "samples": 3
+            },
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "(idle)",
+              "sampledMs": 2.22,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/@tanstack/react-query/build/modern/useMutation.js",
+              "functionName": "useMutation",
+              "sourceLine": 178,
+              "sampledMs": 2.21,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControlData.ts",
+              "functionName": "useTimeControlData",
+              "sourceLine": 15,
+              "sampledMs": 2.15,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/@tanstack/query-core/build/modern/mutationCache.js",
+              "functionName": "getAll",
+              "sourceLine": 125,
+              "sampledMs": 1.84,
+              "samples": 1
+            },
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "setTimeout",
+              "sampledMs": 1.72,
+              "samples": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sample": 2,
+      "fcpMs": 204,
+      "profileStartAfterFcpMs": 571.7,
+      "profileEndAfterFcpMs": 2474.2,
+      "profilerTimeMs": 2132.077,
+      "longTasksAfterFcp": [
+        {
+          "startAfterFcpMs": 1.9,
+          "durationMs": 85,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 100.3,
+          "durationMs": 94,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 579.3,
+          "durationMs": 95,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 943.9,
+          "durationMs": 131,
+          "name": "self"
+        }
+      ],
+      "taskAttribution": [
+        {
+          "startAfterFcpMs": 579.2999999970198,
+          "durationMs": 95,
+          "name": "self",
+          "profileSampleCount": 0,
+          "sampledWindowMs": 0,
+          "mappedSampledMs": 0,
+          "topAppFrames": [],
+          "topSelfFrames": []
+        },
+        {
+          "startAfterFcpMs": 943.9000000059605,
+          "durationMs": 131,
+          "name": "self",
+          "profileSampleCount": 119,
+          "sampledWindowMs": 130.79,
+          "mappedSampledMs": 77.71,
+          "topAppFrames": [
+            {
+              "source": "src/services/apiClient.ts",
+              "functionName": "performRequest",
+              "sourceLine": 384,
+              "sampledMs": 10.85,
+              "samples": 10
+            },
+            {
+              "source": "src/services/socketService.ts",
+              "functionName": "connect",
+              "sourceLine": 11,
+              "sampledMs": 9.72,
+              "samples": 10
+            },
+            {
+              "source": "src/hooks/queries/useEmployeesQuery.ts",
+              "functionName": "m",
+              "sourceLine": 12,
+              "sampledMs": 5.13,
+              "samples": 1
+            },
+            {
+              "source": "src/hooks/queries/useConfigQuery.ts",
+              "functionName": "Rt",
+              "sourceLine": 47,
+              "sampledMs": 3.37,
+              "samples": 1
+            },
+            {
+              "source": "src/utils/timePolicy.ts",
+              "functionName": "formatBusinessDateCL",
+              "sourceLine": 26,
+              "sampledMs": 2.73,
+              "samples": 3
+            },
+            {
+              "source": "src/hooks/queries/useCorrectionRequestsQuery.ts",
+              "functionName": "useCorrectionRequestsQuery",
+              "sourceLine": 6,
+              "sampledMs": 2.25,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/useUsers.ts",
+              "functionName": "m",
+              "sourceLine": 14,
+              "sampledMs": 1.87,
+              "samples": 2
+            },
+            {
+              "source": "src/lib/querySync.ts",
+              "functionName": "refreshActiveQueriesForSync",
+              "sourceLine": 11,
+              "sampledMs": 1.87,
+              "samples": 2
+            },
+            {
+              "source": "src/utils/sentryMiddlewares.ts",
+              "functionName": "config",
+              "sourceLine": 52,
+              "sampledMs": 1.66,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/useConfigMutations.ts",
+              "functionName": "useConfigMutations",
+              "sourceLine": 6,
+              "sampledMs": 1.59,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControl.ts",
+              "functionName": "useTimeControl",
+              "sourceLine": 25,
+              "sampledMs": 1.57,
+              "samples": 2
+            },
+            {
+              "source": "src/services/apiClient.ts",
+              "functionName": "buildQuery",
+              "sourceLine": 736,
+              "sampledMs": 1.56,
+              "samples": 1
+            }
+          ],
+          "topSelfFrames": [
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "(program)",
+              "sampledMs": 42.26,
+              "samples": 41
+            },
+            {
+              "source": "src/services/apiClient.ts",
+              "functionName": "performRequest",
+              "sourceLine": 384,
+              "sampledMs": 6.68,
+              "samples": 6
+            },
+            {
+              "source": "node_modules/@tanstack/react-query/build/modern/useQuery.js",
+              "functionName": "useQuery",
+              "sourceLine": 5,
+              "sampledMs": 5.13,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/@tanstack/query-persist-client-core/build/modern/persist.js",
+              "functionName": "persistQueryClientSubscribe",
+              "sourceLine": 58,
+              "sampledMs": 4.93,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/react-dom/cjs/react-dom-client.production.js",
+              "functionName": "completeRoot",
+              "sourceLine": 12867,
+              "sampledMs": 4.72,
+              "samples": 2
+            },
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "fetch",
+              "sampledMs": 4.16,
+              "samples": 4
+            },
+            {
+              "source": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+              "functionName": "anonymous",
+              "sourceLine": 1,
+              "sampledMs": 3.81,
+              "samples": 4
+            },
+            {
+              "source": "node_modules/@tanstack/query-core/build/modern/queryObserver.js",
+              "functionName": "createResult",
+              "sourceLine": 290,
+              "sampledMs": 3.37,
+              "samples": 1
+            },
+            {
+              "source": "src/hooks/useUsers.ts",
+              "functionName": "m",
+              "sourceLine": 14,
+              "sampledMs": 1.87,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/@tanstack/query-core/build/modern/utils.js",
+              "functionName": "matchQuery",
+              "sourceLine": 33,
+              "sampledMs": 1.87,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/react-dom/cjs/react-dom-client.production.js",
+              "functionName": "getListener",
+              "sourceLine": 1686,
+              "sampledMs": 1.71,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/socket.io-client/build/esm/manager.js",
+              "functionName": "Z",
+              "sourceLine": 8,
+              "sampledMs": 1.58,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControl.ts",
+              "functionName": "useTimeControl",
+              "sourceLine": 25,
+              "sampledMs": 1.57,
+              "samples": 2
+            },
+            {
+              "source": "src/services/apiClient.ts",
+              "functionName": "buildQuery",
+              "sourceLine": 736,
+              "sampledMs": 1.56,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/react-dom/cjs/react-dom-client.production.js",
+              "functionName": "hasSelectionCapabilities",
+              "sourceLine": 2378,
+              "sampledMs": 1.53,
+              "samples": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sample": 3,
+      "fcpMs": 180,
+      "profileStartAfterFcpMs": 550.4,
+      "profileEndAfterFcpMs": 2456.8,
+      "profilerTimeMs": 2138.222,
+      "longTasksAfterFcp": [
+        {
+          "startAfterFcpMs": -11.9,
+          "durationMs": 91,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 93,
+          "durationMs": 83,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 562.3,
+          "durationMs": 94,
+          "name": "self"
+        },
+        {
+          "startAfterFcpMs": 910,
+          "durationMs": 138,
+          "name": "self"
+        }
+      ],
+      "taskAttribution": [
+        {
+          "startAfterFcpMs": 562.3000000119209,
+          "durationMs": 94,
+          "name": "self",
+          "profileSampleCount": 0,
+          "sampledWindowMs": 0,
+          "mappedSampledMs": 0,
+          "topAppFrames": [],
+          "topSelfFrames": []
+        },
+        {
+          "startAfterFcpMs": 910,
+          "durationMs": 138,
+          "name": "self",
+          "profileSampleCount": 130,
+          "sampledWindowMs": 137.97,
+          "mappedSampledMs": 65.05,
+          "topAppFrames": [
+            {
+              "source": "src/services/apiClient.ts",
+              "functionName": "performRequest",
+              "sourceLine": 384,
+              "sampledMs": 7.94,
+              "samples": 8
+            },
+            {
+              "source": "src/services/socketService.ts",
+              "functionName": "connect",
+              "sourceLine": 11,
+              "sampledMs": 6.78,
+              "samples": 7
+            },
+            {
+              "source": "src/lib/querySync.ts",
+              "functionName": "refreshActiveQueriesForSync",
+              "sourceLine": 11,
+              "sampledMs": 3.7,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/layout/useHeaderController.ts",
+              "functionName": "useHeaderController",
+              "sourceLine": 9,
+              "sampledMs": 2.14,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/queries/useConfigQuery.ts",
+              "functionName": "It",
+              "sourceLine": 27,
+              "sampledMs": 2.05,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/useScheduling.ts",
+              "functionName": "useScheduling",
+              "sourceLine": 53,
+              "sampledMs": 1.96,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControlData.ts",
+              "functionName": "useTimeControlData",
+              "sourceLine": 15,
+              "sampledMs": 1.93,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControl.ts",
+              "functionName": "useTimeControl",
+              "sourceLine": 25,
+              "sampledMs": 1.91,
+              "samples": 2
+            },
+            {
+              "source": "src/hooks/queries/useAssignedShiftsQuery.ts",
+              "functionName": "s",
+              "sourceLine": 6,
+              "sampledMs": 1.46,
+              "samples": 1
+            },
+            {
+              "source": "src/hooks/queries/useConfigQuery.ts",
+              "functionName": "useControlInternoEnabledQuery",
+              "sourceLine": 73,
+              "sampledMs": 1.4,
+              "samples": 2
+            },
+            {
+              "source": "src/store/slices/syncSlice.ts",
+              "functionName": "initializeAppData",
+              "sourceLine": 263,
+              "sampledMs": 1.35,
+              "samples": 1
+            },
+            {
+              "source": "src/hooks/queries/useEmployeesQuery.ts",
+              "functionName": "h",
+              "sourceLine": 28,
+              "sampledMs": 0.98,
+              "samples": 1
+            }
+          ],
+          "topSelfFrames": [
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "(program)",
+              "sampledMs": 52.97,
+              "samples": 50
+            },
+            {
+              "source": "node_modules/date-fns/locale/en-US/_lib/formatDistance.js",
+              "functionName": "anonymous",
+              "sourceLine": 1,
+              "sampledMs": 7.22,
+              "samples": 5
+            },
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "fetch",
+              "sampledMs": 5.78,
+              "samples": 5
+            },
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "setAttribute",
+              "sampledMs": 4.37,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/react-dom/cjs/react-dom-client.production.js",
+              "functionName": "propagateParentContextChanges",
+              "sourceLine": 3223,
+              "sampledMs": 3.53,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/@tanstack/query-core/build/modern/query.js",
+              "functionName": "fetch",
+              "sourceLine": 297,
+              "sampledMs": 2.84,
+              "samples": 1
+            },
+            {
+              "source": "node_modules/socket.io-client/build/esm/url.js",
+              "functionName": "url",
+              "sourceLine": 11,
+              "sampledMs": 2.26,
+              "samples": 2
+            },
+            {
+              "source": "src/services/apiClient.ts",
+              "functionName": "performRequest",
+              "sourceLine": 384,
+              "sampledMs": 2.16,
+              "samples": 3
+            },
+            {
+              "source": "node_modules/react-dom/cjs/react-dom-client.production.js",
+              "functionName": "updateCallback",
+              "sourceLine": 5445,
+              "sampledMs": 2.14,
+              "samples": 2
+            },
+            {
+              "source": "unmapped/unknown",
+              "functionName": "anonymous",
+              "sampledMs": 2.13,
+              "samples": 2
+            },
+            {
+              "source": "unmapped/unknown.js",
+              "functionName": "y",
+              "sampledMs": 1.96,
+              "samples": 1
+            },
+            {
+              "source": "src/hooks/useScheduling.ts",
+              "functionName": "useScheduling",
+              "sourceLine": 53,
+              "sampledMs": 1.96,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControlData.ts",
+              "functionName": "useTimeControlData",
+              "sourceLine": 15,
+              "sampledMs": 1.93,
+              "samples": 2
+            },
+            {
+              "source": "src/features/time-control/hooks/useTimeControl.ts",
+              "functionName": "useTimeControl",
+              "sourceLine": 25,
+              "sampledMs": 1.91,
+              "samples": 2
+            },
+            {
+              "source": "node_modules/react-dom/cjs/react-dom-client.production.js",
+              "functionName": "commitHostUpdate",
+              "sourceLine": 9218,
+              "sampledMs": 1.78,
+              "samples": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

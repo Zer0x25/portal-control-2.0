@@ -1,0 +1,8 @@
+{
+  "capturedAt": "2026-10-23T13:40:27.351Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "fontRequests": ["http://127.0.0.1:8080/assets/Inter-Regular-latin-DZ2H3oP-.woff2", "http://127.0.0.1:8080/assets/Inter-SemiBold-latin-BnCj5yHe.woff2", "http://127.0.0.1:8080/assets/Inter-Bold-latin-C-mUijkG.woff2", "http://127.0.0.1:8080/assets/RobotoMono-Regular-latin-DERbL4AX.woff2", "http://127.0.0.1:8080/assets/RobotoMono-Bold-latin-C5Vh1VjD.woff2"],
+  "encodedBytes": 132711,
+  "specimenSha256": "fc5ec5109bd81e6748476ae33b08feacdcf3528327c676aa79853addeccdc28e",
+  "comparedWithOriginal": true
+}

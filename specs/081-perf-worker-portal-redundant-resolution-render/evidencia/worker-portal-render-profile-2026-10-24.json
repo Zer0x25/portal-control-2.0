@@ -1,0 +1,3954 @@
+{
+  "schemaVersion": 3,
+  "measuredAt": "2026-10-24T20:17:17.115Z",
+  "baseUrl": "http://127.0.0.1:5174",
+  "apiBase": "http://127.0.0.1:8080/api",
+  "nodeVersion": "v26.10.0",
+  "browser": {
+    "name": "Chromium",
+    "version": "153.0.8010.12"
+  },
+  "viewport": {
+    "width": 412,
+    "height": 823
+  },
+  "cpuThrottleRate": 4,
+  "sampleCountPerRoute": 3,
+  "viewportName": "mobile",
+  "interaction": "direct route navigation in a fresh browser context per sample",
+  "timingLimit": "React Profiler timings come from Vite development mode with the recorded CDP CPU throttle; use only for component attribution, not production timing comparisons",
+  "routes": [
+    {
+      "id": "worker-portal",
+      "path": "/#/worker-portal",
+      "role": "worker",
+      "navigationCommits": 4,
+      "sampleCount": 3,
+      "samples": [
+        {
+          "navigationCommits": 4,
+          "renderProfile": {
+            "root": {
+              "commits": 22,
+              "phases": {
+                "mount": 1,
+                "update": 21,
+                "nested-update": 0
+              },
+              "actualDurationMs": 315.6000000089407,
+              "baseDurationMs": 1613.6000004559755,
+              "maxActualDurationMs": 105.80000001192093
+            },
+            "appProfiles": {
+              "app:initial-sync-overlay": {
+                "commits": 5,
+                "phases": {
+                  "mount": 1,
+                  "update": 4,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 32.400000005960464,
+                "baseDurationMs": 21.60000003874302,
+                "maxActualDurationMs": 11.400000005960464
+              },
+              "app:top-loading": {
+                "commits": 5,
+                "phases": {
+                  "mount": 1,
+                  "update": 4,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 4.200000002980232,
+                "baseDurationMs": 2.7000000178813934,
+                "maxActualDurationMs": 2.2999999970197678
+              },
+              "app:background-activity": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1.5,
+                "baseDurationMs": 0,
+                "maxActualDurationMs": 1.5
+              },
+              "app:toast-container": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3.3999999910593033,
+                "baseDurationMs": 0.7999999970197678,
+                "maxActualDurationMs": 2.0999999940395355
+              },
+              "app:access-notifier": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 1.2000000029802322,
+                "baseDurationMs": 0.09999999403953552,
+                "maxActualDurationMs": 1.1000000089406967
+              },
+              "app:routes": {
+                "commits": 9,
+                "phases": {
+                  "mount": 1,
+                  "update": 8,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 197.00000001490116,
+                "baseDurationMs": 556.5000002086163,
+                "maxActualDurationMs": 47.6000000089407
+              },
+              "app:application": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 283.90000000596046,
+                "baseDurationMs": 1090.0000004023314,
+                "maxActualDurationMs": 76.00000001490116
+              },
+              "app:shell": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 293.50000001490116,
+                "baseDurationMs": 1299.0000004023314,
+                "maxActualDurationMs": 85.50000001490116
+              },
+              "app:router": {
+                "commits": 21,
+                "phases": {
+                  "mount": 1,
+                  "update": 20,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 300.29999999701977,
+                "baseDurationMs": 1483.8000002652407,
+                "maxActualDurationMs": 96.1000000089407
+              },
+              "app:query-cache-provider": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 313.80000001192093,
+                "baseDurationMs": 1578.4000005871058,
+                "maxActualDurationMs": 104.2000000178814
+              },
+              "app:providers": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 314.80000001192093,
+                "baseDurationMs": 1596.0000005215406,
+                "maxActualDurationMs": 105.00000001490116
+              }
+            },
+            "route": {
+              "commits": 4,
+              "phases": {
+                "mount": 1,
+                "update": 3,
+                "nested-update": 0
+              },
+              "actualDurationMs": 104.09999997913837,
+              "baseDurationMs": 132.79999996721745,
+              "maxActualDurationMs": 41.69999997317791
+            },
+            "widgets": {},
+            "scopedProfiles": {
+              "worker-portal:view": {
+                "commits": 4,
+                "phases": {
+                  "mount": 1,
+                  "update": 3,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 77.09999997913837,
+                "baseDurationMs": 97.79999996721745,
+                "maxActualDurationMs": 30.299999982118607
+              }
+            },
+            "commitEvents": [
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "mount",
+                "startTimeMs": 1037.9,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 8.2
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "mount",
+                "startTimeMs": 1050.8,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:background-activity",
+                "phase": "mount",
+                "startTimeMs": 1052,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:toast-container",
+                "phase": "mount",
+                "startTimeMs": 1053.6,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 2.1
+              },
+              {
+                "id": "app:access-notifier",
+                "phase": "mount",
+                "startTimeMs": 1055.9,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:routes",
+                "phase": "mount",
+                "startTimeMs": 1057.2,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 33.3
+              },
+              {
+                "id": "app:application",
+                "phase": "mount",
+                "startTimeMs": 1009.7,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 76
+              },
+              {
+                "id": "app:shell",
+                "phase": "mount",
+                "startTimeMs": 1000.2,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 85.5
+              },
+              {
+                "id": "app:router",
+                "phase": "mount",
+                "startTimeMs": 989.6,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 96.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "mount",
+                "startTimeMs": 981.5,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 104.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "mount",
+                "startTimeMs": 980.7,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 105
+              },
+              {
+                "id": "app:root",
+                "phase": "mount",
+                "startTimeMs": 979.9,
+                "commitTimeMs": 1093.8,
+                "actualDurationMs": 105.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1242.1,
+                "commitTimeMs": 1247.4,
+                "actualDurationMs": 4.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1242.1,
+                "commitTimeMs": 1247.4,
+                "actualDurationMs": 4.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1242,
+                "commitTimeMs": 1247.4,
+                "actualDurationMs": 4.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1242,
+                "commitTimeMs": 1247.4,
+                "actualDurationMs": 4.4
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1242,
+                "commitTimeMs": 1247.4,
+                "actualDurationMs": 4.4
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1242,
+                "commitTimeMs": 1247.4,
+                "actualDurationMs": 4.4
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1264.1,
+                "commitTimeMs": 1268.2,
+                "actualDurationMs": 4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1264.1,
+                "commitTimeMs": 1268.2,
+                "actualDurationMs": 4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1261.9,
+                "commitTimeMs": 1268.2,
+                "actualDurationMs": 5.4
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1261.9,
+                "commitTimeMs": 1268.2,
+                "actualDurationMs": 5.4
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1261.9,
+                "commitTimeMs": 1268.2,
+                "actualDurationMs": 5.4
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1293,
+                "commitTimeMs": 1294.2,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1293,
+                "commitTimeMs": 1294.2,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1293,
+                "commitTimeMs": 1294.2,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1292,
+                "commitTimeMs": 1294.2,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1292,
+                "commitTimeMs": 1294.2,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1292,
+                "commitTimeMs": 1294.2,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1334.9,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.4
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1334.8,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1334.8,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1334.8,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1334.8,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1334.8,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1334.8,
+                "commitTimeMs": 1347.5,
+                "actualDurationMs": 11.5
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1350.1,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1350.1,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1350,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1350,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1350,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1350,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1350,
+                "commitTimeMs": 1354.7,
+                "actualDurationMs": 4.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1438.6,
+                "commitTimeMs": 1439.3,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1438.6,
+                "commitTimeMs": 1439.3,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1438.6,
+                "commitTimeMs": 1439.3,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1438.6,
+                "commitTimeMs": 1439.3,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1438.6,
+                "commitTimeMs": 1439.3,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1438.6,
+                "commitTimeMs": 1439.3,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1466.3,
+                "commitTimeMs": 1472.7,
+                "actualDurationMs": 6.2
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1475.7,
+                "commitTimeMs": 1479.1,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1511.9,
+                "commitTimeMs": 1512.6,
+                "actualDurationMs": 0.6
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1511.9,
+                "commitTimeMs": 1512.6,
+                "actualDurationMs": 0.6
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1511.9,
+                "commitTimeMs": 1512.6,
+                "actualDurationMs": 0.6
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1511.9,
+                "commitTimeMs": 1512.6,
+                "actualDurationMs": 0.6
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1511.9,
+                "commitTimeMs": 1512.6,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1511.9,
+                "commitTimeMs": 1512.6,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:toast-container",
+                "phase": "update",
+                "startTimeMs": 1519.6,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 1.3
+              },
+              {
+                "id": "app:access-notifier",
+                "phase": "update",
+                "startTimeMs": 1520.9,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1521,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1519.1,
+                "commitTimeMs": 1571,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1575.2,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1575.2,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1575.2,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1575.2,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1575.1,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1575.1,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1575.1,
+                "commitTimeMs": 1577.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1725.9,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1725.8,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1725.8,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1725.8,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1725.8,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1725.8,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1725.8,
+                "commitTimeMs": 1726.1,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1726.6,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1726.6,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1726.6,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1726.5,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1726.5,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1726.5,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1726.5,
+                "commitTimeMs": 1871.9,
+                "actualDurationMs": 47.6
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1928.8,
+                "commitTimeMs": 1929,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1928.8,
+                "commitTimeMs": 1929,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1928.8,
+                "commitTimeMs": 1929,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1928.1,
+                "commitTimeMs": 1929,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1928.1,
+                "commitTimeMs": 1929,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1928.1,
+                "commitTimeMs": 1929,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1941.3,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 3.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1937.9,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 6.9
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1937.9,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 6.9
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1937.9,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 6.9
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1937.9,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 6.9
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1937.9,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 6.9
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1937.9,
+                "commitTimeMs": 1944.9,
+                "actualDurationMs": 6.9
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1947.1,
+                "commitTimeMs": 1953.4,
+                "actualDurationMs": 6
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 2127.5,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2126.9,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2126.9,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2126.9,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2126.9,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2126.9,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2126.9,
+                "commitTimeMs": 2127.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "mount",
+                "startTimeMs": 2143.9,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 30.3
+              },
+              {
+                "id": "worker-portal",
+                "phase": "mount",
+                "startTimeMs": 2129.9,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 41.7
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2128.5,
+                "commitTimeMs": 2179.2,
+                "actualDurationMs": 42.6
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 2341.1,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 21.7
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 2333.5,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.3
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2332.9,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.3
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2332.3,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.9
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2332.3,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.9
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2332.3,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.9
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2332.3,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.9
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2332.3,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.9
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2332.3,
+                "commitTimeMs": 2363.2,
+                "actualDurationMs": 29.9
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 2414.1,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 23.4
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 2406.1,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 31.4
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2405.4,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 32.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2404.5,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 33
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2404.5,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 33
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2404.5,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 33
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2404.5,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 33
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2404.5,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 33
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2404.5,
+                "commitTimeMs": 2437.9,
+                "actualDurationMs": 33
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 3304.5,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 3304.5,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 3303.9,
+                "commitTimeMs": 3306.4,
+                "actualDurationMs": 2.3
+              }
+            ],
+            "commitEventsDropped": 0,
+            "readinessAudit": null
+          }
+        },
+        {
+          "navigationCommits": 4,
+          "renderProfile": {
+            "root": {
+              "commits": 18,
+              "phases": {
+                "mount": 1,
+                "update": 17,
+                "nested-update": 0
+              },
+              "actualDurationMs": 296.5999999791384,
+              "baseDurationMs": 1328.2999992519617,
+              "maxActualDurationMs": 102.49999998509884
+            },
+            "appProfiles": {
+              "app:initial-sync-overlay": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 8.799999997019768,
+                "baseDurationMs": 2.0999999940395355,
+                "maxActualDurationMs": 8.299999997019768
+              },
+              "app:top-loading": {
+                "commits": 5,
+                "phases": {
+                  "mount": 1,
+                  "update": 4,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 16.100000008940697,
+                "baseDurationMs": 13.100000008940697,
+                "maxActualDurationMs": 10.200000002980232
+              },
+              "app:background-activity": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.199999988079071,
+                "baseDurationMs": 0.8999999910593033,
+                "maxActualDurationMs": 1.3999999910593033
+              },
+              "app:toast-container": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 3,
+                "baseDurationMs": 2.499999985098839,
+                "maxActualDurationMs": 2.5999999940395355
+              },
+              "app:access-notifier": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 0.29999999701976776,
+                "baseDurationMs": 0.09999999403953552,
+                "maxActualDurationMs": 0.20000000298023224
+              },
+              "app:routes": {
+                "commits": 9,
+                "phases": {
+                  "mount": 1,
+                  "update": 8,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 197.40000000596046,
+                "baseDurationMs": 520.9000000059605,
+                "maxActualDurationMs": 47.3999999910593
+              },
+              "app:application": {
+                "commits": 18,
+                "phases": {
+                  "mount": 1,
+                  "update": 17,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 267.70000000298023,
+                "baseDurationMs": 944.2999996989965,
+                "maxActualDurationMs": 76.09999999403954
+              },
+              "app:shell": {
+                "commits": 18,
+                "phases": {
+                  "mount": 1,
+                  "update": 17,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 276.8999999910593,
+                "baseDurationMs": 1108.0999995917082,
+                "maxActualDurationMs": 85.19999998807907
+              },
+              "app:router": {
+                "commits": 17,
+                "phases": {
+                  "mount": 1,
+                  "update": 16,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 283.5999999791384,
+                "baseDurationMs": 1190.2999995052814,
+                "maxActualDurationMs": 92.2999999821186
+              },
+              "app:query-cache-provider": {
+                "commits": 18,
+                "phases": {
+                  "mount": 1,
+                  "update": 17,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 293.99999998509884,
+                "baseDurationMs": 1285.0999994128942,
+                "maxActualDurationMs": 100.09999999403954
+              },
+              "app:providers": {
+                "commits": 18,
+                "phases": {
+                  "mount": 1,
+                  "update": 17,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 295.89999997615814,
+                "baseDurationMs": 1317.49999935925,
+                "maxActualDurationMs": 101.8999999910593
+              }
+            },
+            "route": {
+              "commits": 4,
+              "phases": {
+                "mount": 1,
+                "update": 3,
+                "nested-update": 0
+              },
+              "actualDurationMs": 107.7999999821186,
+              "baseDurationMs": 125.59999993443489,
+              "maxActualDurationMs": 46.099999994039536
+            },
+            "widgets": {},
+            "scopedProfiles": {
+              "worker-portal:view": {
+                "commits": 4,
+                "phases": {
+                  "mount": 1,
+                  "update": 3,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 80.20000000298023,
+                "baseDurationMs": 92.69999995827675,
+                "maxActualDurationMs": 33.70000000298023
+              }
+            },
+            "commitEvents": [
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "mount",
+                "startTimeMs": 997.3,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 8.3
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "mount",
+                "startTimeMs": 1007.3,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:background-activity",
+                "phase": "mount",
+                "startTimeMs": 1009.1,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 1.4
+              },
+              {
+                "id": "app:toast-container",
+                "phase": "mount",
+                "startTimeMs": 1010.5,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:access-notifier",
+                "phase": "mount",
+                "startTimeMs": 1010.9,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:routes",
+                "phase": "mount",
+                "startTimeMs": 1011.2,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 38.9
+              },
+              {
+                "id": "app:application",
+                "phase": "mount",
+                "startTimeMs": 971.8,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 76.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "mount",
+                "startTimeMs": 962.7,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 85.2
+              },
+              {
+                "id": "app:router",
+                "phase": "mount",
+                "startTimeMs": 955.6,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 92.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "mount",
+                "startTimeMs": 947.8,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 100.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "mount",
+                "startTimeMs": 946,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 101.9
+              },
+              {
+                "id": "app:root",
+                "phase": "mount",
+                "startTimeMs": 945.4,
+                "commitTimeMs": 1052.9,
+                "actualDurationMs": 102.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1205.9,
+                "commitTimeMs": 1213.8,
+                "actualDurationMs": 7.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1205.9,
+                "commitTimeMs": 1213.8,
+                "actualDurationMs": 7.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1205,
+                "commitTimeMs": 1213.8,
+                "actualDurationMs": 7.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1203.9,
+                "commitTimeMs": 1213.8,
+                "actualDurationMs": 7.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1203.9,
+                "commitTimeMs": 1213.8,
+                "actualDurationMs": 7.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1203.9,
+                "commitTimeMs": 1213.8,
+                "actualDurationMs": 7.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1239,
+                "commitTimeMs": 1239.5,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1239,
+                "commitTimeMs": 1239.5,
+                "actualDurationMs": 0.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1236.6,
+                "commitTimeMs": 1239.5,
+                "actualDurationMs": 2.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1236.6,
+                "commitTimeMs": 1239.5,
+                "actualDurationMs": 2.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1236.6,
+                "commitTimeMs": 1239.5,
+                "actualDurationMs": 2.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1262,
+                "commitTimeMs": 1264.1,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1262,
+                "commitTimeMs": 1264.1,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1262,
+                "commitTimeMs": 1264.1,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1262,
+                "commitTimeMs": 1264.1,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1262,
+                "commitTimeMs": 1264.1,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1262,
+                "commitTimeMs": 1264.1,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1323.8,
+                "commitTimeMs": 1325.4,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1323.8,
+                "commitTimeMs": 1325.4,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1323.8,
+                "commitTimeMs": 1325.4,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1323.8,
+                "commitTimeMs": 1325.4,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1323.7,
+                "commitTimeMs": 1325.4,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1323.7,
+                "commitTimeMs": 1325.4,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1354,
+                "commitTimeMs": 1355.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1354,
+                "commitTimeMs": 1355.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1354,
+                "commitTimeMs": 1355.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1353.9,
+                "commitTimeMs": 1355.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1353.9,
+                "commitTimeMs": 1355.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1353.9,
+                "commitTimeMs": 1355.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1380.3,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 2.3
+              },
+              {
+                "id": "app:background-activity",
+                "phase": "update",
+                "startTimeMs": 1382.6,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:toast-container",
+                "phase": "update",
+                "startTimeMs": 1383.4,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 2.6
+              },
+              {
+                "id": "app:access-notifier",
+                "phase": "update",
+                "startTimeMs": 1398.4,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1398.5,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 6.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 6.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 6.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 6.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 6.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1379.8,
+                "commitTimeMs": 1407.6,
+                "actualDurationMs": 6.5
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1426.8,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1426.8,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1426.8,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1426.5,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1426.5,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1426.5,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1426.5,
+                "commitTimeMs": 1437.7,
+                "actualDurationMs": 10.3
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1598,
+                "commitTimeMs": 1599.1,
+                "actualDurationMs": 1
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1603.5,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1602.6,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1602.6,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1602.6,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1602.6,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1602.6,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1602.6,
+                "commitTimeMs": 1714.7,
+                "actualDurationMs": 42.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1806.1,
+                "commitTimeMs": 1807.4,
+                "actualDurationMs": 0.6
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1806.1,
+                "commitTimeMs": 1807.4,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1806.1,
+                "commitTimeMs": 1807.4,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1806.1,
+                "commitTimeMs": 1807.4,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1806.1,
+                "commitTimeMs": 1807.4,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1806.1,
+                "commitTimeMs": 1807.4,
+                "actualDurationMs": 0.7
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1834.2,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1833.3,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1833.3,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1833.3,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1833.2,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1833,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1833,
+                "commitTimeMs": 1836.6,
+                "actualDurationMs": 2.4
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1838.3,
+                "commitTimeMs": 1843.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2002.9,
+                "commitTimeMs": 2004,
+                "actualDurationMs": 1.1
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "mount",
+                "startTimeMs": 2021.9,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 33.7
+              },
+              {
+                "id": "worker-portal",
+                "phase": "mount",
+                "startTimeMs": 2006.7,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 46.1
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2005.4,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2005.4,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2005.4,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2005.4,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2005.3,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2005.3,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2005.3,
+                "commitTimeMs": 2059.8,
+                "actualDurationMs": 47.4
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 2218.5,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 23.6
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 2208.6,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 33.5
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2208.5,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 33.6
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2207.7,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 34.4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2207.7,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 34.4
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2207.7,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 34.4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2207.7,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 34.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2207.7,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 34.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2207.7,
+                "commitTimeMs": 2242.2,
+                "actualDurationMs": 34.5
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 2290.5,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 20.7
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 2285.2,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2285.2,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2284.4,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26.7
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2284.4,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26.7
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2284.4,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26.7
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2284.4,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26.7
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2284.4,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26.7
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2284.4,
+                "commitTimeMs": 2311.6,
+                "actualDurationMs": 26.8
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 3185.1,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 3185.1,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 3185,
+                "commitTimeMs": 3187.3,
+                "actualDurationMs": 2.2
+              }
+            ],
+            "commitEventsDropped": 0,
+            "readinessAudit": null
+          }
+        },
+        {
+          "navigationCommits": 4,
+          "renderProfile": {
+            "root": {
+              "commits": 22,
+              "phases": {
+                "mount": 1,
+                "update": 21,
+                "nested-update": 0
+              },
+              "actualDurationMs": 417.7999999076128,
+              "baseDurationMs": 2078.9000000208616,
+              "maxActualDurationMs": 145.09999999403954
+            },
+            "appProfiles": {
+              "app:initial-sync-overlay": {
+                "commits": 5,
+                "phases": {
+                  "mount": 1,
+                  "update": 4,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 21.49999998509884,
+                "baseDurationMs": 12.800000011920929,
+                "maxActualDurationMs": 6.700000002980232
+              },
+              "app:top-loading": {
+                "commits": 5,
+                "phases": {
+                  "mount": 1,
+                  "update": 4,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 9,
+                "baseDurationMs": 3.4000000059604645,
+                "maxActualDurationMs": 4.899999991059303
+              },
+              "app:background-activity": {
+                "commits": 1,
+                "phases": {
+                  "mount": 1,
+                  "update": 0,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.7000000029802322,
+                "baseDurationMs": 0.5,
+                "maxActualDurationMs": 2.7000000029802322
+              },
+              "app:toast-container": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 11.099999994039536,
+                "baseDurationMs": 0.09999999403953552,
+                "maxActualDurationMs": 7.700000002980232
+              },
+              "app:access-notifier": {
+                "commits": 2,
+                "phases": {
+                  "mount": 1,
+                  "update": 1,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 2.800000011920929,
+                "baseDurationMs": 1.1000000089406967,
+                "maxActualDurationMs": 2.2000000029802322
+              },
+              "app:routes": {
+                "commits": 9,
+                "phases": {
+                  "mount": 1,
+                  "update": 8,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 261.9999999701977,
+                "baseDurationMs": 847.0000000745058,
+                "maxActualDurationMs": 106.29999999701977
+              },
+              "app:application": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 373.5999999344349,
+                "baseDurationMs": 1511.8999999016523,
+                "maxActualDurationMs": 106.29999999701977
+              },
+              "app:shell": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 383.1999999284744,
+                "baseDurationMs": 1718.7000000327826,
+                "maxActualDurationMs": 114.8999999910593
+              },
+              "app:router": {
+                "commits": 21,
+                "phases": {
+                  "mount": 1,
+                  "update": 20,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 391.29999996721745,
+                "baseDurationMs": 1921.300000116229,
+                "maxActualDurationMs": 126.59999999403954
+              },
+              "app:query-cache-provider": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 413.9999999254942,
+                "baseDurationMs": 2034.9000000208616,
+                "maxActualDurationMs": 143.09999999403954
+              },
+              "app:providers": {
+                "commits": 22,
+                "phases": {
+                  "mount": 1,
+                  "update": 21,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 415.89999993145466,
+                "baseDurationMs": 2076.700000151992,
+                "maxActualDurationMs": 145
+              }
+            },
+            "route": {
+              "commits": 4,
+              "phases": {
+                "mount": 1,
+                "update": 3,
+                "nested-update": 0
+              },
+              "actualDurationMs": 105.2999999821186,
+              "baseDurationMs": 125.90000002086163,
+              "maxActualDurationMs": 47.49999998509884
+            },
+            "widgets": {},
+            "scopedProfiles": {
+              "worker-portal:view": {
+                "commits": 4,
+                "phases": {
+                  "mount": 1,
+                  "update": 3,
+                  "nested-update": 0
+                },
+                "actualDurationMs": 83.29999999701977,
+                "baseDurationMs": 98.80000004172325,
+                "maxActualDurationMs": 37.8999999910593
+              }
+            },
+            "commitEvents": [
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "mount",
+                "startTimeMs": 1016.2,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 6.7
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "mount",
+                "startTimeMs": 1023.4,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:background-activity",
+                "phase": "mount",
+                "startTimeMs": 1028.3,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 2.7
+              },
+              {
+                "id": "app:toast-container",
+                "phase": "mount",
+                "startTimeMs": 1033.7,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:access-notifier",
+                "phase": "mount",
+                "startTimeMs": 1041.4,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 2.2
+              },
+              {
+                "id": "app:routes",
+                "phase": "mount",
+                "startTimeMs": 1043.6,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 39.1
+              },
+              {
+                "id": "app:application",
+                "phase": "mount",
+                "startTimeMs": 974.6,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 105.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "mount",
+                "startTimeMs": 965.2,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 114.9
+              },
+              {
+                "id": "app:router",
+                "phase": "mount",
+                "startTimeMs": 953.5,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 126.6
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "mount",
+                "startTimeMs": 937.1,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 143.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "mount",
+                "startTimeMs": 935.2,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 145
+              },
+              {
+                "id": "app:root",
+                "phase": "mount",
+                "startTimeMs": 935.1,
+                "commitTimeMs": 1086.1,
+                "actualDurationMs": 145.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1237.3,
+                "commitTimeMs": 1246.3,
+                "actualDurationMs": 8.9
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1237.3,
+                "commitTimeMs": 1246.3,
+                "actualDurationMs": 8.9
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1237.3,
+                "commitTimeMs": 1246.3,
+                "actualDurationMs": 8.9
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1237.3,
+                "commitTimeMs": 1246.3,
+                "actualDurationMs": 9
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1237.3,
+                "commitTimeMs": 1246.3,
+                "actualDurationMs": 9
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1237.3,
+                "commitTimeMs": 1246.3,
+                "actualDurationMs": 9
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1270.4,
+                "commitTimeMs": 1276.5,
+                "actualDurationMs": 4
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1270.4,
+                "commitTimeMs": 1276.5,
+                "actualDurationMs": 4
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1268.6,
+                "commitTimeMs": 1276.5,
+                "actualDurationMs": 5.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1268.6,
+                "commitTimeMs": 1276.5,
+                "actualDurationMs": 5.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1268.6,
+                "commitTimeMs": 1276.5,
+                "actualDurationMs": 6.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1301.6,
+                "commitTimeMs": 1302,
+                "actualDurationMs": 0.3
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1301.6,
+                "commitTimeMs": 1302,
+                "actualDurationMs": 0.3
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1301.6,
+                "commitTimeMs": 1302,
+                "actualDurationMs": 0.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1301.6,
+                "commitTimeMs": 1302,
+                "actualDurationMs": 0.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1301.6,
+                "commitTimeMs": 1302,
+                "actualDurationMs": 0.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1301.6,
+                "commitTimeMs": 1302,
+                "actualDurationMs": 0.3
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1316.1,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1316.1,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1316.1,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1316.1,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1316.1,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1316.1,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1316,
+                "commitTimeMs": 1321.4,
+                "actualDurationMs": 5
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1322.2,
+                "commitTimeMs": 1327.2,
+                "actualDurationMs": 4.9
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1336,
+                "commitTimeMs": 1340.2,
+                "actualDurationMs": 4.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1336,
+                "commitTimeMs": 1340.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1336,
+                "commitTimeMs": 1340.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1336,
+                "commitTimeMs": 1340.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1336,
+                "commitTimeMs": 1340.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1336,
+                "commitTimeMs": 1340.2,
+                "actualDurationMs": 4.2
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1476.5,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1476.5,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1476.4,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1476.4,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1476.4,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1476.4,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1476.4,
+                "commitTimeMs": 1482.2,
+                "actualDurationMs": 5.5
+              },
+              {
+                "id": "app:initial-sync-overlay",
+                "phase": "update",
+                "startTimeMs": 1486.2,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1486.2,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1486.2,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1486.1,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1486.1,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1486.1,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1486.1,
+                "commitTimeMs": 1487.1,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1522.8,
+                "commitTimeMs": 1524.3,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1522.8,
+                "commitTimeMs": 1524.3,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1522.8,
+                "commitTimeMs": 1524.3,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1522.7,
+                "commitTimeMs": 1524.3,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1522.7,
+                "commitTimeMs": 1524.3,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1522.7,
+                "commitTimeMs": 1524.3,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1531.5,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 0.1
+              },
+              {
+                "id": "app:toast-container",
+                "phase": "update",
+                "startTimeMs": 1531.6,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 3.4
+              },
+              {
+                "id": "app:access-notifier",
+                "phase": "update",
+                "startTimeMs": 1535,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 0.6
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1535.6,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 0.2
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1531.4,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 4.3
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1531.4,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 4.3
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1531.4,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 4.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1531.4,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 4.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1531.4,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 4.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1531.4,
+                "commitTimeMs": 1604,
+                "actualDurationMs": 4.3
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1617.5,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1617,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1617,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1617,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1617,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1617,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1617,
+                "commitTimeMs": 1619.2,
+                "actualDurationMs": 1.7
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 1758,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1758,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1758,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1757.9,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1757.9,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1757,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1757,
+                "commitTimeMs": 1759.8,
+                "actualDurationMs": 1.6
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1767.7,
+                "commitTimeMs": 1938.8,
+                "actualDurationMs": 106.3
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 1990.3,
+                "commitTimeMs": 1990.9,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 1990.3,
+                "commitTimeMs": 1990.9,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 1990.3,
+                "commitTimeMs": 1990.9,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 1989.8,
+                "commitTimeMs": 1990.9,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 1989.8,
+                "commitTimeMs": 1990.9,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 1989.8,
+                "commitTimeMs": 1990.9,
+                "actualDurationMs": 0.5
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2021.4,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 1.9
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2020.6,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 2.7
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2020.6,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 2.8
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2020.6,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 2.8
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2020.6,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 2.8
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2020.6,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 2.8
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2020.6,
+                "commitTimeMs": 2023.8,
+                "actualDurationMs": 2.8
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2025.7,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2025.6,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2025.6,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2025.6,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2025.6,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2025.6,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2025.6,
+                "commitTimeMs": 2033.6,
+                "actualDurationMs": 7.7
+              },
+              {
+                "id": "app:top-loading",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2194.5,
+                "commitTimeMs": 2195.3,
+                "actualDurationMs": 0.8
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "mount",
+                "startTimeMs": 2209.5,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 37.9
+              },
+              {
+                "id": "worker-portal",
+                "phase": "mount",
+                "startTimeMs": 2199.2,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 47.5
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2197.9,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 48.9
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2197.4,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 49.3
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2197.4,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 49.3
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2197.4,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 49.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2197.4,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 49.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2197.4,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 49.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2197.4,
+                "commitTimeMs": 2251.5,
+                "actualDurationMs": 49.4
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 2393.7,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 22.5
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 2386.4,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 29.8
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2386.4,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 29.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2385.6,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 30.6
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2385.6,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 30.6
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2385.5,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 30.6
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2385.5,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 30.7
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2385.5,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 30.7
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2385.5,
+                "commitTimeMs": 2416.3,
+                "actualDurationMs": 30.7
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 2461.3,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 20.2
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 2456.2,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 25.3
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 2455.9,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 25.3
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 2455,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 26.2
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 2455,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 26.2
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 2455,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 26.2
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 2455,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 26.2
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 2455,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 26.2
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 2455,
+                "commitTimeMs": 2483.2,
+                "actualDurationMs": 26.2
+              },
+              {
+                "id": "worker-portal:view",
+                "phase": "update",
+                "startTimeMs": 3362.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 2.7
+              },
+              {
+                "id": "worker-portal",
+                "phase": "update",
+                "startTimeMs": 3362.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 2.7
+              },
+              {
+                "id": "app:routes",
+                "phase": "update",
+                "startTimeMs": 3361.6,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 2.8
+              },
+              {
+                "id": "app:application",
+                "phase": "update",
+                "startTimeMs": 3361.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 2.9
+              },
+              {
+                "id": "app:shell",
+                "phase": "update",
+                "startTimeMs": 3361.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 2.9
+              },
+              {
+                "id": "app:router",
+                "phase": "update",
+                "startTimeMs": 3361.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 3.3
+              },
+              {
+                "id": "app:query-cache-provider",
+                "phase": "update",
+                "startTimeMs": 3361.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 3.3
+              },
+              {
+                "id": "app:providers",
+                "phase": "update",
+                "startTimeMs": 3361.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 3.3
+              },
+              {
+                "id": "app:root",
+                "phase": "update",
+                "startTimeMs": 3361.5,
+                "commitTimeMs": 3365.8,
+                "actualDurationMs": 3.4
+              }
+            ],
+            "commitEventsDropped": 0,
+            "readinessAudit": null
+          }
+        }
+      ],
+      "readinessCorrelations": [],
+      "readinessCorrelation": null,
+      "renderProfile": {
+        "source": "React Profiler in Vite development mode; accumulated during the first second",
+        "root": {
+          "samplesPresent": 3,
+          "commitsMedian": 22,
+          "actualDurationMsMedian": 315.6,
+          "baseDurationMsMedian": 1613.6,
+          "maxActualDurationMsMedian": 105.8,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 21,
+            "nestedUpdate": 0
+          }
+        },
+        "appProfiles": {
+          "app:access-notifier": {
+            "samplesPresent": 3,
+            "commitsMedian": 2,
+            "actualDurationMsMedian": 1.2,
+            "baseDurationMsMedian": 0.1,
+            "maxActualDurationMsMedian": 1.1,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 1,
+              "nestedUpdate": 0
+            }
+          },
+          "app:application": {
+            "samplesPresent": 3,
+            "commitsMedian": 22,
+            "actualDurationMsMedian": 283.9,
+            "baseDurationMsMedian": 1090,
+            "maxActualDurationMsMedian": 76.1,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 21,
+              "nestedUpdate": 0
+            }
+          },
+          "app:background-activity": {
+            "samplesPresent": 3,
+            "commitsMedian": 1,
+            "actualDurationMsMedian": 2.2,
+            "baseDurationMsMedian": 0.5,
+            "maxActualDurationMsMedian": 1.5,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 0,
+              "nestedUpdate": 0
+            }
+          },
+          "app:initial-sync-overlay": {
+            "samplesPresent": 3,
+            "commitsMedian": 5,
+            "actualDurationMsMedian": 21.5,
+            "baseDurationMsMedian": 12.8,
+            "maxActualDurationMsMedian": 8.3,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 4,
+              "nestedUpdate": 0
+            }
+          },
+          "app:providers": {
+            "samplesPresent": 3,
+            "commitsMedian": 22,
+            "actualDurationMsMedian": 314.8,
+            "baseDurationMsMedian": 1596,
+            "maxActualDurationMsMedian": 105,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 21,
+              "nestedUpdate": 0
+            }
+          },
+          "app:query-cache-provider": {
+            "samplesPresent": 3,
+            "commitsMedian": 22,
+            "actualDurationMsMedian": 313.8,
+            "baseDurationMsMedian": 1578.4,
+            "maxActualDurationMsMedian": 104.2,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 21,
+              "nestedUpdate": 0
+            }
+          },
+          "app:router": {
+            "samplesPresent": 3,
+            "commitsMedian": 21,
+            "actualDurationMsMedian": 300.3,
+            "baseDurationMsMedian": 1483.8,
+            "maxActualDurationMsMedian": 96.1,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 20,
+              "nestedUpdate": 0
+            }
+          },
+          "app:routes": {
+            "samplesPresent": 3,
+            "commitsMedian": 9,
+            "actualDurationMsMedian": 197.4,
+            "baseDurationMsMedian": 556.5,
+            "maxActualDurationMsMedian": 47.6,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 8,
+              "nestedUpdate": 0
+            }
+          },
+          "app:shell": {
+            "samplesPresent": 3,
+            "commitsMedian": 22,
+            "actualDurationMsMedian": 293.5,
+            "baseDurationMsMedian": 1299,
+            "maxActualDurationMsMedian": 85.5,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 21,
+              "nestedUpdate": 0
+            }
+          },
+          "app:toast-container": {
+            "samplesPresent": 3,
+            "commitsMedian": 2,
+            "actualDurationMsMedian": 3.4,
+            "baseDurationMsMedian": 0.8,
+            "maxActualDurationMsMedian": 2.6,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 1,
+              "nestedUpdate": 0
+            }
+          },
+          "app:top-loading": {
+            "samplesPresent": 3,
+            "commitsMedian": 5,
+            "actualDurationMsMedian": 9,
+            "baseDurationMsMedian": 3.4,
+            "maxActualDurationMsMedian": 4.9,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 4,
+              "nestedUpdate": 0
+            }
+          }
+        },
+        "route": {
+          "samplesPresent": 3,
+          "commitsMedian": 4,
+          "actualDurationMsMedian": 105.3,
+          "baseDurationMsMedian": 125.9,
+          "maxActualDurationMsMedian": 46.1,
+          "phasesMedian": {
+            "mount": 1,
+            "update": 3,
+            "nestedUpdate": 0
+          }
+        },
+        "widgets": {},
+        "scopedProfiles": {
+          "worker-portal:view": {
+            "samplesPresent": 3,
+            "commitsMedian": 4,
+            "actualDurationMsMedian": 80.2,
+            "baseDurationMsMedian": 97.8,
+            "maxActualDurationMsMedian": 33.7,
+            "phasesMedian": {
+              "mount": 1,
+              "update": 3,
+              "nestedUpdate": 0
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["http://127.0.0.1:8080/#/worker-portal", "http://127.0.0.1:8080/#/time-control"],
+      "numberOfRuns": 3,
+      "puppeteerScript": "scripts/lhci-puppeteer.cjs",
+      "puppeteerLaunchOptions": {
+        "args": ["--no-sandbox", "--disable-setuid-sandbox"]
+      },
+      "settings": {
+        "disableStorageReset": false,
+        "maxWaitForLoad": 60000
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

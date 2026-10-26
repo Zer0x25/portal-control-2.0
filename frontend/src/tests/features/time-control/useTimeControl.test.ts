@@ -3,8 +3,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { authTokenStore } from "../../../services/authToken";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
 
-const { queryArgsMock, filtersMock } = vi.hoisted(() => ({
+const {
+  queryArgsMock,
+  filtersMock,
+  schedulingMock,
+  scheduleEnrichmentMock,
+  accountingLockDateQueryMock,
+} = vi.hoisted(() => ({
   queryArgsMock: vi.fn(),
+  schedulingMock: vi.fn(),
+  scheduleEnrichmentMock: vi.fn(),
+  accountingLockDateQueryMock: vi.fn(),
   filtersMock: {
     name: "Ana",
     area: "Ops",
@@ -28,9 +37,17 @@ vi.mock("../../../hooks/useAuth", () => ({
 }));
 
 vi.mock("../../../hooks/useScheduling", () => ({
-  useScheduling: () => ({
-    getEmployeeDailyScheduleInfo: vi.fn(() => null),
-  }),
+  useScheduling: (...args: unknown[]) => {
+    schedulingMock(...args);
+    return { getEmployeeDailyScheduleInfo: vi.fn(() => null) };
+  },
+}));
+
+vi.mock("../../../features/time-control/hooks/useTimeControlScheduleEnrichment", () => ({
+  useTimeControlScheduleEnrichment: () => {
+    scheduleEnrichmentMock();
+    return vi.fn(() => null);
+  },
 }));
 
 vi.mock("../../../features/time-control/hooks/useTimeRecordFilters", () => ({
@@ -111,7 +128,10 @@ vi.mock("../../../hooks/queries/useTimeRecordsQuery", () => ({
 }));
 
 vi.mock("../../../hooks/queries/useConfigQuery", () => ({
-  useAccountingLockDateQuery: () => ({ data: "2026-01-01" }),
+  useAccountingLockDateQuery: () => {
+    accountingLockDateQueryMock();
+    return { data: "2026-01-01" };
+  },
 }));
 
 vi.mock("../../../utils/calculations", () => ({
@@ -136,6 +156,8 @@ describe("useTimeControl", () => {
   it("builds filtersKey and opens the local quick action modal on row double click", () => {
     const { result } = renderHook(() => useTimeControl());
 
+    expect(scheduleEnrichmentMock).toHaveBeenCalledTimes(1);
+    expect(schedulingMock).not.toHaveBeenCalled();
     expect(result.current.filtersKey).toContain("2026-03-01");
     expect(result.current.filtersKey).toContain("Ana");
 
@@ -144,6 +166,12 @@ describe("useTimeControl", () => {
     });
 
     expect(result.current.quickActionRecord).toEqual({ id: "r1" });
+  });
+
+  it("does not subscribe to accounting lock date without consuming its result", () => {
+    renderHook(() => useTimeControl());
+
+    expect(accountingLockDateQueryMock).not.toHaveBeenCalled();
   });
 
   it("exports streaming only when token exists", () => {

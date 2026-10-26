@@ -3,7 +3,7 @@ import { correctionService } from "../../services/correctionService";
 import { useAuth } from "../useAuth";
 import { queryKeys } from "../../lib/queryKeys";
 
-export const useCorrectionRequestsQuery = (status?: string, since?: number) => {
+export const useCorrectionRequestsQuery = (status?: string, since?: number, enabled = true) => {
   const { currentUser } = useAuth();
   const isAuthorized = !!currentUser;
 
@@ -23,7 +23,7 @@ export const useCorrectionRequestsQuery = (status?: string, since?: number) => {
       const loadedCount = allPages.reduce((acc, p) => acc + p.requests.length, 0);
       return loadedCount < (lastPage.total || 0) ? loadedCount : undefined;
     },
-    enabled: isAuthorized,
+    enabled: enabled && isAuthorized,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });

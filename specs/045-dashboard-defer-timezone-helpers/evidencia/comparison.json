@@ -1,0 +1,353 @@
+{
+  "capturedOnLocal": "2026-10-23",
+  "source": {
+    "commit": "f1d515b9bfbc4567c48ca096aa5aecce3511f0a1",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "name": "local-staging",
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontendImageId": "sha256:e82c07b90d7f53437a3df7f5da691a86c681e0ec878fbbc57c9cd917d1895921",
+    "health": {
+      "gateway": 200,
+      "api": 200
+    }
+  },
+  "playwright": {
+    "route": "/#/dashboard",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "baseline": {
+      "scriptRequestCount": 76,
+      "transferBytes": 168970,
+      "encodedBodyBytes": 153929,
+      "timezoneChunksRequested": [
+        "dateUtils-DP-rlx0F.js",
+        "date-utils-DTu9wXYq.js",
+        "formatters-Cwrnz_fT.js"
+      ]
+    },
+    "after": {
+      "scriptRequestCount": 74,
+      "transferBytes": 157982,
+      "encodedBodyBytes": 141678,
+      "timezoneChunksRequested": []
+    }
+  },
+  "lighthouse": {
+    "baseline": {
+      "runs": [
+        {
+          "report": "frontend/.lighthouseci/127_0_0_1--2026_10_23_23_49_21.report.json",
+          "capturedAt": "2026-10-23T23:49:21.567Z",
+          "performanceScore": 0.67,
+          "fcpMs": 3779.05,
+          "lcpMs": 5553.1,
+          "tbtMs": 210,
+          "cls": 0,
+          "mainThreadMs": 2310.1,
+          "javascriptBootupMs": 983.2,
+          "reactCoreCpuMs": 1226.3,
+          "lcpElement": {
+            "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+            "nodeLabel": "20:49:39",
+            "phases": {
+              "TTFB": 451.85,
+              "Load Delay": 0,
+              "Load Time": 0,
+              "Render Delay": 5101.24
+            }
+          },
+          "resources": {
+            "totalRequests": 88,
+            "totalTransferBytes": 468560,
+            "scriptRequests": 76,
+            "scriptTransferBytes": 305028
+          },
+          "timezoneChunksRequested": [
+            "dateUtils-DP-rlx0F.js",
+            "date-utils-DTu9wXYq.js",
+            "formatters-Cwrnz_fT.js"
+          ],
+          "unusedJavascript": [
+            {
+              "url": "react-core-k-iqGWxC.js",
+              "estimatedBytes": 32280
+            }
+          ]
+        },
+        {
+          "report": "frontend/.lighthouseci/127_0_0_1--2026_10_23_23_49_47.report.json",
+          "capturedAt": "2026-10-23T23:49:47.404Z",
+          "performanceScore": 0.71,
+          "fcpMs": 3749.5,
+          "lcpMs": 5423.07,
+          "tbtMs": 99.5,
+          "cls": 0,
+          "mainThreadMs": 1910.51,
+          "javascriptBootupMs": 873.07,
+          "reactCoreCpuMs": 930.73,
+          "lcpElement": {
+            "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+            "nodeLabel": "20:50:05",
+            "phases": {
+              "TTFB": 451.46,
+              "Load Delay": 0,
+              "Load Time": 0,
+              "Render Delay": 4971.61
+            }
+          },
+          "resources": {
+            "totalRequests": 88,
+            "totalTransferBytes": 471924,
+            "scriptRequests": 76,
+            "scriptTransferBytes": 308409
+          },
+          "timezoneChunksRequested": [
+            "dateUtils-DP-rlx0F.js",
+            "date-utils-DTu9wXYq.js",
+            "formatters-Cwrnz_fT.js"
+          ],
+          "unusedJavascript": [
+            {
+              "url": "react-core-k-iqGWxC.js",
+              "estimatedBytes": 32280
+            }
+          ]
+        },
+        {
+          "report": "frontend/.lighthouseci/127_0_0_1--2026_10_23_23_50_12.report.json",
+          "capturedAt": "2026-10-23T23:50:12.637Z",
+          "performanceScore": 0.71,
+          "fcpMs": 3759.76,
+          "lcpMs": 5415.74,
+          "tbtMs": 108.0,
+          "cls": 0,
+          "mainThreadMs": 2124.82,
+          "javascriptBootupMs": 855.65,
+          "reactCoreCpuMs": 974.7,
+          "lcpElement": {
+            "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+            "nodeLabel": "20:50:30",
+            "phases": {
+              "TTFB": 450.89,
+              "Load Delay": 0,
+              "Load Time": 0,
+              "Render Delay": 4964.86
+            }
+          },
+          "resources": {
+            "totalRequests": 88,
+            "totalTransferBytes": 471943,
+            "scriptRequests": 76,
+            "scriptTransferBytes": 308409
+          },
+          "timezoneChunksRequested": [
+            "dateUtils-DP-rlx0F.js",
+            "date-utils-DTu9wXYq.js",
+            "formatters-Cwrnz_fT.js"
+          ],
+          "unusedJavascript": [
+            {
+              "url": "react-core-k-iqGWxC.js",
+              "estimatedBytes": 32280
+            }
+          ]
+        }
+      ],
+      "medians": {
+        "performanceScore": 0.71,
+        "fcpMs": 3759.76,
+        "lcpMs": 5423.07,
+        "tbtMs": 108.0,
+        "cls": 0,
+        "mainThreadMs": 2124.82,
+        "javascriptBootupMs": 873.07,
+        "reactCoreCpuMs": 974.7,
+        "ranges": {
+          "fcpMs": [
+            3749.5,
+            3779.05
+          ],
+          "lcpMs": [
+            5415.74,
+            5553.1
+          ],
+          "tbtMs": [
+            99.5,
+            210
+          ],
+          "mainThreadMs": [
+            1910.51,
+            2310.1
+          ],
+          "reactCoreCpuMs": [
+            930.73,
+            1226.3
+          ]
+        },
+        "totalRequests": 88,
+        "totalTransferBytes": 471924,
+        "scriptRequests": 76,
+        "scriptTransferBytes": 308409
+      }
+    },
+    "after": {
+      "runs": [
+        {
+          "report": "frontend/.lighthouseci/127_0_0_1--2026_10_24_00_47_23.report.json",
+          "capturedAt": "2026-10-24T00:47:23.715Z",
+          "performanceScore": 0.69,
+          "fcpMs": 3692.08,
+          "lcpMs": 5329.01,
+          "tbtMs": 182.5,
+          "cls": 0,
+          "mainThreadMs": 2282.96,
+          "javascriptBootupMs": 996.87,
+          "reactCoreCpuMs": 1210.38,
+          "lcpElement": {
+            "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+            "nodeLabel": "21:47:41",
+            "phases": {
+              "TTFB": 451.39,
+              "Load Delay": 0,
+              "Load Time": 0,
+              "Render Delay": 4877.62
+            }
+          },
+          "resources": {
+            "totalRequests": 86,
+            "totalTransferBytes": 458765,
+            "scriptRequests": 74,
+            "scriptTransferBytes": 295143
+          },
+          "timezoneChunksRequested": [],
+          "unusedJavascript": [
+            {
+              "url": "react-core-k-iqGWxC.js",
+              "estimatedBytes": 32280
+            }
+          ]
+        },
+        {
+          "report": "frontend/.lighthouseci/127_0_0_1--2026_10_24_00_47_49.report.json",
+          "capturedAt": "2026-10-24T00:47:49.995Z",
+          "performanceScore": 0.71,
+          "fcpMs": 3705.7,
+          "lcpMs": 5286.91,
+          "tbtMs": 116,
+          "cls": 0,
+          "mainThreadMs": 1891.14,
+          "javascriptBootupMs": 880.06,
+          "reactCoreCpuMs": 934.94,
+          "lcpElement": {
+            "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+            "nodeLabel": "21:48:07",
+            "phases": {
+              "TTFB": 451.24,
+              "Load Delay": 0,
+              "Load Time": 0,
+              "Render Delay": 4835.67
+            }
+          },
+          "resources": {
+            "totalRequests": 86,
+            "totalTransferBytes": 458791,
+            "scriptRequests": 74,
+            "scriptTransferBytes": 295143
+          },
+          "timezoneChunksRequested": [],
+          "unusedJavascript": [
+            {
+              "url": "react-core-k-iqGWxC.js",
+              "estimatedBytes": 31958
+            }
+          ]
+        },
+        {
+          "report": "frontend/.lighthouseci/127_0_0_1--2026_10_24_00_48_15.report.json",
+          "capturedAt": "2026-10-24T00:48:15.582Z",
+          "performanceScore": 0.68,
+          "fcpMs": 3736.42,
+          "lcpMs": 5404.01,
+          "tbtMs": 201,
+          "cls": 0,
+          "mainThreadMs": 2421.46,
+          "javascriptBootupMs": 1169.64,
+          "reactCoreCpuMs": 1195.65,
+          "lcpElement": {
+            "selector": "div.flex > div.bg-token-surface-card > div.text-right > div.font-bold",
+            "nodeLabel": "21:48:33",
+            "phases": {
+              "TTFB": 451.42,
+              "Load Delay": 0,
+              "Load Time": 0,
+              "Render Delay": 4952.6
+            }
+          },
+          "resources": {
+            "totalRequests": 86,
+            "totalTransferBytes": 455443,
+            "scriptRequests": 74,
+            "scriptTransferBytes": 291762
+          },
+          "timezoneChunksRequested": [],
+          "unusedJavascript": [
+            {
+              "url": "react-core-k-iqGWxC.js",
+              "estimatedBytes": 31958
+            }
+          ]
+        }
+      ],
+      "medians": {
+        "performanceScore": 0.69,
+        "fcpMs": 3705.7,
+        "lcpMs": 5329.01,
+        "tbtMs": 182.5,
+        "cls": 0,
+        "mainThreadMs": 2282.96,
+        "javascriptBootupMs": 996.87,
+        "reactCoreCpuMs": 1195.65,
+        "ranges": {
+          "fcpMs": [
+            3692.08,
+            3736.42
+          ],
+          "lcpMs": [
+            5286.91,
+            5404.01
+          ],
+          "tbtMs": [
+            116,
+            201
+          ],
+          "mainThreadMs": [
+            1891.14,
+            2421.46
+          ],
+          "reactCoreCpuMs": [
+            934.94,
+            1210.38
+          ]
+        },
+        "totalRequests": 86,
+        "totalTransferBytes": 458765,
+        "scriptRequests": 74,
+        "scriptTransferBytes": 295143
+      }
+    }
+  },
+  "interpretation": [
+    "En la imagen final, Playwright y Lighthouse no solicitaron los tres chunks de fecha/formato durante el Dashboard.",
+    "La transferencia de scripts Lighthouse bajó 13266 bytes y las solicitudes de script bajaron de 76 a 74.",
+    "FCP y LCP medianos bajaron en esta tanda, pero TBT, hilo principal y CPU variaron en contra; no se declara una mejora estable de CWV ni causalidad con tres muestras."
+  ],
+  "limitations": [
+    "Staging local con usuario y datos semillados; no son Core Web Vitals de campo.",
+    "Tres muestras por versión no permiten distinguir con confianza cambios pequeños frente a variación de laboratorio.",
+    "La reducción de chunks y bytes es directamente observada; los tiempos de pintura siguen siendo una señal de laboratorio."
+  ]
+}

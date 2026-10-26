@@ -50,28 +50,24 @@ describe("KioskView", () => {
           {
             id: "jornada_inicio",
             label: "Inicio Jornada",
-            color: "green",
             enabled: false,
             actionType: "jornada_inicio",
           },
           {
             id: "colacion_inicio",
             label: "Inicio Colación",
-            color: "yellow",
             enabled: true,
             actionType: "colacion_inicio",
           },
           {
             id: "colacion_fin",
             label: "Fin Colación",
-            color: "blue",
             enabled: false,
             actionType: "colacion_fin",
           },
           {
             id: "jornada_fin",
             label: "Fin Jornada",
-            color: "red",
             enabled: false,
             actionType: "jornada_fin",
           },

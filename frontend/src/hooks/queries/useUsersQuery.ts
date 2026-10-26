@@ -11,7 +11,7 @@ import { queryKeys } from "../../lib/queryKeys";
  * `SENSITIVE_QUERY_ROOTS`): en un dispositivo compartido no se conserva nada
  * entre sesiones.
  */
-export const useUsersQuery = () => {
+export const useUsersQuery = (options: { readonly enabled?: boolean } = {}) => {
   const hasToken = !!authService.getToken();
 
   return useQuery<User[]>({
@@ -22,6 +22,6 @@ export const useUsersQuery = () => {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
-    enabled: hasToken,
+    enabled: hasToken && options.enabled !== false,
   });
 };

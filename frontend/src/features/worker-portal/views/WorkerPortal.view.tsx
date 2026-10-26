@@ -14,10 +14,12 @@ import {
   User,
 } from "../../../types/index";
 import PageHeader from "../../../components/ui/PageHeader";
+import Button from "../../../components/ui/Button";
 import LiveStatus from "../../../components/ui/LiveStatus";
 import ServerClock from "../../../components/ui/ServerClock";
 import IconBox from "../../../components/ui/IconBox";
 import Container from "../../../components/ui/Container";
+import Card from "../../../components/ui/Card";
 import {
   DocumentArrowDownIcon,
   CalendarDaysIcon,
@@ -25,6 +27,10 @@ import {
 } from "../../../components/ui/icons/index";
 import { CorrectionRequestModal } from "..";
 import { formatBusinessDate } from "../../../utils/dateUtils";
+import {
+  getClockingActionButtonClassName,
+  type ClockingActionType,
+} from "../../../utils/clockingActionButtonStyles";
 import { Z } from "../../../constants/zScale";
 
 export interface WorkerPortalViewProps {
@@ -46,9 +52,7 @@ export interface WorkerPortalViewProps {
   status: ClockingStatus;
   requestsMap: Map<string, CorrectionRequest>;
   handleExportPDF: () => Promise<void> | void;
-  handleClockingAction: (
-    t: "jornada_inicio" | "colacion_inicio" | "colacion_fin" | "jornada_fin",
-  ) => Promise<void> | void;
+  handleClockingAction: (t: ClockingActionType) => Promise<void> | void;
   openCorrectionModal: (r: AugmentedTimeRecord, f: TimeRecordField) => void;
   formatDisplayDateTime?: (d: string | number | Date | undefined | null) => string;
   formatDecimalHoursToHHMM?: (h: number) => string;
@@ -93,32 +97,33 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
   // es presentacional puro (spec 033 AC1); el compilador de React (spec 037)
   // se encarga de memoizar estas constantes.
   const quickMonthOptions = monthOptions.slice(0, 3);
-  const clockingActions = [
+  const clockingActions: Array<{
+    id: ClockingActionType;
+    label: string;
+    statusGroup: ClockingStatus[];
+    action: () => Promise<void> | void;
+  }> = [
     {
       id: "jornada_inicio",
       label: "Inicio Jornada",
-      color: "green",
       statusGroup: ["fuera", "terminada", "jornada_terminada_anomalia"] as ClockingStatus[],
       action: () => handleClockingAction("jornada_inicio"),
     },
     {
       id: "colacion_inicio",
       label: "Inicio Colación",
-      color: "yellow",
       statusGroup: ["en_jornada"] as ClockingStatus[],
       action: () => handleClockingAction("colacion_inicio"),
     },
     {
       id: "colacion_fin",
       label: "Fin Colación",
-      color: "blue",
       statusGroup: ["en_colacion"] as ClockingStatus[],
       action: () => handleClockingAction("colacion_fin"),
     },
     {
       id: "jornada_fin",
       label: "Fin Jornada",
-      color: "red",
       statusGroup: ["en_jornada", "en_jornada_post_colacion", "en_colacion"] as ClockingStatus[],
       action: () => handleClockingAction("jornada_fin"),
     },
@@ -136,21 +141,22 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
     const cellKey = `${record.id}-${field}`;
 
     return (
-      <div key={cellKey} className="flex flex-col group/cell">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-tighter shrink-0">
-            {label}:
-          </span>
-          <span className="text-[10px] font-black font-mono text-token-text-primary">
+      <div key={cellKey} className="group/cell min-w-0">
+        <div className="flex min-w-0 items-baseline justify-between gap-2">
+          <span className="typo-list-secondary truncate text-token-text-secondary">{label}:</span>
+          <span
+            data-list-role="value"
+            className="typo-list-value whitespace-nowrap text-token-text-primary"
+          >
             {(formatDisplayDateTime && formatDisplayDateTime(value)).split(" ")[1] || "--:--"}
           </span>
         </div>
         <button
           onClick={() => openCorrectionModal(record, field)}
           disabled={isPendingCorrection}
-          className="text-xxs font-black text-token-accent-brand uppercase tracking-widest opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 focus-visible:opacity-100 focus:opacity-100 transition-opacity mt-0.5 text-left disabled:text-token-text-tertiary disabled:cursor-not-allowed"
+          className="mt-1 text-xs font-medium text-token-accent-brand opacity-100 transition-opacity focus:opacity-100 focus-visible:opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 disabled:cursor-not-allowed disabled:text-token-text-tertiary"
         >
-          {isPendingCorrection ? `[ ${requestStatus} ]` : "[ Corregir ]"}
+          {isPendingCorrection ? "Solicitud pendiente" : "Corregir"}
         </button>
       </div>
     );
@@ -186,30 +192,29 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           title="Portal del Trabajador"
           subtitle="Gestión personal y control de asistencia"
           actions={
-            <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="flex min-w-0 items-center gap-4 w-full sm:w-auto">
               <LiveStatus label="PORTAL LIVE" status="online" className="hidden sm:flex" />
               <ServerClock
-                containerClassName="text-right"
-                dateClassName="font-black text-xxs text-token-text-tertiary uppercase tracking-[0.2em] mb-1 italic"
-                timeClassName="font-black text-2xl text-token-text-primary leading-none tabular-nums font-mono italic tracking-tighter"
+                containerClassName="min-w-max shrink-0 text-right"
+                dateClassName="mb-1 whitespace-nowrap text-xs font-semibold text-token-text-tertiary uppercase tracking-wide"
+                timeClassName="whitespace-nowrap text-2xl font-semibold text-token-text-primary leading-tight tabular-nums font-mono"
               />
             </div>
           }
         />
       </div>
 
-      <div className="relative overflow-hidden p-8 rounded-[3rem] bg-token-surface-card border border-token-border-technical backdrop-blur-xl profile-card-glass">
+      <Card noPadding className="overflow-hidden">
         <div
-          className={`relative ${Z.sticky} flex flex-col md:flex-row justify-between items-center gap-8`}
+          className={`relative ${Z.sticky} flex flex-col md:flex-row justify-between items-center gap-8 p-8`}
         >
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <div className="absolute inset-0 bg-token-accent-brand/20 rounded-2xl blur-2xl group-hover:bg-token-accent-brand/40 transition-all scale-125" />
               <IconBox
                 icon={<UserIcon />}
                 variant="primary"
                 size="lg"
-                className="relative rounded-2xl border-2 border-white/10 w-20 h-20"
+                className="relative border-2 border-white/10 w-20 h-20"
               />
             </div>
             <div>
@@ -218,7 +223,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               </p>
               <h2
                 data-testid="worker-identity"
-                className="text-3xl font-black text-token-text-primary uppercase italic tracking-tighter"
+                className="text-3xl font-black text-token-text-primary uppercase tracking-tight"
               >
                 {employee?.name}
               </h2>
@@ -231,7 +236,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 </div>
                 <span
                   data-testid="worker-identity-code"
-                  className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest italic"
+                  className="text-xs font-medium text-token-text-tertiary uppercase tracking-wide"
                 >
                   # {employee?.id.slice(-8).toUpperCase()}
                 </span>
@@ -244,14 +249,13 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
                 Contrato Vigente
               </p>
-              <p className="text-sm font-black text-token-text-primary uppercase italic mt-1">
+              <p className="text-sm font-semibold text-token-text-primary uppercase mt-1">
                 {employee?.workdayType}
               </p>
             </div>
           </div>
         </div>
-        <div className="absolute top-[-50%] right-[-10%] w-64 h-64 bg-token-accent-brand/10 rounded-full blur-[100px] pointer-events-none" />
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-12">
@@ -264,45 +268,46 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             {clockingActions.map((item) => {
               const isDisabled = !item.statusGroup.includes(status);
               return (
-                <button
+                <Button
                   key={item.id}
+                  variant="none"
+                  size="none"
                   onClick={item.action}
                   disabled={isDisabled}
-                  className={`h-24 rounded-2xl border transition-all relative overflow-hidden group flex flex-col items-center justify-center gap-2 ${isDisabled ? "bg-token-surface-card border-token-border-subtle opacity-40 grayscale cursor-not-allowed text-token-text-tertiary" : item.color === "green" ? "bg-green-500/5 border-green-500/20 text-green-800 dark:text-green-600" : item.color === "yellow" ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-800 dark:text-yellow-600" : item.color === "blue" ? "bg-blue-500/5 border-blue-500/20 text-blue-800 dark:text-blue-600" : "bg-red-500/5 border-red-500/20 text-red-800 dark:text-red-600"}`}
+                  aria-label={item.label}
+                  className={`w-full h-24 relative overflow-hidden group flex-col gap-2 transition-all ${getClockingActionButtonClassName(item.id, isDisabled)}`}
                 >
-                  <div
+                  <span
                     className={`text-[10px] font-black uppercase tracking-[0.2em] relative ${Z.sticky}`}
                   >
                     {item.label}
-                  </div>
-                </button>
+                  </span>
+                </Button>
               );
             })}
           </div>
         </div>
       </div>
 
-      <div className="bg-token-surface-card backdrop-blur-xl rounded-[2.5rem] border border-token-border-technical shadow-2xl overflow-hidden">
+      <Card noPadding className="overflow-hidden">
         <div className="p-8 border-b border-token-border-subtle flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-4">
             <IconBox icon={<CalendarDaysIcon />} variant="primary" size="md" />
             <div>
-              <h3 className="text-sm font-black text-token-text-primary uppercase italic">
-                Historial de Marcajes
-              </h3>
-              <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+              <h3 className="typo-ui-title text-token-text-primary">Historial de marcajes</h3>
+              <p className="typo-ui-meta text-token-text-secondary mt-1">
                 Control de registros y asistencias
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex bg-token-surface-header p-1 rounded-xl border border-token-border-subtle">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="flex bg-token-surface-header p-1 rounded-md border border-token-border-subtle">
               {quickMonthOptions.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setSelectedMonth(opt.value)}
-                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedMonth === opt.value ? "bg-token-surface-active text-token-text-primary" : "text-token-text-tertiary hover:text-token-text-secondary"}`}
+                  className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${selectedMonth === opt.value ? "bg-token-surface-active text-token-text-primary" : "text-token-text-tertiary hover:text-token-text-secondary"}`}
                 >
                   {opt.label.split(" ")[0]}
                 </button>
@@ -312,7 +317,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               aria-label="Seleccionar mes del calendario"
-              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-xl text-[10px] font-black uppercase text-token-text-secondary outline-none focus:border-token-accent-brand/50"
+              className="h-10 px-4 bg-token-surface-card border border-token-border-technical rounded-md text-xs font-medium text-token-text-secondary outline-none focus:border-token-accent-brand/50"
             >
               {monthOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -322,7 +327,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </select>
             <button
               onClick={() => handleExportPDF && handleExportPDF()}
-              className="h-10 px-6 bg-token-accent-brand hover:brightness-110 text-token-text-onAccent rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg transition-all flex items-center gap-2"
+              className="h-10 shrink-0 whitespace-nowrap px-4 bg-token-accent-brand hover:brightness-110 text-token-text-onAccent rounded-md text-xs font-semibold shadow-sm transition-all flex items-center gap-2"
             >
               <DocumentArrowDownIcon className="w-4 h-4" />
               Descargar PDF
@@ -345,17 +350,17 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 enrichedRecords.map((record) => (
                   <div
                     key={record.id}
-                    className={`p-6 rounded-2xl border backdrop-blur-xl bg-token-surface-card border-token-border-subtle shadow-sm group`}
+                    className="p-6 rounded-md border bg-token-surface-card border-token-border-subtle shadow-sm group"
                   >
                     <div className="flex justify-between items-start mb-6">
                       <div>
-                        <p className="text-lg font-black text-token-text-primary uppercase italic tracking-tighter">
+                        <p className="text-base font-semibold text-token-text-primary">
                           {formatRecordDate(record.date, {
                             day: "2-digit",
                             month: "2-digit",
                           })}
                         </p>
-                        <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-0.5">
+                        <p className="text-xs font-medium text-token-text-tertiary mt-1">
                           {formatRecordDate(record.date, {
                             weekday: "long",
                           })}
@@ -366,18 +371,16 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-1">
-                          <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
-                            Turno
-                          </p>
-                          <p className="text-[10px] font-black text-token-text-secondary uppercase tracking-tight">
-                            {record.scheduleInfo?.scheduleText || "N/A"}
+                          <p className="text-xs font-medium text-token-text-tertiary">Turno</p>
+                          <p className="text-sm font-medium text-token-text-primary">
+                            {record.scheduleInfo?.scheduleText || "Sin turno asignado"}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
-                            Trabajado
+                          <p className="text-xs font-medium text-token-text-tertiary">
+                            Horas trabajadas
                           </p>
-                          <p className="text-[10px] font-black text-token-accent-brand font-mono italic tracking-tighter">
+                          <p className="text-sm font-semibold text-token-accent-brand font-mono tabular-nums">
                             {formatDecimalHoursToHHMM &&
                               formatDecimalHoursToHHMM(record.workedHours)}{" "}
                             hrs
@@ -386,14 +389,14 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                       </div>
 
                       <div className="pt-4 border-t border-token-border-subtle">
-                        <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mb-3">
-                          Marcajes y Correcciones
+                        <p className="text-sm font-semibold text-token-text-primary mb-3">
+                          Marcajes y correcciones
                         </p>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                          {renderTimestampCell(record, "entrada", "IN")}
-                          {renderTimestampCell(record, "inicioColacion", "L1")}
-                          {renderTimestampCell(record, "finColacion", "L2")}
-                          {renderTimestampCell(record, "salida", "OUT")}
+                        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-x-6 gap-y-3">
+                          {renderTimestampCell(record, "entrada", "Entrada")}
+                          {renderTimestampCell(record, "inicioColacion", "Inicio colación")}
+                          {renderTimestampCell(record, "finColacion", "Fin colación")}
+                          {renderTimestampCell(record, "salida", "Salida")}
                         </div>
                       </div>
                     </div>
@@ -401,32 +404,33 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                 ))
               ) : (
                 <div className="py-20 text-center">
-                  <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.5em]">
-                    Sin actividad reciente
-                  </p>
+                  <p className="text-sm text-token-text-secondary">Sin actividad reciente</p>
                 </div>
               )}
             </div>
           ) : (
-            <table className="min-w-full border-separate border-spacing-0">
-              <thead className="bg-token-surface-header backdrop-blur-md">
+            <table
+              data-list-group="data-table"
+              className="w-full min-w-full md:min-w-[880px] border-separate border-spacing-0"
+            >
+              <thead className="bg-token-surface-header">
                 <tr>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Fecha
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle">
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Turno
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle">
-                    Marcajes Progresivos
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
+                    Marcajes
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle">
-                    P.
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
+                    Horas planificadas
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle">
-                    T.
+                  <th className="whitespace-nowrap px-3 py-3 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle">
+                    Horas trabajadas
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] border-b border-token-border-subtle text-right">
+                  <th className="whitespace-nowrap px-3 py-3 text-right typo-list-header text-token-text-secondary border-b border-token-border-subtle">
                     Balance
                   </th>
                 </tr>
@@ -438,42 +442,55 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                       key={record.id}
                       className={`group hover:bg-token-surface-active transition-colors animate-in fade-in ${record.scheduleInfo?.justificationType || record.justification?.type ? "bg-token-accent-brand/5" : ""}`}
                     >
-                      <td className="px-6 py-4 align-top">
-                        <div className="text-sm font-black text-token-text-primary uppercase italic tracking-tighter">
+                      <td className="px-3 py-4 align-top">
+                        <div
+                          data-list-role="value"
+                          className="typo-list-value text-token-text-primary"
+                        >
                           {formatRecordDate(record.date, {
                             day: "2-digit",
                             month: "2-digit",
                           })}
                         </div>
-                        <div className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
+                        <div className="typo-list-secondary text-token-text-tertiary mt-1">
                           {formatRecordDate(record.date, {
                             weekday: "short",
                           })}
                         </div>
                       </td>
-                      <td className="px-6 py-4 align-top">
-                        <span className="text-[10px] font-black text-token-text-secondary uppercase tracking-tighter italic">
-                          {record.scheduleInfo?.scheduleText || "N/A"}
+                      <td className="px-3 py-4 align-top">
+                        <span
+                          data-list-role="primary"
+                          className="typo-list-primary text-token-text-primary"
+                        >
+                          {record.scheduleInfo?.scheduleText || "Sin turno asignado"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 align-top">
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 max-w-xs">
-                          {renderTimestampCell(record, "entrada", "IN")}
-                          {renderTimestampCell(record, "inicioColacion", "L1")}
-                          {renderTimestampCell(record, "finColacion", "L2")}
-                          {renderTimestampCell(record, "salida", "OUT")}
+                      <td className="px-3 py-4 align-top">
+                        <div className="grid w-[20rem] max-w-full grid-cols-2 gap-x-3 gap-y-2">
+                          {renderTimestampCell(record, "entrada", "Entrada")}
+                          {renderTimestampCell(record, "inicioColacion", "Inicio colación")}
+                          {renderTimestampCell(record, "finColacion", "Fin colación")}
+                          {renderTimestampCell(record, "salida", "Salida")}
                         </div>
                       </td>
-                      <td className="px-6 py-4 align-top text-xs font-black font-mono text-token-text-tertiary italic">
+                      <td
+                        data-list-role="value"
+                        className="px-3 py-4 align-top typo-list-value text-token-text-secondary"
+                      >
                         {formatDecimalHoursToHHMM &&
                           formatDecimalHoursToHHMM(record.scheduledHours ?? 0)}
                       </td>
-                      <td className="px-6 py-4 align-top text-xs font-black font-mono text-token-accent-brand italic">
+                      <td
+                        data-list-role="value"
+                        className="px-3 py-4 align-top typo-list-value text-token-text-primary"
+                      >
                         {formatDecimalHoursToHHMM && formatDecimalHoursToHHMM(record.workedHours)}
                       </td>
-                      <td className={`px-6 py-4 align-top text-right`}>
+                      <td className="px-3 py-4 align-top text-right">
                         <div
-                          className={`text-sm font-black font-mono italic tracking-tighter ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-token-status-error"}`}
+                          data-list-role="value"
+                          className={`typo-list-value ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-token-status-error"}`}
                         >
                           {formatDecimalHoursToHHMM &&
                             formatDecimalHoursToHHMM(record.overtimeHours)}
@@ -483,11 +500,8 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   ))
                 ) : (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="text-center py-12 text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.3em]"
-                    >
-                      Sin registros para este período
+                    <td colSpan={6} className="text-center py-12 text-sm text-token-text-secondary">
+                      No hay registros para este período
                     </td>
                   </tr>
                 )}
@@ -495,7 +509,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </table>
           )}
         </div>
-      </div>
+      </Card>
 
       {modalState.isOpen && modalState.record && modalState.field && (
         <CorrectionRequestModal

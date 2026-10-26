@@ -9,7 +9,7 @@ import { queryKeys } from "../../lib/queryKeys";
  * Zustand ni escritura manual a IndexedDB. El persist cache de queries la
  * sirve offline y el logout la purga.
  */
-export const useEmployeesQuery = () => {
+export const useEmployeesQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
 
   return useQuery<Employee[]>({
@@ -20,7 +20,20 @@ export const useEmployeesQuery = () => {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
-    enabled: hasToken,
+    enabled: hasToken && enabled,
+  });
+};
+
+/** Proyección pequeña de empleados activos para Control de Horario. */
+export const useClockingEmployeeOptionsQuery = (enabled = true) => {
+  const hasToken = !!authService.getToken();
+
+  return useQuery({
+    queryKey: queryKeys.employeeClockingOptions(),
+    queryFn: () => employeeService.getClockingOptions(),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 24,
+    enabled: hasToken && enabled,
   });
 };
 
@@ -32,11 +45,12 @@ export const useEmployeesQuery = () => {
  * del backend): el kiosco funciona en dispositivo sin sesion, por lo que esta
  * query NUNCA se gatea con token.
  */
-export const useKioskEmployeesQuery = () => {
+export const useKioskEmployeesQuery = (enabled = true) => {
   return useQuery<Employee[]>({
     queryKey: queryKeys.employeesKiosk(),
     queryFn: () => employeeService.getKioskEmployees(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
+    enabled,
   });
 };

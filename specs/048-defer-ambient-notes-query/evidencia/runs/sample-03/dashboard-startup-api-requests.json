@@ -1,0 +1,81 @@
+{
+  "capturedAt": "2026-10-24T01:36:56.820Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 582.83,
+  "serverClockVisibleOffsetMs": 633.27,
+  "apiRequestsPendingWhenServerClockAppeared": [],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [],
+  "apiRequestCount": 8,
+  "uniqueApiEndpointCount": 8,
+  "duplicateEndpoints": [],
+  "autoStartSchedulingRequests": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/health",
+      "startOffsetMs": 164.25,
+      "durationMs": 123.89,
+      "finishOffsetMs": 288.13,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 178,
+      "durationMs": 115.13,
+      "finishOffsetMs": 293.12,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 475.24,
+      "durationMs": 114.86,
+      "finishOffsetMs": 590.1,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 477.36,
+      "durationMs": 112.79,
+      "finishOffsetMs": 590.16,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 477.45,
+      "durationMs": 112.74,
+      "finishOffsetMs": 590.19,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 477.95,
+      "durationMs": 112.27,
+      "finishOffsetMs": 590.22,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 477.99,
+      "durationMs": 112.22,
+      "finishOffsetMs": 590.21,
+      "status": 200
+    },
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 478.02,
+      "durationMs": 112.22,
+      "finishOffsetMs": 590.23,
+      "status": 200
+    }
+  ]
+}

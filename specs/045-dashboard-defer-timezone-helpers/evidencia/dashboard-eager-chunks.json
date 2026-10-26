@@ -1,0 +1,36 @@
+{
+  "source": {
+    "commit": "f1d515b9bfbc4567c48ca096aa5aecce3511f0a1",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "name": "local-staging",
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontendImageId": "sha256:e82c07b90d7f53437a3df7f5da691a86c681e0ec878fbbc57c9cd917d1895921",
+    "health": {
+      "gateway": 200,
+      "api": 200
+    }
+  },
+  "route": "/#/dashboard",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "baseline": {
+    "scriptRequestCount": 76,
+    "transferBytes": 168970,
+    "encodedBodyBytes": 153929,
+    "timezoneChunksRequested": [
+      "dateUtils-DP-rlx0F.js",
+      "date-utils-DTu9wXYq.js",
+      "formatters-Cwrnz_fT.js"
+    ]
+  },
+  "after": {
+    "scriptRequestCount": 74,
+    "transferBytes": 157982,
+    "encodedBodyBytes": 141678,
+    "timezoneChunksRequested": []
+  }
+}

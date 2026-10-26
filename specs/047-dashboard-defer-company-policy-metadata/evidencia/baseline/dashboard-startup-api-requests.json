@@ -1,0 +1,107 @@
+{
+  "capturedAt": "2026-10-24T01:15:24.178Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 595.18,
+  "serverClockVisibleOffsetMs": 1030.42,
+  "apiRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 1042.63
+    }
+  ],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 1042.63
+    }
+  ],
+  "apiRequestCount": 10,
+  "uniqueApiEndpointCount": 10,
+  "duplicateEndpoints": [],
+  "autoStartSchedulingRequests": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview",
+    "/api/configs/public/company-policy",
+    "/api/notes"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/users",
+      "startOffsetMs": 591.51,
+      "durationMs": 375.31,
+      "finishOffsetMs": 966.83,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 591.62,
+      "durationMs": 375.16,
+      "finishOffsetMs": 966.79,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 588.09,
+      "durationMs": 366.16,
+      "finishOffsetMs": 954.24,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 591.93,
+      "durationMs": 264.7,
+      "finishOffsetMs": 856.63,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 588.04,
+      "durationMs": 261.32,
+      "finishOffsetMs": 849.36,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 170.27,
+      "durationMs": 133.6,
+      "finishOffsetMs": 303.87,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 196.66,
+      "durationMs": 107.29,
+      "finishOffsetMs": 303.95,
+      "status": 200
+    },
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 958.96,
+      "durationMs": 83.67,
+      "finishOffsetMs": 1042.63,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/public/company-policy",
+      "startOffsetMs": 1047.15,
+      "durationMs": 21.38,
+      "finishOffsetMs": 1068.53,
+      "status": 200
+    },
+    {
+      "path": "/api/notes",
+      "startOffsetMs": 1048.65,
+      "durationMs": 21.06,
+      "finishOffsetMs": 1069.71,
+      "status": 200
+    }
+  ]
+}

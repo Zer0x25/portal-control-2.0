@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": {
+    "start": "2026-10-25T19:17:00.147Z",
+    "end": "2026-10-25T19:18:41.615Z"
+  },
+  "source": {
+    "tool": "Lighthouse",
+    "version": "12.6.1",
+    "route": "#/time-control",
+    "stagingImage": "sha256:3bd09bf5baa0c7aa6208f73059d811407987842737a2b45c025d48a802049db3"
+  },
+  "target": {
+    "formFactor": "mobile",
+    "viewport": {
+      "width": 412,
+      "height": 823
+    },
+    "cpuSlowdownMultiplier": 4,
+    "rttMs": 150,
+    "throttlingMethod": "simulate"
+  },
+  "comparison": {
+    "baseline": "../../091-time-policy-cached-business-date/evidencia/time-control-lighthouse-after-2026-10-25.json",
+    "sampleCount": 5
+  },
+  "summary": {
+    "performanceScore": {
+      "median": 0.92,
+      "min": 0.89,
+      "max": 0.96
+    },
+    "fcpMs": {
+      "median": 2008.39,
+      "min": 1994.74,
+      "max": 2254.81
+    },
+    "lcpMs": {
+      "median": 2253.43,
+      "min": 2252.62,
+      "max": 2759.85
+    },
+    "tbtMs": {
+      "median": 232,
+      "min": 133.5,
+      "max": 269
+    },
+    "cls": {
+      "median": 0.0102,
+      "min": 0,
+      "max": 0.0102
+    },
+    "speedIndexMs": {
+      "median": 2021.28,
+      "min": 2019.04,
+      "max": 2254.81
+    },
+    "totalTransferBytes": {
+      "median": 463992,
+      "min": 463961,
+      "max": 500192
+    },
+    "scriptTransferBytes": {
+      "median": 301040,
+      "min": 301040,
+      "max": 334903
+    },
+    "requestCount": {
+      "median": 85,
+      "min": 85,
+      "max": 88
+    }
+  },
+  "samples": [
+    {
+      "run": 1,
+      "performanceScore": 0.91,
+      "fcpMs": 2021.28,
+      "lcpMs": 2253.43,
+      "tbtMs": 269,
+      "cls": 0.0102,
+      "speedIndexMs": 2021.28,
+      "totalTransferBytes": 463961,
+      "scriptTransferBytes": 301040,
+      "requestCount": 85
+    },
+    {
+      "run": 2,
+      "performanceScore": 0.94,
+      "fcpMs": 1994.74,
+      "lcpMs": 2252.62,
+      "tbtMs": 199,
+      "cls": 0.0102,
+      "speedIndexMs": 2019.04,
+      "totalTransferBytes": 463993,
+      "scriptTransferBytes": 301040,
+      "requestCount": 85
+    },
+    {
+      "run": 3,
+      "performanceScore": 0.92,
+      "fcpMs": 2002.28,
+      "lcpMs": 2253.42,
+      "tbtMs": 250.49,
+      "cls": 0.0102,
+      "speedIndexMs": 2020.15,
+      "totalTransferBytes": 463977,
+      "scriptTransferBytes": 301040,
+      "requestCount": 85
+    },
+    {
+      "run": 4,
+      "performanceScore": 0.96,
+      "fcpMs": 2008.39,
+      "lcpMs": 2253.59,
+      "tbtMs": 133.5,
+      "cls": 0.0102,
+      "speedIndexMs": 2042.3,
+      "totalTransferBytes": 500192,
+      "scriptTransferBytes": 334903,
+      "requestCount": 88
+    },
+    {
+      "run": 5,
+      "performanceScore": 0.89,
+      "fcpMs": 2254.81,
+      "lcpMs": 2759.85,
+      "tbtMs": 232,
+      "cls": 0,
+      "speedIndexMs": 2254.81,
+      "totalTransferBytes": 463992,
+      "scriptTransferBytes": 301040,
+      "requestCount": 85
+    }
+  ]
+}

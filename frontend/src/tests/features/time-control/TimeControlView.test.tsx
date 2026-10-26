@@ -17,9 +17,15 @@ vi.mock("../../../features/time-control/components/TimeRecordFilters", () => ({
   ),
 }));
 
-vi.mock("../../../features/time-control/components/TimeRecordTable", () => ({
-  default: (props: { onExportStreaming: (format: "csv" | "excel") => void }) => (
-    <button onClick={() => props.onExportStreaming("csv")}>EXPORT-CSV</button>
+vi.mock("../../../features/time-control/components/DeferredTimeRecordTable", () => ({
+  default: (props: {
+    isLoading: boolean;
+    onExportStreaming: (format: "csv" | "excel") => void;
+  }) => (
+    <>
+      <div data-testid="records-loading-state">{props.isLoading ? "loading" : "ready"}</div>
+      <button onClick={() => props.onExportStreaming("csv")}>EXPORT-CSV</button>
+    </>
   ),
 }));
 
@@ -34,9 +40,11 @@ vi.mock("../../../features/time-control", async (importOriginal) => {
   return {
     ...actual,
     QuickActionModal: () => <div>QUICK-ACTION-MODAL</div>,
-    EditTimestampModal: () => <div>EDIT-TIMESTAMP-MODAL</div>,
   };
 });
+vi.mock("../../../features/time-control/components/EditTimestampModal.container", () => ({
+  default: () => <div>EDIT-TIMESTAMP-MODAL</div>,
+}));
 vi.mock("../../../features/time-control/components/AnomalyResolutionModal", () => ({
   default: () => <div>ANOMALY-RESOLUTION-MODAL</div>,
 }));
@@ -98,6 +106,44 @@ describe("TimeControlView", () => {
     render(<TimeControlView {...baseProps} isPageLoading={true} />);
 
     expect(screen.getByText("Optimizando registros de asistencia...")).toBeInTheDocument();
+  });
+
+  it("keeps the page header visible while the records table loads", () => {
+    render(<TimeControlView {...baseProps} isLoading={true} />);
+
+    expect(screen.getByText("Control de Asistencia")).toBeInTheDocument();
+    expect(screen.getByTestId("records-loading-state")).toHaveTextContent("loading");
+    expect(screen.queryByText("Optimizando registros de asistencia...")).not.toBeInTheDocument();
+  });
+
+  it("mounts the timestamp editor only when a record is selected for editing", async () => {
+    const { rerender } = render(<TimeControlView {...baseProps} />);
+
+    expect(screen.queryByText("EDIT-TIMESTAMP-MODAL")).not.toBeInTheDocument();
+
+    const editingRecordInfo: NonNullable<
+      React.ComponentProps<typeof TimeControlView>["editingRecordInfo"]
+    > = {
+      record: {
+        id: "record-1",
+        employeeId: "employee-1",
+        employeeName: "JUAN PEREZ",
+        employeePosition: "OPERADOR",
+        employeeArea: "OPERACIONES",
+        employeeWorkdayType: "Full Time",
+        date: "2026-03-03",
+        status: "Completado",
+        entrada: "2026-03-03T08:00:00Z",
+        lastModified: 1,
+        syncStatus: "synced",
+        isDeleted: false,
+      },
+      field: "entrada",
+    };
+
+    rerender(<TimeControlView {...baseProps} editingRecordInfo={editingRecordInfo} />);
+
+    expect(await screen.findByText("EDIT-TIMESTAMP-MODAL")).toBeInTheDocument();
   });
 
   it("renders main content and delegates filter/export actions", () => {

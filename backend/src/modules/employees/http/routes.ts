@@ -9,6 +9,7 @@ import {
 } from "../../../models/schemas/employee.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
 import { ForbiddenError } from "../../../utils/AppError";
+import { employeeClockingOptionsResponse } from "./responseSchemas";
 import type { ExcelHttpStream } from "../../../utils/httpStream";
 import type { EmployeeFlows } from "../application/flows";
 import type {
@@ -42,6 +43,11 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
   const write = { config: { requiresAuth: true }, onRequest: [options.authenticate, supervisor] };
   app.get<{ Querystring: EmployeeQuery }>("/api/employees/kiosk", async (request) =>
     options.service.list(request.query),
+  );
+  app.get(
+    "/api/employees/clocking-options",
+    { ...read, schema: { response: { 200: employeeClockingOptionsResponse } } },
+    async (request) => options.service.listClockingOptions(request.user),
   );
   app.get<{ Querystring: EmployeeQuery }>(
     "/api/employees",

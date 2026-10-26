@@ -4,6 +4,8 @@ import { ArrowPathIcon } from "../../../components/ui/icons/index";
 import TimeRecordMobileCard from "./TimeRecordMobileCard";
 import { useInfiniteVirtualizedList } from "../hooks/useInfiniteVirtualizedList";
 
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- Design-system rule requires focusable scroll regions. */
+
 interface TimeRecordTableViewMobileProps {
   records: AugmentedTimeRecord[];
   fetchNextPage: () => void;
@@ -63,7 +65,12 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
   return (
     <div
       ref={parentRef}
-      className="overflow-y-auto h-[600px] pr-2 custom-scrollbar"
+      data-testid="time-record-list-mobile"
+      data-list-group="responsive-record-cards"
+      role="region"
+      aria-label="Registros de horario"
+      tabIndex={0}
+      className="overflow-y-auto h-[600px] pr-2 custom-scrollbar focus:outline-hidden"
       style={{ contain: "strict" }}
     >
       <div

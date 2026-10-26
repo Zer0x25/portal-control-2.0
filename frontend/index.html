@@ -12,9 +12,246 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="dns-prefetch" href="https://api.open-meteo.com" />
     <link rel="dns-prefetch" href="https://ipapi.co" />
+    <style id="app-bootstrap-critical">
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #f0f2f5;
+        color: #0f172a;
+      }
+      .dark,
+      .dark body {
+        background: #020617;
+        color: #f8fafc;
+      }
+      #root {
+        visibility: hidden;
+      }
+      .boot {
+        --a: #f0f2f5;
+        --c: #fdfbf7;
+        --t: #0f172a;
+        --m: #5b6b7f;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        background: var(--a);
+        color: var(--t);
+        font:
+          500 1rem/1.5 system-ui,
+          sans-serif;
+      }
+      .dark .boot {
+        --a: #020617;
+        --c: #0f172a;
+        --t: #f8fafc;
+        --m: #7c8da6;
+      }
+      .boot[hidden] {
+        display: none;
+      }
+      .boot > section {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 48rem;
+        border-radius: 0.5rem;
+        background: var(--c);
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 10px 15px -3px #0000001a;
+      }
+      .boot p {
+        margin: 0 0 0.5rem;
+        color: var(--m);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .boot h1 {
+        margin: 0;
+        font-size: clamp(1.875rem, 5vw, 3rem);
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .boot section > div {
+        margin-top: 0.75rem;
+        border-radius: 0.125rem;
+        background: var(--a);
+        padding: 1rem;
+      }
+      .boot section > div > div {
+        color: var(--m);
+        font-size: 0.75rem;
+      }
+      .boot time {
+        display: block;
+        font:
+          700 clamp(1.5rem, 4vw, 2.25rem)/1.2 ui-monospace,
+          monospace;
+      }
+    </style>
   </head>
   <body class="bg-token-surface-app text-token-text-primary antialiased">
+    <div
+      id="app-bootstrap-shell"
+      role="status"
+      aria-live="polite"
+      aria-label="Cargando Portal"
+      class="boot"
+      hidden
+    >
+      <section>
+        <p>Portal Control Interno</p>
+        <h1>Preparando el portal</h1>
+        <div>
+          <div id="app-bootstrap-date"></div>
+          <time id="app-bootstrap-time"></time>
+        </div>
+      </section>
+    </div>
     <div id="root"></div>
+    <script id="app-bootstrap-script">
+      (() => {
+        const shell = document.getElementById("app-bootstrap-shell");
+        const root = document.getElementById("root");
+        const stylesheet = document.querySelector('link[rel="stylesheet"]');
+        const enableStylesheet = () => {
+          if (stylesheet) stylesheet.media = "all";
+        };
+        const revealRoot = () => {
+          if (root) root.style.visibility = "visible";
+        };
+        const activateOtherRouteStyles = () => {
+          if (!stylesheet) {
+            revealRoot();
+            return;
+          }
+          const onStylesheetReady = () => {
+            enableStylesheet();
+            revealRoot();
+          };
+          stylesheet.addEventListener("load", onStylesheetReady, { once: true });
+          stylesheet.addEventListener("error", onStylesheetReady, { once: true });
+          enableStylesheet();
+          try {
+            if (stylesheet.sheet?.cssRules.length) onStylesheetReady();
+          } catch {
+            // A same-origin production stylesheet is expected; wait for load if unreadable.
+          }
+        };
+        try {
+          const theme = window.localStorage.getItem("app-theme") || "system";
+          const isDark =
+            theme === "dark" ||
+            (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", isDark);
+        } catch {
+          // Keep the current document theme when storage is unavailable.
+        }
+        if (!shell || !root) {
+          activateOtherRouteStyles();
+          return;
+        }
+
+        const currentRoute = () => window.location.hash.split("?")[0];
+        try {
+          if (!window.sessionStorage.getItem("authToken")) {
+            shell.remove();
+            activateOtherRouteStyles();
+            return;
+          }
+        } catch {
+          shell.remove();
+          activateOtherRouteStyles();
+          return;
+        }
+
+        const route = currentRoute();
+        if (!/^#\/(dashboard|worker-portal|time-control)$/.test(route)) {
+          shell.remove();
+          activateOtherRouteStyles();
+          return;
+        }
+
+        const now = new Date();
+        const date = new Intl.DateTimeFormat("es-CL", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }).format(now);
+        const time = new Intl.DateTimeFormat("es-CL", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }).format(now);
+        const dateElement = document.getElementById("app-bootstrap-date");
+        const timeElement = document.getElementById("app-bootstrap-time");
+        if (dateElement) dateElement.textContent = date;
+        if (timeElement) timeElement.textContent = time;
+        shell.hidden = false;
+
+        let appReady = false;
+        let stylesheetReady = !stylesheet;
+        let observer;
+        let expiry = 0;
+        let onHashChange = () => {};
+        const removeShell = () => {
+          shell.remove();
+          observer?.disconnect();
+          window.clearTimeout(expiry);
+          window.removeEventListener("hashchange", onHashChange);
+        };
+        const releaseWhenReady = () => {
+          if (appReady && stylesheetReady) removeShell();
+        };
+        const onStylesheetReady = () => {
+          enableStylesheet();
+          revealRoot();
+          stylesheetReady = true;
+          releaseWhenReady();
+        };
+
+        observer = new MutationObserver(() => {
+          if (
+            root.querySelector('[data-testid="server-clock"]') ||
+            (route === "#/time-control" && root.querySelector("#initial-sync-overlay"))
+          ) {
+            appReady = true;
+            releaseWhenReady();
+          }
+        });
+        observer.observe(root, { childList: true, subtree: true });
+
+        if (stylesheet) {
+          stylesheet.addEventListener("load", onStylesheetReady, { once: true });
+          stylesheet.addEventListener("error", onStylesheetReady, { once: true });
+          try {
+            if (stylesheet.sheet?.cssRules.length) onStylesheetReady();
+          } catch {
+            // A same-origin production stylesheet is expected; wait for load if unreadable.
+          }
+        }
+
+        onHashChange = () => {
+          if (currentRoute() !== route) {
+            activateOtherRouteStyles();
+            removeShell();
+          }
+        };
+        window.addEventListener("hashchange", onHashChange);
+        expiry = window.setTimeout(() => {
+          enableStylesheet();
+          revealRoot();
+          removeShell();
+        }, 8000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

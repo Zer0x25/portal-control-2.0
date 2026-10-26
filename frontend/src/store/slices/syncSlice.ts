@@ -1,10 +1,14 @@
 import { StateCreator } from "zustand";
 import { SyncState } from "../../types/index";
 import { AppState } from "../types";
-import { configService } from "../../services/configService";
 import { idbIsStoreEmpty, STORES, wipeAllData } from "../../utils/indexedDB";
 import { queryClient } from "../../lib/queryClient";
 import { queryKeys } from "../../lib/queryKeys";
+import { refreshActiveQueriesForSync } from "../../lib/querySync";
+import {
+  readinessQueryOptions,
+  type HealthReadinessData,
+} from "../../hooks/queries/useHealthQuery";
 import { logger } from "../../utils/logger";
 
 export interface SyncSlice {
@@ -14,10 +18,89 @@ export interface SyncSlice {
   isInitialSync: boolean;
   currentSyncStep: string;
   isSyncing: boolean;
-  runSync: () => Promise<void>;
+  runSync: (forceRefresh?: boolean) => Promise<void>;
   initializeAppData: () => Promise<void>;
   validateInstanceId: () => Promise<boolean>;
 }
+
+type SyncDiagnosticPhase = "validation" | "cache-check" | "sync-step";
+type SyncDiagnosticOutcome = "success" | "failure";
+
+const isSyncDiagnosticsEnabled = (): boolean =>
+  typeof window !== "undefined" &&
+  (window as Window & { __PORTAL_SYNC_PERF_DIAGNOSTICS__?: boolean })
+    .__PORTAL_SYNC_PERF_DIAGNOSTICS__ === true;
+
+const emitSyncDiagnostic = (
+  phase: SyncDiagnosticPhase,
+  name: string,
+  durationMs: number,
+  outcome: SyncDiagnosticOutcome,
+  startedAtMs: number,
+): void => {
+  if (!isSyncDiagnosticsEnabled()) return;
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("portal:sync-phase", {
+        detail: { phase, name, startedAtMs, durationMs, outcome },
+      }),
+    );
+  } catch {
+    // Diagnostics are observational and must never interrupt synchronization.
+  }
+};
+
+const emitInstanceValidationStage = (stage: "readiness-query-resolved"): void => {
+  if (!isSyncDiagnosticsEnabled()) return;
+  try {
+    window.dispatchEvent(
+      new CustomEvent("portal:instance-validation-stage", {
+        detail: { stage, atMs: Number(performance.now().toFixed(2)) },
+      }),
+    );
+  } catch {
+    // Stage timing is observational and must never interrupt synchronization.
+  }
+};
+
+const measureSyncPhase = <T>(
+  phase: SyncDiagnosticPhase,
+  name: string,
+  action: () => Promise<T>,
+): Promise<T> => {
+  if (!isSyncDiagnosticsEnabled()) return action();
+
+  const startedAt = performance.now();
+  const emitResult = (outcome: SyncDiagnosticOutcome): void => {
+    emitSyncDiagnostic(
+      phase,
+      name,
+      Number((performance.now() - startedAt).toFixed(2)),
+      outcome,
+      Number(startedAt.toFixed(2)),
+    );
+  };
+
+  let result: Promise<T>;
+  try {
+    result = action();
+  } catch (error) {
+    emitResult("failure");
+    return Promise.reject(error);
+  }
+
+  return result.then(
+    (value) => {
+      emitResult("success");
+      return value;
+    },
+    (error: unknown) => {
+      emitResult("failure");
+      throw error;
+    },
+  );
+};
 
 export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, get) => ({
   syncState: "success",
@@ -27,7 +110,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
   currentSyncStep: "",
   isSyncing: false,
 
-  runSync: async () => {
+  runSync: async (forceRefresh = false) => {
     if (get().isSyncing) {
       logger.warn("Sync already in progress, skipping...");
       return;
@@ -59,14 +142,19 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         return;
       }
 
-      // 1. Smart Cache Check: If critical stores are empty, force a full sync regardless of lastSyncTime
-      const isCacheEmpty = await (async () => {
-        const [empEmpty, userEmpty] = await Promise.all([
-          idbIsStoreEmpty(STORES.EMPLOYEES),
-          idbIsStoreEmpty(STORES.USERS),
-        ]);
-        return empEmpty && userEmpty;
-      })();
+      // A cache check can affect only a delta sync that has a prior marker.
+      // On the first sync there is no timestamp to preserve, so opening IndexedDB
+      // here would delay the initial overlay without changing the sync decision.
+      let isCacheEmpty = false;
+      if (since) {
+        isCacheEmpty = await measureSyncPhase("cache-check", "criticalStores", async () => {
+          const [empEmpty, userEmpty] = await Promise.all([
+            idbIsStoreEmpty(STORES.EMPLOYEES),
+            idbIsStoreEmpty(STORES.USERS),
+          ]);
+          return empEmpty && userEmpty;
+        });
+      }
 
       if (isCacheEmpty && since) {
         logger.warn("⚠️ Cache local vacía detectada. Forzando sincronización completa...");
@@ -82,36 +170,46 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
         );
       }
 
-      // Spec 032 T5: colecciones remotas ya viven en query hooks; el sync
-      // solo invalida sus raices (refresco bajo demanda, sin duplicacion).
+      // Spec 032 T5: las colecciones remotas viven en query hooks. En un
+      // arranque normal se refrescan solo queries activas stale; si cambia la
+      // instancia de BD, forceRefresh descarta la caché potencialmente ajena.
       const steps = [
         {
           name: "Usuarios",
-          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.users() }),
+          action: () => refreshActiveQueriesForSync(queryClient, queryKeys.users(), forceRefresh),
           skip: role === "Usuario",
         },
         {
           name: "Empleados",
-          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.employees() }),
+          action: () =>
+            refreshActiveQueriesForSync(queryClient, queryKeys.employees(), forceRefresh),
         },
-        // Spec 032 T4: config y shift ahora viven en query hooks; el sync
-        // solo invalida sus raices para que react-query refresque bajo demanda.
+        // Spec 032 T4: configuración y turnos viven en query hooks.
         {
           name: "Configuraciones",
-          action: () => queryClient.invalidateQueries({ queryKey: queryKeys.configRoot() }),
+          action: () =>
+            refreshActiveQueriesForSync(queryClient, queryKeys.configRoot(), forceRefresh),
         },
         {
           name: "Horarios",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: queryKeys.shiftPatterns() });
-            await queryClient.invalidateQueries({ queryKey: queryKeys.assignedShifts() });
+            await refreshActiveQueriesForSync(queryClient, queryKeys.shiftPatterns(), forceRefresh);
+            await refreshActiveQueriesForSync(
+              queryClient,
+              queryKeys.assignedShifts(),
+              forceRefresh,
+            );
           },
         },
         {
           name: "Medidores",
           action: async () => {
-            await queryClient.invalidateQueries({ queryKey: queryKeys.meterReadings() });
-            await queryClient.invalidateQueries({ queryKey: queryKeys.config("meter_configs") });
+            await refreshActiveQueriesForSync(queryClient, queryKeys.meterReadings(), forceRefresh);
+            await refreshActiveQueriesForSync(
+              queryClient,
+              queryKeys.config("meter_configs"),
+              forceRefresh,
+            );
           },
           skip: role === "Usuario",
         },
@@ -133,7 +231,7 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
           });
         }
 
-        await step.action();
+        await measureSyncPhase("sync-step", step.name, () => step.action());
       }
 
       localStorage.setItem("lastSyncTime", now.toString());
@@ -175,14 +273,16 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
 
     try {
       // Validar instancia de DB antes de sincronizar
-      const isConsistent = await state.validateInstanceId();
+      const isConsistent = await measureSyncPhase("validation", "validateInstanceId", () =>
+        state.validateInstanceId(),
+      );
 
       if (!isConsistent) {
         logger.warn("⚠️ Mismatch de instancia detectado. Caché local invalidada.");
       }
 
       // La primera vez o en init, intentamos una sincronización delta/full
-      await state.runSync();
+      await state.runSync(!isConsistent);
 
       logger.warn("Aplicación inicializada correctamente.");
     } catch (error) {
@@ -194,7 +294,17 @@ export const createSyncSlice: StateCreator<AppState, [], [], SyncSlice> = (set, 
   },
 
   validateInstanceId: async () => {
-    const health = await configService.getHealth();
+    let health: HealthReadinessData | undefined;
+    try {
+      // La validación debe comprobar la instancia actual, no reutilizar una
+      // respuesta antigua; `fetchQuery` aún comparte el promise si ya está en vuelo.
+      health = await queryClient.fetchQuery({ ...readinessQueryOptions, staleTime: 0 });
+      emitInstanceValidationStage("readiness-query-resolved");
+    } catch (error) {
+      logger.error("Error fetching health for instance validation:", error);
+      return true; // Fail safe
+    }
+
     if (!health || !health.instanceId) return true; // Fail safe
 
     const localInstanceId = localStorage.getItem("db_instance_id");

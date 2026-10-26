@@ -23,7 +23,10 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
   const { data: accountingLockDate } = useAccountingLockDateQuery();
   // const deleteRecordById = useStore(s => s.deleteRecordById); // REMOVED
   // const dailyRecords = useStore(s => s.timeRecordsPage.data); // REMOVED
-  const { data: shiftReports = [] } = useReportsQuery({ status: "open" });
+  const { refetch: refetchOpenShiftReports } = useReportsQuery(
+    { status: "open" },
+    { enabled: false },
+  );
 
   const [modalState, setModalState] = useState<ModalState>({ type: "none" });
   const [editingRecordInfo, setEditingRecordInfo] = useState<{
@@ -71,7 +74,17 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
         return;
       }
 
-      const activeShift = shiftReports.find((s) => s.status === "open");
+      let openShiftReports: ShiftReport[];
+      try {
+        const result = await refetchOpenShiftReports({ throwOnError: true });
+        openShiftReports = result.data ?? [];
+      } catch (error) {
+        logger.error("No se pudieron cargar los turnos abiertos para agregar una novedad:", error);
+        addToast("No se pudo verificar el turno activo. Inténtalo nuevamente.", "error");
+        return;
+      }
+
+      const activeShift = openShiftReports.find((s) => s.status === "open");
 
       if (!activeShift) {
         addToast("No hay un turno activo para agregar una novedad.", "warning");
@@ -85,7 +98,7 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
       setIsAddNoveltyModalOpen(true);
       closeQuickActionModal();
     },
-    [accountingLockDate, addToast, shiftReports, closeQuickActionModal],
+    [accountingLockDate, addToast, refetchOpenShiftReports, closeQuickActionModal],
   );
 
   const handleSaveNovelty = useCallback(

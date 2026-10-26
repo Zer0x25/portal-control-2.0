@@ -1,0 +1,91 @@
+{
+  "capturedAt": "2026-10-24T02:28:28.867Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 550.15,
+  "serverClockVisibleOffsetMs": 599.59,
+  "apiRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 618.48
+    }
+  ],
+  "dashboardDataRequestsPendingWhenServerClockAppeared": [
+    {
+      "path": "/api/kpis/overview",
+      "finishOffsetMs": 618.48
+    }
+  ],
+  "apiRequestCount": 8,
+  "uniqueApiEndpointCount": 8,
+  "duplicateEndpoints": [],
+  "autoStartSchedulingRequests": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 515.53,
+      "durationMs": 102.95,
+      "finishOffsetMs": 618.48,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 515.51,
+      "durationMs": 82.47,
+      "finishOffsetMs": 597.97,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 515.48,
+      "durationMs": 82.45,
+      "finishOffsetMs": 597.93,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 185.39,
+      "durationMs": 75.38,
+      "finishOffsetMs": 260.77,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 515.36,
+      "durationMs": 65.48,
+      "finishOffsetMs": 580.84,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 515.45,
+      "durationMs": 65.46,
+      "finishOffsetMs": 580.91,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 515.42,
+      "durationMs": 61.56,
+      "finishOffsetMs": 576.98,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 167.33,
+      "durationMs": 42.4,
+      "finishOffsetMs": 209.73,
+      "status": 200
+    }
+  ]
+}

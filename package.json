@@ -23,6 +23,7 @@
     "staging:logs": "docker compose --env-file .env.staging -f compose.staging.yaml logs -f --tail=100",
     "staging:down": "docker compose --env-file .env.staging -f compose.staging.yaml down",
     "e2e:staging": "npm --prefix frontend run e2e:staging",
+    "perf:staging": "npm --prefix frontend run perf:staging",
     "e2e:report": "npx playwright show-report frontend/playwright-report"
   },
   "lint-staged": {

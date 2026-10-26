@@ -7,6 +7,7 @@ import type {
   EmployeeBulkInput,
   EmployeeQuery,
   EmployeePrincipal,
+  EmployeeClockingOption,
   PublicEmployee,
 } from "./contracts";
 export function toPublicEmployee(row: EmployeeRow): PublicEmployee {
@@ -55,6 +56,9 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
             },
           }
         : employees;
+    },
+    async listClockingOptions(user?: EmployeePrincipal): Promise<EmployeeClockingOption[]> {
+      return deps.repository.listClockingOptions(user);
     },
     async create(input: EmployeeCreateInput, actorUsername: string) {
       const { createUserAccount, ...data } = input;

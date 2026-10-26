@@ -47,8 +47,6 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
         maxWidth="max-w-xl"
       >
         <div className="space-y-8 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-token-accent-brand/5 rounded-full blur-3xl pointer-events-none" />
-
           <div className="text-center space-y-4 relative">
             <div
               onClick={onLogoClick}

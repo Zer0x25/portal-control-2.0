@@ -51,7 +51,10 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
   hidePagination = false,
 }) => {
   const renderMobileView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+    <div
+      data-list-group="responsive-record-cards"
+      className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4"
+    >
       {paginatedEmployees.length > 0 ? (
         paginatedEmployees.map((emp) => (
           <div
@@ -66,10 +69,10 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
 
             <div className="flex justify-between items-start mb-4 pl-2">
               <div>
-                <h4 className="text-sm font-black text-token-text-primary uppercase tracking-tight">
+                <h4 className="typo-list-primary text-token-text-primary uppercase tracking-tight">
                   {emp.name}
                 </h4>
-                <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest mt-1">
+                <p className="typo-list-secondary text-token-accent-brand uppercase tracking-wide mt-1">
                   {emp.position}
                 </p>
               </div>
@@ -84,26 +87,24 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
 
             <div className="bg-token-surface-stripe rounded-md p-3 space-y-2 mb-4 border border-token-border-subtle">
               <div className="flex justify-between">
-                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
+                <span className="typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                   RUT
                 </span>
-                <span className="text-xs font-mono font-bold text-token-text-secondary">
-                  {emp.rut}
-                </span>
+                <span className="typo-list-value text-token-text-secondary">{emp.rut}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
+                <span className="typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                   Área
                 </span>
-                <span className="text-xs font-bold text-token-text-secondary uppercase">
+                <span className="typo-list-secondary text-token-text-secondary uppercase">
                   {emp.area}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
+                <span className="typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                   Jornada
                 </span>
-                <span className="text-xs font-bold text-token-text-secondary uppercase">
+                <span className="typo-list-secondary text-token-text-secondary uppercase">
                   {emp.workdayType}
                 </span>
               </div>
@@ -152,7 +153,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
         ))
       ) : (
         <div className="col-span-full py-16 text-center bg-token-surface-stripe rounded-lg border-2 border-dashed border-token-border-technical">
-          <p className="text-sm font-bold text-token-text-tertiary italic">
+          <p className="typo-list-secondary text-token-text-tertiary">
             No se encontraron empleados.
           </p>
         </div>
@@ -161,7 +162,10 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
   );
 
   const renderDesktopView = () => (
-    <div className="border border-token-border-technical bg-token-surface-stripe rounded-lg">
+    <div
+      data-list-group="data-table"
+      className="border border-token-border-technical bg-token-surface-stripe rounded-lg"
+    >
       <table data-testid="data-table" className="min-w-full border-separate border-spacing-0">
         <thead className={`sticky top-0 ${Z.dropdown} bg-token-surface-header backdrop-blur-sm`}>
           <tr>
@@ -170,30 +174,30 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
               sortKey="name"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em] border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
+              className="px-6 py-4 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
             />
             <SortableHeader
               title="RUT"
               sortKey="rut"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em] border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
+              className="px-6 py-4 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
             />
             <SortableHeader
               title="Área"
               sortKey="area"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em] border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
+              className="px-6 py-4 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
             />
             <SortableHeader
               title="Jornada"
               sortKey="workdayType"
               sortConfig={sortConfig}
               onSort={requestSort}
-              className="px-6 py-4 text-left text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em] border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
+              className="px-6 py-4 text-left typo-list-header text-token-text-secondary border-b border-token-border-subtle cursor-pointer hover:bg-black/5 transition-colors"
             />
-            <th className="px-6 py-4 text-right text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em] border-b border-token-border-subtle">
+            <th className="px-6 py-4 text-right typo-list-header text-token-text-secondary border-b border-token-border-subtle">
               Acciones
             </th>
           </tr>
@@ -207,40 +211,38 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
               >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-token-text-primary uppercase tracking-tight">
+                    <span className="typo-list-primary text-token-text-primary uppercase tracking-tight">
                       {emp.name}
                     </span>
-                    <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
+                    <span className="typo-list-secondary text-token-accent-brand uppercase tracking-wide">
                       {emp.position}
                     </span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
-                    <span className="text-xs font-mono font-bold text-token-text-secondary">
-                      {emp.rut}
-                    </span>
-                    <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
+                    <span className="typo-list-value text-token-text-secondary">{emp.rut}</span>
+                    <span className="typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                       Identificador
                     </span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-token-text-secondary uppercase tracking-tight">
+                    <span className="typo-list-secondary text-token-text-secondary uppercase">
                       {emp.area}
                     </span>
-                    <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
+                    <span className="typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                       Departamento
                     </span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-token-text-secondary uppercase tracking-tight">
+                    <span className="typo-list-secondary text-token-text-secondary uppercase">
                       {emp.workdayType}
                     </span>
-                    <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
+                    <span className="typo-list-secondary text-token-text-tertiary uppercase tracking-wide">
                       Tipo Jornada
                     </span>
                   </div>
@@ -300,7 +302,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
             <tr>
               <td
                 colSpan={6}
-                className="px-6 py-12 text-center text-sm text-token-text-tertiary italic"
+                className="px-6 py-12 text-center typo-list-secondary text-token-text-tertiary"
               >
                 No hay empleados para mostrar.
               </td>

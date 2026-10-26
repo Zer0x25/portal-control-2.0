@@ -1,0 +1,174 @@
+{
+  "capturedAt": "2026-10-23T23:33:15.777Z",
+  "baseUrl": "http://127.0.0.1:8080",
+  "route": "/#/dashboard",
+  "mainContentVisibleOffsetMs": 628.54,
+  "serverClockVisibleOffsetMs": 651.63,
+  "apiRequestCount": 20,
+  "uniqueApiEndpointCount": 20,
+  "duplicateEndpoints": [],
+  "apiPaths": [
+    "/api/health",
+    "/api/configs/is_control_interno_enabled",
+    "/api/corrections/stats",
+    "/api/audit-logs",
+    "/api/users",
+    "/api/employees",
+    "/api/shift-reports",
+    "/api/kpis/overview",
+    "/api/configs/global_max_hours",
+    "/api/configs/area_list",
+    "/api/configs/workday_types",
+    "/api/configs/email_recipients",
+    "/api/configs/accounting_lock_date",
+    "/api/shifts/patterns",
+    "/api/shifts/assignments",
+    "/api/holidays",
+    "/api/leaves",
+    "/api/corrections",
+    "/api/configs/public/company-policy",
+    "/api/notes"
+  ],
+  "apiRequestTimings": [
+    {
+      "path": "/api/holidays",
+      "startOffsetMs": 519.64,
+      "durationMs": 136.4,
+      "finishOffsetMs": 656.04,
+      "status": 200
+    },
+    {
+      "path": "/api/leaves",
+      "startOffsetMs": 519.66,
+      "durationMs": 136.4,
+      "finishOffsetMs": 656.06,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections",
+      "startOffsetMs": 519.68,
+      "durationMs": 136.28,
+      "finishOffsetMs": 655.96,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/accounting_lock_date",
+      "startOffsetMs": 519.57,
+      "durationMs": 135.85,
+      "finishOffsetMs": 655.42,
+      "status": 200
+    },
+    {
+      "path": "/api/shifts/patterns",
+      "startOffsetMs": 519.6,
+      "durationMs": 135.85,
+      "finishOffsetMs": 655.44,
+      "status": 200
+    },
+    {
+      "path": "/api/shifts/assignments",
+      "startOffsetMs": 519.62,
+      "durationMs": 135.84,
+      "finishOffsetMs": 655.45,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/email_recipients",
+      "startOffsetMs": 519.55,
+      "durationMs": 135.81,
+      "finishOffsetMs": 655.36,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/workday_types",
+      "startOffsetMs": 519.53,
+      "durationMs": 133.26,
+      "finishOffsetMs": 652.79,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/area_list",
+      "startOffsetMs": 519.5,
+      "durationMs": 130.83,
+      "finishOffsetMs": 650.33,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/global_max_hours",
+      "startOffsetMs": 519.48,
+      "durationMs": 130.82,
+      "finishOffsetMs": 650.3,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/is_control_interno_enabled",
+      "startOffsetMs": 219.57,
+      "durationMs": 106.86,
+      "finishOffsetMs": 326.43,
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "startOffsetMs": 188.77,
+      "durationMs": 63.53,
+      "finishOffsetMs": 252.3,
+      "status": 200
+    },
+    {
+      "path": "/api/configs/public/company-policy",
+      "startOffsetMs": 598.18,
+      "durationMs": 57.89,
+      "finishOffsetMs": 656.07,
+      "status": 200
+    },
+    {
+      "path": "/api/notes",
+      "startOffsetMs": 601.7,
+      "durationMs": 54.39,
+      "finishOffsetMs": 656.09,
+      "status": 200
+    },
+    {
+      "path": "/api/corrections/stats",
+      "startOffsetMs": 506.46,
+      "durationMs": 41.8,
+      "finishOffsetMs": 548.26,
+      "status": 200
+    },
+    {
+      "path": "/api/kpis/overview",
+      "startOffsetMs": 519.46,
+      "durationMs": 34.36,
+      "finishOffsetMs": 553.82,
+      "status": 200
+    },
+    {
+      "path": "/api/audit-logs",
+      "startOffsetMs": 515.96,
+      "durationMs": 34.18,
+      "finishOffsetMs": 550.14,
+      "status": 200
+    },
+    {
+      "path": "/api/employees",
+      "startOffsetMs": 519.38,
+      "durationMs": 30.89,
+      "finishOffsetMs": 550.27,
+      "status": 200
+    },
+    {
+      "path": "/api/shift-reports",
+      "startOffsetMs": 519.42,
+      "durationMs": 30.83,
+      "finishOffsetMs": 550.25,
+      "status": 200
+    },
+    {
+      "path": "/api/users",
+      "startOffsetMs": 518.96,
+      "durationMs": 29.36,
+      "finishOffsetMs": 548.32,
+      "status": 200
+    }
+  ]
+}

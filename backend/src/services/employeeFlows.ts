@@ -14,6 +14,11 @@ export const employeeFlows = createEmployeeFlows({
         { ...user, employeeId: user?.employeeId ?? undefined },
         kiosk,
       ),
+    listClockingOptions: (user) =>
+      employeeService.listClockingOptions({
+        ...user,
+        employeeId: user?.employeeId ?? undefined,
+      }),
     resolveId: (id) => employeeService.resolveEmployeeId(id),
     find: (id) => employeeService.getEmployeeById(id),
     update: (id, data) => employeeService.updateEmployee(id, data),

@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-23T22:55:36.560Z",
+  "route": "/#/dashboard",
+  "source": {
+    "commit": "45138318f801c54307efd60d6a86a1729313caee",
+    "workingTreeDirty": true
+  },
+  "target": {
+    "baseUrl": "http://127.0.0.1:8080",
+    "frontendImageId": "sha256:51e1866eff3c5987eebc655801175014f6d70d71c2f57e76cd6707c4dbd3cd8f"
+  },
+  "baseline": {
+    "apiEvidence": "specs/041-dashboard-deferred-modals/evidencia/profile-summary.json#samples.after",
+    "performanceRun": "specs/039-frontend-performance-battery/evidencia/runs/2026-10-23T15-01-52-304Z-45138318.json",
+    "frontendImageId": "sha256:292bc2e70eee55398cc04d7f214eff19ece18ca8ea9b384c887ddf85ea7a803c",
+    "apiRequests": {
+      "total": 32,
+      "uniqueEndpointCount": 21,
+      "repeatedEndpointCount": 11,
+      "duplicateRequests": 11,
+      "kioskRequests": 2,
+      "repeatedEndpoints": [
+        {
+          "path": "/api/configs/is_control_interno_enabled",
+          "count": 2
+        },
+        {
+          "path": "/api/users",
+          "count": 2
+        },
+        {
+          "path": "/api/employees",
+          "count": 2
+        },
+        {
+          "path": "/api/employees/kiosk",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/global_max_hours",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/area_list",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/workday_types",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/email_recipients",
+          "count": 2
+        },
+        {
+          "path": "/api/configs/accounting_lock_date",
+          "count": 2
+        },
+        {
+          "path": "/api/shifts/patterns",
+          "count": 2
+        },
+        {
+          "path": "/api/shifts/assignments",
+          "count": 2
+        }
+      ]
+    },
+    "lighthouseColdDashboard": {
+      "performanceScore": {
+        "median": 0.68,
+        "min": 0.66,
+        "max": 0.69
+      },
+      "fcpMs": {
+        "median": 3784.73,
+        "min": 3780.14,
+        "max": 3787.51
+      },
+      "lcpMs": {
+        "median": 5508.43,
+        "min": 5463.28,
+        "max": 5567.46
+      },
+      "tbtMs": {
+        "median": 190,
+        "min": 151,
+        "max": 239
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "totalTransferBytes": {
+        "median": 470917,
+        "min": 469811,
+        "max": 474266
+      },
+      "scriptTransferBytes": {
+        "median": 304922,
+        "min": 303831,
+        "max": 308287
+      },
+      "requestCount": {
+        "median": 89,
+        "min": 89,
+        "max": 89
+      }
+    }
+  },
+  "after": {
+    "apiEvidence": "dashboard-startup-api-requests.json",
+    "performanceRun": "specs/039-frontend-performance-battery/evidencia/runs/2026-10-23T22-55-31-580Z-45138318.json",
+    "apiRequests": {
+      "total": 21,
+      "uniqueEndpointCount": 20,
+      "repeatedEndpointCount": 1,
+      "duplicateRequests": 1,
+      "kioskRequests": 0,
+      "repeatedEndpoints": [
+        {
+          "path": "/api/health",
+          "count": 2
+        }
+      ]
+    },
+    "lighthouseColdDashboard": {
+      "performanceScore": {
+        "median": 0.67,
+        "min": 0.66,
+        "max": 0.68
+      },
+      "fcpMs": {
+        "median": 3808.92,
+        "min": 3801.2,
+        "max": 3827.88
+      },
+      "lcpMs": {
+        "median": 5598.99,
+        "min": 5540.98,
+        "max": 5664.4
+      },
+      "tbtMs": {
+        "median": 221.5,
+        "min": 187.5,
+        "max": 250
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "totalTransferBytes": {
+        "median": 473684,
+        "min": 473639,
+        "max": 474944
+      },
+      "scriptTransferBytes": {
+        "median": 308417,
+        "min": 305050,
+        "max": 308417
+      },
+      "requestCount": {
+        "median": 89,
+        "min": 89,
+        "max": 90
+      }
+    },
+    "performanceBattery": {
+      "status": "passed",
+      "playwrightPassed": "passed",
+      "lighthouseStandardStatus": "passed",
+      "standardRoutes": 17,
+      "standardAssertionsPassed": 85,
+      "standardAssertionFailures": 0
+    }
+  },
+  "change": {
+    "apiRequestsReducedBy": 11,
+    "apiRequestsReducedPercent": 34.38,
+    "repeatedEndpointsBefore": 11,
+    "repeatedEndpointsAfter": 1,
+    "duplicateRequestsBefore": 11,
+    "duplicateRequestsAfter": 1,
+    "kioskRequestsBefore": 2,
+    "kioskRequestsAfter": 0,
+    "lighthouseColdDashboardMedianDelta": {
+      "performanceScore": {
+        "beforeMedian": 0.68,
+        "afterMedian": 0.67,
+        "change": -0.010000000000000009,
+        "changePercent": -1.47
+      },
+      "fcpMs": {
+        "beforeMedian": 3784.73,
+        "afterMedian": 3808.92,
+        "change": 24.190000000000055,
+        "changePercent": 0.64
+      },
+      "lcpMs": {
+        "beforeMedian": 5508.43,
+        "afterMedian": 5598.99,
+        "change": 90.55999999999949,
+        "changePercent": 1.64
+      },
+      "tbtMs": {
+        "beforeMedian": 190,
+        "afterMedian": 221.5,
+        "change": 31.5,
+        "changePercent": 16.58
+      },
+      "cls": {
+        "beforeMedian": 0,
+        "afterMedian": 0,
+        "change": 0,
+        "changePercent": null
+      },
+      "totalTransferBytes": {
+        "beforeMedian": 470917,
+        "afterMedian": 473684,
+        "change": 2767,
+        "changePercent": 0.59
+      },
+      "scriptTransferBytes": {
+        "beforeMedian": 304922,
+        "afterMedian": 308417,
+        "change": 3495,
+        "changePercent": 1.15
+      },
+      "requestCount": {
+        "beforeMedian": 89,
+        "afterMedian": 89,
+        "change": 0,
+        "changePercent": 0
+      }
+    }
+  },
+  "limitations": ["The baseline API count comes from a CDP profile stopped 1500 ms after server-clock readiness; the new count comes from a Playwright request listener after 800 ms of API quiet. Treat the request reduction as an observed comparison, not a repeated-sample causal estimate.", "A focused repeat at 2026-10-23T23:09:41.135Z also recorded 21 API requests and only /api/health repeated; the full-battery request capture remains the primary record.", "Each Lighthouse comparison has three cold samples from one batch. These are lab measurements, not field Core Web Vitals.", "The code change targets duplicate API traffic. Lighthouse transfer and timing values were effectively unchanged within noisy sample ranges; no stable LCP or TBT improvement is claimed."]
+}

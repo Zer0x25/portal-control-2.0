@@ -7,6 +7,7 @@ import { Z } from "../../constants/zScale";
 
 const INTERVALS = [10, 15, 20, 25, 30]; // in minutes
 const STORAGE_KEY = "portal_reminder_next_trigger";
+const PREFETCH_LEAD_MS = 60 * 1000;
 const getNextInterval = () => {
   const randomMin = INTERVALS[Math.floor(Math.random() * INTERVALS.length)];
   return randomMin * 60 * 1000;
@@ -23,7 +24,8 @@ const getNextInterval = () => {
  */
 
 const AmbientReminderManager: React.FC = () => {
-  const { notes } = useQuickNotes();
+  const [shouldLoadNotes, setShouldLoadNotes] = useState(false);
+  const { notes, isLoadingNotes } = useQuickNotes({ enabled: shouldLoadNotes });
   const { play } = useAudio();
   const [activeNote, setActiveNote] = useState<QuickNote | null>(null);
   const [nextTrigger, setNextTrigger] = useState<number | null>(null);
@@ -32,6 +34,7 @@ const AmbientReminderManager: React.FC = () => {
   const scheduleNext = useCallback(() => {
     const delay = getNextInterval();
     const triggerAt = Date.now() + delay;
+    setShouldLoadNotes(false);
     setNextTrigger(triggerAt);
     localStorage.setItem(STORAGE_KEY, triggerAt.toString());
   }, []);
@@ -53,8 +56,18 @@ const AmbientReminderManager: React.FC = () => {
   useEffect(() => {
     if (!nextTrigger) return;
 
+    const prefetchDelay = Math.max(0, nextTrigger - PREFETCH_LEAD_MS - Date.now());
+    const timeout = setTimeout(() => setShouldLoadNotes(true), prefetchDelay);
+    return () => clearTimeout(timeout);
+  }, [nextTrigger]);
+
+  useEffect(() => {
+    if (!nextTrigger) return;
+
     const checkTimer = () => {
       if (Date.now() >= nextTrigger && !activeNote) {
+        if (isLoadingNotes) return;
+
         const candidates = notes.filter((n) => !n.isArchived && n.reminderEnabled);
         if (candidates.length > 0) {
           const picked = candidates[Math.floor(Math.random() * candidates.length)];
@@ -68,7 +81,7 @@ const AmbientReminderManager: React.FC = () => {
 
     const interval = setInterval(checkTimer, 10000);
     return () => clearInterval(interval);
-  }, [nextTrigger, notes, activeNote, scheduleNext, play]);
+  }, [nextTrigger, notes, isLoadingNotes, activeNote, scheduleNext, play]);
 
   const handleAcknowledge = () => {
     setActiveNote(null);

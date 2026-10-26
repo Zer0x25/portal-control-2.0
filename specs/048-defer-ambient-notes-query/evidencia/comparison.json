@@ -1,0 +1,177 @@
+{
+  "capturedLocalDate": "2026-10-23",
+  "baseline": {
+    "spec": "047-dashboard-defer-company-policy-metadata",
+    "frontendImageDigest": "sha256:c789faa7cde0a0cf28e111c98beebbf053cb0129d286f001c386dde20828b312",
+    "runs": [
+      {
+        "sample": "sample-01",
+        "capturedAt": "2026-10-24T01:17:53.080Z",
+        "apiRequestCount": 9,
+        "uniqueApiEndpointCount": 9,
+        "mainContentVisibleOffsetMs": 553.08,
+        "serverClockVisibleOffsetMs": 571.27,
+        "notesRequest": {
+          "path": "/api/notes",
+          "startOffsetMs": 626.6,
+          "durationMs": 19.56,
+          "finishOffsetMs": 646.16,
+          "status": 200
+        }
+      },
+      {
+        "sample": "sample-02",
+        "capturedAt": "2026-10-24T01:17:56.463Z",
+        "apiRequestCount": 9,
+        "uniqueApiEndpointCount": 9,
+        "mainContentVisibleOffsetMs": 559.29,
+        "serverClockVisibleOffsetMs": 612.62,
+        "notesRequest": {
+          "path": "/api/notes",
+          "startOffsetMs": 659.78,
+          "durationMs": 33.34,
+          "finishOffsetMs": 693.12,
+          "status": 200
+        }
+      },
+      {
+        "sample": "sample-03",
+        "capturedAt": "2026-10-24T01:17:59.863Z",
+        "apiRequestCount": 9,
+        "uniqueApiEndpointCount": 9,
+        "mainContentVisibleOffsetMs": 536.19,
+        "serverClockVisibleOffsetMs": 550.84,
+        "notesRequest": {
+          "path": "/api/notes",
+          "startOffsetMs": 573.23,
+          "durationMs": 25.96,
+          "finishOffsetMs": 599.19,
+          "status": 200
+        }
+      }
+    ]
+  },
+  "after": {
+    "spec": "048-defer-ambient-notes-query",
+    "frontendImageDigest": "sha256:90f244ed92908124a6635a82612179318c88604e57ccbdd4ce0474aaa216f534",
+    "runs": [
+      {
+        "sample": "sample-01",
+        "capturedAt": "2026-10-24T01:36:45.984Z",
+        "apiRequestCount": 8,
+        "uniqueApiEndpointCount": 8,
+        "duplicateEndpoints": [],
+        "allRequestsSuccessful": true,
+        "mainContentVisibleOffsetMs": 663.67,
+        "serverClockVisibleOffsetMs": 891.02,
+        "notesRequest": null
+      },
+      {
+        "sample": "sample-02",
+        "capturedAt": "2026-10-24T01:36:51.572Z",
+        "apiRequestCount": 8,
+        "uniqueApiEndpointCount": 8,
+        "duplicateEndpoints": [],
+        "allRequestsSuccessful": true,
+        "mainContentVisibleOffsetMs": 528.75,
+        "serverClockVisibleOffsetMs": 587.97,
+        "notesRequest": null
+      },
+      {
+        "sample": "sample-03",
+        "capturedAt": "2026-10-24T01:36:56.820Z",
+        "apiRequestCount": 8,
+        "uniqueApiEndpointCount": 8,
+        "duplicateEndpoints": [],
+        "allRequestsSuccessful": true,
+        "mainContentVisibleOffsetMs": 582.83,
+        "serverClockVisibleOffsetMs": 633.27,
+        "notesRequest": null
+      }
+    ]
+  },
+  "requestComparison": {
+    "baselineStartupEndpoints": 9,
+    "afterStartupEndpoints": 8,
+    "requestsRemovedThisIteration": 1,
+    "reductionPercentThisIteration": 11.11,
+    "startupNotesRequestsBefore": 3,
+    "startupNotesRequestsAfter": 0,
+    "notesRequestDurationBeforeMs": {
+      "samples": [
+        19.56,
+        33.34,
+        25.96
+      ],
+      "medianMs": 25.96,
+      "rangeMs": [
+        19.56,
+        33.34
+      ]
+    },
+    "dashboardStartupReductionSinceSpec046Percent": 20
+  },
+  "visibleTimings": {
+    "mainContentBefore": {
+      "samples": [
+        553.08,
+        559.29,
+        536.19
+      ],
+      "medianMs": 553.08,
+      "rangeMs": [
+        536.19,
+        559.29
+      ]
+    },
+    "mainContentAfter": {
+      "samples": [
+        663.67,
+        528.75,
+        582.83
+      ],
+      "medianMs": 582.83,
+      "rangeMs": [
+        528.75,
+        663.67
+      ]
+    },
+    "serverClockBefore": {
+      "samples": [
+        571.27,
+        612.62,
+        550.84
+      ],
+      "medianMs": 571.27,
+      "rangeMs": [
+        550.84,
+        612.62
+      ]
+    },
+    "serverClockAfter": {
+      "samples": [
+        891.02,
+        587.97,
+        633.27
+      ],
+      "medianMs": 633.27,
+      "rangeMs": [
+        587.97,
+        891.02
+      ]
+    },
+    "mainContentRangesOverlap": true,
+    "serverClockRangesOverlap": true,
+    "renderImprovementDemonstrated": false,
+    "conclusion": "Request volume improved; visible render medians are slower after this change, but ranges overlap, so the three-run sample does not demonstrate a stable causal render change."
+  },
+  "modalOnDemand": {
+    "capturedAt": "2026-10-24T01:37:05.016Z",
+    "baseUrl": "http://127.0.0.1:8080",
+    "route": "/#/dashboard",
+    "apiPath": "/api/notes",
+    "requestedBeforeModalOpen": false,
+    "requestOffsetFromModalOpenMs": 382.54,
+    "responseStatus": 200
+  }
+}
