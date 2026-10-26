@@ -22,3 +22,8 @@
 
 **Learning:** Generic labels such as "Editar" and "Eliminar" do not identify which repeated list row will be changed, and desktop actions need the same names as mobile actions.
 **Action:** Include the row type and a useful record detail in every icon-only action name across responsive variants; preserve existing accessibility history when updating this log.
+
+## 2026-10-25 - Tooltip trigger descriptions
+
+**Learning:** Bubbling focus events can open a tooltip visually, but screen readers still need an `aria-describedby` relationship from the trigger to the tooltip content.
+**Action:** Give tooltip content a stable ID and `role="tooltip"`, attach that ID to the single trigger with `aria-describedby`, and open it on the trigger's focus as well as pointer hover. Keep loading announcements polite unless the state requires immediate interruption.
