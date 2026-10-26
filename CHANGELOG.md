@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.37.2](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.1...v8.37.2) (2026-10-26)
+
+
+### Bug Fixes
+
+* **cd:** stabilize release gate and parallelize image builds ([#135](https://github.com/Zer0x25/portal-control-2.0/issues/135)) ([8281812](https://github.com/Zer0x25/portal-control-2.0/commit/828181270e7469726596afc98fa13b9a90f18f41))
+
 ## [8.37.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.0...v8.37.1) (2026-10-26)
 
 
