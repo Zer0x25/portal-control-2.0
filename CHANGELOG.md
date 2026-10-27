@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.37.4](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.3...v8.37.4) (2026-10-27)
+
+
+### Bug Fixes
+
+* **visual:** refresh stale e2e baselines ([#139](https://github.com/Zer0x25/portal-control-2.0/issues/139)) ([764eabc](https://github.com/Zer0x25/portal-control-2.0/commit/764eabcd2abc3617c0bad9fc55fb048a553a7a74))
+
 ## [8.37.3](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.2...v8.37.3) (2026-10-26)
 
 
