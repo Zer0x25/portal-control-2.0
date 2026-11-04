@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { createUserFlows, type CreateUserDto, type UserProjection } from "../../src/modules/users";
-import { ValidationError } from "../../src/utils/AppError";
 const row: UserProjection = {
   id: "u",
   username: "ana",
@@ -111,7 +110,7 @@ describe("Spec 012 shared users flows", () => {
     const f = fixture();
     await expect(
       f.flows.createUser({ username: "ana", role: "Usuario" } as unknown as CreateUserDto, "admin"),
-    ).rejects.toThrow(ValidationError);
+    ).rejects.toThrow("La contraseña es requerida");
     await expect(
       f.flows.createUser({ username: "ana", role: "Usuario", password: "   " }, "admin"),
     ).rejects.toThrow("La contraseña es requerida");
