@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.37.5](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.4...v8.37.5) (2026-11-04)
+
+
+### Bug Fixes
+
+* **frontend:** display repository version ([237ab6e](https://github.com/Zer0x25/portal-control-2.0/commit/237ab6e4aebfab2499d702e7c4b42303af06aadb))
+
+
+### Performance Improvements
+
+* **kpi:** memoize kpi metrics array to prevent re-renders ([#142](https://github.com/Zer0x25/portal-control-2.0/issues/142)) ([49e64a4](https://github.com/Zer0x25/portal-control-2.0/commit/49e64a464628a5b8f8831c1541ccfdeb9a052288))
+
 ## [8.37.4](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.3...v8.37.4) (2026-10-27)
 
 
