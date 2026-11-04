@@ -151,7 +151,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
         </span>
 
         {isToday && (
-          <span className="text-xxs font-black uppercase tracking-widest text-token-accent-brand dark:text-blue-300 bg-token-accent-brand/10 dark:bg-blue-400/20 px-1.5 py-0.5 rounded-md border border-token-accent-brand/20">
+          <span className="text-xxs font-black uppercase tracking-widest text-white dark:text-black bg-token-accent-brand px-1.5 py-0.5 rounded-md border border-token-accent-brand">
             Hoy
           </span>
         )}
