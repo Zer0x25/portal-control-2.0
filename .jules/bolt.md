@@ -638,3 +638,6 @@
 ## 2026-10-30 - [Memoize kpiMetrics in useKpisController]
 **Learning:** kpiMetrics was documented as memoized but wasn't actually using useMemo, leading to unnecessary re-renders when kpis calculation wasn't changing
 **Action:** Replaced the array initialization with useMemo to ensure it's only recalculated when kpis object changes
+## 2026-11-04 - [AdminSystemStats]
+**Learning:** Sequential awaits when aggregating system statistics in `AdminService.getSystemStats` caused an unnecessary N+1 waterfall of queries, increasing API response times without reason.
+**Action:** Consolidate independent Prisma aggregate/count queries into a single `Promise.all` array to execute them concurrently and improve dashboard load speeds.
