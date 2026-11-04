@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.37.7](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.6...v8.37.7) (2026-11-04)
+
+
+### Bug Fixes
+
+* **ci:** capture digest from image push ([dce8355](https://github.com/Zer0x25/portal-control-2.0/commit/dce83557267e84bcc7436aa85c6df5c625a945a5))
+
 ## [8.37.6](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.5...v8.37.6) (2026-11-04)
 
 
