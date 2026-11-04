@@ -124,8 +124,13 @@ describe("DatePicker componible (spec 031 AC7)", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("grid")).toBeInTheDocument();
 
-    fireEvent.click(document.querySelector<HTMLElement>('[data-date="2026-10-15"]')!);
-    expect(onChange).toHaveBeenCalledWith("2026-10-15");
+    const now = new Date();
+    const expectedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-15`;
+    const dateButton = document.querySelector<HTMLElement>(`[data-date="${expectedDate}"]`);
+    expect(dateButton).not.toBeNull();
+
+    fireEvent.click(dateButton!);
+    expect(onChange).toHaveBeenCalledWith(expectedDate);
   });
 
   it("Escape cierra el panel y devuelve el foco al disparador", () => {
