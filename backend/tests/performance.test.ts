@@ -48,6 +48,7 @@ const leaveCreate = vi.mocked(prisma.leaveRecord.create);
 const recordFindMany = vi.mocked(prisma.timeRecord.findMany);
 const recordCreate = vi.mocked(prisma.timeRecord.create);
 const recordUpdate = vi.mocked(prisma.timeRecord.update);
+const recordUpdateMany = vi.mocked(prisma.timeRecord.updateMany);
 const sealAfterMutation = vi.mocked(timeRecordIntegrityService.sealAfterMutation);
 
 /** Builds `count` business days starting at `startDate`. */
@@ -77,6 +78,7 @@ describe("LeaveService.materializeDays", () => {
     recordUpdate.mockImplementation(({ where }: never) =>
       Promise.resolve({ id: (where as { id: string }).id } as never),
     );
+    recordUpdateMany.mockResolvedValue({ count: 1 } as never);
   });
 
   const futureLeave = (days: number) => {
@@ -157,9 +159,9 @@ describe("LeaveService.materializeDays", () => {
 
     await LeaveService.upsert(leave);
 
-    expect(recordUpdate).toHaveBeenCalledTimes(1);
-    expect(recordUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: "tr-existing" } }),
+    expect(recordUpdateMany).toHaveBeenCalledTimes(1);
+    expect(recordUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: ["tr-existing"] } } }),
     );
     expect(recordCreate).toHaveBeenCalledTimes(1);
   });
