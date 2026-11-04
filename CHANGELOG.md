@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.37.6](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.5...v8.37.6) (2026-11-04)
+
+
+### Bug Fixes
+
+* **calendar:** ensure today badge contrast ([1578910](https://github.com/Zer0x25/portal-control-2.0/commit/157891091809cc1630b26df87038b55809fff0c9))
+
 ## [8.37.5](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.4...v8.37.5) (2026-11-04)
 
 
