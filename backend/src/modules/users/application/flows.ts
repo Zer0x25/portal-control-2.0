@@ -1,8 +1,9 @@
+import { ValidationError } from "../../../utils/AppError";
 import { toPublicUser, type UserProjection, type PublicUser } from "./publicUser";
 export interface CreateUserDto {
   id?: string;
   username: string;
-  password?: string;
+  password: string;
   role: string;
   employeeId?: string;
 }
@@ -75,10 +76,13 @@ export function createUserFlows(deps: UserFlowDependencies) {
       };
     },
     async createUser(input: CreateUserDto, actorUsername: string) {
+      if (!input.password || typeof input.password !== "string" || !input.password.trim()) {
+        throw new ValidationError("La contraseña es requerida");
+      }
       const user = await deps.repository.create({
         id: input.id || deps.id(),
         username: input.username.toLowerCase(),
-        passwordHash: deps.hash(input.password || "123456"),
+        passwordHash: deps.hash(input.password),
         role: mapUserRole(input.role),
         employeeId: input.employeeId,
         isForcePasswordChange: true,
