@@ -635,3 +635,6 @@
 - **Pendiente aceptado**: la última línea base de Control horario registra TBT mediano de 265 ms, LCP de 2,66 s y score 0,89; no certifica rendimiento de campo.
 - **Continuidad**: se conservan pruebas, evidencia y umbrales. Este cierre no modifica CI/CD ni inicia perfiles o benchmarks adicionales. Reabrir ante lentitud reproducible en uso real o una causa concreta con una mejora verificable.
 - **Evidencia**: [cierre en el resultado de Spec 107](../specs/107-estabilizar-callback-intersection-observer/evidencia/resultado.md#cierre-de-la-campaña-2026-10-26).
+## 2026-10-30 - [Memoize kpiMetrics in useKpisController]
+**Learning:** kpiMetrics was documented as memoized but wasn't actually using useMemo, leading to unnecessary re-renders when kpis calculation wasn't changing
+**Action:** Replaced the array initialization with useMemo to ensure it's only recalculated when kpis object changes
