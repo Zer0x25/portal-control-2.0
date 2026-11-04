@@ -4,6 +4,7 @@ import easterEggImg from "../../assets/images/Mini_Zer0x.jpg";
 import CinematicModal from "./CinematicModal";
 import Button from "./Button";
 import { Z } from "../../constants/zScale";
+import { BUILD_VERSION } from "../../lib/buildVersion";
 
 interface AboutModalViewProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
                 Información del Sistema
               </h3>
               <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] mt-1 italic leading-none">
-                Portal Modernizado v3.0
+                Portal Modernizado v{BUILD_VERSION}
               </p>
             </div>
           </div>
@@ -71,7 +72,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
                   Versión Nucleus
                 </span>
                 <span className="text-sm font-black text-token-text-primary italic">
-                  3.0.4-STABLE
+                  {BUILD_VERSION}
                 </span>
               </div>
               <div className="bg-token-surface-stripe p-4 rounded-xl border border-token-border-subtle group hover:border-token-border-focus/20 transition-all">

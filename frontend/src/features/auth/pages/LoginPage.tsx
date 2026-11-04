@@ -18,6 +18,7 @@ import BrandLogo from "../../../components/ui/BrandLogo";
 import MFALoginModal from "../components/MFALoginModal.container";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
+import { BUILD_VERSION } from "../../../lib/buildVersion";
 
 const LoginPage: React.FC = () => {
   const { login, isAuthenticated, currentUser, mfaRequired, logout } = useAuth();
@@ -269,7 +270,7 @@ const LoginPage: React.FC = () => {
       <div
         className={`fixed bottom-6 right-6 ${Z.dropdown} text-[10px] font-mono text-token-text-tertiary pointer-events-none select-none animate-in fade-in [animation-duration:800ms] [animation-delay:1200ms]`}
       >
-        v3.0.0-RC1
+        v{BUILD_VERSION}
       </div>
     </div>
   );
