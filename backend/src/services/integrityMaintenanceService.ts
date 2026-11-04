@@ -109,12 +109,28 @@ export const integrityMaintenanceService = {
     let errors = 0;
 
     await requestContext.run({ username: "SYSTEM", skipTrigger: true }, async () => {
+      // Performance Optimization: Batch fetch all records for affected employees in a single query
+      // instead of issuing N separate queries in a loop (resolves N+1 query issue).
+      // Expected impact: reduces query count from N to 1 (up to 99.5% reduction with 200 employees)
+      // and significantly cuts I/O latency and database round-trips.
+      const allRecords = await prisma.timeRecord.findMany({
+        where: { employeeId: { in: affectedEmployees } },
+        orderBy: [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }],
+        select: { id: true, employeeId: true },
+      });
+
+      const recordsByEmployee = new Map<string, { id: string }[]>();
+      for (const record of allRecords) {
+        let list = recordsByEmployee.get(record.employeeId);
+        if (!list) {
+          list = [];
+          recordsByEmployee.set(record.employeeId, list);
+        }
+        list.push({ id: record.id });
+      }
+
       for (const employeeId of affectedEmployees) {
-        const records = await prisma.timeRecord.findMany({
-          where: { employeeId },
-          orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
-          select: { id: true },
-        });
+        const records = recordsByEmployee.get(employeeId) ?? [];
 
         for (const record of records) {
           try {

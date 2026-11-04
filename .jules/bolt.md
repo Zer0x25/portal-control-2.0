@@ -638,3 +638,7 @@
 ## 2026-10-30 - [Memoize kpiMetrics in useKpisController]
 **Learning:** kpiMetrics was documented as memoized but wasn't actually using useMemo, leading to unnecessary re-renders when kpis calculation wasn't changing
 **Action:** Replaced the array initialization with useMemo to ensure it's only recalculated when kpis object changes
+
+## 2026-11-04 - N+1 Query in Integrity Maintenance Auto Rechain
+**Learning:** In `backend/src/services/integrityMaintenanceService.ts:runAutoRechainIfNeeded`, `prisma.timeRecord.findMany` was executed sequentially inside a loop over `affectedEmployees` (up to 200 employees), resulting in 200 sequential database queries and high I/O latency.
+**Action:** Batch-fetch all records for `affectedEmployees` in a single query using `where: { employeeId: { in: affectedEmployees } }`, group records by `employeeId` in memory, and process each employee's records sequentially to maintain chain integrity.
