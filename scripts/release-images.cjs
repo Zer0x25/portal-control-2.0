@@ -35,7 +35,7 @@ function main(command, filename = "release-images.json", runDocker = docker) {
       const repo = `ghcr.io/${manifest.owner}/portal-control-2-0-${service}`;
       const target = `${repo}:sha-${manifest.source}`;
       runDocker("tag", image.local, target);
-      const output = runDocker("push", "--quiet", target);
+      const output = runDocker("push", target);
       const digest = output.match(/digest:\s*(sha256:[a-f0-9]{64})/i)?.[1] ?? output.match(/^sha256:[a-f0-9]{64}$/m)?.[0];
       if (!digest) throw new Error("Registry did not return a digest");
       image.published = `${repo}@${digest}`;

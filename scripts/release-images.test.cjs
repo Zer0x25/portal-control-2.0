@@ -35,7 +35,7 @@ function fixture(t) {
     require("./release-images.cjs").main(cmd, filename, (...args) => {
       commands.push(args);
       if (args[0] === "image") return replaced ? "other" : "tested";
-      return args[0] === "push" ? `image: digest: ${digest} size: 123` : digest;
+      return args[0] === "push" ? (args.includes("--quiet") ? "" : `image: digest: ${digest} size: 123`) : digest;
     });
   return { dir, run, commands, previous };
 }
