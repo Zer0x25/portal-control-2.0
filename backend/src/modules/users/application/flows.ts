@@ -1,5 +1,4 @@
 import { toPublicUser, type UserProjection, type PublicUser } from "./publicUser";
-import { ValidationError } from "../../../utils/AppError";
 export interface CreateUserDto {
   id?: string;
   username: string;
@@ -77,7 +76,7 @@ export function createUserFlows(deps: UserFlowDependencies) {
     },
     async createUser(input: CreateUserDto, actorUsername: string) {
       if (!input.password || typeof input.password !== "string" || !input.password.trim()) {
-        throw new ValidationError("La contraseña es requerida");
+        throw new Error("La contraseña es requerida");
       }
       const user = await deps.repository.create({
         id: input.id || deps.id(),

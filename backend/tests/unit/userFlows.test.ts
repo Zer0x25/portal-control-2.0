@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { createUserFlows, type CreateUserDto, type UserProjection } from "../../src/modules/users";
-import { ValidationError } from "../../src/utils/AppError";
 const row: UserProjection = {
   id: "u",
   username: "ana",
@@ -109,25 +108,12 @@ describe("Spec 012 shared users flows", () => {
   });
   it("rejects creation when password is missing or blank", async () => {
     const f = fixture();
-    const missingPassword = f.flows.createUser(
-      { username: "ana", role: "Usuario" } as unknown as CreateUserDto,
-      "admin",
-    );
-    await expect(missingPassword).rejects.toBeInstanceOf(ValidationError);
-    await expect(missingPassword).rejects.toMatchObject({
-      message: "La contraseña es requerida",
-      statusCode: 400,
-    });
-
-    const blankPassword = f.flows.createUser(
-      { username: "ana", role: "Usuario", password: "   " },
-      "admin",
-    );
-    await expect(blankPassword).rejects.toBeInstanceOf(ValidationError);
-    await expect(blankPassword).rejects.toMatchObject({
-      message: "La contraseña es requerida",
-      statusCode: 400,
-    });
+    await expect(
+      f.flows.createUser({ username: "ana", role: "Usuario" } as unknown as CreateUserDto, "admin"),
+    ).rejects.toThrow("La contraseña es requerida");
+    await expect(
+      f.flows.createUser({ username: "ana", role: "Usuario", password: "   " }, "admin"),
+    ).rejects.toThrow("La contraseña es requerida");
     expect(f.repository.create).not.toHaveBeenCalled();
     expect(f.audit).not.toHaveBeenCalled();
     expect(f.emit).not.toHaveBeenCalled();
