@@ -3,7 +3,12 @@ import { numericString, syncAuditFields, userRoleEnum, z } from "./common";
 export const CreateUserSchema = z
   .object({
     username: z.string().min(3),
-    password: z.string().min(6),
+    password: z
+      .string()
+      .min(6)
+      .refine((password) => password.trim().length > 0, {
+        message: "La contraseña es requerida",
+      }),
     role: userRoleEnum,
     employeeId: z.string().optional(),
   })

@@ -75,9 +75,6 @@ export function createUserFlows(deps: UserFlowDependencies) {
       };
     },
     async createUser(input: CreateUserDto, actorUsername: string) {
-      if (!input.password || typeof input.password !== "string" || !input.password.trim()) {
-        throw new Error("La contraseña es requerida");
-      }
       const user = await deps.repository.create({
         id: input.id || deps.id(),
         username: input.username.toLowerCase(),
