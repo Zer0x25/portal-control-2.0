@@ -645,3 +645,8 @@
 
 **Learning:** `createHolidayCommands.sync` in `backend/src/modules/holidays/application/commands.ts` executed holiday upserts in a sequential `for...of` loop with `await write(...)`. For external synchronization batches (~15-25 annual holidays), serial network round-trips caused cumulative database latency.
 **Action:** Use `Promise.all` with `Array.map` to parallelize bounded upsert operations across independent items, eliminating sequential I/O bottlenecks while maintaining pool safety.
+
+## 2026-11-04 - N+1 Query in Integrity Maintenance Auto Rechain
+
+**Learning:** In `backend/src/services/integrityMaintenanceService.ts:runAutoRechainIfNeeded`, `prisma.timeRecord.findMany` was executed sequentially inside a loop over `affectedEmployees` (up to 200 employees), resulting in 200 sequential database queries and high I/O latency.
+**Action:** Batch-fetch all records for `affectedEmployees` in a single query using `where: { employeeId: { in: affectedEmployees } }`, group records by `employeeId` in memory, and process each employee's records sequentially to maintain chain integrity.
