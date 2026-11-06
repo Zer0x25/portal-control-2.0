@@ -635,9 +635,21 @@
 - **Pendiente aceptado**: la última línea base de Control horario registra TBT mediano de 265 ms, LCP de 2,66 s y score 0,89; no certifica rendimiento de campo.
 - **Continuidad**: se conservan pruebas, evidencia y umbrales. Este cierre no modifica CI/CD ni inicia perfiles o benchmarks adicionales. Reabrir ante lentitud reproducible en uso real o una causa concreta con una mejora verificable.
 - **Evidencia**: [cierre en el resultado de Spec 107](../specs/107-estabilizar-callback-intersection-observer/evidencia/resultado.md#cierre-de-la-campaña-2026-10-26).
+
 ## 2026-10-30 - [Memoize kpiMetrics in useKpisController]
+
 **Learning:** kpiMetrics was documented as memoized but wasn't actually using useMemo, leading to unnecessary re-renders when kpis calculation wasn't changing
 **Action:** Replaced the array initialization with useMemo to ensure it's only recalculated when kpis object changes
+
+## 2026-11-04 - Sequential Holiday Writes in Sync Command
+
+**Learning:** `createHolidayCommands.sync` in `backend/src/modules/holidays/application/commands.ts` executed holiday upserts in a sequential `for...of` loop with `await write(...)`. For external synchronization batches (~15-25 annual holidays), serial network round-trips caused cumulative database latency.
+**Action:** Use `Promise.all` with `Array.map` to parallelize bounded upsert operations across independent items, eliminating sequential I/O bottlenecks while maintaining pool safety.
+
+## 2026-11-04 - N+1 Query in Integrity Maintenance Auto Rechain
+
+**Learning:** In `backend/src/services/integrityMaintenanceService.ts:runAutoRechainIfNeeded`, `prisma.timeRecord.findMany` was executed sequentially inside a loop over `affectedEmployees` (up to 200 employees), resulting in 200 sequential database queries and high I/O latency.
+**Action:** Batch-fetch all records for `affectedEmployees` in a single query using `where: { employeeId: { in: affectedEmployees } }`, group records by `employeeId` in memory, and process each employee's records sequentially to maintain chain integrity.
 
 ## 2026-11-04 - Parallelize Model Exports in BackupService
 
