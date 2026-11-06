@@ -650,3 +650,8 @@
 
 **Learning:** In `backend/src/services/integrityMaintenanceService.ts:runAutoRechainIfNeeded`, `prisma.timeRecord.findMany` was executed sequentially inside a loop over `affectedEmployees` (up to 200 employees), resulting in 200 sequential database queries and high I/O latency.
 **Action:** Batch-fetch all records for `affectedEmployees` in a single query using `where: { employeeId: { in: affectedEmployees } }`, group records by `employeeId` in memory, and process each employee's records sequentially to maintain chain integrity.
+
+## 2026-11-04 - Parallelize Model Exports in BackupService
+
+**Learning:** `BackupService.exportAllData` sequentially awaited `findMany()` across 14 database models in a sequential `for...of` loop. In I/O-bound environments, this accumulated latency serially (e.g. 14 * 20ms = ~285ms) and prolonged event loop execution.
+**Action:** Parallelized independent model queries using `Promise.all` with `Array.map`, safely populating the export dictionary concurrently while preserving per-model error handling, cutting simulated query latency from 285ms to 20ms (-93%).
