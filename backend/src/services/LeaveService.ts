@@ -295,9 +295,12 @@ export class LeaveService {
       }
     }
 
-    for (const existingTR of recordsToUpdate) {
-      await tx.timeRecord.update({
-        where: { id: existingTR.id },
+    if (recordsToUpdate.length > 0) {
+      // Performance optimization: Batch update all existing TimeRecords in a single query
+      // instead of issuing individual update statements inside a loop (reducing N round-trips to 1).
+      // Expected impact: O(N) database round-trips reduced to O(1), cutting latency significantly for long leaves.
+      await tx.timeRecord.updateMany({
+        where: { id: { in: recordsToUpdate.map((r) => r.id) } },
         data: {
           isDeleted: false,
           deletedAt: null,
@@ -310,9 +313,23 @@ export class LeaveService {
           scheduledHours: 0,
         },
       });
-      await timeRecordIntegrityService.sealAfterMutation(tx, existingTR.employeeId, existingTR.id, {
-        skipAudit: true,
-      });
+
+      // Crucial: When batch updated with updateMany, all records share identical updatedAt.
+      // Cryptographic chain order is [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }].
+      // To prevent PREV_HASH_MISMATCH when computing hashes against predecessor records,
+      // records must be sealed deterministically in order of id ASC.
+      const recordsToSeal = [...recordsToUpdate].sort((a, b) => a.id.localeCompare(b.id));
+
+      for (const existingTR of recordsToSeal) {
+        await timeRecordIntegrityService.sealAfterMutation(
+          tx,
+          existingTR.employeeId,
+          existingTR.id,
+          {
+            skipAudit: true,
+          },
+        );
+      }
     }
 
     for (const dateStr of datesToCreate) {

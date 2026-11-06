@@ -659,3 +659,8 @@
 
 **Learning:** Sequential awaits when aggregating system statistics in `AdminService.getSystemStats` caused an unnecessary N+1 waterfall of queries, increasing API response times without reason.
 **Action:** Consolidate independent Prisma aggregate/count queries into a single `Promise.all` array to execute them concurrently and improve dashboard load speeds.
+
+## 2026-11-04 - Batch Update Materialized TimeRecords in Leave Upsert
+
+**Learning:** `LeaveService.materializeDays` executed sequential `tx.timeRecord.update` calls in an $O(N)$ loop. Batching with `updateMany` eliminates $N-1$ queries but assigns identical `updatedAt` timestamps across records, which could corrupt the cryptographic hash chain (`PREV_HASH_MISMATCH`) if sealed in arbitrary calendar order.
+**Action:** Batch update existing unpunched records using `tx.timeRecord.updateMany` and sort records deterministically by `id: "asc"` before sealing to preserve strict chain order.

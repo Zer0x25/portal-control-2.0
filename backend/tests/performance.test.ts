@@ -48,6 +48,7 @@ const leaveCreate = vi.mocked(prisma.leaveRecord.create);
 const recordFindMany = vi.mocked(prisma.timeRecord.findMany);
 const recordCreate = vi.mocked(prisma.timeRecord.create);
 const recordUpdate = vi.mocked(prisma.timeRecord.update);
+const recordUpdateMany = vi.mocked(prisma.timeRecord.updateMany);
 const sealAfterMutation = vi.mocked(timeRecordIntegrityService.sealAfterMutation);
 
 /** Builds `count` business days starting at `startDate`. */
@@ -77,6 +78,7 @@ describe("LeaveService.materializeDays", () => {
     recordUpdate.mockImplementation(({ where }: never) =>
       Promise.resolve({ id: (where as { id: string }).id } as never),
     );
+    recordUpdateMany.mockResolvedValue({ count: 1 } as never);
   });
 
   const futureLeave = (days: number) => {
@@ -157,11 +159,41 @@ describe("LeaveService.materializeDays", () => {
 
     await LeaveService.upsert(leave);
 
-    expect(recordUpdate).toHaveBeenCalledTimes(1);
-    expect(recordUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: "tr-existing" } }),
+    expect(recordUpdateMany).toHaveBeenCalledTimes(1);
+    expect(recordUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: ["tr-existing"] } } }),
     );
     expect(recordCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it("seals multiple existing unpunched records in deterministic id ascending order", async () => {
+    const leave = futureLeave(3);
+
+    // Provide two existing records in reverse ID order
+    recordFindMany.mockResolvedValue([
+      { id: "tr-zebra", date: leave.startDate, entrada: null, salida: null, employeeId: "emp1" },
+      {
+        id: "tr-alpha",
+        date: addBusinessDaysChile(leave.startDate, 1),
+        entrada: null,
+        salida: null,
+        employeeId: "emp1",
+      },
+    ] as never);
+
+    await LeaveService.upsert(leave);
+
+    expect(recordUpdateMany).toHaveBeenCalledTimes(1);
+    expect(recordUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: ["tr-zebra", "tr-alpha"] } } }),
+    );
+
+    // Verify sealing was called in id ASC order: tr-alpha first, then tr-zebra
+    const calls = sealAfterMutation.mock.calls.filter((call) =>
+      ["tr-alpha", "tr-zebra"].includes(call[2]),
+    );
+    expect(calls[0][2]).toBe("tr-alpha");
+    expect(calls[1][2]).toBe("tr-zebra");
   });
 
   it("rejects leave ranges that start more than 7 days in the past", async () => {
