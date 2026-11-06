@@ -640,7 +640,6 @@
 
 **Learning:** kpiMetrics was documented as memoized but wasn't actually using useMemo, leading to unnecessary re-renders when kpis calculation wasn't changing
 **Action:** Replaced the array initialization with useMemo to ensure it's only recalculated when kpis object changes
-
 ## 2026-11-04 - Sequential Holiday Writes in Sync Command
 
 **Learning:** `createHolidayCommands.sync` in `backend/src/modules/holidays/application/commands.ts` executed holiday upserts in a sequential `for...of` loop with `await write(...)`. For external synchronization batches (~15-25 annual holidays), serial network round-trips caused cumulative database latency.
@@ -655,3 +654,8 @@
 
 **Learning:** `BackupService.exportAllData` sequentially awaited `findMany()` across 14 database models in a sequential `for...of` loop. In I/O-bound environments, this accumulated latency serially (e.g. 14 * 20ms = ~285ms) and prolonged event loop execution.
 **Action:** Parallelized independent model queries using `Promise.all` with `Array.map`, safely populating the export dictionary concurrently while preserving per-model error handling, cutting simulated query latency from 285ms to 20ms (-93%).
+
+## 2026-11-04 - [AdminSystemStats]
+
+**Learning:** Sequential awaits when aggregating system statistics in `AdminService.getSystemStats` caused an unnecessary N+1 waterfall of queries, increasing API response times without reason.
+**Action:** Consolidate independent Prisma aggregate/count queries into a single `Promise.all` array to execute them concurrently and improve dashboard load speeds.
