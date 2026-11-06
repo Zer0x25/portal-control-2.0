@@ -77,13 +77,17 @@ describe("Holiday commands without infrastructure", () => {
     });
     expect(deps.emit).toHaveBeenCalledWith({ id: "existing", isDeleted: true });
   });
-  it("sync keeps sequential writes, type mapping and actor", async () => {
+  it("sync writes concurrently with Promise.all, type mapping and actor", async () => {
     const { deps, commands } = fixture();
-    let running = 0;
+    let concurrentCount = 0;
+    let maxConcurrent = 0;
     vi.mocked(deps.repository.upsert).mockImplementation(async (row) => {
-      expect(++running).toBe(1);
-      await Promise.resolve();
-      running--;
+      concurrentCount++;
+      if (concurrentCount > maxConcurrent) {
+        maxConcurrent = concurrentCount;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      concurrentCount--;
       return { ...row, createdAt: new Date(0), updatedAt: new Date(0) };
     });
     expect(await commands.sync(undefined, "sync-actor")).toEqual({
@@ -91,8 +95,8 @@ describe("Holiday commands without infrastructure", () => {
       total: 2,
       year: 2026,
     });
-    expect(deps.repository.upsert).toHaveBeenNthCalledWith(
-      2,
+    expect(maxConcurrent).toBeGreaterThan(1);
+    expect(deps.repository.upsert).toHaveBeenCalledWith(
       expect.objectContaining({ type: "Regional" }),
     );
     expect(deps.audit).toHaveBeenCalledWith(
