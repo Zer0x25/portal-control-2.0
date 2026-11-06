@@ -599,14 +599,18 @@ export class BackupService {
       "scheduledReport",
     ];
 
-    for (const model of models) {
-      try {
-        const delegate = (prisma as unknown as Record<string, ExportedModelDelegate>)[model];
-        data[model] = await delegate.findMany();
-      } catch (error) {
-        logger.error(`Error exporting model ${model}:`, error);
-      }
-    }
+    // Parallelize model exports with Promise.all across models array to eliminate
+    // sequential round-trip query latency and avoid blocking the event loop across independent models.
+    await Promise.all(
+      models.map(async (model) => {
+        try {
+          const delegate = (prisma as unknown as Record<string, ExportedModelDelegate>)[model];
+          data[model] = await delegate.findMany();
+        } catch (error) {
+          logger.error(`Error exporting model ${model}:`, error);
+        }
+      }),
+    );
 
     return data;
   }
