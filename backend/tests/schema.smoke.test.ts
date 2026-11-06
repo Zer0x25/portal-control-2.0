@@ -51,6 +51,27 @@ describe("Schema Smoke", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects missing or blank passwords in CreateUserSchema", () => {
+    const missingPassword = CreateUserSchema.safeParse({
+      username: "usuario1",
+      role: "Supervisor",
+    });
+    expect(missingPassword.success).toBe(false);
+
+    const blankPassword = CreateUserSchema.safeParse({
+      username: "usuario1",
+      password: "      ",
+      role: "Supervisor",
+    });
+
+    expect(blankPassword.success).toBe(false);
+    if (!blankPassword.success) {
+      expect(blankPassword.error.issues).toContainEqual(
+        expect.objectContaining({ message: "La contraseña es requerida" }),
+      );
+    }
+  });
+
   it("validates ShiftPatternSchema with string dailySchedules", () => {
     const result = ShiftPatternSchema.safeParse({
       name: "Turno A",

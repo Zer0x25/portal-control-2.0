@@ -94,17 +94,54 @@ describe("ShiftValidator (pure methods, no DB)", () => {
   describe("validateTemporalBoundary", () => {
     it("accepts today and future dates", () => {
       const today = toBusinessDateChile();
-      expect(validator.validateTemporalBoundary(today).isValid).toBe(true);
-      expect(validator.validateTemporalBoundary(addBusinessDaysChile(today, 30)).isValid).toBe(
-        true,
+      expect(validator.validateTemporalBoundary(today)).toEqual({ isValid: true });
+      expect(validator.validateTemporalBoundary(addBusinessDaysChile(today, 1))).toEqual({
+        isValid: true,
+      });
+      expect(validator.validateTemporalBoundary(addBusinessDaysChile(today, 30))).toEqual({
+        isValid: true,
+      });
+    });
+
+    it("accepts dates in the past within the 7-day boundary", () => {
+      const today = toBusinessDateChile();
+      expect(validator.validateTemporalBoundary(addBusinessDaysChile(today, -1))).toEqual({
+        isValid: true,
+      });
+      expect(validator.validateTemporalBoundary(addBusinessDaysChile(today, -6))).toEqual({
+        isValid: true,
+      });
+    });
+
+    it("accepts dates exactly at the 7-day boundary limit", () => {
+      const today = toBusinessDateChile();
+      const exactBoundary = addBusinessDaysChile(today, -7);
+      expect(validator.validateTemporalBoundary(exactBoundary)).toEqual({ isValid: true });
+    });
+
+    it("rejects dates just beyond the 7-day boundary (8 days ago)", () => {
+      const today = toBusinessDateChile();
+      const justPastLimit = addBusinessDaysChile(today, -8);
+      const result = validator.validateTemporalBoundary(justPastLimit);
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe(
+        "No se pueden registrar o editar registros con más de 7 días de antigüedad.",
       );
     });
 
     it("rejects dates older than 7 days (calendar-rot-proof anchors)", () => {
       const today = toBusinessDateChile();
-      const result = validator.validateTemporalBoundary(addBusinessDaysChile(today, -30));
-      expect(result.isValid).toBe(false);
-      expect(result.error).toMatch(/7 d/);
+      const result30 = validator.validateTemporalBoundary(addBusinessDaysChile(today, -30));
+      expect(result30.isValid).toBe(false);
+      expect(result30.error).toBe(
+        "No se pueden registrar o editar registros con más de 7 días de antigüedad.",
+      );
+
+      const result365 = validator.validateTemporalBoundary(addBusinessDaysChile(today, -365));
+      expect(result365.isValid).toBe(false);
+      expect(result365.error).toBe(
+        "No se pueden registrar o editar registros con más de 7 días de antigüedad.",
+      );
     });
   });
 

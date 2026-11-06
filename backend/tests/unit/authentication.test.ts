@@ -67,6 +67,22 @@ describe("Shared authentication with real JWT verification", () => {
     expect(f.deps.sessions.remove).toHaveBeenCalledWith("s1");
     expect(f.deps.users.find).not.toHaveBeenCalled();
   });
+  it("expired session removal failure is best effort and still rejects with session expired", async () => {
+    const f = fixture();
+    vi.mocked(f.deps.sessions.find).mockResolvedValue({
+      id: "s1",
+      userId: "u1",
+      expiresAt: new Date(0),
+      lastActive: now,
+    });
+    vi.mocked(f.deps.sessions.remove).mockRejectedValue(new Error("remove failed"));
+    await expect(f.authenticate(f.token)).rejects.toMatchObject({
+      statusCode: 401,
+      message: "Sesión expirada",
+    });
+    expect(f.deps.sessions.remove).toHaveBeenCalledWith("s1");
+    expect(f.deps.users.find).not.toHaveBeenCalled();
+  });
   it("retains short-lived kiosk session exemption", async () => {
     const f = fixture();
     const token = jwt.sign({ id: "k", username: "kiosk", role: "Kiosk_Employee" }, secret, {
