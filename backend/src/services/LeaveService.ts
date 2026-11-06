@@ -314,7 +314,13 @@ export class LeaveService {
         },
       });
 
-      for (const existingTR of recordsToUpdate) {
+      // Crucial: When batch updated with updateMany, all records share identical updatedAt.
+      // Cryptographic chain order is [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }].
+      // To prevent PREV_HASH_MISMATCH when computing hashes against predecessor records,
+      // records must be sealed deterministically in order of id ASC.
+      const recordsToSeal = [...recordsToUpdate].sort((a, b) => a.id.localeCompare(b.id));
+
+      for (const existingTR of recordsToSeal) {
         await timeRecordIntegrityService.sealAfterMutation(
           tx,
           existingTR.employeeId,

@@ -166,6 +166,36 @@ describe("LeaveService.materializeDays", () => {
     expect(recordCreate).toHaveBeenCalledTimes(1);
   });
 
+  it("seals multiple existing unpunched records in deterministic id ascending order", async () => {
+    const leave = futureLeave(3);
+
+    // Provide two existing records in reverse ID order
+    recordFindMany.mockResolvedValue([
+      { id: "tr-zebra", date: leave.startDate, entrada: null, salida: null, employeeId: "emp1" },
+      {
+        id: "tr-alpha",
+        date: addBusinessDaysChile(leave.startDate, 1),
+        entrada: null,
+        salida: null,
+        employeeId: "emp1",
+      },
+    ] as never);
+
+    await LeaveService.upsert(leave);
+
+    expect(recordUpdateMany).toHaveBeenCalledTimes(1);
+    expect(recordUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: ["tr-zebra", "tr-alpha"] } } }),
+    );
+
+    // Verify sealing was called in id ASC order: tr-alpha first, then tr-zebra
+    const calls = sealAfterMutation.mock.calls.filter((call) =>
+      ["tr-alpha", "tr-zebra"].includes(call[2]),
+    );
+    expect(calls[0][2]).toBe("tr-alpha");
+    expect(calls[1][2]).toBe("tr-zebra");
+  });
+
   it("rejects leave ranges that start more than 7 days in the past", async () => {
     await expect(
       LeaveService.upsert({
