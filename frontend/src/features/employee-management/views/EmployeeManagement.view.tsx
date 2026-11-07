@@ -205,6 +205,12 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
             </div>
 
             <div className="flex items-center justify-between gap-3">
+              {isEmbedded && (
+                <Button onClick={handleOpenNewForm} className="hidden md:flex items-center gap-2">
+                  <UserPlusIcon className="w-5 h-5" />
+                  <span>Nuevo Registro</span>
+                </Button>
+              )}
               <div className="flex p-1 bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm">
                 <button
                   onClick={() => handleViewChange("active")}

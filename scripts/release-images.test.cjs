@@ -69,3 +69,20 @@ test("unpublished manifest cannot change compose", (t) => {
   assert.throws(() => f.run("pin"), /not published/);
   assert.equal(fs.readFileSync("compose.yaml", "utf8"), "original");
 });
+
+test("restored candidates must match source, owner, local tags and every image ID", () => {
+  const { verifyManifest } = require("./release-images.cjs");
+  const source = "b".repeat(40);
+  const images = { backend: "backend:candidate", frontend: "frontend:candidate", gateway: "gateway:candidate" };
+  const manifest = { source, owner: "owner", images: Object.fromEntries(Object.entries(images).map(([service, local]) => [service, { local, id: "tested" }])) };
+  const expected = { source, owner: "owner", images };
+  const inspect = () => "tested";
+  assert.doesNotThrow(() => verifyManifest(manifest, expected, inspect));
+  assert.throws(() => verifyManifest(manifest, { ...expected, source: "c".repeat(40) }, inspect), /source/);
+  assert.throws(() => verifyManifest(manifest, { ...expected, owner: "other" }, inspect), /owner/);
+  assert.throws(() => verifyManifest(manifest, { ...expected, images: { ...images, frontend: "other:tag" } }, inspect), /tag/);
+  assert.throws(() => verifyManifest(manifest, expected, () => "replaced"), /replaced/);
+  const missing = structuredClone(manifest);
+  delete missing.images.gateway;
+  assert.throws(() => verifyManifest(missing, expected, inspect), /Missing/);
+});

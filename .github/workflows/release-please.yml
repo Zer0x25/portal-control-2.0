@@ -7,11 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  packages: write
-  actions: read
+  contents: read
 
 jobs:
   release-please:
@@ -21,6 +17,13 @@ jobs:
           (github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, '[skip ci]')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    concurrency:
+      group: release-please-main
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -36,6 +39,10 @@ jobs:
     name: Deploy Release
     needs: release-please
     if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    permissions:
+      contents: write
+      packages: write
+      actions: read
     uses: ./.github/workflows/deploy.yml
     with:
       tag_name: ${{ needs.release-please.outputs.tag_name }}

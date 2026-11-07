@@ -99,6 +99,19 @@ describe("EmployeeManagementView", () => {
     expect(baseProps.handleViewChange).toHaveBeenCalledWith("archived");
   });
 
+  it("keeps the desktop create action when embedded in Personnel Management", () => {
+    const handleOpenNewForm = vi.fn();
+    render(
+      <EmployeeManagementView {...baseProps} isEmbedded handleOpenNewForm={handleOpenNewForm} />,
+    );
+
+    expect(screen.queryByText("Gestión de Empleados")).not.toBeInTheDocument();
+    const desktopCreate = screen.getByText("Nuevo Registro", { exact: true });
+    expect(desktopCreate).toHaveTextContent("Nuevo Registro");
+    fireEvent.click(desktopCreate);
+    expect(handleOpenNewForm).toHaveBeenCalledOnce();
+  });
+
   it("renders loading state when employees/config are loading", () => {
     render(<EmployeeManagementView {...baseProps} isLoadingEmployees={true} />);
     expect(screen.getByText("Cargando base de datos de personal...")).toBeInTheDocument();

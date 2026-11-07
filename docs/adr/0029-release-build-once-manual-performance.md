@@ -51,3 +51,36 @@ no certifican rendimiento de usuarios reales.
 - [Spec 108](../../specs/108-release-build-once-manual-performance/spec.md)
 - [CD](../../.github/workflows/deploy.yml)
 - [Auditoría manual](../../.github/workflows/performance.yml)
+
+## Actualización: reintentos de release (2026-11-06)
+
+El [fallo de release #238](https://github.com/Zer0x25/portal-control-2.0/actions/runs/42324188376)
+mostró que un error E2E obligaba a repetir la construcción completa. Se separan
+`build`, `release` (validar/publicar) y `pin-stack-images`. Build exporta las tres
+imágenes con su manifiesto a un artefacto inmutable de la ejecución, retenido
+tres días. Los jobs posteriores descargan por ID, incluso si pertenecen a un
+intento previo; las etiquetas locales usan run ID y no run attempt.
+
+La validación hace checkout del SHA construido y comprueba propietario, SHA,
+etiquetas e IDs antes de arrancar y antes de publicar. Los reportes funcionales
+y visuales usan directorios distintos. La regresión visual conserva su carácter
+diagnóstico no bloqueante; la validación funcional sigue impidiendo publicación
+y pineo cuando falla. Cada intento guarda sus reportes durante siete días.
+
+Para un fallo transitorio, usar **Re-run failed jobs** en la ejecución original:
+el build exitoso no se repite. Si solo falló el pineo, se reutiliza el manifiesto
+publicado por ID y tampoco se repiten las pruebas. Después de expirar candidatos,
+se necesita una ejecución completa nueva. Esta transferencia añade tráfico y
+almacenamiento entre runners a cambio de evitar recompilar en reintentos.
+
+Un fallo de producto o test que requiere cambiar código se resuelve por PR y
+una nueva versión correctiva. Reintentar una ejecución antigua conserva su
+workflow y código; no recoge arreglos nuevos. No se mueve el tag v8.38.0 ni se
+republica esa versión con código diferente.
+
+CI detecta rutas solo en PR y valida cambios de bots y dependencias como los de
+cualquier autor. Release Please serializa la edición de sus PR; cada job declara
+los permisos de escritura que utiliza. Actionlint, fijado por versión y SHA256,
+valida los workflows en gates. No se relajan cobertura, lint ni presupuestos.
+
+- [Spec 111](../../specs/111-release-retry-workflow/spec.md)

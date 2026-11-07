@@ -7,6 +7,16 @@ function validateReference(ref, service, owner) {
   if (!ref?.startsWith(prefix) || !/^[a-f0-9]{64}$/.test(ref.slice(prefix.length))) throw new Error(`Invalid digest reference for ${service}`);
   return ref;
 }
+function verifyManifest(manifest, expected, runDocker = docker) {
+  if (manifest.source !== expected.source) throw new Error("Candidate source does not match checkout");
+  if (manifest.owner !== expected.owner) throw new Error("Candidate owner does not match repository");
+  for (const service of services) {
+    const image = manifest.images?.[service];
+    if (!image?.local || !image.id) throw new Error(`Missing candidate image: ${service}`);
+    if (image.local !== expected.images[service]) throw new Error(`Candidate tag does not match: ${service}`);
+    if (runDocker("image", "inspect", "--format", "{{.Id}}", image.local) !== image.id) throw new Error(`Tested image was replaced: ${service}`);
+  }
+}
 function main(command, filename = "release-images.json", runDocker = docker) {
   const owner = (process.env.GITHUB_REPOSITORY_OWNER || process.env.IMAGE_OWNER || "").toLowerCase();
   if (command === "validate") {
@@ -25,6 +35,14 @@ function main(command, filename = "release-images.json", runDocker = docker) {
     return;
   }
   const manifest = JSON.parse(fs.readFileSync(filename, "utf8"));
+  if (command === "verify") {
+    verifyManifest(manifest, {
+      source: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+      owner,
+      images: Object.fromEntries(services.map((service) => [service, process.env[`${service.toUpperCase()}_IMAGE`]])),
+    }, runDocker);
+    return;
+  }
   if (command === "publish") {
     const tag = process.env.TAG_INPUT;
     if (tag && !/^[\w][\w.-]{0,127}$/.test(tag)) throw new Error("Invalid release tag");
@@ -63,5 +81,5 @@ function main(command, filename = "release-images.json", runDocker = docker) {
     fs.writeFileSync("compose.yaml", compose);
   } else throw new Error("Unknown command");
 }
-module.exports = { validateReference, main };
+module.exports = { validateReference, verifyManifest, main };
 if (require.main === module) main(...process.argv.slice(2));
