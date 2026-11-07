@@ -29,7 +29,7 @@ env:
 jobs:
   changes:
     name: Detect changes
-    if: ${{ github.actor != 'github-actions[bot]' }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -38,12 +38,11 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
-      stack: ${{ steps.filter.outputs.stack }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.event_name == 'push' && 2 || 1 }}
+          persist-credentials: false
 
       - name: Detect changed paths
         id: filter
@@ -59,19 +58,9 @@ jobs:
               - 'scripts/**'
               - 'backend/docs/swagger.json'
               - '.github/workflows/ci.yml'
-            stack:
-              - 'compose.db.dev.yaml'
-              - 'compose.staging.yaml'
-              - 'compose.yaml'
-              - 'nginx/**'
-              - 'backend/Dockerfile*'
-              - 'frontend/Dockerfile*'
-              - 'frontend/e2e/**'
-              - 'frontend/playwright.config.*'
 
   gates:
     name: Gates (agentic, spec, docs)
-    if: ${{ github.event_name != 'push' || github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -147,6 +136,18 @@ jobs:
       - name: Check Node.js version alignment
         run: npm run check:node-version
 
+      - name: Validate GitHub Actions workflows
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          curl --fail --silent --show-error --location \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            -o "$RUNNER_TEMP/actionlint.tar.gz"
+          printf '%s  %s\n' "$ACTIONLINT_SHA256" "$RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -shellcheck= .github/workflows/*.yml
+
       - name: Validate release image tooling
         run: node --test scripts/release-images.test.cjs
 
@@ -197,14 +198,12 @@ jobs:
   verify-backend:
     name: Verify backend
     needs: [gates, changes]
-    # Corre exclusivamente en PR si su área cambió (excluyendo bots de release o dependabot).
+    # Corre en cualquier PR cuya área cambió, incluidos bots y dependencias.
     # En push a main se salta por diseño (ADR-0013): el PR ya validó la batería pesada.
     # `!cancelled()` evita que un `needs` en skipped cancele la evaluación del resto de la condición.
     if: >-
       ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.backend == 'true' &&
-        github.event_name == 'pull_request' &&
-        !startsWith(github.head.ref, 'release-please--') &&
-        !startsWith(github.head.ref, 'dependabot/')
+        github.event_name == 'pull_request'
       }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -273,13 +272,11 @@ jobs:
   verify-frontend:
     name: Verify frontend
     needs: [gates, changes]
-    # Corre exclusivamente en PR si su área cambió (excluyendo bots de release o dependabot).
+    # Corre en cualquier PR cuya área cambió, incluidos bots y dependencias.
     # En push a main se salta por diseño (ADR-0013): el PR ya validó la batería pesada.
     if: >-
       ${{ !cancelled() && needs.gates.result == 'success' && needs.changes.outputs.frontend == 'true' &&
-        github.event_name == 'pull_request' &&
-        !startsWith(github.head.ref, 'release-please--') &&
-        !startsWith(github.head.ref, 'dependabot/')
+        github.event_name == 'pull_request'
       }}
     runs-on: ubuntu-latest
     timeout-minutes: 35

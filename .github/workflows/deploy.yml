@@ -19,44 +19,44 @@ on:
       - "v*"
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
   actions: read
 
 concurrency:
   group: deploy-release
   cancel-in-progress: false
 
+defaults:
+  run:
+    shell: bash
+
 env:
   REGISTRY: ghcr.io
   IMAGE_OWNER: ${{ github.repository_owner }}
 
 jobs:
-  release:
-    name: Build once, test and publish
+  build:
+    name: Build release candidates
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     outputs:
       source_sha: ${{ steps.source.outputs.sha }}
+      artifact_id: ${{ steps.candidates.outputs.artifact-id }}
     env:
-      BACKEND_IMAGE: portal-backend:${{ github.run_id }}-${{ github.run_attempt }}
-      FRONTEND_IMAGE: portal-frontend:${{ github.run_id }}-${{ github.run_attempt }}
-      GATEWAY_IMAGE: portal-gateway:${{ github.run_id }}-${{ github.run_attempt }}
-      COMPOSE_FILE: compose.staging.yaml:compose.images.yaml
-      COMPOSE_PROJECT_NAME: release-${{ github.run_id }}-${{ github.run_attempt }}
-      COMPOSE_ENV_FILES: .env.staging
+      BACKEND_IMAGE: portal-backend:${{ github.run_id }}
+      FRONTEND_IMAGE: portal-frontend:${{ github.run_id }}
+      GATEWAY_IMAGE: portal-gateway:${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag_name && inputs.tag_name != 'latest' && inputs.tag_name || github.ref }}
+          persist-credentials: false
       - name: Resolve source
         id: source
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
       - uses: docker/setup-buildx-action@v3
       - name: Build release images in parallel
         uses: docker/bake-action@v6
@@ -66,8 +66,59 @@ jobs:
           files: docker-bake.hcl
           targets: backend,frontend,gateway
           load: true
-      - name: Record tested images
-        run: node scripts/release-images.cjs record
+      - name: Record and archive candidate images
+        run: |
+          node scripts/release-images.cjs record
+          docker save "$BACKEND_IMAGE" "$FRONTEND_IMAGE" "$GATEWAY_IMAGE" | gzip -1 > release-images.tar.gz
+      - name: Save candidates for validation and failed-job retries
+        id: candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidates-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            release-images.tar.gz
+            release-images.json
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error
+
+  release:
+    name: Test and publish existing candidates
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    outputs:
+      manifest_artifact_id: ${{ steps.manifest.outputs.artifact-id }}
+    env:
+      BACKEND_IMAGE: portal-backend:${{ github.run_id }}
+      FRONTEND_IMAGE: portal-frontend:${{ github.run_id }}
+      GATEWAY_IMAGE: portal-gateway:${{ github.run_id }}
+      COMPOSE_FILE: compose.staging.yaml:compose.images.yaml
+      COMPOSE_PROJECT_NAME: release-${{ github.run_id }}-${{ github.run_attempt }}
+      COMPOSE_ENV_FILES: .env.staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.source_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Restore built candidates
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact_id }}
+          merge-multiple: true
+      - name: Load and verify exact candidate images
+        run: |
+          docker load -i release-images.tar.gz
+          node scripts/release-images.cjs verify
       - name: Create isolated staging credentials
         run: |
           cp .env.staging.example .env.staging
@@ -91,7 +142,8 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:8080
           E2E_API_URL: http://127.0.0.1:8080/api
           E2E_ADMIN_PASSWORD: "999.666"
-        run: npx playwright test --project=functional --retries=1 --max-failures=3
+          PLAYWRIGHT_HTML_REPORT: playwright-report/functional
+        run: npx playwright test --project=functional --retries=1 --max-failures=3 --output=test-results/functional
       # Page snapshots still include conditionally rendered, live audit rows;
       # keep the report, but do not let that data-dependent comparison block a release.
       - name: Visual regression diagnostics (non-blocking)
@@ -102,7 +154,8 @@ jobs:
           E2E_BASE_URL: http://127.0.0.1:8080
           E2E_API_URL: http://127.0.0.1:8080/api
           E2E_ADMIN_PASSWORD: "999.666"
-        run: npx playwright test --project=visual --no-deps --retries=0 --max-failures=1
+          PLAYWRIGHT_HTML_REPORT: playwright-report/visual
+        run: npx playwright test --project=visual --no-deps --retries=0 --max-failures=1 --output=test-results/visual
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -111,12 +164,22 @@ jobs:
       - name: Publish tested images without rebuilding
         env:
           TAG_INPUT: ${{ inputs.tag_name || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || '' }}
-        run: node scripts/release-images.cjs publish
+        run: |
+          node scripts/release-images.cjs verify
+          node scripts/release-images.cjs publish
+      - name: Save published manifest for pinning
+        id: manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-images-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-images.json
+          retention-days: 7
+          if-no-files-found: error
       - name: Save test reports and image manifest
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: release-validation-${{ github.run_id }}
+          name: release-validation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             frontend/playwright-report/
             frontend/test-results/
@@ -131,13 +194,18 @@ jobs:
   pin-stack-images:
     needs: release
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
       - uses: actions/download-artifact@v4
         with:
-          name: release-validation-${{ github.run_id }}
+          artifact-ids: ${{ needs.release.outputs.manifest_artifact_id }}
+          merge-multiple: true
           path: release-validation
       - name: Pin published digests
         run: node scripts/release-images.cjs pin release-validation/release-images.json
