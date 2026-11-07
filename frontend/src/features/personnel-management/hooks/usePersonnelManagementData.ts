@@ -12,9 +12,7 @@ export const usePersonnelManagementData = ({
   const [activeTab, setActiveTab] = useState<ActivePersonnelTab>(defaultTab);
 
   useEffect(() => {
-    if (defaultTab) {
-      setActiveTab(defaultTab);
-    }
+    setActiveTab(defaultTab);
   }, [defaultTab]);
 
   return {

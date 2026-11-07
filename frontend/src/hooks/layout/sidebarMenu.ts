@@ -103,12 +103,15 @@ export const buildSidebarMenuByRole = ({
     });
   }
 
-  if (canManageEmployees) {
-    items.push({ to: ROUTES.EMPLOYEE_MANAGEMENT, icon: UsersIcon, label: "Personal" });
+  if (canManageEmployees && !isAdminOrElevated) {
+    items.push({
+      to: `${ROUTES.PERSONNEL_MANAGEMENT}?tab=employees`,
+      icon: UsersIcon,
+      label: "Personal",
+    });
   }
 
   if (isAdminOrElevated) {
-    items.push({ to: ROUTES.USER_MANAGEMENT, icon: UsersIcon, label: "Usuarios" });
     items.push({ to: ROUTES.PERSONNEL_MANAGEMENT, icon: UserPlusIcon, label: "Dotación" });
     if (role === "Administrador" || role === "Supervisor_Elevado") {
       items.push({ to: ROUTES.GOVERNANCE_HUB, icon: ShieldIcon, label: "Gobernanza" });

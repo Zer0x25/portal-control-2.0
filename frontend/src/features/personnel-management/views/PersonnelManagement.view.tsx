@@ -8,6 +8,7 @@ import { ActivePersonnelTab } from "../hooks/usePersonnelManagementData";
 export interface PersonnelManagementViewProps {
   activeTab: ActivePersonnelTab;
   setActiveTab: (tab: ActivePersonnelTab) => void;
+  showUsersTab?: boolean;
   employeesContent: React.ReactNode;
   usersContent: React.ReactNode;
 }
@@ -18,6 +19,7 @@ export interface PersonnelManagementViewProps {
 export const PersonnelManagementView: React.FC<PersonnelManagementViewProps> = ({
   activeTab,
   setActiveTab,
+  showUsersTab = true,
   employeesContent,
   usersContent,
 }) => {
@@ -32,14 +34,16 @@ export const PersonnelManagementView: React.FC<PersonnelManagementViewProps> = (
           subtitle="Administración centralizada de trabajadores y cuentas"
         />
 
-        <TabNav
-          tabs={[
-            { id: "employees", label: "Empleados" },
-            { id: "users", label: "Accesos" },
-          ]}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as "employees" | "users")}
-        />
+        {showUsersTab && (
+          <TabNav
+            tabs={[
+              { id: "employees", label: "Empleados" },
+              { id: "users", label: "Accesos" },
+            ]}
+            activeTab={activeTab}
+            onTabChange={(id) => setActiveTab(id as ActivePersonnelTab)}
+          />
+        )}
 
         <div className="relative">
           <div key={activeTab} className="animate-in fade-in slide-in-from-right-2">

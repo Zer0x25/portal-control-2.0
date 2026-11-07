@@ -77,16 +77,6 @@ const MeterReadingsPage = React.lazy(() =>
     default: m.MeterReadingsContainer,
   })),
 );
-const EmployeeManagementPage = React.lazy(() =>
-  import("./features/employee-management/containers/EmployeeManagement.container").then((m) => ({
-    default: m.EmployeeManagementContainer,
-  })),
-);
-const UserManagementPage = React.lazy(() =>
-  import("./features/user-management/containers/UserManagement.container").then((m) => ({
-    default: m.UserManagementContainer,
-  })),
-);
 const PersonnelManagementPage = React.lazy(() =>
   import("./features/personnel-management/containers/PersonnelManagement.container").then((m) => ({
     default: m.PersonnelManagementContainer,
@@ -346,7 +336,7 @@ const App: React.FC = () => {
               path={ROUTES.USER_MANAGEMENT}
               element={
                 <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
-                  <UserManagementPage />
+                  <Navigate to={`${ROUTES.PERSONNEL_MANAGEMENT}?tab=users`} replace />
                 </ProtectedRoute>
               }
             />
@@ -361,14 +351,21 @@ const App: React.FC = () => {
                     ROLES.CLOCK_CONTROL,
                   ]}
                 >
-                  <EmployeeManagementPage />
+                  <Navigate to={`${ROUTES.PERSONNEL_MANAGEMENT}?tab=employees`} replace />
                 </ProtectedRoute>
               }
             />
             <Route
               path={ROUTES.PERSONNEL_MANAGEMENT}
               element={
-                <ProtectedRoute requiredRoles={[ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}>
+                <ProtectedRoute
+                  requiredRoles={[
+                    ROLES.ADMIN,
+                    ROLES.SUPERVISOR,
+                    ROLES.SUPERVISOR_ELEVATED,
+                    ROLES.CLOCK_CONTROL,
+                  ]}
+                >
                   <PersonnelManagementPage />
                 </ProtectedRoute>
               }
