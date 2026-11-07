@@ -8,7 +8,7 @@ Express está retirado por decisión del usuario. No mantener ni recrear su runt
 
 ## 1. Project Structure
 
-- **`backend/`**: Node.js (v26), Fastify (único servidor HTTP), TypeScript, Prisma ORM, PostgreSQL (vía PgBouncer en transaction mode).
+- **`backend/`**: Node.js 26.13.0 (fijado en `.nvmrc`), Fastify (único servidor HTTP), TypeScript, Prisma ORM, PostgreSQL (vía PgBouncer en transaction mode).
 - **`frontend/`**: React 19, Vite, TypeScript, Zustand, TanStack Query, Tailwind CSS.
 - **`compose.yaml`**: Stack de producción (PostgreSQL 18.4, PgBouncer, backend, frontend, gateway). `compose.db.dev.yaml` ejecuta solo PostgreSQL para desarrollo local con Vite/Fastify en el host.
 - **PostgreSQL 18.4**:

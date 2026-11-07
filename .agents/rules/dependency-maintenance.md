@@ -16,6 +16,7 @@ Dependabot is disabled in this repository. Upgrades follow a scheduled monthly s
    ```
 2. Apply minor and patch updates explicitly: `npm update <pkg>` (never bare `npm update`).
 3. Major version upgrades must be handled individually: validate, commit, push, and verify green CI (`gh run list --limit 3`) before proceeding.
+4. Node patches are pinned by root `.nvmrc`; update package engines, lockfiles, Node Docker tags, and `setup-node` references in the same change, then run `npm run check:node-version`.
 
 ## 2. Validation Discipline
 

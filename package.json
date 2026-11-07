@@ -1,7 +1,12 @@
 {
   "name": "portal-control-workspace",
   "private": true,
+  "engines": {
+    "node": ">=26.13.0 <27"
+  },
   "scripts": {
+    "check:node-version": "node scripts/check-node-version.cjs",
+    "predev": "npm run check:node-version",
     "prepare": "husky",
     "lint:budget": "node scripts/lint-budget.cjs",
     "lint:budget:update": "node scripts/lint-budget.cjs --update",

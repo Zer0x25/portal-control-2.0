@@ -67,3 +67,5 @@ Reglas:
 - `OBSERVABILITY.md`: señales actuales. Detalle operativo de ADR-0009.
 - `backend/docs/swagger.json`: contrato generado. Ver ADR-0003.
   | [0029](0029-release-build-once-manual-performance.md) | Aceptado | Release Build Once Manual Performance |
+  | [0030](0030-node-runtime-2613.md) | Propuesto | Runtime de aplicación Node 26.13.0 |
+  | [0030](0030-node-runtime-2613.md) | Propuesto | Node Runtime 2613 |
