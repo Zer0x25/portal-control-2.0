@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.38.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.38.0...v8.38.1) (2026-11-07)
+
+
+### Bug Fixes
+
+* **release:** repair personnel flow and reuse images on retries ([#159](https://github.com/Zer0x25/portal-control-2.0/issues/159)) ([262646e](https://github.com/Zer0x25/portal-control-2.0/commit/262646e49b2da0049898a1ad67af0192398808be))
+
 ## [8.38.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.7...v8.38.0) (2026-11-07)
 
 
