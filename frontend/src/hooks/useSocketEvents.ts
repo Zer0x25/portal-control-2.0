@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useStore } from "../store/useStore";
 import { queryKeys } from "../lib/queryKeys";
 import { logger } from "../utils/logger";
+import { loadSocketService } from "../services/loadSocketService";
 
 /**
  * A global hook to listen for WebSocket events and trigger Query invalidations.
@@ -39,7 +40,7 @@ export const useSocketEvents = () => {
     } | null = null;
 
     const setupSocket = async () => {
-      const { socketService } = await import("../services/socketService");
+      const { socketService } = await loadSocketService();
       if (!mounted) return;
       disconnect = () => socketService.disconnect();
 

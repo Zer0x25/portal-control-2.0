@@ -22,6 +22,7 @@ permissions:
   contents: read
 
 env:
+  # Runtime interno de las acciones JavaScript de GitHub; el proyecto usa .nvmrc.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   VITE_CONFIG_NATIVE_IGNORE_WARNING: true
 
@@ -141,7 +142,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version-file: .nvmrc
+
+      - name: Check Node.js version alignment
+        run: npm run check:node-version
 
       - name: Validate release image tooling
         run: node --test scripts/release-images.test.cjs
@@ -219,7 +223,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -289,7 +293,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 

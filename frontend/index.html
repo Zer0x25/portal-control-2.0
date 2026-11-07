@@ -202,6 +202,8 @@
         let expiry = 0;
         let onHashChange = () => {};
         const removeShell = () => {
+          // Vite dev injects CSS without a stylesheet link; also release #root here.
+          revealRoot();
           shell.remove();
           observer?.disconnect();
           window.clearTimeout(expiry);

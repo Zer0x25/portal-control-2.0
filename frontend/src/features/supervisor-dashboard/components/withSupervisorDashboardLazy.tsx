@@ -1,5 +1,10 @@
 import React, { Suspense, ComponentType } from "react";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
+import {
+  preloadSupervisorAnalytics,
+  preloadSupervisorKpis,
+  preloadSupervisorReports,
+} from "../preloadSupervisorDashboardModules";
 
 /**
  * HOC para lazy loading de componentes del supervisor dashboard
@@ -31,28 +36,10 @@ export function withSupervisorDashboardLazy<P extends object>(
  * Precarga componentes basados en patrones de uso comunes
  */
 export const useSupervisorDashboardPreload = () => {
-  const preloadAnalytics = React.useCallback(() => {
-    // Precargar componentes de analytics cuando el usuario está en overview
-    import("../components/analytics/AttendanceAnalyticsWidget");
-    import("../components/analytics/AttendanceHeatmap");
-    import("../components/analytics/TrendAnalysis");
-  }, []);
-
-  const preloadKpis = React.useCallback(() => {
-    // Precargar componentes de KPIs
-    import("../components/KpisTab");
-    import("../hooks/useKpisController");
-  }, []);
-
-  const preloadReports = React.useCallback(() => {
-    // Precargar componentes de reportes
-    import("../components/ReportsTab");
-  }, []);
-
   return {
-    preloadAnalytics,
-    preloadKpis,
-    preloadReports,
+    preloadAnalytics: preloadSupervisorAnalytics,
+    preloadKpis: preloadSupervisorKpis,
+    preloadReports: preloadSupervisorReports,
   };
 };
 

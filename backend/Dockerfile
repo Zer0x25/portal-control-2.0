@@ -1,5 +1,5 @@
 # Build Stage
-FROM node:26-alpine AS builder
+FROM node:26.13.0-alpine AS builder
 LABEL org.opencontainers.image.source="https://github.com/Zer0x25/portal-control"
 
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN DIRECT_URL=postgresql://prisma-codegen:prisma-codegen@localhost:1/prisma-cod
 RUN npm run build
 
 # Install the runtime tree separately: do not copy legacy/dev dependencies into image layers.
-FROM node:26-alpine AS runtime-deps
+FROM node:26.13.0-alpine AS runtime-deps
 WORKDIR /app
 COPY package*.json ./
 COPY --from=builder /root/.npm /root/.npm
@@ -27,7 +27,7 @@ RUN npm ci --omit=dev --ignore-scripts --offline --no-audit --no-fund
 COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 
 # Production Stage
-FROM node:26-alpine
+FROM node:26.13.0-alpine
 LABEL org.opencontainers.image.source="https://github.com/Zer0x25/portal-control"
 
 # Instalar cliente de PostgreSQL para backups, curl para healthchecks y tini para reaps de zombies

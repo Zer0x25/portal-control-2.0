@@ -5,7 +5,7 @@
   "version": "8.10.0",
   "type": "module",
   "engines": {
-    "node": ">=26 <27"
+    "node": ">=26.13.0 <27"
   },
   "scripts": {
     "audit:design-system": "node scripts/audit-design-system.cjs",
@@ -39,6 +39,7 @@
     "measure:renders": "node scripts/measure-renders.mjs",
     "preview": "vite preview",
     "sdk:generate": "openapi-typescript ../backend/docs/swagger.json -o src/types/api-schema.ts && prettier --write src/types/api-schema.ts",
+    "prestorybook": "node ../scripts/check-node-version.cjs",
     "storybook": "PORTAL_SKIP_PWA=1 storybook dev --host 127.0.0.1 --port 6006",
     "storybook:build": "npm run catalog:manifest:check && PORTAL_SKIP_PWA=1 storybook build",
     "storybook:visual": "playwright test --config=playwright.storybook.config.ts",
@@ -93,6 +94,7 @@
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
     "@storybook/addon-a11y": "10.6.3",
+    "@storybook/addon-docs": "10.6.3",
     "@storybook/react-vite": "10.6.3",
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/vite": "^4.3.3",

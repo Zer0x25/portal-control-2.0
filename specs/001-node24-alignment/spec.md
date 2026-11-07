@@ -41,6 +41,10 @@ Fuera (explícito):
 
 ## Línea Node: 24 y no 26
 
+> Vigencia histórica: este documento registra la decisión del 2026-10-02,
+> cuando Node 26 todavía no era LTS. La elección de Node 24 fue reemplazada por
+> Spec 007; el pin operativo actual es Node 26.13.0, según Spec 110 y ADR-0030.
+
 | Línea | Estado     | Active LTS | EOL        |
 | ----- | ---------- | ---------- | ---------- |
 | 24.x  | Active LTS | 2025-10-28 | 2028-04-30 |
