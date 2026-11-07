@@ -1,5 +1,26 @@
 # Changelog
 
+## [8.38.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.7...v8.38.0) (2026-11-07)
+
+
+### Features
+
+* align node 26 runtime and consolidate dotacion routes ([#158](https://github.com/Zer0x25/portal-control-2.0/issues/158)) ([f421b42](https://github.com/Zer0x25/portal-control-2.0/commit/f421b42fd26c8407d50f9bb3cb2a8a882edc196e))
+
+
+### Bug Fixes
+
+* **users:** require password and remove hardcoded default in user creation ([#150](https://github.com/Zer0x25/portal-control-2.0/issues/150)) ([7c031c9](https://github.com/Zer0x25/portal-control-2.0/commit/7c031c9a236b2aa20d7761a81eb42ad2ebe5e6c5))
+
+
+### Performance Improvements
+
+* **admin:** batch system stats queries ([#155](https://github.com/Zer0x25/portal-control-2.0/issues/155)) ([c25efc1](https://github.com/Zer0x25/portal-control-2.0/commit/c25efc145ba547ea8a1d49691af73aa656afdc0d))
+* **core:** batch update materialized time records in leave upsert ([#152](https://github.com/Zer0x25/portal-control-2.0/issues/152)) ([2fae4ae](https://github.com/Zer0x25/portal-control-2.0/commit/2fae4ae526aab0f4d2aba93c98ee6c24aa274d77))
+* **core:** fix N+1 query in integrity maintenance auto rechain ([#153](https://github.com/Zer0x25/portal-control-2.0/issues/153)) ([423842b](https://github.com/Zer0x25/portal-control-2.0/commit/423842b2e94b74f1acae61a575d6071c3d00a959))
+* **core:** parallelize model exports in backupService ([#154](https://github.com/Zer0x25/portal-control-2.0/issues/154)) ([c97e168](https://github.com/Zer0x25/portal-control-2.0/commit/c97e16893272a29d1db5690558fac226cecc6fe0))
+* **holidays:** parallelize holiday upserts in sync command ([#148](https://github.com/Zer0x25/portal-control-2.0/issues/148)) ([5f87601](https://github.com/Zer0x25/portal-control-2.0/commit/5f87601177711a01aaeeb9f6091b777932899e90))
+
 ## [8.37.7](https://github.com/Zer0x25/portal-control-2.0/compare/v8.37.6...v8.37.7) (2026-11-04)
 
 
