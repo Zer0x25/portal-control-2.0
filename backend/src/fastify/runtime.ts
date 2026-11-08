@@ -73,7 +73,7 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       ...(process.env.BETTER_AUTH_ENABLED === "true"
         ? {
             betterAuthHandler: async (req, reply) => {
-              const { createAuth } = await import("../modules/auth/infrastructure/betterAuth");
+              const { createAuth } = await import("../modules/auth");
               const auth = createAuth(prisma as unknown as Parameters<typeof createAuth>[0]);
               const headers = new Headers();
               for (const [k, v] of Object.entries(req.headers)) {
