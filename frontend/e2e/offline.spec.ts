@@ -19,36 +19,62 @@ import { loginFast } from "./helpers/auth-helper";
 
 const QUERY_CACHE_DB = "SAPHRPortalQueryCache";
 const QUERY_CACHE_STORE = "queryCache";
+const QUERY_CACHE_KEY = "saphr:react-query-cache";
 
-/** Cuenta las entradas persistidas del cache de queries. */
-async function persistedQueryCacheEntries(page: Page): Promise<number> {
+/**
+ * Raíces de query presentes en el payload persistido de TanStack Query.
+ *
+ * Contar claves del store no basta para el escenario offline: el persister
+ * (throttle 1s) escribe el payload en ráfagas y una escritura temprana puede
+ * crear la llave con un estado parcial anterior a que `employees` resuelva
+ * (en el boot 1 el `_verifyAuth` primero purga el cache y luego sincroniza).
+ * Si el reload offline hidrata un payload sin `employees`, el portal no
+ * puede resolver el empleado y cae en "Error de Configuración de Cuenta",
+ * mientras que el reload online enmascara el defecto con un fetch en vivo.
+ * Por eso el test espera contenido, no solo existencia de la llave.
+ */
+async function persistedQueryRoots(page: Page): Promise<string[]> {
   return page.evaluate(
-    ([dbName, storeName]) =>
-      new Promise<number>((resolve, reject) => {
+    ([dbName, storeName, cacheKey]) =>
+      new Promise<string[]>((resolve, reject) => {
         const open = indexedDB.open(dbName as string);
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
           const db = open.result;
           if (!db.objectStoreNames.contains(storeName as string)) {
             db.close();
-            resolve(0);
+            resolve([]);
             return;
           }
           const request = db
             .transaction(storeName as string, "readonly")
             .objectStore(storeName as string)
-            .count();
+            .get(cacheKey as string);
           request.onsuccess = () => {
-            resolve(request.result);
             db.close();
+            const raw = request.result;
+            if (typeof raw !== "string") return resolve([]);
+            try {
+              const parsed = JSON.parse(raw) as {
+                clientState?: { queries?: Array<{ queryKey?: unknown[] }> };
+              };
+              const queries = parsed.clientState?.queries ?? [];
+              resolve(
+                queries
+                  .filter((q) => Array.isArray(q.queryKey) && q.queryKey.length > 0)
+                  .map((q) => String((q.queryKey as unknown[])[0])),
+              );
+            } catch {
+              resolve([]);
+            }
           };
           request.onerror = () => {
-            reject(request.error);
             db.close();
+            reject(request.error);
           };
         };
       }),
-    [QUERY_CACHE_DB, QUERY_CACHE_STORE] as const,
+    [QUERY_CACHE_DB, QUERY_CACHE_STORE, QUERY_CACHE_KEY] as const,
   );
 }
 
@@ -79,16 +105,28 @@ test.describe("Offline desde cache persistido (spec 032 AC3)", () => {
     const identityHeading = page.getByRole("heading", { name: "Juan Perez", exact: true });
     await expect(identityHeading).toBeVisible({ timeout: 30000 });
 
-    // El persister (throttle 1s) debe haber vaciado el cache a IndexedDB.
+    // El persister (throttle 1s) debe haber vaciado el cache a IndexedDB,
+    // incluyendo la query de empleados (spec 032 AC3).
     await expect
-      .poll(() => persistedQueryCacheEntries(page), { timeout: 30000 })
-      .toBeGreaterThan(0);
+      .poll(async () => (await persistedQueryRoots(page)).includes("employees"), {
+        timeout: 30000,
+      })
+      .toBe(true);
 
     // Calentamiento bajo control del SW (chunks lazy al runtime cache) y de
     // la sesion (owner marker del cache persistido).
     await waitForServiceWorkerControl(page);
     await page.reload();
     await expect(identityHeading).toBeVisible({ timeout: 60000 });
+
+    // El reload de calentamiento vuelve a persistir: esperar su throttle
+    // antes de cortar la red, o el reload offline puede hidratar el payload
+    // anterior sin `employees` (el reload online si lo enmascara con fetch).
+    await expect
+      .poll(async () => (await persistedQueryRoots(page)).includes("employees"), {
+        timeout: 30000,
+      })
+      .toBe(true);
 
     // --- Sin red: recarga completa sirve desde el cache ---
     await context.setOffline(true);
@@ -120,9 +158,13 @@ test.describe("Offline desde cache persistido (spec 032 AC3)", () => {
       timeout: 30000,
     });
 
+    // Contenido, no solo llave: el kiosk persiste la query `employees/kiosk`
+    // bajo la misma raíz `employees` que requiere este escenario.
     await expect
-      .poll(() => persistedQueryCacheEntries(page), { timeout: 30000 })
-      .toBeGreaterThan(0);
+      .poll(async () => (await persistedQueryRoots(page)).includes("employees"), {
+        timeout: 30000,
+      })
+      .toBe(true);
 
     // Calentamiento bajo control del SW (chunks lazy al runtime cache). El
     // kiosk no restaura sesion, por lo que el arranque no purga el cache.
@@ -132,6 +174,14 @@ test.describe("Offline desde cache persistido (spec 032 AC3)", () => {
     await expect(page.getByRole("button", { name: /juan perez/i }).first()).toBeVisible({
       timeout: 30000,
     });
+
+    // Igual que en worker-portal: no cortar la red dentro del throttle del
+    // persister tras el reload de calentamiento.
+    await expect
+      .poll(async () => (await persistedQueryRoots(page)).includes("employees"), {
+        timeout: 30000,
+      })
+      .toBe(true);
 
     await context.setOffline(true);
     await page.reload();
