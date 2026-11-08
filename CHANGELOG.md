@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.39.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.39.0...v8.39.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **e2e:** wait for persisted employees payload before going offline ([#163](https://github.com/Zer0x25/portal-control-2.0/issues/163)) ([58c4279](https://github.com/Zer0x25/portal-control-2.0/commit/58c4279a6d3427df3e986806866a167125aeb22f))
+
 ## [8.39.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.38.1...v8.39.0) (2026-11-08)
 
 
