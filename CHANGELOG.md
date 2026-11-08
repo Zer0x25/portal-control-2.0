@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.39.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.38.1...v8.39.0) (2026-11-08)
+
+
+### Features
+
+* **auth:** integrate better-auth via strangler fig with legacy fallback ([#161](https://github.com/Zer0x25/portal-control-2.0/issues/161)) ([89414d4](https://github.com/Zer0x25/portal-control-2.0/commit/89414d4da6e7b203b885bb649c5867837917efd0))
+
 ## [8.38.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.38.0...v8.38.1) (2026-11-07)
 
 
