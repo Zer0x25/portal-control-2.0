@@ -7,6 +7,7 @@ describe("better-auth schema", () => {
     expect(schema).toContain("model Session");
     expect(schema).toContain("model Account");
     expect(schema).toContain("model Verification");
+    expect(schema).toContain("model TwoFactor");
     expect(schema).toContain("model User");
   });
 });

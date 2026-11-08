@@ -1,7 +1,7 @@
 // backend/src/modules/auth/infrastructure/betterAuth.ts
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { bearer } from "better-auth/plugins";
+import { bearer, twoFactor } from "better-auth/plugins";
 import bcryptjs from "bcryptjs";
 import type { PrismaClient } from "../../../generated/prisma/client";
 
@@ -30,7 +30,7 @@ export function createAuth(prisma: PrismaClient) {
       updateAge: 60,
       cookieCache: { enabled: false },
     },
-    plugins: [bearer()],
+    plugins: [bearer(), twoFactor({ issuer: "Portal Control" })],
   });
 }
 

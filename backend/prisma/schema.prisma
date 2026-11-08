@@ -27,9 +27,11 @@ model User {
   mfaFailedAttempts         Int             @default(0) @map("mfa_failed_attempts")
   mfaFailureWindowStartedAt DateTime?       @map("mfa_failure_window_started_at")
   mfaBlockedUntil           DateTime?       @map("mfa_blocked_until")
+  twoFactorEnabled          Boolean         @default(false) @map("two_factor_enabled")
   sessions                  ActiveSession[]
   betterAuthSessions        Session[]
   accounts                  Account[]
+  twoFactor                 TwoFactor?
   employee                  Employee?       @relation(fields: [employeeId], references: [id])
 
   @@index([updatedAt])
@@ -96,6 +98,23 @@ model Verification {
 
   @@index([identifier])
   @@map("verifications")
+}
+
+model TwoFactor {
+  id                      String    @id @default(uuid())
+  secret                  String
+  backupCodes             String    @map("backup_codes")
+  userId                  String    @unique @map("user_id")
+  verified                Boolean   @default(true)
+  failedVerificationCount Int       @default(0) @map("failed_verification_count")
+  lockedUntil             DateTime? @map("locked_until")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([secret])
+  @@map("two_factors")
 }
 
 model Employee {
