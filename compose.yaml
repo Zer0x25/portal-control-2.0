@@ -56,7 +56,7 @@ services:
       - default
 
   backend:
-    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend@sha256:f788931182a6b59dd387de36ca798351affcdb22007654ce950fd1e238ee725f}
+    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend@sha256:0bd15b345f1193f8ca53db5486ebe7ecaf4258edfe684a23d5f66a90dbd3e965}
     restart: always
     expose:
       - "4000"
