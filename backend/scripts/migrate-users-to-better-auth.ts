@@ -9,9 +9,7 @@ const isDryRun = !process.argv.includes("--apply");
 
 async function main(): Promise<void> {
   if (isDryRun) {
-    console.log(
-      "migrate-users-to-better-auth: dry-run (no DB writes, no connection required)",
-    );
+    console.log("migrate-users-to-better-auth: dry-run (no DB writes, no connection required)");
     return;
   }
 
@@ -43,8 +41,7 @@ async function main(): Promise<void> {
   console.log(`✅ Migrated ${pending.length} users to better-auth accounts`);
 }
 
-void main()
-  .catch((e) => {
-    console.error(e);
-    process.exitCode = 1;
-  });
+void main().catch((e) => {
+  console.error(e);
+  process.exitCode = 1;
+});
