@@ -1,4 +1,5 @@
 import { seedingJobService } from "../services/seedingJobService";
+import prisma from "../services/db";
 import { workCoordinator } from "../services/workCoordinator";
 import { operationRuntime } from "../services/operationRuntime";
 import { openSchedulerRuntime, stopScheduler } from "../services/schedulerService";
@@ -66,6 +67,33 @@ export function createFastifyRuntime(config?: FastifyConfig) {
         workCoordinator.closeAdmission();
       },
       authenticate: authenticateAccessToken,
+      // better-auth handler inyectado (strangler fig): solo existe con flag true.
+      // Se construye de forma lazy dentro del handler para no exigir
+      // BETTER_AUTH_* al arrancar en modo legacy.
+      ...(process.env.BETTER_AUTH_ENABLED === "true"
+        ? {
+            betterAuthHandler: async (req, reply) => {
+              const { createAuth } = await import("../modules/auth");
+              const auth = createAuth(prisma as unknown as Parameters<typeof createAuth>[0]);
+              const headers = new Headers();
+              for (const [k, v] of Object.entries(req.headers)) {
+                if (typeof v === "string") headers.set(k, v);
+                else if (Array.isArray(v)) headers.set(k, v.join(", "));
+              }
+              const url = `http://${req.headers.host}${req.url}`;
+              const body =
+                req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS"
+                  ? undefined
+                  : JSON.stringify(req.body ?? {});
+              const res = await auth.handler(
+                new Request(url, { method: req.method, headers, body }),
+              );
+              res.headers.forEach((v, k) => reply.header(k, v));
+              reply.code(res.status);
+              return reply.send(Buffer.from(await res.arrayBuffer()));
+            },
+          }
+        : {}),
       holidays: holidayService,
       users: userService,
       admin: adminFlows,

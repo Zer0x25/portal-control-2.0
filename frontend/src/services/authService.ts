@@ -1,6 +1,9 @@
 import { request as apiRequest, errorMessageOr, ApiHttpError } from "./apiClient";
 import { authTokenStore } from "./authToken";
 import { logger } from "../utils/logger";
+import { authClient } from "../lib/authClient";
+
+const USE_BETTER_AUTH = import.meta.env.VITE_BETTER_AUTH_ENABLED === "true";
 
 export interface LoginResponse {
   userId: string;
@@ -50,6 +53,23 @@ export interface AuthService {
  */
 class AuthServiceImpl implements AuthService {
   async login(username: string, password: string): Promise<LoginResponse> {
+    if (USE_BETTER_AUTH) {
+      const { data, error } = await authClient.signIn.email({
+        email: username.includes("@") ? username : `${username}@portal.local`,
+        password,
+      });
+      if (error || !data) {
+        logger.error("Login error:", error);
+        throw new Error(error?.message ?? "Error en el inicio de sesión");
+      }
+      const user = data.user as { id: string; email: string; name?: string | null };
+      return {
+        userId: user.id,
+        username: username,
+        role: "Usuario",
+        message: "Login exitoso",
+      };
+    }
     try {
       const data = await apiRequest<LoginResponse>({
         method: "POST",

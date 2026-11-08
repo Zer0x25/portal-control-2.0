@@ -10,7 +10,7 @@ import { configsPlugin, type ConfigHttpService } from "../../modules/configs";
 import { emailReportsPlugin, type EmailReportFlows } from "../../modules/emailReports";
 import { kpisPlugin, type KpiFlows } from "../../modules/kpis";
 import type {} from "./types";
-import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fastify";
 import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import compress from "@fastify/compress";
@@ -42,6 +42,7 @@ export interface FastifyDependencies {
   enterWork?(path: string): Promise<() => Promise<void>>;
   closeAdmission?(): void;
   authenticate(token: string | undefined, requestPath?: string): Promise<AuthUser>;
+  betterAuthHandler?: (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
   holidays: HolidayHttpService;
   users: UserFlows;
   records: RecordsHttpService;
@@ -260,6 +261,13 @@ export function buildFastifyApp(
     }
     return deps.health.getReadiness();
   });
+  // better-auth handler: solo activo con BETTER_AUTH_ENABLED=true (strangler fig).
+  // Dormido por defecto para no romper el contrato legacy /api/auth/*.
+  // El handler se inyecta desde el runtime (que sí puede importar services/db);
+  // nunca se importa db desde platform/fastify para respetar tsconfig.modules estricto.
+  if (process.env.BETTER_AUTH_ENABLED === "true" && deps.betterAuthHandler) {
+    app.all("/api/auth/*", async (req, reply) => deps.betterAuthHandler!(req, reply));
+  }
   app.register(async (protectedApp) => {
     await protectedApp.register(rateLimit, {
       ...config.rateLimit,

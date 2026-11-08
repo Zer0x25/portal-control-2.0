@@ -75,6 +75,7 @@
     "@sentry/node": "^11.4.0",
     "@sentry/profiling-node": "^11.4.0",
     "bcryptjs": "^3.0.3",
+    "better-auth": "^1.7.18",
     "cron-parser": "^5.10.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",

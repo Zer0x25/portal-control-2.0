@@ -36,6 +36,7 @@ con Prettier (`printWidth: 100`).
 | [0026](0026-frontend-rendering-observability.md)        | Aceptado  | Compilador, container queries y CWV    |
 | [0027](0027-design-system-catalog-pipeline.md)          | Aceptado  | Catálogo externo y pipeline de tokens  |
 | [0028](0028-frontend-testing-stack.md)                  | Propuesto | MSW, browser mode y cobertura          |
+| [0031](0031-better-auth.md)                             | Propuesto | Integración better-auth como autoridad |
 | [0000](0000-template.md)                                | Plantilla | No usar como decisión                  |
 
 ## Ciclo de vida
