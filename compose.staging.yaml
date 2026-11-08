@@ -84,6 +84,9 @@ services:
       # Fail-fast: sin secretos reales el stack no arranca (ADR-0004, sin fallbacks débiles).
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env.staging}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Define SEED_ADMIN_PASSWORD en .env.staging}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:8080/api/auth}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      BETTER_AUTH_ENABLED: ${BETTER_AUTH_ENABLED:-false}
       # E2E contra build prod: crea juan.perez/EMP001 (idempotente).
       # Solo staging local; jamás en prod real.
       SEED_E2E_USERS: ${SEED_E2E_USERS:-1}
@@ -131,6 +134,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_BETTER_AUTH_ENABLED: ${VITE_BETTER_AUTH_ENABLED:-false}
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:80 || exit 1"]
