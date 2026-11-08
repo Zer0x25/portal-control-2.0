@@ -11,6 +11,10 @@ datasource db {
 model User {
   id                        String          @id @default(uuid())
   username                  String          @unique
+  email                     String?         @unique
+  name                      String?
+  emailVerified             Boolean         @default(false) @map("email_verified")
+  image                     String?
   passwordHash              String          @map("password_hash")
   role                      UserRole        @default(Usuario)
   employeeId                String?         @unique @map("employee_id")
@@ -24,6 +28,8 @@ model User {
   mfaFailureWindowStartedAt DateTime?       @map("mfa_failure_window_started_at")
   mfaBlockedUntil           DateTime?       @map("mfa_blocked_until")
   sessions                  ActiveSession[]
+  betterAuthSessions        Session[]
+  accounts                  Account[]
   employee                  Employee?       @relation(fields: [employeeId], references: [id])
 
   @@index([updatedAt])
@@ -42,6 +48,54 @@ model ActiveSession {
 
   @@index([userId])
   @@map("active_sessions")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  password              String?
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verifications")
 }
 
 model Employee {

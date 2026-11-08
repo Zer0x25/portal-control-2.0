@@ -33,6 +33,10 @@ const context = (request: FastifyRequest) => ({
   user: request.user,
 });
 export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, options) => {
+  if (process.env.BETTER_AUTH_ENABLED === "true") {
+    app.log.info("Auth: better-auth handler takes over /api/auth/*, legacy routes disabled");
+    return;
+  }
   const throttle = async (request: FastifyRequest, reply: Parameters<onRequestHookHandler>[1]) => {
     const blocked = await options.inspectFailures(request.ip || "unknown", request.body);
     if (blocked)
