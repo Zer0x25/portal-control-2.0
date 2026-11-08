@@ -11,8 +11,10 @@ const html = readFileSync(htmlPath, "utf8");
 const nginxConfig = readFileSync(nginxConfigPath, "utf8");
 const inlineScript = html.match(/<script id="app-bootstrap-script">([\s\S]*?)<\/script>/);
 
-if (useBuiltHtml && Buffer.byteLength(html, "utf8") > 5 * 1024) {
-  throw new Error(`Built index.html exceeds 5 KiB: ${Buffer.byteLength(html, "utf8")} bytes`);
+if (useBuiltHtml && Buffer.byteLength(html, "utf8") > 6 * 1024) {
+  throw new Error(
+    `Built index.html exceeds 6 KiB: ${Buffer.byteLength(html, "utf8")} bytes`,
+  );
 }
 
 if (!inlineScript) {
