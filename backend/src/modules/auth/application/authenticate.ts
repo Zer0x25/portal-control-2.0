@@ -22,6 +22,10 @@ export interface AuthenticationDependencies {
     touch(id: string, now: Date): Promise<unknown>;
   };
   users: { find(id: string): Promise<AuthUser | null> };
+  betterAuth?: {
+    enabled: boolean;
+    findSession(token: string): Promise<AuthSession | null>;
+  };
 }
 const KIOSK_ALLOWED_PATHS = [
   "/api/records/punch",
@@ -36,6 +40,27 @@ const KIOSK_ALLOWED_PATHS = [
 export function createAuthenticate(deps: AuthenticationDependencies) {
   return async (token: string | undefined, requestPath?: string): Promise<AuthUser> => {
     if (!token) throw new AuthError("Token de acceso no proporcionado");
+    // Dual-mode strangler fig: con flag, primero prueba sesión better-auth
+    // (token opaco en sessions.token). Si existe, resuelve usuario sin JWT.
+    if (deps.betterAuth?.enabled) {
+      const baSession = await deps.betterAuth.findSession(token).catch(() => null);
+      if (baSession) {
+        if (baSession.expiresAt < deps.now()) throw new AuthError("Sesión expirada");
+        const baUser = await deps.users.find(baSession.userId);
+        if (!baUser) throw new AuthError("Usuario no encontrado");
+        if (baUser.isForcePasswordChange && requestPath) {
+          const cleanPath = requestPath.split("?")[0];
+          const allowedWhileForced =
+            cleanPath.startsWith("/api/auth/") || cleanPath === "/api/users/" + baUser.id;
+          if (!allowedWhileForced) {
+            throw new ForbiddenError(
+              "Debe actualizar su contraseña temporal antes de continuar",
+            );
+          }
+        }
+        return baUser;
+      }
+    }
     let user: AuthUser;
     try {
       user = deps.verify(token);

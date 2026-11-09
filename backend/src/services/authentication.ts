@@ -28,4 +28,13 @@ export const authenticateAccessToken = createAuthenticate({
         },
       }),
   },
+  betterAuth: {
+    enabled: process.env.BETTER_AUTH_ENABLED === "true",
+    findSession: async (token) => {
+      const s = await prisma.session.findUnique({ where: { token } });
+      return s
+        ? { id: s.id, userId: s.userId, expiresAt: s.expiresAt, lastActive: s.updatedAt }
+        : null;
+    },
+  },
 });

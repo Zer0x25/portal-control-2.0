@@ -62,11 +62,17 @@ class AuthServiceImpl implements AuthService {
         logger.error("Login error:", error);
         throw new Error(error?.message ?? "Error en el inicio de sesión");
       }
-      const user = data.user as { id: string; email: string; name?: string | null };
+      const user = data.user as {
+        id: string;
+        email: string;
+        name?: string | null;
+        role?: string;
+      };
+      if (data.token) this.setToken(data.token);
       return {
         userId: user.id,
         username: username,
-        role: "Usuario",
+        role: user.role ?? "Usuario",
         message: "Login exitoso",
       };
     }

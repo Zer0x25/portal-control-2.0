@@ -30,6 +30,12 @@ export function createAuth(prisma: PrismaClient) {
       updateAge: 60,
       cookieCache: { enabled: false },
     },
+    user: {
+      additionalFields: {
+        role: { type: "string", input: false, defaultValue: "Usuario" },
+        username: { type: "string", input: true },
+      },
+    },
     plugins: [bearer(), twoFactor({ issuer: "Portal Control" })],
   });
 }
