@@ -29,10 +29,15 @@ async function main(): Promise<void> {
 
   for (const user of pending) {
     const email = user.email ?? `${user.username}@portal.local`;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { email },
+    });
+    // better-auth espera accountId === user.id para provider credential
     await prisma.account.create({
       data: {
         userId: user.id,
-        accountId: email,
+        accountId: user.id,
         providerId: "credential",
         password: user.passwordHash,
       },
