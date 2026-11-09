@@ -53,9 +53,7 @@ export function createAuthenticate(deps: AuthenticationDependencies) {
           const allowedWhileForced =
             cleanPath.startsWith("/api/auth/") || cleanPath === "/api/users/" + baUser.id;
           if (!allowedWhileForced) {
-            throw new ForbiddenError(
-              "Debe actualizar su contraseña temporal antes de continuar",
-            );
+            throw new ForbiddenError("Debe actualizar su contraseña temporal antes de continuar");
           }
         }
         return baUser;
