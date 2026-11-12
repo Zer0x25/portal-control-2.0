@@ -145,7 +145,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
       {/* Header: Date number & Today tag */}
       <div className="flex justify-between items-start mb-1">
         <span
-          className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-token-accent-brand dark:text-blue-400" : "text-token-text-secondary group-hover:text-token-text-primary"}`}
+          className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-token-accent-brand dark:text-sky-200" : "text-token-text-secondary group-hover:text-token-text-primary"}`}
         >
           {day.getDate()}
         </span>
