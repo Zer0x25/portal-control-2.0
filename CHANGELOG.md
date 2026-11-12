@@ -1,5 +1,20 @@
 # Changelog
 
+## [8.40.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.39.1...v8.40.0) (2026-11-12)
+
+
+### Features
+
+* **auth:** accept better-auth sessions in socket authentication ([099b72b](https://github.com/Zer0x25/portal-control-2.0/commit/099b72b65034fe17e78eae729b94e0c8b83307ca))
+* **ui:** add aria-label to quick filter buttons ([#157](https://github.com/Zer0x25/portal-control-2.0/issues/157)) ([8e11c69](https://github.com/Zer0x25/portal-control-2.0/commit/8e11c69f43accf4e2bf58fd9fcb009072b365f8f))
+
+
+### Bug Fixes
+
+* **auth:** dual-mode authenticate for better-auth sessions with role ([34123e8](https://github.com/Zer0x25/portal-control-2.0/commit/34123e863568f35f2657e66f479bf854c3f9487b))
+* **auth:** keep kiosk-login active with better-auth enabled ([3bfa24b](https://github.com/Zer0x25/portal-control-2.0/commit/3bfa24bd278afbfe8e33285c9790d5e653b86684))
+* **auth:** use user id as credential accountId for better-auth ([a8e72a5](https://github.com/Zer0x25/portal-control-2.0/commit/a8e72a550811a475cc58c74490076a3147e759e9))
+
 ## [8.39.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.39.0...v8.39.1) (2026-11-08)
 
 
