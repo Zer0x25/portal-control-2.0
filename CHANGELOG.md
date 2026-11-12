@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.40.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.40.0...v8.40.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **a11y:** improve dark calendar contrast ([#166](https://github.com/Zer0x25/portal-control-2.0/issues/166)) ([65c278f](https://github.com/Zer0x25/portal-control-2.0/commit/65c278ff80e74c3fa41d06e31e8a5945e1f58dfb))
+
 ## [8.40.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.39.1...v8.40.0) (2026-11-12)
 
 
