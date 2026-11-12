@@ -15,6 +15,10 @@ import path from "node:path";
  */
 
 const INDEX_CSS = path.resolve(__dirname, "../../index.css");
+const SHIFT_CALENDAR_DAY_CELL = path.resolve(
+  __dirname,
+  "../../components/ui/ShiftCalendarDayCell.tsx",
+);
 
 const STATUS_KEYS = [
   "laborando",
@@ -196,5 +200,14 @@ describe("Contraste de tokens de dominio (spec 031 AC4)", () => {
     for (const index of CHART_KEYS) {
       expect(lightVars.get(`color-token-chart-${index}`)).toBeTruthy();
     }
+  });
+
+  it("calendario: el número del día actual mantiene contraste AA en la celda oscura", () => {
+    const source = readFileSync(SHIFT_CALENDAR_DAY_CELL, "utf8");
+    const todayTextClasses =
+      /isToday\s*\?\s*"(text-token-accent-brand[^"]+)"/.exec(source)?.[1] ?? "";
+
+    expect(todayTextClasses).toContain("dark:text-sky-200");
+    expect(contrastRatio("#bae6fd", "#34546d")).toBeGreaterThanOrEqual(AA_TEXT);
   });
 });
