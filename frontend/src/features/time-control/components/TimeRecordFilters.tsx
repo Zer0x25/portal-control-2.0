@@ -208,6 +208,13 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                       <button
                         key={p}
                         onClick={() => onQuickFilterClick(p)}
+                        aria-label={
+                          p === "24h"
+                            ? "Filtrar las últimas 24 horas"
+                            : p === "week"
+                              ? "Filtrar los últimos 7 días"
+                              : "Filtrar los últimos 31 días"
+                        }
                         className={`flex-1 min-w-[60px] h-full px-4 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-300
                               ${
                                 activeQuickFilter === p
