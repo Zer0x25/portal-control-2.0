@@ -74,7 +74,7 @@ export interface TimeControlViewProps {
   isApplyButtonEnabled: boolean;
   periodDisplayText?: string;
   activeQuickFilter: QuickFilterMode | null;
-  handleExportStreaming: (format: "csv" | "excel") => void;
+  handleExportStreaming: (format: "csv" | "excel") => Promise<void> | void;
   handleViewHistory: (record: DailyTimeRecord) => void;
   totalRecords: number;
   filtersKey?: string;

@@ -92,7 +92,7 @@ describe("Spec 012 shared users flows", () => {
       total: 1,
       isPaginated: true,
       users: [
-        { role: "Supervisor Elevado", syncStatus: "synced", lastModified: 0, isDeleted: false },
+        { role: "Supervisor_Elevado", syncStatus: "synced", lastModified: 0, isDeleted: false },
       ],
     });
     expect(result.users[0]).not.toHaveProperty("isForcePasswordChange");

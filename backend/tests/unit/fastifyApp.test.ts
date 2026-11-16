@@ -966,6 +966,10 @@ describe("Anti-regression: PUT /api/users/:id permission rules", () => {
       "regular",
       { password: "newSecurePassword123" },
       "regular",
+      expect.objectContaining({
+        actorId: "regular",
+        currentTokenHash: expect.any(String),
+      }),
     );
   });
 
@@ -1049,5 +1053,18 @@ describe("Anti-regression: PUT /api/employees/:id permission rules", () => {
     });
     expect(response.statusCode).toBe(200);
     expect(deps.employees.update).toHaveBeenCalledWith("EMP-1", { name: "Updated Name" }, "sup");
+  });
+});
+
+describe("Anti-regression: query ?token= rejection", () => {
+  it("rejects valid JWT supplied only via ?token= query parameter with 401", async () => {
+    const { app, token, deps } = fixture();
+    const jwtToken = token("sup", "Supervisor");
+    const response = await app.inject({
+      method: "GET",
+      url: `/api/holidays?token=${encodeURIComponent(jwtToken)}`,
+    });
+    expect(response.statusCode).toBe(401);
+    expect(deps.holidays.getHolidays).not.toHaveBeenCalled();
   });
 });

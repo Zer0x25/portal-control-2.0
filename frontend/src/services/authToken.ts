@@ -10,6 +10,9 @@
  * `removeToken`, `getAuthHeader`) delegando en este almacen.
  */
 const TOKEN_KEY = "authToken";
+const KIOSK_TOKEN_KEY = "kioskToken";
+
+export type AuthTokenScope = "portal" | "kiosk";
 
 export const authTokenStore = {
   getToken: (): string | null => sessionStorage.getItem(TOKEN_KEY),
@@ -26,4 +29,22 @@ export const authTokenStore = {
     const token = authTokenStore.getToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   },
+
+  getKioskToken: (): string | null => sessionStorage.getItem(KIOSK_TOKEN_KEY),
+
+  setKioskToken: (token: string): void => {
+    sessionStorage.setItem(KIOSK_TOKEN_KEY, token);
+  },
+
+  removeKioskToken: (): void => {
+    sessionStorage.removeItem(KIOSK_TOKEN_KEY);
+  },
+
+  getKioskAuthHeader: (): HeadersInit => {
+    const token = authTokenStore.getKioskToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  },
+
+  getAuthHeaderForScope: (scope: AuthTokenScope = "portal"): HeadersInit =>
+    scope === "kiosk" ? authTokenStore.getKioskAuthHeader() : authTokenStore.getAuthHeader(),
 };

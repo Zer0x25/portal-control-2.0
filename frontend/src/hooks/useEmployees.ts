@@ -10,6 +10,7 @@ import { Employee, EmployeeStatus } from "../types";
 import { useEffect } from "react";
 import { UserRole } from "../types/user";
 import { queryKeys } from "../lib/queryKeys";
+import { DEFAULT_TEMPORARY_PASSWORD } from "../constants";
 
 const EMPTY_EMPLOYEES: Employee[] = [];
 const loadDateUtilsForArchive = () => import("../utils/dateUtils");
@@ -30,7 +31,7 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
 
-  const employeesQuery = useEmployeesQuery(options.enabled);
+  const employeesQuery = useEmployeesQuery(!_isKiosk && (options.enabled ?? true));
   const kioskQuery = useKioskEmployeesQuery(_isKiosk);
 
   const invalidateEmployees = () =>
@@ -112,12 +113,6 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
     return `EMP-${maxId + 1}`;
   };
 
-  const generateTemporaryPassword = (): string => {
-    const bytes = new Uint8Array(12);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, (b) => (b % 36).toString(36)).join("");
-  };
-
   return {
     // Data from Query
     employees: data?.active || [],
@@ -149,6 +144,17 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al actualizar empleado";
+        addToast(message, "error");
+        return false;
+      }
+    },
+    updateKioskPin: async (id: string, pin: string): Promise<boolean> => {
+      try {
+        await employeeService.updateKioskPin(id, pin);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.employeesKiosk() });
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Error al actualizar el PIN";
         addToast(message, "error");
         return false;
       }
@@ -261,7 +267,7 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .replace(/\s+/g, ".");
-        const temporaryPassword = generateTemporaryPassword();
+        const temporaryPassword = DEFAULT_TEMPORARY_PASSWORD;
 
         await recreateUser({
           username,

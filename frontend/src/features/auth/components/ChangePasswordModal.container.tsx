@@ -14,19 +14,12 @@ export interface ChangePasswordModalProps {
   isOpen: boolean;
   /** Cierra el modal. */
   onClose: () => void;
-  /** Usuario cuya contraseña se cambia (ausente = el propio usuario). */
-  userIdToUpdate?: string;
 }
 
-const ChangePasswordModalContainer: React.FC<ChangePasswordModalProps> = ({
-  isOpen,
-  onClose,
-  userIdToUpdate,
-}) => {
+const ChangePasswordModalContainer: React.FC<ChangePasswordModalProps> = ({ isOpen, onClose }) => {
   const controller = useChangePasswordModalController({
     isOpen,
     onClose,
-    userIdToUpdate,
   });
 
   return (

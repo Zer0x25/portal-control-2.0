@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createAuthFlows, type AuthFlowDependencies } from "../../src/modules/auth";
+import { RateLimitError } from "../../src/utils/AppError";
 
 function fixture() {
   const user = {
@@ -34,6 +35,11 @@ function fixture() {
   return { deps, user, flows: createAuthFlows(deps) };
 }
 const context = { ip: "127.0.0.1", userAgent: "test-agent", user: { id: "u1", username: "alice" } };
+const adminContext = {
+  ip: "127.0.0.1",
+  userAgent: "test-agent",
+  user: { id: "u1", username: "alice", role: "Administrador" },
+};
 describe("Shared auth flows", () => {
   it("creates session, normalizes role, clears failures and audits login without credentials", async () => {
     const f = fixture();
@@ -42,10 +48,11 @@ describe("Shared auth flows", () => {
       body: {
         userId: "u1",
         username: "alice",
-        role: "Supervisor Elevado",
+        role: "Supervisor_Elevado",
         employeeId: null,
         token: "access",
         mustChangePassword: true,
+        mfaEnabled: false,
         message: "Login exitoso",
       },
     });
@@ -109,19 +116,54 @@ describe("Shared auth flows", () => {
       expect.objectContaining({ action: "LOGIN_MFA_SUCCESS" }),
     );
   });
-  it("rejects invalid MFA code without creating session", async () => {
+  it("rejects invalid MFA code without creating session and audits MFA_FAILED", async () => {
     const f = fixture();
-    vi.mocked(f.deps.service.validateMFALogin).mockResolvedValue({ success: false });
+    vi.mocked(f.deps.service.validateMFALogin).mockResolvedValue({
+      success: false,
+      actorUsername: "alice",
+      userId: "u1",
+    });
     await expect(
       f.flows.validateMFA({ mfaToken: "pending", code: "000000" }, context),
     ).rejects.toMatchObject({ statusCode: 401 });
     expect(f.deps.service.createSession).not.toHaveBeenCalled();
+    expect(f.deps.audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUsername: "alice",
+        action: "MFA_FAILED",
+        outcome: "FAILURE",
+      }),
+    );
   });
-  it("sets up and confirms MFA only with an authenticated user", async () => {
+  it("audits MFA_FAILED when validateMFALogin throws RateLimitError", async () => {
+    const f = fixture();
+    vi.mocked(f.deps.service.validateMFALogin).mockRejectedValue(new RateLimitError(60, "alice"));
+    await expect(
+      f.flows.validateMFA({ mfaToken: "pending", code: "000000" }, context),
+    ).rejects.toMatchObject({ statusCode: 429 });
+    expect(f.deps.audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUsername: "alice",
+        action: "MFA_FAILED",
+        outcome: "FAILURE",
+        details: expect.objectContaining({ reason: "MFA_RATE_LIMITED", retryAfter: 60 }),
+      }),
+    );
+  });
+  it("sets up and confirms MFA only with an authenticated Administrador", async () => {
     const f = fixture();
     await expect(f.flows.setupMFA({})).rejects.toMatchObject({ statusCode: 401 });
-    expect(await f.flows.setupMFA(context)).toMatchObject({ body: { secret: "secret" } });
-    expect(await f.flows.verifyMFASetup({ token: "123456" }, context)).toMatchObject({
+    await expect(
+      f.flows.setupMFA({ ...context, user: { id: "u1", username: "alice", role: "Supervisor" } }),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      f.flows.verifyMFASetup(
+        { token: "123456" },
+        { ...context, user: { id: "u1", username: "alice", role: "Supervisor" } },
+      ),
+    ).rejects.toMatchObject({ statusCode: 403 });
+    expect(await f.flows.setupMFA(adminContext)).toMatchObject({ body: { secret: "secret" } });
+    expect(await f.flows.verifyMFASetup({ token: "123456" }, adminContext)).toMatchObject({
       body: { message: "MFA habilitado correctamente" },
     });
     expect(f.deps.audit).toHaveBeenCalledWith(expect.objectContaining({ action: "MFA_ENABLED" }));
@@ -129,10 +171,22 @@ describe("Shared auth flows", () => {
   it("invalid setup code never audits enabling MFA", async () => {
     const f = fixture();
     vi.mocked(f.deps.service.confirmMFASetup).mockResolvedValue(false);
-    await expect(f.flows.verifyMFASetup({ token: "000000" }, context)).rejects.toMatchObject({
+    await expect(f.flows.verifyMFASetup({ token: "000000" }, adminContext)).rejects.toMatchObject({
       statusCode: 400,
     });
     expect(f.deps.audit).not.toHaveBeenCalled();
+  });
+  it("rejects archived employee in kioskLogin with 403 without creating session or failure counter", async () => {
+    const f = fixture();
+    vi.mocked(f.deps.service.verifyKioskPin).mockResolvedValue({
+      success: false,
+      reason: "ARCHIVED",
+    });
+    expect(await f.flows.kioskLogin({ employeeId: "e1", pin: "1234" }, context)).toEqual({
+      status: 403,
+      body: { message: "Empleado archivado o inactivo." },
+    });
+    expect(f.deps.failures.record).not.toHaveBeenCalled();
   });
   it.each([
     ["NOT_FOUND", 404],
@@ -164,17 +218,24 @@ describe("Shared auth flows", () => {
     });
     expect(f.deps.failures.clear).toHaveBeenCalledWith(context.ip, "e1");
   });
-  it("logout with and without token is idempotent and uses anonymous actor by default", async () => {
+  it("logout revokes token, attributes audit to real session owner, and falls back to ANONYMOUS", async () => {
     const f = fixture();
     await f.flows.logout(undefined, {});
     expect(f.deps.service.revokeSession).not.toHaveBeenCalled();
+    expect(f.deps.audit).toHaveBeenCalledWith(
+      expect.objectContaining({ actorUsername: "ANONYMOUS" }),
+    );
+    vi.mocked(f.deps.service.revokeSession).mockResolvedValueOnce({
+      username: "alice",
+      userId: "u1",
+    });
     expect(await f.flows.logout("access", context)).toEqual({
       status: 200,
       body: { message: "Logout exitoso" },
     });
     expect(f.deps.service.revokeSession).toHaveBeenCalledWith("access");
-    expect(f.deps.audit).toHaveBeenCalledWith(
-      expect.objectContaining({ actorUsername: "ANONYMOUS" }),
+    expect(f.deps.audit).toHaveBeenLastCalledWith(
+      expect.objectContaining({ actorUsername: "alice" }),
     );
   });
   it("session persistence failure does not audit success or clear failures", async () => {

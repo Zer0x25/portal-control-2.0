@@ -8,7 +8,7 @@ export const messageResponse = {
 export const sessionResponse = {
   type: "object",
   additionalProperties: false,
-  required: ["userId", "username", "role", "token", "mustChangePassword", "message"],
+  required: ["userId", "username", "role", "token", "mustChangePassword", "mfaEnabled", "message"],
   properties: {
     userId: string,
     username: string,
@@ -16,6 +16,7 @@ export const sessionResponse = {
     employeeId: { type: ["string", "null"] },
     token: string,
     mustChangePassword: { type: "boolean" },
+    mfaEnabled: { type: "boolean" },
     message: string,
   },
 };

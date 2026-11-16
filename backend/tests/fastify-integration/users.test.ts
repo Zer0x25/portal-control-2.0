@@ -94,7 +94,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     assertSafe(paginated.body.data[0]);
     expect(paginated.body.data[0]).toMatchObject({
       id: target.id,
-      role: "Supervisor Elevado",
+      role: "Supervisor_Elevado",
       mfaEnabled: true,
       mustChangePassword: true,
     });
@@ -289,5 +289,82 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     assertSafe(override.body);
     const stored = await prismaDirect.user.findUniqueOrThrow({ where: { id: "legacy-user-id" } });
     expect(bcrypt.compareSync("override-password", stored.passwordHash)).toBe(true);
+  });
+
+  it("enforces admin-only mustChangePassword and revokes sessions/sockets on password or role change", async () => {
+    const crypto = await import("node:crypto");
+    const forceLogoutSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToUser")
+      .mockImplementation(() => {});
+
+    const created = await http("POST", "/api/users", {
+      username: "revoke-target",
+      password: "initial-password-1",
+      role: "Reloj_Control",
+    });
+    expect(created.status).toBe(201);
+    const targetId = created.body.id as string;
+
+    const firstSess = await AuthService.createSession(
+      targetId,
+      "revoke-target",
+      "Reloj_Control",
+      null,
+      "browser-1",
+    );
+    const secondSess = await AuthService.createSession(
+      targetId,
+      "revoke-target",
+      "Reloj_Control",
+      null,
+      "browser-2",
+    );
+
+    // Non-admin attempting to set mustChangePassword must be rejected with 403
+    const nonAdminAttempt = await http(
+      "PUT",
+      `/api/users/${targetId}`,
+      { password: "changed-self-1", mustChangePassword: false },
+      firstSess.token,
+    );
+    expect(nonAdminAttempt.status).toBe(403);
+
+    // Voluntary self-password change revokes EXCEPT_CURRENT session
+    const selfChange = await http(
+      "PUT",
+      `/api/users/${targetId}`,
+      { password: "changed-self-2" },
+      firstSess.token,
+    );
+    expect(selfChange.status).toBe(200);
+    const firstHash = crypto.createHash("sha256").update(firstSess.token).digest("hex");
+    const secondHash = crypto.createHash("sha256").update(secondSess.token).digest("hex");
+    expect(
+      await prismaDirect.activeSession.findUnique({ where: { tokenHash: firstHash } }),
+    ).not.toBeNull();
+    expect(
+      await prismaDirect.activeSession.findUnique({ where: { tokenHash: secondHash } }),
+    ).toBeNull();
+    expect(forceLogoutSpy).toHaveBeenCalledWith(
+      targetId,
+      expect.objectContaining({
+        reason: "SESSION_INVALIDATED",
+        exceptTokenHash: firstHash,
+      }),
+    );
+
+    // Admin changing role or archiving revokes ALL sessions
+    forceLogoutSpy.mockClear();
+    const adminRoleChange = await http("PUT", `/api/users/${targetId}`, {
+      role: "Supervisor_Elevado",
+      mustChangePassword: true,
+    });
+    expect(adminRoleChange.status).toBe(200);
+    expect(adminRoleChange.body.mustChangePassword).toBe(true);
+    expect(await prismaDirect.activeSession.count({ where: { userId: targetId } })).toBe(0);
+    expect(forceLogoutSpy).toHaveBeenCalledWith(
+      targetId,
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
   });
 });

@@ -6,9 +6,6 @@ import { UserManagementView } from "../../../features/user-management/views/User
 vi.mock("../../../features/user-management/components/UserForm", () => ({
   default: () => <div>USER-FORM</div>,
 }));
-vi.mock("../../../features/auth/components/MFASetupModal.container", () => ({
-  default: () => <div>MFA-MODAL</div>,
-}));
 vi.mock("../../../components/ui/CinematicModal", () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -62,7 +59,6 @@ describe("UserManagementView", () => {
     userToResetPin: null,
     userToResetPassword: null,
     searchTerm: "",
-    isMFASetupOpen: false,
     isMobile: false,
     paginatedUsers: [
       {
@@ -85,7 +81,6 @@ describe("UserManagementView", () => {
     handleEditUser: vi.fn(),
     handleSaveUser: vi.fn(),
     setIsFormVisible: vi.fn(),
-    setIsMFASetupOpen: vi.fn(),
     setUserToDelete: vi.fn(),
     setUserToResetPin: vi.fn(),
     setUserToResetPassword: vi.fn(),
@@ -124,5 +119,13 @@ describe("UserManagementView", () => {
     expect(container).toBeInTheDocument();
     expect(container).toHaveClass("max-w-[1440px]");
     expect(container).toHaveAttribute("data-ui-protected");
+  });
+
+  it("does not render dead MFA setup button for current admin user in table rows", () => {
+    render(<UserManagementView {...baseProps} paginatedUsers={[baseProps.currentUser!]} />);
+
+    expect(
+      screen.queryByRole("button", { name: /Configurar autenticación MFA/i }),
+    ).not.toBeInTheDocument();
   });
 });

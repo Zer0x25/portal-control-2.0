@@ -20,6 +20,7 @@ export const UpdateUserSchema = z
     password: z.string().min(6).optional(),
     role: userRoleEnum.optional(),
     employeeId: z.string().optional(),
+    mustChangePassword: z.boolean().optional(),
   })
   .openapi("UpdateUser");
 
@@ -27,7 +28,7 @@ export const UserSchema = z
   .object({
     id: z.string(),
     username: z.string(),
-    role: z.enum([...userRoleEnum.options, "Archivado", "Reloj Control", "Supervisor Elevado"]),
+    role: z.enum([...userRoleEnum.options, "Archivado"]),
     employeeId: z.string().nullable().optional(),
     mustChangePassword: z.boolean().optional(),
     mfaEnabled: z.boolean().optional(),
@@ -49,8 +50,13 @@ export const UserQuerySchema = z.object({
 
 export const LoginSchema = z
   .object({
-    username: z.string(),
-    password: z.string(),
+    username: z
+      .string()
+      .min(1, "El usuario es requerido")
+      .refine((value) => value.trim().length > 0, {
+        message: "El usuario es requerido",
+      }),
+    password: z.string().min(1, "La contraseña es requerida"),
   })
   .openapi("Login");
 
@@ -73,8 +79,13 @@ export const MFAValidateSchema = z
 
 export const KioskLoginSchema = z
   .object({
-    employeeId: z.string(),
-    pin: z.string(),
+    employeeId: z
+      .string()
+      .min(1, "El empleado es requerido")
+      .refine((value) => value.trim().length > 0, {
+        message: "El empleado es requerido",
+      }),
+    pin: z.string().min(1, "El PIN es requerido"),
   })
   .openapi("KioskLogin");
 

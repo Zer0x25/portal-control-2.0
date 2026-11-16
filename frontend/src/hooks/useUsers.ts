@@ -6,6 +6,7 @@ import { User, UserRole } from "../types";
 import { userService } from "../services/userService";
 import { queryKeys } from "../lib/queryKeys";
 import { logger } from "../utils/logger";
+import { DEFAULT_TEMPORARY_PASSWORD } from "../constants";
 
 /**
  * Cuentas de usuario: única fuente = `useUsersQuery` (spec 032 T5).
@@ -67,7 +68,8 @@ export const useUsers = (options: { readonly enabled?: boolean } = {}) => {
       const newUser: Omit<User, "id"> = {
         username: finalAlias,
         role,
-        password: "changeme123", // Default per requirements
+        password: DEFAULT_TEMPORARY_PASSWORD,
+        mustChangePassword: true,
         employeeId,
         isDeleted: false,
         lastModified: Date.now(),
@@ -127,9 +129,15 @@ export const useUsers = (options: { readonly enabled?: boolean } = {}) => {
         await userService.update(currentUser.id, {
           password: data.newPassword,
         });
-        await refreshUsers();
+        if (["Administrador", "Supervisor_Elevado"].includes(currentUser.role)) {
+          await refreshUsers();
+        }
         return true;
-      } catch {
+      } catch (error) {
+        addToast(
+          error instanceof Error ? error.message : "Error al actualizar la contraseña.",
+          "error",
+        );
         return false;
       }
     },

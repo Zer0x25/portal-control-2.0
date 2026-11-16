@@ -143,4 +143,41 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
 
     updateSpy.mockRestore();
   });
+
+  it("resets isPinBlocked and pinFailedAttempts when clearing PIN with pin: null", async () => {
+    const service = new EmployeeService();
+    const updateSpy = vi.spyOn(prisma.employee, "update").mockImplementation(async ({ data }) => ({
+      id: "EMP-2001",
+      name: "Carlos",
+      rut: "11.111.111-1",
+      email: null,
+      position: "Dev",
+      area: "IT",
+      workdayType: "Completa",
+      status: "Activo",
+      pin: data.pin as string | null,
+      isPinBlocked: data.isPinBlocked as boolean,
+      pinFailedAttempts: data.pinFailedAttempts as number,
+      phone: null,
+      address: null,
+      gender: null,
+      birthDate: null,
+      entryDate: new Date(),
+      leaveDaysAvailable: 15,
+      isDeleted: false,
+      lastModified: BigInt(0),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
+    await service.updateEmployee("EMP-2001", { pin: null });
+
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    const updatedData = updateSpy.mock.calls[0][0].data;
+    expect(updatedData.pin).toBeNull();
+    expect(updatedData.isPinBlocked).toBe(false);
+    expect(updatedData.pinFailedAttempts).toBe(0);
+
+    updateSpy.mockRestore();
+  });
 });

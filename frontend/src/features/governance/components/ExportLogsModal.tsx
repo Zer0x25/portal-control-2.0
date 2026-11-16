@@ -54,7 +54,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
     addToast(`Iniciando exportación a ${format.toUpperCase()}...`, "info");
 
     try {
-      startDownload(startDate, endDate, format);
+      await startDownload(startDate, endDate, format);
 
       addToast(`Descarga de ${format.toUpperCase()} iniciada.`, "success");
       onClose();

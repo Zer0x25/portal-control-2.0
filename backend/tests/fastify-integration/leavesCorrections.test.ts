@@ -504,7 +504,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect(SocketService.emit).not.toHaveBeenCalled();
     expect(await prismaDirect.auditLog.count({ where: { action: "TIME_RECORD_EDITED" } })).toBe(0);
   });
-  it("scopes kiosk correction reads and creation to its signed employee", async () => {
+  it("scopes Usuario correction reads/creation to linked employee and denies Kiosk_Employee with 403", async () => {
     const own = await seedRequest();
     await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
     await seedRecord({ id: "foreign-record", employeeId: "foreign" });
@@ -518,11 +518,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
         reason: "Foreign",
       },
     });
-    token = jwt.sign(
-      { id: employee.id, username: "kiosk", role: "Kiosk_Employee", employeeId: employee.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: "5m" },
-    );
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     for (const url of ["/api/corrections", "/api/corrections?since=1"]) {
       const listed = await http("GET", url);
       expect(listed.status).toBe(200);
@@ -550,8 +546,9 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
         .status,
     ).toBe(403);
     expect((await http("POST", "/api/corrections", correction())).status).toBe(201);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
     token = jwt.sign(
-      { id: employee.id, username: "kiosk", role: "Kiosk_Employee" },
+      { id: employee.id, username: "kiosk", role: "Kiosk_Employee", employeeId: employee.id },
       process.env.JWT_SECRET!,
       { expiresIn: "5m" },
     );

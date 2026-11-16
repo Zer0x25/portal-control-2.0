@@ -248,7 +248,7 @@ describe("Spec 015 shifts on Fastify", () => {
     expect(overlap.status).toBe(400);
     expect(await prismaDirect.assignedShift.count()).toBe(1);
   });
-  it.each(["Usuario", "Kiosk_Employee"])("scopes assignments and calendar for %s", async (role) => {
+  it("scopes assignments and calendar for Usuario and denies Kiosk_Employee with 403", async () => {
     await setup();
     await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
     await prismaDirect.assignedShift.create({
@@ -259,14 +259,7 @@ describe("Spec 015 shifts on Fastify", () => {
         endDate: plus(1),
       },
     });
-    if (role === "Usuario")
-      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
-    if (role === "Kiosk_Employee")
-      token = jwt.sign(
-        { id: employee.id, username: "kiosk", role, employeeId: employee.id },
-        process.env.JWT_SECRET!,
-        { expiresIn: "5m" },
-      );
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     const list = await http("GET", "/api/shifts/assignments?employeeId=foreign");
     expect(list.status).toBe(200);
     expect(list.body.data.map((a: { employeeId: string }) => a.employeeId)).toEqual([employee.id]);
@@ -297,20 +290,32 @@ describe("Spec 015 shifts on Fastify", () => {
     expect(matrix.status).toBe(200);
     expect(Object.keys(matrix.body)).toEqual([employee.id]);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
-    if (role === "Kiosk_Employee")
-      token = jwt.sign({ id: employee.id, username: "kiosk", role }, process.env.JWT_SECRET!, {
-        expiresIn: "5m",
-      });
+    token = jwt.sign(
+      { id: employee.id, username: "kiosk", role: "Kiosk_Employee", employeeId: employee.id },
+      process.env.JWT_SECRET!,
+      { expiresIn: "5m" },
+    );
     expect((await http("GET", "/api/shifts/assignments")).status).toBe(403);
     expect(
       (await http("GET", `/api/shifts/assignments?employeeId=${employee.id}&since=1`)).status,
+    ).toBe(403);
+    expect(
+      (await http("GET", `/api/shifts/schedule/employee/${employee.id}?date=${today()}`)).status,
+    ).toBe(403);
+    expect(
+      (
+        await http(
+          "GET",
+          `/api/shifts/schedule/employee/${employee.id}/month?year=${year}&month=${month}`,
+        )
+      ).status,
     ).toBe(403);
     expect(
       (
         await http("POST", "/api/shifts/schedule/matrix", {
           startDate: today(),
           endDate: plus(1),
-          employeeIds: ["foreign"],
+          employeeIds: [employee.id],
         })
       ).status,
     ).toBe(403);

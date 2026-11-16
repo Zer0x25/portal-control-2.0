@@ -9,11 +9,12 @@ export interface LoginResponse {
   userId: string;
   username: string;
   role: string;
-  employeeId?: string;
+  employeeId?: string | null;
   token?: string;
   mfaRequired?: boolean;
   mfaToken?: string;
   mustChangePassword?: boolean;
+  mfaEnabled?: boolean;
   message?: string;
 }
 
@@ -25,6 +26,9 @@ export interface AuthService {
   setToken: (token: string) => void;
   removeToken: () => void;
   getAuthHeader: () => HeadersInit;
+  getKioskToken: () => string | null;
+  setKioskToken: (token: string) => void;
+  removeKioskToken: () => void;
   setupMFA: () => Promise<{ qrCode: string; secret: string }>;
   verifyMFASetup: (token: string) => Promise<{ message: string }>;
   validateMFACode: (mfaToken: string, code: string) => Promise<LoginResponse>;
@@ -134,16 +138,39 @@ class AuthServiceImpl implements AuthService {
   }
 
   async logout(): Promise<void> {
-    this.removeToken();
-    return Promise.resolve();
+    const token = this.getToken();
+    try {
+      if (USE_BETTER_AUTH) {
+        await authClient.signOut({});
+      } else if (token) {
+        await apiRequest({
+          method: "POST",
+          url: "/api/auth/logout",
+          skipAuthEvents: true,
+        });
+      }
+    } catch (error) {
+      logger.warn("Logout request failed:", error);
+      return;
+    } finally {
+      this.removeToken();
+    }
   }
 
   isAuthenticated(): boolean {
     const token = this.getToken();
     if (!token) return false;
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload.exp * 1000 > Date.now();
+      const parts = token.split(".");
+      if (parts.length < 2 || !parts[1]) return false;
+      const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+      const payload = JSON.parse(atob(padded)) as { exp?: unknown; role?: unknown };
+      return (
+        typeof payload.exp === "number" &&
+        payload.exp * 1000 > Date.now() &&
+        payload.role !== "Kiosk_Employee"
+      );
     } catch {
       return false;
     }
@@ -165,6 +192,18 @@ class AuthServiceImpl implements AuthService {
     return authTokenStore.getAuthHeader();
   }
 
+  getKioskToken(): string | null {
+    return authTokenStore.getKioskToken();
+  }
+
+  setKioskToken(token: string): void {
+    authTokenStore.setKioskToken(token);
+  }
+
+  removeKioskToken(): void {
+    authTokenStore.removeKioskToken();
+  }
+
   async kioskVerifyPin(
     employeeId: string,
     pin: string,
@@ -182,7 +221,7 @@ class AuthServiceImpl implements AuthService {
       });
 
       if (data.token) {
-        this.setToken(data.token);
+        this.setKioskToken(data.token);
       }
 
       return data;

@@ -5,11 +5,18 @@ import { useReportsTabController } from "../../../features/supervisor-dashboard/
 import { server } from "../../mocks/server";
 import { http, HttpResponse } from "msw";
 
-const { useEmployeesMock, useToastsMock, useNavigateMock, addToastMock } = vi.hoisted(() => ({
+const {
+  useEmployeesMock,
+  useToastsMock,
+  useNavigateMock,
+  addToastMock,
+  triggerBrowserDownloadMock,
+} = vi.hoisted(() => ({
   useEmployeesMock: vi.fn(),
   useToastsMock: vi.fn(),
   useNavigateMock: vi.fn(),
   addToastMock: vi.fn(),
+  triggerBrowserDownloadMock: vi.fn(),
 }));
 
 vi.mock("../../../hooks/useEmployees", () => ({
@@ -24,8 +31,13 @@ vi.mock("react-router", () => ({
   useNavigate: () => useNavigateMock,
 }));
 
+vi.mock("../../../utils/triggerBrowserDownload", () => ({
+  triggerBrowserDownload: (...args: unknown[]) => triggerBrowserDownloadMock(...args),
+}));
+
 describe("useReportsTabController", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     authTokenStore.setToken("token-123");
     useEmployeesMock.mockReturnValue({ activeEmployees: [] });
     useToastsMock.mockReturnValue({ addToast: addToastMock });
@@ -103,5 +115,53 @@ describe("useReportsTabController", () => {
     });
 
     expect(result.current.showPdfModeModal).toBe(true);
+  });
+
+  it("exports csv and xml via Authorization Bearer without token in URL", async () => {
+    const requests: Array<{ auth: string | null; url: string }> = [];
+    server.use(
+      http.get("http://localhost:4000/api/records/export", ({ request }) => {
+        requests.push({
+          auth: request.headers.get("authorization"),
+          url: request.url,
+        });
+        const format = new URL(request.url).searchParams.get("format") ?? "csv";
+        return new HttpResponse(new Blob(["data"], { type: "text/plain" }), {
+          status: 200,
+          headers: { "content-disposition": `attachment; filename="reporte.${format}"` },
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useReportsTabController());
+
+    act(() => {
+      result.current.handleFiltersChange({
+        employeeId: "",
+        area: "A1",
+        workdayType: "",
+        startDateISO: "2026-03-01",
+        endDateISO: "2026-03-05",
+      });
+    });
+
+    await act(async () => {
+      await result.current.handleGenerateReport();
+    });
+
+    await act(async () => {
+      await result.current.handleExport("csv");
+      await result.current.handleExport("xml");
+    });
+
+    expect(requests).toHaveLength(2);
+    expect(requests[0].auth).toBe("Bearer token-123");
+    expect(requests[0].url).toContain("format=csv");
+    expect(requests[0].url).not.toContain("token=");
+    expect(requests[1].auth).toBe("Bearer token-123");
+    expect(requests[1].url).toContain("format=xml");
+    expect(requests[1].url).not.toContain("token=");
+    expect(triggerBrowserDownloadMock).toHaveBeenCalledWith(expect.any(Blob), "reporte.csv");
+    expect(triggerBrowserDownloadMock).toHaveBeenCalledWith(expect.any(Blob), "reporte.xml");
   });
 });

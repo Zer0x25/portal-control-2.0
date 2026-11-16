@@ -190,13 +190,18 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
           soundEnabled={true}
           isDropdownOpen={false}
           isChangePasswordModalOpen={false}
+          canConfigureMfa={false}
+          isMfaSetupModalOpen={false}
           isManualModalOpen={false}
           dropdownRef={{ current: null }}
           onToggleSound={vi.fn()}
           onToggleDropdown={vi.fn()}
           onOpenChangePassword={vi.fn()}
+          onOpenMfaSetup={vi.fn()}
           onOpenManual={vi.fn()}
           onCloseChangePassword={vi.fn()}
+          onCloseMfaSetup={vi.fn()}
+          onMfaSetupSuccess={vi.fn()}
           onCloseManual={vi.fn()}
           onLogout={vi.fn()}
         />,
@@ -208,6 +213,37 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
         "app-sidebar",
       );
       expect(screen.getByTestId("user-menu-button")).toBeInTheDocument();
+    });
+
+    it("renders mfa-setup-button in user menu dropdown only when canConfigureMfa is true", () => {
+      const baseHeaderProps = {
+        toggleSidebar: vi.fn(),
+        currentUser: { role: "Administrador" },
+        welcomeName: "Admin User",
+        systemStatus: "online",
+        soundEnabled: true,
+        isDropdownOpen: true,
+        isChangePasswordModalOpen: false,
+        isMfaSetupModalOpen: false,
+        isManualModalOpen: false,
+        dropdownRef: { current: null },
+        onToggleSound: vi.fn(),
+        onToggleDropdown: vi.fn(),
+        onOpenChangePassword: vi.fn(),
+        onOpenMfaSetup: vi.fn(),
+        onOpenManual: vi.fn(),
+        onCloseChangePassword: vi.fn(),
+        onCloseMfaSetup: vi.fn(),
+        onMfaSetupSuccess: vi.fn(),
+        onCloseManual: vi.fn(),
+        onLogout: vi.fn(),
+      };
+
+      const { rerender } = render(<HeaderView {...baseHeaderProps} canConfigureMfa={true} />);
+      expect(screen.getByTestId("mfa-setup-button")).toBeInTheDocument();
+
+      rerender(<HeaderView {...baseHeaderProps} canConfigureMfa={false} />);
+      expect(screen.queryByTestId("mfa-setup-button")).not.toBeInTheDocument();
     });
 
     it("renders SidebarView with complementary landmark, navigation role, and dynamic height", () => {

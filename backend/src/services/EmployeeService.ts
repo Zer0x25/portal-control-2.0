@@ -1,9 +1,11 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
 import { Prisma, EmployeeStatus } from "../generated/prisma/client";
 import bcryptjs from "bcryptjs";
 import { auditService } from "./auditService";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
 import type { AuthUser } from "../modules/auth";
+import { SocketService } from "./socketService";
+import { DEFAULT_TEMPORARY_PASSWORD } from "./UserService";
 
 const EMPLOYEE_ID_PREFIX = "EMP-";
 const EMPLOYEE_ID_BASE = 1000;
@@ -178,16 +180,22 @@ export class EmployeeService {
       // 4. User Sync
       const user = await prisma.user.findFirst({ where: { employeeId: id } });
       if (user) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: "Archivado" },
+        await withDirectTransaction(async (tx) => {
+          await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+          await tx.user.update({
+            where: { id: user.id },
+            data: { role: "Archivado" },
+          });
+          await tx.activeSession.deleteMany({ where: { userId: user.id } });
         });
+        SocketService.emitForceLogoutToUser(user.id, { reason: "SESSION_INVALIDATED" });
       }
+      SocketService.emitForceLogoutToEmployee(id, { reason: "SESSION_INVALIDATED" });
     } else if (newStatus === "Activo" && oldStatus === "Archivado") {
       // Un-archive User and reset credentials
       const user = await prisma.user.findFirst({ where: { employeeId: id } });
       if (user) {
-        const defaultPassword = bcryptjs.hashSync("123456", 10);
+        const defaultPassword = bcryptjs.hashSync(DEFAULT_TEMPORARY_PASSWORD, 10);
         const defaultPin = updatedRut.slice(0, 4);
 
         await prisma.user.update({
@@ -219,6 +227,9 @@ export class EmployeeService {
     authUser?: EmployeeListAuthUser,
     isPublicKiosk?: boolean,
   ) {
+    if (authUser?.role === "Archivado") {
+      return { rawEmployees: [], total: 0 };
+    }
     const { since, page, pageSize, search, status, area } = query as EmployeeListQuery;
     const where: Prisma.EmployeeWhereInput = {};
 
@@ -278,6 +289,7 @@ export class EmployeeService {
   }
 
   async listClockingOptions(authUser?: EmployeeListAuthUser) {
+    if (authUser?.role === "Archivado") return [];
     if (authUser?.role === "Usuario" && !authUser.employeeId) return [];
     if (authUser?.role === "Supervisor" && authUser.employeeId) {
       const supervisor = await prisma.employee.findUnique({
@@ -311,11 +323,15 @@ export class EmployeeService {
     return await prisma.employee.findUnique({ where: { id } });
   }
 
+  private async normalizePinForStorage(pin?: string | null): Promise<string | null | undefined> {
+    if (typeof pin === "string" && /^\d{4}$/.test(pin)) {
+      return bcryptjs.hash(pin, 10);
+    }
+    return pin;
+  }
+
   async createEmployee(data: EmployeeCreateData, db: EmployeeDbClient = prisma) {
-    const hashedPin =
-      typeof data.pin === "string" && /^\d{4}$/.test(data.pin)
-        ? await bcryptjs.hash(data.pin, 10)
-        : data.pin;
+    const hashedPin = await this.normalizePinForStorage(data.pin);
     return await db.employee.create({
       data: {
         id: data.id,
@@ -332,10 +348,8 @@ export class EmployeeService {
   }
 
   async updateEmployee(id: string, data: EmployeeUpdateData) {
-    const hashedPin =
-      typeof data.pin === "string" && /^\d{4}$/.test(data.pin)
-        ? await bcryptjs.hash(data.pin, 10)
-        : data.pin;
+    const hashedPin = await this.normalizePinForStorage(data.pin);
+    const resetPinState = data.pin !== undefined;
     return await prisma.employee.update({
       where: { id },
       data: {
@@ -346,8 +360,8 @@ export class EmployeeService {
         workdayType: data.workdayType,
         status: data.status as EmployeeStatus,
         pin: hashedPin,
-        isPinBlocked: data.pin ? false : data.isPinBlocked,
-        pinFailedAttempts: data.pin ? 0 : data.pinFailedAttempts,
+        isPinBlocked: resetPinState ? false : data.isPinBlocked,
+        pinFailedAttempts: resetPinState ? 0 : data.pinFailedAttempts,
       },
     });
   }
@@ -362,8 +376,9 @@ export class EmployeeService {
     for (let i = 0; i < employees.length; i += CHUNK_SIZE) {
       const chunk = employees.slice(i, i + CHUNK_SIZE);
       await Promise.all(
-        chunk.map((emp) =>
-          prisma.employee.upsert({
+        chunk.map(async (emp) => {
+          const hashedPin = await this.normalizePinForStorage(emp.pin);
+          return prisma.employee.upsert({
             where: { id: emp.id },
             update: {
               name: emp.name,
@@ -373,7 +388,7 @@ export class EmployeeService {
               area: emp.area,
               workdayType: emp.workdayType,
               status: (emp.status || "Activo") as EmployeeStatus,
-              pin: emp.pin,
+              pin: hashedPin,
             },
             create: {
               id: emp.id,
@@ -384,10 +399,10 @@ export class EmployeeService {
               area: emp.area,
               workdayType: emp.workdayType,
               status: (emp.status || "Activo") as EmployeeStatus,
-              pin: emp.pin,
+              pin: hashedPin,
             },
-          }),
-        ),
+          });
+        }),
       );
       createdCount += chunk.length;
     }

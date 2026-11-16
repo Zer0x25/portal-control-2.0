@@ -45,9 +45,10 @@ describe("MFALoginModal", () => {
     expect(screen.getByPlaceholderText("000000")).toHaveValue("123456");
   });
 
-  it("llama al flujo de exito con un codigo valido", async () => {
+  it("llama al flujo de exito con el usuario autenticado cuando el codigo es valido", async () => {
     const onSuccess = vi.fn();
-    validateMFACodeMock.mockResolvedValue(undefined);
+    const user = { id: "u1", username: "ana", role: "Administrador" };
+    validateMFACodeMock.mockResolvedValue(user);
 
     render(<MFALoginModal isOpen={true} onSuccess={onSuccess} onCancel={vi.fn()} />);
 
@@ -56,8 +57,24 @@ describe("MFALoginModal", () => {
 
     await waitFor(() => {
       expect(validateMFACodeMock).toHaveBeenCalledWith("123456");
-      expect(onSuccess).toHaveBeenCalled();
+      expect(onSuccess).toHaveBeenCalledWith(user);
     });
+  });
+
+  it("no cancela al hacer click en el backdrop y solo cancela desde el boton Cancelar", () => {
+    const onCancel = vi.fn();
+    render(<MFALoginModal isOpen={true} onSuccess={vi.fn()} onCancel={onCancel} />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-labelledby", "mfa-login-modal-title");
+
+    const backdrop = dialog.firstElementChild as HTMLElement;
+    fireEvent.click(backdrop);
+    expect(onCancel).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it("muestra el mensaje del backend si el codigo es invalido", async () => {

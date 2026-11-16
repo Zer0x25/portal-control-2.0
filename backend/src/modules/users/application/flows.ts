@@ -14,6 +14,10 @@ export interface UpdateUserDto {
   mustChangePassword?: boolean;
   isForcePasswordChange?: boolean;
 }
+export interface UpdateUserActorContext {
+  actorId?: string;
+  currentTokenHash?: string;
+}
 export interface UserQuery {
   since?: string | number;
   requesterRole?: string;
@@ -36,7 +40,11 @@ export interface UserFlowDependencies {
     create(
       data: UserWrite & { id: string; username: string; passwordHash: string; role: string },
     ): Promise<UserProjection>;
-    update(id: string, data: UserWrite): Promise<UserProjection>;
+    update(
+      id: string,
+      data: UserWrite,
+      actorContext?: UpdateUserActorContext,
+    ): Promise<UserProjection>;
     findUsername(id: string): Promise<{ username: string } | null>;
     delete(id: string): Promise<void>;
   };
@@ -93,7 +101,12 @@ export function createUserFlows(deps: UserFlowDependencies) {
       deps.emit(result);
       return result;
     },
-    async updateUser(id: string, input: UpdateUserDto, actorUsername: string) {
+    async updateUser(
+      id: string,
+      input: UpdateUserDto,
+      actorUsername: string,
+      actorContext?: UpdateUserActorContext,
+    ) {
       const data: UserWrite = {};
       if (input.username) data.username = input.username.toLowerCase();
       if (input.password) data.passwordHash = deps.hash(input.password);
@@ -109,7 +122,9 @@ export function createUserFlows(deps: UserFlowDependencies) {
         data.isForcePasswordChange = input.mustChangePassword;
       if (input.isForcePasswordChange !== undefined)
         data.isForcePasswordChange = input.isForcePasswordChange;
-      const user = await deps.repository.update(id, data);
+      const user = actorContext
+        ? await deps.repository.update(id, data, actorContext)
+        : await deps.repository.update(id, data);
       const result = toPublicUser(user);
       // Keep the legacy audit's Prisma relation field name without importing Prisma.
       const updatedFields = Object.keys(data).map((field) =>

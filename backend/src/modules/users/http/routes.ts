@@ -1,4 +1,5 @@
 import type {} from "../../../platform/fastify/types";
+import crypto from "node:crypto";
 import type { FastifyPluginAsync, onRequestHookHandler } from "fastify";
 import { z } from "zod";
 import {
@@ -9,6 +10,7 @@ import {
 } from "../../../models/schemas/auth-user.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
 import { ForbiddenError } from "../../../utils/AppError";
+import { resolveAccessToken } from "../../auth";
 import type { CreateUserDto, UpdateUserDto, UserFlows } from "../application/flows";
 export interface UsersPluginOptions {
   service: UserFlows;
@@ -91,11 +93,16 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
           );
         }
       }
+      const accessToken = resolveAccessToken(request.headers.authorization);
+      const currentTokenHash = accessToken
+        ? crypto.createHash("sha256").update(accessToken).digest("hex")
+        : undefined;
       return UserSchema.parse(
         await options.service.updateUser(
           request.params.id,
           request.body,
           request.user?.username || "System",
+          { actorId: request.user?.id, currentTokenHash },
         ),
       );
     },

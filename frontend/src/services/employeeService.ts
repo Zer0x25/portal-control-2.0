@@ -82,6 +82,18 @@ export const employeeService = {
   },
 
   /**
+   * Actualiza exclusivamente el PIN desde sesión Kiosko (`kioskToken`).
+   */
+  async updateKioskPin(id: string, pin: string): Promise<Employee> {
+    const response = await apiClient.put("/api/employees/{id}", {
+      path: { id },
+      body: { pin } as unknown as EmployeeSchema,
+      authScope: "kiosk",
+    });
+    return response as unknown as Employee;
+  },
+
+  /**
    * Importación masiva de empleados.
    */
   async createBulk(employees: Employee[]): Promise<{ count: number }> {

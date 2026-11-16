@@ -28,6 +28,13 @@ export const authenticateAccessToken = createAuthenticate({
         },
       }),
   },
+  employees: {
+    findStatus: (id) =>
+      prisma.employee.findUnique({
+        where: { id },
+        select: { status: true },
+      }),
+  },
   betterAuth: {
     enabled: process.env.BETTER_AUTH_ENABLED === "true",
     findSession: async (token) => {

@@ -2526,21 +2526,40 @@
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 token: { type: string }
- *                 requiresMFA: { type: boolean }
- *                 mustChangePassword: { type: boolean }
+ *               oneOf:
+ *                 - type: object
+ *                   required: [userId, username, role, token, mustChangePassword, mfaEnabled, message]
+ *                   properties:
+ *                     userId: { type: string }
+ *                     username: { type: string }
+ *                     role: { type: string }
+ *                     employeeId: { type: string, nullable: true }
+ *                     token: { type: string }
+ *                     mustChangePassword: { type: boolean }
+ *                     mfaEnabled: { type: boolean }
+ *                     message: { type: string }
+ *                 - type: object
+ *                   required: [mfaRequired, mfaToken, userId, message]
+ *                   properties:
+ *                     mfaRequired: { type: boolean }
+ *                     mfaToken: { type: string }
+ *                     userId: { type: string }
+ *                     message: { type: string }
+ *       400:
+ *         description: Error de validación en credenciales
  *       401:
  *         description: Credenciales inválidas
+ *       403:
+ *         description: Cuenta de usuario archivada
+ *       429:
+ *         description: Demasiados intentos fallidos
  */
 
 /**
  * @openapi
  * /api/auth/mfa/setup:
  *   post:
- *     summary: Genera secreto MFA y QR
+ *     summary: Genera secreto MFA y QR (Solo Administrador)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -2551,16 +2570,22 @@
  *           application/json:
  *             schema:
  *               type: object
+ *               required: [qrCode, secret, message]
  *               properties:
  *                 qrCode: { type: string }
  *                 secret: { type: string }
+ *                 message: { type: string }
+ *       403:
+ *         description: Requiere rol Administrador
+ *       409:
+ *         description: MFA ya habilitado
  */
 
 /**
  * @openapi
  * /api/auth/mfa/verify:
  *   post:
- *     summary: Habilita MFA tras verificar primer código
+ *     summary: Habilita MFA tras verificar primer código (Solo Administrador)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -2569,12 +2594,23 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               token: { type: string }
+ *             $ref: '#/components/schemas/MFAVerify'
  *     responses:
  *       200:
  *         description: MFA habilitado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [message]
+ *               properties:
+ *                 message: { type: string }
+ *       400:
+ *         description: MFA no configurado o código inválido
+ *       403:
+ *         description: Requiere rol Administrador
+ *       409:
+ *         description: MFA ya habilitado
  */
 
 /**
@@ -2583,9 +2619,17 @@
  *   post:
  *     summary: Valida código MFA durante login
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MFAValidate'
  *     responses:
+ *       400:
+ *         description: Payload inválido
  *       401:
- *         description: Código o desafío inválido, expirado o MFA deshabilitado
+ *         description: Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado
  *       403:
  *         description: Cuenta archivada entre factores
  *       429:
@@ -2602,9 +2646,16 @@
  *           application/json:
  *             schema:
  *               type: object
+ *               required: [userId, username, role, token, mustChangePassword, mfaEnabled, message]
  *               properties:
+ *                 userId: { type: string }
+ *                 username: { type: string }
+ *                 role: { type: string }
+ *                 employeeId: { type: string, nullable: true }
  *                 token: { type: string }
  *                 mustChangePassword: { type: boolean }
+ *                 mfaEnabled: { type: boolean }
+ *                 message: { type: string }
  */
 
 /**
@@ -2626,9 +2677,22 @@
  *           application/json:
  *             schema:
  *               type: object
+ *               required: [success, employeeName, token, message]
  *               properties:
+ *                 success: { type: boolean }
+ *                 employeeName: { type: string }
  *                 token: { type: string }
- *                 employee: { $ref: '#/components/schemas/Employee' }
+ *                 message: { type: string }
+ *       400:
+ *         description: Error de validación en credenciales
+ *       401:
+ *         description: PIN incorrecto
+ *       403:
+ *         description: Empleado archivado o PIN bloqueado
+ *       404:
+ *         description: Empleado no encontrado
+ *       429:
+ *         description: Demasiados intentos fallidos
  */
 
 /**
@@ -2637,9 +2701,18 @@
  *   post:
  *     summary: Cierra sesión del usuario
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Sesión cerrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [message]
+ *               properties:
+ *                 message: { type: string }
  */
 
 /**

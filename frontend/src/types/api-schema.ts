@@ -3726,16 +3726,48 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": {
-              success?: boolean;
-              token?: string;
-              requiresMFA?: boolean;
-              mustChangePassword?: boolean;
-            };
+            "application/json":
+              | {
+                  userId: string;
+                  username: string;
+                  role: string;
+                  employeeId?: string | null;
+                  token: string;
+                  mustChangePassword: boolean;
+                  mfaEnabled: boolean;
+                  message: string;
+                }
+              | {
+                  mfaRequired: boolean;
+                  mfaToken: string;
+                  userId: string;
+                  message: string;
+                };
           };
+        };
+        /** @description Error de validación en credenciales */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
         /** @description Credenciales inválidas */
         401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Cuenta de usuario archivada */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Demasiados intentos fallidos */
+        429: {
           headers: {
             [name: string]: unknown;
           };
@@ -3758,7 +3790,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Genera secreto MFA y QR */
+    /** Genera secreto MFA y QR (Solo Administrador) */
     post: {
       parameters: {
         query?: never;
@@ -3775,10 +3807,25 @@ export interface paths {
           };
           content: {
             "application/json": {
-              qrCode?: string;
-              secret?: string;
+              qrCode: string;
+              secret: string;
+              message: string;
             };
           };
+        };
+        /** @description Requiere rol Administrador */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description MFA ya habilitado */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -3797,7 +3844,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Habilita MFA tras verificar primer código */
+    /** Habilita MFA tras verificar primer código (Solo Administrador) */
     post: {
       parameters: {
         query?: never;
@@ -3807,14 +3854,37 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": {
-            token?: string;
-          };
+          "application/json": components["schemas"]["MFAVerify"];
         };
       };
       responses: {
         /** @description MFA habilitado */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              message: string;
+            };
+          };
+        };
+        /** @description MFA no configurado o código inválido */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Requiere rol Administrador */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description MFA ya habilitado */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -3845,7 +3915,11 @@ export interface paths {
         path?: never;
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["MFAValidate"];
+        };
+      };
       responses: {
         /** @description Autenticación de dos pasos exitosa */
         200: {
@@ -3854,12 +3928,25 @@ export interface paths {
           };
           content: {
             "application/json": {
-              token?: string;
-              mustChangePassword?: boolean;
+              userId: string;
+              username: string;
+              role: string;
+              employeeId?: string | null;
+              token: string;
+              mustChangePassword: boolean;
+              mfaEnabled: boolean;
+              message: string;
             };
           };
         };
-        /** @description Código o desafío inválido, expirado o MFA deshabilitado */
+        /** @description Payload inválido */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado */
         401: {
           headers: {
             [name: string]: unknown;
@@ -3920,10 +4007,47 @@ export interface paths {
           };
           content: {
             "application/json": {
-              token?: string;
-              employee?: components["schemas"]["Employee"];
+              success: boolean;
+              employeeName: string;
+              token: string;
+              message: string;
             };
           };
+        };
+        /** @description Error de validación en credenciales */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description PIN incorrecto */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Empleado archivado o PIN bloqueado */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Empleado no encontrado */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Demasiados intentos fallidos */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -3957,7 +4081,11 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "application/json": {
+              message: string;
+            };
+          };
         };
       };
     };
@@ -4949,6 +5077,7 @@ export interface components {
         | "Supervisor_Elevado"
         | "Fiscalizador";
       employeeId?: string;
+      mustChangePassword?: boolean;
     };
     UserQuery: {
       page?: string;
@@ -4968,9 +5097,7 @@ export interface components {
         | "Administrador"
         | "Supervisor_Elevado"
         | "Fiscalizador"
-        | "Archivado"
-        | "Reloj Control"
-        | "Supervisor Elevado";
+        | "Archivado";
       employeeId?: string | null;
       mustChangePassword?: boolean;
       mfaEnabled?: boolean;

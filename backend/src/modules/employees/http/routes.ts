@@ -78,9 +78,14 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
         ["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(role);
       const isKioskSelf =
         role === "Kiosk_Employee" &&
-        (request.user?.id === request.params.id || request.user?.employeeId === request.params.id);
+        (request.user?.employeeId
+          ? request.user.employeeId === request.params.id
+          : request.user?.id === request.params.id);
       if (!isSupervisorOrAbove && !isKioskSelf) {
         throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
+      }
+      if (isKioskSelf && typeof request.body.pin !== "string") {
+        throw new ForbiddenError("Token de kiosco solo puede actualizar su PIN de 4 dígitos");
       }
       const payload: EmployeeUpdateInput = isKioskSelf ? { pin: request.body.pin } : request.body;
       return options.service.update(request.params.id, payload, request.user?.username || "SYSTEM");

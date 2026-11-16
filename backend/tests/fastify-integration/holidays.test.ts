@@ -225,6 +225,16 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
           payload: { year: 2026 },
         })
       ).statusCode,
+    ).toBe(401);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: `/api/holidays/sync?token=${actor.token}`,
+          headers: actor.headers,
+          payload: { year: 2026 },
+        })
+      ).statusCode,
     ).toBe(500);
     expect(await prisma.holiday.count()).toBe(1);
     expect(events).toHaveBeenCalledTimes(1);

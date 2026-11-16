@@ -27,7 +27,7 @@ export type KioskStep =
 
 export const useKioskData = () => {
   const navigate = useNavigate();
-  const { activeEmployees, isLoadingEmployees, updateEmployee } = useEmployees(true);
+  const { activeEmployees, isLoadingEmployees, updateKioskPin } = useEmployees(true);
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
 
@@ -41,6 +41,7 @@ export const useKioskData = () => {
       employeeId: id,
       source,
       forcedType: type,
+      authScope: "kiosk",
       suppressErrorToast: true,
       ...(location ? { latitude: location.latitude, longitude: location.longitude } : {}),
     });
@@ -68,6 +69,7 @@ export const useKioskData = () => {
     return () => {
       document.body.style.overflow = "unset";
       document.body.style.overscrollBehavior = "auto";
+      authService.removeKioskToken();
     };
   }, []);
 
@@ -123,7 +125,7 @@ export const useKioskData = () => {
     setRutError("");
     setNewPin("");
     setConfirmNewPin("");
-    authService.removeToken();
+    authService.removeKioskToken();
     setIsKioskArmed(false);
   }, []);
 
@@ -140,6 +142,7 @@ export const useKioskData = () => {
           const freshRecords = await timeRecordService.getAll({
             pageSize: 1,
             filters: { employeeId: selectedEmployee.id },
+            authScope: "kiosk",
           });
           const latestRecord = freshRecords.data[0];
           const status = getContractClockingStatus(latestRecord as AttendanceRecord, () => "fuera");
@@ -230,14 +233,14 @@ export const useKioskData = () => {
     }
     if (!selectedEmployee) return;
 
-    const success = await updateEmployee({ ...selectedEmployee, pin: newPin });
+    const success = await updateKioskPin(selectedEmployee.id, newPin);
     if (success) {
       addToast("PIN actualizado con éxito.", "success");
       setSelectedEmployee({ ...selectedEmployee, pin: newPin });
       setStep("actions");
       setIsKioskArmed(false);
       setTimeout(() => setIsKioskArmed(true), 800);
-    } else addToast("Error al actualizar el PIN.", "error");
+    }
   };
 
   const handleClockingAction = async (type: ClockingActionType) => {
@@ -363,6 +366,9 @@ export const useKioskData = () => {
     handleSetNewPin,
     handleClockingAction,
     resetState,
-    onLogout: () => navigate(ROUTES.LOGIN),
+    onLogout: () => {
+      authService.removeKioskToken();
+      navigate(ROUTES.LOGIN);
+    },
   };
 };

@@ -411,11 +411,10 @@ describe("Spec021 import/export on Fastify", () => {
     expect((await http("GET", `/api/export/report-excel?${query}&mode=invalid`)).status).toBe(400);
     expect(spy).not.toHaveBeenCalled();
   });
-  it("rejects impossible/reversed calendar dates without rendering", async () => {
+  it("rejects impossible/reversed calendar dates without rendering and blocks Kiosk_Employee from exports", async () => {
     const spy = vi
       .spyOn(ExportService.prototype, "generateReportPDF")
       .mockResolvedValue(Buffer.from("%PDF-test"));
-    await worker("quiosco", false);
     expect(
       (
         await http(
@@ -427,6 +426,18 @@ describe("Spec021 import/export on Fastify", () => {
         )
       ).status,
     ).toBe(400);
+    await worker("quiosco", false);
+    expect(
+      (
+        await http(
+          "GET",
+          "/api/export/calendar-pdf?startDate=2020-02-30&endDate=2020-01-01",
+          undefined,
+          token,
+          true,
+        )
+      ).status,
+    ).toBe(403);
     expect(spy).not.toHaveBeenCalled();
   });
   it("handles renderer failure before bytes with structured JSON and ends after partial bytes", async () => {

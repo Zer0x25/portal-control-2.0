@@ -47,7 +47,10 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
 - Accesibilidad (axe-core, core+serious): login, dashboard, planificador
   (calendario de turnos) y worker-portal, en tema claro y oscuro.
 - Modales: `modal-dialog` genérico (con `role="dialog"` + `aria-labelledby`);
-  MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`.
+  MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`
+  (disparado desde `mfa-setup-button` en el menú de usuario de `app-header`
+  solo para `Administrador` con `mfaEnabled === false`), y overlay de expiración
+  `session-expired-overlay` (`role="alertdialog"`, `aria-labelledby="session-expired-title"`).
 - Kiosco (`/#/kiosk`): fuera del shell (sin `app-shell`/`main-content`);
   `page-container`, `kiosk-step[data-step]`
   (`rut_input|employee_list|pin_input|actions|success|change_pin`), `kiosk-display`,

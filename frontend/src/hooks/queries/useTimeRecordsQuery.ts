@@ -1,6 +1,7 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { timeRecordService } from "../../services/timeRecordService";
 import { leaveService } from "../../services/leaveService";
+import type { AuthTokenScope } from "../../services/authToken";
 import { AttendanceRecord, DailyTimeRecord } from "../../types/index";
 import { LeaveRecord } from "../../types/scheduling";
 import { useToasts } from "../useToasts";
@@ -192,6 +193,7 @@ export interface PunchMutationInput {
   forcedType?: string;
   latitude?: number;
   longitude?: number;
+  authScope?: AuthTokenScope;
   /**
    * El llamante muestra su propio toast en el catch: evita el toast genérico
    * del onError para no duplicar el error (spec 030).
@@ -216,6 +218,7 @@ export const useTimeRecordMutations = () => {
         data.source,
         data.forcedType,
         geolocation,
+        data.authScope,
       );
     },
     onSuccess: (result) => {

@@ -1,6 +1,6 @@
 import { AttendanceRecord, DailyTimeRecord } from "../types";
-import { apiClient } from "./apiClient";
-import { API_BASE_URL } from "./apiBase";
+import { apiClient, type BinaryResponse } from "./apiClient";
+import type { AuthTokenScope } from "./authToken";
 import { logger } from "../utils/logger";
 
 const RECORDS_ENDPOINT = "/api/records";
@@ -13,6 +13,7 @@ export interface TimeRecordQueryParams {
   pageSize?: number;
   since?: string | number;
   filters?: Record<string, string | number | boolean | null | undefined>;
+  authScope?: AuthTokenScope;
 }
 
 interface TimeRecordsResult {
@@ -126,6 +127,7 @@ export const timeRecordService = {
 
     const response = await apiClient.get(RECORDS_ENDPOINT, {
       params: queryParams,
+      authScope: params.authScope,
     });
     const payload: unknown = response;
 
@@ -180,13 +182,37 @@ export const timeRecordService = {
     throw new Error("Respuesta invalida de /api/records/export");
   },
 
-  getExportUrl(startDate: string, endDate: string, format: "csv" | "xml" | "json" = "csv"): string {
-    const query = new URLSearchParams({
-      startDate,
-      endDate,
-      format,
+  async downloadExport(params: {
+    startDate: string;
+    endDate: string;
+    format: "csv" | "xml" | "excel";
+    employeeId?: string;
+    name?: string;
+    area?: string;
+    workdayType?: string;
+  }): Promise<{ blob: Blob; filename: string }> {
+    const queryParams: Record<string, string> = {
+      startDate: params.startDate,
+      endDate: params.endDate,
+      format: params.format,
+    };
+    if (params.employeeId) queryParams.employeeId = params.employeeId;
+    if (params.name) queryParams.name = params.name;
+    if (params.area) queryParams.area = params.area;
+    if (params.workdayType) queryParams.workdayType = params.workdayType;
+
+    const response = await apiClient.get(`${RECORDS_ENDPOINT}/export`, {
+      params: queryParams as never,
+      responseType: "binary",
     });
-    return `${API_BASE_URL}/records/export?${query.toString()}`;
+
+    const binary = response as unknown as BinaryResponse;
+    const defaultExt = params.format === "excel" ? "xlsx" : params.format;
+    return {
+      blob: binary.blob,
+      filename:
+        binary.filename ?? `Marcajes_${params.startDate}_al_${params.endDate}.${defaultExt}`,
+    };
   },
 
   async save(record: DailyTimeRecord): Promise<AttendanceRecord> {
@@ -218,6 +244,7 @@ export const timeRecordService = {
     source: string = "WEB",
     forcedType?: string,
     geolocation?: { latitude: number; longitude: number },
+    authScope?: AuthTokenScope,
   ): Promise<PunchResponse> {
     const normalizedForcedType = normalizeForcedType(forcedType);
 
@@ -240,6 +267,7 @@ export const timeRecordService = {
 
     const response = await apiClient.post(`${RECORDS_ENDPOINT}/punch`, {
       body,
+      authScope,
     });
 
     if (isPunchResponse(response)) return response;

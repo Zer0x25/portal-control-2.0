@@ -31,12 +31,9 @@ export function verifyAccessToken(token: string, secret: string): AuthUser {
   };
 }
 
-export function resolveAccessToken(
-  authorization: string | undefined,
-  queryToken: unknown,
-): string | undefined {
-  const token = authorization?.startsWith("Bearer ")
-    ? authorization.slice(7).trim()
-    : authorization?.split(" ")[1];
-  return token || (typeof queryToken === "string" ? queryToken : undefined);
+export function resolveAccessToken(authorization: string | undefined): string | undefined {
+  if (!authorization) return undefined;
+  const match = /^Bearer\s+(.+)$/i.exec(authorization.trim());
+  const token = match?.[1]?.trim();
+  return token || undefined;
 }

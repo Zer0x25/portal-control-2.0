@@ -8,11 +8,11 @@ const apps: FastifyInstance[] = [];
 afterEach(async () => {
   await Promise.all(apps.splice(0).map((app) => app.close()));
 });
-function fixture() {
+function fixture(role: string = "Administrador") {
   const user = {
     id: "u1",
     username: "alice",
-    role: "Supervisor",
+    role,
     employeeId: null,
     mfaEnabled: false,
     credentialStamp: "private-credential-proof",
@@ -96,17 +96,54 @@ describe("Auth Fastify adapter", () => {
     expect(res.statusCode).toBe(401);
     expect(f.deps.service.setupMFA).not.toHaveBeenCalled();
   });
-  it.each(["login", "kiosk-login"])(
-    "throttles %s before validation, preserves legacy 429 payload and Retry-After",
-    async (path) => {
+  it.each([
+    ["login", {}],
+    ["login", { username: "   ", password: "x" }],
+    ["login", { username: "alice", password: "" }],
+    ["kiosk-login", {}],
+    ["kiosk-login", { employeeId: " ", pin: "1234" }],
+    ["kiosk-login", { employeeId: "e1", pin: "" }],
+  ])(
+    "rejects empty %s credentials with 400 VALIDATION_ERROR before consuming throttle",
+    async (path, payload) => {
       const f = fixture();
       f.inspectFailures.mockResolvedValue({ retryAfter: 37, message: "Demasiados intentos." });
-      const res = await f.app.inject({ method: "POST", url: `/api/auth/${path}`, payload: {} });
+      const res = await f.app.inject({ method: "POST", url: `/api/auth/${path}`, payload });
+      expect(res.statusCode).toBe(400);
+      expect(res.json().code).toBe("VALIDATION_ERROR");
+      expect(f.inspectFailures).not.toHaveBeenCalled();
+      expect(f.deps.service.authenticate).not.toHaveBeenCalled();
+    },
+  );
+  it.each([
+    ["login", { username: "alice", password: "secret" }],
+    ["kiosk-login", { employeeId: "e1", pin: "1234" }],
+  ] as const)(
+    "throttles non-empty %s after validation, preserves 429 payload and Retry-After",
+    async (path, payload) => {
+      const f = fixture();
+      f.inspectFailures.mockResolvedValue({ retryAfter: 37, message: "Demasiados intentos." });
+      const res = await f.app.inject({ method: "POST", url: `/api/auth/${path}`, payload });
       expect(res.statusCode).toBe(429);
       expect(res.headers["retry-after"]).toBe("37");
       expect(res.json()).toEqual({ message: "Demasiados intentos." });
-      expect(f.inspectFailures).toHaveBeenCalledWith("127.0.0.1", {});
+      expect(f.inspectFailures).toHaveBeenCalledWith("127.0.0.1", payload);
       expect(f.deps.service.authenticate).not.toHaveBeenCalled();
+    },
+  );
+  it.each(["mfa/setup", "mfa/verify"])(
+    "rejects non-admin %s with 403 before invoking flows",
+    async (path) => {
+      const f = fixture("Supervisor");
+      const res = await f.app.inject({
+        method: "POST",
+        url: `/api/auth/${path}`,
+        payload: path === "mfa/verify" ? { token: "123456" } : undefined,
+        headers: { authorization: "Bearer access" },
+      });
+      expect(res.statusCode).toBe(403);
+      expect(f.deps.service.setupMFA).not.toHaveBeenCalled();
+      expect(f.deps.service.confirmMFASetup).not.toHaveBeenCalled();
     },
   );
   it.each([
@@ -143,6 +180,15 @@ describe("Auth Fastify adapter", () => {
     });
     expect(logout.statusCode).toBe(200);
     expect(f.deps.service.revokeSession).toHaveBeenCalledWith("access");
+    expect(
+      (
+        await f.app.inject({
+          method: "POST",
+          url: "/api/auth/logout?token=ignored-query-token",
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(f.deps.service.revokeSession).toHaveBeenCalledTimes(1);
     expect((await f.app.inject({ method: "POST", url: "/api/auth/logout" })).statusCode).toBe(200);
   });
 });

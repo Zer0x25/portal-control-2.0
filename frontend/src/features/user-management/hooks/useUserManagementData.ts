@@ -8,12 +8,11 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 import type { UserFormValues } from "../../../schemas/forms/user";
+import { DEFAULT_TEMPORARY_PASSWORD } from "../../../constants";
 
 interface UseUserManagementDataParams {
   isEmbedded?: boolean;
 }
-
-const DEFAULT_RESET_CREDENTIAL = ["123", "456"].join("");
 
 export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParams = {}) => {
   const {
@@ -34,7 +33,6 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
   const [userToResetPin, setUserToResetPin] = useState<User | null>(null);
   const [userToResetPassword, setUserToResetPassword] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isMFASetupOpen, setIsMFASetupOpen] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -135,7 +133,7 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
   const handleConfirmResetPassword = async () => {
     if (!userToResetPassword) return;
     await updateUser(userToResetPassword.id, {
-      password: DEFAULT_RESET_CREDENTIAL,
+      password: DEFAULT_TEMPORARY_PASSWORD,
       mustChangePassword: true,
     });
     refreshUsers();
@@ -155,7 +153,6 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
     userToResetPin,
     userToResetPassword,
     searchTerm,
-    isMFASetupOpen,
     isMobile,
     paginatedUsers,
     hasNextPage,
@@ -167,7 +164,6 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
     handleEditUser,
     handleSaveUser,
     setIsFormVisible,
-    setIsMFASetupOpen,
     setUserToDelete,
     setUserToResetPin,
     setUserToResetPassword,

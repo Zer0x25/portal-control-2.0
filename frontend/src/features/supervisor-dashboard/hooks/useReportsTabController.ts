@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useToasts } from "../../../hooks/useToasts";
 import { useEmployees } from "../../../hooks/useEmployees";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
+import { timeRecordService } from "../../../services/timeRecordService";
 import {
   downloadReportExcel,
   downloadReportPDF,
@@ -156,20 +155,16 @@ export const useReportsTabController = () => {
       }
 
       try {
-        const token = authService.getToken();
-
         if (formatType === "csv" || formatType === "xml") {
-          const query = new URLSearchParams();
-          query.set("startDate", filters.startDateISO);
-          query.set("endDate", filters.endDateISO);
-          query.set("format", formatType);
-          if (filters.employeeId && filters.employeeId !== "ALL")
-            query.set("employeeId", filters.employeeId);
-          if (filters.area && filters.area !== "TODOS") query.set("area", filters.area);
-          query.set("token", token || "");
-
-          const downloadUrl = `${API_BASE_URL}/records/export?${query.toString()}`;
-          window.location.href = downloadUrl;
+          const { blob, filename } = await timeRecordService.downloadExport({
+            startDate: filters.startDateISO,
+            endDate: filters.endDateISO,
+            format: formatType,
+            employeeId:
+              filters.employeeId && filters.employeeId !== "ALL" ? filters.employeeId : undefined,
+            area: filters.area && filters.area !== "TODOS" ? filters.area : undefined,
+          });
+          triggerBrowserDownload(blob, filename);
           addToast(`Descarga de ${formatType.toUpperCase()} iniciada.`, "success");
           return;
         }

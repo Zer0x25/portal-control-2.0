@@ -9,10 +9,24 @@ const mocks = vi.hoisted(() => ({
   delete: vi.fn(),
   audit: vi.fn(),
   emit: vi.fn(),
+  emitForceLogoutToUser: vi.fn(),
+  sessionDeleteMany: vi.fn(),
 }));
-vi.mock("../../src/services/db", () => ({ default: { user: mocks } }));
+vi.mock("../../src/services/db", () => {
+  const tx = {
+    $queryRaw: vi.fn(async () => []),
+    user: mocks,
+    activeSession: { deleteMany: mocks.sessionDeleteMany },
+  };
+  return {
+    default: { user: mocks, activeSession: { deleteMany: mocks.sessionDeleteMany } },
+    withDirectTransaction: vi.fn(async (cb: (client: typeof tx) => unknown) => cb(tx)),
+  };
+});
 vi.mock("../../src/services/auditService", () => ({ auditService: { log: mocks.audit } }));
-vi.mock("../../src/services/socketService", () => ({ SocketService: { emit: mocks.emit } }));
+vi.mock("../../src/services/socketService", () => ({
+  SocketService: { emit: mocks.emit, emitForceLogoutToUser: mocks.emitForceLogoutToUser },
+}));
 import { UserService } from "../../src/services/UserService";
 const row = {
   id: "user-public",
@@ -35,7 +49,7 @@ function assertPublic(value: unknown) {
   expect(value).toMatchObject({
     id: row.id,
     username: row.username,
-    role: "Supervisor Elevado",
+    role: "Supervisor_Elevado",
     employeeId: "emp",
     mustChangePassword: true,
     mfaEnabled: true,
@@ -56,8 +70,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.findMany.mockResolvedValue([row]);
   mocks.count.mockResolvedValue(1);
+  mocks.findUnique.mockResolvedValue(row);
   mocks.create.mockResolvedValue(row);
   mocks.update.mockResolvedValue(row);
+  mocks.sessionDeleteMany.mockResolvedValue({ count: 1 });
   mocks.audit.mockResolvedValue(undefined);
 });
 describe("Public user DTO allowlist at all service/socket boundaries", () => {

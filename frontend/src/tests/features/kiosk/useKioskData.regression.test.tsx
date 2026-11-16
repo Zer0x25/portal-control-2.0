@@ -5,12 +5,14 @@ import { useKioskData } from "../../../features/kiosk/hooks/useKioskData";
 import { server } from "../../mocks/server";
 import { http, HttpResponse } from "msw";
 
-const { addToastMock, punchMutateAsyncMock, geolocationMock, loggerErrorMock } = vi.hoisted(() => ({
-  addToastMock: vi.fn(),
-  punchMutateAsyncMock: vi.fn(),
-  geolocationMock: vi.fn(),
-  loggerErrorMock: vi.fn(),
-}));
+const { addToastMock, punchMutateAsyncMock, geolocationMock, loggerErrorMock, updateKioskPinMock } =
+  vi.hoisted(() => ({
+    addToastMock: vi.fn(),
+    punchMutateAsyncMock: vi.fn(),
+    geolocationMock: vi.fn(),
+    loggerErrorMock: vi.fn(),
+    updateKioskPinMock: vi.fn(async () => true),
+  }));
 
 const employeeK1 = {
   id: "k1",
@@ -23,15 +25,17 @@ const employeeK1 = {
   isPinBlocked: false,
 };
 
+const navigateMock = vi.fn();
+
 vi.mock("react-router", () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
 }));
 
 vi.mock("../../../hooks/useEmployees", () => ({
   useEmployees: () => ({
     activeEmployees: [employeeK1],
     isLoadingEmployees: false,
-    updateEmployee: vi.fn(async () => true),
+    updateKioskPin: updateKioskPinMock,
   }),
 }));
 
@@ -82,6 +86,7 @@ describe("useKioskData (spec 029)", () => {
 
   afterEach(() => {
     authTokenStore.removeToken();
+    authTokenStore.removeKioskToken();
     server.resetHandlers();
   });
 
@@ -192,5 +197,76 @@ describe("useKioskData (spec 029)", () => {
     });
 
     expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/licencia/i), "error");
+  });
+
+  it("aisla kioskToken de authToken al verificar PIN, consultar registros, actualizar PIN y limpiar en resetState/onLogout/unmount", async () => {
+    authTokenStore.setToken("portal-jwt");
+    let recordsAuthHeader: string | null = null;
+    let recordsEmployeeFilter: string | null = null;
+
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json({ success: true, message: "ok", token: "kiosk-jwt" }),
+      ),
+      http.get("http://localhost:4000/api/records", ({ request }) => {
+        recordsAuthHeader = request.headers.get("authorization");
+        recordsEmployeeFilter = new URL(request.url).searchParams.get("employeeId");
+        return HttpResponse.json({ data: [], total: 0, page: 1, totalPages: 1 });
+      }),
+    );
+
+    const { result, unmount } = renderHook(() => useKioskData());
+
+    act(() => {
+      result.current.handleEmployeeSelect(employeeK1 as never);
+      result.current.setPinInput("2468");
+    });
+
+    await waitFor(() => {
+      expect(result.current.step).toBe("actions");
+    });
+
+    expect(authTokenStore.getKioskToken()).toBe("kiosk-jwt");
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+    expect(recordsAuthHeader).toBe("Bearer kiosk-jwt");
+    expect(recordsEmployeeFilter).toBe("k1");
+
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+    expect(punchMutateAsyncMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        employeeId: "k1",
+        authScope: "kiosk",
+      }),
+    );
+
+    act(() => {
+      result.current.setNewPin("1357");
+      result.current.setConfirmNewPin("1357");
+    });
+    await act(async () => {
+      await result.current.handleSetNewPin();
+    });
+    expect(updateKioskPinMock).toHaveBeenCalledWith("k1", "1357");
+
+    act(() => {
+      result.current.resetState();
+    });
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+
+    authTokenStore.setKioskToken("kiosk-jwt-2");
+    act(() => {
+      result.current.onLogout();
+    });
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+    expect(navigateMock).toHaveBeenCalled();
+
+    authTokenStore.setKioskToken("kiosk-jwt-3");
+    unmount();
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
   });
 });

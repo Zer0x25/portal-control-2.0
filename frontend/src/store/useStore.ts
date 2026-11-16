@@ -37,22 +37,20 @@ state._verifyAuth();
 // Apply theme on initial load
 state._applyTheme(state.theme);
 
-// Set up global event listener for unauthorized access
-window.addEventListener("unauthorized", () => {
-  useStore.getState().logout();
-});
-
 let rateLimitHandling = false;
-window.addEventListener("rate_limited", () => {
+window.addEventListener("rate_limited", (event: Event) => {
   if (rateLimitHandling) return;
   rateLimitHandling = true;
 
+  const detail = (event as CustomEvent<{ retryAfter?: string | null }>).detail;
+  const retrySeconds = detail?.retryAfter ? Number(detail.retryAfter) : NaN;
+  const message =
+    Number.isFinite(retrySeconds) && retrySeconds > 0
+      ? `Demasiados intentos. Intente nuevamente en ${Math.ceil(retrySeconds)} segundos.`
+      : "Demasiadas peticiones detectadas. Espere unos segundos antes de intentar nuevamente.";
+
   const state = useStore.getState();
-  state.addToast(
-    "Demasiadas peticiones detectadas. Espere unos segundos antes de intentar nuevamente.",
-    "error",
-    6000,
-  );
+  state.addToast(message, "error", 6000);
 
   setTimeout(() => {
     rateLimitHandling = false;

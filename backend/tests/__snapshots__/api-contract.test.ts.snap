@@ -1203,9 +1203,11 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       "KioskLogin": {
         "properties": {
           "employeeId": {
+            "minLength": 1,
             "type": "string",
           },
           "pin": {
+            "minLength": 1,
             "type": "string",
           },
         },
@@ -1365,9 +1367,11 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       "Login": {
         "properties": {
           "password": {
+            "minLength": 1,
             "type": "string",
           },
           "username": {
+            "minLength": 1,
             "type": "string",
           },
         },
@@ -3053,6 +3057,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "employeeId": {
             "type": "string",
           },
+          "mustChangePassword": {
+            "type": "boolean",
+          },
           "password": {
             "minLength": 6,
             "type": "string",
@@ -3113,8 +3120,6 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
               "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado",
-              "Reloj Control",
-              "Supervisor Elevado",
             ],
             "type": "string",
           },
@@ -3682,18 +3687,45 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
               "application/json": {
                 "schema": {
                   "properties": {
-                    "employee": {
-                      "$ref": "#/components/schemas/Employee",
+                    "employeeName": {
+                      "type": "string",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                    "success": {
+                      "type": "boolean",
                     },
                     "token": {
                       "type": "string",
                     },
                   },
+                  "required": [
+                    "success",
+                    "employeeName",
+                    "token",
+                    "message",
+                  ],
                   "type": "object",
                 },
               },
             },
             "description": "Login de Kiosko exitoso",
+          },
+          "400": {
+            "description": "Error de validación en credenciales",
+          },
+          "401": {
+            "description": "PIN incorrecto",
+          },
+          "403": {
+            "description": "Empleado archivado o PIN bloqueado",
+          },
+          "404": {
+            "description": "Empleado no encontrado",
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos",
           },
         },
         "summary": "Inicia sesión modo Kiosko (Reloj Control)",
@@ -3719,28 +3751,86 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "mustChangePassword": {
-                      "type": "boolean",
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "employeeId": {
+                          "nullable": true,
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                        "mfaEnabled": {
+                          "type": "boolean",
+                        },
+                        "mustChangePassword": {
+                          "type": "boolean",
+                        },
+                        "role": {
+                          "type": "string",
+                        },
+                        "token": {
+                          "type": "string",
+                        },
+                        "userId": {
+                          "type": "string",
+                        },
+                        "username": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "userId",
+                        "username",
+                        "role",
+                        "token",
+                        "mustChangePassword",
+                        "mfaEnabled",
+                        "message",
+                      ],
+                      "type": "object",
                     },
-                    "requiresMFA": {
-                      "type": "boolean",
+                    {
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                        },
+                        "mfaRequired": {
+                          "type": "boolean",
+                        },
+                        "mfaToken": {
+                          "type": "string",
+                        },
+                        "userId": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "mfaRequired",
+                        "mfaToken",
+                        "userId",
+                        "message",
+                      ],
+                      "type": "object",
                     },
-                    "success": {
-                      "type": "boolean",
-                    },
-                    "token": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  ],
                 },
               },
             },
             "description": "Login exitoso o requerimiento de MFA",
           },
+          "400": {
+            "description": "Error de validación en credenciales",
+          },
           "401": {
             "description": "Credenciales inválidas",
+          },
+          "403": {
+            "description": "Cuenta de usuario archivada",
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos",
           },
         },
         "summary": "Inicia sesión de usuario (Soporta MFA)",
@@ -3753,9 +3843,29 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       "post": {
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "message",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
             "description": "Sesión cerrada",
           },
         },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
         "summary": "Cierra sesión del usuario",
         "tags": [
           "Auth",
@@ -3770,6 +3880,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
               "application/json": {
                 "schema": {
                   "properties": {
+                    "message": {
+                      "type": "string",
+                    },
                     "qrCode": {
                       "type": "string",
                     },
@@ -3777,11 +3890,22 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
                       "type": "string",
                     },
                   },
+                  "required": [
+                    "qrCode",
+                    "secret",
+                    "message",
+                  ],
                   "type": "object",
                 },
               },
             },
             "description": "Secreto generado",
+          },
+          "403": {
+            "description": "Requiere rol Administrador",
+          },
+          "409": {
+            "description": "MFA ya habilitado",
           },
         },
         "security": [
@@ -3789,7 +3913,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
             "bearerAuth": [],
           },
         ],
-        "summary": "Genera secreto MFA y QR",
+        "summary": "Genera secreto MFA y QR (Solo Administrador)",
         "tags": [
           "Auth",
         ],
@@ -3797,27 +3921,68 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
     },
     "/api/auth/mfa/validate": {
       "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MFAValidate",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
+                    "employeeId": {
+                      "nullable": true,
+                      "type": "string",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                    "mfaEnabled": {
+                      "type": "boolean",
+                    },
                     "mustChangePassword": {
                       "type": "boolean",
+                    },
+                    "role": {
+                      "type": "string",
                     },
                     "token": {
                       "type": "string",
                     },
+                    "userId": {
+                      "type": "string",
+                    },
+                    "username": {
+                      "type": "string",
+                    },
                   },
+                  "required": [
+                    "userId",
+                    "username",
+                    "role",
+                    "token",
+                    "mustChangePassword",
+                    "mfaEnabled",
+                    "message",
+                  ],
                   "type": "object",
                 },
               },
             },
             "description": "Autenticación de dos pasos exitosa",
           },
+          "400": {
+            "description": "Payload inválido",
+          },
           "401": {
-            "description": "Código o desafío inválido, expirado o MFA deshabilitado",
+            "description": "Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado",
           },
           "403": {
             "description": "Cuenta archivada entre factores",
@@ -3847,12 +4012,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "content": {
             "application/json": {
               "schema": {
-                "properties": {
-                  "token": {
-                    "type": "string",
-                  },
-                },
-                "type": "object",
+                "$ref": "#/components/schemas/MFAVerify",
               },
             },
           },
@@ -3860,7 +4020,31 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "message",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
             "description": "MFA habilitado",
+          },
+          "400": {
+            "description": "MFA no configurado o código inválido",
+          },
+          "403": {
+            "description": "Requiere rol Administrador",
+          },
+          "409": {
+            "description": "MFA ya habilitado",
           },
         },
         "security": [
@@ -3868,7 +4052,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
             "bearerAuth": [],
           },
         ],
-        "summary": "Habilita MFA tras verificar primer código",
+        "summary": "Habilita MFA tras verificar primer código (Solo Administrador)",
         "tags": [
           "Auth",
         ],

@@ -3,10 +3,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useStore } from "../../store/useStore";
 import { queryClient } from "../../lib/queryClient";
 
-const purgeMock = vi.fn().mockResolvedValue(undefined);
-const wipeAllDataMock = vi.fn().mockResolvedValue(undefined);
-const authLogoutMock = vi.fn().mockResolvedValue(undefined);
-const loginMock = vi.fn();
+const {
+  purgeMock,
+  wipeAllDataMock,
+  authLogoutMock,
+  loginMock,
+  isAuthenticatedMock,
+  removeTokenMock,
+} = vi.hoisted(() => ({
+  purgeMock: vi.fn().mockResolvedValue(undefined),
+  wipeAllDataMock: vi.fn().mockResolvedValue(undefined),
+  authLogoutMock: vi.fn().mockResolvedValue(undefined),
+  loginMock: vi.fn(),
+  isAuthenticatedMock: vi.fn(() => true),
+  removeTokenMock: vi.fn(),
+}));
 
 vi.mock("../../lib/queryCache", () => ({
   QUERY_CACHE_OWNER_KEY: "saphr:query-cache-owner",
@@ -51,9 +62,10 @@ vi.mock("../../services/authService", () => ({
   authService: {
     logout: (...args: unknown[]) => authLogoutMock(...args),
     login: (...args: unknown[]) => loginMock(...args),
+    isAuthenticated: () => isAuthenticatedMock(),
     getToken: () => null,
     getAuthHeader: () => ({}),
-    removeToken: vi.fn(),
+    removeToken: () => removeTokenMock(),
     validateMFACode: vi.fn(),
   },
 }));
@@ -66,6 +78,9 @@ describe("purga del cache persistido en sesion (spec 032 AC2.1)", () => {
     wipeAllDataMock.mockClear();
     authLogoutMock.mockClear();
     loginMock.mockClear();
+    isAuthenticatedMock.mockReset();
+    isAuthenticatedMock.mockReturnValue(true);
+    removeTokenMock.mockClear();
     localStorage.clear();
     sessionStorage.clear();
     queryClient.clear();
@@ -123,5 +138,19 @@ describe("purga del cache persistido en sesion (spec 032 AC2.1)", () => {
 
     expect(purgeMock).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem(OWNER_KEY)).toBe("user-B");
+  });
+
+  it("no hidrata sesion si authToken falta o expiro y limpia currentUser sin purgar cache", async () => {
+    isAuthenticatedMock.mockReturnValue(false);
+    localStorage.setItem(OWNER_KEY, "user-A");
+    sessionStorage.setItem("currentUser", JSON.stringify({ id: "user-A", username: "a" }));
+
+    await useStore.getState()._verifyAuth();
+
+    expect(useStore.getState().isAuthenticated).toBe(false);
+    expect(useStore.getState().currentUser).toBeNull();
+    expect(sessionStorage.getItem("currentUser")).toBeNull();
+    expect(removeTokenMock).toHaveBeenCalledTimes(1);
+    expect(purgeMock).not.toHaveBeenCalled();
   });
 });

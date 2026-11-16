@@ -13,6 +13,7 @@ export const useSocketEvents = () => {
   const queryClient = useQueryClient();
   const userId = useStore((state) => state.currentUser?.id);
   const authenticated = useStore((state) => state.isAuthenticated);
+  const mustChangePassword = useStore((state) => state.currentUser?.mustChangePassword === true);
   const debounceTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Helper to debounce invalidations (prevents spamming refetches)
@@ -31,7 +32,7 @@ export const useSocketEvents = () => {
 
   useEffect(() => {
     const pendingDebounceTimeouts = debounceTimeouts.current;
-    if (!authenticated || !userId) return;
+    if (!authenticated || !userId || mustChangePassword) return;
     let disconnect: (() => void) | undefined;
     let mounted = true;
     let activeSocket: {
@@ -147,6 +148,7 @@ export const useSocketEvents = () => {
       socket.on("meter:updated", handleMeterUpdate);
 
       const handleForcedLogout = (data: unknown) => {
+        if (!useStore.getState().isAuthenticated) return;
         const detail =
           typeof data === "object" && data !== null
             ? (data as { reason?: string; restartRecommended?: boolean })
@@ -228,5 +230,5 @@ export const useSocketEvents = () => {
       activeSocket?.off("connect_error");
       disconnect?.();
     };
-  }, [queryClient, debouncedInvalidate, authenticated, userId]);
+  }, [queryClient, debouncedInvalidate, authenticated, userId, mustChangePassword]);
 };

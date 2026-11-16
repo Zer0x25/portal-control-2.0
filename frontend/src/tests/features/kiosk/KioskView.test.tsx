@@ -82,4 +82,22 @@ describe("KioskView", () => {
     expect(screen.getByRole("button", { name: "Fin Colación" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Fin Jornada" })).toBeDisabled();
   });
+
+  it("invokes onLogout when clicking kiosk-exit-button", () => {
+    const onLogout = vi.fn();
+
+    render(
+      <KioskView
+        step={"rut_input" as never}
+        setStep={vi.fn()}
+        rutInput=""
+        setRutInput={vi.fn()}
+        formattedRutDisplay=""
+        onLogout={onLogout}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("kiosk-exit-button"));
+    expect(onLogout).toHaveBeenCalledTimes(1);
+  });
 });

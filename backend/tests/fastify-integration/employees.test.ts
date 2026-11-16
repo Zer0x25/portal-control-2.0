@@ -394,4 +394,84 @@ describe("Spec 013 employees on Fastify", () => {
     expect(sheet.getRow(2).getCell(1).value).toBe(input.id);
     expect(JSON.stringify(sheet.getRow(2).values)).not.toContain(input.pin);
   });
+
+  it("[BUG-19] hashes bulk PINs on createBulk and resets PIN block counters when pin is cleared to null", async () => {
+    const bulkRes = await http("POST", "/api/employees/bulk", [
+      {
+        id: "EMP-BULK-1",
+        name: "Bulk Worker",
+        rut: "33333333-3",
+        position: "Operario",
+        area: "Planta",
+        workdayType: "Normal",
+        pin: "4567",
+      },
+    ]);
+    expect(bulkRes.status).toBe(200);
+    const bulkEmp = await prismaDirect.employee.findUniqueOrThrow({ where: { id: "EMP-BULK-1" } });
+    expect(bulkEmp.pin).not.toBe("4567");
+    expect(bcrypt.compareSync("4567", bulkEmp.pin ?? "")).toBe(true);
+
+    await prismaDirect.employee.update({
+      where: { id: "EMP-BULK-1" },
+      data: { isPinBlocked: true, pinFailedAttempts: 5 },
+    });
+    const clearPin = await http("PUT", "/api/employees/EMP-BULK-1", { pin: null });
+    expect(clearPin.status).toBe(200);
+    const clearedEmp = await prismaDirect.employee.findUniqueOrThrow({
+      where: { id: "EMP-BULK-1" },
+    });
+    expect(clearedEmp.pin).toBeNull();
+    expect(clearedEmp.isPinBlocked).toBe(false);
+    expect(clearedEmp.pinFailedAttempts).toBe(0);
+  });
+
+  it("[BUG-11] archiving employee archives linked user, deletes sessions, and disconnects sockets", async () => {
+    const forceUserSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToUser")
+      .mockImplementation(() => {});
+    const forceEmpSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToEmployee")
+      .mockImplementation(() => {});
+
+    const created = await http("POST", "/api/employees", {
+      ...input,
+      id: "EMP-ARCHIVE-1",
+      rut: "44444444-4",
+      createUserAccount: true,
+    });
+    expect(created.status).toBe(201);
+    const linked = await prismaDirect.user.findUniqueOrThrow({
+      where: { employeeId: "EMP-ARCHIVE-1" },
+    });
+    const sess = await AuthService.createSession(
+      linked.id,
+      linked.username,
+      linked.role,
+      "EMP-ARCHIVE-1",
+      "kiosk-ua",
+    );
+
+    const archived = await http("PUT", "/api/employees/EMP-ARCHIVE-1", { status: "Archivado" });
+    expect(archived.status).toBe(200);
+    const archivedUser = await prismaDirect.user.findUniqueOrThrow({ where: { id: linked.id } });
+    expect(archivedUser.role).toBe("Archivado");
+    expect(await prismaDirect.activeSession.count({ where: { userId: linked.id } })).toBe(0);
+    expect(forceUserSpy).toHaveBeenCalledWith(
+      linked.id,
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
+    expect(forceEmpSpy).toHaveBeenCalledWith(
+      "EMP-ARCHIVE-1",
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
+    expect(
+      (
+        await fastify.inject({
+          url: "/api/holidays",
+          headers: { authorization: `Bearer ${sess.token}` },
+        })
+      ).statusCode,
+    ).toBe(401);
+  });
 });

@@ -12,7 +12,6 @@ import {
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import UserForm from "../components/UserForm.container";
-import MFASetupModal from "../../../features/auth/components/MFASetupModal.container";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import RoleBadge from "../../../components/ui/RoleBadge";
@@ -32,7 +31,6 @@ export interface UserManagementViewProps {
   userToResetPin: User | null;
   userToResetPassword: User | null;
   searchTerm: string;
-  isMFASetupOpen: boolean;
   isMobile: boolean;
   paginatedUsers: User[];
   sentinelRef: React.RefObject<HTMLDivElement | null>;
@@ -43,7 +41,6 @@ export interface UserManagementViewProps {
   handleEditUser: (user: User) => void;
   handleSaveUser: (data: UserFormValues) => Promise<void>;
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsMFASetupOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setUserToDelete: React.Dispatch<React.SetStateAction<User | null>>;
   setUserToResetPin: React.Dispatch<React.SetStateAction<User | null>>;
   setUserToResetPassword: React.Dispatch<React.SetStateAction<User | null>>;
@@ -69,7 +66,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
     userToResetPin,
     userToResetPassword,
     searchTerm,
-    isMFASetupOpen,
     isMobile,
     paginatedUsers,
     sentinelRef,
@@ -80,14 +76,12 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
     handleEditUser,
     handleSaveUser,
     setIsFormVisible,
-    setIsMFASetupOpen,
     setUserToDelete,
     setUserToResetPin,
     setUserToResetPassword,
     handleDeleteUser,
     handleConfirmResetPassword,
     handleConfirmResetPin,
-    refreshUsers,
   } = props;
 
   const renderDesktopView = () => (
@@ -169,17 +163,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                     >
                       <ShieldIcon className="w-4 h-4 text-token-text-tertiary" />
                     </Button>
-                    {currentUser?.id === user.id && !user.mfaEnabled && (
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => setIsMFASetupOpen(true)}
-                        aria-label="Configurar autenticación MFA"
-                        className="bg-indigo-600/10 border border-indigo-500/20"
-                      >
-                        <ShieldIcon className="w-4 h-4 text-indigo-600" />
-                      </Button>
-                    )}
                     <Button
                       size="xs"
                       variant="danger"
@@ -323,15 +306,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           existingUsers={allUsers}
         />
       </CinematicModal>
-
-      <MFASetupModal
-        isOpen={isMFASetupOpen}
-        onClose={() => setIsMFASetupOpen(false)}
-        onSuccess={() => {
-          setIsMFASetupOpen(false);
-          refreshUsers();
-        }}
-      />
 
       <ConfirmationModal
         isOpen={!!userToDelete}

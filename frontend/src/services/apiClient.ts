@@ -1,5 +1,5 @@
 import { paths, components } from "../types/api";
-import { authTokenStore } from "./authToken";
+import { authTokenStore, type AuthTokenScope } from "./authToken";
 import { API_BASE_URL } from "./apiBase";
 
 /**
@@ -90,6 +90,25 @@ export const errorMessageOr = (error: unknown, fallback: string): string => {
   return fallback;
 };
 
+/** Verifica si el error o alguno de sus `.cause` corresponde al status HTTP indicado. */
+export const hasHttpStatus = (error: unknown, status: number): boolean => {
+  let current: unknown = error;
+  const visited = new Set<unknown>();
+
+  while (current !== null && typeof current === "object" && !visited.has(current)) {
+    visited.add(current);
+    if (current instanceof ApiHttpError && current.status === status) {
+      return true;
+    }
+    if ("status" in current && (current as { status: unknown }).status === status) {
+      return true;
+    }
+    current = "cause" in current ? (current as { cause?: unknown }).cause : null;
+  }
+
+  return false;
+};
+
 /** Respuesta binaria (PDF/XLSX): no pasa por `response.text()`, que lo corrompe. */
 export interface BinaryResponse {
   blob: Blob;
@@ -117,9 +136,9 @@ export const resetRateLimitEventLockForTests = (): void => {
   rateLimitEventLocked = false;
 };
 
-function getAuthHeaderString(): string {
+function getAuthHeaderString(scope: AuthTokenScope = "portal"): string {
   try {
-    const headers = authTokenStore.getAuthHeader() as Record<string, string>;
+    const headers = authTokenStore.getAuthHeaderForScope(scope) as Record<string, string>;
     return headers["Authorization"] ?? "";
   } catch {
     return "";
@@ -192,11 +211,13 @@ export interface RequestOptions {
   timeoutMs?: number;
   /**
    * Suprime los eventos globales `unauthorized` y `rate_limited`.
-   * Por defecto `false`, pero se aplica **automáticamente** a los endpoints de
-   * autenticación anónima (`/auth/login`, `/auth/mfa/validate`,
+   * Por defecto `false`, pero `unauthorized` se suprime **automáticamente** en
+   * los endpoints de autenticación anónima (`/auth/login`, `/auth/mfa/validate`,
    * `/auth/kiosk-login`).
    */
   skipAuthEvents?: boolean;
+  /** Alcance de token de sesión (`portal` por defecto o `kiosk`). */
+  authScope?: AuthTokenScope;
   /** `binary` devuelve `{ blob, headers, filename? }` sin pasar por `text()`. */
   /** `stream` devuelve la `Response` cruda (flujo de progreso). */
   responseType?: ResponseType;
@@ -239,6 +260,7 @@ export interface RequestSpec {
   /** Solo GET: dedup de peticiones en vuelo. */
   dedup?: boolean;
   skipAuthEvents?: boolean;
+  authScope?: AuthTokenScope;
 }
 
 /**
@@ -268,7 +290,9 @@ interface PreparedRequest {
   timeoutMs: number;
   retry: boolean;
   dedup: boolean;
-  skipAuthEvents: boolean;
+  skipUnauthorized: boolean;
+  skipRateLimit: boolean;
+  authScope: AuthTokenScope;
   responseType: ResponseType;
   cache?: RequestCache;
 }
@@ -304,8 +328,9 @@ function prepareRequest(spec: RequestSpec): PreparedRequest {
   const resolvedPath = resolvePath(spec.url, spec.path);
   const fullUrl = `${getFullUrl(resolvedPath)}${buildQuery(spec.params)}`;
   const isGet = spec.method === "GET";
+  const authScope = spec.authScope ?? "portal";
   const { body, headers } = prepareBody(spec.body, {
-    ...(authTokenStore.getAuthHeader() as Record<string, string>),
+    ...(authTokenStore.getAuthHeaderForScope(authScope) as Record<string, string>),
     ...spec.headers,
   });
 
@@ -319,7 +344,9 @@ function prepareRequest(spec: RequestSpec): PreparedRequest {
     timeoutMs: spec.timeoutMs ?? DEFAULT_TIMEOUT_MS,
     retry: isGet ? (spec.retry ?? true) : false,
     dedup: isGet ? (spec.dedup ?? true) && !spec.signal : false,
-    skipAuthEvents: spec.skipAuthEvents ?? ANONYMOUS_AUTH_PATH.test(resolvedPath),
+    skipUnauthorized: spec.skipAuthEvents ?? ANONYMOUS_AUTH_PATH.test(resolvedPath),
+    skipRateLimit: spec.skipAuthEvents ?? false,
+    authScope,
     responseType: spec.responseType ?? "json",
     cache: spec.cache,
   };
@@ -349,11 +376,16 @@ function prepareBody(
 
 /** Emite los eventos globales de auth: `unauthorized` (401) y `rate_limited` (429). */
 function emitAuthEvents(response: Response, prepared: PreparedRequest): void {
-  if (prepared.skipAuthEvents) return;
   if (response.status === 401) {
-    window.dispatchEvent(new CustomEvent("unauthorized"));
+    if (prepared.authScope === "kiosk") {
+      authTokenStore.removeKioskToken();
+      return;
+    }
+    if (!prepared.skipUnauthorized) {
+      window.dispatchEvent(new CustomEvent("unauthorized"));
+    }
   }
-  if (response.status === 429) {
+  if (response.status === 429 && !prepared.skipRateLimit) {
     emitRateLimited(response, prepared.fullUrl);
   }
 }
@@ -517,7 +549,7 @@ export async function request<T = unknown>(spec: RequestSpec): Promise<unknown> 
 
   let result: ExecutionResult;
   if (prepared.dedup) {
-    const dedupKey = `${prepared.method} ${prepared.fullUrl} ${getAuthHeaderString()}`;
+    const dedupKey = `${prepared.method} ${prepared.fullUrl} ${getAuthHeaderString(prepared.authScope)}`;
     const inflight = inflightGets.get(dedupKey) as Promise<ExecutionResult> | undefined;
     if (inflight) {
       result = await inflight;
@@ -565,6 +597,7 @@ export const apiClient = {
       retry?: boolean;
       dedup?: boolean;
       skipAuthEvents?: boolean;
+      authScope?: AuthTokenScope;
       responseType?: ResponseType;
     },
   ): Promise<
@@ -583,6 +616,7 @@ export const apiClient = {
       retry: options?.retry,
       dedup: options?.dedup,
       skipAuthEvents: options?.skipAuthEvents,
+      authScope: options?.authScope,
       responseType: options?.responseType,
     }) as Promise<never>;
   },
@@ -602,6 +636,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
+      authScope?: AuthTokenScope;
       responseType?: ResponseType;
     },
   ): Promise<
@@ -619,6 +654,7 @@ export const apiClient = {
       signal: options.signal,
       timeoutMs: options.timeoutMs,
       skipAuthEvents: options.skipAuthEvents,
+      authScope: options.authScope,
       responseType: options.responseType,
     }) as Promise<never>;
   },
@@ -637,6 +673,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
+      authScope?: AuthTokenScope;
       responseType?: ResponseType;
     },
   ): Promise<
@@ -653,6 +690,7 @@ export const apiClient = {
       signal: options.signal,
       timeoutMs: options.timeoutMs,
       skipAuthEvents: options.skipAuthEvents,
+      authScope: options.authScope,
       responseType: options.responseType,
     }) as Promise<never>;
   },
@@ -673,6 +711,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
+      authScope?: AuthTokenScope;
       responseType?: ResponseType;
     },
   ): Promise<
@@ -689,6 +728,7 @@ export const apiClient = {
       signal: options.signal,
       timeoutMs: options.timeoutMs,
       skipAuthEvents: options.skipAuthEvents,
+      authScope: options.authScope,
       responseType: options.responseType,
     }) as Promise<never>;
   },
@@ -704,6 +744,7 @@ export const apiClient = {
       signal?: AbortSignal;
       timeoutMs?: number;
       skipAuthEvents?: boolean;
+      authScope?: AuthTokenScope;
     },
   ): Promise<void> {
     await request<void>({
@@ -714,6 +755,7 @@ export const apiClient = {
       signal: options?.signal,
       timeoutMs: options?.timeoutMs,
       skipAuthEvents: options?.skipAuthEvents,
+      authScope: options?.authScope,
     });
   },
 };

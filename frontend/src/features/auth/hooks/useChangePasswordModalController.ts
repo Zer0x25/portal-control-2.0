@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
-import { useUsers } from "../../../hooks/useUsers";
+import { userService } from "../../../services/userService";
 import {
   changePasswordFormSchema,
   type ChangePasswordFormValues,
@@ -35,26 +35,15 @@ interface UseChangePasswordModalControllerParams {
   readonly isOpen: boolean;
   /** Cierra el modal. */
   readonly onClose: () => void;
-  /** Usuario cuya contraseña se cambia (ausente = el propio usuario). */
-  readonly userIdToUpdate?: string;
 }
 
 /** Controlador del formulario de cambio de contraseña (spec 036 T11). */
 export const useChangePasswordModalController = ({
   isOpen,
   onClose,
-  userIdToUpdate,
 }: UseChangePasswordModalControllerParams) => {
   const { currentUser } = useAuth();
-  const { getUserById, updateUser, changeOwnPassword } = useUsers();
   const { addToast } = useToasts();
-
-  const targetUser = (() => {
-    const targetId = userIdToUpdate || currentUser?.id;
-    return targetId ? getUserById(targetId) : null;
-  })();
-
-  const isSelfChange = !userIdToUpdate;
 
   const form = useAppForm<ChangePasswordFormValues, { password: string }>({
     schema: changePasswordFormSchema,
@@ -68,12 +57,12 @@ export const useChangePasswordModalController = ({
     /** `passwordConfirm` es solo de cliente y no viaja al backend. */
     serialize: (values) => ({ password: values.password }),
     onSubmit: async (payload) => {
-      if (!targetUser || !currentUser) {
+      if (!currentUser) {
         addToast("No se pudo identificar al usuario para actualizar.", "error");
         return;
       }
 
-      if (targetUser.id === "admin-001" && targetUser.username === "admin") {
+      if (currentUser.id === "admin-001" && currentUser.username === "admin") {
         addToast(
           "La contraseña del administrador por defecto (admin) no puede ser cambiada.",
           "error",
@@ -82,13 +71,15 @@ export const useChangePasswordModalController = ({
         return;
       }
 
-      const success = isSelfChange
-        ? await changeOwnPassword({ newPassword: payload.password })
-        : await updateUser(targetUser.id, { password: payload.password });
-
-      if (success) {
-        addToast(`Contraseña para '${targetUser.username}' actualizada con éxito.`, "success");
+      try {
+        await userService.update(currentUser.id, { password: payload.password });
+        addToast(`Contraseña para '${currentUser.username}' actualizada con éxito.`, "success");
         onClose();
+      } catch (error) {
+        addToast(
+          error instanceof Error ? error.message : "Error al actualizar la contraseña.",
+          "error",
+        );
       }
     },
   });
@@ -123,9 +114,7 @@ export const useChangePasswordModalController = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  const modalTitle = isSelfChange
-    ? "Cambiar Mi Contraseña"
-    : `Cambiar Contraseña para ${targetUser?.username}`;
+  const modalTitle = "Cambiar Mi Contraseña";
 
   return {
     values: form.values,

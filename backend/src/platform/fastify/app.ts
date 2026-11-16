@@ -41,7 +41,11 @@ export interface RouteEntry {
 export interface FastifyDependencies {
   enterWork?(path: string): Promise<() => Promise<void>>;
   closeAdmission?(): void;
-  authenticate(token: string | undefined, requestPath?: string): Promise<AuthUser>;
+  authenticate(
+    token: string | undefined,
+    requestPath?: string,
+    requestMethod?: string,
+  ): Promise<AuthUser>;
   betterAuthHandler?: (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
   holidays: HolidayHttpService;
   users: UserFlows;
@@ -334,17 +338,15 @@ export function buildFastifyApp(
         );
     });
     const authenticate: import("fastify").onRequestHookHandler = async (request) => {
-      const query = request.query;
-      const token =
-        typeof query === "object" && query !== null && "token" in query ? query.token : undefined;
       await work.attach(
         request,
         () => deps.enterWork?.(request.url.split("?")[0]) ?? Promise.resolve(async () => {}),
       );
       const user = await work.run(request, () =>
         deps.authenticate(
-          resolveAccessToken(request.headers.authorization, token),
-          request.url.split("?")[0],
+          resolveAccessToken(request.headers.authorization),
+          request.url,
+          request.method,
         ),
       );
       request.user = user;

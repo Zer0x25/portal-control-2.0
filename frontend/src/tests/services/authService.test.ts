@@ -12,6 +12,7 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
 
   afterEach(() => {
     authTokenStore.removeToken();
+    authTokenStore.removeKioskToken();
     sessionStorage.clear();
     server.resetHandlers();
   });
@@ -129,5 +130,76 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
     await authService.setupMFA();
 
     expect(capturedAuth).toBe("Bearer jwt-3");
+  });
+
+  it("logout envia POST /api/auth/logout con Bearer antes de limpiar authToken", async () => {
+    authTokenStore.setToken("jwt-logout");
+    let capturedAuth: string | null = null;
+    let tokenPresentDuringRequest = false;
+    server.use(
+      http.post("http://localhost:4000/api/auth/logout", ({ request }) => {
+        capturedAuth = request.headers.get("authorization");
+        tokenPresentDuringRequest = authTokenStore.getToken() === "jwt-logout";
+        return HttpResponse.json({ message: "ok" });
+      }),
+    );
+
+    await authService.logout();
+
+    expect(capturedAuth).toBe("Bearer jwt-logout");
+    expect(tokenPresentDuringRequest).toBe(true);
+    expect(authTokenStore.getToken()).toBeNull();
+  });
+
+  it("logout limpia authToken aunque el backend responda 500 o error de red", async () => {
+    authTokenStore.setToken("jwt-err");
+    server.use(
+      http.post("http://localhost:4000/api/auth/logout", () =>
+        HttpResponse.json({ message: "fail" }, { status: 500 }),
+      ),
+    );
+
+    await expect(authService.logout()).resolves.toBeUndefined();
+    expect(authTokenStore.getToken()).toBeNull();
+
+    authTokenStore.setToken("jwt-net");
+    server.use(http.post("http://localhost:4000/api/auth/logout", () => HttpResponse.error()));
+
+    await expect(authService.logout()).resolves.toBeUndefined();
+    expect(authTokenStore.getToken()).toBeNull();
+  });
+
+  it("kioskVerifyPin guarda token en kioskToken sin sobrescribir authToken", async () => {
+    authTokenStore.setToken("portal-token");
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json({ success: true, message: "ok", token: "kiosk-jwt" }),
+      ),
+    );
+
+    const res = await authService.kioskVerifyPin("e1", "2468");
+
+    expect(res.success).toBe(true);
+    expect(authTokenStore.getKioskToken()).toBe("kiosk-jwt");
+    expect(authTokenStore.getToken()).toBe("portal-token");
+  });
+
+  it("isAuthenticated valida vigencia base64url y rechaza tokens expirados o de Kiosk_Employee", () => {
+    const encodeBase64Url = (obj: Record<string, unknown>) =>
+      btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+    const futureExp = Math.floor(Date.now() / 1000) + 3600;
+    const pastExp = Math.floor(Date.now() / 1000) - 60;
+
+    authTokenStore.setToken(`hdr.${encodeBase64Url({ exp: futureExp, role: "Usuario" })}.sig`);
+    expect(authService.isAuthenticated()).toBe(true);
+
+    authTokenStore.setToken(`hdr.${encodeBase64Url({ exp: pastExp, role: "Usuario" })}.sig`);
+    expect(authService.isAuthenticated()).toBe(false);
+
+    authTokenStore.setToken(
+      `hdr.${encodeBase64Url({ exp: futureExp, role: "Kiosk_Employee" })}.sig`,
+    );
+    expect(authService.isAuthenticated()).toBe(false);
   });
 });

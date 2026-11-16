@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useToasts } from "../../../hooks/useToasts";
 import { timeRecordService } from "../../../services/timeRecordService";
-import { authService } from "../../../services/authService";
 import { isDateRangeValid } from "../../../utils/validation";
 import { toBusinessDateChile } from "../../../utils/dateUtils";
+import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
 import { logger } from "../../../utils/logger";
 
 export const useMasterDataExportController = () => {
@@ -37,12 +37,14 @@ export const useMasterDataExportController = () => {
     addToast(`Preparando descarga ${format.toUpperCase()}...`, "info");
 
     try {
-      const token = authService.getToken();
-      const baseUrl = timeRecordService.getExportUrl(startDate, endDate, format);
-      const downloadUrl = `${baseUrl}&token=${token}`;
-      window.location.href = downloadUrl;
+      const { blob, filename } = await timeRecordService.downloadExport({
+        startDate,
+        endDate,
+        format,
+      });
+      triggerBrowserDownload(blob, filename);
       addToast(`Descarga de ${format.toUpperCase()} iniciada.`, "success");
-      setTimeout(() => setExporting(false), 2000);
+      setExporting(false);
     } catch (error) {
       const err = error as Error;
       logger.error("Error starting master data export:", err);

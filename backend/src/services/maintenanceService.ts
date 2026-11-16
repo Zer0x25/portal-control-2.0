@@ -65,15 +65,20 @@ export class MaintenanceService {
         },
       });
 
-      // 6. Sesiones expiradas (ActiveSession) -> Limpieza inmediata de tokens vencidos
+      // 6. Sesiones expiradas (ActiveSession) y tokens consumidos expirados -> Limpieza inmediata
       const p6 = prisma.activeSession.deleteMany({
+        where: {
+          expiresAt: { lt: now },
+        },
+      });
+      const p7 = prisma.verification.deleteMany({
         where: {
           expiresAt: { lt: now },
         },
       });
 
       // Execute all cleanup tasks in parallel
-      const [r1, r2, r3, r4, r5, r6] = await Promise.all([p1, p2, p3, p4, p5, p6]);
+      const [r1, r2, r3, r4, r5, r6, r7] = await Promise.all([p1, p2, p3, p4, p5, p6, p7]);
 
       console.warn(
         `✅ Depuración Finalizada:
@@ -82,7 +87,8 @@ export class MaintenanceService {
          - Infraestructura (>2 meses): ${r3.count}
          - ShiftReport (>24 meses): ${r4.count}
          - MeterReading (>24 meses): ${r5.count}
-         - ActiveSessions expiradas: ${r6.count}`,
+         - ActiveSessions expiradas: ${r6.count}
+         - Verificaciones MFA expiradas: ${r7.count}`,
       );
     } catch (error) {
       console.error("❌ Error en rotación de logs:", error);

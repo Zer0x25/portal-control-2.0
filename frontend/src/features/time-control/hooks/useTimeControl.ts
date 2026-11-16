@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AttendanceRecord, DailyTimeRecord } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
+import { useToasts } from "../../../hooks/useToasts";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
@@ -8,7 +9,9 @@ import { useTimeControlScheduleEnrichment } from "./useTimeControlScheduleEnrich
 import { useDebounce } from "../../../hooks/useDebounce";
 import { getContractAttendanceMetrics, getContractClockingStatus } from "../../../utils/mappings";
 import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
+import { timeRecordService } from "../../../services/timeRecordService";
+import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import { logger } from "../../../utils/logger";
 
 const RECORDS_PER_PAGE = 30;
 
@@ -23,6 +26,7 @@ const extractKPIs = (record: AttendanceRecord) => {
 
 export const useTimeControl = () => {
   const { currentUser } = useAuth();
+  const { addToast } = useToasts();
   const getEmployeeDailyScheduleInfo = useTimeControlScheduleEnrichment();
   // Decomposed hooks
   const filters = useTimeRecordFilters();
@@ -114,22 +118,23 @@ export const useTimeControl = () => {
     filtersKey,
     ...filters,
     ...modals,
-    handleExportStreaming: (format: "csv" | "excel") => {
-      const token = authService.getToken();
-      if (!token) return;
+    handleExportStreaming: async (format: "csv" | "excel") => {
+      if (!authService.getToken()) return;
 
-      const params = new URLSearchParams();
-      params.append("startDate", desde);
-      params.append("endDate", hasta);
-      params.append("format", format);
-      params.append("token", token);
-
-      if (debouncedSearchName) params.append("name", debouncedSearchName);
-      if (area) params.append("area", area);
-      if (workdayType) params.append("workdayType", workdayType);
-
-      const url = `${API_BASE_URL}/records/export?${params.toString()}`;
-      window.location.href = url;
+      try {
+        const { blob, filename } = await timeRecordService.downloadExport({
+          startDate: desde,
+          endDate: hasta,
+          format,
+          name: debouncedSearchName || undefined,
+          area: area || undefined,
+          workdayType: workdayType || undefined,
+        });
+        triggerBrowserDownload(blob, filename);
+      } catch (error) {
+        logger.error("Error exporting time records:", error);
+        addToast("Error al exportar registros de asistencia.", "error");
+      }
     },
     filteredRecords: enrichedRecords, // Renamed for component compatibility
     totalRecords: infiniteData?.pages[0]?.total || 0,
