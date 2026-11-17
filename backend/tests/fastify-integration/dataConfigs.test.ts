@@ -9,6 +9,7 @@ import { AuthService } from "../../src/services/AuthService";
 import { SocketService } from "../../src/services/socketService";
 import { companyPolicyStorage } from "../../src/services/companyPolicyStorage";
 import { configFlows } from "../../src/services/configFlows";
+import { closureValidationService } from "../../src/services/closureValidationService";
 import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
 import { httpClient } from "./_support/http";
 let fastify: FastifyInstance, token: string, actorId: string;
@@ -524,6 +525,45 @@ describe("Spec020 data/configs on Fastify", () => {
       ).value,
     ).toBe('"2020-01-01"');
   });
+  it.each(["manual", "automatic"])(
+    "keeps the %s closure transaction alive during validation longer than five seconds",
+    async (kind) => {
+      const validate =
+        closureValidationService.validateManualClosure.bind(closureValidationService);
+      const delayedValidation = vi
+        .spyOn(closureValidationService, "validateManualClosure")
+        .mockImplementation(async (date) => {
+          await new Promise((resolve) => setTimeout(resolve, 5_200));
+          return validate(date);
+        });
+      try {
+        if (kind === "manual") {
+          expect(
+            (await http("POST", "/api/configs/accounting_lock_date", { value: "2020-01-01" }))
+              .status,
+          ).toBe(200);
+        } else {
+          expect(
+            await closureValidationService.triggerAccountingAutoClosureNow("data-admin"),
+          ).toMatchObject({ applied: true });
+        }
+        expect(delayedValidation).toHaveBeenCalledOnce();
+        expect(
+          await prismaDirect.systemConfig.count({ where: { key: "accounting_lock_date" } }),
+        ).toBe(1);
+        expect(
+          await prismaDirect.auditLog.count({
+            where: {
+              action: kind === "manual" ? "CONFIG_SET" : "CIERRE_CONTABLE_AUTOMATICO_APLICADO",
+            },
+          }),
+        ).toBe(1);
+      } finally {
+        delayedValidation.mockRestore();
+      }
+    },
+    20_000,
+  );
   it("preserves nested secret redaction in generic config audits", async () => {
     const value = { nested: { password: "test-only-password", pin: "1234" }, visible: true };
     expect((await http("POST", "/api/configs/custom", { value })).status).toBe(200);

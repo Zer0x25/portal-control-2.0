@@ -15,7 +15,8 @@ describe("ShiftCalendarFeatureView", () => {
   const baseProps: React.ComponentProps<typeof ShiftCalendarFeatureView> = {
     isWorker: false,
     isLoadingEmployees: false,
-    displayDate: new Date("2026-03-03T00:00:00Z"),
+    // The selector stores a local calendar date, not a UTC-midnight instant.
+    displayDate: new Date(2026, 2, 3),
     viewMode: "month",
     selectedArea: "",
     selectedCargo: "",

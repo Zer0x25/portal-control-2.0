@@ -440,7 +440,7 @@ export class ExportService {
     const ROW_HEIGHT = 20;
     const HEADER_HEIGHT = 20;
 
-    const colWidths = [45, 25, 75, 55, 55, 55, 235];
+    const colWidths = [54, 25, 75, 55, 55, 55, 226];
     const headers = ["Mes", "Día", "Nombre", "Entrada", "Salida", "H. Proy.", "Observación"];
 
     const monthNames = [
@@ -490,11 +490,36 @@ export class ExportService {
     };
 
     let pageNum = 0;
+    const drawFooter = (): void => {
+      doc.fontSize(7).fillColor("#9ca3af");
+      doc.text(
+        `Generado: ${new Date().toLocaleString("es-CL", { hour12: false, timeZone: "America/Santiago" })}`,
+        startX,
+        800,
+        { lineBreak: false },
+      );
+      doc.text(`Página ${pageNum}`, startX + PAGE_WIDTH - 50, 800, {
+        width: 50,
+        align: "right",
+        lineBreak: false,
+      });
+    };
+    const startEmployeePage = (employee: {
+      name: string;
+      area: string;
+      position: string;
+    }): number => {
+      if (pageNum > 0) {
+        drawFooter();
+        doc.addPage({ margin: 25, size: "A4", layout: "portrait" });
+      }
+      pageNum++;
+      return drawTableHeader(drawEmployeeHeader(employee));
+    };
 
     for (const employee of employees) {
       const rows = [];
       let weeklySum = 0;
-      let hasWorkData = false;
 
       for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
         const schedule = await schedulingService.getEmployeeDailyScheduleInfo(
@@ -519,17 +544,14 @@ export class ExportService {
 
         if (schedule) {
           if (schedule.isWorkDay) {
-            hasWorkData = true;
             startTime = schedule.startTime || "-";
             endTime = schedule.endTime || "-";
             projectedHours = schedule.hours || 0;
             observation = schedule.shiftPatternName || "Turno";
           } else if (schedule.isHoliday) {
-            hasWorkData = true;
             isHoliday = true;
             observation = `Feriado: ${schedule.holidayName || ""}`;
           } else if (schedule.justificationType) {
-            hasWorkData = true;
             isLeave = true;
             observation = schedule.justificationType;
           }
@@ -572,115 +594,124 @@ export class ExportService {
         }
       }
 
-      if (!hasWorkData) continue;
-
-      if (pageNum > 0) {
-        doc.addPage({ margin: 25, size: "A4", layout: "portrait" });
-      }
-      pageNum++;
-
-      let currentY = drawEmployeeHeader(employee);
-      currentY = drawTableHeader(currentY);
+      let currentY = startEmployeePage(employee);
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (row.isTotalRow) {
-          doc.fillColor("#e0f2fe").rect(startX, currentY, PAGE_WIDTH, ROW_HEIGHT).fill();
-        } else if (i % 2 === 0) {
-          doc.fillColor("#f9fafb").rect(startX, currentY, PAGE_WIDTH, ROW_HEIGHT).fill();
+        doc.font("Helvetica-Bold").fontSize(9);
+        const observationLines: string[] = [];
+        let line = "";
+        for (const character of row.observation) {
+          if (character === "\n" || doc.widthOfString(line + character) > colWidths[6] - 6) {
+            observationLines.push(line);
+            line = character === "\n" ? "" : character;
+          } else line += character;
         }
-        if (row.isWeekend && row.observation === "Descanso") {
-          doc.fillColor("#fef3c7").rect(startX, currentY, PAGE_WIDTH, ROW_HEIGHT).fill();
+        observationLines.push(line);
+        const segments: string[] = [];
+        for (let offset = 0; offset < observationLines.length; offset += 50) {
+          segments.push(observationLines.slice(offset, offset + 50).join("\n"));
         }
+        for (const [segmentIndex, observation] of segments.entries()) {
+          doc.font("Helvetica-Bold").fontSize(9);
+          const rowHeight = Math.max(
+            ROW_HEIGHT,
+            doc.heightOfString(observation, { width: colWidths[6] - 6 }) + 8,
+          );
+          const totalHeight =
+            segmentIndex === segments.length - 1 && !row.isTotalRow && rows[i + 1]?.isTotalRow
+              ? ROW_HEIGHT
+              : 0;
+          if (currentY + rowHeight + totalHeight > 790) currentY = startEmployeePage(employee);
+          if (row.isTotalRow) {
+            doc.fillColor("#e0f2fe").rect(startX, currentY, PAGE_WIDTH, rowHeight).fill();
+          } else if (i % 2 === 0) {
+            doc.fillColor("#f9fafb").rect(startX, currentY, PAGE_WIDTH, rowHeight).fill();
+          }
+          if (row.isWeekend && row.observation === "Descanso") {
+            doc.fillColor("#fef3c7").rect(startX, currentY, PAGE_WIDTH, rowHeight).fill();
+          }
 
-        doc.fontSize(9);
-        let xPos = startX;
-        const rowTextColor = row.isSunday || row.isHoliday ? "#dc2626" : "#333333";
+          doc.fontSize(9);
+          let xPos = startX;
+          const rowTextColor = row.isSunday || row.isHoliday ? "#dc2626" : "#333333";
 
-        doc.fillColor(rowTextColor).text(row.month, xPos + 3, currentY + 4, {
-          width: colWidths[0],
-          lineBreak: false,
-        });
-        xPos += colWidths[0];
+          doc
+            .fillColor(rowTextColor)
+            .text(segmentIndex === 0 ? row.month : "", xPos + 3, currentY + 4, {
+              width: colWidths[0],
+              lineBreak: false,
+            });
+          xPos += colWidths[0];
 
-        doc
-          .fillColor(rowTextColor)
-          .font("Helvetica-Bold")
-          .text(row.dayNum, xPos + 3, currentY + 4, {
-            width: colWidths[1],
+          doc
+            .fillColor(rowTextColor)
+            .font("Helvetica-Bold")
+            .text(segmentIndex === 0 ? row.dayNum : "", xPos + 3, currentY + 4, {
+              width: colWidths[1],
+              lineBreak: false,
+            });
+          xPos += colWidths[1];
+
+          doc
+            .font("Helvetica")
+            .text(segmentIndex === 0 ? row.dayName : "", xPos + 3, currentY + 4, {
+              width: colWidths[2],
+              lineBreak: false,
+            });
+          xPos += colWidths[2];
+
+          if (!row.isSunday) {
+            if (row.isHoliday) doc.fillColor("#dc2626");
+            else if (row.isLeave) doc.fillColor("#7c3aed");
+            else doc.fillColor("#333333");
+          }
+          doc.text(segmentIndex === 0 ? row.startTime : "", xPos + 3, currentY + 4, {
+            width: colWidths[3],
             lineBreak: false,
           });
-        xPos += colWidths[1];
+          xPos += colWidths[3];
 
-        doc.font("Helvetica").text(row.dayName, xPos + 3, currentY + 4, {
-          width: colWidths[2],
-          lineBreak: false,
-        });
-        xPos += colWidths[2];
+          doc.text(segmentIndex === 0 ? row.endTime : "", xPos + 3, currentY + 4, {
+            width: colWidths[4],
+            lineBreak: false,
+          });
+          xPos += colWidths[4];
 
-        if (!row.isSunday) {
-          if (row.isHoliday) doc.fillColor("#dc2626");
-          else if (row.isLeave) doc.fillColor("#7c3aed");
-          else doc.fillColor("#333333");
+          doc
+            .font("Helvetica-Bold")
+            .text(
+              segmentIndex > 0
+                ? ""
+                : row.isTotalRow
+                  ? `${row.projectedHours.toFixed(1)} hrs`
+                  : row.projectedHours > 0
+                    ? row.projectedHours.toString()
+                    : "-",
+              xPos + 3,
+              currentY + 4,
+              { width: colWidths[5], align: "center", lineBreak: false },
+            );
+          xPos += colWidths[5];
+
+          doc.fillColor(rowTextColor).font("Helvetica-Bold");
+          doc.text(observation, xPos + 3, currentY + 4, {
+            width: colWidths[6] - 6,
+            height: rowHeight - 8,
+          });
+          doc.font("Helvetica");
+
+          currentY += rowHeight;
+          doc
+            .strokeColor("#e5e7eb")
+            .moveTo(startX, currentY)
+            .lineTo(startX + PAGE_WIDTH, currentY)
+            .stroke();
         }
-        doc.text(row.startTime, xPos + 3, currentY + 4, {
-          width: colWidths[3],
-          lineBreak: false,
-        });
-        xPos += colWidths[3];
-
-        doc.text(row.endTime, xPos + 3, currentY + 4, {
-          width: colWidths[4],
-          lineBreak: false,
-        });
-        xPos += colWidths[4];
-
-        doc
-          .font("Helvetica-Bold")
-          .text(
-            row.isTotalRow
-              ? `${row.projectedHours.toFixed(1)} hrs`
-              : row.projectedHours > 0
-                ? row.projectedHours.toString()
-                : "-",
-            xPos + 3,
-            currentY + 4,
-            { width: colWidths[5], align: "center", lineBreak: false },
-          );
-        xPos += colWidths[5];
-
-        doc.fillColor(rowTextColor).font("Helvetica-Bold");
-        doc.text(row.observation, xPos + 3, currentY + 4, {
-          width: colWidths[6],
-          ellipsis: true,
-          lineBreak: false,
-        });
-        doc.font("Helvetica");
-
-        currentY += ROW_HEIGHT;
-        doc
-          .strokeColor("#e5e7eb")
-          .moveTo(startX, currentY)
-          .lineTo(startX + PAGE_WIDTH, currentY)
-          .stroke();
       }
-
-      doc.fontSize(7).fillColor("#9ca3af");
-      doc.text(
-        `Generado: ${new Date().toLocaleString("es-CL", { hour12: false, timeZone: "America/Santiago" })}`,
-        startX,
-        800,
-        {
-          lineBreak: false,
-        },
-      );
-      doc.text(`Página ${pageNum}`, startX + PAGE_WIDTH - 50, 800, {
-        width: 50,
-        align: "right",
-        lineBreak: false,
-      });
     }
 
+    if (pageNum > 0) drawFooter();
     if (employees.length === 0 || pageNum === 0) {
       doc
         .fontSize(12)

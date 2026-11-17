@@ -391,6 +391,16 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect(
       (await http("POST", "/api/corrections", correction({ recordField: "invalid" }))).status,
     ).toBe(400);
+    for (const query of ["limit=abc", "limit=-1", "offset=-1"]) {
+      expect((await http("GET", `/api/corrections?${query}`)).status).toBe(400);
+    }
+    expect((await http("POST", "/api/corrections", correction({ reason: "   " }))).status).toBe(
+      400,
+    );
+    expect(
+      (await http("POST", "/api/corrections", correction({ attachment: { name: "x.pdf" } })))
+        .status,
+    ).toBe(400);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     const foreign = await http("POST", "/api/corrections", correction({ employeeId: "foreign" }));
     expect(foreign.status).toBe(403);
@@ -400,7 +410,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect(await prismaDirect.correctionRequest.count()).toBe(0);
     const own = await http("POST", "/api/corrections", correction());
     expect(own.status).toBe(201);
-    // currentValue is not remapped to originalValue by the existing service.
+    // The server captures the persisted field, including an empty mark.
     expect(own.body).toMatchObject({ status: "pending", originalValue: "" });
     expect(
       await prismaDirect.auditLog.findFirst({ where: { action: "CORRECTION_REQUEST_CREATED" } }),
@@ -443,6 +453,33 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect((await http("GET", `/api/corrections/${foreign.id}/history`)).status).toBe(403);
     expect((await http("GET", "/api/corrections/missing/history")).status).toBe(404);
   });
+  it("paginates equal creation timestamps deterministically without repeating requests", async () => {
+    await seedRecord();
+    const createdAt = new Date("2020-01-01T12:00:00.000Z");
+    await prismaDirect.correctionRequest.createMany({
+      data: ["b", "e", "a", "d", "c"].map((suffix) => ({
+        id: `tie-${suffix}`,
+        employeeId: employee.id,
+        timeRecordId: "correction-record",
+        recordField: "salida",
+        originalValue: "",
+        requestedValue: correctionSalida(),
+        reason: "Historical request",
+        createdAt,
+      })),
+    });
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
+    const pages = await Promise.all(
+      [0, 2, 4].map((offset) => http("GET", `/api/corrections?limit=2&offset=${offset}`)),
+    );
+    for (const page of pages) {
+      expect(page.status).toBe(200);
+      expect(page.body.total).toBe(5);
+    }
+    const ids = pages.flatMap((page) => page.body.requests.map((r: { id: string }) => r.id));
+    expect(ids).toEqual(["tie-e", "tie-d", "tie-c", "tie-b", "tie-a"]);
+    expect(new Set(ids).size).toBe(5);
+  });
   it("denies reads and creation for Usuario without an employee link", async () => {
     const request = await seedRequest();
     await prismaDirect.user.update({
@@ -482,6 +519,78 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect((await http("POST", "/api/corrections", correction())).status).toBe(404);
     expect(await prismaDirect.correctionRequest.count()).toBe(0);
   });
+  it("rejects creation and approval for a deleted time record", async () => {
+    const request = await seedRequest();
+    await prismaDirect.timeRecord.update({
+      where: { id: request.timeRecordId },
+      data: { isDeleted: true },
+    });
+    expect((await http("POST", "/api/corrections", correction())).status).toBe(404);
+    expect(
+      (
+        await http("PATCH", `/api/corrections/${request.id}/status`, {
+          status: "approved",
+          resolvedBy: "actor",
+        })
+      ).status,
+    ).toBe(404);
+    expect(await prismaDirect.correctionRequest.count()).toBe(1);
+    expect(
+      (await prismaDirect.correctionRequest.findUniqueOrThrow({ where: { id: request.id } }))
+        .status,
+    ).toBe("pending");
+    expect(SocketService.emit).not.toHaveBeenCalled();
+    expect(await prismaDirect.auditLog.count({ where: { category: "CTRL_HOURS" } })).toBe(0);
+  });
+  it.each(["audit", "commit"])(
+    "rolls back creation and approval when %s fails without emitting events",
+    async (failure) => {
+      await seedRecord();
+      vi.spyOn(SocketService, "emitToAll").mockImplementation(() => {});
+      await prismaDirect.$executeRaw`CREATE FUNCTION test_correction_audit_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'forced correction audit failure'; END; $$`;
+      if (failure === "audit") {
+        await prismaDirect.$executeRaw`CREATE TRIGGER test_correction_audit_failure BEFORE INSERT ON audit_logs FOR EACH ROW EXECUTE FUNCTION test_correction_audit_failure()`;
+      } else {
+        await prismaDirect.$executeRaw`CREATE CONSTRAINT TRIGGER test_correction_audit_failure AFTER INSERT ON audit_logs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION test_correction_audit_failure()`;
+      }
+      try {
+        expect((await http("POST", "/api/corrections", correction())).status).toBe(500);
+        expect(await prismaDirect.correctionRequest.count()).toBe(0);
+        const request = await prismaDirect.correctionRequest.create({
+          data: {
+            employeeId: employee.id,
+            timeRecordId: "correction-record",
+            recordField: "salida",
+            originalValue: "",
+            requestedValue: correctionSalida(),
+            reason: "Missing exit",
+          },
+        });
+        expect(
+          (
+            await http("PATCH", `/api/corrections/${request.id}/status`, {
+              status: "approved",
+              resolvedBy: "actor",
+            })
+          ).status,
+        ).toBe(500);
+        expect(
+          (await prismaDirect.correctionRequest.findUniqueOrThrow({ where: { id: request.id } }))
+            .status,
+        ).toBe("pending");
+        expect(
+          (await prismaDirect.timeRecord.findUniqueOrThrow({ where: { id: request.timeRecordId } }))
+            .salida,
+        ).toBeNull();
+        expect(await prismaDirect.auditLog.count({ where: { category: "CTRL_HOURS" } })).toBe(0);
+        expect(SocketService.emit).not.toHaveBeenCalled();
+        expect(SocketService.emitToAll).not.toHaveBeenCalled();
+      } finally {
+        await prismaDirect.$executeRaw`DROP TRIGGER test_correction_audit_failure ON audit_logs`;
+        await prismaDirect.$executeRaw`DROP FUNCTION test_correction_audit_failure()`;
+      }
+    },
+  );
   it("rolls back approval of historical inconsistent ownership", async () => {
     await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
     const request = await seedRequest({ employeeId: "foreign" });
@@ -545,7 +654,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
       (await http("POST", "/api/corrections", correction({ timeRecordId: "foreign-record" })))
         .status,
     ).toBe(403);
-    expect((await http("POST", "/api/corrections", correction())).status).toBe(201);
+    expect((await http("POST", "/api/corrections", correction())).status).toBe(409);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
     const kioskJti = "lc-kiosk-jti";
     await prismaDirect.verification.create({
@@ -595,7 +704,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect(result.status).toBe(200);
     expect(result.body).toMatchObject({
       status: "rejected",
-      resolvedBy: "display",
+      resolvedBy: "absence-admin",
       rejectionReason: "No evidence",
     });
     expect(

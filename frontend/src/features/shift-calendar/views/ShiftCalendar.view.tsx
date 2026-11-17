@@ -1,3 +1,4 @@
+import { calendarAnchor } from "../../../utils/calendarGrid";
 import React from "react";
 import { ScheduledEmployeeDetail } from "../../../types/index";
 import ShiftCalendarView from "../../../components/ui/ShiftCalendarView";
@@ -96,7 +97,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
     scheduleMap: map,
     onNavigateToEmployeeMonth,
   }) => {
-    const dayData = map.get(formatDateUTCISO(date));
+    const dayData = map.get(formatDateUTCISO(calendarAnchor(date)));
 
     if (selectedId) {
       const scheduleInfo = dayData?.type === "employee" ? dayData.data : undefined;

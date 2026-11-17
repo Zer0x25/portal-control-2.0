@@ -346,7 +346,7 @@ describe("Spec 018 KPI on Fastify", () => {
     expect((await http("POST", "/api/kpis/detailed-report", range("2020-01-06"))).status).toBe(200);
     const cache = await prismaDirect.monthlyEmployeeStats.findFirstOrThrow();
     const stored = JSON.parse(cache.dailyBreakdown);
-    expect(stored.version).toBe(2);
+    expect(stored.version).toBe(3);
     expect(stored.days).toHaveLength(31);
     expect(stored.days[19]).toMatchObject({ isoDate: "2020-01-20", scheduledHours: 8 });
     expect(stored.days[20].status).toBe("Vacaciones");
@@ -364,7 +364,7 @@ describe("Spec 018 KPI on Fastify", () => {
     expect(
       JSON.parse((await prismaDirect.monthlyEmployeeStats.findFirstOrThrow()).dailyBreakdown)
         .version,
-    ).toBe(2);
+    ).toBe(3);
   });
   it("returns 500 on actual cache write failure without inserting partial cache", async () => {
     await seedRecord("2020-01-06");

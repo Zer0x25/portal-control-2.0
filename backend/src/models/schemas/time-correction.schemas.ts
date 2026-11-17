@@ -1,6 +1,5 @@
 import { calendarDateQuery } from "./dataQuery";
 import { isoDateSchema, positiveIntString, z } from "./common";
-import { ApiResponseSchema } from "./responses.schemas";
 
 export const TimeRecordWriteSchema = z
   .object({
@@ -136,10 +135,21 @@ export const CorrectionRequestSchema = z
     employeeId: z.string(),
     timeRecordId: z.string(),
     recordField: z.enum(["entrada", "inicioColacion", "finColacion", "salida"]),
-    currentValue: z.string().optional(),
+    originalValue: z.string().nullable().optional(),
+    currentValue: z
+      .string()
+      .nullable()
+      .optional()
+      .describe(
+        "Alias anterior de originalValue; el servidor captura el valor actual de la jornada.",
+      ),
     requestedValue: z.iso.datetime({ offset: true }),
-    reason: z.string(),
-    attachment: z.any().optional(),
+    reason: z.string().trim().min(1, "El motivo es obligatorio."),
+    attachment: z.unknown().optional().describe("No admitido: los adjuntos están deshabilitados."),
+  })
+  .refine((data) => data.attachment === undefined, {
+    message: "Los adjuntos no están disponibles.",
+    path: ["attachment"],
   })
   .refine((data) => new Date(data.requestedValue).getTime() <= Date.now(), {
     message: "No se puede solicitar una corrección con fecha futura.",
@@ -164,10 +174,53 @@ export const UpdateCorrectionStatusSchema = z
   })
   .openapi("UpdateCorrectionStatus");
 
-export const CorrectionRequestListResponseSchema = ApiResponseSchema.extend({
-  data: z.array(CorrectionRequestSchema),
-}).openapi("CorrectionRequestListResponse");
+export const CorrectionQuerySchema = z.object({
+  since: z
+    .string()
+    .regex(/^\d+$/)
+    .refine((value) => Number.isSafeInteger(Number(value)))
+    .optional(),
+  limit: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .refine((value) => Number.isSafeInteger(Number(value)) && Number(value) <= 1000)
+    .optional(),
+  offset: z
+    .string()
+    .regex(/^\d+$/)
+    .refine((value) => Number.isSafeInteger(Number(value)))
+    .optional(),
+  status: z.enum(["pending", "approved", "rejected"]).optional(),
+});
 
+export const CorrectionRequestRecordSchema = z
+  .object({
+    id: z.string(),
+    employeeId: z.string(),
+    timeRecordId: z.string(),
+    recordField: z.string(),
+    originalValue: z.string(),
+    requestedValue: z.string(),
+    reason: z.string(),
+    status: z.string(),
+    rejectionReason: z.string().nullable(),
+    resolvedBy: z.string().nullable(),
+    resolvedAt: z.iso.datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    isDeleted: z.boolean(),
+    deletedAt: z.iso.datetime().nullable(),
+  })
+  .openapi("CorrectionRequestRecord");
+
+export const CorrectionRequestListResponseSchema = z
+  .object({
+    requests: z.array(
+      CorrectionRequestRecordSchema.extend({ lastModified: z.number(), syncStatus: z.string() }),
+    ),
+    total: z.number().int(),
+  })
+  .openapi("CorrectionRequestListResponse");
 export const TimeRecordQuerySchema = z.object({
   page: positiveIntString.optional(),
   pageSize: z

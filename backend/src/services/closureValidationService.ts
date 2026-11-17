@@ -1,4 +1,5 @@
-import prisma from "./db";
+import prisma, { withDirectTransaction } from "./db";
+import { ACCOUNTING_TRANSACTION_OPTIONS } from "./accountingTransaction";
 import { securityAuditService } from "./securityAuditService";
 import { schedulingService } from "./schedulingService";
 import { safeJsonParse } from "../utils/configUtils";
@@ -53,49 +54,52 @@ export class ClosureValidationService {
     }
 
     const monthEnd = getMonthEndBusinessDateChile(targetYear, targetMonth);
-    const lockConfig = await prisma.systemConfig.findUnique({
-      where: { key: "accounting_lock_date" },
-    });
+    return withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${"accounting_lock_date"}))`;
+      const lockConfig = await tx.systemConfig.findUnique({
+        where: { key: "accounting_lock_date" },
+      });
 
-    const currentLockDate = safeJsonParse<string>(lockConfig?.value);
-    const closureCandidate = monthEnd;
+      const currentLockDate = safeJsonParse<string>(lockConfig?.value);
+      const closureCandidate = monthEnd;
 
-    if (currentLockDate && closureCandidate <= currentLockDate) {
+      if (currentLockDate && closureCandidate <= currentLockDate) {
+        return {
+          applied: false,
+          closureCandidate,
+          currentLockDate,
+        };
+      }
+
+      const manualValidation = await this.validateManualClosure(closureCandidate);
+
+      await tx.systemConfig.upsert({
+        where: { key: "accounting_lock_date" },
+        update: { value: JSON.stringify(closureCandidate) },
+        create: { key: "accounting_lock_date", value: JSON.stringify(closureCandidate) },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorUsername,
+          category: "CTRL_HOURS",
+          action: manualValidation.allowed
+            ? "CIERRE_CONTABLE_AUTOMATICO_APLICADO"
+            : "CIERRE_CONTABLE_AUTOMATICO_CON_ANOMALIAS",
+          details: manualValidation.allowed
+            ? `Cierre contable automático aplicado hasta ${closureCandidate}.`
+            : `Cierre contable automático aplicado hasta ${closureCandidate} con anomalías pendientes.`,
+          severity: manualValidation.allowed ? "INFO" : "WARNING",
+          metadata: JSON.stringify(manualValidation.details || { lockDate: closureCandidate }),
+        },
+      });
+
       return {
-        applied: false,
+        applied: true,
         closureCandidate,
-        currentLockDate,
+        currentLockDate: currentLockDate || null,
       };
-    }
-
-    const manualValidation = await this.validateManualClosure(closureCandidate);
-
-    await prisma.systemConfig.upsert({
-      where: { key: "accounting_lock_date" },
-      update: { value: JSON.stringify(closureCandidate) },
-      create: { key: "accounting_lock_date", value: JSON.stringify(closureCandidate) },
-    });
-
-    await prisma.auditLog.create({
-      data: {
-        actorUsername,
-        category: "CTRL_HOURS",
-        action: manualValidation.allowed
-          ? "CIERRE_CONTABLE_AUTOMATICO_APLICADO"
-          : "CIERRE_CONTABLE_AUTOMATICO_CON_ANOMALIAS",
-        details: manualValidation.allowed
-          ? `Cierre contable automático aplicado hasta ${closureCandidate}.`
-          : `Cierre contable automático aplicado hasta ${closureCandidate} con anomalías pendientes.`,
-        severity: manualValidation.allowed ? "INFO" : "WARNING",
-        metadata: JSON.stringify(manualValidation.details || { lockDate: closureCandidate }),
-      },
-    });
-
-    return {
-      applied: true,
-      closureCandidate,
-      currentLockDate: currentLockDate || null,
-    };
+    }, ACCOUNTING_TRANSACTION_OPTIONS);
   }
 
   /**

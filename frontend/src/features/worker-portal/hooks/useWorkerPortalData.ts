@@ -6,6 +6,7 @@ import {
   useTimeRecordMutations,
   useUserClockingStatus,
 } from "../../../hooks/queries/useTimeRecordsQuery";
+import { useAllPendingCorrectionRequestsQuery } from "../../../hooks/queries/useAllPendingCorrectionRequestsQuery";
 import { useToasts } from "../../../hooks/useToasts";
 import { useScheduling } from "../../../hooks/useScheduling";
 import { employeeService } from "../../../services/employeeService";
@@ -40,7 +41,18 @@ export const useWorkerPortalData = () => {
   } = useEmployees();
   const { punchMutation } = useTimeRecordMutations();
   const { addToast } = useToasts();
-  const { requests, getEmployeeDailyScheduleInfo, isLoadingSchedulingData } = useScheduling();
+  const {
+    requests,
+    getEmployeeDailyScheduleInfo,
+    isLoadingSchedulingData,
+    fetchNextPage: fetchNextCorrectionRequestsPage,
+    hasNextPage: hasMoreCorrectionRequests,
+    isFetchingNextPage: isFetchingMoreCorrectionRequests,
+    isLoadingCorrectionRequests,
+    isErrorCorrectionRequests,
+    isFetchNextPageCorrectionRequestsError,
+    refetchCorrectionRequests,
+  } = useScheduling();
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -104,7 +116,24 @@ export const useWorkerPortalData = () => {
 
   // Estado de marcaje desde el último registro del empleado (1 sola fila),
   // válido incluso si el registro abierto es de un mes anterior al visible.
-  const { lastRecord: latestEmployeeRecord } = useUserClockingStatus(employee?.id);
+  const {
+    lastRecord: latestEmployeeRecord,
+    isFetching: isFetchingLatestEmployeeRecord,
+    isError: isLatestEmployeeRecordError,
+    refetch: refetchLatestEmployeeRecord,
+  } = useUserClockingStatus(employee?.id);
+  const isClockingStatusUncertain =
+    Boolean(employee?.id) && (isFetchingLatestEmployeeRecord || isLatestEmployeeRecordError);
+  const isClockingStatusLoading =
+    Boolean(employee?.id) && isFetchingLatestEmployeeRecord && !isLatestEmployeeRecordError;
+
+  const allPendingCorrectionsQuery = useAllPendingCorrectionRequestsQuery(Boolean(employee?.id));
+  const allPendingCorrectionRequests = allPendingCorrectionsQuery.data;
+  const isFetchingPendingCorrections = allPendingCorrectionsQuery.isFetching;
+  const isPendingCorrectionsError = allPendingCorrectionsQuery.isError;
+  const refetchPendingCorrections = allPendingCorrectionsQuery.refetch;
+  const isPendingCorrectionsUncertain =
+    Boolean(employee?.id) && (isFetchingPendingCorrections || isPendingCorrectionsError);
 
   useEffect(() => {
     if (!currentUser) {
@@ -179,14 +208,14 @@ export const useWorkerPortalData = () => {
   // Estado derivado de la última query del empleado. Mantenerlo en useState y
   // sincronizarlo con un efecto añadía un commit tras cada cambio del registro.
   const status =
-    employee && latestEmployeeRecord
+    employee && !isClockingStatusUncertain && latestEmployeeRecord
       ? getContractClockingStatus(latestEmployeeRecord, () => "fuera")
       : "fuera";
 
   const requestsMap = useMemo(() => {
     const map = new Map<string, CorrectionRequest>();
     if (employee) {
-      requests
+      [...requests, ...(allPendingCorrectionRequests || [])]
         .filter((r: CorrectionRequest) => r.employeeId === employee.id)
         .forEach((req: CorrectionRequest) => {
           const key = `${req.timeRecordId}-${req.recordField}`;
@@ -206,7 +235,17 @@ export const useWorkerPortalData = () => {
         });
     }
     return map;
-  }, [requests, employee]);
+  }, [requests, allPendingCorrectionRequests, employee]);
+
+  const correctionRequests = useMemo(
+    () =>
+      employee
+        ? requests
+            .filter((request: CorrectionRequest) => request.employeeId === employee.id)
+            .sort((a, b) => b.createdAt - a.createdAt)
+        : [],
+    [requests, employee],
+  );
 
   const enrichedRecords = useMemo(() => {
     if (!employee) return [];
@@ -271,6 +310,7 @@ export const useWorkerPortalData = () => {
 
   const handleClockingAction = useCallback(
     async (type: ClockingActionType) => {
+      if (isClockingStatusUncertain) return;
       if (!employee || !currentUser) {
         addToast("Empleado no encontrado.", "error");
         return;
@@ -332,12 +372,52 @@ export const useWorkerPortalData = () => {
         isSubmittingClockingRef.current = false;
       }
     },
-    [employee, currentUser, punchMutation, addToast],
+    [employee, currentUser, punchMutation, addToast, isClockingStatusUncertain],
   );
 
-  const openCorrectionModal = useCallback((record: DailyTimeRecord, field: TimeRecordField) => {
-    setModalState({ isOpen: true, record, field });
-  }, []);
+  const retryClockingStatus = useCallback(async () => {
+    await refetchLatestEmployeeRecord();
+  }, [refetchLatestEmployeeRecord]);
+
+  const retryPendingCorrectionRequests = useCallback(async () => {
+    await refetchPendingCorrections();
+  }, [refetchPendingCorrections]);
+
+  const loadMoreCorrectionRequests = useCallback(() => {
+    if (hasMoreCorrectionRequests && !isFetchingMoreCorrectionRequests) {
+      void fetchNextCorrectionRequestsPage();
+    }
+  }, [
+    fetchNextCorrectionRequestsPage,
+    hasMoreCorrectionRequests,
+    isFetchingMoreCorrectionRequests,
+  ]);
+
+  const retryCorrectionRequests = useCallback(async () => {
+    if (isFetchNextPageCorrectionRequestsError && hasMoreCorrectionRequests) {
+      await fetchNextCorrectionRequestsPage();
+      return;
+    }
+    await refetchCorrectionRequests();
+  }, [
+    fetchNextCorrectionRequestsPage,
+    hasMoreCorrectionRequests,
+    isFetchNextPageCorrectionRequestsError,
+    refetchCorrectionRequests,
+  ]);
+
+  const openCorrectionModal = useCallback(
+    (record: DailyTimeRecord, field: TimeRecordField) => {
+      if (
+        isPendingCorrectionsUncertain ||
+        requestsMap.get(`${record.id}-${field}`)?.status === "pending"
+      ) {
+        return;
+      }
+      setModalState({ isOpen: true, record, field });
+    },
+    [isPendingCorrectionsUncertain, requestsMap],
+  );
 
   return {
     currentUser,
@@ -355,7 +435,22 @@ export const useWorkerPortalData = () => {
     monthOptions,
     enrichedRecords,
     status,
+    isClockingStatusUncertain,
+    isClockingStatusLoading,
+    isClockingStatusError: Boolean(employee?.id) && isLatestEmployeeRecordError,
+    retryClockingStatus,
+    isPendingCorrectionsUncertain,
+    isPendingCorrectionsError: Boolean(employee?.id) && isPendingCorrectionsError,
+    retryPendingCorrectionRequests,
     requestsMap,
+    correctionRequests,
+    isLoadingCorrectionRequests,
+    isErrorCorrectionRequests: isErrorCorrectionRequests || isFetchNextPageCorrectionRequestsError,
+    isCorrectionRequestsNextPageError: isFetchNextPageCorrectionRequestsError,
+    retryCorrectionRequests,
+    hasMoreCorrectionRequests: Boolean(hasMoreCorrectionRequests),
+    isFetchingMoreCorrectionRequests,
+    loadMoreCorrectionRequests,
     handleExportPDF,
     handleClockingAction,
     openCorrectionModal,

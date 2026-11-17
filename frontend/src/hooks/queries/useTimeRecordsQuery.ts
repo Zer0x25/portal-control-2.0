@@ -184,7 +184,15 @@ export const useUserClockingStatus = (employeeId?: string) => {
     status = "out"; // No records ever
   }
 
-  return { status, time, lastRecord, isLoading: query.isLoading };
+  return {
+    status,
+    time,
+    lastRecord,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 };
 
 export interface PunchMutationInput {

@@ -3,21 +3,14 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { toDate } from "date-fns-tz";
 import { useCorrectionRequestModalController } from "../../../features/worker-portal/hooks/useCorrectionRequestModalController";
 
-const {
-  useToastsMock,
-  useSchedulingMock,
-  addToastMock,
-  addCorrectionRequestMock,
-  onCloseMock,
-  fileToBase64Mock,
-} = vi.hoisted(() => ({
-  useToastsMock: vi.fn(),
-  useSchedulingMock: vi.fn(),
-  addToastMock: vi.fn(),
-  addCorrectionRequestMock: vi.fn(),
-  onCloseMock: vi.fn(),
-  fileToBase64Mock: vi.fn(),
-}));
+const { useToastsMock, useSchedulingMock, addToastMock, addCorrectionRequestMock, onCloseMock } =
+  vi.hoisted(() => ({
+    useToastsMock: vi.fn(),
+    useSchedulingMock: vi.fn(),
+    addToastMock: vi.fn(),
+    addCorrectionRequestMock: vi.fn(),
+    onCloseMock: vi.fn(),
+  }));
 
 vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => useToastsMock(),
@@ -25,10 +18,6 @@ vi.mock("../../../hooks/useToasts", () => ({
 
 vi.mock("../../../hooks/useScheduling", () => ({
   useScheduling: () => useSchedulingMock(),
-}));
-
-vi.mock("../../../utils/fileUtils", () => ({
-  fileToBase64: (...args: unknown[]) => fileToBase64Mock(...args),
 }));
 
 vi.mock("../../../hooks/useBusinessNow", () => ({
@@ -75,7 +64,6 @@ describe("useCorrectionRequestModalController", () => {
 
   it("submits request and closes on success", async () => {
     addCorrectionRequestMock.mockResolvedValue(true);
-    fileToBase64Mock.mockResolvedValue("base64-data");
     useToastsMock.mockReturnValue({ addToast: addToastMock });
     useSchedulingMock.mockReturnValue({ addCorrectionRequest: addCorrectionRequestMock });
 
@@ -114,9 +102,30 @@ describe("useCorrectionRequestModalController", () => {
         timeZone: "America/Santiago",
       }).toISOString(),
       reason: "Olvide marcar correctamente",
-      attachment: undefined,
     });
+    expect(addCorrectionRequestMock.mock.calls[0]?.[0]).not.toHaveProperty("attachment");
     expect(onCloseMock).toHaveBeenCalled();
+  });
+
+  it("no expone controles ni estado de adjuntos", () => {
+    useToastsMock.mockReturnValue({ addToast: addToastMock });
+    useSchedulingMock.mockReturnValue({ addCorrectionRequest: addCorrectionRequestMock });
+
+    const { result } = renderHook(() =>
+      useCorrectionRequestModalController({
+        isOpen: true,
+        onClose: onCloseMock,
+        record: {
+          id: "r1",
+          employeeId: "e1",
+          entrada: "2026-03-05T08:00:00.000Z",
+        } as unknown as import("../../../types").DailyTimeRecord,
+        field: "entrada",
+      }),
+    );
+
+    expect(result.current).not.toHaveProperty("attachment");
+    expect(result.current).not.toHaveProperty("handleFileChange");
   });
 
   it("uses synchronized business now when there is no original value", () => {

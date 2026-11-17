@@ -2,14 +2,11 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useCorrectionRequestModalController } from "../../../features/worker-portal/hooks/useCorrectionRequestModalController";
 
-const { addToastMock, addCorrectionRequestMock, onCloseMock, fileToBase64Mock } = vi.hoisted(
-  () => ({
-    addToastMock: vi.fn(),
-    addCorrectionRequestMock: vi.fn(),
-    onCloseMock: vi.fn(),
-    fileToBase64Mock: vi.fn(),
-  }),
-);
+const { addToastMock, addCorrectionRequestMock, onCloseMock } = vi.hoisted(() => ({
+  addToastMock: vi.fn(),
+  addCorrectionRequestMock: vi.fn(),
+  onCloseMock: vi.fn(),
+}));
 
 vi.mock("../../../hooks/useToasts", () => ({
   useToasts: () => ({ addToast: addToastMock }),
@@ -17,10 +14,6 @@ vi.mock("../../../hooks/useToasts", () => ({
 
 vi.mock("../../../hooks/useScheduling", () => ({
   useScheduling: () => ({ addCorrectionRequest: addCorrectionRequestMock }),
-}));
-
-vi.mock("../../../utils/fileUtils", () => ({
-  fileToBase64: (...args: unknown[]) => fileToBase64Mock(...args),
 }));
 
 vi.mock("../../../hooks/useBusinessNow", () => ({
@@ -67,7 +60,7 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
     expect(addCorrectionRequestMock).not.toHaveBeenCalled();
   });
 
-  it("rechaza archivo mayor a 5MB y limpia el input", async () => {
+  it("AC6: el controlador no ofrece ni conserva manejo de adjuntos", async () => {
     const { result } = renderHook(() =>
       useCorrectionRequestModalController({
         isOpen: true,
@@ -77,55 +70,8 @@ describe("useCorrectionRequestModalController antiregresión (spec 028)", () => 
       }),
     );
 
-    const bigFile = new File(["x"], "grande.pdf", { type: "application/pdf" });
-    Object.defineProperty(bigFile, "size", { value: 6 * 1024 * 1024 });
-    const target = { value: "algo" } as unknown as HTMLInputElement;
-    const event = {
-      target: { ...target, files: [bigFile], value: "algo" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-
-    act(() => {
-      result.current.handleFileChange(event);
-    });
-
-    expect(addToastMock).toHaveBeenCalledWith("El archivo no debe exceder los 5MB.", "error");
-    expect(result.current.attachment).toBeNull();
-  });
-
-  it("muestra error si falla la conversión a base64 y no envía", async () => {
-    addCorrectionRequestMock.mockResolvedValue(true);
-    fileToBase64Mock.mockRejectedValueOnce(new Error("booom"));
-    const { result } = renderHook(() =>
-      useCorrectionRequestModalController({
-        isOpen: true,
-        onClose: onCloseMock,
-        record: makeRecord(),
-        field: "entrada",
-      }),
-    );
-
-    const file = new File(["x"], "a.pdf", { type: "application/pdf" });
-    const event = {
-      target: { files: [file], value: "" },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
-    act(() => {
-      result.current.handleFileChange(event);
-    });
-
-    act(() => {
-      result.current.handleReasonChange("Motivo válido");
-      result.current.handleRequestedValueChange("2026-03-05T09:00");
-    });
-
-    await act(async () => {
-      result.current.submit();
-    });
-
-    await waitFor(() => {
-      expect(addToastMock).toHaveBeenCalledWith("Error al procesar el archivo adjunto.", "error");
-    });
-    expect(addCorrectionRequestMock).not.toHaveBeenCalled();
-    expect(onCloseMock).not.toHaveBeenCalled();
+    expect(result.current).not.toHaveProperty("handleFileChange");
+    expect(result.current).not.toHaveProperty("attachment");
   });
 
   it("rechaza valor futuro sin llamar al backend (spec 030)", async () => {

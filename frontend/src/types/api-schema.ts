@@ -3117,7 +3117,12 @@ export interface paths {
     /** Obtener solicitudes de corrección */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          since?: string;
+          limit?: number;
+          offset?: number;
+          status?: "pending" | "approved" | "rejected";
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -3152,6 +3157,29 @@ export interface paths {
       responses: {
         /** @description Solicitud creada */
         201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CorrectionRequestRecord"];
+          };
+        };
+        /** @description Datos inválidos o adjuntos no admitidos */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Jornada ajena o período cerrado */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Ya existe una solicitud pendiente para el campo */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -3280,6 +3308,22 @@ export interface paths {
       responses: {
         /** @description Estado actualizado */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CorrectionRequestRecord"];
+          };
+        };
+        /** @description Período cerrado */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description El campo cambió desde la solicitud */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -5225,18 +5269,53 @@ export interface components {
       source?: string;
       justification?: string | null;
     };
-    CorrectionRequestListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["CorrectionRequest"][];
+    CorrectionQuery: {
+      since?: string;
+      limit?: string;
+      offset?: string;
+      /** @enum {string} */
+      status?: "pending" | "approved" | "rejected";
+    };
+    CorrectionRequestListResponse: {
+      requests: (components["schemas"]["CorrectionRequestRecord"] & {
+        lastModified: number;
+        syncStatus: string;
+      })[];
+      total: number;
+    };
+    CorrectionRequestRecord: {
+      id: string;
+      employeeId: string;
+      timeRecordId: string;
+      recordField: string;
+      originalValue: string;
+      requestedValue: string;
+      reason: string;
+      status: string;
+      rejectionReason: string | null;
+      resolvedBy: string | null;
+      /** Format: date-time */
+      resolvedAt: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      isDeleted: boolean;
+      /** Format: date-time */
+      deletedAt: string | null;
     };
     CorrectionRequest: {
       employeeId: string;
       timeRecordId: string;
       /** @enum {string} */
       recordField: "entrada" | "inicioColacion" | "finColacion" | "salida";
-      currentValue?: string;
+      originalValue?: string | null;
+      /** @description Alias anterior de originalValue; el servidor captura el valor actual de la jornada. */
+      currentValue?: string | null;
       /** Format: date-time */
       requestedValue: string;
       reason: string;
+      /** @description No admitido: los adjuntos están deshabilitados. */
       attachment?: unknown;
     };
     DailyAttendanceQuery: {

@@ -221,16 +221,19 @@ export class TimeRecordService {
     return enriched;
   }
 
-  static async isRecordLocked(recordDate: string): Promise<boolean> {
+  static async isRecordLocked(
+    recordDate: string,
+    client?: Prisma.TransactionClient,
+  ): Promise<boolean> {
     try {
       const now = new Date();
       const chileDate = getChileDateISO(now);
       const [currYear, currMonth] = chileDate.split("-").map(Number);
 
       // 1. Manual Accounting Lock
-      const lockConfig = await prisma.systemConfig.findUnique({
-        where: { key: "accounting_lock_date" },
-      });
+      const lockConfig = client
+        ? await client.systemConfig.findUnique({ where: { key: "accounting_lock_date" } })
+        : await prisma.systemConfig.findUnique({ where: { key: "accounting_lock_date" } });
       if (lockConfig && lockConfig.value) {
         const manualLockDate = safeJsonParse<string>(lockConfig.value);
         if (manualLockDate && typeof manualLockDate === "string") {

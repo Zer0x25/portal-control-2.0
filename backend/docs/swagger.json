@@ -354,19 +354,73 @@
         },
         "required": ["employeeId", "date"]
       },
+      "CorrectionQuery": {
+        "type": "object",
+        "properties": {
+          "since": { "type": "string", "pattern": "^\\d+$" },
+          "limit": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "offset": { "type": "string", "pattern": "^\\d+$" },
+          "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+        }
+      },
       "CorrectionRequestListResponse": {
-        "allOf": [
-          { "$ref": "#/components/schemas/ApiResponse" },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/CorrectionRequest" }
-              }
-            },
-            "required": ["data"]
-          }
+        "type": "object",
+        "properties": {
+          "requests": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                { "$ref": "#/components/schemas/CorrectionRequestRecord" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "lastModified": { "type": "number" },
+                    "syncStatus": { "type": "string" }
+                  },
+                  "required": ["lastModified", "syncStatus"]
+                }
+              ]
+            }
+          },
+          "total": { "type": "integer" }
+        },
+        "required": ["requests", "total"]
+      },
+      "CorrectionRequestRecord": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "employeeId": { "type": "string" },
+          "timeRecordId": { "type": "string" },
+          "recordField": { "type": "string" },
+          "originalValue": { "type": "string" },
+          "requestedValue": { "type": "string" },
+          "reason": { "type": "string" },
+          "status": { "type": "string" },
+          "rejectionReason": { "type": "string", "nullable": true },
+          "resolvedBy": { "type": "string", "nullable": true },
+          "resolvedAt": { "type": "string", "nullable": true, "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "isDeleted": { "type": "boolean" },
+          "deletedAt": { "type": "string", "nullable": true, "format": "date-time" }
+        },
+        "required": [
+          "id",
+          "employeeId",
+          "timeRecordId",
+          "recordField",
+          "originalValue",
+          "requestedValue",
+          "reason",
+          "status",
+          "rejectionReason",
+          "resolvedBy",
+          "resolvedAt",
+          "createdAt",
+          "updatedAt",
+          "isDeleted",
+          "deletedAt"
         ]
       },
       "CorrectionRequest": {
@@ -378,10 +432,18 @@
             "type": "string",
             "enum": ["entrada", "inicioColacion", "finColacion", "salida"]
           },
-          "currentValue": { "type": "string" },
+          "originalValue": { "type": "string", "nullable": true },
+          "currentValue": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alias anterior de originalValue; el servidor captura el valor actual de la jornada."
+          },
           "requestedValue": { "type": "string", "format": "date-time" },
-          "reason": { "type": "string" },
-          "attachment": { "nullable": true }
+          "reason": { "type": "string", "minLength": 1 },
+          "attachment": {
+            "nullable": true,
+            "description": "No admitido: los adjuntos están deshabilitados."
+          }
         },
         "required": ["employeeId", "timeRecordId", "recordField", "requestedValue", "reason"]
       },
@@ -3194,6 +3256,20 @@
         "summary": "Obtener solicitudes de corrección",
         "tags": ["Corrections"],
         "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "in": "query", "name": "since", "schema": { "type": "string", "pattern": "^[0-9]+$" } },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000 }
+          },
+          { "in": "query", "name": "offset", "schema": { "type": "integer", "minimum": 0 } },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de solicitudes",
@@ -3215,7 +3291,19 @@
             "application/json": { "schema": { "$ref": "#/components/schemas/CorrectionRequest" } }
           }
         },
-        "responses": { "201": { "description": "Solicitud creada" } }
+        "responses": {
+          "201": {
+            "description": "Solicitud creada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CorrectionRequestRecord" }
+              }
+            }
+          },
+          "400": { "description": "Datos inválidos o adjuntos no admitidos" },
+          "403": { "description": "Jornada ajena o período cerrado" },
+          "409": { "description": "Ya existe una solicitud pendiente para el campo" }
+        }
       }
     },
     "/api/corrections/stats": {
@@ -3286,7 +3374,18 @@
             }
           }
         },
-        "responses": { "200": { "description": "Estado actualizado" } }
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CorrectionRequestRecord" }
+              }
+            }
+          },
+          "403": { "description": "Período cerrado" },
+          "409": { "description": "El campo cambió desde la solicitud" }
+        }
       }
     },
     "/api/configs/public/company-policy": {

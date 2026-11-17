@@ -1,5 +1,6 @@
 import React from "react";
-import { formatDateUTCISO, generateCalendarGrid } from "../../utils/dateUtils";
+import { formatDateUTCISO } from "../../utils/dateUtils";
+import { calendarAnchor, calendarGrid } from "../../utils/calendarGrid";
 import { ScheduleMap } from "../../hooks/useCalendarData";
 import ShiftCalendarDayCell from "./ShiftCalendarDayCell";
 
@@ -21,7 +22,7 @@ const ShiftCalendarView: React.FC<ShiftCalendarViewProps> = ({
   onDayClick,
   cellHeight,
 }) => {
-  const calendarGridCells: (Date | null)[] = generateCalendarGrid(viewMode, currentDisplayDate);
+  const calendarGridCells: (Date | null)[] = calendarGrid(viewMode, currentDisplayDate);
 
   const weekDayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -54,7 +55,7 @@ const ShiftCalendarView: React.FC<ShiftCalendarViewProps> = ({
           }
           const dateStr = formatDateUTCISO(day);
           const dayData = scheduleMap.get(dateStr);
-          const isToday = new Date().toDateString() === day.toDateString();
+          const isToday = formatDateUTCISO(calendarAnchor(new Date())) === dateStr;
 
           return (
             <ShiftCalendarDayCell

@@ -1,5 +1,6 @@
 import { Employee, ScheduledEmployeeDetail } from "../types/index";
-import { formatDateUTCISO, getWeekStartDate } from "../utils/dateUtils";
+import { formatDateUTCISO, getDateRange } from "../utils/dateUtils";
+import { calendarAnchor } from "../utils/calendarGrid";
 import { ScheduleInfo } from "../types/scheduling";
 import { useCalendarMatrixQuery } from "./queries/useCalendarMatrixQuery";
 import { useShiftPatternsQuery } from "./queries/useShiftPatternsQuery";
@@ -38,27 +39,8 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
       return { startDateStr: "", endDateStr: "" };
     }
 
-    let start: Date;
-    let end: Date;
-
-    if (viewMode === "day") {
-      start = new Date(
-        Date.UTC(displayDate.getFullYear(), displayDate.getMonth(), displayDate.getDate()),
-      );
-      end = new Date(
-        Date.UTC(displayDate.getFullYear(), displayDate.getMonth(), displayDate.getDate()),
-      );
-    } else if (viewMode === "month") {
-      const year = displayDate.getFullYear();
-      const month = displayDate.getMonth();
-      start = new Date(Date.UTC(year, month, 1));
-      end = new Date(Date.UTC(year, month + 1, 0));
-    } else {
-      // week
-      start = getWeekStartDate(new Date(displayDate));
-      end = new Date(start);
-      end.setDate(start.getUTCDate() + 6);
-    }
+    const anchor = calendarAnchor(displayDate);
+    const { startDate: start, endDate: end } = getDateRange(viewMode, anchor);
 
     try {
       return {
@@ -78,7 +60,9 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
 
   const {
     data: matrix,
-    isLoading: isLoadingCalendar,
+    isPending,
+    isFetching,
+    isError: isCalendarError,
     refetch: refreshCalendar,
   } = useCalendarMatrixQuery(startDateStr, endDateStr, employeeIds);
 
@@ -150,7 +134,8 @@ export const useCalendarData = (options: UseCalendarDataOptions) => {
 
   return {
     scheduleMap,
-    isLoadingCalendar,
+    isLoadingCalendar: isPending || isFetching,
+    isCalendarError,
     refreshCalendar,
     isShiftPatternsLoading,
     isAssignedShiftsLoading,

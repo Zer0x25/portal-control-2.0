@@ -206,6 +206,15 @@ describe("ConfigService unit tests", () => {
       await expect(
         ConfigService.set("accounting_lock_date", "2026-05-05", "admin"),
       ).rejects.toBeInstanceOf(ClosureBlockedError);
+      expect(withDirectTransaction).toHaveBeenCalledWith(expect.any(Function), {
+        maxWait: 10_000,
+        timeout: 120_000,
+      });
+      expect(vi.mocked(prisma.$executeRaw).mock.invocationCallOrder[0]).toBeLessThan(
+        vi.mocked(closureValidationService.validateManualClosure).mock.invocationCallOrder[0],
+      );
+      expect(prisma.systemConfig.upsert).not.toHaveBeenCalled();
+      expect(prisma.auditLog.create).not.toHaveBeenCalled();
     });
 
     it("successfully creates or updates a configuration value and emits audit & socket events", async () => {

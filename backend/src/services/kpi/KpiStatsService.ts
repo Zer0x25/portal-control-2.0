@@ -336,9 +336,9 @@ export class KpiStatsService {
                     0,
                   );
                   if (isFinite(firstIn) && lastOut > 0)
-                    actualClocks = `${new Date(firstIn).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })} - ${new Date(lastOut).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+                    actualClocks = `${new Date(firstIn).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Santiago" })} - ${new Date(lastOut).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Santiago" })}`;
                 } else if (recordForDay?.entrada)
-                  actualClocks = `${new Date(recordForDay.entrada).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false })} - ???`;
+                  actualClocks = `${new Date(recordForDay.entrada).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Santiago" })} - ???`;
               }
               if (emp.workdayType !== "Artículo 22") {
                 if (scheduleInfo?.isWorkDay) {

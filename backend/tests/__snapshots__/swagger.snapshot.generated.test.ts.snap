@@ -496,18 +496,51 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "CorrectionQuery": {
+        "properties": {
+          "limit": {
+            "pattern": "^[1-9]\\d*$",
+            "type": "string",
+          },
+          "offset": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "since": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+            ],
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
       "CorrectionRequest": {
         "properties": {
           "attachment": {
+            "description": "No admitido: los adjuntos están deshabilitados.",
             "nullable": true,
           },
           "currentValue": {
+            "description": "Alias anterior de originalValue; el servidor captura el valor actual de la jornada.",
+            "nullable": true,
             "type": "string",
           },
           "employeeId": {
             "type": "string",
           },
+          "originalValue": {
+            "nullable": true,
+            "type": "string",
+          },
           "reason": {
+            "minLength": 1,
             "type": "string",
           },
           "recordField": {
@@ -537,25 +570,116 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "type": "object",
       },
       "CorrectionRequestListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse",
-          },
-          {
-            "properties": {
-              "data": {
-                "items": {
-                  "$ref": "#/components/schemas/CorrectionRequest",
+        "properties": {
+          "requests": {
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/CorrectionRequestRecord",
                 },
-                "type": "array",
-              },
+                {
+                  "properties": {
+                    "lastModified": {
+                      "type": "number",
+                    },
+                    "syncStatus": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "lastModified",
+                    "syncStatus",
+                  ],
+                  "type": "object",
+                },
+              ],
             },
-            "required": [
-              "data",
-            ],
-            "type": "object",
+            "type": "array",
           },
+          "total": {
+            "type": "integer",
+          },
+        },
+        "required": [
+          "requests",
+          "total",
         ],
+        "type": "object",
+      },
+      "CorrectionRequestRecord": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "originalValue": {
+            "type": "string",
+          },
+          "reason": {
+            "type": "string",
+          },
+          "recordField": {
+            "type": "string",
+          },
+          "rejectionReason": {
+            "nullable": true,
+            "type": "string",
+          },
+          "requestedValue": {
+            "type": "string",
+          },
+          "resolvedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+          },
+          "resolvedBy": {
+            "nullable": true,
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+          "timeRecordId": {
+            "type": "string",
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "employeeId",
+          "timeRecordId",
+          "recordField",
+          "originalValue",
+          "requestedValue",
+          "reason",
+          "status",
+          "rejectionReason",
+          "resolvedBy",
+          "resolvedAt",
+          "createdAt",
+          "updatedAt",
+          "isDeleted",
+          "deletedAt",
+        ],
+        "type": "object",
       },
       "CreateUser": {
         "properties": {
@@ -4523,6 +4647,45 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/corrections": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+              ],
+              "type": "string",
+            },
+          },
+        ],
         "responses": {
           "200": {
             "content": {
@@ -4558,7 +4721,23 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionRequestRecord",
+                },
+              },
+            },
             "description": "Solicitud creada",
+          },
+          "400": {
+            "description": "Datos inválidos o adjuntos no admitidos",
+          },
+          "403": {
+            "description": "Jornada ajena o período cerrado",
+          },
+          "409": {
+            "description": "Ya existe una solicitud pendiente para el campo",
           },
         },
         "security": [
@@ -4677,7 +4856,20 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionRequestRecord",
+                },
+              },
+            },
             "description": "Estado actualizado",
+          },
+          "403": {
+            "description": "Período cerrado",
+          },
+          "409": {
+            "description": "El campo cambió desde la solicitud",
           },
         },
         "security": [

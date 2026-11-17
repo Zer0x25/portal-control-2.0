@@ -2166,6 +2166,19 @@
  *     tags: [Corrections]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: since
+ *         schema: { type: string, pattern: '^[0-9]+$' }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, minimum: 1, maximum: 1000 }
+ *       - in: query
+ *         name: offset
+ *         schema: { type: integer, minimum: 0 }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [pending, approved, rejected] }
  *     responses:
  *       200:
  *         description: Lista de solicitudes
@@ -2192,6 +2205,16 @@
  *     responses:
  *       201:
  *         description: Solicitud creada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CorrectionRequestRecord'
+ *       400:
+ *         description: Datos inválidos o adjuntos no admitidos
+ *       403:
+ *         description: Jornada ajena o período cerrado
+ *       409:
+ *         description: Ya existe una solicitud pendiente para el campo
  */
 
 /**
@@ -2271,6 +2294,14 @@
  *     responses:
  *       200:
  *         description: Estado actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CorrectionRequestRecord'
+ *       403:
+ *         description: Período cerrado
+ *       409:
+ *         description: El campo cambió desde la solicitud
  */
 
 /**

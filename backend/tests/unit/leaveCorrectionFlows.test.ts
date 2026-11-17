@@ -58,12 +58,12 @@ describe("Spec 016 application TDD", () => {
     });
     await expect(f.flows.create({}, undefined)).rejects.toMatchObject({ statusCode: 401 });
   });
-  it("uses persisted actor while preserving supplied resolvedBy and history envelope", async () => {
+  it("uses persisted actor for resolution and preserves history envelope", async () => {
     const f = corrections();
     await f.flows.updateStatus("c", { status: "approved", resolvedBy: "display-name" }, user);
     expect(f.service.updateStatus).toHaveBeenCalledWith("c", {
       status: "approved",
-      resolvedBy: "display-name",
+      resolvedBy: "actor",
       rejectionReason: undefined,
       actorUsername: "actor",
       actorRole: "Usuario",

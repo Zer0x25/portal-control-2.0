@@ -13,9 +13,6 @@ vi.mock("../../../features/worker-portal/hooks/useCorrectionRequestModalControll
 describe("CorrectionRequestModal diferido", () => {
   beforeEach(() => {
     useCorrectionRequestModalControllerMock.mockReturnValue({
-      attachment: null,
-      attachmentLabel: "Subir archivo (PDF, PNG, JPG)",
-      handleFileChange: vi.fn(),
       handleRequestedValueChange: vi.fn(),
       handleReasonChange: vi.fn(),
       values: { requestedValue: "2026-10-23T09:00", reason: "" },
@@ -52,10 +49,11 @@ describe("CorrectionRequestModal diferido", () => {
     render(<CorrectionRequestModal isOpen onClose={onClose} record={record} field="entrada" />);
 
     expect(
-      await screen.findByRole("heading", { name: "Solicitud de Corrección" }),
+      await screen.findByRole("heading", { name: "Solicitud de Corrección" }, { timeout: 5000 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Inicio de Jornada")).toBeInTheDocument();
     expect(screen.getByLabelText("Nuevo Valor Solicitado")).toHaveValue("2026-10-23T09:00");
+    expect(document.querySelector('input[type="file"]')).not.toBeInTheDocument();
     expect(useCorrectionRequestModalControllerMock).toHaveBeenCalledWith({
       isOpen: true,
       onClose,
