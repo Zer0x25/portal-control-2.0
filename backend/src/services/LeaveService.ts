@@ -148,6 +148,7 @@ export class LeaveService {
     const leave = await withDirectTransaction(
       async (tx) => {
         // Serializes leave create/update/delete for this employee, including empty ranges.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employeeId}))`;
         const employees = await tx.$queryRaw<Array<{ id: string }>>`
         SELECT id FROM employees WHERE id = ${employeeId} FOR UPDATE`;
         if (!employees.length) throw new AppError("Empleado no encontrado.", 404, "NOT_FOUND");
@@ -365,6 +366,7 @@ export class LeaveService {
       async (tx) => {
         const initial = await tx.leaveRecord.findUnique({ where: { id } });
         if (!initial) throw new Error("NOT_FOUND");
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + initial.employeeId}))`;
         await tx.$queryRaw`SELECT id FROM employees WHERE id = ${initial.employeeId} FOR UPDATE`;
         const current = await tx.leaveRecord.findUnique({ where: { id } });
         if (!current) throw new Error("NOT_FOUND");

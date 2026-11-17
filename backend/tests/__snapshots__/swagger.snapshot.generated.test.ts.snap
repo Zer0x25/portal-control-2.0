@@ -1013,9 +1013,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "search": {
@@ -1200,6 +1202,51 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "KioskEmployee": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isPinBlocked": {
+            "type": "boolean",
+          },
+          "name": {
+            "type": "string",
+          },
+          "rutHash": {
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "Activo",
+              "Archivado",
+            ],
+            "type": "string",
+          },
+          "workdayType": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "name",
+          "rutHash",
+          "isPinBlocked",
+          "status",
+          "area",
+          "workdayType",
+        ],
+        "type": "object",
+      },
+      "KioskEmployees": {
+        "items": {
+          "$ref": "#/components/schemas/KioskEmployee",
+        },
+        "type": "array",
+      },
       "KioskLogin": {
         "properties": {
           "employeeId": {
@@ -1207,7 +1254,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "pin": {
-            "minLength": 1,
+            "pattern": "^\\d{4}$",
             "type": "string",
           },
         },
@@ -1827,9 +1874,13 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "latitude": {
+            "maximum": 90,
+            "minimum": -90,
             "type": "number",
           },
           "longitude": {
+            "maximum": 180,
+            "minimum": -180,
             "type": "number",
           },
           "source": {
@@ -1849,8 +1900,18 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "action": {
             "type": "string",
           },
+          "exceptionApplied": {
+            "type": "boolean",
+          },
+          "exceptionType": {
+            "nullable": true,
+            "type": "string",
+          },
           "record": {
             "$ref": "#/components/schemas/AttendanceRecordResponse",
+          },
+          "requiresReview": {
+            "type": "boolean",
           },
           "success": {
             "type": "boolean",
@@ -2955,10 +3016,25 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
             "type": "string",
+          },
+          "showAnomalies": {
+            "anyOf": [
+              {
+                "type": "boolean",
+              },
+              {
+                "enum": [
+                  "true",
+                  "false",
+                ],
+                "type": "string",
+              },
+            ],
           },
           "since": {
             "type": "string",
@@ -3693,6 +3769,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                     "message": {
                       "type": "string",
                     },
+                    "mustChangePin": {
+                      "type": "boolean",
+                    },
                     "success": {
                       "type": "boolean",
                     },
@@ -3704,6 +3783,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                     "success",
                     "employeeName",
                     "token",
+                    "mustChangePin",
                     "message",
                   ],
                   "type": "object",
@@ -4973,6 +5053,67 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/employees/kiosk": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KioskEmployees",
+                },
+              },
+            },
+            "description": "Lista pública de empleados activos para Kiosko (sin PII)",
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos",
+          },
+        },
         "summary": "Obtiene lista de empleados para modo Kiosko",
         "tags": [
           "Employees",

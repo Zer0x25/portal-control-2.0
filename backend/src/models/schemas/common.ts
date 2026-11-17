@@ -41,4 +41,9 @@ export const employeeStatusEnum = z.enum(["Activo", "Archivado"]);
 
 export const numericString = z.string().transform((val) => Number(val));
 
+export const positiveIntString = z
+  .string()
+  .regex(/^[1-9]\d*$/, "Debe ser un número entero positivo mayor o igual a 1")
+  .transform((val) => Number(val));
+
 export { z };

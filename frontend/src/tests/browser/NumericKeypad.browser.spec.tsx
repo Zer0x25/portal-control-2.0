@@ -26,22 +26,26 @@ describe("NumericKeypad in Real Browser (AC5)", () => {
 
     // Click digit 5
     const key5 = screen.getByTestId("kiosk-key-5");
-    fireEvent.pointerDown(key5);
+    fireEvent.click(key5);
     expect(onInput).toHaveBeenCalledWith("5");
 
     // Click digit 9
     const key9 = screen.getByTestId("kiosk-key-9");
-    fireEvent.pointerDown(key9);
+    fireEvent.click(key9);
     expect(onInput).toHaveBeenCalledWith("9");
+
+    // Keyboard activation on button
+    fireEvent.keyDown(key5, { key: "Enter" });
+    fireEvent.keyDown(key9, { key: " " });
 
     // Click backspace
     const deleteBtn = screen.getByLabelText("Borrar");
-    fireEvent.pointerDown(deleteBtn);
+    fireEvent.click(deleteBtn);
     expect(onDelete).toHaveBeenCalledOnce();
 
     // Click confirm
     const confirmBtn = screen.getByTestId("kiosk-key-confirm");
-    fireEvent.pointerDown(confirmBtn);
+    fireEvent.click(confirmBtn);
     expect(onConfirm).toHaveBeenCalledOnce();
   });
 });

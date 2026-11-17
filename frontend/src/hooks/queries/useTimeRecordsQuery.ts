@@ -219,6 +219,7 @@ export const useTimeRecordMutations = () => {
         data.forcedType,
         geolocation,
         data.authScope,
+        { skipAuthEvents: data.authScope === "kiosk" },
       );
     },
     onSuccess: (result) => {

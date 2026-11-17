@@ -28,6 +28,7 @@ export function verifyAccessToken(token: string, secret: string): AuthUser {
     role: value.role,
     employeeId:
       "employeeId" in value && typeof value.employeeId === "string" ? value.employeeId : null,
+    jti: "jti" in value && typeof value.jti === "string" ? value.jti : null,
   };
 }
 

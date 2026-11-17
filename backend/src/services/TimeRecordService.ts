@@ -16,6 +16,7 @@ import { schedulingService } from "./schedulingService";
 import { KpiEngine } from "./kpi/KpiEngine";
 import { KpiFormattingService } from "./kpi/KpiFormattingService";
 import { AppError } from "../utils/AppError";
+import { logger } from "../utils/logger";
 import type { TimeRecord } from "../generated/prisma/client";
 import type { SchedulingContext } from "./schedulingService";
 import type { VerifyFilters } from "./timeRecordIntegrityService";
@@ -156,6 +157,18 @@ export class TimeRecordService {
   }
 
   static async enrichRecord(rec: TimeRecord, context?: SchedulingContext) {
+    let parsedJustification: unknown = rec.justification;
+    if (rec.justification && typeof rec.justification === "string") {
+      try {
+        parsedJustification = JSON.parse(rec.justification);
+      } catch (error) {
+        logger.error(`[TimeRecordService.enrichRecord] Invalid justification JSON for ${rec.id}`, {
+          error,
+        });
+        parsedJustification = rec.justification;
+      }
+    }
+
     // 1. Basic Enrichement (Legacy/Persistence Sync)
     const enriched = {
       ...rec,
@@ -163,10 +176,7 @@ export class TimeRecordService {
       inicioColacionTimestamp: rec.inicioColacion ? new Date(rec.inicioColacion).getTime() : null,
       finColacionTimestamp: rec.finColacion ? new Date(rec.finColacion).getTime() : null,
       salidaTimestamp: rec.salida ? new Date(rec.salida).getTime() : null,
-      justification:
-        rec.justification && typeof rec.justification === "string"
-          ? JSON.parse(rec.justification)
-          : rec.justification,
+      justification: parsedJustification,
       syncStatus: "synced",
       lastModified: rec.updatedAt?.getTime() || Date.now(),
       isDeleted: rec.isDeleted || false,
@@ -202,10 +212,9 @@ export class TimeRecordService {
           lateMinutes,
         };
       } catch (error) {
-        console.error(
-          `[TimeRecordService.enrichRecord] Failed to enrich KPI for ${rec.id}:`,
+        logger.error(`[TimeRecordService.enrichRecord] Failed to enrich KPI for ${rec.id}`, {
           error,
-        );
+        });
       }
     }
 
@@ -242,8 +251,8 @@ export class TimeRecordService {
 
       return false;
     } catch (error) {
-      console.error("Error checking lock status:", error);
-      return false;
+      logger.error("Error checking lock status:", { error });
+      return true;
     }
   }
 
@@ -384,26 +393,6 @@ export class TimeRecordService {
    * Crea o actualiza un registro de tiempo con validación de horas extras e integridad.
    */
   static async saveRecord(recordData: TimeRecordInput, actorUsername: string) {
-    // Normalize identity: if caller doesn't send id, reuse existing employee/day row.
-    // This prevents duplicate records for the same employee and business date.
-    // New rows mint their id here (2026-10-04): Prisma rejects
-    // findUnique/upsert with id undefined (500), and the route contract
-    // (createOrUpdate, id opcional) promises create sin id pre-acuñado.
-    if (!recordData.id && recordData.employeeId && recordData.date) {
-      const existing = await prisma.timeRecord.findFirst({
-        where: {
-          employeeId: recordData.employeeId,
-          date: recordData.date,
-          isDeleted: false,
-        },
-        orderBy: { updatedAt: "desc" },
-      });
-      if (existing) {
-        recordData.id = existing.id;
-      }
-    }
-    recordData.id ??= ulid();
-
     const data: Prisma.TimeRecordUncheckedCreateInput = {
       employeeId: recordData.employeeId,
       employeeName: recordData.employeeName,
@@ -435,6 +424,22 @@ export class TimeRecordService {
     });
 
     return await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + data.employeeId}))`;
+      if (!recordData.id && recordData.employeeId && recordData.date) {
+        const existing = await tx.timeRecord.findFirst({
+          where: {
+            employeeId: recordData.employeeId,
+            date: recordData.date,
+            isDeleted: false,
+          },
+          orderBy: { updatedAt: "desc" },
+        });
+        if (existing) {
+          recordData.id = existing.id;
+        }
+      }
+      recordData.id ??= ulid();
+
       const oldValue = await tx.timeRecord.findUnique({ where: { id: recordData.id } });
 
       // Automatic state cleaning: if anomaly state is now complete (entrada + salida), set to Completado
@@ -517,6 +522,7 @@ export class TimeRecordService {
     }
 
     return await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + record.employeeId}))`;
       let result;
 
       if (isVirtual) {
@@ -797,6 +803,10 @@ export class TimeRecordService {
     for (let i = 0; i < formatted.length; i += CHUNK_SIZE) {
       const chunk = formatted.slice(i, i + CHUNK_SIZE);
       await withDirectTransaction(async (tx) => {
+        const sortedEmployeeIds = [...new Set(chunk.map((row) => row.employeeId))].sort();
+        for (const empId of sortedEmployeeIds) {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + empId}))`;
+        }
         const created: TimeRecord[] = [];
         for (const row of chunk) {
           const result = await tx.timeRecord.create({ data: row });
@@ -1148,22 +1158,43 @@ export class TimeRecordService {
    */
   static async processAutoClosures(): Promise<number> {
     const now = new Date();
-    const chileDate = getChileDateISO(now);
+    const nowMs = now.getTime();
+    const FOURTEEN_HOURS_MS = 14 * 60 * 60 * 1000;
 
-    // Get open records from previous days
+    // Get open records (aligning with autoCloseService >= 14h threshold to preserve night shifts)
     const openRecords = await prisma.timeRecord.findMany({
       where: {
-        status: { in: ["Laborando", "Colacion"] },
-        date: { lt: chileDate },
+        entrada: { not: null },
+        salida: null,
+        status: {
+          notIn: ["Completado", "AnomaliaManual", "Ausente", "Feriado"],
+        },
         isDeleted: false,
       },
     });
 
-    if (openRecords.length === 0) return 0;
+    const expiredRecords = openRecords.filter((rec) => {
+      if (!rec.entrada) return false;
+      const direct = new Date(rec.entrada).getTime();
+      const entradaTime = Number.isFinite(direct)
+        ? direct
+        : /^\d{2}:\d{2}(:\d{2})?$/.test(rec.entrada)
+          ? new Date(
+              `${rec.date}T${rec.entrada.length === 5 ? `${rec.entrada}:00` : rec.entrada}Z`,
+            ).getTime()
+          : NaN;
+      return Number.isFinite(entradaTime) && nowMs - entradaTime >= FOURTEEN_HOURS_MS;
+    });
+
+    if (expiredRecords.length === 0) return 0;
 
     const results = await withDirectTransaction(async (tx) => {
+      const sortedEmployeeIds = [...new Set(expiredRecords.map((rec) => rec.employeeId))].sort();
+      for (const empId of sortedEmployeeIds) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + empId}))`;
+      }
       const updatedList = [];
-      for (const rec of openRecords) {
+      for (const rec of expiredRecords) {
         const updated = await tx.timeRecord.update({
           where: { id: rec.id },
           data: {
@@ -1171,10 +1202,11 @@ export class TimeRecordService {
             salida: null, // Leave empty to force audit/repair
             justification: JSON.stringify({
               type: "SYSTEM_ANOMALY",
-              reason: "AUTO_CLOSE_END_OF_DAY",
-              comment: "Cerrado automáticamente al final del día por sistema pendiendo revisión.",
+              reason: "AUTO_CLOSE_EXCEEDED_14H",
+              comment: "Cerrado automáticamente por exceder el límite de 14 horas de jornada.",
               metadata: {
                 autoClosedAt: now.toISOString(),
+                threshold: 14,
                 originalDate: rec.date,
               },
             }),
@@ -1258,6 +1290,7 @@ export class TimeRecordService {
     }
 
     await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + record.employeeId}))`;
       const deleted = await tx.timeRecord.update({
         where: { id },
         data: { isDeleted: true, deletedAt: new Date() },

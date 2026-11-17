@@ -66,18 +66,21 @@ describe("Employee application contracts", () => {
     expect(f.deps.repository.listClockingOptions).toHaveBeenCalledWith(user);
   });
 
-  it("limits kiosk projection and omits PIN in authenticated sync response", async () => {
+  it("limits kiosk projection (rutHash + workdayType without raw rut) and omits PIN in authenticated sync response", async () => {
     const f = fixture();
-    expect(await f.flows.list({}, undefined)).toEqual([
+    const kioskList = await f.flows.list({}, undefined);
+    expect(kioskList).toEqual([
       {
         id: row.id,
         name: row.name,
-        rut: row.rut,
+        rutHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         status: row.status,
         area: row.area,
+        workdayType: row.workdayType,
         isPinBlocked: false,
       },
     ]);
+    expect(JSON.stringify(kioskList)).not.toContain(row.rut);
     const response = await f.flows.list(
       { page: "1", pageSize: "10" },
       { role: "Usuario", employeeId: row.id },

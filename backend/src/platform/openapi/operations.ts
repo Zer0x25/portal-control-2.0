@@ -1973,6 +1973,34 @@
  *   get:
  *     summary: Obtiene lista de empleados para modo Kiosko
  *     tags: [Employees]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: area
+ *         schema: { type: string }
+ *       - in: query
+ *         name: since
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Lista pública de empleados activos para Kiosko (sin PII)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/KioskEmployees'
+ *       400:
+ *         description: Parámetros de consulta inválidos
  */
 
 /**
@@ -2677,11 +2705,12 @@
  *           application/json:
  *             schema:
  *               type: object
- *               required: [success, employeeName, token, message]
+ *               required: [success, employeeName, token, mustChangePin, message]
  *               properties:
  *                 success: { type: boolean }
  *                 employeeName: { type: string }
  *                 token: { type: string }
+ *                 mustChangePin: { type: boolean }
  *                 message: { type: string }
  *       400:
  *         description: Error de validación en credenciales

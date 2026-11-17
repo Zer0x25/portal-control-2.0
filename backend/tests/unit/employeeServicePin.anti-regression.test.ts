@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import bcryptjs from "bcryptjs";
+import * as dbModule from "../../src/services/db";
 import { EmployeeService } from "../../src/services/EmployeeService";
 import prisma from "../../src/services/db";
 
@@ -61,7 +62,7 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
 
   it("hashes PIN on update and resets isPinBlocked to false and pinFailedAttempts to 0", async () => {
     const service = new EmployeeService();
-    const updateSpy = vi.spyOn(prisma.employee, "update").mockImplementation(async ({ data }) => ({
+    const updateSpy = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
       id: "EMP-2001",
       name: "Carlos",
       rut: "11.111.111-1",
@@ -73,17 +74,18 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
       pin: data.pin as string,
       isPinBlocked: data.isPinBlocked as boolean,
       pinFailedAttempts: data.pinFailedAttempts as number,
-      phone: null,
-      address: null,
-      gender: null,
-      birthDate: null,
-      entryDate: new Date(),
-      leaveDaysAvailable: 15,
-      isDeleted: false,
-      lastModified: BigInt(0),
       createdAt: new Date(),
       updatedAt: new Date(),
     }));
+    const txSpy = vi.spyOn(dbModule, "withDirectTransaction").mockImplementation(async (fn) =>
+      fn({
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "EMP-2001" }]),
+        employee: {
+          findUnique: vi.fn().mockResolvedValue({ id: "EMP-2001", rut: "11.111.111-1" }),
+          update: updateSpy,
+        },
+      } as unknown as Parameters<typeof fn>[0]),
+    );
 
     await service.updateEmployee("EMP-2001", {
       pin: "9999",
@@ -100,12 +102,30 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
     expect(typeof updatedData.pin).toBe("string");
     expect(bcryptjs.compareSync("9999", updatedData.pin as string)).toBe(true);
 
-    updateSpy.mockRestore();
+    txSpy.mockRestore();
+  });
+
+  it("rejects setting PIN equal to first 4 characters of RUT", async () => {
+    const service = new EmployeeService();
+    const txSpy = vi.spyOn(dbModule, "withDirectTransaction").mockImplementation(async (fn) =>
+      fn({
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "EMP-2001" }]),
+        employee: {
+          findUnique: vi.fn().mockResolvedValue({ id: "EMP-2001", rut: "11111111-1" }),
+          update: vi.fn(),
+        },
+      } as unknown as Parameters<typeof fn>[0]),
+    );
+
+    await expect(service.updateEmployee("EMP-2001", { pin: "1111" })).rejects.toThrow(
+      "primeros 4 dígitos del RUT",
+    );
+    txSpy.mockRestore();
   });
 
   it("retains isPinBlocked and pinFailedAttempts when no new PIN is passed on update", async () => {
     const service = new EmployeeService();
-    const updateSpy = vi.spyOn(prisma.employee, "update").mockImplementation(async ({ data }) => ({
+    const updateSpy = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
       id: "EMP-2001",
       name: "Carlos",
       rut: "11.111.111-1",
@@ -117,17 +137,18 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
       pin: data.pin as string,
       isPinBlocked: data.isPinBlocked as boolean,
       pinFailedAttempts: data.pinFailedAttempts as number,
-      phone: null,
-      address: null,
-      gender: null,
-      birthDate: null,
-      entryDate: new Date(),
-      leaveDaysAvailable: 15,
-      isDeleted: false,
-      lastModified: BigInt(0),
       createdAt: new Date(),
       updatedAt: new Date(),
     }));
+    const txSpy = vi.spyOn(dbModule, "withDirectTransaction").mockImplementation(async (fn) =>
+      fn({
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "EMP-2001" }]),
+        employee: {
+          findUnique: vi.fn().mockResolvedValue({ id: "EMP-2001", rut: "11.111.111-1" }),
+          update: updateSpy,
+        },
+      } as unknown as Parameters<typeof fn>[0]),
+    );
 
     await service.updateEmployee("EMP-2001", {
       isPinBlocked: true,
@@ -141,12 +162,12 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
     expect(updatedData.isPinBlocked).toBe(true);
     expect(updatedData.pinFailedAttempts).toBe(3);
 
-    updateSpy.mockRestore();
+    txSpy.mockRestore();
   });
 
   it("resets isPinBlocked and pinFailedAttempts when clearing PIN with pin: null", async () => {
     const service = new EmployeeService();
-    const updateSpy = vi.spyOn(prisma.employee, "update").mockImplementation(async ({ data }) => ({
+    const updateSpy = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
       id: "EMP-2001",
       name: "Carlos",
       rut: "11.111.111-1",
@@ -158,17 +179,18 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
       pin: data.pin as string | null,
       isPinBlocked: data.isPinBlocked as boolean,
       pinFailedAttempts: data.pinFailedAttempts as number,
-      phone: null,
-      address: null,
-      gender: null,
-      birthDate: null,
-      entryDate: new Date(),
-      leaveDaysAvailable: 15,
-      isDeleted: false,
-      lastModified: BigInt(0),
       createdAt: new Date(),
       updatedAt: new Date(),
     }));
+    const txSpy = vi.spyOn(dbModule, "withDirectTransaction").mockImplementation(async (fn) =>
+      fn({
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "EMP-2001" }]),
+        employee: {
+          findUnique: vi.fn().mockResolvedValue({ id: "EMP-2001", rut: "11.111.111-1" }),
+          update: updateSpy,
+        },
+      } as unknown as Parameters<typeof fn>[0]),
+    );
 
     await service.updateEmployee("EMP-2001", { pin: null });
 
@@ -178,6 +200,6 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
     expect(updatedData.isPinBlocked).toBe(false);
     expect(updatedData.pinFailedAttempts).toBe(0);
 
-    updateSpy.mockRestore();
+    txSpy.mockRestore();
   });
 });

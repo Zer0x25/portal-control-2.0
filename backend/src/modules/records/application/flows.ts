@@ -26,6 +26,7 @@ const punchErrors: Record<string, string> = {
   WORKDAY_FINISHED: "La jornada ya fue cerrada para este empleado.",
   ALREADY_BREAK_STARTED: "Ya existe una colación iniciada.",
   NO_BREAK_STARTED: "No hay colación iniciada para finalizar.",
+  NO_ENTRY_RECORDED: "No existe una jornada abierta con entrada previa para registrar esta acción.",
   ALREADY_BREAK_FINISHED: "La colación ya fue finalizada.",
   ACTION_ALREADY_TAKEN: "Esta accion ya fue registrada en la jornada actual.",
   BREAK_INCOMPLETE_TOO_EARLY:
@@ -57,13 +58,6 @@ export function createRecordFlows<
       const now = deps.now();
       if (await deps.service.isLocked(deps.businessDate(now)))
         throw new ForbiddenError("El periodo contable para esta fecha está cerrado.");
-      const last = await deps.service.lastPunch(employeeId);
-      if (last && input.forcedType && last.updatedAt.getTime() >= now.getTime() - 15000)
-        throw new AppError(
-          "Acción bloqueada por seguridad. Espere unos segundos.",
-          429,
-          "TOO_MANY_REQUESTS",
-        );
       try {
         return {
           success: true,
@@ -79,6 +73,14 @@ export function createRecordFlows<
       } catch (error) {
         const key = message(error);
         if (key === "EMPLOYEE_NOT_FOUND") throw new NotFoundError("Empleado no encontrado");
+        if (key === "EMPLOYEE_INACTIVE")
+          throw new ForbiddenError("Acceso denegado: Empleado archivado o inactivo");
+        if (key === "PUNCH_COOLDOWN")
+          throw new AppError(
+            "Acción bloqueada por seguridad. Espere unos segundos.",
+            429,
+            "TOO_MANY_REQUESTS",
+          );
         if (punchErrors[key]) throw new ValidationError(punchErrors[key]);
         throw new AppError("Error al registrar marcaje", 500, "PUNCH_ERROR");
       }

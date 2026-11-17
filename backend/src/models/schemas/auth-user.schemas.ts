@@ -85,7 +85,7 @@ export const KioskLoginSchema = z
       .refine((value) => value.trim().length > 0, {
         message: "El empleado es requerido",
       }),
-    pin: z.string().min(1, "El PIN es requerido"),
+    pin: z.string().regex(/^\d{4}$/, "El PIN debe contener exactamente 4 dígitos numéricos"),
   })
   .openapi("KioskLogin");
 

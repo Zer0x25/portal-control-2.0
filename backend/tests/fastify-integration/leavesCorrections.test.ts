@@ -547,8 +547,23 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     ).toBe(403);
     expect((await http("POST", "/api/corrections", correction())).status).toBe(201);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
+    const kioskJti = "lc-kiosk-jti";
+    await prismaDirect.verification.create({
+      data: {
+        id: `kiosk-jti:${kioskJti}`,
+        identifier: `kiosk-jti:${employee.id}`,
+        value: "active",
+        expiresAt: new Date(Date.now() + 300_000),
+      },
+    });
     token = jwt.sign(
-      { id: employee.id, username: "kiosk", role: "Kiosk_Employee", employeeId: employee.id },
+      {
+        id: employee.id,
+        username: "kiosk",
+        role: "Kiosk_Employee",
+        employeeId: employee.id,
+        jti: kioskJti,
+      },
       process.env.JWT_SECRET!,
       { expiresIn: "5m" },
     );

@@ -55,7 +55,7 @@ export const processAutoClosures = async () => {
       }
       const elapsed = nowMs - entradaTime;
 
-      if (elapsed > FOURTEEN_HOURS_MS) {
+      if (elapsed >= FOURTEEN_HOURS_MS) {
         console.warn(
           `Cerrando registro ${record.id} de ${record.employeeName} (Antigüedad: ${Math.round(elapsed / 3600000)}h)`,
         );
@@ -63,6 +63,7 @@ export const processAutoClosures = async () => {
         // Note: virtualSalida calculation was removed as it was not used.
 
         await withDirectTransaction(async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + record.employeeId}))`;
           const closed = await tx.timeRecord.update({
             where: { id: record.id },
             data: {
@@ -206,6 +207,7 @@ export const processDailyAbsences = async (targetDate?: string) => {
         !recordMap.has(employee.id)
       ) {
         await withDirectTransaction(async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employee.id}))`;
           const record = await tx.timeRecord.create({
             data: {
               employeeId: employee.id,

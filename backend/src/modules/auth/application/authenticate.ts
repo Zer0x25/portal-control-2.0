@@ -4,6 +4,7 @@ export interface AuthUser {
   username: string;
   role: string;
   employeeId?: string | null;
+  jti?: string | null;
   isForcePasswordChange?: boolean;
 }
 export interface AuthSession {
@@ -22,7 +23,10 @@ export interface AuthenticationDependencies {
     touch(id: string, now: Date): Promise<unknown>;
   };
   users: { find(id: string): Promise<AuthUser | null> };
-  employees?: { findStatus(id: string): Promise<{ status: string } | null> };
+  employees?: {
+    findStatus(id: string): Promise<{ status: string; isPinBlocked?: boolean } | null>;
+  };
+  kioskSessions?: { isActive(jti: string): Promise<boolean> };
   betterAuth?: {
     enabled: boolean;
     findSession(token: string): Promise<AuthSession | null>;
@@ -127,6 +131,14 @@ export function createAuthenticate(deps: AuthenticationDependencies) {
         const employee = await deps.employees.findStatus(employeeId);
         if (!employee || employee.status !== "Activo") {
           throw new ForbiddenError("Acceso denegado: Empleado archivado o inactivo");
+        }
+        if (employee.isPinBlocked) {
+          throw new ForbiddenError("Acceso denegado: PIN bloqueado");
+        }
+      }
+      if (deps.kioskSessions) {
+        if (!user.jti || !(await deps.kioskSessions.isActive(user.jti))) {
+          throw new AuthError("Sesión de kiosco cerrada o expirada");
         }
       }
       if (requestPath) {

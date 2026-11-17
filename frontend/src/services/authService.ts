@@ -35,7 +35,16 @@ export interface AuthService {
   kioskVerifyPin: (
     employeeId: string,
     pin: string,
-  ) => Promise<{ success: boolean; message: string; employeeName?: string }>;
+    options?: { signal?: AbortSignal },
+  ) => Promise<{
+    success: boolean;
+    message: string;
+    employeeName?: string;
+    mustChangePin?: boolean;
+    status?: number;
+    code?: string;
+  }>;
+  kioskLogout: () => Promise<void>;
 }
 
 /**
@@ -207,17 +216,28 @@ class AuthServiceImpl implements AuthService {
   async kioskVerifyPin(
     employeeId: string,
     pin: string,
-  ): Promise<{ success: boolean; message: string; employeeName?: string }> {
+    options?: { signal?: AbortSignal },
+  ): Promise<{
+    success: boolean;
+    message: string;
+    employeeName?: string;
+    mustChangePin?: boolean;
+    status?: number;
+    code?: string;
+  }> {
     try {
       const data = await apiRequest<{
         success: boolean;
         message: string;
         employeeName?: string;
         token?: string;
+        mustChangePin?: boolean;
       }>({
         method: "POST",
         url: "/api/auth/kiosk-login",
         body: { employeeId, pin },
+        signal: options?.signal,
+        skipAuthEvents: true,
       });
 
       if (data.token) {
@@ -230,9 +250,39 @@ class AuthServiceImpl implements AuthService {
       // El kiosk no lanza: muestra el mensaje en pantalla. Un 4xx del backend
       // trae su propio mensaje ("PIN incorrecto"); un fallo de red no.
       if (error instanceof ApiHttpError) {
-        return { success: false, message: errorMessageOr(error, "Error de verificación") };
+        const errorCode =
+          error.data &&
+          typeof error.data === "object" &&
+          "code" in error.data &&
+          typeof (error.data as { code?: unknown }).code === "string"
+            ? (error.data as { code: string }).code
+            : undefined;
+        return {
+          success: false,
+          message: errorMessageOr(error, "Error de verificación"),
+          status: error.status,
+          ...(errorCode ? { code: errorCode } : {}),
+        };
       }
       return { success: false, message: "Error de conexión con el servidor" };
+    }
+  }
+
+  async kioskLogout(): Promise<void> {
+    const kioskToken = this.getKioskToken();
+    try {
+      if (kioskToken) {
+        await apiRequest({
+          method: "POST",
+          url: "/api/auth/logout",
+          authScope: "kiosk",
+          skipAuthEvents: true,
+        });
+      }
+    } catch (error) {
+      logger.warn("Kiosk logout request failed:", error);
+    } finally {
+      this.removeKioskToken();
     }
   }
 }

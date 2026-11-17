@@ -66,7 +66,7 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
 
     const result = await authService.kioskVerifyPin("e1", "0000");
 
-    expect(result).toEqual({ success: false, message: "PIN incorrecto" });
+    expect(result).toEqual({ success: false, message: "PIN incorrecto", status: 401 });
     expect(unauthorized).not.toHaveBeenCalled();
     window.removeEventListener("unauthorized", unauthorized);
   });
@@ -169,18 +169,42 @@ describe("authService sobre apiClient (spec 034 T14)", () => {
     expect(authTokenStore.getToken()).toBeNull();
   });
 
-  it("kioskVerifyPin guarda token en kioskToken sin sobrescribir authToken", async () => {
+  it("kioskVerifyPin guarda token en kioskToken sin sobrescribir authToken y retorna mustChangePin/status", async () => {
     authTokenStore.setToken("portal-token");
     server.use(
       http.post("http://localhost:4000/api/auth/kiosk-login", () =>
-        HttpResponse.json({ success: true, message: "ok", token: "kiosk-jwt" }),
+        HttpResponse.json({
+          success: true,
+          message: "ok",
+          token: "kiosk-jwt",
+          mustChangePin: true,
+        }),
       ),
     );
 
     const res = await authService.kioskVerifyPin("e1", "2468");
 
     expect(res.success).toBe(true);
+    expect(res.mustChangePin).toBe(true);
     expect(authTokenStore.getKioskToken()).toBe("kiosk-jwt");
+    expect(authTokenStore.getToken()).toBe("portal-token");
+  });
+
+  it("kioskLogout envía POST /api/auth/logout con kioskToken y luego lo elimina", async () => {
+    authTokenStore.setToken("portal-token");
+    authTokenStore.setKioskToken("kiosk-logout-jwt");
+    let capturedAuth: string | null = null;
+    server.use(
+      http.post("http://localhost:4000/api/auth/logout", ({ request }) => {
+        capturedAuth = request.headers.get("authorization");
+        return HttpResponse.json({ message: "ok" });
+      }),
+    );
+
+    await authService.kioskLogout();
+
+    expect(capturedAuth).toBe("Bearer kiosk-logout-jwt");
+    expect(authTokenStore.getKioskToken()).toBeNull();
     expect(authTokenStore.getToken()).toBe("portal-token");
   });
 

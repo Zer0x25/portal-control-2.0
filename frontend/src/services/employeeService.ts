@@ -56,7 +56,7 @@ export const employeeService = {
    * Obtiene lista de empleados para modo Kiosko.
    */
   async getKioskEmployees(): Promise<Employee[]> {
-    const response = await apiClient.get("/api/employees/kiosk");
+    const response = await apiClient.get("/api/employees/kiosk", { skipAuthHeader: true });
     return response as unknown as Employee[];
   },
 

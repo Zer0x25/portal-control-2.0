@@ -22,7 +22,10 @@ export async function authorizeSocketTokens(tokens: string[]): Promise<Set<strin
   const stateful = [...candidates.values()].filter(({ user }) => user.role !== "Kiosk_Employee");
   const kiosk = [...candidates.values()].filter(({ user }) => user.role === "Kiosk_Employee");
   const now = new Date();
-  const [sessions, kioskEmployees] = await Promise.all([
+  const kioskJtis = kiosk
+    .map(({ user }) => user.jti)
+    .filter((jti): jti is string => typeof jti === "string" && jti.length > 0);
+  const [sessions, kioskEmployees, activeKioskVerifications] = await Promise.all([
     stateful.length
       ? prisma.activeSession.findMany({
           where: { tokenHash: { in: stateful.map(({ hash }) => hash) }, expiresAt: { gt: now } },
@@ -34,6 +37,16 @@ export async function authorizeSocketTokens(tokens: string[]): Promise<Set<strin
           where: {
             id: { in: [...new Set(kiosk.map(({ user }) => user.employeeId || user.id))] },
             status: "Activo",
+            isPinBlocked: false,
+          },
+          select: { id: true },
+        })
+      : Promise.resolve([]),
+    kioskJtis.length
+      ? prisma.verification.findMany({
+          where: {
+            id: { in: kioskJtis.map((jti) => `kiosk-jti:${jti}`) },
+            expiresAt: { gt: now },
           },
           select: { id: true },
         })
@@ -48,10 +61,15 @@ export async function authorizeSocketTokens(tokens: string[]): Promise<Set<strin
   const byHash = new Map(sessions.map((session) => [session.tokenHash, session.userId]));
   const byUser = new Map(users.map((user) => [user.id, user]));
   const activeEmployees = new Set(kioskEmployees.map((emp) => emp.id));
+  const activeKioskJtis = new Set(activeKioskVerifications.map((row) => row.id));
   const valid = new Set<string>();
   for (const [token, { user, hash }] of candidates) {
     if (user.role === "Kiosk_Employee") {
-      if (activeEmployees.has(user.employeeId || user.id)) {
+      if (
+        activeEmployees.has(user.employeeId || user.id) &&
+        user.jti &&
+        activeKioskJtis.has(`kiosk-jti:${user.jti}`)
+      ) {
         valid.add(token);
       }
       continue;

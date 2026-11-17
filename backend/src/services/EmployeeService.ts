@@ -6,6 +6,7 @@ import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
 import type { AuthUser } from "../modules/auth";
 import { SocketService } from "./socketService";
 import { DEFAULT_TEMPORARY_PASSWORD } from "./UserService";
+import { NotFoundError, ValidationError } from "../utils/AppError";
 
 const EMPLOYEE_ID_PREFIX = "EMP-";
 const EMPLOYEE_ID_BASE = 1000;
@@ -193,10 +194,10 @@ export class EmployeeService {
       SocketService.emitForceLogoutToEmployee(id, { reason: "SESSION_INVALIDATED" });
     } else if (newStatus === "Activo" && oldStatus === "Archivado") {
       // Un-archive User and reset credentials
+      const defaultPinHash = await bcryptjs.hash(updatedRut.slice(0, 4), 10);
       const user = await prisma.user.findFirst({ where: { employeeId: id } });
       if (user) {
         const defaultPassword = bcryptjs.hashSync(DEFAULT_TEMPORARY_PASSWORD, 10);
-        const defaultPin = updatedRut.slice(0, 4);
 
         await prisma.user.update({
           where: { id: user.id },
@@ -206,16 +207,16 @@ export class EmployeeService {
             isForcePasswordChange: true,
           },
         });
-
-        await prisma.employee.update({
-          where: { id },
-          data: {
-            pin: defaultPin,
-            pinFailedAttempts: 0,
-            isPinBlocked: false,
-          },
-        });
       }
+
+      await prisma.employee.update({
+        where: { id },
+        data: {
+          pin: defaultPinHash,
+          pinFailedAttempts: 0,
+          isPinBlocked: false,
+        },
+      });
     }
   }
 
@@ -331,7 +332,8 @@ export class EmployeeService {
   }
 
   async createEmployee(data: EmployeeCreateData, db: EmployeeDbClient = prisma) {
-    const hashedPin = await this.normalizePinForStorage(data.pin);
+    const rawPin = data.pin === undefined || data.pin === "" ? data.rut.slice(0, 4) : data.pin;
+    const hashedPin = await this.normalizePinForStorage(rawPin);
     return await db.employee.create({
       data: {
         id: data.id,
@@ -348,21 +350,34 @@ export class EmployeeService {
   }
 
   async updateEmployee(id: string, data: EmployeeUpdateData) {
-    const hashedPin = await this.normalizePinForStorage(data.pin);
-    const resetPinState = data.pin !== undefined;
-    return await prisma.employee.update({
-      where: { id },
-      data: {
-        name: data.name,
-        email: data.email,
-        position: data.position,
-        area: data.area,
-        workdayType: data.workdayType,
-        status: data.status as EmployeeStatus,
-        pin: hashedPin,
-        isPinBlocked: resetPinState ? false : data.isPinBlocked,
-        pinFailedAttempts: resetPinState ? 0 : data.pinFailedAttempts,
-      },
+    return withDirectTransaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM employees WHERE id = ${id} FOR UPDATE`;
+      const existing = await tx.employee.findUnique({
+        where: { id },
+        select: { id: true, rut: true },
+      });
+      if (!existing) {
+        throw new NotFoundError("Empleado no encontrado");
+      }
+      if (typeof data.pin === "string" && data.pin === existing.rut.slice(0, 4)) {
+        throw new ValidationError("El PIN no puede ser igual a los primeros 4 dígitos del RUT");
+      }
+      const hashedPin = await this.normalizePinForStorage(data.pin);
+      const resetPinState = data.pin !== undefined;
+      return await tx.employee.update({
+        where: { id },
+        data: {
+          name: data.name,
+          email: data.email,
+          position: data.position,
+          area: data.area,
+          workdayType: data.workdayType,
+          status: data.status as EmployeeStatus,
+          pin: hashedPin,
+          isPinBlocked: resetPinState ? false : data.isPinBlocked,
+          pinFailedAttempts: resetPinState ? 0 : data.pinFailedAttempts,
+        },
+      });
     });
   }
 
@@ -377,7 +392,8 @@ export class EmployeeService {
       const chunk = employees.slice(i, i + CHUNK_SIZE);
       await Promise.all(
         chunk.map(async (emp) => {
-          const hashedPin = await this.normalizePinForStorage(emp.pin);
+          const rawPin = emp.pin === undefined || emp.pin === "" ? emp.rut.slice(0, 4) : emp.pin;
+          const hashedPin = await this.normalizePinForStorage(rawPin);
           return prisma.employee.upsert({
             where: { id: emp.id },
             update: {

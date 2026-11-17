@@ -290,8 +290,23 @@ describe("Spec 015 shifts on Fastify", () => {
     expect(matrix.status).toBe(200);
     expect(Object.keys(matrix.body)).toEqual([employee.id]);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
+    const kioskJti = "shifts-kiosk-jti";
+    await prismaDirect.verification.create({
+      data: {
+        id: `kiosk-jti:${kioskJti}`,
+        identifier: `kiosk-jti:${employee.id}`,
+        value: "active",
+        expiresAt: new Date(Date.now() + 300_000),
+      },
+    });
     token = jwt.sign(
-      { id: employee.id, username: "kiosk", role: "Kiosk_Employee", employeeId: employee.id },
+      {
+        id: employee.id,
+        username: "kiosk",
+        role: "Kiosk_Employee",
+        employeeId: employee.id,
+        jti: kioskJti,
+      },
       process.env.JWT_SECRET!,
       { expiresIn: "5m" },
     );

@@ -118,7 +118,7 @@ export const timeRecordIntegrityService = {
   async getPrevHash(
     tx: TxLike,
     employeeId: string,
-    updatedAt: Date,
+    createdAt: Date,
     excludeRecordId?: string,
   ): Promise<string | null> {
     const prev = await tx.timeRecord.findFirst({
@@ -126,15 +126,15 @@ export const timeRecordIntegrityService = {
         employeeId,
         id: excludeRecordId ? { not: excludeRecordId } : undefined,
         OR: [
-          { updatedAt: { lt: updatedAt } },
+          { createdAt: { lt: createdAt } },
           excludeRecordId
             ? {
-                AND: [{ updatedAt }, { id: { lt: excludeRecordId } }],
+                AND: [{ createdAt }, { id: { lt: excludeRecordId } }],
               }
-            : { updatedAt: { lt: updatedAt } },
+            : { createdAt: { lt: createdAt } },
         ],
       },
-      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: { integrityHash: true },
     });
 
@@ -145,7 +145,7 @@ export const timeRecordIntegrityService = {
     const record = await tx.timeRecord.findUnique({ where: { id: recordId } });
     if (!record) return;
 
-    const prevHash = await this.getPrevHash(tx, record.employeeId, record.updatedAt, record.id);
+    const prevHash = await this.getPrevHash(tx, record.employeeId, record.createdAt, record.id);
     const payload = this.buildCanonicalPayload(record, prevHash);
     const hash = this.computeHash(payload);
     const action = record.integrityHash ? "TIME_RECORD_HASH_UPDATED" : "TIME_RECORD_HASH_CREATED";
@@ -184,7 +184,37 @@ export const timeRecordIntegrityService = {
     options?: SealOptions,
   ): Promise<void> {
     await this.sealRecord(tx, affectedRecordId, options);
-    void employeeId;
+    const affected = await tx.timeRecord.findUnique({ where: { id: affectedRecordId } });
+    if (!affected) return;
+
+    const subsequent = await tx.timeRecord.findMany({
+      where: {
+        employeeId,
+        OR: [
+          { createdAt: { gt: affected.createdAt } },
+          { AND: [{ createdAt: affected.createdAt }, { id: { gt: affected.id } }] },
+        ],
+      },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    });
+
+    let prevHash = affected.integrityHash ?? null;
+    for (const record of subsequent) {
+      const nextHash = this.computeHash(this.buildCanonicalPayload(record, prevHash));
+      if (record.integrityPrevHash !== prevHash || record.integrityHash !== nextHash) {
+        await tx.timeRecord.update({
+          where: { id: record.id },
+          data: {
+            integrityHash: nextHash,
+            integrityPrevHash: prevHash,
+            integrityAlgo: INTEGRITY_ALGO,
+            integrityVersion: INTEGRITY_VERSION,
+            updatedAt: record.updatedAt,
+          },
+        });
+      }
+      prevHash = nextHash;
+    }
   },
 
   async verifyChain(tx: TxLike, filters: VerifyFilters): Promise<VerifyResult> {
@@ -209,7 +239,7 @@ export const timeRecordIntegrityService = {
     while (true) {
       const records = await tx.timeRecord.findMany({
         where,
-        orderBy: [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }],
+        orderBy: [{ employeeId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
         take: batchSize,
         skip: cursorId ? 1 : 0,
         cursor: cursorId ? { id: cursorId } : undefined,
@@ -388,7 +418,7 @@ export const timeRecordIntegrityService = {
       // Fetch absolute batch of records
       const records = await prisma.timeRecord.findMany({
         where,
-        orderBy: [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }],
+        orderBy: [{ employeeId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
         take: batchSize,
         skip: cursorId ? 1 : 0,
         cursor: cursorId ? { id: cursorId } : undefined,

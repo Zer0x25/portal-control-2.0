@@ -2848,13 +2848,37 @@ export interface paths {
     /** Obtiene lista de empleados para modo Kiosko */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          page?: number;
+          pageSize?: number;
+          search?: string;
+          status?: string;
+          area?: string;
+          since?: string;
+        };
         header?: never;
         path?: never;
         cookie?: never;
       };
       requestBody?: never;
-      responses: never;
+      responses: {
+        /** @description Lista pública de empleados activos para Kiosko (sin PII) */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["KioskEmployees"];
+          };
+        };
+        /** @description Parámetros de consulta inválidos */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
     };
     put?: never;
     post?: never;
@@ -4010,6 +4034,7 @@ export interface paths {
               success: boolean;
               employeeName: string;
               token: string;
+              mustChangePin: boolean;
               message: string;
             };
           };
@@ -5027,6 +5052,17 @@ export interface components {
       area?: string;
       since?: string;
     };
+    KioskEmployee: {
+      id: string;
+      name: string;
+      rutHash: string;
+      isPinBlocked: boolean;
+      /** @enum {string} */
+      status: "Activo" | "Archivado";
+      area: string;
+      workdayType: string;
+    };
+    KioskEmployees: components["schemas"]["KioskEmployee"][];
     CreateUser: {
       username: string;
       password: string;
@@ -5236,6 +5272,9 @@ export interface components {
       action: string;
       record?: components["schemas"]["AttendanceRecordResponse"];
       timestamp: string;
+      exceptionApplied?: boolean;
+      exceptionType?: string | null;
+      requiresReview?: boolean;
     };
     Punch: {
       employeeId: string;
@@ -5268,6 +5307,7 @@ export interface components {
       workdayType?: string;
       status?: string;
       employeeId?: string;
+      showAnomalies?: boolean | ("true" | "false");
     };
     UpdateCorrectionStatus: {
       /** @enum {string} */

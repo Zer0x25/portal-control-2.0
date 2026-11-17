@@ -77,4 +77,15 @@ describe("query pública de empleados para kiosco", () => {
     expect(portalEmployeesFetch).not.toHaveBeenCalled();
     expect(usersQueryEnablement).toEqual([false]);
   });
+
+  it("expone isError real y refetchKioskEmployees cuando falla la carga pública de kiosco", async () => {
+    kioskFetch.mockRejectedValueOnce(new Error("Fallo de red"));
+    const { result } = renderHook(() => useEmployees(true), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    kioskFetch.mockResolvedValueOnce([]);
+    await result.current.refetchKioskEmployees();
+    await waitFor(() => expect(result.current.isError).toBe(false));
+  });
 });

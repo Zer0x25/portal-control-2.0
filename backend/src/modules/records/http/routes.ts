@@ -43,12 +43,21 @@ export const recordsPlugin: FastifyPluginAsync<{
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };
+  const punchAllowed: onRequestHookHandler = async (request) => {
+    if (request.user?.role === "Fiscalizador") {
+      throw new ForbiddenError("Acceso denegado: El rol Fiscalizador es de solo lectura");
+    }
+  };
   const read = { config: { requiresAuth: true }, onRequest: options.authenticate };
+  const punchGuard = {
+    config: { requiresAuth: true },
+    onRequest: [options.authenticate, punchAllowed],
+  };
   const write = { config: { requiresAuth: true }, onRequest: [options.authenticate, supervisor] };
   const params = z.object({ id: z.string() });
   app.post<{ Body: PunchInput }>(
     "/api/records/punch",
-    { ...read, preHandler: validateRequest("body", PunchSchema) },
+    { ...punchGuard, preHandler: validateRequest("body", PunchSchema) },
     (req) => options.service.punch(req.body, req.user),
   );
   app.get<{ Querystring: RecordQuery }>(

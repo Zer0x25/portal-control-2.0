@@ -55,7 +55,7 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
   `page-container`, `kiosk-step[data-step]`
   (`rut_input|employee_list|pin_input|actions|success|change_pin`), `kiosk-display`,
   `kiosk-keypad`, `kiosk-key-<1..9,K,0>`, `kiosk-key-delete`, `kiosk-key-confirm`,
-  `kiosk-exit-button`, `kiosk-rut-error`, `kiosk-pin-error`.
+  `kiosk-change-pin-button`, `kiosk-exit-button`, `kiosk-rut-error`, `kiosk-pin-error`.
 
 ## Regresión visual (spec 035, AC4)
 

@@ -56,7 +56,7 @@ async function employee() {
       area: "Ops",
       workdayType: "Normal",
       status: "Activo",
-      pin: "1234",
+      pin: bcrypt.hashSync("1234", 4),
     },
   });
 }
@@ -400,6 +400,14 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
         })
       ).statusCode,
     ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          url: `/api/records?employeeId=${emp.id}`,
+          headers: headers(kioskToken),
+        })
+      ).statusCode,
+    ).toBe(401);
     await prismaDirect.employee.update({
       where: { id: emp.id },
       data: { pin: bcrypt.hashSync("5678", 4), pinFailedAttempts: 2 },
@@ -409,25 +417,25 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       (await prismaDirect.employee.findUniqueOrThrow({ where: { id: emp.id } })).pinFailedAttempts,
     ).toBe(0);
     await prismaDirect.employee.update({ where: { id: emp.id }, data: { pin: null } });
-    expect((await kiosk(emp.rut.slice(0, 4))).statusCode).toBe(200);
+    expect((await kiosk(emp.rut.slice(0, 4))).statusCode).toBe(401);
     await prismaDirect.employee.update({ where: { id: emp.id }, data: { status: "Archivado" } });
     expect((await kiosk(emp.rut.slice(0, 4))).statusCode).toBe(403);
-    expect(
-      (
-        await app.inject({
-          url: `/api/records?employeeId=${emp.id}`,
-          headers: headers(kioskToken),
-        })
-      ).statusCode,
-    ).toBe(403);
   });
-  it("five wrong PINs block employee and preserve 401/403/404 bodies", async () => {
+  it("five wrong PINs block employee with 403 on 5th failure and rejects non-numeric PIN with 400", async () => {
     await employee();
-    for (let attempts = 1; attempts <= 5; attempts++) {
-      const response = await kiosk("wrong");
+    expect((await kiosk("abcd")).statusCode).toBe(400);
+    for (let attempts = 1; attempts <= 4; attempts++) {
+      const response = await kiosk("9999");
       expect(response.statusCode).toBe(401);
       expect(response.json()).toMatchObject({ success: false, attempts });
     }
+    const fifth = await kiosk("9999");
+    expect(fifth.statusCode).toBe(403);
+    expect(fifth.json()).toMatchObject({
+      success: false,
+      message: "PIN bloqueado por demasiados intentos.",
+      attempts: 5,
+    });
     const emp = await prismaDirect.employee.findUniqueOrThrow({ where: { id: "employee-test" } });
     expect(emp.isPinBlocked).toBe(true);
     expect(emp.pinFailedAttempts).toBe(5);
@@ -664,10 +672,10 @@ describe("Spec 010 MFA and PIN security", () => {
   });
   it("serializes eight concurrent bad PINs to attempts 1..5 and keeps later valid PIN blocked", async () => {
     const emp = await employee();
-    const responses = await Promise.all(Array.from({ length: 8 }, () => kiosk("wrong")));
+    const responses = await Promise.all(Array.from({ length: 8 }, () => kiosk("9999")));
     const failures = responses.filter((r) => r.statusCode === 401);
-    expect(failures.map((r) => r.json().attempts).sort()).toEqual([1, 2, 3, 4, 5]);
-    expect(responses.filter((r) => r.statusCode === 403)).toHaveLength(3);
+    expect(failures.map((r) => r.json().attempts).sort()).toEqual([1, 2, 3, 4]);
+    expect(responses.filter((r) => r.statusCode === 403)).toHaveLength(4);
     expect(await prismaDirect.employee.findUniqueOrThrow({ where: { id: emp.id } })).toMatchObject({
       pinFailedAttempts: 5,
       isPinBlocked: true,

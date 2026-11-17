@@ -41,8 +41,10 @@ export const employeesPlugin: FastifyPluginAsync<EmployeesPluginOptions> = async
   };
   const read = { config: { requiresAuth: true }, onRequest: options.authenticate };
   const write = { config: { requiresAuth: true }, onRequest: [options.authenticate, supervisor] };
-  app.get<{ Querystring: EmployeeQuery }>("/api/employees/kiosk", async (request) =>
-    options.service.list(request.query),
+  app.get<{ Querystring: EmployeeQuery }>(
+    "/api/employees/kiosk",
+    { preHandler: validateRequest("query", EmployeeQuerySchema) },
+    async (request) => options.service.list(request.query),
   );
   app.get(
     "/api/employees/clocking-options",

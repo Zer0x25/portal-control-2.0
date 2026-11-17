@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { AppError, NotFoundError } from "../../../utils/AppError";
 import type {
   EmployeeRow,
@@ -35,10 +36,14 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
         return rawEmployees.map((row) => ({
           id: row.id,
           name: row.name,
-          rut: row.rut,
+          rutHash: crypto
+            .createHash("sha256")
+            .update(row.rut.replace(/\./g, "").toUpperCase())
+            .digest("hex"),
           isPinBlocked: row.isPinBlocked,
           status: row.status,
           area: row.area,
+          workdayType: row.workdayType,
         }));
       const employees = rawEmployees.map((row) => ({
         ...toPublicEmployee(row),
@@ -127,7 +132,12 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
       if (createUserAccount && updated.status !== "Archivado")
         await deps.ensureUser({ employeeId: updated.id, fullName: updated.name }, actorUsername);
       await deps.syncStatus(id, old.status, updated.status, updated.name, updated.rut);
-      const result = toPublicEmployee(updated);
+      const result = {
+        ...toPublicEmployee(updated),
+        syncStatus: "synced",
+        lastModified: updated.updatedAt.getTime(),
+        isDeleted: false,
+      };
       deps.emit(result);
       return result;
     },

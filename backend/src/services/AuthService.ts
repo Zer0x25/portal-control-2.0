@@ -220,14 +220,9 @@ export class AuthService {
       if (employee.status !== "Activo") return { success: false, reason: "ARCHIVED" };
       if (employee.isPinBlocked) return { success: false, reason: "BLOCKED" };
 
-      const defaultPin = employee.rut.slice(0, 4);
-      const storedPin = employee.pin || defaultPin;
-
       let isPinValid = false;
-      if (storedPin.startsWith("$2") || storedPin.length > 10) {
-        isPinValid = await bcryptjs.compare(pin, storedPin);
-      } else {
-        isPinValid = pin === storedPin;
+      if (employee.pin && (employee.pin.startsWith("$2") || employee.pin.length > 10)) {
+        isPinValid = await bcryptjs.compare(pin, employee.pin);
       }
 
       if (isPinValid) {
@@ -238,18 +233,34 @@ export class AuthService {
           });
         }
 
+        const jti = crypto.randomUUID();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+        await tx.verification.create({
+          data: {
+            id: `kiosk-jti:${jti}`,
+            identifier: `kiosk-jti:${employee.id}`,
+            value: "active",
+            expiresAt,
+          },
+        });
+
         const token = jwt.sign(
           {
             id: `kiosk-${employee.id}`,
             username: employee.name,
             role: "Kiosk_Employee",
             employeeId: employee.id,
+            jti,
           },
           this.SECRET,
           { expiresIn: "5m" },
         );
 
-        return { success: true, token, employeeName: employee.name };
+        const mustChangePin = employee.pin
+          ? await bcryptjs.compare(employee.rut.slice(0, 4), employee.pin)
+          : false;
+
+        return { success: true, token, employeeName: employee.name, mustChangePin };
       } else {
         const newAttempts = employee.pinFailedAttempts + 1;
         const isBlocked = newAttempts >= 5;
@@ -298,6 +309,12 @@ export class AuthService {
         ) {
           const role = "role" in decoded && typeof decoded.role === "string" ? decoded.role : "";
           if (role === "Kiosk_Employee") {
+            const jti = "jti" in decoded && typeof decoded.jti === "string" ? decoded.jti : null;
+            if (jti) {
+              await prisma.verification
+                .deleteMany({ where: { id: `kiosk-jti:${jti}` } })
+                .catch(() => {});
+            }
             resolved = { userId: decoded.id, username: decoded.username };
           } else {
             const dbUser = await prisma.user

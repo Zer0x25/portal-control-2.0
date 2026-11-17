@@ -245,6 +245,7 @@ export const timeRecordService = {
     forcedType?: string,
     geolocation?: { latitude: number; longitude: number },
     authScope?: AuthTokenScope,
+    options?: { skipAuthEvents?: boolean },
   ): Promise<PunchResponse> {
     const normalizedForcedType = normalizeForcedType(forcedType);
 
@@ -268,6 +269,7 @@ export const timeRecordService = {
     const response = await apiClient.post(`${RECORDS_ENDPOINT}/punch`, {
       body,
       authScope,
+      skipAuthEvents: options?.skipAuthEvents,
     });
 
     if (isPunchResponse(response)) return response;

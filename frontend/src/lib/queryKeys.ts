@@ -43,7 +43,7 @@ export const queryKeys = {
   /** Proyección mínima para las pantallas de Control de Horario. */
   employeeClockingOptions: resource("employees", () => ["employees", "clockingOptions"] as const),
   /** Listado de empleados para el kiosk (unico worker). */
-  employeesKiosk: resource("employees", () => ["employees", "kiosk"] as const),
+  employeesKiosk: resource("employeesKiosk", () => ["employeesKiosk"] as const),
 
   /* --- Configuración --- */
   /** Prefijo de la raiz `config` (invalida todas las claves de configuracion). */

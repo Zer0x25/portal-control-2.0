@@ -14,8 +14,10 @@ import { queryClient } from "../../lib/queryClient";
  * queue (`wipeAllData`), cuya cola de escritura es invariante.
  */
 const resetPersistedQueryCache = async (ownerId: string | null): Promise<void> => {
-  await purgePersistedQueryCache();
-  queryClient.clear();
+  await purgePersistedQueryCache({ preserveRoots: ["employeesKiosk"] });
+  queryClient.removeQueries({
+    predicate: (query) => query.queryKey[0] !== "employeesKiosk",
+  });
   if (ownerId) {
     localStorage.setItem(QUERY_CACHE_OWNER_KEY, ownerId);
   } else {

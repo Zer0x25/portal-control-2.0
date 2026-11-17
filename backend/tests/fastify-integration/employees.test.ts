@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import ExcelJS from "exceljs";
 import bcrypt from "bcryptjs";
@@ -121,10 +122,14 @@ describe("Spec 013 employees on Fastify", () => {
       {
         id: input.id,
         name: input.name,
-        rut: input.rut,
+        rutHash: crypto
+          .createHash("sha256")
+          .update(input.rut.replace(/\./g, "").toUpperCase())
+          .digest("hex"),
         isPinBlocked: false,
         status: "Activo",
         area: "Ops",
+        workdayType: input.workdayType,
       },
     ]);
     expect((await http("GET", "/api/employees", undefined, null)).status).toBe(401);
@@ -326,7 +331,8 @@ describe("Spec 013 employees on Fastify", () => {
     expect(linked.role).toBe("Usuario");
     expect(linked.isForcePasswordChange).toBe(true);
     const employee = await prismaDirect.employee.findUniqueOrThrow({ where: { id: input.id } });
-    expect(employee.pin).toBe(input.rut.slice(0, 4));
+    expect(employee.pin).not.toBe(input.rut.slice(0, 4));
+    expect(bcrypt.compareSync(input.rut.slice(0, 4), employee.pin ?? "")).toBe(true);
     expect(employee.pinFailedAttempts).toBe(0);
     for (const [, event] of employeeEvents()) withoutPin(event as Record<string, unknown>);
   });

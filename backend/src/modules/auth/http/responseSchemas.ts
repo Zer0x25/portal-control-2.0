@@ -39,11 +39,12 @@ export const loginResponse = {
 export const kioskResponse = {
   type: "object",
   additionalProperties: false,
-  required: ["success", "employeeName", "token", "message"],
+  required: ["success", "employeeName", "token", "mustChangePin", "message"],
   properties: {
     success: { type: "boolean", const: true },
     employeeName: string,
     token: string,
+    mustChangePin: { type: "boolean" },
     message: string,
   },
 };

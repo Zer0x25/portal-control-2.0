@@ -47,6 +47,7 @@ export interface AuthFlowDependencies {
       reason?: string;
       token?: string;
       employeeName?: string;
+      mustChangePin?: boolean;
       attempts?: number;
       isBlocked?: boolean;
     }>;
@@ -174,15 +175,36 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
           message: "Verificación exitosa",
           employeeName: result.employeeName,
           token: result.token,
+          mustChangePin: Boolean(result.mustChangePin),
         });
       }
       if (result.reason === "ARCHIVED")
         return { status: 403, body: { message: "Empleado archivado o inactivo." } };
       await deps.failures.record(context.ip || "unknown", employeeId);
-      if (result.reason === "NOT_FOUND")
+      if (result.reason === "NOT_FOUND") {
+        await deps.audit({
+          actorUsername: "UNKNOWN_KIOSK_USER",
+          action: "KIOSK_PIN_FAILED",
+          category: "OPERATIONS",
+          severity: "WARNING",
+          outcome: "FAILURE",
+          details: { employeeId, reason: "NOT_FOUND" },
+          ipAddress: context.ip,
+        });
         return { status: 404, body: { message: "Empleado no encontrado" } };
-      if (result.reason === "BLOCKED")
+      }
+      if (result.reason === "BLOCKED") {
+        await deps.audit({
+          actorUsername: "UNKNOWN_KIOSK_USER",
+          action: "KIOSK_PIN_FAILED",
+          category: "OPERATIONS",
+          severity: "WARNING",
+          outcome: "FAILURE",
+          details: { employeeId, reason: "BLOCKED", isBlocked: true },
+          ipAddress: context.ip,
+        });
         return { status: 403, body: { message: "PIN bloqueado. Contacte a un administrador." } };
+      }
       const attempts = result.attempts || 0;
       await deps.audit({
         actorUsername: "UNKNOWN_KIOSK_USER",
@@ -194,7 +216,7 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
         ipAddress: context.ip,
       });
       return {
-        status: 401,
+        status: result.isBlocked ? 403 : 401,
         body: {
           success: false,
           message: result.isBlocked ? "PIN bloqueado por demasiados intentos." : "PIN incorrecto.",

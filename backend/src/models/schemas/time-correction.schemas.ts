@@ -1,5 +1,5 @@
 import { calendarDateQuery } from "./dataQuery";
-import { isoDateSchema, numericString, z } from "./common";
+import { isoDateSchema, positiveIntString, z } from "./common";
 import { ApiResponseSchema } from "./responses.schemas";
 
 export const TimeRecordWriteSchema = z
@@ -114,8 +114,8 @@ export const PunchSchema = z
     source: z.string().optional(),
     forcedType: z.enum(["entrada", "salida", "inicioColacion", "finColacion"]).optional(),
     timestamp: z.string().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
+    latitude: z.number().min(-90).max(90).optional(),
+    longitude: z.number().min(-180).max(180).optional(),
   })
   .openapi("Punch");
 
@@ -125,6 +125,9 @@ export const PunchResponseSchema = z
     action: z.string(),
     record: AttendanceRecordResponseSchema.optional(),
     timestamp: z.string(),
+    exceptionApplied: z.boolean().optional(),
+    exceptionType: z.string().nullable().optional(),
+    requiresReview: z.boolean().optional(),
   })
   .openapi("PunchResponse");
 
@@ -166,9 +169,21 @@ export const CorrectionRequestListResponseSchema = ApiResponseSchema.extend({
 }).openapi("CorrectionRequestListResponse");
 
 export const TimeRecordQuerySchema = z.object({
-  page: numericString.optional(),
-  pageSize: numericString.optional(),
-  since: numericString.optional(),
+  page: positiveIntString.optional(),
+  pageSize: z
+    .string()
+    .transform((val) => Number(val))
+    .refine((val) => Number.isInteger(val) && (val >= 1 || val === -1), {
+      message: "pageSize debe ser un entero >= 1 o -1",
+    })
+    .optional(),
+  since: z
+    .string()
+    .transform((val) => Number(val))
+    .refine((val) => Number.isFinite(val) && val >= 0, {
+      message: "since debe ser un timestamp numérico válido",
+    })
+    .optional(),
   desde: z.string().optional(),
   hasta: z.string().optional(),
   name: z.string().optional(),
@@ -176,6 +191,7 @@ export const TimeRecordQuerySchema = z.object({
   workdayType: z.string().optional(),
   status: z.string().optional(),
   employeeId: z.string().optional(),
+  showAnomalies: z.union([z.boolean(), z.enum(["true", "false"])]).optional(),
 });
 
 export const DailyAttendanceQuerySchema = z.object({

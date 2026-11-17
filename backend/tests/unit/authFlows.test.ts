@@ -189,23 +189,30 @@ describe("Shared auth flows", () => {
     expect(f.deps.failures.record).not.toHaveBeenCalled();
   });
   it.each([
-    ["NOT_FOUND", 404],
-    ["BLOCKED", 403],
-    ["INVALID_PIN", 401],
-  ] as const)("preserves kiosk %s status %s and records failure", async (reason, status) => {
-    const f = fixture();
-    vi.mocked(f.deps.service.verifyKioskPin).mockResolvedValue({
-      success: false,
-      reason,
-      attempts: 5,
-      isBlocked: true,
-    });
-    expect(await f.flows.kioskLogin({ employeeId: "e1", pin: "bad" }, context)).toMatchObject({
-      status,
-    });
-    expect(f.deps.failures.record).toHaveBeenCalledWith(context.ip, "e1");
-  });
-  it("successful kiosk clears failures and returns legacy shape", async () => {
+    ["NOT_FOUND", 404, false],
+    ["BLOCKED", 403, true],
+    ["INVALID_PIN", 401, false],
+    ["INVALID_PIN", 403, true],
+  ] as const)(
+    "preserves kiosk %s status %s (blocked=%s) and records failure",
+    async (reason, status, isBlocked) => {
+      const f = fixture();
+      vi.mocked(f.deps.service.verifyKioskPin).mockResolvedValue({
+        success: false,
+        reason,
+        attempts: isBlocked ? 5 : 1,
+        isBlocked,
+      });
+      expect(await f.flows.kioskLogin({ employeeId: "e1", pin: "9999" }, context)).toMatchObject({
+        status,
+      });
+      expect(f.deps.failures.record).toHaveBeenCalledWith(context.ip, "e1");
+      expect(f.deps.audit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "KIOSK_PIN_FAILED", outcome: "FAILURE" }),
+      );
+    },
+  );
+  it("successful kiosk clears failures and returns mustChangePin", async () => {
     const f = fixture();
     expect(await f.flows.kioskLogin({ employeeId: "e1", pin: "1234" }, context)).toEqual({
       status: 200,
@@ -214,6 +221,7 @@ describe("Shared auth flows", () => {
         message: "Verificación exitosa",
         employeeName: "Employee",
         token: "kiosk",
+        mustChangePin: false,
       },
     });
     expect(f.deps.failures.clear).toHaveBeenCalledWith(context.ip, "e1");

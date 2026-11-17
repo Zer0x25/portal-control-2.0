@@ -121,7 +121,8 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
     allEmployees: data?.all || [],
     archivedCount: data?.archivedCount || 0,
     isLoadingEmployees: _isKiosk ? isLoadingKioskEmployees : isLoading,
-    isError: false,
+    isError: _isKiosk ? kioskQuery.isError : employeesQuery.isError,
+    refetchKioskEmployees: kioskQuery.refetch,
 
     // Actions via Service
     addEmployee: async (emp: Partial<Employee>): Promise<Employee | null> => {

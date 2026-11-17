@@ -1,12 +1,18 @@
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ sessions: vi.fn(), users: vi.fn(), employees: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  sessions: vi.fn(),
+  users: vi.fn(),
+  employees: vi.fn(),
+  verifications: vi.fn(),
+}));
 vi.mock("../../src/services/db", () => ({
   default: {
     activeSession: { findMany: mocks.sessions },
     user: { findMany: mocks.users },
     employee: { findMany: mocks.employees },
+    verification: { findMany: mocks.verifications },
   },
 }));
 import { authorizeSocketTokens } from "../../src/services/socketAuthentication";
@@ -19,6 +25,7 @@ beforeEach(() => {
   mocks.sessions.mockReset().mockResolvedValue([]);
   mocks.users.mockReset().mockResolvedValue([]);
   mocks.employees.mockReset().mockResolvedValue([]);
+  mocks.verifications.mockReset().mockResolvedValue([]);
 });
 it("uses two batch queries for the complete token collection, deduplicating sessions", async () => {
   const tokens = Array.from({ length: 15 }, (_, i) => sign(`user-${i}`));
@@ -71,9 +78,26 @@ it("denies expired/invalid/revoked tokens, removed users, archived, force-change
     ]),
   ).toEqual(new Set([valid]));
 });
-it("retains signed kiosk sessionless semantics while rejecting archived or expired kiosk JWT", async () => {
+it("validates revocable kiosk jti and rejects archived, revoked, or expired kiosk JWT", async () => {
   const activeKiosk = jwt.sign(
-    { id: "emp-active", username: "emp-active", role: "Kiosk_Employee", employeeId: "emp-active" },
+    {
+      id: "emp-active",
+      username: "emp-active",
+      role: "Kiosk_Employee",
+      employeeId: "emp-active",
+      jti: "kiosk-jti-1",
+    },
+    secret,
+    { expiresIn: 300 },
+  );
+  const revokedKiosk = jwt.sign(
+    {
+      id: "emp-active",
+      username: "emp-active",
+      role: "Kiosk_Employee",
+      employeeId: "emp-active",
+      jti: "kiosk-jti-revoked",
+    },
     secret,
     { expiresIn: 300 },
   );
@@ -83,14 +107,17 @@ it("retains signed kiosk sessionless semantics while rejecting archived or expir
       username: "emp-archived",
       role: "Kiosk_Employee",
       employeeId: "emp-archived",
+      jti: "kiosk-jti-2",
     },
     secret,
     { expiresIn: 300 },
   );
   mocks.employees.mockResolvedValue([{ id: "emp-active", status: "Activo" }]);
+  mocks.verifications.mockResolvedValue([{ id: "kiosk-jti:kiosk-jti-1" }]);
   expect(
     await authorizeSocketTokens([
       activeKiosk,
+      revokedKiosk,
       archivedKiosk,
       sign("expired", "Kiosk_Employee", -1),
     ]),
@@ -98,6 +125,7 @@ it("retains signed kiosk sessionless semantics while rejecting archived or expir
   expect(mocks.sessions).not.toHaveBeenCalled();
   expect(mocks.users).not.toHaveBeenCalled();
   expect(mocks.employees).toHaveBeenCalledTimes(1);
+  expect(mocks.verifications).toHaveBeenCalledTimes(1);
 });
 it("fails closed on database failure instead of treating it as an active session", async () => {
   mocks.sessions.mockRejectedValue(new Error("db unavailable"));

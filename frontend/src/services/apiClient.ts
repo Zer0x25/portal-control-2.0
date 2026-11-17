@@ -216,6 +216,8 @@ export interface RequestOptions {
    * `/auth/kiosk-login`).
    */
   skipAuthEvents?: boolean;
+  /** Omite el header Authorization en rutas públicas aunque exista token en sesión. */
+  skipAuthHeader?: boolean;
   /** Alcance de token de sesión (`portal` por defecto o `kiosk`). */
   authScope?: AuthTokenScope;
   /** `binary` devuelve `{ blob, headers, filename? }` sin pasar por `text()`. */
@@ -260,6 +262,7 @@ export interface RequestSpec {
   /** Solo GET: dedup de peticiones en vuelo. */
   dedup?: boolean;
   skipAuthEvents?: boolean;
+  skipAuthHeader?: boolean;
   authScope?: AuthTokenScope;
 }
 
@@ -329,8 +332,11 @@ function prepareRequest(spec: RequestSpec): PreparedRequest {
   const fullUrl = `${getFullUrl(resolvedPath)}${buildQuery(spec.params)}`;
   const isGet = spec.method === "GET";
   const authScope = spec.authScope ?? "portal";
+  const authHeader = spec.skipAuthHeader
+    ? {}
+    : (authTokenStore.getAuthHeaderForScope(authScope) as Record<string, string>);
   const { body, headers } = prepareBody(spec.body, {
-    ...(authTokenStore.getAuthHeaderForScope(authScope) as Record<string, string>),
+    ...authHeader,
     ...spec.headers,
   });
 
@@ -597,6 +603,7 @@ export const apiClient = {
       retry?: boolean;
       dedup?: boolean;
       skipAuthEvents?: boolean;
+      skipAuthHeader?: boolean;
       authScope?: AuthTokenScope;
       responseType?: ResponseType;
     },
@@ -616,6 +623,7 @@ export const apiClient = {
       retry: options?.retry,
       dedup: options?.dedup,
       skipAuthEvents: options?.skipAuthEvents,
+      skipAuthHeader: options?.skipAuthHeader,
       authScope: options?.authScope,
       responseType: options?.responseType,
     }) as Promise<never>;

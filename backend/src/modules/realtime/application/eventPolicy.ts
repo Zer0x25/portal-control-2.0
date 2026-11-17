@@ -134,11 +134,17 @@ export function projectRealtimeEvent(
     return { payload };
   }
   let allowed = false;
-  if (scoped.has(event))
+  if (scoped.has(event)) {
+    const nestedRecord =
+      value.record && typeof value.record === "object" && !Array.isArray(value.record)
+        ? (value.record as Record<string, unknown>)
+        : null;
+    const recordEmployeeId =
+      typeof nestedRecord?.employeeId === "string" ? nestedRecord.employeeId : value.employeeId;
     allowed =
       staff.has(recipient.role) ||
-      (!!recipient.employeeId && value.employeeId === recipient.employeeId);
-  else if (event === "employee:updated")
+      (!!recipient.employeeId && recordEmployeeId === recipient.employeeId);
+  } else if (event === "employee:updated")
     allowed =
       staff.has(recipient.role) || (!!recipient.employeeId && value.id === recipient.employeeId);
   else if (supervisorEvents.has(event)) allowed = supervisors.has(recipient.role);

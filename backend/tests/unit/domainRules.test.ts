@@ -54,49 +54,52 @@ describe("domain/attendanceRules (pure, no DB)", () => {
     });
 
     it("honors forced overrides with guard errors", () => {
+      const withEntry: PunchState = { ...empty, entrada: "2026-03-01T08:00:00Z" };
+
       // ENTRADA
       expect(determineNextPunchAction(empty, "entrada").action).toBe("ENTRADA");
-      expect(() => determineNextPunchAction({ ...empty, entrada: "x" }, "entrada")).toThrow(
-        "ALREADY_PUNCHED_IN",
-      );
+      expect(() => determineNextPunchAction(withEntry, "entrada")).toThrow("ALREADY_PUNCHED_IN");
 
       // INICIO_COLACION
-      expect(determineNextPunchAction(empty, "inicio_colacion").action).toBe("INICIO_COLACION");
+      expect(() => determineNextPunchAction(empty, "inicioColacion")).toThrow("NO_ENTRY_RECORDED");
+      expect(determineNextPunchAction(withEntry, "inicioColacion").action).toBe("INICIO_COLACION");
       expect(() =>
-        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "inicio_colacion"),
+        determineNextPunchAction({ ...withEntry, inicioColacion: "x" }, "inicioColacion"),
       ).toThrow("ALREADY_BREAK_STARTED");
 
       // FIN_COLACION
-      expect(() => determineNextPunchAction(empty, "fin_colacion")).toThrow("NO_BREAK_STARTED");
+      expect(() => determineNextPunchAction(empty, "finColacion")).toThrow("NO_ENTRY_RECORDED");
+      expect(() => determineNextPunchAction(withEntry, "finColacion")).toThrow("NO_BREAK_STARTED");
       expect(
-        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "fin_colacion").action,
+        determineNextPunchAction({ ...withEntry, inicioColacion: "x" }, "finColacion").action,
       ).toBe("FIN_COLACION");
       expect(() =>
         determineNextPunchAction(
-          { ...empty, inicioColacion: "x", finColacion: "y" },
-          "fin_colacion",
+          { ...withEntry, inicioColacion: "x", finColacion: "y" },
+          "finColacion",
         ),
       ).toThrow("ALREADY_BREAK_FINISHED");
 
       // SALIDA
-      expect(determineNextPunchAction(empty, "salida").action).toBe("SALIDA");
-      expect(() => determineNextPunchAction({ ...empty, salida: "x" }, "salida")).toThrow(
+      expect(() => determineNextPunchAction(empty, "salida")).toThrow("NO_ENTRY_RECORDED");
+      expect(determineNextPunchAction(withEntry, "salida").action).toBe("SALIDA");
+      expect(() => determineNextPunchAction({ ...withEntry, salida: "x" }, "salida")).toThrow(
         "ALREADY_PUNCHED_OUT",
       );
     });
 
     it("accepts canonical camelCase forcedType (PunchSchema contract)", () => {
-      expect(determineNextPunchAction(empty, "inicioColacion").action).toBe("INICIO_COLACION");
+      const withEntry: PunchState = { ...empty, entrada: "2026-03-01T08:00:00Z" };
+      expect(determineNextPunchAction(withEntry, "inicioColacion").action).toBe("INICIO_COLACION");
       expect(
-        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "finColacion").action,
+        determineNextPunchAction({ ...withEntry, inicioColacion: "x" }, "finColacion").action,
       ).toBe("FIN_COLACION");
     });
 
-    it("keeps legacy snake_case forcedType for older kiosk clients", () => {
-      expect(determineNextPunchAction(empty, "inicio_colacion").action).toBe("INICIO_COLACION");
-      expect(
-        determineNextPunchAction({ ...empty, inicioColacion: "x" }, "fin_colacion").action,
-      ).toBe("FIN_COLACION");
+    it("does not accept legacy snake_case forcedType (falls back to automated flow)", () => {
+      const withEntry: PunchState = { ...empty, entrada: "2026-03-01T08:00:00Z" };
+      expect(determineNextPunchAction(empty, "inicio_colacion").action).toBe("ENTRADA");
+      expect(determineNextPunchAction(withEntry, "fin_colacion").action).toBe("INICIO_COLACION");
     });
   });
 

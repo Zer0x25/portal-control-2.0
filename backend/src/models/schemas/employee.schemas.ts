@@ -1,4 +1,4 @@
-import { employeeStatusEnum, isoDateSchema, numericString, syncAuditFields, z } from "./common";
+import { employeeStatusEnum, isoDateSchema, positiveIntString, syncAuditFields, z } from "./common";
 
 export const EmployeeSchema = z
   .object({
@@ -51,13 +51,27 @@ export const DepartmentSchema = z
   .openapi("Department");
 
 export const EmployeeQuerySchema = z.object({
-  page: numericString.optional(),
-  pageSize: numericString.optional(),
+  page: positiveIntString.optional(),
+  pageSize: positiveIntString.optional(),
   search: z.string().optional(),
   status: z.string().optional(),
   area: z.string().optional(),
   since: z.string().optional(),
 });
+
+export const KioskEmployeeSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    rutHash: z.string(),
+    isPinBlocked: z.boolean(),
+    status: employeeStatusEnum,
+    area: z.string(),
+    workdayType: z.string(),
+  })
+  .openapi("KioskEmployee");
+
+export const KioskEmployeesSchema = z.array(KioskEmployeeSchema).openapi("KioskEmployees");
 
 export const EmployeeClockingOptionSchema = z
   .object({
