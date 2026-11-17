@@ -158,10 +158,10 @@ test.describe("Offline desde cache persistido (spec 032 AC3)", () => {
       timeout: 30000,
     });
 
-    // Contenido, no solo llave: el kiosk persiste la query `employees/kiosk`
-    // bajo la misma raíz `employees` que requiere este escenario.
+    // Contenido, no solo llave: el kiosk persiste la query `employeesKiosk`
+    // en su propia raíz aislada que requiere este escenario.
     await expect
-      .poll(async () => (await persistedQueryRoots(page)).includes("employees"), {
+      .poll(async () => (await persistedQueryRoots(page)).includes("employeesKiosk"), {
         timeout: 30000,
       })
       .toBe(true);
@@ -178,7 +178,7 @@ test.describe("Offline desde cache persistido (spec 032 AC3)", () => {
     // Igual que en worker-portal: no cortar la red dentro del throttle del
     // persister tras el reload de calentamiento.
     await expect
-      .poll(async () => (await persistedQueryRoots(page)).includes("employees"), {
+      .poll(async () => (await persistedQueryRoots(page)).includes("employeesKiosk"), {
         timeout: 30000,
       })
       .toBe(true);

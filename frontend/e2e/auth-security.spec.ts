@@ -803,7 +803,7 @@ test.describe("Auth, MFA, Session Lifecycle & Kiosk Security (Phase 4)", () => {
         (res) => res.url().includes("/api/auth/kiosk-login") && res.request().method() === "POST",
       );
       for (const digit of emp.pin.split("")) {
-        await page.locator(`[data-testid="kiosk-key-${digit}"]`).dispatchEvent("pointerdown");
+        await page.locator(`[data-testid="kiosk-key-${digit}"]`).click();
       }
       const kioskLoginRes = await kioskLoginPromise;
       expect(kioskLoginRes.status()).toBe(200);
