@@ -54,6 +54,7 @@ export const PERSISTED_QUERY_ROOTS: readonly string[] = [
   "holidays",
   "leaves",
   "meterReadings",
+  "monthlyPlan",
   "notes",
   "recordHistory",
   "shiftPatterns",

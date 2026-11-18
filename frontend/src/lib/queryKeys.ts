@@ -68,6 +68,12 @@ export const queryKeys = {
     "assignedShifts",
     (filters: unknown) => ["assignedShifts", filters] as const,
   ),
+  /** Planificacion mensual por empleado, anio y mes. */
+  monthlyPlan: resource(
+    "monthlyPlan",
+    (employeeId: string, year: number, month: number) =>
+      ["monthlyPlan", employeeId, year, month] as const,
+  ),
 
   /* --- Marcaciones y tiempos --- */
   /** Marcaciones de tiempo. */
