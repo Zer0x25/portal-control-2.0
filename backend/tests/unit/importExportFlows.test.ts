@@ -65,11 +65,11 @@ describe("Spec021 pure flows", () => {
       }),
     );
   });
-  it("preserves Excel validation/access 500, original area and partial response end", async () => {
+  it("preserves Excel validation/access 403, original area and partial response end", async () => {
     const { deps, flows } = fixture();
     await expect(
       flows.prepareExcel({}, { role: "Usuario", employeeId: "self" }),
-    ).rejects.toMatchObject({ statusCode: 500, code: "EXPORT_REPORT_EXCEL_ERROR" });
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
     const filters = await flows.prepareExcel(
       { employeeId: "self", area: "other" },
       { role: "Usuario", employeeId: "self" },

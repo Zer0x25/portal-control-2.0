@@ -1,7 +1,7 @@
 import type {} from "../../../platform/fastify/types";
 import type { FastifyPluginAsync, onRequestHookHandler } from "fastify";
 import { z } from "zod";
-import { ShiftReportSchema } from "../../../models/schemas/report.schemas";
+import { ShiftReportQuerySchema, ShiftReportSchema } from "../../../models/schemas/report.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
 import { sendHttpStream } from "../../../platform/fastify/stream";
 import { ForbiddenError } from "../../../utils/AppError";
@@ -18,9 +18,7 @@ export const shiftReportsPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (request) => {
     if (
       !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
-        request.user.role,
-      )
+      !["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(request.user.role)
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };
@@ -30,7 +28,7 @@ export const shiftReportsPlugin: FastifyPluginAsync<{
   };
   app.get<{ Querystring: ShiftReportQuery }>(
     "/api/shift-reports",
-    { ...protectedRoute, preHandler: validateRequest("query", z.unknown()) },
+    { ...protectedRoute, preHandler: validateRequest("query", ShiftReportQuerySchema) },
     (req) => options.service.list(req.query),
   );
   app.post<{ Body: ShiftReportInput }>(

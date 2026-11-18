@@ -1015,13 +1015,47 @@
  *     tags: [ShiftReports]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 1000000
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *       - in: query
+ *         name: since
+ *         schema:
+ *           type: string
+ *         description: Timestamp para consulta delta
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [open, closed]
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Búsqueda por folio, responsable o turno
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de turno (YYYY-MM-DD)
  *     responses:
  *       200:
  *         description: Lista de bitácoras
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ShiftReportListResponse'
+ *               $ref: '#/components/schemas/ShiftReportPaginatedResponse'
  */
 
 /**

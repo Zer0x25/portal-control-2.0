@@ -92,7 +92,11 @@ export const importExportPlugin: FastifyPluginAsync<{
   app.get<{ Params: { id: string } }>(
     "/api/export/shift-report-pdf/:id",
     { ...elevated, preHandler: validateRequest("params", z.object({ id: z.string() })) },
-    async (req, reply) => sendPdf(reply, await options.service.shiftPdf(req.params.id)),
+    async (req, reply) => {
+      const file = await options.service.shiftPdf(req.params.id);
+      const safeId = req.params.id.replace(/[^a-zA-Z0-9_-]/g, "_");
+      return sendPdf(reply, { ...file, filename: `Reporte_Turno_${safeId}.pdf` });
+    },
   );
   app.get(
     "/api/export/report-excel",

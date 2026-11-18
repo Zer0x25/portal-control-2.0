@@ -6,6 +6,7 @@ import PDFDocument from "pdfkit";
 import { schedulingService } from "../schedulingService";
 import { kpiService } from "../kpiService";
 import { formatDateUTCISO, toBusinessDateChile } from "../../utils/timeUtils";
+import { NotFoundError } from "../../utils/AppError";
 
 interface ReportFilters {
   startDate?: string;
@@ -1189,8 +1190,10 @@ export class ExportService {
     const chunks: Buffer[] = [];
     doc.on("data", (chunk) => chunks.push(chunk));
 
-    const report = await prisma.shiftReport.findUnique({ where: { id: reportId } });
-    if (!report) throw new Error("Reporte de turno no encontrado");
+    const report = await prisma.shiftReport.findFirst({
+      where: { id: reportId, isDeleted: false },
+    });
+    if (!report) throw new NotFoundError("Reporte de turno no encontrado");
 
     const { logEntries, supplierEntries } = normalizeShiftReportEntries(
       report.logEntries,

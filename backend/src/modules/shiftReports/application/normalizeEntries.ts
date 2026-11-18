@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "date-fns-tz";
 import type { LogEntry, SupplierEntry } from "./contracts";
 
 function toNumberTimestamp(value: unknown, fallback: number): number {
@@ -13,10 +14,7 @@ function toNumberTimestamp(value: unknown, fallback: number): number {
 
 function toTimeString(value: unknown, timestamp: number): string {
   if (typeof value === "string" && value.trim().length > 0) return value.trim();
-  const d = new Date(timestamp);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
+  return formatInTimeZone(new Date(timestamp), "America/Santiago", "HH:mm");
 }
 
 function normalizeLogEntry(entry: unknown, idx: number, fallbackTs: number): LogEntry {

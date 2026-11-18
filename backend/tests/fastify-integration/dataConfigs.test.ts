@@ -933,4 +933,36 @@ describe("Spec027 brand logo (branding_logo)", () => {
     expect(reset.status).toBe(200);
     expect(reset.body).toBeNull();
   });
+
+  it("rejects Supervisor on meters routes and allows authenticated reads / admin-only writes on communications_content", async () => {
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    expect((await http("GET", "/api/meters")).status).toBe(403);
+    expect((await http("POST", "/api/meters/bulk", [])).status).toBe(403);
+
+    for (const role of [
+      "Fiscalizador",
+      "Supervisor",
+      "Reloj_Control",
+      "Supervisor_Elevado",
+    ] as const) {
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+      const empty = await http("GET", "/api/configs/communications_content");
+      expect(empty.status).toBe(200);
+      expect(empty.body).toBeNull();
+      expect(
+        (await http("POST", "/api/configs/communications_content", { value: "Hola" })).status,
+      ).toBe(403);
+    }
+
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    expect(
+      (await http("POST", "/api/configs/communications_content", { value: "Aviso importante" }))
+        .status,
+    ).toBe(200);
+
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Fiscalizador" } });
+    const readRes = await http("GET", "/api/configs/communications_content");
+    expect(readRes.status).toBe(200);
+    expect(readRes.body).toBe("Aviso importante");
+  });
 });

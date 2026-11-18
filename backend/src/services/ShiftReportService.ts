@@ -31,10 +31,12 @@ export interface SupplierEntry {
 }
 
 export interface ShiftReportListParams {
-  since?: string;
+  since?: string | number;
   page?: string | number;
   pageSize?: string | number;
   status?: string;
+  search?: string;
+  date?: string;
 }
 
 /**
@@ -93,17 +95,39 @@ export class ShiftReportService {
    * Lists all shift reports with filtering and pagination.
    */
   static async list(params: ShiftReportListParams) {
-    const { since, page = 1, pageSize = 50, status } = params;
-    const pageNum = parseInt(page as string, 10);
-    const pageSizeNum = parseInt(pageSize as string, 10);
+    const { since, page = 1, pageSize = 50, status, search, date } = params;
+    const pageNum = Number(page) || 1;
+    const pageSizeNum = Number(pageSize) || 50;
 
     const where: Prisma.ShiftReportWhereInput = { isDeleted: false };
+    const andConditions: Prisma.ShiftReportWhereInput[] = [];
 
-    if (since) {
+    if (since !== undefined && since !== "") {
       const sinceDate = new Date(Number(since));
       if (!isNaN(sinceDate.getTime())) {
-        where.OR = [{ updatedAt: { gte: sinceDate } }, { status: "open" }];
+        andConditions.push({ OR: [{ updatedAt: { gte: sinceDate } }, { status: "open" }] });
       }
+    }
+
+    const trimmedSearch = typeof search === "string" ? search.trim() : "";
+    if (trimmedSearch) {
+      andConditions.push({
+        OR: [
+          { folio: { contains: trimmedSearch, mode: "insensitive" } },
+          { responsibleUser: { contains: trimmedSearch, mode: "insensitive" } },
+          { shiftName: { contains: trimmedSearch, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    if (date) {
+      const dayStart = new Date(`${date}T00:00:00.000Z`);
+      const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+      andConditions.push({ date: { gte: dayStart, lt: dayEnd } });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     if (status) {
@@ -294,7 +318,6 @@ export class ShiftReportService {
         report = await tx.shiftReport.update({
           where: { id: data.id },
           data: {
-            folio: data.folio,
             shiftName: data.shiftName,
             responsibleUser: data.responsibleUser,
             startTime: data.startTime ? new Date(data.startTime) : undefined,
@@ -480,7 +503,7 @@ export class ShiftReportService {
     return this.createOrUpdate(
       {
         id: existing.id,
-        folio: data.folio ?? existing.folio,
+        folio: existing.folio,
         shiftName: data.shiftName ?? existing.shiftName,
         responsibleUser: data.responsibleUser ?? existing.responsibleUser,
         startTime: data.startTime ?? existing.startTime.toISOString(),
@@ -514,16 +537,16 @@ export class ShiftReportService {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(17017, 1)`;
       await tx.shiftReport.update({
         where: { id },
-        data: { isDeleted: true },
+        data: { isDeleted: true, deletedAt: new Date() },
       });
-    });
-    await auditService.log({
-      actorUsername,
-      action: "SHIFT_REPORT_DELETED",
-      category: "OPERATIONS",
-      severity: "WARNING",
-      outcome: "SUCCESS",
-      details: { shiftId: id, folio: existing.folio },
+      await auditService.log({
+        actorUsername,
+        action: "SHIFT_REPORT_DELETED",
+        category: "OPERATIONS",
+        severity: "WARNING",
+        outcome: "SUCCESS",
+        details: { shiftId: id, folio: existing.folio },
+      });
     });
     SocketService.emit("shiftReport:deleted", { id, isDeleted: true });
   }

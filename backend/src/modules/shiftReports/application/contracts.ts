@@ -1,8 +1,10 @@
 export interface ShiftReportQuery {
-  since?: string;
-  page?: string;
-  pageSize?: string;
+  since?: string | number;
+  page?: string | number;
+  pageSize?: string | number;
   status?: string;
+  search?: string;
+  date?: string;
 }
 export interface LogEntry {
   id: string;

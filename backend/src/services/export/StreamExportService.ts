@@ -551,8 +551,8 @@ export class StreamExportService {
   async streamShiftReportToExcel(res: ExcelHttpStream, shiftId: string): Promise<void> {
     try {
       const prisma = (await import("../db")).default;
-      const report = await prisma.shiftReport.findUnique({
-        where: { id: shiftId },
+      const report = await prisma.shiftReport.findFirst({
+        where: { id: shiftId, isDeleted: false },
       });
 
       if (!report) {

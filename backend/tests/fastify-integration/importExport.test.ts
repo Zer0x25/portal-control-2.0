@@ -265,9 +265,9 @@ describe("Spec021 import/export on Fastify", () => {
       JSON.stringify([{ company: "Legacy" }, null]),
     ],
   ])(
-    "generates shift PDF from normalized legacy entries (%s); missing ID keeps service 500",
+    "generates shift PDF from normalized legacy entries (%s), returns 404 when missing/deleted, and sanitizes Content-Disposition",
     async (logEntries, supplierEntries) => {
-      expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
+      expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(404);
       await prismaDirect.shiftReport.create({
         data: {
           id: "shift-pdf",
@@ -293,6 +293,37 @@ describe("Spec021 import/export on Fastify", () => {
       expect(response.headers["content-disposition"]).toBe(
         "attachment; filename=Reporte_Turno_shift-pdf.pdf",
       );
+
+      await prismaDirect.shiftReport.create({
+        data: {
+          id: "shift-pdf;evil",
+          folio: "002",
+          shiftName: "Day",
+          responsibleUser: "Operator",
+          startTime: new Date("2020-01-01T12:00:00Z"),
+          date: new Date("2020-01-01T00:00:00Z"),
+          status: "closed",
+          logEntries: "[]",
+          supplierEntries: "[]",
+        },
+      });
+      const sanitized = await http(
+        "GET",
+        "/api/export/shift-report-pdf/shift-pdf%3Bevil",
+        undefined,
+        token,
+        true,
+      );
+      expect(sanitized.status).toBe(200);
+      expect(sanitized.headers["content-disposition"]).toBe(
+        "attachment; filename=Reporte_Turno_shift-pdf_evil.pdf",
+      );
+
+      await prismaDirect.shiftReport.update({
+        where: { id: "shift-pdf" },
+        data: { isDeleted: true, deletedAt: new Date() },
+      });
+      expect((await http("GET", "/api/export/shift-report-pdf/shift-pdf")).status).toBe(404);
     },
   );
   it("streams real team and employee XLSX with data columns/rows and no PIN", async () => {
@@ -519,7 +550,7 @@ describe("Spec021 import/export on Fastify", () => {
   it("allows Reloj_Control preview/shift exports but denies Usuario before decoder", async () => {
     await worker("Reloj_Control", false);
     expect((await upload(await workbook())).status).toBe(200);
-    expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
+    expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(404);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     expect((await upload(Buffer.from("bad zip"))).status).toBe(403);
     expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(403);
