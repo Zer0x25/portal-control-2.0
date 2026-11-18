@@ -1297,7 +1297,17 @@ export interface paths {
     /** Obtener todas las bitácoras de turno */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          page?: number;
+          pageSize?: number;
+          /** @description Timestamp para consulta delta */
+          since?: string;
+          status?: "open" | "closed";
+          /** @description Búsqueda por folio, responsable o turno */
+          search?: string;
+          /** @description Fecha de turno (YYYY-MM-DD) */
+          date?: string;
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -1310,7 +1320,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": components["schemas"]["ShiftReportListResponse"];
+            "application/json": components["schemas"]["ShiftReportPaginatedResponse"];
           };
         };
       };
@@ -6036,7 +6046,7 @@ export interface components {
     ShiftReport: {
       id?: string;
       date: string;
-      folio: string;
+      folio?: string;
       shiftName: string;
       responsibleUser: string;
       startTime: string;
@@ -6061,6 +6071,21 @@ export interface components {
         reason: string;
         timestamp: number;
       }[];
+    };
+    ShiftReportPaginatedResponse: {
+      data: components["schemas"]["ShiftReport"][];
+      total: number;
+      page: number;
+      totalPages: number;
+    };
+    ShiftReportQuery: {
+      page?: string;
+      pageSize?: string;
+      since?: string;
+      /** @enum {string} */
+      status?: "open" | "closed";
+      search?: string;
+      date?: string;
     };
   };
   responses: never;
