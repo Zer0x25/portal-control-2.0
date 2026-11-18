@@ -202,4 +202,47 @@ describe("Anti-regression: EmployeeService PIN hashing and block-reset", () => {
 
     txSpy.mockRestore();
   });
+
+  it("normalizes dotted RUT digits when deriving initial PIN on create and rejects matching PIN on update", async () => {
+    const service = new EmployeeService();
+    const createMock = vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+    const mockDb = { employee: { create: createMock } } as unknown as typeof prisma;
+
+    const created = await service.createEmployee(
+      {
+        id: "EMP-2003",
+        name: "RUT Con Puntos",
+        rut: "12.345.678-9",
+        position: "Operario",
+        area: "Planta",
+        workdayType: "Normal",
+      },
+      mockDb,
+    );
+
+    const savedPin = (created as { pin?: string | null }).pin;
+    expect(typeof savedPin).toBe("string");
+    expect(savedPin).not.toBe("1234");
+    expect(savedPin).not.toBe("12.3");
+    expect(bcryptjs.compareSync("1234", savedPin!)).toBe(true);
+
+    const txSpy = vi.spyOn(dbModule, "withDirectTransaction").mockImplementation(async (fn) =>
+      fn({
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "EMP-2003" }]),
+        employee: {
+          findUnique: vi.fn().mockResolvedValue({ id: "EMP-2003", rut: "12.345.678-9" }),
+          update: vi.fn(),
+        },
+      } as unknown as Parameters<typeof fn>[0]),
+    );
+
+    await expect(service.updateEmployee("EMP-2003", { pin: "1234" })).rejects.toThrow(
+      "primeros 4 dígitos del RUT",
+    );
+    txSpy.mockRestore();
+  });
 });

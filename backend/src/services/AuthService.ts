@@ -256,9 +256,11 @@ export class AuthService {
           { expiresIn: "5m" },
         );
 
-        const mustChangePin = employee.pin
-          ? await bcryptjs.compare(employee.rut.slice(0, 4), employee.pin)
-          : false;
+        const rutDigits = employee.rut.replace(/\D/g, "");
+        const mustChangePin =
+          employee.pin && rutDigits.length >= 4
+            ? await bcryptjs.compare(rutDigits.slice(0, 4), employee.pin)
+            : false;
 
         return { success: true, token, employeeName: employee.name, mustChangePin };
       } else {

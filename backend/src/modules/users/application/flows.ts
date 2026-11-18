@@ -1,3 +1,4 @@
+import { ForbiddenError } from "../../../utils/AppError";
 import { toPublicUser, type UserProjection, type PublicUser } from "./publicUser";
 export interface CreateUserDto {
   id?: string;
@@ -10,12 +11,13 @@ export interface UpdateUserDto {
   username?: string;
   password?: string;
   role?: string;
-  employeeId?: string;
+  employeeId?: string | null;
   mustChangePassword?: boolean;
   isForcePasswordChange?: boolean;
 }
 export interface UpdateUserActorContext {
   actorId?: string;
+  actorRole?: string;
   currentTokenHash?: string;
 }
 export interface UserQuery {
@@ -31,7 +33,7 @@ export interface UserWrite {
   username?: string;
   passwordHash?: string;
   role?: string;
-  employeeId?: string;
+  employeeId?: string | null;
   isForcePasswordChange?: boolean;
 }
 export interface UserFlowDependencies {
@@ -45,8 +47,8 @@ export interface UserFlowDependencies {
       data: UserWrite,
       actorContext?: UpdateUserActorContext,
     ): Promise<UserProjection>;
-    findUsername(id: string): Promise<{ username: string } | null>;
-    delete(id: string): Promise<void>;
+    findUsername(id: string): Promise<{ username: string; role?: string } | null>;
+    delete(id: string, actorRole?: string): Promise<void>;
   };
   hash(password: string): string;
   id(): string;
@@ -140,9 +142,12 @@ export function createUserFlows(deps: UserFlowDependencies) {
       deps.emit(result);
       return result;
     },
-    async deleteUser(id: string, actorUsername: string) {
+    async deleteUser(id: string, actorUsername: string, actorRole?: string) {
       const user = await deps.repository.findUsername(id);
-      await deps.repository.delete(id);
+      if (actorRole === "Supervisor_Elevado" && user?.role === "Administrador") {
+        throw new ForbiddenError("Acceso denegado: No puede eliminar usuarios Administrador");
+      }
+      await deps.repository.delete(id, actorRole);
       await deps.audit({
         actorUsername,
         action: "USER_DELETE",

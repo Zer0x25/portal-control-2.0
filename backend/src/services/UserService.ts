@@ -4,7 +4,7 @@ import { ulid } from "ulid";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { UserRole, Prisma } from "../generated/prisma/client";
-import { NotFoundError } from "../utils/AppError";
+import { ForbiddenError, NotFoundError } from "../utils/AppError";
 
 import {
   toPublicUser,
@@ -171,6 +171,12 @@ export class UserService {
       if (!existing) {
         throw new NotFoundError("El recurso solicitado no existe");
       }
+      if (actorContext?.actorRole === "Supervisor_Elevado" && existing.role === "Administrador") {
+        throw new ForbiddenError("Acceso denegado: No puede modificar usuarios Administrador");
+      }
+      if (actorContext?.actorRole === "Supervisor_Elevado" && update.role === "Administrador") {
+        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Administrador");
+      }
       const updated = await tx.user.update({
         select: publicUserSelect,
         where: { id },
@@ -227,9 +233,23 @@ export class UserService {
         }),
       update: (id, data, actorContext) =>
         this.updateUserWithSessionRevocation(id, data, actorContext),
-      findUsername: (id) => prisma.user.findUnique({ where: { id }, select: { username: true } }),
-      delete: async (id) => {
-        await prisma.user.delete({ where: { id } });
+      findUsername: (id) =>
+        prisma.user.findUnique({ where: { id }, select: { username: true, role: true } }),
+      delete: async (id, actorRole) => {
+        await withDirectTransaction(async (tx) => {
+          await tx.$queryRaw`SELECT id FROM users WHERE id = ${id} FOR UPDATE`;
+          const target = await tx.user.findUnique({
+            where: { id },
+            select: { id: true, role: true },
+          });
+          if (!target) {
+            throw new NotFoundError("El recurso solicitado no existe");
+          }
+          if (actorRole === "Supervisor_Elevado" && target.role === "Administrador") {
+            throw new ForbiddenError("Acceso denegado: No puede eliminar usuarios Administrador");
+          }
+          await tx.user.delete({ where: { id } });
+        });
       },
     },
     hash: (password) => bcrypt.hashSync(password, 10),
@@ -252,8 +272,8 @@ export class UserService {
   ) {
     return this.flows.updateUser(id, data, actor, actorContext);
   }
-  deleteUser(id: string, actor: string) {
-    return this.flows.deleteUser(id, actor);
+  deleteUser(id: string, actor: string, actorRole?: string) {
+    return this.flows.deleteUser(id, actor, actorRole);
   }
 
   async ensureEmployeeUser(

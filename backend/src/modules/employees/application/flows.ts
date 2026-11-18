@@ -67,9 +67,9 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
     },
     async create(input: EmployeeCreateInput, actorUsername: string) {
       const { createUserAccount, ...data } = input;
-      const id = await deps.repository.resolveId(data.id);
       const employee = await deps.withoutTriggers(async () => {
         const created = await deps.transaction(async (tx) => {
+          const id = await tx.resolveId(data.id);
           const row = await tx.create({ ...data, id });
           if (createUserAccount)
             await tx.ensureUser({ employeeId: row.id, fullName: row.name }, actorUsername);
@@ -85,7 +85,12 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
         return created;
       });
       if (!employee) throw new AppError("EMPLOYEE_NOT_CREATED", 500, "EMPLOYEE_NOT_CREATED");
-      const result = toPublicEmployee(employee);
+      const result = {
+        ...toPublicEmployee(employee),
+        syncStatus: "synced",
+        lastModified: employee.updatedAt.getTime(),
+        isDeleted: false,
+      };
       deps.emit(result);
       return result;
     },
@@ -93,30 +98,37 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
       const { createUserAccount, ...data } = input;
       const old = await deps.repository.find(id);
       if (!old) throw new NotFoundError("Empleado no encontrado");
-      const updated = await deps.withoutTriggers(async () => {
-        const row = await deps.repository.update(id, data);
-        if (old.status !== row.status)
+      const { row: updated, forceLogout } = await deps.withoutTriggers(async () => {
+        const txResult = await deps.transaction(async (tx) => {
+          const row = await tx.update(id, data);
+          if (createUserAccount && row.status !== "Archivado") {
+            await tx.ensureUser({ employeeId: row.id, fullName: row.name }, actorUsername);
+          }
+          const logout = await tx.syncStatus(id, old.status, row.status, row.name, row.rut);
+          return { row, forceLogout: logout };
+        });
+        if (old.status !== txResult.row.status)
           await deps.audit({
             actorUsername,
-            action: `EMPLEADO_ESTADO_CAMBIADO: ${row.status}`,
+            action: `EMPLEADO_ESTADO_CAMBIADO: ${txResult.row.status}`,
             category: "OPERATIONS",
             severity: "WARNING",
             details: {
-              employeeId: row.id,
-              employeeName: row.name,
+              employeeId: txResult.row.id,
+              employeeName: txResult.row.name,
               oldStatus: old.status,
-              newStatus: row.status,
+              newStatus: txResult.row.status,
             },
           });
-        if (data.pin !== undefined && old.pin !== row.pin)
+        if (data.pin !== undefined && old.pin !== txResult.row.pin)
           await deps.audit({
             actorUsername,
             action: "EMPLEADO_PIN_ACTUALIZADO",
             category: "SEGURIDAD",
             severity: "CRITICAL",
             details: {
-              employeeId: row.id,
-              employeeName: row.name,
+              employeeId: txResult.row.id,
+              employeeName: txResult.row.name,
               isReset: data.pin === null || data.pin === undefined,
             },
           });
@@ -125,13 +137,13 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
           action: "EMPLEADO_ACTUALIZADO",
           category: "OPERATIONS",
           severity: "INFO",
-          details: { employeeId: row.id, employeeName: row.name, changes: data },
+          details: { employeeId: txResult.row.id, employeeName: txResult.row.name, changes: data },
         });
-        return row;
+        return txResult;
       });
-      if (createUserAccount && updated.status !== "Archivado")
-        await deps.ensureUser({ employeeId: updated.id, fullName: updated.name }, actorUsername);
-      await deps.syncStatus(id, old.status, updated.status, updated.name, updated.rut);
+      if (forceLogout) {
+        deps.emitForceLogout?.(forceLogout);
+      }
       const result = {
         ...toPublicEmployee(updated),
         syncStatus: "synced",

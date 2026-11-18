@@ -28,10 +28,14 @@ export const employeeFlows = createEmployeeFlows({
     withDirectTransaction(
       (tx) =>
         run({
+          resolveId: (id) => employeeService.resolveEmployeeId(id, tx),
           create: (data) => employeeService.createEmployee(data, tx),
+          update: (id, data) => employeeService.updateEmployee(id, data, tx),
           ensureUser: async (input, actor) => {
             await userService.ensureEmployeeUser(input, actor, tx);
           },
+          syncStatus: (id, oldStatus, newStatus, name, rut) =>
+            employeeService.syncEmployeeStatus(id, oldStatus, newStatus, name, rut, tx),
         }),
       { timeout: 15000, maxWait: 5000 },
     ),
@@ -40,8 +44,19 @@ export const employeeFlows = createEmployeeFlows({
   ensureUser: async (input, actor) => {
     await userService.ensureEmployeeUser(input, actor);
   },
-  syncStatus: (id, oldStatus, newStatus, name, rut) =>
-    employeeService.syncEmployeeStatus(id, oldStatus, newStatus, name, rut),
+  syncStatus: async (id, oldStatus, newStatus, name, rut) => {
+    await employeeService.syncEmployeeStatus(id, oldStatus, newStatus, name, rut);
+  },
   audit: (entry) => auditService.log(entry),
   emit: (payload) => SocketService.emit("employee:updated", payload),
+  emitForceLogout: ({ forceLogoutUserId, forceLogoutEmployeeId }) => {
+    if (forceLogoutUserId) {
+      SocketService.emitForceLogoutToUser(forceLogoutUserId, { reason: "SESSION_INVALIDATED" });
+    }
+    if (forceLogoutEmployeeId) {
+      SocketService.emitForceLogoutToEmployee(forceLogoutEmployeeId, {
+        reason: "SESSION_INVALIDATED",
+      });
+    }
+  },
 });

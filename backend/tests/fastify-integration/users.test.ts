@@ -367,4 +367,125 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
       expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
     );
   });
+
+  it("[Spec 116] validates pagination, supports employeeId: null, blocks self-delete, and enforces Supervisor_Elevado hierarchy", async () => {
+    // 1. Invalid pagination -> 400 VALIDATION_ERROR
+    for (const qs of ["page=0&pageSize=1", "page=-1&pageSize=1", "page=abc&pageSize=1", "page=1&pageSize=201"]) {
+      const bad = await http("GET", `/api/users?${qs}`);
+      expect(bad.status).toBe(400);
+      expect(bad.body.code).toBe("VALIDATION_ERROR");
+    }
+
+    // 2. Self-delete blocked
+    const admin = await prismaDirect.user.findUniqueOrThrow({ where: { username: "dto-admin" } });
+    const selfDelete = await http("DELETE", `/api/users/${admin.id}`);
+    expect(selfDelete.status).toBe(400);
+    expect(await prismaDirect.user.findUnique({ where: { id: admin.id } })).not.toBeNull();
+
+    // 3. employeeId: null unlinks employee & blank username rejected
+    const emp = await prismaDirect.employee.create({
+      data: {
+        id: "EMP-UNLINK-1",
+        name: "Unlink Test",
+        rut: "55555555-5",
+        position: "Op",
+        area: "Ops",
+        workdayType: "Normal",
+      },
+    });
+    const linked = await http("POST", "/api/users", {
+      username: "unlink-user",
+      password,
+      role: "Usuario",
+      employeeId: emp.id,
+    });
+    expect(linked.status).toBe(201);
+    expect((await http("PUT", `/api/users/${linked.body.id}`, { username: "   " })).status).toBe(400);
+    const unlinked = await http("PUT", `/api/users/${linked.body.id}`, { employeeId: null });
+    expect(unlinked.status).toBe(200);
+    expect(unlinked.body.employeeId).toBeNull();
+
+    // 4. Supervisor_Elevado can manage non-Admin users but gets 403 for Admin targets/escalation
+    const elevated = await prismaDirect.user.create({
+      data: {
+        username: "elevated-mgr",
+        role: "Supervisor_Elevado",
+        passwordHash: "hash",
+      },
+    });
+    const elevatedToken = (
+      await AuthService.createSession(
+        elevated.id,
+        elevated.username,
+        elevated.role,
+        null,
+        "elevated-test",
+      )
+    ).token;
+
+    // Allowed: create Usuario
+    const createdByElevated = await http(
+      "POST",
+      "/api/users",
+      { username: "by-elevated", password, role: "Usuario" },
+      elevatedToken,
+    );
+    expect(createdByElevated.status).toBe(201);
+
+    // Forbidden: create Administrador
+    expect(
+      (
+        await http(
+          "POST",
+          "/api/users",
+          { username: "forged-admin", password, role: "Administrador" },
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(403);
+
+    // Allowed: edit non-Admin
+    expect(
+      (
+        await http(
+          "PUT",
+          `/api/users/${createdByElevated.body.id}`,
+          { role: "Supervisor" },
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(200);
+
+    // Forbidden: escalate to Administrador or edit Administrador
+    expect(
+      (
+        await http(
+          "PUT",
+          `/api/users/${createdByElevated.body.id}`,
+          { role: "Administrador" },
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await http("PUT", `/api/users/${admin.id}`, { username: "hacked" }, elevatedToken)).status,
+    ).toBe(403);
+
+    // Forbidden: delete Administrador
+    expect((await http("DELETE", `/api/users/${admin.id}`, undefined, elevatedToken)).status).toBe(
+      403,
+    );
+
+    // Allowed: delete non-Admin
+    expect(
+      (
+        await http(
+          "DELETE",
+          `/api/users/${createdByElevated.body.id}`,
+          undefined,
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(204);
+  });
 });

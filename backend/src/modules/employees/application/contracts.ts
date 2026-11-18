@@ -57,9 +57,22 @@ export interface LinkedUserInput {
   fullName: string;
 }
 export type PublicEmployee = Omit<EmployeeRow, "pin">;
+export interface ForceLogoutTargets {
+  forceLogoutUserId?: string;
+  forceLogoutEmployeeId?: string;
+}
 export interface EmployeeTransaction {
+  resolveId(input?: string): Promise<string>;
   create(input: EmployeeCreateInput & { id: string }): Promise<EmployeeRow>;
+  update(id: string, input: EmployeeUpdateInput): Promise<EmployeeRow>;
   ensureUser(input: LinkedUserInput, actor: string): Promise<void>;
+  syncStatus(
+    id: string,
+    oldStatus: EmployeeStatus,
+    newStatus: EmployeeStatus,
+    name: string,
+    rut: string,
+  ): Promise<ForceLogoutTargets | void>;
 }
 export interface EmployeeFlowDependencies {
   repository: {
@@ -92,4 +105,5 @@ export interface EmployeeFlowDependencies {
     details: Record<string, unknown>;
   }): Promise<void>;
   emit(payload: PublicEmployee | { count: number }): void;
+  emitForceLogout?(targets: ForceLogoutTargets): void;
 }

@@ -480,4 +480,67 @@ describe("Spec 013 employees on Fastify", () => {
       ).statusCode,
     ).toBe(401);
   });
+
+  it("[Spec 116] normalizes dotted RUT for initial PIN, emits sync metadata on POST, resolves concurrent EMP-N atomically, and validates query/scoping", async () => {
+    // 1. POST without PIN and with dotted RUT -> hashes normalized first 4 digits & includes sync metadata
+    const created = await http("POST", "/api/employees", {
+      name: "RUT Normalizado",
+      rut: "12.345.678-9",
+      position: "Operario",
+      area: "Ops",
+      workdayType: "Normal",
+    });
+    expect(created.status).toBe(201);
+    expect(created.body).toMatchObject({
+      id: "EMP-1001",
+      syncStatus: "synced",
+      isDeleted: false,
+    });
+    expect(typeof created.body.lastModified).toBe("number");
+    const stored = await prismaDirect.employee.findUniqueOrThrow({ where: { id: "EMP-1001" } });
+    expect(bcrypt.compareSync("1234", stored.pin ?? "")).toBe(true);
+
+    // 2. Concurrent POST without explicit ID -> no 409 collisions, sequential numeric EMP-N
+    const concurrent = await Promise.all(
+      Array.from({ length: 4 }, (_, idx) =>
+        http("POST", "/api/employees", {
+          name: `Concurrent ${idx}`,
+          rut: `${20000000 + idx}-1`,
+          position: "Operario",
+          area: idx % 2 === 0 ? "Ops" : "Other",
+          workdayType: "Normal",
+        }),
+      ),
+    );
+    expect(concurrent.map((r) => r.status)).toEqual([201, 201, 201, 201]);
+    const createdIds = concurrent.map((r) => r.body.id as string).sort();
+    expect(createdIds).toEqual(["EMP-1002", "EMP-1003", "EMP-1004", "EMP-1005"]);
+
+    // 3. Invalid pagination query params -> 400 VALIDATION_ERROR
+    for (const qs of ["page=0&pageSize=1", "page=-1&pageSize=1", "page=abc&pageSize=1", "page=1&pageSize=201"]) {
+      const bad = await http("GET", `/api/employees?${qs}`);
+      expect(bad.status).toBe(400);
+      expect(bad.body.code).toBe("VALIDATION_ERROR");
+    }
+
+    // 4. Role scoping: Usuario without employeeId -> []; Supervisor -> only own area
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Usuario", employeeId: null },
+    });
+    expect((await http("GET", "/api/employees")).body).toEqual([]);
+    expect((await http("GET", "/api/employees?page=1&pageSize=10")).body).toEqual({
+      data: [],
+      pagination: { total: 0, page: 1, totalPages: 0 },
+    });
+
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Supervisor", employeeId: "EMP-1001" },
+    });
+    const supList = await http("GET", "/api/employees");
+    expect(supList.status).toBe(200);
+    expect(supList.body.every((e: { area: string }) => e.area === "Ops")).toBe(true);
+    expect(supList.body.length).toBe(3);
+  });
 });

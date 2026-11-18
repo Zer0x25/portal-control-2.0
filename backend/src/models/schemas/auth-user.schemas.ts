@@ -1,4 +1,11 @@
-import { numericString, syncAuditFields, userRoleEnum, z } from "./common";
+import {
+  numericString,
+  pageSizeString,
+  positiveIntString,
+  syncAuditFields,
+  userRoleEnum,
+  z,
+} from "./common";
 
 export const CreateUserSchema = z
   .object({
@@ -16,10 +23,10 @@ export const CreateUserSchema = z
 
 export const UpdateUserSchema = z
   .object({
-    username: z.string().min(3).optional(),
+    username: z.string().trim().min(3).optional(),
     password: z.string().min(6).optional(),
-    role: userRoleEnum.optional(),
-    employeeId: z.string().optional(),
+    role: z.enum([...userRoleEnum.options, "Archivado"]).optional(),
+    employeeId: z.string().nullable().optional(),
     mustChangePassword: z.boolean().optional(),
   })
   .openapi("UpdateUser");
@@ -41,8 +48,8 @@ export const UserSchema = z
   .openapi("User");
 
 export const UserQuerySchema = z.object({
-  page: numericString.optional(),
-  pageSize: numericString.optional(),
+  page: positiveIntString.optional(),
+  pageSize: pageSizeString.optional(),
   since: numericString.optional(),
   search: z.string().optional(),
   role: z.string().optional(),
