@@ -23,7 +23,33 @@ interface SuggestedPatternNameResponse {
 }
 
 type ScheduleMatrix = Record<string, Record<string, ScheduleInfo>>;
-type MonthlyPlanPayload = Record<string, unknown>;
+
+export interface MonthlyDayScheduleItem {
+  dateIso: string;
+  dayOfWeek: string;
+  dayOfMonth: number;
+  scheduleText: string;
+  isWorkDay: boolean;
+}
+
+export interface MonthlyPlanDayInput {
+  day: number;
+  type: "work" | "rest";
+  startTime?: string;
+  endTime?: string;
+  hours?: number;
+}
+
+export interface MonthlyPlanRequestPayload {
+  employeeId: string;
+  month: string;
+  year: string;
+  patternName?: string;
+  dailySchedules: MonthlyPlanDayInput[];
+  worksOnHolidays?: boolean;
+  hasColacion?: boolean;
+  colacionMinutes?: number;
+}
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object";
@@ -106,7 +132,9 @@ export const shiftService = {
     });
   },
 
-  async getAssignments(options: PaginationOptions = {}): Promise<PaginatedResponse<AssignedShift>> {
+  async getAssignments(
+    options: PaginationOptions & { search?: string } = {},
+  ): Promise<PaginatedResponse<AssignedShift>> {
     const response = await apiClient.get("/api/shifts/assignments", {
       params: {
         page: options.page,
@@ -116,7 +144,8 @@ export const shiftService = {
         employeeId: options.employeeId,
         since: options.since,
         showArchived: options.showArchived,
-      },
+        search: options.search,
+      } as unknown as never,
     });
     if (isPaginatedResponse<AssignedShift>(response)) return response;
     throw new Error("Respuesta paginada invalida de asignaciones");
@@ -173,7 +202,25 @@ export const shiftService = {
     throw new Error("Respuesta invalida de matriz de calendario");
   },
 
-  async createMonthlyPlan(planData: MonthlyPlanPayload): Promise<void> {
+  async getMonthlyPlan(
+    employeeId: string,
+    year: number,
+    month: number,
+  ): Promise<MonthlyDayScheduleItem[]> {
+    const response = await apiClient.get("/api/shifts/monthly-plan/{employeeId}/{year}/{month}", {
+      path: {
+        employeeId,
+        year: year.toString(),
+        month: month.toString(),
+      },
+    });
+    if (Array.isArray(response)) return response as MonthlyDayScheduleItem[];
+    throw new Error("Respuesta invalida del plan mensual");
+  },
+
+  async createMonthlyPlan(
+    planData: MonthlyPlanRequestPayload | Record<string, unknown>,
+  ): Promise<void> {
     await apiClient.post("/api/shifts/monthly-plan", {
       body: planData as unknown as never,
     });

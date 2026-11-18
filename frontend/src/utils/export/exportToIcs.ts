@@ -38,15 +38,22 @@ const foldLine = (line: string): string => {
 const formatDate = (date: Date): string =>
   date.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 
+const sanitizeIcsFilename = (filename: string): string => {
+  const cleaned = filename.replace(/[\\/:*?"<>|]+/g, "_").trim() || "turnos";
+  return cleaned.endsWith(".ics") ? cleaned : `${cleaned}.ics`;
+};
+
 export const exportShiftScheduleToICS = (
   events: IcsShiftEvent[],
   options: { calendarName: string; filename: string; employeeName: string },
 ): boolean => {
   const blocks = events.flatMap((event) => {
-    if (!event.startTime || !event.endTime) return [];
-    const endDate = event.endTime < event.startTime ? addBusinessDaysCL(event.date, 1) : event.date;
-    const start = parseBusinessDateTimeCL(event.date, event.startTime);
-    const end = parseBusinessDateTimeCL(endDate, event.endTime);
+    const startTime = event.startTime?.trim();
+    const endTime = event.endTime?.trim();
+    if (!startTime || !endTime) return [];
+    const endDate = endTime < startTime ? addBusinessDaysCL(event.date, 1) : event.date;
+    const start = parseBusinessDateTimeCL(event.date, startTime);
+    const end = parseBusinessDateTimeCL(endDate, endTime);
     if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start)
       return [];
     return [
@@ -77,7 +84,7 @@ export const exportShiftScheduleToICS = (
       .join("\r\n") + "\r\n";
   triggerBrowserDownload(
     new Blob([content], { type: "text/calendar;charset=utf-8" }),
-    options.filename.endsWith(".ics") ? options.filename : `${options.filename}.ics`,
+    sanitizeIcsFilename(options.filename),
   );
   return true;
 };
