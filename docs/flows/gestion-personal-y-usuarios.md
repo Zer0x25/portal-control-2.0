@@ -1,0 +1,77 @@
+# Flujo: Gestión de personal y usuarios (`gestion-personal-y-usuarios`)
+
+- **Estado:** `AS_IS_DOCUMENTADO` — Fase 1 completada; pendiente replicación controlada (Fase 2).
+- **Última actualización:** 2026-11-18
+- **Módulos / actores:** `personnel-management`, `employee-management`, `user-management`, `employees`, `users`, `EmployeeService`, `UserService`, `useEmployeeManagementData`, `useUserManagementData`, `useEmployees`, `useUsers`. En UI, `#/personnel-management` y `#/employee-management` admiten `Administrador`, `Supervisor_Elevado`, `Supervisor` y `Reloj_Control`; `#/user-management` admite `Administrador` y `Supervisor_Elevado` (`App.tsx`). En API, `/api/employees*` varía según endpoint (`kiosk` público, `GET /api/employees` y `clocking-options` autenticados sin `Kiosk_Employee`, escrituras para `Administrador`/`Supervisor_Elevado`/`Supervisor`/`Reloj_Control`, `PUT /api/employees/:id` también para `Kiosk_Employee` sobre sí mismo); `/api/users*` admite `Administrador` y `Supervisor_Elevado` en `GET`, solo `Administrador` en `POST`/`DELETE`, y `Administrador` o propio usuario (solo `password`) en `PUT /api/users/:id`.
+- **Entradas:** UI `#/personnel-management` (redirecciones `#/employee-management` -> `?tab=employees` y `#/user-management` -> `?tab=users`); API `GET /api/employees/kiosk`, `GET /api/employees/clocking-options`, `GET/POST /api/employees`, `PUT /api/employees/:id`, `POST /api/employees/bulk`, `GET /api/employees/export`, `GET/POST /api/users`, `PUT/DELETE /api/users/:id`.
+- **Alcance de evidencia:** Fase 1 (inspección estática de backend y frontend).
+
+## 1. Diagrama AS-IS
+
+```mermaid
+flowchart TD
+  A["#/personnel-management (?tab=employees|users)"] --> B["EmployeeManagementContainer (tab=employees)"]
+  A --> C["UserManagementContainer (tab=users, Admin / Supervisor_Elevado)"]
+
+  B --> D["useEmployeesQuery -> GET /api/employees (sin paginación)"]
+  B --> E["EmployeeForm (RUT + createUserAccount) -> POST/PUT /api/employees"]
+  B --> F["Archivar/Reactivar -> useEmployees.archiveEmployee / reactivateEmployee + hardDeleteUser / recreateUser"]
+  E --> G["EmployeeService + employeeFlows -> Prisma Employee + ensureEmployeeUser + syncEmployeeStatus"]
+
+  C --> H["useUsersQuery -> GET /api/users (sin paginación)"]
+  C --> I["UserForm (sin input password) -> buildUserFormSchema -> POST/PUT /api/users"]
+  C --> J["Acciones tabla: Editar / Reset Password / Reset PIN / DELETE /api/users/:id"]
+  I --> K["UserService -> Prisma User + ActiveSession revocation + Socket.IO"]
+```
+
+## 2. Comportamiento observado en código
+
+### 2.1 Navegación y permisos (`#/personnel-management`)
+
+- `App.tsx` redirige `#/user-management` hacia `#/personnel-management?tab=users` (solo `Administrador` y `Supervisor_Elevado`) y `#/employee-management` hacia `#/personnel-management?tab=employees` (`Administrador`, `Supervisor_Elevado`, `Supervisor`, `Reloj_Control`).
+- `PersonnelManagement.container.tsx` habilita `canManageUsers` para `Administrador` y `Supervisor_Elevado`. Si otro rol entra con `?tab=users`, reemplaza la URL a `?tab=employees`.
+- `PersonnelManagement.view.tsx` renderiza `TabNav` condicional con las pestañas `"Empleados"` y `"Accesos"` y monta `EmployeeManagementContainer` o `UserManagementContainer` con `isEmbedded={true}`.
+
+### 2.2 Gestión de empleados (`#/personnel-management?tab=employees` y `/api/employees*`)
+
+- **Frontend (`employee-management`):**
+  - `useEmployeesQuery` invoca `employeeService.getAll()` (`GET /api/employees` sin `page`/`pageSize`) y filtra `!employee.isDeleted`.
+  - `useEmployeeManagementData` filtra en memoria por estado (`Activos` / `Archivados`) y búsqueda (`name`, `rut`, `position`, `area`), con scroll infinito en cliente (`pageSize = 20` móvil, `50` desktop). `requestSort` muestra toast indicando que no está disponible en modo infinito.
+  - `EmployeeForm` valida RUT chileno (`isValidChileanRut`), `position`, `area` y `workdayType` obligatorios, e incluye el switch `"Generar Cuenta de Acceso Asociada"` (`createUserAccount`).
+  - `EmployeeManagement.view.tsx` muestra `"Nuevo Registro"`, menú `"Utilitarios"` (importación Excel, exportación CSV/Excel/PDF), modales de formulario, historial de turnos y confirmación de archivado (que consulta previamente `checkOpenRecord`).
+  - `useEmployees.archiveEmployee` actualiza el estado del empleado a `"Archivado"` y adicionalmente invoca `hardDeleteUser` (`DELETE /api/users/:id`) y cierra asignaciones de turno futuras desde el cliente; `reactivateEmployee` vuelve a `"Activo"` e invoca `recreateUser` (`POST /api/users`).
+- **Backend (`backend/src/modules/employees/` y `EmployeeService.ts`):**
+  - Todas las rutas de `/api/employees*` están registradas en `protectedApp` y validadas por `routeContracts.ts`.
+  - `GET /api/employees/kiosk` es pública y expone `{ id, name, rutHash, isPinBlocked, status, area, workdayType }` solo de empleados activos.
+  - `GET /api/employees/clocking-options` requiere autenticación (sin `Kiosk_Employee`), filtra por `area` si el usuario es `Supervisor` y devuelve `[]` si es `Usuario` sin `employeeId`.
+  - `GET /api/employees` requiere autenticación (sin `Kiosk_Employee`); si el usuario es `Usuario` y tiene `employeeId`, restringe `where.id = authUser.employeeId`. Soporta `since`, `search`, `status`, `area`, `page`, `pageSize` (sin cota máxima).
+  - `POST /api/employees` (`Administrador`, `Supervisor_Elevado`, `Supervisor`, `Reloj_Control`) genera ID secuencial `EMP-N` si no viene `id`, hashea PIN inicial (o `rut.slice(0, 4)` si es numérico de 4 dígitos) con `bcryptjs`, crea empleado en `withDirectTransaction` y opcionalmente llama `ensureEmployeeUser` (`POST` alias único + password `"123456"` + `isForcePasswordChange: true`).
+  - `PUT /api/employees/:id` permite `Supervisor_Elevado`/`Administrador`/`Supervisor`/`Reloj_Control`, o `Kiosk_Employee` sobre su propio `id` enviando únicamente `{ pin }`. Prohíbe que un nuevo PIN coincida con `existing.rut.slice(0, 4)`.
+  - `EmployeeService.syncEmployeeStatus` al archivar cierra turnos activos (`endDate = yesterday`), soft-delete de turnos futuros, hard-delete de permisos futuros, recorta permisos activos a `today`, cambia el `User` asociado a `role: "Archivado"`, elimina sus `ActiveSession` y emite `force-logout`; al reactivar resetea el PIN a `rut.slice(0, 4)` y restaura al `User` a `role: "Usuario"` con contraseña `"123456"` y `isForcePasswordChange: true`.
+  - `POST /api/employees/bulk` (`bodyLimit: 10 MiB`) crea empleados en lote; `GET /api/employees/export` exporta `.xlsx` en streaming.
+
+### 2.3 Gestión de usuarios (`#/personnel-management?tab=users` y `/api/users*`)
+
+- **Frontend (`user-management`):**
+  - `useUsersQuery` está habilitada solo para `Administrador` y `Supervisor_Elevado`; invoca `userService.getAll()` (`GET /api/users` sin paginación), deduplica por `username` y filtra `!user.isDeleted`.
+  - `useUserManagementData` filtra en memoria por `username` o nombre del empleado vinculado, con scroll infinito en cliente (`30` móvil, `60` desktop). `canManageUser` exige `currentUser.role === "Administrador"`.
+  - `UserManagement.view.tsx` renderiza el botón `"Nuevo Usuario"` únicamente cuando `!isEmbedded`. En la tabla desktop ofrece Editar, Resetear contraseña (`"123456"` + `mustChangePassword: true`), Resetear PIN Kiosco y Eliminar (`DELETE /api/users/:id`).
+  - `UserForm.view.tsx` muestra tarjeta estática `"Contraseña Temporal: 123456 * Cambio Obligatorio"` en alta (sin input de contraseña), mientras `buildUserFormSchema` exige `values.password.length >= 6` en alta. En edición deshabilita `username` y permite seleccionar `employeeId`.
+- **Backend (`backend/src/modules/users/` y `UserService.ts`):**
+  - `GET /api/users` permite `Administrador` y `Supervisor_Elevado`; soporta `since`, `search`, `role`, `page`, `pageSize`.
+  - `POST /api/users` (`Administrador`) normaliza `username` a minúsculas, hashea `password`, asigna `isForcePasswordChange: true` y registra auditoría `USER_CREATE`.
+  - `PUT /api/users/:id` permite `Administrador` o el propio usuario (`isSelf`, restringido estrictamente a `{ password }`). En `withDirectTransaction` con `FOR UPDATE`, revoca sesiones (`EXCEPT_CURRENT` si cambia su propia contraseña voluntariamente, `ALL` si cambia rol, archiva, fuerza cambio o cambia password de otro) y emite `force-logout`.
+  - `DELETE /api/users/:id` (`Administrador`) ejecuta hard delete de `User` y registra `USER_DELETE`.
+
+## 3. Anomalías y riesgos para replicación
+
+1. **[ANOMALÍA-01] Botón `"Nuevo Usuario"` ausente en modo embebido y `UserForm` bloqueado por Zod:** `UserManagement.view.tsx` oculta el botón `"Nuevo Usuario"` cuando `isEmbedded === true` (como ocurre siempre desde `#/personnel-management`). Además, `buildUserFormSchema` exige `password.length >= 6` al crear, pero `toFormValues(null)` inicializa `password: ""` y `UserForm.view.tsx` no renderiza input de contraseña.
+2. **[ANOMALÍA-02] Archivado/reactivación de empleados desalineado entre frontend y backend:** `useEmployees.archiveEmployee` llama `DELETE /api/users/:id` (hard delete del usuario) tras poner al empleado en `"Archivado"`, chocando con `EmployeeService.syncEmployeeStatus` que preserva al usuario con `role: "Archivado"` y espera restaurarlo al reactivar. Luego `reactivateEmployee` intenta recrear un `POST /api/users` con un nuevo `username`.
+3. **[ANOMALÍA-03] Imposibilidad de desvincular `employeeId` en `PUT /api/users/:id` y fallos silenciosos en `useUserManagementData`:** `UserForm` envía `employeeId: undefined` (omitido en JSON) y `UpdateUserSchema` no acepta `null`; `useUsers.addUser`/`updateUser` devuelven `null`/`false` sin toast ni validación antes de cerrar el modal o mostrar éxito en reset de contraseña.
+4. **[ANOMALÍA-04] Desalineación de contratos en `EmployeeSchema`, `UserQuerySchema` y respuestas de `/api/employees`:** `EmployeeSchema` omite `area` y `workdayType` (obligatorios en Prisma/`EmployeeService`), `UserQuerySchema` usa `numericString` en `page`/`pageSize` (permite `0`/`-1`/`abc` con riesgo `500`), `POST /api/employees` omite `syncStatus`/`lastModified`/`isDeleted`, `UpdateUserSchema` excluye rol `"Archivado"` y `UserManagement` muestra la pestaña `"Accesos"` a `Supervisor_Elevado` pero lo deja en solo lectura.
+5. **[ANOMALÍA-05] Seguridad, concurrencia y reglas de dominio en backend:**
+   - `GET /api/employees` no restringe lista cuando un usuario con rol `Usuario` tiene `employeeId: null` (fuga de nómina) ni filtra por área para `Supervisor` (a diferencia de `clocking-options`).
+   - `EmployeeService` guarda el PIN inicial sin hashear cuando el RUT contiene puntos (`"12.345.678-9".slice(0, 4)` = `"12.3"`), y `resolveEmployeeId` ordena lexicográficamente sin lock (riesgo de colisión `EMP-N` en concurrencia).
+   - `EmployeeFlows.update` ejecuta `ensureUser` y `syncEmployeeStatus` fuera de la transacción de `repository.update`; `createBulkEmployees` no es transaccional ni ejecuta `syncEmployeeStatus`.
+   - `DELETE /api/users/:id` permite que un `Administrador` se elimine a sí mismo.
+   - `EmployeeManagement.view.tsx` pasa `hasLinkedUser={false}` fijo y `existingEmployees={processedEmployees}` (incompleto frente a archivados/paginados).
