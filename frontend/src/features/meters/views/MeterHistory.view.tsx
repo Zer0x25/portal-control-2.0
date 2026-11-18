@@ -64,8 +64,9 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
           ) : (
             displayReadings.map((r) => {
               const config = meterConfigById.get(r.meterConfigId);
-              if (!config) return null;
-              const unit = config.unit;
+              const meterName = config?.name ?? "Medidor eliminado";
+              const unit = config?.unit ?? "";
+              const displayUnit = config?.type === "PERCENT" ? "%" : unit;
               const deltaColor = r.delta < 0 ? "text-red-500" : "text-green-500";
 
               return (
@@ -73,13 +74,15 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
                   <td className="p-2 text-token-text-primary whitespace-nowrap">
                     {new Date(r.timestamp).toLocaleString("es-CL")}
                   </td>
-                  <td className="p-2 text-token-text-primary font-bold">{config.name}</td>
+                  <td className="p-2 text-token-text-primary font-bold">{meterName}</td>
                   <td className="p-2 font-mono text-token-text-primary">
                     {r.isRecharge ? "+" : ""}
-                    {r.value.toFixed(2)} {config.type === "PERCENT" ? "%" : unit}
+                    {r.value.toFixed(2)}
+                    {displayUnit ? ` ${displayUnit}` : ""}
                   </td>
                   <td className="p-2 font-mono text-token-text-primary">
-                    {r.normalizedValue.toFixed(2)} {unit}
+                    {r.normalizedValue.toFixed(2)}
+                    {unit ? ` ${unit}` : ""}
                   </td>
                   <td className={`p-2 font-mono font-semibold ${deltaColor}`}>
                     {r.delta !== 0 ? r.delta.toFixed(2) : "-"}
@@ -116,8 +119,9 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
       ) : (
         displayReadings.map((r) => {
           const config = meterConfigById.get(r.meterConfigId);
-          if (!config) return null;
-          const unit = config.unit;
+          const meterName = config?.name ?? "Medidor eliminado";
+          const unit = config?.unit ?? "";
+          const displayUnit = config?.type === "PERCENT" ? "%" : unit;
           const deltaColor = r.delta < 0 ? "text-red-500" : "text-green-500";
 
           return (
@@ -128,7 +132,7 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="font-bold text-token-text-primary uppercase tracking-tight">
-                    {config.name}
+                    {meterName}
                   </p>
                   <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mt-0.5">
                     {new Date(r.timestamp).toLocaleString("es-CL")}
@@ -143,13 +147,15 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
                   Ingresado:{" "}
                   <strong className="font-mono text-token-text-primary">
                     {r.isRecharge ? "+" : ""}
-                    {r.value.toFixed(2)} {config.type === "PERCENT" ? "%" : unit}
+                    {r.value.toFixed(2)}
+                    {displayUnit ? ` ${displayUnit}` : ""}
                   </strong>
                 </span>
                 <span>
                   Normalizado:{" "}
                   <strong className="font-mono text-token-text-primary">
-                    {r.normalizedValue.toFixed(2)} {unit}
+                    {r.normalizedValue.toFixed(2)}
+                    {unit ? ` ${unit}` : ""}
                   </strong>
                 </span>
                 <span>

@@ -46,7 +46,9 @@ export const buildSidebarMenuByRole = ({
   if (isAuditorRole) {
     return [
       { to: ROUTES.TIME_CONTROL, icon: ClockIcon, label: "Control" },
-      { to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" },
+      ...(isControlInternoEnabled
+        ? [{ to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" }]
+        : []),
       { to: ROUTES.SHIFT_CALENDAR, icon: CalendarDaysIcon, label: "Calendario" },
       { to: ROUTES.AUDIT_LOGS, icon: ShieldIcon, label: "Auditoría" },
     ];

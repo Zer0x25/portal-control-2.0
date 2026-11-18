@@ -18,6 +18,20 @@ describe("buildSidebarMenuByRole", () => {
     ]);
   });
 
+  it("hides Comunicados from Fiscalizador menu when isControlInternoEnabled is false", () => {
+    const items = buildSidebarMenuByRole({
+      role: "Fiscalizador",
+      isControlInternoEnabled: false,
+    });
+
+    expect(items.some((item) => item.to === ROUTES.COMMUNICATIONS)).toBe(false);
+    expect(items.map((item) => item.to)).toEqual([
+      ROUTES.TIME_CONTROL,
+      ROUTES.SHIFT_CALENDAR,
+      ROUTES.AUDIT_LOGS,
+    ]);
+  });
+
   it("keeps Supervisión in Supervisor, Supervisor_Elevado and Administrador menus", () => {
     for (const role of ["Supervisor", "Supervisor_Elevado", "Administrador"] as const) {
       const items = buildSidebarMenuByRole({

@@ -77,16 +77,20 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
       syncStatus: "pending",
     };
 
-    await onUpdateShift(updatedShift);
-    addToast(
-      editingSupplierEntry
-        ? "Registro de proveedor actualizado."
-        : "Registro de proveedor agregado.",
-      "success",
-    );
+    try {
+      await onUpdateShift(updatedShift);
+      addToast(
+        editingSupplierEntry
+          ? "Registro de proveedor actualizado."
+          : "Registro de proveedor agregado.",
+        "success",
+      );
 
-    setShowSupplierEntryModal(false);
-    setEditingSupplierEntry(null);
+      setShowSupplierEntryModal(false);
+      setEditingSupplierEntry(null);
+    } catch {
+      // Error toast already shown by onUpdateShift; keep modal open
+    }
   };
 
   const openEditSupplierEntryModal = (entry: SupplierEntry) => {
@@ -102,9 +106,13 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
       lastModified: Date.now(),
       syncStatus: "pending",
     };
-    await onUpdateShift(updatedShift);
-    addToast("Registro de proveedor eliminado.", "success");
-    setItemToDelete(null);
+    try {
+      await onUpdateShift(updatedShift);
+      addToast("Registro de proveedor eliminado.", "success");
+      setItemToDelete(null);
+    } catch {
+      // Error toast already shown by onUpdateShift
+    }
   };
 
   const renderMobileView = () => (

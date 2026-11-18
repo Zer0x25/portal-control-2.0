@@ -77,7 +77,7 @@ describe("LogbookView", () => {
     fireEvent.click(screen.getByRole("button", { name: "Historial de Turnos" }));
     expect(baseProps.setShowShiftHistoryModal).toHaveBeenCalledWith(true);
 
-    fireEvent.click(screen.getByRole("button", { name: "Cerrar Guardía" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar Guardia" }));
     expect(baseProps.setShowCloseShiftConfirmation).toHaveBeenCalledWith(true);
   });
 

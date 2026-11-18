@@ -7,7 +7,7 @@ import {
 } from "./queries/useMeterReadingsQuery";
 import { idFactory } from "../utils/idFactory";
 import { MeterConfig } from "../types";
-import { MeterReadingItem } from "../types/dashboard";
+import { Schema } from "../services/apiClient";
 
 /**
  * Lecturas de medidores: única fuente = `useMeterReadingsQuery`
@@ -24,20 +24,18 @@ export const useMeterReadings = () => {
   const addReading = async (newReadings: { meterConfigId: string; value: string }[]) => {
     const actor = currentUser?.username || "System";
     const now = Date.now();
+    const timestampIso = new Date(now).toISOString();
 
-    const newEntries: MeterReadingItem[] = newReadings.map(({ meterConfigId, value }) => ({
+    const newEntries: Schema<"MeterReading">[] = newReadings.map(({ meterConfigId, value }) => ({
       id: idFactory.ulid(),
       meterConfigId,
-      timestamp: now,
+      timestamp: timestampIso,
       authorUsername: actor,
       value: parseFloat(value.replace("+", "")),
       isRecharge: value.startsWith("+"),
-      normalizedValue: parseFloat(value.replace("+", "")),
       syncStatus: "synced",
       lastModified: now,
       isDeleted: false,
-      delta: 0,
-      eventType: "UNKNOWN",
     }));
 
     return addReadingMutation(newEntries);

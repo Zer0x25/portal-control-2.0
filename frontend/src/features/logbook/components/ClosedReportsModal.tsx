@@ -14,6 +14,8 @@ import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import { ShiftReport } from "../../../types/index";
 import { useShiftReportsInfinite } from "../../../hooks/queries/useShiftReportsInfinite";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
+import { useDebounce } from "../../../hooks/useDebounce";
+import { formatDisplayDateTime } from "../../../utils/formatters";
 import { useRef, useEffect } from "react";
 
 interface ClosedReportsModalProps {
@@ -38,24 +40,19 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useShiftReportsInfinite({
       pageSize: 20,
       status: "closed",
+      search: debouncedSearch || undefined,
+      date: dateFilter || undefined,
+      enabled: isOpen,
     });
 
   const reports = data?.pages.flatMap((page) => page.data) || [];
-
-  const filteredReports = reports.filter((r) => {
-    const matchesSearch =
-      !searchTerm ||
-      r.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.responsibleUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.shiftName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDate = !dateFilter || r.date.startsWith(dateFilter);
-    return matchesSearch && matchesDate;
-  });
+  const filteredReports = reports;
 
   const sentinelRef = useRef<HTMLTableRowElement>(null);
   const entry = useIntersectionObserver(sentinelRef, {
@@ -111,6 +108,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
             {searchTerm && (
               <Button
                 variant="none"
+                aria-label="Limpiar búsqueda"
                 onClick={() => setSearchTerm("")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-token-text-tertiary hover:text-token-accent-brand transition-colors p-0 shadow-none"
               >
@@ -223,9 +221,9 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                             {report.shiftName}
                           </span>
                           <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest mt-0.5">
-                            {report.startTime}{" "}
+                            {formatDisplayDateTime(report.startTime)}{" "}
                             <span className="text-token-text-tertiary/60">→</span>{" "}
-                            {report.endTime || "Activo"}
+                            {report.endTime ? formatDisplayDateTime(report.endTime) : "Activo"}
                           </span>
                         </div>
                       </td>
@@ -243,6 +241,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                         <div className="flex justify-end gap-2">
                           <Button
                             variant="none"
+                            aria-label={`Ver detalle del turno #${report.folio}`}
                             onClick={() => onPreview(report)}
                             className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-accent-brand hover:border-token-border-focus shadow-sm transition active:scale-95"
                             title="Ver Detalle"
@@ -251,6 +250,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                           </Button>
                           <Button
                             variant="none"
+                            aria-label={`Descargar PDF del turno #${report.folio}`}
                             onClick={() => onDownloadPDF(report)}
                             className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-status-error hover:border-token-status-error/30 shadow-sm transition active:scale-95"
                             title="Descargar PDF"
@@ -259,6 +259,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                           </Button>
                           <Button
                             variant="none"
+                            aria-label={`Exportar Excel del turno #${report.folio}`}
                             onClick={() => onExportExcel(report)}
                             className="p-3 bg-token-surface-card rounded-md border border-token-border-technical text-token-text-tertiary hover:text-token-status-success hover:border-token-status-success/30 shadow-sm transition active:scale-95"
                             title="Exportar Excel"
