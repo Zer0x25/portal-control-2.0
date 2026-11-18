@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { NotFoundError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { AdminActor, AdminDependencies, AdminRespond } from "./contracts";
@@ -81,11 +79,9 @@ export function createAdminFlows(deps: AdminDependencies) {
       });
       try {
         const backupPath = await deps.backup();
-        const filename = path.basename(backupPath);
-        const sizeBytes = await fs.promises
-          .stat(backupPath)
-          .then((s) => s.size)
-          .catch(() => undefined);
+        const { filename, sizeBytes } = deps.inspectBackup
+          ? await deps.inspectBackup(backupPath)
+          : { filename: backupPath.split(/[/\\]/).pop() || backupPath, sizeBytes: undefined };
         deps.backupSuccess();
         await deps.audit({
           actorUsername,

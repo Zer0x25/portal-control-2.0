@@ -18,12 +18,12 @@ import { KpiEngine } from "./kpi/KpiEngine";
 import { KpiFormattingService } from "./kpi/KpiFormattingService";
 import { AppError, ForbiddenError, ValidationError } from "../utils/AppError";
 import { ACCOUNTING_TRANSACTION_OPTIONS } from "./accountingTransaction";
-import { MAX_BULK_TIME_RECORDS } from "../modules/records/application/contracts";
+import { MAX_BULK_TIME_RECORDS } from "../modules/records";
 import { logger } from "../utils/logger";
 import type { TimeRecord } from "../generated/prisma/client";
 import type { SchedulingContext } from "./schedulingService";
 import type { VerifyFilters } from "./timeRecordIntegrityService";
-import type { ExportFilters as ViewExportFilters } from "../modules/records/application/contracts";
+import type { ExportFilters as ViewExportFilters } from "../modules/records";
 
 /**
  * Shape accepted by the record writers. Mirrors the persisted `TimeRecord` columns

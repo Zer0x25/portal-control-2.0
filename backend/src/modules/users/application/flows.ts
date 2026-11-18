@@ -1,4 +1,3 @@
-import { ForbiddenError } from "../../../utils/AppError";
 import { toPublicUser, type UserProjection, type PublicUser } from "./publicUser";
 export interface CreateUserDto {
   id?: string;
@@ -60,6 +59,7 @@ export interface UserFlowDependencies {
     details: Record<string, unknown>;
   }): Promise<void>;
   emit(user: PublicUser | { id: string; isDeleted: true }): void;
+  forbidden?(message: string): Error;
 }
 export function mapUserRole(role: string): string {
   const roles: Record<string, string> = {
@@ -145,7 +145,8 @@ export function createUserFlows(deps: UserFlowDependencies) {
     async deleteUser(id: string, actorUsername: string, actorRole?: string) {
       const user = await deps.repository.findUsername(id);
       if (actorRole === "Supervisor_Elevado" && user?.role === "Administrador") {
-        throw new ForbiddenError("Acceso denegado: No puede eliminar usuarios Administrador");
+        const message = "Acceso denegado: No puede eliminar usuarios Administrador";
+        throw deps.forbidden ? deps.forbidden(message) : new Error(message);
       }
       await deps.repository.delete(id, actorRole);
       await deps.audit({

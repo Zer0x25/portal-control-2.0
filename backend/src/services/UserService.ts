@@ -256,6 +256,7 @@ export class UserService {
     id: ulid,
     audit: (entry) => auditService.log(entry),
     emit: (user) => SocketService.emit("user:updated", user),
+    forbidden: (message) => new ForbiddenError(message),
   } satisfies UserFlowDependencies);
 
   getAllUsers(query: UserQuery) {

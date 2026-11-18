@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import {
   createEmployeeFlows,
@@ -53,6 +54,8 @@ function fixture() {
     audit: vi.fn(async () => {}),
     emit: vi.fn(),
     emitForceLogout: vi.fn(),
+    hashRut: (rut) =>
+      crypto.createHash("sha256").update(rut.replace(/\./g, "").toUpperCase()).digest("hex"),
   };
   return { deps, tx, flows: createEmployeeFlows(deps) };
 }

@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { createEmployeeFlows } from "../modules/employees";
 import { employeeService } from "./EmployeeService";
 import { userService } from "./UserService";
@@ -59,4 +60,6 @@ export const employeeFlows = createEmployeeFlows({
       });
     }
   },
+  hashRut: (rut) =>
+    crypto.createHash("sha256").update(rut.replace(/\./g, "").toUpperCase()).digest("hex"),
 });

@@ -1,6 +1,6 @@
 import { calendarDateQuery } from "./dataQuery";
 import { isoDateSchema, positiveIntString, z } from "./common";
-import { MAX_BULK_TIME_RECORDS } from "../../modules/records/application/contracts";
+import { MAX_BULK_TIME_RECORDS } from "../../modules/records";
 
 export const TimeRecordWriteSchema = z
   .object({

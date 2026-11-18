@@ -1,4 +1,3 @@
-import { formatInTimeZone } from "date-fns-tz";
 import type { LogEntry, SupplierEntry } from "./contracts";
 
 function toNumberTimestamp(value: unknown, fallback: number): number {
@@ -12,12 +11,21 @@ function toNumberTimestamp(value: unknown, fallback: number): number {
   return fallback;
 }
 
-function toTimeString(value: unknown, timestamp: number): string {
+function toTimeString(
+  value: unknown,
+  timestamp: number,
+  formatTime: (timestamp: number) => string,
+): string {
   if (typeof value === "string" && value.trim().length > 0) return value.trim();
-  return formatInTimeZone(new Date(timestamp), "America/Santiago", "HH:mm");
+  return formatTime(timestamp);
 }
 
-function normalizeLogEntry(entry: unknown, idx: number, fallbackTs: number): LogEntry {
+function normalizeLogEntry(
+  entry: unknown,
+  idx: number,
+  fallbackTs: number,
+  formatTime: (timestamp: number) => string,
+): LogEntry {
   const e = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>;
   const timestamp = toNumberTimestamp(e.timestamp, fallbackTs + idx);
   const annotationRaw = e.annotation ?? e.detail ?? e.notes ?? e.message;
@@ -29,14 +37,19 @@ function normalizeLogEntry(entry: unknown, idx: number, fallbackTs: number): Log
   return {
     id:
       typeof e.id === "string" && e.id.trim().length > 0 ? e.id : `legacy-log-${timestamp}-${idx}`,
-    time: toTimeString(e.time, timestamp),
+    time: toTimeString(e.time, timestamp, formatTime),
     annotation,
     timestamp,
     ...(typeof e.recordId === "string" && e.recordId ? { recordId: e.recordId } : {}),
   };
 }
 
-function normalizeSupplierEntry(entry: unknown, idx: number, fallbackTs: number): SupplierEntry {
+function normalizeSupplierEntry(
+  entry: unknown,
+  idx: number,
+  fallbackTs: number,
+  formatTime: (timestamp: number) => string,
+): SupplierEntry {
   const e = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>;
   const timestamp = toNumberTimestamp(e.timestamp, fallbackTs + idx);
 
@@ -45,7 +58,7 @@ function normalizeSupplierEntry(entry: unknown, idx: number, fallbackTs: number)
       typeof e.id === "string" && e.id.trim().length > 0
         ? e.id
         : `legacy-supplier-${timestamp}-${idx}`,
-    time: toTimeString(e.time, timestamp),
+    time: toTimeString(e.time, timestamp, formatTime),
     licensePlate:
       typeof e.licensePlate === "string" && e.licensePlate.trim().length > 0
         ? e.licensePlate.trim()
@@ -66,6 +79,8 @@ export function normalizeShiftReportEntries(
   logEntriesRaw: string,
   supplierEntriesRaw: string,
   fallbackTs: number,
+  formatTime: (timestamp: number) => string = (timestamp) =>
+    new Date(timestamp).toISOString().slice(11, 16),
 ) {
   let parsedLogEntries: unknown[] = [];
   let parsedSupplierEntries: unknown[] = [];
@@ -85,11 +100,11 @@ export function normalizeShiftReportEntries(
   }
 
   const logEntries = parsedLogEntries
-    .map((entry, idx) => normalizeLogEntry(entry, idx, fallbackTs))
+    .map((entry, idx) => normalizeLogEntry(entry, idx, fallbackTs, formatTime))
     .sort((a, b) => a.timestamp - b.timestamp);
 
   const supplierEntries = parsedSupplierEntries
-    .map((entry, idx) => normalizeSupplierEntry(entry, idx, fallbackTs))
+    .map((entry, idx) => normalizeSupplierEntry(entry, idx, fallbackTs, formatTime))
     .sort((a, b) => a.timestamp - b.timestamp);
 
   return { logEntries, supplierEntries };

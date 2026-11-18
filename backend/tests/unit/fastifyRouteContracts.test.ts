@@ -51,6 +51,7 @@ routes.push(
     ["POST", "/api/records/punch"],
     ["GET", "/api/records"],
     ["GET", "/api/records/export"],
+    ["GET", "/api/records/indicators"],
     ["GET", "/api/records/daily-attendance"],
     ["POST", "/api/records"],
     ["POST", "/api/records/bulk"],

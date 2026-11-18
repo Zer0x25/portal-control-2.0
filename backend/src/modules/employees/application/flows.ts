@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import { AppError, NotFoundError } from "../../../utils/AppError";
 import type {
   EmployeeRow,
@@ -36,10 +35,7 @@ export function createEmployeeFlows(deps: EmployeeFlowDependencies) {
         return rawEmployees.map((row) => ({
           id: row.id,
           name: row.name,
-          rutHash: crypto
-            .createHash("sha256")
-            .update(row.rut.replace(/\./g, "").toUpperCase())
-            .digest("hex"),
+          rutHash: deps.hashRut(row.rut),
           isPinBlocked: row.isPinBlocked,
           status: row.status,
           area: row.area,

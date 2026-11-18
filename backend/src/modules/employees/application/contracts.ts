@@ -106,4 +106,5 @@ export interface EmployeeFlowDependencies {
   }): Promise<void>;
   emit(payload: PublicEmployee | { count: number }): void;
   emitForceLogout?(targets: ForceLogoutTargets): void;
+  hashRut(rut: string): string;
 }
