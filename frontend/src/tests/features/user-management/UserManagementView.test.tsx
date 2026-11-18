@@ -103,9 +103,25 @@ describe("UserManagementView", () => {
     expect(baseProps.setSearchTerm).toHaveBeenCalledWith("ana");
   });
 
-  it("hides header when embedded mode is enabled", () => {
-    render(<UserManagementView {...baseProps} isEmbedded={true} />);
+  it("hides header when embedded mode is enabled but keeps Nuevo Usuario button when authorized", () => {
+    render(<UserManagementView {...baseProps} isEmbedded={true} canCreateUsers={true} />);
     expect(screen.queryByText("Gestión de Accesos")).not.toBeInTheDocument();
+    const createBtn = screen.getByRole("button", { name: /Nuevo Usuario/i });
+    expect(createBtn).toBeInTheDocument();
+    fireEvent.click(createBtn);
+    expect(baseProps.handleOpenNewForm).toHaveBeenCalled();
+  });
+
+  it("hides Nuevo Usuario button in embedded mode when user cannot create users", () => {
+    render(
+      <UserManagementView
+        {...baseProps}
+        isEmbedded={true}
+        canCreateUsers={false}
+        currentUser={{ ...baseProps.currentUser!, role: "Supervisor" }}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: /Nuevo Usuario/i })).not.toBeInTheDocument();
   });
 
   it("shows an informative empty state instead of a blank page", () => {

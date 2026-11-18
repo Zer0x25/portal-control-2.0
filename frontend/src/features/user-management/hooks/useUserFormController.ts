@@ -4,6 +4,7 @@ import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
 import { normalizeString } from "../../../utils/stringUtils";
 import { ROLE_HIERARCHY, USER_ROLES } from "../../../utils/mappings";
+import { DEFAULT_TEMPORARY_PASSWORD } from "../../../constants";
 import { buildUserFormSchema, type UserFormValues } from "../../../schemas/forms/user";
 import type { Employee, User, UserRole } from "../../../types/index";
 
@@ -46,7 +47,7 @@ export interface UseUserFormControllerOptions {
 /** Valores iniciales del formulario a partir del usuario en edicion. */
 const toFormValues = (editingUser: User | null): UserFormValues => ({
   username: editingUser?.username ?? "",
-  password: editingUser ? undefined : "",
+  password: editingUser ? undefined : DEFAULT_TEMPORARY_PASSWORD,
   role: editingUser?.role ?? "Usuario",
   employeeId: editingUser?.employeeId ?? "",
 });

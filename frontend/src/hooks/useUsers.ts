@@ -99,22 +99,39 @@ export const useUsers = (options: { readonly enabled?: boolean } = {}) => {
         const newUser = await userService.create(user as User);
         await refreshUsers();
         return newUser;
-      } catch {
+      } catch (error) {
+        logger.error("[useUsers] Error creating user:", error);
+        const message = error instanceof Error ? error.message : "Error al crear el usuario.";
+        addToast(message, "error");
         return null;
       }
     },
-    updateUser: async (id: string, updates: Partial<User>) => {
+    updateUser: async (
+      id: string,
+      updates: Partial<Omit<User, "employeeId">> & { employeeId?: string | null },
+    ): Promise<boolean> => {
       try {
-        await userService.update(id, updates);
+        await userService.update(id, updates as Partial<User>);
         await refreshUsers();
         return true;
-      } catch {
+      } catch (error) {
+        logger.error("[useUsers] Error updating user:", error);
+        const message = error instanceof Error ? error.message : "Error al actualizar el usuario.";
+        addToast(message, "error");
         return false;
       }
     },
-    deleteUser: async (id: string) => {
-      await userService.delete(id);
-      await refreshUsers();
+    deleteUser: async (id: string): Promise<boolean> => {
+      try {
+        await userService.delete(id);
+        await refreshUsers();
+        return true;
+      } catch (error) {
+        logger.error("[useUsers] Error deleting user:", error);
+        const message = error instanceof Error ? error.message : "Error al eliminar el usuario.";
+        addToast(message, "error");
+        return false;
+      }
     },
 
     // Selectors

@@ -224,7 +224,7 @@ describe("useEmployeeFormController (spec 036 T9)", () => {
 });
 
 describe("useUserFormController (spec 036 T9)", () => {
-  it("envia el payload con la forma exacta en el alta", async () => {
+  it("envia el payload con la forma exacta en el alta usando la contraseña temporal por defecto", async () => {
     const onSave = vi.fn();
     const { result } = renderHook(() =>
       useUserFormController({
@@ -245,10 +245,16 @@ describe("useUserFormController (spec 036 T9)", () => {
       result.current.submit();
     });
 
-    await waitFor(() => expect(result.current.formError).toBeDefined());
-    // El alta exige la contraseña: sin ella el formulario no se envia.
-    expect(result.current.formError).toContain("contraseña");
-    expect(onSave).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+
+    const payload = asJson(onSave.mock.calls[0][0] as Record<string, unknown>);
+    expect(payload).toEqual({
+      username: "ana.perez",
+      password: "123456",
+      role: "Supervisor",
+      employeeId: "e-1",
+    });
+    expect(result.current.formError).toBeUndefined();
   });
 
   it("normaliza el nombre de usuario (sin tildes)", () => {

@@ -35,6 +35,7 @@ export interface UserManagementViewProps {
   paginatedUsers: User[];
   sentinelRef: React.RefObject<HTMLDivElement | null>;
   setScrollRoot: React.Dispatch<React.SetStateAction<HTMLDivElement | null>>;
+  canCreateUsers?: boolean;
   canManageUser: (user: User) => boolean;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   handleOpenNewForm: () => void;
@@ -83,6 +84,13 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
     handleConfirmResetPassword,
     handleConfirmResetPin,
   } = props;
+
+  const canCreateUsers =
+    props.canCreateUsers ??
+    Boolean(
+      currentUser &&
+      (currentUser.role === "Administrador" || currentUser.role === "Supervisor_Elevado"),
+    );
 
   const renderDesktopView = () => (
     <div className="border border-token-border-technical rounded-sm shadow-sm w-full overflow-hidden">
@@ -244,25 +252,37 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           title="Gestión de Accesos"
           subtitle="Control maestro de perfiles y permisos operativos"
           actions={
-            <Button
-              onClick={handleOpenNewForm}
-              className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm"
-            >
-              <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
-            </Button>
+            canCreateUsers ? (
+              <Button
+                onClick={handleOpenNewForm}
+                className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm"
+              >
+                <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
+              </Button>
+            ) : undefined
           }
         />
       )}
 
       <Card variant="premium" noPadding className="border-token-border-technical overflow-hidden">
         <div className="p-6 sm:p-8">
-          <div className="p-4 mb-6 bg-token-surface-stripe border border-token-border-technical rounded-sm">
-            <PremiumSearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Buscar por usuario o personal..."
-              shortcut="/"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 mb-6 bg-token-surface-stripe border border-token-border-technical rounded-sm">
+            <div className="flex-1">
+              <PremiumSearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar por usuario o personal..."
+                shortcut="/"
+              />
+            </div>
+            {isEmbedded && canCreateUsers && (
+              <Button
+                onClick={handleOpenNewForm}
+                className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm shrink-0"
+              >
+                <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
+              </Button>
+            )}
           </div>
 
           <div

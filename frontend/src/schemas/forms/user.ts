@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { ERROR_MESSAGES } from "../../utils/errorMessages";
 import type { UserRole } from "../../types/index";
 import { USER_ROLES, optionalText, requiredTextMin } from "./common";
 
@@ -78,23 +77,10 @@ export interface UserFormValidationContext {
  * La regla del alta (la contraseña es obligatoria) depende del contexto, asi
  * que vive en el `superRefine` del constructor y no en el schema base.
  */
-export const buildUserFormSchema = (context: UserFormValidationContext) =>
-  z
-    .object({
-      username: requiredTextMin("El usuario", 3),
-      password: requiredTextMin("La contraseña", 6).optional(),
-      role: z.enum(USER_ROLES),
-      employeeId: optionalText(),
-    })
-    .superRefine((values, ctx) => {
-      if (context.isEditing) return;
-      if (values.password === undefined || values.password.length < 6) {
-        // El formulario **no muestra** un campo de contraseña (muestra la
-        // temporal que el backend asigna), asi que el error es de formulario y
-        // no de campo: se muestra arriba, no junto a un input inexistente.
-        ctx.addIssue({
-          code: "custom",
-          message: ERROR_MESSAGES.required("La contraseña"),
-        });
-      }
-    });
+export const buildUserFormSchema = (_context: UserFormValidationContext) =>
+  z.object({
+    username: requiredTextMin("El usuario", 3),
+    password: requiredTextMin("La contraseña", 6).optional(),
+    role: z.enum(USER_ROLES),
+    employeeId: optionalText(),
+  });
