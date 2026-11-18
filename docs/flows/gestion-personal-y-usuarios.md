@@ -1,10 +1,10 @@
 # Flujo: Gestión de personal y usuarios (`gestion-personal-y-usuarios`)
 
-- **Estado:** `AS_IS_DOCUMENTADO` — Fase 1 completada; pendiente replicación controlada (Fase 2).
+- **Estado:** `REPLICADO_CON_HALLAZGOS` — Fase 2 completada; `7` bugs confirmados y `3` dudas de negocio abiertas.
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `personnel-management`, `employee-management`, `user-management`, `employees`, `users`, `EmployeeService`, `UserService`, `useEmployeeManagementData`, `useUserManagementData`, `useEmployees`, `useUsers`. En UI, `#/personnel-management` y `#/employee-management` admiten `Administrador`, `Supervisor_Elevado`, `Supervisor` y `Reloj_Control`; `#/user-management` admite `Administrador` y `Supervisor_Elevado` (`App.tsx`). En API, `/api/employees*` varía según endpoint (`kiosk` público, `GET /api/employees` y `clocking-options` autenticados sin `Kiosk_Employee`, escrituras para `Administrador`/`Supervisor_Elevado`/`Supervisor`/`Reloj_Control`, `PUT /api/employees/:id` también para `Kiosk_Employee` sobre sí mismo); `/api/users*` admite `Administrador` y `Supervisor_Elevado` en `GET`, solo `Administrador` en `POST`/`DELETE`, y `Administrador` o propio usuario (solo `password`) en `PUT /api/users/:id`.
 - **Entradas:** UI `#/personnel-management` (redirecciones `#/employee-management` -> `?tab=employees` y `#/user-management` -> `?tab=users`); API `GET /api/employees/kiosk`, `GET /api/employees/clocking-options`, `GET/POST /api/employees`, `PUT /api/employees/:id`, `POST /api/employees/bulk`, `GET /api/employees/export`, `GET/POST /api/users`, `PUT/DELETE /api/users/:id`.
-- **Alcance de evidencia:** Fase 1 (inspección estática de backend y frontend).
+- **Alcance de evidencia:** Fase 1 (inspección estática) + Fase 2 (pruebas unitarias e integración Fastify/PostgreSQL 18.4, replicación HTTP en Fastify + PostgreSQL efímero y Playwright headless en staging `http://127.0.0.1:8080`).
 
 ## 1. Diagrama AS-IS
 
@@ -75,3 +75,45 @@ flowchart TD
    - `EmployeeFlows.update` ejecuta `ensureUser` y `syncEmployeeStatus` fuera de la transacción de `repository.update`; `createBulkEmployees` no es transaccional ni ejecuta `syncEmployeeStatus`.
    - `DELETE /api/users/:id` permite que un `Administrador` se elimine a sí mismo.
    - `EmployeeManagement.view.tsx` pasa `hasLinkedUser={false}` fijo y `existingEmployees={processedEmployees}` (incompleto frente a archivados/paginados).
+
+## 4. Evidencia de replicación (Fase 2)
+
+- **Suites existentes ejecutadas:**
+  - Backend unit (`6/6` archivos, `30/30` tests): `user-service.test.ts`, `public-users.test.ts`, `userFlows.test.ts`, `employeeFlows.test.ts`, `employeeServicePin.anti-regression.test.ts`, `employeeServiceList.test.ts`.
+  - Backend integración Fastify + PostgreSQL 18.4 (`2/2` archivos, `29/29` tests): `tests/fastify-integration/employees.test.ts` (`16/16`), `tests/fastify-integration/users.test.ts` (`13/13`).
+  - Frontend (`9/9` archivos, `44/44` tests): `personnel-management`, `employee-management`, `user-management`, `employeeAndUserForms.test.tsx`, `useEmployeesQueryGating.test.tsx`, `useUsersQuery.test.tsx`.
+- **Replicación HTTP / PostgreSQL 18.4 (`createFastifyRuntime`):**
+  - `EmployeeSchema.parse(...)` stripea `area` y `workdayType`; `POST /api/employees` sin `position` o sin `area` devuelve `500 INTERNAL_ERROR` (`PrismaClientValidationError`).
+  - `GET /api/employees` como `Usuario` con `employeeId: null` devuelve `200` con toda la nómina (`3/3`), y como `Supervisor` devuelve `200` sin filtrar por área (`3/3`).
+  - `GET /api/users?page=0&pageSize=1` y `GET /api/users?page=abc&pageSize=1` devuelven `500 INTERNAL_ERROR`.
+  - `POST /api/employees` con RUT `"12.345.678-9"` sin `pin` responde `201` y almacena `"12.3"` en texto plano en `employees.pin` (`isBcryptHash: false`).
+  - Dos `POST /api/employees` concurrentes sin `id` (`Promise.all`) colisionan en `resolveEmployeeId`: uno responde `201` (`EMP-1001`) y el otro `409 CONFLICT`.
+  - `PUT /api/users/:id` con `{ employeeId: null }` devuelve `400 VALIDATION_ERROR`; con `{ employeeId: "" }` desvincula a `null`. Con `{ role: "Archivado" }` devuelve `400 VALIDATION_ERROR`.
+  - `DELETE /api/users/:id` con el propio ID del `Administrador` autenticado responde `204` y elimina su propia cuenta en BD.
+  - `POST /api/employees` (`201`) omite `syncStatus`, `lastModified` e `isDeleted` de la respuesta.
+  - `GET /api/employees/export` responde `200` (`6890` bytes `.xlsx`) con auth y `401` sin auth; `GET /api/employees/kiosk` responde `200` sin auth exponiendo `rutHash`.
+- **Replicación UI headless en staging (`http://127.0.0.1:8080`):**
+  - Redirecciones `#/user-management` y `#/employee-management` funcionan hacia `#/personnel-management?tab=users` y `?tab=employees`.
+  - En `?tab=users` como `Administrador`, `hasNuevoUsuario: false` (no existe botón `"Nuevo Usuario"` en modo embebido).
+  - `Supervisor_Elevado` con contraseña activa entra a `?tab=users`, ve `4/4` filas en `"Solo Lectura"` y sin botón de creación.
+  - Al editar `EMP-1001` (con usuario vinculado), aparece el switch `"Generar Cuenta de Acceso Asociada"`.
+  - Crear empleado con RUT duplicado de empleado archivado (`28604551-0`) no valida en cliente y falla en servidor con `409 CONFLICT`.
+  - Archivar `EMP-1001` dispara `PUT /api/employees/EMP-1001` (`200`) + `DELETE /api/users/...` (`204`); reactivar `EMP-1002` dispara `PUT /api/employees/EMP-1002` (`200`) + `POST /api/users` (`201`).
+  - Al editar usuario y elegir `"-- SIN ASIGNAR --"`, `PUT /api/users/:id` omite `employeeId` del body y la vinculación previa persiste tras recargar.
+  - Con fallo `500` simulado en `**/api/users/**`, resetear contraseña cierra el modal y muestra toast falso positivo `ÉXITO`, y guardar usuario cierra el modal sin toast de error.
+
+## 5. Bugs confirmados
+
+- **[BUG-01]** Pestaña `"Accesos"` sin botón `"Nuevo Usuario"` en modo embebido (`UserManagement.view.tsx`) y `UserForm` bloqueado por validación Zod (`password` vacío vs mínimo 6 caracteres sin input en pantalla).
+- **[BUG-02]** `EmployeeManagement.view.tsx` fija `hasLinkedUser={false}` en edición y valida RUT duplicado solo contra `processedEmployees` en lugar de todos los empleados (`active + archived`).
+- **[BUG-03]** Imposibilidad de desvincular `employeeId` en `PUT /api/users/:id` (`undefined` omitido en JSON y `UpdateUserSchema` no acepta `null`) + fallos silenciosos / falsos positivos en `useUsers` y `useUserManagementData` al fallar mutaciones.
+- **[BUG-04]** `EmployeeSchema` omite `area` y `workdayType` (causando `500` en `POST /api/employees` cuando faltan), `POST /api/employees` omite campos de sincronización (`syncStatus`, `lastModified`, `isDeleted`) y `UpdateUserSchema` excluye `"Archivado"`.
+- **[BUG-05]** `UserQuerySchema` acepta `page=0` / `page=abc` causando `500 INTERNAL_ERROR`, y no existe cota máxima de `pageSize` en `/api/employees` ni `/api/users`.
+- **[BUG-06]** `EmployeeService` guarda PIN inicial en texto plano si el RUT tiene puntos, `resolveEmployeeId` colisiona en `POST /api/employees` concurrentes, `EmployeeFlows.update` ejecuta `ensureUser`/`syncEmployeeStatus` fuera de transacción y `createBulkEmployees` no es transaccional.
+- **[BUG-07]** `DELETE /api/users/:id` permite que un `Administrador` se elimine a sí mismo.
+
+## 6. Dudas de negocio abiertas
+
+- **[DUDA-01]** **Ciclo de vida del `User` al archivar/reactivar un empleado:** ¿Mantener al usuario en BD con `role: "Archivado"` y restaurarlo al reactivar (quitando `DELETE /api/users/:id` y `POST /api/users` redundantes del frontend) o eliminarlo físicamente también en backend?
+- **[DUDA-02]** **Permisos de `Supervisor_Elevado` en `"Accesos"` / `/api/users`:** ¿Mantener `Supervisor_Elevado` en solo lectura en `"Accesos"` (ocultando botón `"Nuevo Usuario"` y acciones de escritura para ese rol) o habilitarle creación/edición de usuarios?
+- **[DUDA-03]** **Visibilidad en `GET /api/employees` para `Usuario` sin `employeeId` y `Supervisor`:** ¿Alinear `GET /api/employees` con `clocking-options` (`[]` para `Usuario` sin `employeeId` y filtro por `area` para `Supervisor`) o solo restringir `Usuario` sin `employeeId` manteniendo todas las áreas para `Supervisor`?
