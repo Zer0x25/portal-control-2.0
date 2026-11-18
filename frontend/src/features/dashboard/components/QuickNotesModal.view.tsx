@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "../../../components/ui/Button";
 import {
+  ArchiveBoxIcon,
   DeleteIcon,
   BookOpenIcon,
   ExclamationTriangleIcon,
@@ -32,6 +33,7 @@ interface QuickNotesModalViewProps {
   colorOptions: string[];
   onColorChange: (color: string) => void;
   onContentChange: (value: string) => void;
+  onArchiveNote?: (id: string) => void;
   onDeleteNote: (id: string) => void;
   canDelete: (authorUsername: string) => boolean;
   /** Hay un envio en vuelo. */
@@ -56,6 +58,7 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
   colorOptions,
   onColorChange,
   onContentChange,
+  onArchiveNote,
   onDeleteNote,
   canDelete,
   isSubmitting,
@@ -164,12 +167,25 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
+                    {onArchiveNote && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => onArchiveNote(note.id)}
+                        className="p-1.5 text-token-text-tertiary hover:text-token-accent-brand"
+                        aria-label="Archivar nota"
+                        title="Archivar nota"
+                      >
+                        <ArchiveBoxIcon className="w-4 h-4" />
+                      </Button>
+                    )}
                     {canDelete(note.authorUsername) && (
                       <Button
                         variant="ghost"
                         size="xs"
                         onClick={() => onDeleteNote(note.id)}
                         className="p-1.5 text-token-text-tertiary hover:text-token-status-error"
+                        aria-label="Eliminar nota"
                         title="Eliminar de forma permanente"
                       >
                         <DeleteIcon className="w-4 h-4" />

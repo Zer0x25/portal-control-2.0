@@ -15,7 +15,7 @@ export const usePersistentLayoutController = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated, isAuthLoading } = useAuth();
   const isInitialSync = useStore((state) => state.isInitialSync);
 
   const { handoverData, isAutoStartEligible, isHandoverModalOpen, closeHandoverModal } =
@@ -97,6 +97,8 @@ export const usePersistentLayoutController = () => {
     closeHandoverModal,
     currentPath: location.pathname,
     currentUser,
+    isAuthLoading,
+    isAuthenticated,
     isAutoStartEligible,
     goHome,
     handleSwipeTouchEnd,

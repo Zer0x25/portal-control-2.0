@@ -1,5 +1,10 @@
 import React from "react";
-import { AugmentedTimeRecord, DailyTimeRecord, CorrectionRequest } from "../../../types/index";
+import {
+  AugmentedTimeRecord,
+  DailyTimeRecord,
+  CorrectionRequest,
+  AuditLog,
+} from "../../../types/index";
 import { ArrowPathIcon } from "../../../components/ui/icons/index";
 import TimeRecordMobileCard from "./TimeRecordMobileCard";
 import { useInfiniteVirtualizedList } from "../hooks/useInfiniteVirtualizedList";
@@ -18,7 +23,8 @@ interface TimeRecordTableViewMobileProps {
   isActionDisabledForRole: boolean;
   accountingLockDate: string | null;
   isControlInternoEnabled: boolean;
-  pendingRequestsMap: Map<string, CorrectionRequest>;
+  pendingRequestsMap: Map<string, Pick<CorrectionRequest, "id" | "timeRecordId" | "status">>;
+  editsMapAll: Map<string, AuditLog[]>;
 }
 
 // Spec 037 T12: retain the dense record table and the mobile card with per-record actions; their virtual rows are 66/280 px.
@@ -35,6 +41,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
   accountingLockDate,
   isControlInternoEnabled,
   pendingRequestsMap,
+  editsMapAll,
 }) => {
   const { parentRef, sentinelRef, virtualizer } = useInfiniteVirtualizedList({
     count: records.length,
@@ -105,6 +112,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
                 accountingLockDate={accountingLockDate}
                 isControlInternoEnabled={isControlInternoEnabled}
                 externalPendingRequest={pendingRequestsMap.get(String(record.id))}
+                externalEdits={editsMapAll.get(String(record.id))}
               />
             </div>
           );

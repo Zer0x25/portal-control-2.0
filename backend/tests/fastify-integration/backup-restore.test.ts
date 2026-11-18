@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { BackupService } from "../../src/services/backupService";
+import { NotFoundError, ValidationError } from "../../src/utils/AppError";
 import { assertConnectedToTestDb } from "../integration/_support/testDb";
 
 // Separate database in the owned container; never restores the application DB.
@@ -75,10 +76,14 @@ it("restores pg_dump and rolls back schema replacement after a later SQL error",
     { value: "original" },
   ]);
   await fs.writeFile(
-    path.join(directory, "broken.sql"),
+    path.join(directory, "backup-pg-broken.sql"),
     "CREATE TABLE partial_restore (id int); INSERT INTO partial_restore VALUES (1); SELECT * FROM absent_restore_table;",
   );
-  await expect(service.restoreDatabase("broken.sql")).rejects.toThrow("failed");
+  await expect(service.restoreDatabase("backup-pg-broken.sql")).rejects.toThrow("failed");
+  await expect(service.restoreDatabase("invalid-name.sql")).rejects.toBeInstanceOf(ValidationError);
+  await expect(service.restoreDatabase("backup-pg-missing.sql")).rejects.toBeInstanceOf(
+    NotFoundError,
+  );
   expect((await target.query("SELECT value FROM restore_probe")).rows).toEqual([
     { value: "original" },
   ]);
@@ -87,17 +92,17 @@ it("restores pg_dump and rolls back schema replacement after a later SQL error",
   ).toBeNull();
 });
 it("restores gzip without overwriting a sibling backup and preserves data on decompression failure", async () => {
-  const sibling = path.join(directory, "compressed.sql");
+  const sibling = path.join(directory, "backup-pg-compressed.sql");
   await fs.writeFile(sibling, "preserve this unrelated backup");
   await fs.writeFile(
     `${sibling}.gz`,
     gzipSync("CREATE TABLE gzip_probe (id int); INSERT INTO gzip_probe VALUES (7);"),
   );
-  await service.restoreDatabase("compressed.sql.gz");
+  await service.restoreDatabase("backup-pg-compressed.sql.gz");
   expect((await target.query("SELECT id FROM gzip_probe")).rows).toEqual([{ id: 7 }]);
   expect(await fs.readFile(sibling, "utf8")).toBe("preserve this unrelated backup");
   await fs.writeFile(`${sibling}.gz`, Buffer.from("invalid gzip"));
-  await expect(service.restoreDatabase("compressed.sql.gz")).rejects.toThrow();
+  await expect(service.restoreDatabase("backup-pg-compressed.sql.gz")).rejects.toThrow();
   expect((await target.query("SELECT id FROM gzip_probe")).rows).toEqual([{ id: 7 }]);
   expect(await fs.readFile(sibling, "utf8")).toBe("preserve this unrelated backup");
 });

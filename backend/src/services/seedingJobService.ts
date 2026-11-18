@@ -6,6 +6,8 @@ import { seedingEngine as seedingService } from "./seeder/SeederEngine";
 import { SocketService } from "./socketService";
 import { logger } from "../utils/logger";
 import { toCaughtError } from "../utils/caughtError";
+import { ConflictError, NotFoundError } from "../utils/AppError";
+import { startOfBusinessDayCL } from "../utils/timePolicy";
 
 type Phase2Config = {
   days: number;
@@ -166,6 +168,13 @@ export const seedingJobService = {
   },
 
   async pause(jobId: string) {
+    const existing = await prisma.seedingJob.findUnique({ where: { id: jobId } });
+    if (!existing) {
+      throw new NotFoundError("Job de seeding no encontrado");
+    }
+    if (!["running", "pending"].includes(existing.status)) {
+      throw new ConflictError(`No se puede pausar un job en estado '${existing.status}'`);
+    }
     const job = await prisma.seedingJob.update({
       where: { id: jobId },
       data: { status: "paused" },
@@ -177,6 +186,13 @@ export const seedingJobService = {
   },
 
   async resume(jobId: string) {
+    const existing = await prisma.seedingJob.findUnique({ where: { id: jobId } });
+    if (!existing) {
+      throw new NotFoundError("Job de seeding no encontrado");
+    }
+    if (existing.status !== "paused") {
+      throw new ConflictError(`No se puede reanudar un job en estado '${existing.status}'`);
+    }
     const job = await prisma.seedingJob.update({
       where: { id: jobId },
       data: { status: "pending" },
@@ -188,6 +204,13 @@ export const seedingJobService = {
   },
 
   async stop(jobId: string) {
+    const existing = await prisma.seedingJob.findUnique({ where: { id: jobId } });
+    if (!existing) {
+      throw new NotFoundError("Job de seeding no encontrado");
+    }
+    if (!["pending", "running", "paused"].includes(existing.status)) {
+      throw new ConflictError(`No se puede detener un job en estado '${existing.status}'`);
+    }
     RUNNING.set(jobId, false);
     const job = await prisma.seedingJob.update({
       where: { id: jobId },
@@ -289,8 +312,7 @@ export const seedingJobService = {
           );
 
           const PARALLEL_DAYS = phase2ParallelDays;
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
+          const today = startOfBusinessDayCL();
 
           for (
             let chunkStart = progress.currentDay;

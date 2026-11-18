@@ -104,19 +104,19 @@ export const downloadReportPDF = async (filters: {
   endDate: string;
   employeeId?: string;
   area?: string;
+  workdayType?: string;
   mode?: "summary" | "compiled_detailed";
 }): Promise<{ blob: Blob; filename: string }> => {
   try {
     const response = await apiClient.get("/api/export/report-pdf", {
-      // `mode` lo acepta el backend (ExportQuerySchema) pero no lo documenta
-      // el swagger: se envia igualmente.
       params: {
         startDate: filters.startDate,
         endDate: filters.endDate,
         employeeId: filters.employeeId,
         area: filters.area,
+        workdayType: filters.workdayType,
         mode: filters.mode,
-      } as never,
+      },
       responseType: "binary",
     });
 
@@ -143,7 +143,8 @@ export const downloadReportExcel = async (filters: {
   endDate: string;
   employeeId?: string;
   area?: string;
-  mode?: "summary" | "detailed";
+  workdayType?: string;
+  mode?: "summary" | "compiled_detailed";
 }): Promise<{ blob: Blob; filename: string }> => {
   try {
     const response = await apiClient.get("/api/export/report-excel", {
@@ -152,8 +153,9 @@ export const downloadReportExcel = async (filters: {
         endDate: filters.endDate,
         employeeId: filters.employeeId,
         area: filters.area,
+        workdayType: filters.workdayType,
         mode: filters.mode,
-      } as never,
+      },
       responseType: "binary",
     });
 

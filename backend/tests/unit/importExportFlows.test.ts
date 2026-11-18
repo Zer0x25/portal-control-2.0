@@ -65,11 +65,11 @@ describe("Spec021 pure flows", () => {
       }),
     );
   });
-  it("preserves Excel validation/access 500, original area and partial response end", async () => {
+  it("preserves Excel validation/access 403, original area and partial response end", async () => {
     const { deps, flows } = fixture();
     await expect(
       flows.prepareExcel({}, { role: "Usuario", employeeId: "self" }),
-    ).rejects.toMatchObject({ statusCode: 500, code: "EXPORT_REPORT_EXCEL_ERROR" });
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
     const filters = await flows.prepareExcel(
       { employeeId: "self", area: "other" },
       { role: "Usuario", employeeId: "self" },
@@ -91,5 +91,56 @@ describe("Spec021 pure flows", () => {
     const failure = new Error("PDF failure");
     deps.pdf.mockRejectedValue(failure);
     await expect(flows.shiftPdf("folio")).rejects.toBe(failure);
+  });
+
+  it("enforces MAX_IMPORT_PREVIEW_ROWS, required fields, and type coercion", async () => {
+    const { deps, flows } = fixture();
+
+    deps.readWorkbook.mockResolvedValueOnce({
+      headers: [undefined, "Name", "Count", "Active", "Created"],
+      rows: Array.from({ length: 5001 }, () => ({ 1: "Ada", 2: "1", 3: "true", 4: "2026-01-01" })),
+    });
+    await expect(flows.preview(new Uint8Array([1]))).rejects.toMatchObject({ statusCode: 400 });
+
+    deps.readWorkbook.mockResolvedValueOnce({
+      headers: [undefined, "Name", "Count", "Active", "Created"],
+      rows: [{ 1: "Ada", 2: "42", 3: "si", 4: "2026-01-02T00:00:00.000Z" }],
+    });
+    expect(
+      await flows.preview(
+        new Uint8Array([1]),
+        JSON.stringify({
+          Name: { prop: "name", type: "String", required: true },
+          Count: { prop: "count", type: "Number", required: true },
+          Active: { prop: "active", type: "Boolean" },
+          Created: { prop: "created", type: "Date" },
+        }),
+      ),
+    ).toEqual({
+      rows: [{ name: "Ada", count: 42, active: true, created: "2026-01-02T00:00:00.000Z" }],
+      total: 1,
+    });
+
+    deps.readWorkbook.mockResolvedValueOnce({
+      headers: [undefined, "Name"],
+      rows: [{ 1: "  " }],
+    });
+    await expect(
+      flows.preview(
+        new Uint8Array([1]),
+        JSON.stringify({ Name: { prop: "name", required: true } }),
+      ),
+    ).rejects.toMatchObject({ statusCode: 400 });
+
+    deps.readWorkbook.mockResolvedValueOnce({
+      headers: [undefined, "Count"],
+      rows: [{ 1: "not-a-number" }],
+    });
+    await expect(
+      flows.preview(
+        new Uint8Array([1]),
+        JSON.stringify({ Count: { prop: "count", type: "Number" } }),
+      ),
+    ).rejects.toMatchObject({ statusCode: 400 });
   });
 });

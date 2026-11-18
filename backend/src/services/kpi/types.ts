@@ -6,6 +6,8 @@ export interface KpiFilters {
   endDateExclusive?: string; // YYYY-MM-DD (exclusive, canonical internal)
   employeeIds?: string[];
   area?: string;
+  cargo?: string;
+  workdayType?: string;
 }
 
 export interface DailyMetric {

@@ -134,7 +134,9 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
 
   return (
     <div
-      onClick={() => onDayClick(day)}
+      onClick={() =>
+        onDayClick(new Date(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate()))
+      }
       className={`
                 group relative p-2 ${cellHeightClass} overflow-hidden cursor-pointer transition-colors duration-150
                 ${isToday ? "bg-token-accent-brand/5 dark:bg-token-accent-brand/20" : "bg-token-surface-card"}
@@ -147,7 +149,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
         <span
           className={`text-xs font-black tabular-nums transition-colors ${isToday ? "text-token-accent-brand dark:text-sky-200" : "text-token-text-secondary group-hover:text-token-text-primary"}`}
         >
-          {day.getDate()}
+          {day.getUTCDate()}
         </span>
 
         {isToday && (

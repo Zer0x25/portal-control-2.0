@@ -6,37 +6,47 @@ import { validateRequest } from "../../../platform/fastify/validation";
 import { ForbiddenError } from "../../../utils/AppError";
 import type { LeaveFlows } from "../application/flows";
 import type { LeaveQuery } from "../application/contracts";
+const READ_ROLES = [
+  "Administrador",
+  "Supervisor_Elevado",
+  "Supervisor",
+  "Reloj_Control",
+  "Fiscalizador",
+];
+const WRITE_ROLES = ["Administrador", "Supervisor_Elevado", "Supervisor"];
+
 export const leavesPlugin: FastifyPluginAsync<{
   service: LeaveFlows;
   authenticate: onRequestHookHandler;
 }> = async (app, options) => {
-  const supervisor: onRequestHookHandler = async (request) => {
-    if (
-      !request.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
-        request.user.role,
-      )
-    )
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
+  const requireRoles =
+    (roles: string[]): onRequestHookHandler =>
+    async (request) => {
+      if (!request.user?.role || !roles.includes(request.user.role))
+        throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
+    };
+  const readRoute = {
+    config: { requiresAuth: true, roles: READ_ROLES },
+    onRequest: [options.authenticate, requireRoles(READ_ROLES)],
   };
-  const protectedRoute = {
-    config: { requiresAuth: true },
-    onRequest: [options.authenticate, supervisor],
+  const writeRoute = {
+    config: { requiresAuth: true, roles: WRITE_ROLES },
+    onRequest: [options.authenticate, requireRoles(WRITE_ROLES)],
   };
   app.get<{ Querystring: LeaveQuery }>(
     "/api/leaves",
-    { ...protectedRoute, preHandler: validateRequest("query", LeaveQuerySchema) },
+    { ...readRoute, preHandler: validateRequest("query", LeaveQuerySchema) },
     (req) => options.service.list(req.query, req.user),
   );
   app.post(
     "/api/leaves",
-    { ...protectedRoute, preHandler: validateRequest("body", LeaveRecordSchema) },
+    { ...writeRoute, preHandler: validateRequest("body", LeaveRecordSchema) },
     async (req, reply) =>
       reply.code(201).send(await options.service.upsert(LeaveRecordSchema.parse(req.body))),
   );
   app.delete<{ Params: { id: string } }>(
     "/api/leaves/:id",
-    { ...protectedRoute, preHandler: validateRequest("params", z.object({ id: z.string() })) },
+    { ...writeRoute, preHandler: validateRequest("params", z.object({ id: z.string() })) },
     (req) => options.service.delete(req.params.id),
   );
 };

@@ -205,6 +205,15 @@ export interface paths {
           startDate: string;
           endDate: string;
           format?: "json" | "csv" | "xml" | "excel";
+          /** @description Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error. */
+          matchingView?: "true" | "false";
+          employeeId?: string;
+          name?: string;
+          area?: string;
+          workdayType?: string;
+          status?: string;
+          showAnomalies?: "true" | "false";
+          cargo?: string;
         };
         header?: never;
         path?: never;
@@ -411,6 +420,43 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/records/indicators": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Indicadores de edición y solicitudes pendientes para jornadas visibles */
+    get: {
+      parameters: {
+        query: {
+          /** @description Hasta 100 identificadores de jornada separados por comas. */
+          ids: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Datos mínimos de indicadores por jornada */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/records/integrity/verify": {
     parameters: {
       query?: never;
@@ -425,6 +471,8 @@ export interface paths {
           employeeId?: string;
           from?: string;
           to?: string;
+          /** @description Máximo de registros a verificar; la respuesta indica si el resultado fue truncado. */
+          limit?: number;
         };
         header?: never;
         path?: never;
@@ -1249,7 +1297,17 @@ export interface paths {
     /** Obtener todas las bitácoras de turno */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          page?: number;
+          pageSize?: number;
+          /** @description Timestamp para consulta delta */
+          since?: string;
+          status?: "open" | "closed";
+          /** @description Búsqueda por folio, responsable o turno */
+          search?: string;
+          /** @description Fecha de turno (YYYY-MM-DD) */
+          date?: string;
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -1262,7 +1320,7 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": components["schemas"]["ShiftReportListResponse"];
+            "application/json": components["schemas"]["ShiftReportPaginatedResponse"];
           };
         };
       };
@@ -1283,6 +1341,50 @@ export interface paths {
       };
       responses: {
         /** @description Bitácora guardada */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/shift-reports/{id}/attendance-novelties": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Agregar novedad de una jornada a la bitácora abierta */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": {
+            recordId: string;
+            annotation: string;
+            time: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Novedad persistida */
         200: {
           headers: {
             [name: string]: unknown;
@@ -2690,7 +2792,9 @@ export interface paths {
           endDate: string;
           area?: string;
           cargo?: string;
+          workdayType?: string;
           employeeId?: string;
+          mode?: "summary" | "compiled_detailed";
           viewMode?: "month" | "week" | "day";
         };
         header?: never;
@@ -2733,7 +2837,9 @@ export interface paths {
           endDate: string;
           area?: string;
           cargo?: string;
+          workdayType?: string;
           employeeId?: string;
+          mode?: "summary" | "compiled_detailed";
         };
         header?: never;
         path?: never;
@@ -2812,8 +2918,10 @@ export interface paths {
           startDate: string;
           endDate: string;
           area?: string;
+          cargo?: string;
+          workdayType?: string;
           employeeId?: string;
-          mode?: "summary" | "detailed";
+          mode?: "summary" | "compiled_detailed";
         };
         header?: never;
         path?: never;
@@ -2848,13 +2956,37 @@ export interface paths {
     /** Obtiene lista de empleados para modo Kiosko */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          page?: number;
+          pageSize?: number;
+          search?: string;
+          status?: string;
+          area?: string;
+          since?: string;
+        };
         header?: never;
         path?: never;
         cookie?: never;
       };
       requestBody?: never;
-      responses: never;
+      responses: {
+        /** @description Lista pública de empleados activos para Kiosko (sin PII) */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["KioskEmployees"];
+          };
+        };
+        /** @description Parámetros de consulta inválidos */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
     };
     put?: never;
     post?: never;
@@ -3093,7 +3225,12 @@ export interface paths {
     /** Obtener solicitudes de corrección */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          since?: string;
+          limit?: number;
+          offset?: number;
+          status?: "pending" | "approved" | "rejected";
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -3128,6 +3265,29 @@ export interface paths {
       responses: {
         /** @description Solicitud creada */
         201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CorrectionRequestRecord"];
+          };
+        };
+        /** @description Datos inválidos o adjuntos no admitidos */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Jornada ajena o período cerrado */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Ya existe una solicitud pendiente para el campo */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -3256,6 +3416,22 @@ export interface paths {
       responses: {
         /** @description Estado actualizado */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["CorrectionRequestRecord"];
+          };
+        };
+        /** @description Período cerrado */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description El campo cambió desde la solicitud */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -3726,16 +3902,48 @@ export interface paths {
             [name: string]: unknown;
           };
           content: {
-            "application/json": {
-              success?: boolean;
-              token?: string;
-              requiresMFA?: boolean;
-              mustChangePassword?: boolean;
-            };
+            "application/json":
+              | {
+                  userId: string;
+                  username: string;
+                  role: string;
+                  employeeId?: string | null;
+                  token: string;
+                  mustChangePassword: boolean;
+                  mfaEnabled: boolean;
+                  message: string;
+                }
+              | {
+                  mfaRequired: boolean;
+                  mfaToken: string;
+                  userId: string;
+                  message: string;
+                };
           };
+        };
+        /** @description Error de validación en credenciales */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
         /** @description Credenciales inválidas */
         401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Cuenta de usuario archivada */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Demasiados intentos fallidos */
+        429: {
           headers: {
             [name: string]: unknown;
           };
@@ -3758,7 +3966,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Genera secreto MFA y QR */
+    /** Genera secreto MFA y QR (Solo Administrador) */
     post: {
       parameters: {
         query?: never;
@@ -3775,10 +3983,25 @@ export interface paths {
           };
           content: {
             "application/json": {
-              qrCode?: string;
-              secret?: string;
+              qrCode: string;
+              secret: string;
+              message: string;
             };
           };
+        };
+        /** @description Requiere rol Administrador */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description MFA ya habilitado */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -3797,7 +4020,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Habilita MFA tras verificar primer código */
+    /** Habilita MFA tras verificar primer código (Solo Administrador) */
     post: {
       parameters: {
         query?: never;
@@ -3807,14 +4030,37 @@ export interface paths {
       };
       requestBody: {
         content: {
-          "application/json": {
-            token?: string;
-          };
+          "application/json": components["schemas"]["MFAVerify"];
         };
       };
       responses: {
         /** @description MFA habilitado */
         200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              message: string;
+            };
+          };
+        };
+        /** @description MFA no configurado o código inválido */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Requiere rol Administrador */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description MFA ya habilitado */
+        409: {
           headers: {
             [name: string]: unknown;
           };
@@ -3845,7 +4091,11 @@ export interface paths {
         path?: never;
         cookie?: never;
       };
-      requestBody?: never;
+      requestBody: {
+        content: {
+          "application/json": components["schemas"]["MFAValidate"];
+        };
+      };
       responses: {
         /** @description Autenticación de dos pasos exitosa */
         200: {
@@ -3854,12 +4104,25 @@ export interface paths {
           };
           content: {
             "application/json": {
-              token?: string;
-              mustChangePassword?: boolean;
+              userId: string;
+              username: string;
+              role: string;
+              employeeId?: string | null;
+              token: string;
+              mustChangePassword: boolean;
+              mfaEnabled: boolean;
+              message: string;
             };
           };
         };
-        /** @description Código o desafío inválido, expirado o MFA deshabilitado */
+        /** @description Payload inválido */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado */
         401: {
           headers: {
             [name: string]: unknown;
@@ -3920,10 +4183,48 @@ export interface paths {
           };
           content: {
             "application/json": {
-              token?: string;
-              employee?: components["schemas"]["Employee"];
+              success: boolean;
+              employeeName: string;
+              token: string;
+              mustChangePin: boolean;
+              message: string;
             };
           };
+        };
+        /** @description Error de validación en credenciales */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description PIN incorrecto */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Empleado archivado o PIN bloqueado */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Empleado no encontrado */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description Demasiados intentos fallidos */
+        429: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
         };
       };
     };
@@ -3957,7 +4258,11 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            "application/json": {
+              message: string;
+            };
+          };
         };
       };
     };
@@ -4844,6 +5149,8 @@ export interface components {
       rut: string;
       name: string;
       position?: string;
+      area: string;
+      workdayType: string;
       department?: string;
       /** Format: email */
       email?: string;
@@ -4899,6 +5206,17 @@ export interface components {
       area?: string;
       since?: string;
     };
+    KioskEmployee: {
+      id: string;
+      name: string;
+      rutHash: string;
+      isPinBlocked: boolean;
+      /** @enum {string} */
+      status: "Activo" | "Archivado";
+      area: string;
+      workdayType: string;
+    };
+    KioskEmployees: components["schemas"]["KioskEmployee"][];
     CreateUser: {
       username: string;
       password: string;
@@ -4947,8 +5265,10 @@ export interface components {
         | "Supervisor"
         | "Administrador"
         | "Supervisor_Elevado"
-        | "Fiscalizador";
-      employeeId?: string;
+        | "Fiscalizador"
+        | "Archivado";
+      employeeId?: string | null;
+      mustChangePassword?: boolean;
     };
     UserQuery: {
       page?: string;
@@ -4968,9 +5288,7 @@ export interface components {
         | "Administrador"
         | "Supervisor_Elevado"
         | "Fiscalizador"
-        | "Archivado"
-        | "Reloj Control"
-        | "Supervisor Elevado";
+        | "Archivado";
       employeeId?: string | null;
       mustChangePassword?: boolean;
       mfaEnabled?: boolean;
@@ -5062,18 +5380,53 @@ export interface components {
       source?: string;
       justification?: string | null;
     };
-    CorrectionRequestListResponse: components["schemas"]["ApiResponse"] & {
-      data: components["schemas"]["CorrectionRequest"][];
+    CorrectionQuery: {
+      since?: string;
+      limit?: string;
+      offset?: string;
+      /** @enum {string} */
+      status?: "pending" | "approved" | "rejected";
+    };
+    CorrectionRequestListResponse: {
+      requests: (components["schemas"]["CorrectionRequestRecord"] & {
+        lastModified: number;
+        syncStatus: string;
+      })[];
+      total: number;
+    };
+    CorrectionRequestRecord: {
+      id: string;
+      employeeId: string;
+      timeRecordId: string;
+      recordField: string;
+      originalValue: string;
+      requestedValue: string;
+      reason: string;
+      status: string;
+      rejectionReason: string | null;
+      resolvedBy: string | null;
+      /** Format: date-time */
+      resolvedAt: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      isDeleted: boolean;
+      /** Format: date-time */
+      deletedAt: string | null;
     };
     CorrectionRequest: {
       employeeId: string;
       timeRecordId: string;
       /** @enum {string} */
       recordField: "entrada" | "inicioColacion" | "finColacion" | "salida";
-      currentValue?: string;
+      originalValue?: string | null;
+      /** @description Alias anterior de originalValue; el servidor captura el valor actual de la jornada. */
+      currentValue?: string | null;
       /** Format: date-time */
       requestedValue: string;
       reason: string;
+      /** @description No admitido: los adjuntos están deshabilitados. */
       attachment?: unknown;
     };
     DailyAttendanceQuery: {
@@ -5093,22 +5446,27 @@ export interface components {
       endDate: string;
       area?: string;
       cargo?: string;
+      workdayType?: string;
       employeeId?: string;
       /** @enum {string} */
       viewMode?: "month" | "week" | "day";
       /** @enum {string} */
-      mode?: "summary" | "detailed" | "compiled_detailed";
+      mode?: "summary" | "compiled_detailed";
     };
     IntegrityVerifyQuery: {
       employeeId: string;
       from: string;
       to: string;
+      limit?: number;
     };
     PunchResponse: {
       success: boolean;
       action: string;
       record?: components["schemas"]["AttendanceRecordResponse"];
       timestamp: string;
+      exceptionApplied?: boolean;
+      exceptionType?: string | null;
+      requiresReview?: boolean;
     };
     Punch: {
       employeeId: string;
@@ -5118,6 +5476,22 @@ export interface components {
       timestamp?: string;
       latitude?: number;
       longitude?: number;
+    };
+    RecordExportQuery: {
+      startDate: string;
+      endDate: string;
+      /** @enum {string} */
+      format?: "json" | "csv" | "xml" | "excel";
+      employeeId?: string;
+      area?: string;
+      cargo?: string;
+      name?: string;
+      workdayType?: string;
+      status?: string;
+      /** @enum {string} */
+      showAnomalies?: "true" | "false";
+      /** @enum {string} */
+      matchingView?: "true" | "false";
     };
     ResolveAnomaly: {
       /** @enum {string} */
@@ -5141,6 +5515,7 @@ export interface components {
       workdayType?: string;
       status?: string;
       employeeId?: string;
+      showAnomalies?: boolean | ("true" | "false");
     };
     UpdateCorrectionStatus: {
       /** @enum {string} */
@@ -5193,6 +5568,8 @@ export interface components {
       startDate?: string;
       endDate?: string;
       employeeId?: string;
+      type?: string;
+      search?: string;
       showArchived?: string;
     };
     LeaveResponse: components["schemas"]["ApiResponse"] & {
@@ -5352,18 +5729,21 @@ export interface components {
       employeeId?: string;
       startDate?: string;
       endDate?: string;
+      search?: string;
+      showArchived?: string;
+      since?: string;
     };
     SuggestedPatternName: {
       suggestedName: string;
     };
     AuditLog: {
-      id: string;
-      timestamp: string;
-      actorUsername: string;
+      id?: string;
+      timestamp?: string;
+      actorUsername?: string;
       action: string;
       category: string;
-      severity: string;
-      outcome: string;
+      severity?: string;
+      outcome?: string;
       details?: {
         [key: string]: unknown;
       };
@@ -5393,12 +5773,40 @@ export interface components {
     };
     HealthStatus: {
       /** @enum {string} */
-      status: "ok" | "error";
-      uptime: number;
+      status: "healthy" | "degraded";
+      instanceId: string;
       timestamp: string;
-      database: string;
-      services?: {
-        [key: string]: string;
+      responseTime?: number;
+      uptime?: number;
+      database: {
+        status: string;
+        latency?: number;
+        size?: string;
+      };
+      system?: {
+        platform: string;
+        arch: string;
+        nodeVersion: string;
+        cpus: number;
+        memory: {
+          rss: number;
+          heapTotal: number;
+          heapUsed: number;
+        };
+        os: {
+          freeMem: number;
+          totalMem: number;
+          loadAvg: number[];
+        };
+      };
+      backup?: {
+        [key: string]: unknown;
+      };
+      integrity?: {
+        [key: string]: unknown;
+      };
+      jobs?: {
+        [key: string]: unknown;
       };
     };
     KpiSummaryRequest: {
@@ -5409,6 +5817,8 @@ export interface components {
       employeeIds?: string[];
       area?: string;
       departmentId?: string;
+      cargo?: string;
+      workdayType?: string;
     };
     RestoreBackup: {
       filename: string;
@@ -5664,18 +6074,20 @@ export interface components {
     ShiftReport: {
       id?: string;
       date: string;
-      folio: string;
+      folio?: string;
       shiftName: string;
       responsibleUser: string;
       startTime: string;
       endTime?: string | null;
       /** @enum {string} */
       status: "open" | "closed";
+      removedLogEntryIds?: string[];
       logEntries: {
         id: string;
         time: string;
         annotation: string;
         timestamp: number;
+        recordId?: string;
       }[];
       supplierEntries: {
         id: string;
@@ -5687,6 +6099,21 @@ export interface components {
         reason: string;
         timestamp: number;
       }[];
+    };
+    ShiftReportPaginatedResponse: {
+      data: components["schemas"]["ShiftReport"][];
+      total: number;
+      page: number;
+      totalPages: number;
+    };
+    ShiftReportQuery: {
+      page?: string;
+      pageSize?: string;
+      since?: string;
+      /** @enum {string} */
+      status?: "open" | "closed";
+      search?: string;
+      date?: string;
     };
   };
   responses: never;

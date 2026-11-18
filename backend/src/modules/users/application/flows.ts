@@ -10,9 +10,14 @@ export interface UpdateUserDto {
   username?: string;
   password?: string;
   role?: string;
-  employeeId?: string;
+  employeeId?: string | null;
   mustChangePassword?: boolean;
   isForcePasswordChange?: boolean;
+}
+export interface UpdateUserActorContext {
+  actorId?: string;
+  actorRole?: string;
+  currentTokenHash?: string;
 }
 export interface UserQuery {
   since?: string | number;
@@ -27,7 +32,7 @@ export interface UserWrite {
   username?: string;
   passwordHash?: string;
   role?: string;
-  employeeId?: string;
+  employeeId?: string | null;
   isForcePasswordChange?: boolean;
 }
 export interface UserFlowDependencies {
@@ -36,9 +41,13 @@ export interface UserFlowDependencies {
     create(
       data: UserWrite & { id: string; username: string; passwordHash: string; role: string },
     ): Promise<UserProjection>;
-    update(id: string, data: UserWrite): Promise<UserProjection>;
-    findUsername(id: string): Promise<{ username: string } | null>;
-    delete(id: string): Promise<void>;
+    update(
+      id: string,
+      data: UserWrite,
+      actorContext?: UpdateUserActorContext,
+    ): Promise<UserProjection>;
+    findUsername(id: string): Promise<{ username: string; role?: string } | null>;
+    delete(id: string, actorRole?: string): Promise<void>;
   };
   hash(password: string): string;
   id(): string;
@@ -50,6 +59,7 @@ export interface UserFlowDependencies {
     details: Record<string, unknown>;
   }): Promise<void>;
   emit(user: PublicUser | { id: string; isDeleted: true }): void;
+  forbidden?(message: string): Error;
 }
 export function mapUserRole(role: string): string {
   const roles: Record<string, string> = {
@@ -93,7 +103,12 @@ export function createUserFlows(deps: UserFlowDependencies) {
       deps.emit(result);
       return result;
     },
-    async updateUser(id: string, input: UpdateUserDto, actorUsername: string) {
+    async updateUser(
+      id: string,
+      input: UpdateUserDto,
+      actorUsername: string,
+      actorContext?: UpdateUserActorContext,
+    ) {
       const data: UserWrite = {};
       if (input.username) data.username = input.username.toLowerCase();
       if (input.password) data.passwordHash = deps.hash(input.password);
@@ -109,7 +124,9 @@ export function createUserFlows(deps: UserFlowDependencies) {
         data.isForcePasswordChange = input.mustChangePassword;
       if (input.isForcePasswordChange !== undefined)
         data.isForcePasswordChange = input.isForcePasswordChange;
-      const user = await deps.repository.update(id, data);
+      const user = actorContext
+        ? await deps.repository.update(id, data, actorContext)
+        : await deps.repository.update(id, data);
       const result = toPublicUser(user);
       // Keep the legacy audit's Prisma relation field name without importing Prisma.
       const updatedFields = Object.keys(data).map((field) =>
@@ -125,9 +142,13 @@ export function createUserFlows(deps: UserFlowDependencies) {
       deps.emit(result);
       return result;
     },
-    async deleteUser(id: string, actorUsername: string) {
+    async deleteUser(id: string, actorUsername: string, actorRole?: string) {
       const user = await deps.repository.findUsername(id);
-      await deps.repository.delete(id);
+      if (actorRole === "Supervisor_Elevado" && user?.role === "Administrador") {
+        const message = "Acceso denegado: No puede eliminar usuarios Administrador";
+        throw deps.forbidden ? deps.forbidden(message) : new Error(message);
+      }
+      await deps.repository.delete(id, actorRole);
       await deps.audit({
         actorUsername,
         action: "USER_DELETE",

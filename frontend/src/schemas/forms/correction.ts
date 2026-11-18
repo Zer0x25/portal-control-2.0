@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { ERROR_MESSAGES } from "../../utils/errorMessages";
-import { optionalText, requiredText } from "./common";
+import { optionalNullableText, optionalText, requiredText, requiredTextMin } from "./common";
 
 /**
  * Patrón de fecha-hora de pantalla (`YYYY-MM-DDTHH:mm`), el que escribe el
@@ -26,16 +26,18 @@ export const DATETIME_LOCAL_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
  * (`backend/src/models/schemas/time-correction.schemas.ts`).
  *
  * El formulario de solicitud solo escribe dos campos (`correctionRequestForm`):
- * el empleado, el marcaje, el campo y el valor actual los aporta la pantalla
- * que lo abre, y el adjunto es un `File` que se convierte a base64 al enviar.
+ * el empleado, el marcaje, el campo y los valores actual/anterior los aporta
+ * la pantalla que lo abre. Los adjuntos están deshabilitados hasta contar con
+ * almacenamiento y acceso verificables.
  */
 export const correctionRequestBaseSchema = z.object({
   employeeId: requiredText("El empleado"),
   timeRecordId: requiredText("El marcaje"),
   recordField: z.enum(["entrada", "inicioColacion", "finColacion", "salida"]),
-  currentValue: optionalText(),
+  originalValue: optionalNullableText(),
+  currentValue: optionalNullableText(),
   requestedValue: requiredText("El valor solicitado"),
-  reason: requiredText("El motivo"),
+  reason: requiredTextMin("El motivo", 1),
 });
 
 /**
@@ -54,7 +56,7 @@ export const correctionRequestFormSchema = z.object({
     DATETIME_LOCAL_PATTERN,
     ERROR_MESSAGES.invalidDateTimeLocal(),
   ),
-  reason: requiredText("El motivo"),
+  reason: requiredTextMin("El motivo", 1),
 });
 
 /**

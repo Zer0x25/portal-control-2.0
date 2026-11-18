@@ -47,12 +47,12 @@ const MfaLoginModalView: React.FC<MfaLoginModalViewProps> = ({
     isOpen && (
       <div
         data-testid="mfa-login-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mfa-login-modal-title"
         className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-6`}
       >
-        <div
-          className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in"
-          onClick={onCancel}
-        />
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in" />
 
         <div
           className={`w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative ${Z.sticky} animate-in fade-in zoom-in-95 slide-in-from-bottom-2`}
@@ -74,7 +74,10 @@ const MfaLoginModalView: React.FC<MfaLoginModalViewProps> = ({
                 />
               </svg>
             </div>
-            <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
+            <h2
+              id="mfa-login-modal-title"
+              className="text-2xl font-black text-token-text-primary uppercase tracking-tighter"
+            >
               Verificación de Identidad
             </h2>
             <p className="text-token-text-secondary text-sm mt-2">

@@ -10,6 +10,7 @@ import { ArrowPathIcon, CircleStackIcon, ClockIcon } from "../../../components/u
 import { formatDateTime } from "../../../utils/dateUtils";
 import type { BackupFile } from "../../../types";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 
 interface BackupListModalViewProps {
   isOpen: boolean;
@@ -17,8 +18,11 @@ interface BackupListModalViewProps {
   backups: BackupFile[];
   loading: boolean;
   restoring: string | null;
+  pendingRestoreFilename?: string | null;
   error: string | null;
   handleRestore: (filename: string) => Promise<void>;
+  cancelRestore?: () => void;
+  confirmRestore?: () => Promise<void>;
 }
 
 export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
@@ -27,8 +31,11 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
   backups,
   loading,
   restoring,
+  pendingRestoreFilename = null,
   error,
   handleRestore,
+  cancelRestore = () => {},
+  confirmRestore = async () => {},
 }) => {
   return (
     <CinematicModal
@@ -98,7 +105,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
                   variant="none"
                   onClick={() => handleRestore(backup.name)}
                   disabled={restoring !== null}
-                  className={`opacity-0 group-hover:opacity-100 transition-all px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide flex items-center gap-2 cursor-pointer ${
+                  className={`opacity-100 sm:opacity-0 sm:group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-all px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide flex items-center gap-2 cursor-pointer ${
                     restoring === backup.name
                       ? "bg-amber-500 text-white cursor-wait opacity-100"
                       : "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
@@ -121,6 +128,16 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
           </div>
         )}
       </Container>
+
+      <ConfirmationModal
+        isOpen={Boolean(pendingRestoreFilename)}
+        onClose={cancelRestore}
+        onConfirm={confirmRestore}
+        title="Confirmar Restauración de Base de Datos"
+        message={`ADVERTENCIA: ¿Estás seguro de restaurar el backup ${pendingRestoreFilename ?? ""}? Esta acción eliminará todos los datos actuales y los reemplazará con el contenido del respaldo. Esta acción no se puede deshacer.`}
+        confirmText="Sobrescribir Base de Datos"
+        confirmVariant="danger"
+      />
     </CinematicModal>
   );
 };

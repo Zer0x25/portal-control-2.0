@@ -25,6 +25,7 @@ export interface Employee extends Syncable {
   id: string;
   name: string;
   rut?: string;
+  rutHash?: string;
   position: string;
   area: string;
   workdayType: string;

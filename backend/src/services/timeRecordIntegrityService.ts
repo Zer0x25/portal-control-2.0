@@ -30,6 +30,7 @@ type VerifyResult = {
   checkedCount: number;
   brokenCount: number;
   broken: BrokenItem[];
+  truncated: boolean;
 };
 
 const INTEGRITY_VERSION = 1;
@@ -118,7 +119,7 @@ export const timeRecordIntegrityService = {
   async getPrevHash(
     tx: TxLike,
     employeeId: string,
-    updatedAt: Date,
+    createdAt: Date,
     excludeRecordId?: string,
   ): Promise<string | null> {
     const prev = await tx.timeRecord.findFirst({
@@ -126,15 +127,15 @@ export const timeRecordIntegrityService = {
         employeeId,
         id: excludeRecordId ? { not: excludeRecordId } : undefined,
         OR: [
-          { updatedAt: { lt: updatedAt } },
+          { createdAt: { lt: createdAt } },
           excludeRecordId
             ? {
-                AND: [{ updatedAt }, { id: { lt: excludeRecordId } }],
+                AND: [{ createdAt }, { id: { lt: excludeRecordId } }],
               }
-            : { updatedAt: { lt: updatedAt } },
+            : { createdAt: { lt: createdAt } },
         ],
       },
-      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: { integrityHash: true },
     });
 
@@ -145,7 +146,7 @@ export const timeRecordIntegrityService = {
     const record = await tx.timeRecord.findUnique({ where: { id: recordId } });
     if (!record) return;
 
-    const prevHash = await this.getPrevHash(tx, record.employeeId, record.updatedAt, record.id);
+    const prevHash = await this.getPrevHash(tx, record.employeeId, record.createdAt, record.id);
     const payload = this.buildCanonicalPayload(record, prevHash);
     const hash = this.computeHash(payload);
     const action = record.integrityHash ? "TIME_RECORD_HASH_UPDATED" : "TIME_RECORD_HASH_CREATED";
@@ -184,24 +185,51 @@ export const timeRecordIntegrityService = {
     options?: SealOptions,
   ): Promise<void> {
     await this.sealRecord(tx, affectedRecordId, options);
-    void employeeId;
+    const affected = await tx.timeRecord.findUnique({ where: { id: affectedRecordId } });
+    if (!affected) return;
+
+    const subsequent = await tx.timeRecord.findMany({
+      where: {
+        employeeId,
+        OR: [
+          { createdAt: { gt: affected.createdAt } },
+          { AND: [{ createdAt: affected.createdAt }, { id: { gt: affected.id } }] },
+        ],
+      },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    });
+
+    let prevHash = affected.integrityHash ?? null;
+    for (const record of subsequent) {
+      const nextHash = this.computeHash(this.buildCanonicalPayload(record, prevHash));
+      if (record.integrityPrevHash !== prevHash || record.integrityHash !== nextHash) {
+        await tx.timeRecord.update({
+          where: { id: record.id },
+          data: {
+            integrityHash: nextHash,
+            integrityPrevHash: prevHash,
+            integrityAlgo: INTEGRITY_ALGO,
+            integrityVersion: INTEGRITY_VERSION,
+            updatedAt: record.updatedAt,
+          },
+        });
+      }
+      prevHash = nextHash;
+    }
   },
 
   async verifyChain(tx: TxLike, filters: VerifyFilters): Promise<VerifyResult> {
+    if (filters.limit !== undefined && (!Number.isInteger(filters.limit) || filters.limit < 1)) {
+      throw new RangeError("limit must be a positive integer");
+    }
     const batchSize = 5000;
     const broken: BrokenItem[] = [];
     let checkedCount = 0;
-    let prevHashByEmployee = new Map<string, string | null>();
+    let truncated = false;
+    const prevHashByEmployee = new Map<string, string | null>();
 
     const where: Prisma.TimeRecordWhereInput = {
       employeeId: filters.employeeId,
-      date:
-        filters.from || filters.to
-          ? {
-              gte: filters.from,
-              lte: filters.to,
-            }
-          : undefined,
     };
 
     let cursorId: string | undefined;
@@ -209,7 +237,7 @@ export const timeRecordIntegrityService = {
     while (true) {
       const records = await tx.timeRecord.findMany({
         where,
-        orderBy: [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }],
+        orderBy: [{ employeeId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
         take: batchSize,
         skip: cursorId ? 1 : 0,
         cursor: cursorId ? { id: cursorId } : undefined,
@@ -219,11 +247,19 @@ export const timeRecordIntegrityService = {
 
       for (const record of records) {
         const expectedPrevHash = prevHashByEmployee.get(record.employeeId) ?? null;
-
-        // If we are starting a NEW employee in this batch, we might need
-        // to fetch their last known integrity hash from DB if we don't have it in the map.
-        // However, the current logic assumes we are verifying a CONTINUOUS chain
-        // from the start of the filter.
+        // Chain order is creation time and ID, not business date. Rows outside
+        // the requested range can therefore be predecessors of rows inside it.
+        prevHashByEmployee.set(record.employeeId, record.integrityHash ?? null);
+        if (
+          (filters.from && record.date < filters.from) ||
+          (filters.to && record.date > filters.to)
+        ) {
+          continue;
+        }
+        if (filters.limit !== undefined && checkedCount >= filters.limit) {
+          truncated = true;
+          break;
+        }
 
         const expectedHash = this.computeHash(this.buildCanonicalPayload(record, expectedPrevHash));
         const actualHash = record.integrityHash ?? null;
@@ -261,21 +297,19 @@ export const timeRecordIntegrityService = {
           });
         }
 
-        prevHashByEmployee.set(record.employeeId, actualHash ?? expectedHash);
         checkedCount++;
       }
 
       cursorId = records[records.length - 1].id;
 
-      // Safety limit for the total verification (user requested capability for 1.2M,
-      // but we should probably still have a reasonable default or filter)
-      if (filters.limit && checkedCount >= filters.limit) break;
+      if (truncated) break;
     }
 
     const result: VerifyResult = {
       checkedCount,
       brokenCount: broken.length,
       broken,
+      truncated,
     };
     const byReason = {
       missingHash: broken.filter((x) => x.reason === "MISSING_HASH").length,
@@ -388,7 +422,7 @@ export const timeRecordIntegrityService = {
       // Fetch absolute batch of records
       const records = await prisma.timeRecord.findMany({
         where,
-        orderBy: [{ employeeId: "asc" }, { updatedAt: "asc" }, { id: "asc" }],
+        orderBy: [{ employeeId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
         take: batchSize,
         skip: cursorId ? 1 : 0,
         cursor: cursorId ? { id: cursorId } : undefined,

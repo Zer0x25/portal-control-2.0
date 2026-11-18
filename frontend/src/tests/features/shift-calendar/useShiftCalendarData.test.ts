@@ -20,11 +20,14 @@ const {
 }));
 
 let mockCurrentUser: { role: string; employeeId?: string } | null = { role: "Administrador" };
+let mockEmployeesError = false;
+let mockEmployeesLoading = false;
 let mockCalendarData: {
   scheduleMap: Map<string, unknown>;
   isAssignedShiftsLoading: boolean;
   isShiftPatternsLoading: boolean;
   isLoadingCalendar: boolean;
+  isCalendarError?: boolean;
 } = {
   scheduleMap: new Map(),
   isAssignedShiftsLoading: false,
@@ -56,7 +59,8 @@ vi.mock("../../../hooks/useEmployees", () => ({
       { id: "e1", name: "Ana Pérez", area: "Operaciones", position: "Operador" },
       { id: "e2", name: "Luis Soto", area: "Bodega", position: "Supervisor" },
     ],
-    isLoadingEmployees: false,
+    isLoadingEmployees: mockEmployeesLoading,
+    isError: mockEmployeesError,
   }),
 }));
 
@@ -73,7 +77,11 @@ describe("useShiftCalendarData", () => {
   beforeEach(() => {
     authTokenStore.setToken("fixture");
     vi.clearAllMocks();
+    exportShiftScheduleToICSMock.mockReturnValue(true);
+    exportCalendarToPDFMock.mockReturnValue(true);
     mockCurrentUser = { role: "Administrador" };
+    mockEmployeesError = false;
+    mockEmployeesLoading = false;
     mockCalendarData = {
       scheduleMap: new Map(),
       isAssignedShiftsLoading: false,
@@ -127,11 +135,19 @@ describe("useShiftCalendarData", () => {
     mockCalendarData = {
       scheduleMap: new Map([
         [
+          "2026-04-03",
+          { type: "employee", data: { isWorkDay: true, startTime: "08:00", endTime: "17:00" } },
+        ],
+        [
+          "2026-03-04",
+          { type: "employee", data: { isWorkDay: false, startTime: "08:00", endTime: "17:00" } },
+        ],
+        [
           "2026-03-03",
           {
             type: "employee",
             data: {
-              employeeId: "e1",
+              isWorkDay: true,
               startTime: "08:00",
               endTime: "17:00",
               shiftPatternName: "Turno Día",
@@ -146,13 +162,117 @@ describe("useShiftCalendarData", () => {
 
     const { result } = renderHook(() => useShiftCalendarData());
     act(() => {
+      result.current.setDisplayDate(new Date(2026, 2, 3));
+    });
+    act(() => {
       result.current.handleExportToICS();
     });
 
-    expect(exportShiftScheduleToICSMock).toHaveBeenCalled();
+    expect(exportShiftScheduleToICSMock).toHaveBeenCalledWith(
+      [expect.objectContaining({ date: "2026-03-03", startTime: "08:00" })],
+      expect.any(Object),
+    );
     expect(addToastMock).toHaveBeenCalledWith(
       "Eventos de turno exportados a formato ICS.",
       "success",
     );
+  });
+  it("reports empty exports and blocked print without success", async () => {
+    mockCurrentUser = { role: "Usuario", employeeId: "e1" };
+    exportShiftScheduleToICSMock.mockReturnValue(false);
+    exportCalendarToPDFMock.mockReturnValue(false);
+    const { result } = renderHook(() => useShiftCalendarData());
+    act(() => result.current.handleExportToICS());
+    await act(async () => result.current.handleExportToPDF());
+    expect(addToastMock).toHaveBeenCalledWith(
+      "No hay turnos exportables en el período visible.",
+      "warning",
+    );
+    expect(addToastMock).toHaveBeenCalledWith(expect.stringContaining("bloqueó"), "warning");
+    expect(addToastMock).not.toHaveBeenCalledWith(expect.any(String), "success");
+  });
+  it("escapes calendar data and restricts colors in print markup", async () => {
+    mockCurrentUser = { role: "Usuario", employeeId: "e1" };
+    mockCalendarData.scheduleMap = new Map([
+      [
+        "2026-03-03",
+        {
+          type: "employee",
+          data: {
+            isWorkDay: true,
+            shiftPatternName: '<b id="probe">X</b>',
+            patternColor: 'red" onmouseover="x',
+            startTime: "08:00",
+            endTime: "17:00",
+          },
+        },
+      ],
+    ]);
+    const { result } = renderHook(() => useShiftCalendarData());
+    act(() => result.current.setDisplayDate(new Date(2026, 2, 3)));
+    await act(async () => result.current.handleExportToPDF());
+    const renderCell = exportCalendarToPDFMock.mock.calls[0][5] as (date: Date) => string;
+    const html = renderCell(new Date("2026-03-03T00:00:00Z"));
+    expect(html).toContain("&lt;b id=&quot;probe&quot;&gt;X&lt;/b&gt;");
+    expect(html).toContain("#4b5563");
+    expect(html).not.toContain("onmouseover");
+  });
+  it.each([
+    {
+      isLoadingCalendar: true,
+      isCalendarError: false,
+      message: "Espere a que termine la carga del calendario.",
+      level: "warning",
+    },
+    {
+      isLoadingCalendar: false,
+      isCalendarError: true,
+      message: "No se pudo cargar el calendario. Reintente antes de exportar.",
+      level: "error",
+    },
+  ])(
+    "blocks all exports when calendar is unavailable: $level",
+    async ({ isLoadingCalendar, isCalendarError, message, level }) => {
+      mockCurrentUser = { role: "Usuario", employeeId: "e1" };
+      mockCalendarData.isLoadingCalendar = isLoadingCalendar;
+      mockCalendarData.isCalendarError = isCalendarError;
+      let pdfRequests = 0;
+      server.use(
+        http.get("http://localhost:4000/api/export/calendar-pdf", () => {
+          pdfRequests++;
+          return new HttpResponse(null, { status: 500 });
+        }),
+      );
+      const { result } = renderHook(() => useShiftCalendarData());
+      act(() => result.current.handleExportToICS());
+      await act(async () => result.current.handleExportToPDF());
+      await act(async () => result.current.handleDownloadBackendPDF());
+      expect(exportShiftScheduleToICSMock).not.toHaveBeenCalled();
+      expect(exportCalendarToPDFMock).not.toHaveBeenCalled();
+      expect(pdfRequests).toBe(0);
+      expect(addToastMock).toHaveBeenCalledTimes(3);
+      expect(addToastMock).toHaveBeenCalledWith(message, level);
+      expect(addToastMock).not.toHaveBeenCalledWith(expect.any(String), "success");
+    },
+  );
+  it.each([
+    { loading: true, error: false, message: "Espere a que termine la carga del calendario." },
+    {
+      loading: false,
+      error: true,
+      message: "No se pudo cargar el calendario. Reintente antes de exportar.",
+    },
+  ])("blocks all exports when employees are unavailable", async ({ loading, error, message }) => {
+    mockCurrentUser = { role: "Usuario", employeeId: "e1" };
+    mockEmployeesLoading = loading;
+    mockEmployeesError = error;
+    const { result } = renderHook(() => useShiftCalendarData());
+    act(() => result.current.handleExportToICS());
+    await act(async () => result.current.handleExportToPDF());
+    await act(async () => result.current.handleDownloadBackendPDF());
+    expect(exportShiftScheduleToICSMock).not.toHaveBeenCalled();
+    expect(exportCalendarToPDFMock).not.toHaveBeenCalled();
+    expect(addToastMock).toHaveBeenCalledTimes(3);
+    expect(addToastMock).toHaveBeenCalledWith(message, error ? "error" : "warning");
   });
 });

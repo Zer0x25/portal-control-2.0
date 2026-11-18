@@ -3,9 +3,10 @@ import type { AuditLog, BackupFile } from "../types";
 
 export interface HealthData {
   status: "healthy" | "degraded";
+  instanceId?: string | null;
   timestamp: string;
-  uptime: number;
-  system: {
+  uptime?: number;
+  system?: {
     platform: string;
     arch: string;
     nodeVersion: string;
@@ -23,8 +24,8 @@ export interface HealthData {
   };
   database: {
     status: "OK" | "ERROR";
-    latency: number;
-    size: string;
+    latency?: number;
+    size?: string;
   };
   backup?: {
     enabled: boolean;
@@ -38,7 +39,7 @@ export interface HealthData {
     latestFileSize: string | null;
     backupCount: number;
   };
-  integrity: {
+  integrity?: {
     status: "ok" | "degraded";
     lastRunAt: string | null;
     lastCheckedCount: number;

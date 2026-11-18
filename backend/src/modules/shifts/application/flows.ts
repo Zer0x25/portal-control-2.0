@@ -15,7 +15,14 @@ const code = (error: unknown) =>
 const selfOnly = (user?: ShiftPrincipal) =>
   user?.role === "Usuario" || user?.role === "Kiosk_Employee";
 const isShiftValidationError = (value: string) =>
-  value.includes("Conflicto") || value.includes("excesiva") || value.includes("Descanso");
+  value.includes("Conflicto") ||
+  value.includes("excesiva") ||
+  value.includes("Descanso") ||
+  value.includes("antigüedad") ||
+  value.includes("6x1") ||
+  value.includes("masiva");
+const isPatternValidationError = (value: string) =>
+  value.includes("horario") || value.includes("duración") || value.includes("ciclo");
 export function createShiftFlows<
   Pattern,
   Patterns,
@@ -53,7 +60,7 @@ export function createShiftFlows<
       try {
         return await deps.service.createPattern(input);
       } catch (error) {
-        if (message(error).includes("horario")) throw new ValidationError(message(error));
+        if (isPatternValidationError(message(error))) throw new ValidationError(message(error));
         throw error;
       }
     },
@@ -61,7 +68,7 @@ export function createShiftFlows<
       try {
         return await deps.service.updatePattern(id, input);
       } catch (error) {
-        if (message(error).includes("horario")) throw new ValidationError(message(error));
+        if (isPatternValidationError(message(error))) throw new ValidationError(message(error));
         throw error;
       }
     },
@@ -73,7 +80,12 @@ export function createShiftFlows<
       }
     },
     async bulkPatterns(input: PatternInput[]) {
-      return { count: await deps.service.bulkPatterns(input) };
+      try {
+        return { count: await deps.service.bulkPatterns(input) };
+      } catch (error) {
+        if (isPatternValidationError(message(error))) throw new ValidationError(message(error));
+        throw error;
+      }
     },
     async assignments(query: ShiftQuery, user?: ShiftPrincipal) {
       if (selfOnly(user) && !user?.employeeId) throw new ForbiddenError("Acceso denegado");
@@ -86,6 +98,7 @@ export function createShiftFlows<
         employeeId: selfOnly(user) ? user?.employeeId : query.employeeId,
         role: user?.role,
         showArchived: query.showArchived === "true",
+        search: query.search,
       });
     },
     async assign(input: AssignmentInput, actor: string) {
@@ -109,14 +122,15 @@ export function createShiftFlows<
         await deps.service.deleteAssignment(id, actor);
       } catch (error) {
         if (message(error).includes("encontrada")) throw new NotFoundError(message(error));
+        if (isShiftValidationError(message(error))) throw new ValidationError(message(error));
         throw error;
       }
     },
-    async bulkAssignments(input: AssignmentInput[]) {
+    async bulkAssignments(input: AssignmentInput[], actor = "System") {
       try {
-        return { count: await deps.service.bulkAssignments(input) };
+        return { count: await deps.service.bulkAssignments(input, actor) };
       } catch (error) {
-        if (message(error).includes("masiva")) throw new ValidationError(message(error));
+        if (isShiftValidationError(message(error))) throw new ValidationError(message(error));
         throw error;
       }
     },

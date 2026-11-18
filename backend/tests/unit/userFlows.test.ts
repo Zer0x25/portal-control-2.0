@@ -92,7 +92,7 @@ describe("Spec 012 shared users flows", () => {
       total: 1,
       isPaginated: true,
       users: [
-        { role: "Supervisor Elevado", syncStatus: "synced", lastModified: 0, isDeleted: false },
+        { role: "Supervisor_Elevado", syncStatus: "synced", lastModified: 0, isDeleted: false },
       ],
     });
     expect(result.users[0]).not.toHaveProperty("isForcePasswordChange");
@@ -105,5 +105,19 @@ describe("Spec 012 shared users flows", () => {
     ).rejects.toThrow("audit failed");
     expect(f.repository.create).toHaveBeenCalledTimes(1);
     expect(f.emit).not.toHaveBeenCalled();
+  });
+  it("supports employeeId: null on update and blocks Supervisor_Elevado from deleting Administrador", async () => {
+    const f = fixture();
+    await f.flows.updateUser("u", { employeeId: null }, "admin");
+    expect(f.repository.update).toHaveBeenCalledWith("u", { employeeId: null });
+
+    f.repository.findUsername.mockResolvedValueOnce({
+      username: "root",
+      role: "Administrador",
+    } as never);
+    await expect(f.flows.deleteUser("u-admin", "elevated", "Supervisor_Elevado")).rejects.toThrow(
+      "No puede eliminar usuarios Administrador",
+    );
+    expect(f.repository.delete).not.toHaveBeenCalled();
   });
 });

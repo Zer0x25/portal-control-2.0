@@ -1,5 +1,6 @@
 export { createRecordFlows } from "./application/flows";
 export type { RecordFlows } from "./application/flows";
+export { MAX_BULK_TIME_RECORDS } from "./application/contracts";
 export type {
   AnomalyResolution,
   RecordFlowDependencies,

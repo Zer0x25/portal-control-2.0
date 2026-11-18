@@ -57,6 +57,10 @@ export class KpiAggregationService {
       if (d.status === "Licencia Médica") {
         details.medicalLeaveRecords.push({ employeeName: employee.name, date: d.isoDate });
       }
+      if (d.status === "Permiso" || d.status === "Permiso Especial") {
+        summary.specialPermitCount += 1;
+        details.specialPermitRecords.push({ employeeName: employee.name, date: d.isoDate });
+      }
     });
   }
 }

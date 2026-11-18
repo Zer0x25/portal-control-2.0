@@ -18,9 +18,13 @@ import {
 } from "../../../hooks/queries/useIntegrityStatus";
 import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
 import { useAuditLogMutations } from "../../../hooks/useAuditLogMutations";
+import { useAuth } from "../../../hooks/useAuth";
+import { ROLES } from "../../../utils/mappings";
 import IntegrityAnomalyTable from "./IntegrityAnomalyTable";
 
 const IntegritySummaryView: React.FC = () => {
+  const { currentUser } = useAuth();
+  const canVerifyIntegrity = currentUser?.role !== ROLES.AUDITOR;
   const tableRef = React.useRef<HTMLDivElement>(null);
   const { data: status } = useIntegrityStatus();
   const refreshIntegrityStatus = useRefreshIntegrityStatus();
@@ -75,15 +79,17 @@ const IntegritySummaryView: React.FC = () => {
             <ArrowPathIcon className="w-4 h-4 mr-2" />
             Sincronizar Panel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleManualVerify}
-            loading={verifyIntegrity.isPending}
-            className="rounded-sm font-semibold uppercase tracking-wider text-[11px] px-6 h-10 shadow-lg shadow-(--sidebar-text-active)/20"
-          >
-            {!verifyIntegrity.isPending && <ArrowPathIcon className="w-4 h-4 mr-2" />}
-            Ejecutar Auditoría Profunda
-          </Button>
+          {canVerifyIntegrity && (
+            <Button
+              variant="primary"
+              onClick={handleManualVerify}
+              loading={verifyIntegrity.isPending}
+              className="rounded-sm font-semibold uppercase tracking-wider text-[11px] px-6 h-10 shadow-lg shadow-(--sidebar-text-active)/20"
+            >
+              {!verifyIntegrity.isPending && <ArrowPathIcon className="w-4 h-4 mr-2" />}
+              Ejecutar Auditoría Profunda
+            </Button>
+          )}
         </div>
       </div>
 

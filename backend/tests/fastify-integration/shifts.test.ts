@@ -248,7 +248,7 @@ describe("Spec 015 shifts on Fastify", () => {
     expect(overlap.status).toBe(400);
     expect(await prismaDirect.assignedShift.count()).toBe(1);
   });
-  it.each(["Usuario", "Kiosk_Employee"])("scopes assignments and calendar for %s", async (role) => {
+  it("scopes assignments and calendar for Usuario and denies Kiosk_Employee with 403", async () => {
     await setup();
     await prismaDirect.employee.create({ data: { ...employee, id: "foreign", rut: "22222222-2" } });
     await prismaDirect.assignedShift.create({
@@ -259,14 +259,7 @@ describe("Spec 015 shifts on Fastify", () => {
         endDate: plus(1),
       },
     });
-    if (role === "Usuario")
-      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
-    if (role === "Kiosk_Employee")
-      token = jwt.sign(
-        { id: employee.id, username: "kiosk", role, employeeId: employee.id },
-        process.env.JWT_SECRET!,
-        { expiresIn: "5m" },
-      );
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     const list = await http("GET", "/api/shifts/assignments?employeeId=foreign");
     expect(list.status).toBe(200);
     expect(list.body.data.map((a: { employeeId: string }) => a.employeeId)).toEqual([employee.id]);
@@ -297,20 +290,47 @@ describe("Spec 015 shifts on Fastify", () => {
     expect(matrix.status).toBe(200);
     expect(Object.keys(matrix.body)).toEqual([employee.id]);
     await prismaDirect.user.update({ where: { id: actorId }, data: { employeeId: null } });
-    if (role === "Kiosk_Employee")
-      token = jwt.sign({ id: employee.id, username: "kiosk", role }, process.env.JWT_SECRET!, {
-        expiresIn: "5m",
-      });
+    const kioskJti = "shifts-kiosk-jti";
+    await prismaDirect.verification.create({
+      data: {
+        id: `kiosk-jti:${kioskJti}`,
+        identifier: `kiosk-jti:${employee.id}`,
+        value: "active",
+        expiresAt: new Date(Date.now() + 300_000),
+      },
+    });
+    token = jwt.sign(
+      {
+        id: employee.id,
+        username: "kiosk",
+        role: "Kiosk_Employee",
+        employeeId: employee.id,
+        jti: kioskJti,
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "5m" },
+    );
     expect((await http("GET", "/api/shifts/assignments")).status).toBe(403);
     expect(
       (await http("GET", `/api/shifts/assignments?employeeId=${employee.id}&since=1`)).status,
+    ).toBe(403);
+    expect(
+      (await http("GET", `/api/shifts/schedule/employee/${employee.id}?date=${today()}`)).status,
+    ).toBe(403);
+    expect(
+      (
+        await http(
+          "GET",
+          `/api/shifts/schedule/employee/${employee.id}/month?year=${year}&month=${month}`,
+        )
+      ).status,
     ).toBe(403);
     expect(
       (
         await http("POST", "/api/shifts/schedule/matrix", {
           startDate: today(),
           endDate: plus(1),
-          employeeIds: ["foreign"],
+          employeeIds: [employee.id],
         })
       ).status,
     ).toBe(403);
@@ -574,6 +594,151 @@ describe("Spec 015 shifts on Fastify", () => {
       expect(await prismaDirect.shiftPattern.count()).toBe(0);
       expect(await prismaDirect.assignedShift.count()).toBe(0);
       expect(vi.mocked(SocketService.emit)).not.toHaveBeenCalled();
+    }
+  });
+
+  it("supports 14-day (7x7) patterns, rejects out-of-range dayIndex, and validates bulk patterns", async () => {
+    const pattern7x7 = {
+      ...pattern,
+      id: "pattern-7x7",
+      name: "Turno 7x7 Mineria",
+      cycleLengthDays: 14,
+      dailySchedules: Array.from({ length: 14 }, (_, dayIndex) => ({
+        dayIndex,
+        isOffDay: dayIndex >= 7,
+        startTime: dayIndex < 7 ? "08:00" : null,
+        endTime: dayIndex < 7 ? "20:00" : null,
+        hasColacion: false,
+        hours: dayIndex < 7 ? 12 : 0,
+      })),
+    };
+    const created = await http("POST", "/api/shifts/patterns", pattern7x7);
+    expect(created.status).toBe(201);
+    expect(created.body.dailySchedules).toHaveLength(14);
+
+    const invalidIndex = {
+      ...pattern7x7,
+      id: "pattern-bad-idx",
+      dailySchedules: [{ dayIndex: 14, isOffDay: false, startTime: "08:00", endTime: "16:00" }],
+    };
+    expect((await http("POST", "/api/shifts/patterns", invalidIndex)).status).toBe(400);
+
+    const bulkInvalid = await http("POST", "/api/shifts/patterns/bulk", [
+      { ...pattern, id: "p-valid", name: "Valid Bulk" },
+      {
+        ...pattern,
+        id: "p-bad-schedule",
+        name: "Bad Bulk",
+        dailySchedules: [{ dayIndex: 0, isOffDay: false, startTime: null, endTime: null }],
+      },
+    ]);
+    expect(bulkInvalid.status).toBe(400);
+    expect(await prismaDirect.shiftPattern.findUnique({ where: { id: "p-valid" } })).toBeNull();
+  });
+
+  it("filters assignments with search, showArchived, and date range including indefinite shifts", async () => {
+    await http("POST", "/api/shifts/patterns", pattern);
+    await http("POST", "/api/shifts/assignments", {
+      id: "indefinite-shift",
+      employeeId: employee.id,
+      shiftPatternId: pattern.id,
+      startDate: addBusinessDaysChile(today(), -5),
+      endDate: null,
+    });
+
+    const inRange = await http(
+      "GET",
+      `/api/shifts/assignments?startDate=${today()}&endDate=${plus(5)}&search=Shift`,
+    );
+    expect(inRange.status).toBe(200);
+    expect(inRange.body.data.map((a: { id: string }) => a.id)).toEqual(["indefinite-shift"]);
+
+    const noMatch = await http("GET", "/api/shifts/assignments?search=NoExiste");
+    expect(noMatch.status).toBe(200);
+    expect(noMatch.body.data).toHaveLength(0);
+  });
+
+  it("returns 400 for 7-day past (antigüedad) and 6x1 violations, and validates bulk assignments atomically", async () => {
+    await http("POST", "/api/shifts/patterns", pattern);
+    const sevenDayBad = await http("POST", "/api/shifts/assignments", {
+      employeeId: employee.id,
+      shiftPatternId: pattern.id,
+      startDate: addBusinessDaysChile(today(), -10),
+      endDate: today(),
+    });
+    expect(sevenDayBad.status).toBe(400);
+
+    const pattern7DaysWork = {
+      ...pattern,
+      id: "pattern-7-work",
+      name: "Non-Stop 7d",
+      dailySchedules: Array.from({ length: 7 }, (_, dayIndex) => ({
+        dayIndex,
+        isOffDay: false,
+        startTime: "08:00",
+        endTime: "14:00",
+        hasColacion: false,
+        hours: 6,
+      })),
+    };
+    await http("POST", "/api/shifts/patterns", pattern7DaysWork);
+
+    const sixByOneSingle = await http("POST", "/api/shifts/assignments", {
+      employeeId: employee.id,
+      shiftPatternId: pattern7DaysWork.id,
+      startDate: today(),
+      endDate: plus(10),
+    });
+    expect(sixByOneSingle.status).toBe(400);
+
+    const bulkSixByOne = await http("POST", "/api/shifts/assignments/bulk", [
+      {
+        id: "bulk-valid",
+        employeeId: employee.id,
+        shiftPatternId: pattern.id,
+        startDate: plus(20),
+        endDate: plus(21),
+      },
+      {
+        id: "bulk-6x1-fail",
+        employeeId: employee.id,
+        shiftPatternId: pattern7DaysWork.id,
+        startDate: plus(22),
+        endDate: plus(32),
+      },
+    ]);
+    expect(bulkSixByOne.status).toBe(400);
+    expect(await prismaDirect.assignedShift.count()).toBe(0);
+  });
+
+  it("prevents concurrent overlapping assignments for the same employee with FOR UPDATE", async () => {
+    await http("POST", "/api/shifts/patterns", pattern);
+    const [resA, resB] = await Promise.all([
+      http("POST", "/api/shifts/assignments", assignment({ id: "conc-a" })),
+      http("POST", "/api/shifts/assignments", assignment({ id: "conc-b" })),
+    ]);
+    const statuses = [resA.status, resB.status].sort();
+    expect(statuses).toEqual([201, 400]);
+    expect(await prismaDirect.assignedShift.count({ where: { isDeleted: false } })).toBe(1);
+  });
+
+  it("restricts Reloj_Control and Fiscalizador to read-only on /api/shifts/*", async () => {
+    for (const role of ["Reloj_Control", "Fiscalizador"] as const) {
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+      expect((await http("GET", "/api/shifts/patterns")).status).toBe(200);
+      expect((await http("GET", "/api/shifts/assignments")).status).toBe(200);
+      expect((await http("POST", "/api/shifts/patterns", pattern)).status).toBe(403);
+      expect((await http("POST", "/api/shifts/assignments", assignment())).status).toBe(403);
+      expect(
+        (
+          await http("POST", "/api/shifts/monthly-plan", {
+            employeeId: employee.id,
+            year: "2027",
+            month: "1",
+            dailySchedules: [],
+          })
+        ).status,
+      ).toBe(403);
     }
   });
 });

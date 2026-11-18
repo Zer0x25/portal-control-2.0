@@ -94,7 +94,7 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     assertSafe(paginated.body.data[0]);
     expect(paginated.body.data[0]).toMatchObject({
       id: target.id,
-      role: "Supervisor Elevado",
+      role: "Supervisor_Elevado",
       mfaEnabled: true,
       mustChangePassword: true,
     });
@@ -289,5 +289,204 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
     assertSafe(override.body);
     const stored = await prismaDirect.user.findUniqueOrThrow({ where: { id: "legacy-user-id" } });
     expect(bcrypt.compareSync("override-password", stored.passwordHash)).toBe(true);
+  });
+
+  it("enforces admin-only mustChangePassword and revokes sessions/sockets on password or role change", async () => {
+    const crypto = await import("node:crypto");
+    const forceLogoutSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToUser")
+      .mockImplementation(() => {});
+
+    const created = await http("POST", "/api/users", {
+      username: "revoke-target",
+      password: "initial-password-1",
+      role: "Reloj_Control",
+    });
+    expect(created.status).toBe(201);
+    const targetId = created.body.id as string;
+
+    const firstSess = await AuthService.createSession(
+      targetId,
+      "revoke-target",
+      "Reloj_Control",
+      null,
+      "browser-1",
+    );
+    const secondSess = await AuthService.createSession(
+      targetId,
+      "revoke-target",
+      "Reloj_Control",
+      null,
+      "browser-2",
+    );
+
+    // Non-admin attempting to set mustChangePassword must be rejected with 403
+    const nonAdminAttempt = await http(
+      "PUT",
+      `/api/users/${targetId}`,
+      { password: "changed-self-1", mustChangePassword: false },
+      firstSess.token,
+    );
+    expect(nonAdminAttempt.status).toBe(403);
+
+    // Voluntary self-password change revokes EXCEPT_CURRENT session
+    const selfChange = await http(
+      "PUT",
+      `/api/users/${targetId}`,
+      { password: "changed-self-2" },
+      firstSess.token,
+    );
+    expect(selfChange.status).toBe(200);
+    const firstHash = crypto.createHash("sha256").update(firstSess.token).digest("hex");
+    const secondHash = crypto.createHash("sha256").update(secondSess.token).digest("hex");
+    expect(
+      await prismaDirect.activeSession.findUnique({ where: { tokenHash: firstHash } }),
+    ).not.toBeNull();
+    expect(
+      await prismaDirect.activeSession.findUnique({ where: { tokenHash: secondHash } }),
+    ).toBeNull();
+    expect(forceLogoutSpy).toHaveBeenCalledWith(
+      targetId,
+      expect.objectContaining({
+        reason: "SESSION_INVALIDATED",
+        exceptTokenHash: firstHash,
+      }),
+    );
+
+    // Admin changing role or archiving revokes ALL sessions
+    forceLogoutSpy.mockClear();
+    const adminRoleChange = await http("PUT", `/api/users/${targetId}`, {
+      role: "Supervisor_Elevado",
+      mustChangePassword: true,
+    });
+    expect(adminRoleChange.status).toBe(200);
+    expect(adminRoleChange.body.mustChangePassword).toBe(true);
+    expect(await prismaDirect.activeSession.count({ where: { userId: targetId } })).toBe(0);
+    expect(forceLogoutSpy).toHaveBeenCalledWith(
+      targetId,
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
+  });
+
+  it("[Spec 116] validates pagination, supports employeeId: null, blocks self-delete, and enforces Supervisor_Elevado hierarchy", async () => {
+    // 1. Invalid pagination -> 400 VALIDATION_ERROR
+    for (const qs of [
+      "page=0&pageSize=1",
+      "page=-1&pageSize=1",
+      "page=abc&pageSize=1",
+      "page=1&pageSize=201",
+    ]) {
+      const bad = await http("GET", `/api/users?${qs}`);
+      expect(bad.status).toBe(400);
+      expect(bad.body.code).toBe("VALIDATION_ERROR");
+    }
+
+    // 2. Self-delete blocked
+    const admin = await prismaDirect.user.findUniqueOrThrow({ where: { username: "dto-admin" } });
+    const selfDelete = await http("DELETE", `/api/users/${admin.id}`);
+    expect(selfDelete.status).toBe(400);
+    expect(await prismaDirect.user.findUnique({ where: { id: admin.id } })).not.toBeNull();
+
+    // 3. employeeId: null unlinks employee & blank username rejected
+    const emp = await prismaDirect.employee.create({
+      data: {
+        id: "EMP-UNLINK-1",
+        name: "Unlink Test",
+        rut: "55555555-5",
+        position: "Op",
+        area: "Ops",
+        workdayType: "Normal",
+      },
+    });
+    const linked = await http("POST", "/api/users", {
+      username: "unlink-user",
+      password,
+      role: "Usuario",
+      employeeId: emp.id,
+    });
+    expect(linked.status).toBe(201);
+    expect((await http("PUT", `/api/users/${linked.body.id}`, { username: "   " })).status).toBe(
+      400,
+    );
+    const unlinked = await http("PUT", `/api/users/${linked.body.id}`, { employeeId: null });
+    expect(unlinked.status).toBe(200);
+    expect(unlinked.body.employeeId).toBeNull();
+
+    // 4. Supervisor_Elevado can manage non-Admin users but gets 403 for Admin targets/escalation
+    const elevated = await prismaDirect.user.create({
+      data: {
+        username: "elevated-mgr",
+        role: "Supervisor_Elevado",
+        passwordHash: "hash",
+      },
+    });
+    const elevatedToken = (
+      await AuthService.createSession(
+        elevated.id,
+        elevated.username,
+        elevated.role,
+        null,
+        "elevated-test",
+      )
+    ).token;
+
+    // Allowed: create Usuario
+    const createdByElevated = await http(
+      "POST",
+      "/api/users",
+      { username: "by-elevated", password, role: "Usuario" },
+      elevatedToken,
+    );
+    expect(createdByElevated.status).toBe(201);
+
+    // Forbidden: create Administrador
+    expect(
+      (
+        await http(
+          "POST",
+          "/api/users",
+          { username: "forged-admin", password, role: "Administrador" },
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(403);
+
+    // Allowed: edit non-Admin
+    expect(
+      (
+        await http(
+          "PUT",
+          `/api/users/${createdByElevated.body.id}`,
+          { role: "Supervisor" },
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(200);
+
+    // Forbidden: escalate to Administrador or edit Administrador
+    expect(
+      (
+        await http(
+          "PUT",
+          `/api/users/${createdByElevated.body.id}`,
+          { role: "Administrador" },
+          elevatedToken,
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await http("PUT", `/api/users/${admin.id}`, { username: "hacked" }, elevatedToken)).status,
+    ).toBe(403);
+
+    // Forbidden: delete Administrador
+    expect((await http("DELETE", `/api/users/${admin.id}`, undefined, elevatedToken)).status).toBe(
+      403,
+    );
+
+    // Allowed: delete non-Admin
+    expect(
+      (await http("DELETE", `/api/users/${createdByElevated.body.id}`, undefined, elevatedToken))
+        .status,
+    ).toBe(204);
   });
 });

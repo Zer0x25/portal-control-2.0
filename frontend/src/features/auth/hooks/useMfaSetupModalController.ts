@@ -82,6 +82,18 @@ export const useMfaSetupModalController = ({
     reset({ token: "" });
   }, [isOpen, reset]);
 
+  /** Escape cierra el modal (misma frontera de efectos que ChangePasswordModal). */
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   /** Pide al backend el QR y el secreto para escanear. */
   const handleStartSetup = useCallback(async () => {
     setIsStarting(true);

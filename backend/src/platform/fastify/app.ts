@@ -41,7 +41,11 @@ export interface RouteEntry {
 export interface FastifyDependencies {
   enterWork?(path: string): Promise<() => Promise<void>>;
   closeAdmission?(): void;
-  authenticate(token: string | undefined, requestPath?: string): Promise<AuthUser>;
+  authenticate(
+    token: string | undefined,
+    requestPath?: string,
+    requestMethod?: string,
+  ): Promise<AuthUser>;
   betterAuthHandler?: (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
   holidays: HolidayHttpService;
   users: UserFlows;
@@ -74,6 +78,7 @@ export interface FastifyDependencies {
       healthStatus: "healthy" | "degraded";
       instanceId: string;
     };
+    getPublicHealth?(): Promise<{ database: { status: string } }>;
     getDetailedHealth(): Promise<{ database: { status: string } }>;
   };
   maintenance(): { type: string } | null;
@@ -245,9 +250,22 @@ export function buildFastifyApp(
     allowedHeaders: ["Content-Type", "Authorization"],
   });
   app.register(compress);
-  app.get("/api/health", async (_request, reply) => {
+  app.get("/api/health", async (request, reply) => {
     const start = Date.now();
-    const data = await deps.health.getDetailedHealth();
+    let isAdmin = false;
+    const token = resolveAccessToken(request.headers.authorization);
+    if (token) {
+      try {
+        const user = await deps.authenticate(token, request.url, request.method);
+        isAdmin = user.role === "Administrador";
+      } catch {
+        // Public health falls back to minimal payload when token is invalid or expired.
+      }
+    }
+    const data =
+      isAdmin || !deps.health.getPublicHealth
+        ? await deps.health.getDetailedHealth()
+        : await deps.health.getPublicHealth();
     const failure = data.database.status !== "OK";
     return reply
       .code(failure ? 503 : 200)
@@ -334,17 +352,15 @@ export function buildFastifyApp(
         );
     });
     const authenticate: import("fastify").onRequestHookHandler = async (request) => {
-      const query = request.query;
-      const token =
-        typeof query === "object" && query !== null && "token" in query ? query.token : undefined;
       await work.attach(
         request,
         () => deps.enterWork?.(request.url.split("?")[0]) ?? Promise.resolve(async () => {}),
       );
       const user = await work.run(request, () =>
         deps.authenticate(
-          resolveAccessToken(request.headers.authorization, token),
-          request.url.split("?")[0],
+          resolveAccessToken(request.headers.authorization),
+          request.url,
+          request.method,
         ),
       );
       request.user = user;

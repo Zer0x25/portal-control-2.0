@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
@@ -73,6 +74,13 @@ const toSmtpConfig = (values: SmtpProfileFormValues): SmtpConfig => ({
   fromEmail: values.fromEmail,
 });
 
+/** Indica si un perfil SMTP está sin configurar (campos principales vacíos). */
+const isProfileEmpty = (profile: SmtpProfileFormValues): boolean =>
+  profile.host.trim() === "" &&
+  profile.user.trim() === "" &&
+  profile.pass.trim() === "" &&
+  profile.fromEmail.trim() === "";
+
 /** Opciones del hook del formulario de perfiles SMTP. */
 export interface UseSmtpConfigControllerOptions {
   /** El modal esta abierto. */
@@ -98,8 +106,29 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
 
+  const profileSchema = useMemo(
+    () =>
+      z.any().superRefine((val, ctx) => {
+        const values = val as SmtpProfileFormValues;
+        if (currentSlot !== activeProfileIndex && isProfileEmpty(values)) {
+          return;
+        }
+        const parsed = buildSmtpProfileFormSchema().safeParse(values);
+        if (!parsed.success) {
+          for (const issue of parsed.error.issues) {
+            ctx.addIssue({
+              code: "custom",
+              message: issue.message,
+              path: issue.path,
+            });
+          }
+        }
+      }),
+    [currentSlot, activeProfileIndex],
+  );
+
   const form = useAppForm<SmtpProfileFormValues, MultiSmtpConfig>({
-    schema: buildSmtpProfileFormSchema(),
+    schema: profileSchema,
     defaultValues: toSmtpConfig(initialProfile),
     /**
      * El payload tiene que ser **byte a byte** el de siempre: las cadenas
@@ -114,6 +143,37 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
       activeProfileIndex,
     }),
     onSubmit: async (payload) => {
+      const strictSchema = buildSmtpProfileFormSchema();
+      const activeProfile = payload.profiles[payload.activeProfileIndex];
+      const activeValidation = activeProfile
+        ? strictSchema.safeParse(activeProfile)
+        : { success: false as const, error: { issues: [{ message: "Perfil activo inválido." }] } };
+      if (!activeValidation.success) {
+        addToast(
+          `Perfil activo (${payload.activeProfileIndex + 1}): ${
+            activeValidation.error.issues[0]?.message ?? "Configuración incompleta."
+          }`,
+          "error",
+        );
+        return;
+      }
+
+      for (let idx = 0; idx < payload.profiles.length; idx++) {
+        if (idx === payload.activeProfileIndex) continue;
+        const slotProfile = payload.profiles[idx];
+        if (!slotProfile || isProfileEmpty(slotProfile)) continue;
+        const slotValidation = strictSchema.safeParse(slotProfile);
+        if (!slotValidation.success) {
+          addToast(
+            `Perfil ${idx + 1}: ${
+              slotValidation.error.issues[0]?.message ?? "Configuración incompleta."
+            }`,
+            "error",
+          );
+          return;
+        }
+      }
+
       const result = await emailService.saveConfig(payload);
       if (result.success) {
         addToast("Configuraciones SMTP guardadas correctamente.", "success");
@@ -138,15 +198,34 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
   /** Carga la configuracion guardada cada vez que se abre el modal. */
   useEffect(() => {
     if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  /** Carga la configuracion guardada cada vez que se abre el modal. */
+  useEffect(() => {
+    if (!isOpen) return;
     let cancelled = false;
     setIsLoading(true);
     emailService
       .getConfig()
       .then((stored) => {
         if (cancelled || !stored) return;
-        setProfiles(stored.profiles);
-        setActiveProfileIndex(stored.activeProfileIndex);
-        setCurrentSlot(stored.activeProfileIndex);
+        const normalizedProfiles = [0, 1, 2].map(
+          (idx) => stored.profiles?.[idx] ?? { ...initialProfile },
+        );
+        const safeActive =
+          stored.activeProfileIndex >= 0 && stored.activeProfileIndex <= 2
+            ? stored.activeProfileIndex
+            : 0;
+        setProfiles(normalizedProfiles);
+        setActiveProfileIndex(safeActive);
+        setCurrentSlot(safeActive);
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -158,7 +237,7 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
 
   /** El formulario refleja siempre el perfil del slot que se esta editando. */
   useEffect(() => {
-    reset(toSmtpConfig(profiles[currentSlot]));
+    reset(toSmtpConfig(profiles[currentSlot] ?? initialProfile));
   }, [currentSlot, profiles, reset]);
 
   /** Cambia de perfil: guarda el que se editaba y carga el nuevo. */

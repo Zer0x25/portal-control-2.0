@@ -8,6 +8,7 @@ import {
 import { ExclamationTriangleIcon } from "../../../components/ui/icons/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import Button from "../../../components/ui/Button";
+import { useMobileEditIndicator } from "../hooks/useMobileEditIndicator";
 import { TIME_RECORD_STATUS_CONFIG } from "../../../utils/mappings";
 
 interface TimeRecordMobileCardProps {
@@ -19,7 +20,7 @@ interface TimeRecordMobileCardProps {
   accountingLockDate: string | null;
   isControlInternoEnabled: boolean;
   externalEdits?: AuditLog[];
-  externalPendingRequest?: CorrectionRequest;
+  externalPendingRequest?: Pick<CorrectionRequest, "id" | "timeRecordId" | "status">;
 }
 
 // Spec 037 T12: this stacked mobile card groups schedule, correction, and action details that do not fit the 66 px desktop row.
@@ -34,6 +35,7 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
     accountingLockDate,
     isControlInternoEnabled,
     externalPendingRequest,
+    externalEdits,
   }) => {
     const isLocked = !!(accountingLockDate && record.date <= accountingLockDate);
     const isJustified = !!record.justification;
@@ -44,6 +46,7 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
     };
     const finalDisabledState = isActionDisabledForRole || isJustified || isLocked;
     const pendingRequest = externalPendingRequest;
+    const editIndicator = useMobileEditIndicator(record, accountingLockDate, externalEdits);
 
     return (
       <div
@@ -62,7 +65,11 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               {pendingRequest && (
-                <ExclamationTriangleIcon className="w-3.5 h-3.5 text-token-status-warning" />
+                <ExclamationTriangleIcon
+                  role="img"
+                  aria-label="Solicitud de corrección pendiente"
+                  className="w-3.5 h-3.5 text-token-status-warning"
+                />
               )}
               <p
                 data-list-role="primary"
@@ -89,19 +96,19 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-token-text-secondary">
             <p className="typo-list-value">
               <span className="typo-list-secondary">Entrada:</span>{" "}
-              {formatDisplayDateTime(record.entrada)}
+              {formatDisplayDateTime(record.entrada)} {editIndicator("entrada")}
             </p>
             <p className="typo-list-value">
               <span className="typo-list-secondary">Salida:</span>{" "}
-              {formatDisplayDateTime(record.salida)}
+              {formatDisplayDateTime(record.salida)} {editIndicator("salida")}
             </p>
             <p className="typo-list-value">
               <span className="typo-list-secondary">Ini. Colación:</span>{" "}
-              {formatDisplayDateTime(record.inicioColacion)}
+              {formatDisplayDateTime(record.inicioColacion)} {editIndicator("inicioColacion")}
             </p>
             <p className="typo-list-value">
               <span className="typo-list-secondary">Fin Colación:</span>{" "}
-              {formatDisplayDateTime(record.finColacion)}
+              {formatDisplayDateTime(record.finColacion)} {editIndicator("finColacion")}
             </p>
           </div>
         </div>

@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ROUTES } from "../../constants";
 import { useAuth } from "../useAuth";
 import { useClockingEmployeeOptionsQuery, useEmployeesQuery } from "../queries/useEmployeesQuery";
 import { useSystemStatus } from "../useSystemStatus";
 import { useStore } from "../../store/useStore";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useHeaderController = () => {
-  const { currentUser, logout } = useAuth();
+  const queryClient = useQueryClient();
+  const { currentUser, logout, markMfaEnabled } = useAuth();
   const location = useLocation();
   const useClockingOptions = location.pathname === ROUTES.TIME_CONTROL;
   const employeesQuery = useEmployeesQuery(!useClockingOptions);
@@ -20,9 +23,9 @@ export const useHeaderController = () => {
   const setSoundEnabled = useStore((state) => state.setSoundEnabled);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [isMfaSetupModalOpen, setIsMfaSetupModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,9 +37,8 @@ export const useHeaderController = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate(ROUTES.LOGIN);
+  const handleLogout = async () => {
+    await logout();
   };
 
   const toggleSound = () => {
@@ -48,10 +50,23 @@ export const useHeaderController = () => {
     setIsDropdownOpen(false);
   };
 
+  const openMfaSetup = () => {
+    setIsMfaSetupModalOpen(true);
+    setIsDropdownOpen(false);
+  };
+
+  const handleMfaSetupSuccess = () => {
+    markMfaEnabled();
+    void queryClient.invalidateQueries({ queryKey: queryKeys.users() });
+    setIsMfaSetupModalOpen(false);
+  };
+
   const openManual = () => {
     setIsManualModalOpen(true);
     setIsDropdownOpen(false);
   };
+
+  const canConfigureMfa = currentUser?.role === "Administrador" && !currentUser.mfaEnabled;
 
   const welcomeName = (() => {
     if (currentUser?.employeeId) {
@@ -62,17 +77,22 @@ export const useHeaderController = () => {
   })();
 
   return {
+    canConfigureMfa,
     currentUser,
     dropdownRef,
     handleLogout,
+    handleMfaSetupSuccess,
     isChangePasswordModalOpen,
     isDropdownOpen,
     isManualModalOpen,
+    isMfaSetupModalOpen,
     openChangePassword,
     openManual,
+    openMfaSetup,
     setIsChangePasswordModalOpen,
     setIsDropdownOpen,
     setIsManualModalOpen,
+    setIsMfaSetupModalOpen,
     soundEnabled,
     systemStatus,
     toggleSound,

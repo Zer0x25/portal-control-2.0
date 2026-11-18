@@ -1,7 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, describe, it, expect, vi, beforeEach } from "vitest";
+import { http, HttpResponse } from "msw";
 import { authTokenStore } from "../../../services/authToken";
 import { useTimeControl } from "../../../features/time-control/hooks/useTimeControl";
+import { server } from "../../mocks/server";
 
 const {
   queryArgsMock,
@@ -9,11 +11,13 @@ const {
   schedulingMock,
   scheduleEnrichmentMock,
   accountingLockDateQueryMock,
+  triggerBrowserDownloadMock,
 } = vi.hoisted(() => ({
   queryArgsMock: vi.fn(),
   schedulingMock: vi.fn(),
   scheduleEnrichmentMock: vi.fn(),
   accountingLockDateQueryMock: vi.fn(),
+  triggerBrowserDownloadMock: vi.fn(),
   filtersMock: {
     name: "Ana",
     area: "Ops",
@@ -138,8 +142,8 @@ vi.mock("../../../utils/calculations", () => ({
   getEmployeeClockingStatus: vi.fn(() => null),
 }));
 
-vi.mock("../../../services/apiBase", () => ({
-  API_BASE_URL: "http://localhost:4000",
+vi.mock("../../../utils/triggerBrowserDownload", () => ({
+  triggerBrowserDownload: (...args: unknown[]) => triggerBrowserDownloadMock(...args),
 }));
 
 describe("useTimeControl", () => {
@@ -151,6 +155,11 @@ describe("useTimeControl", () => {
     filtersMock.workdayType = "Full";
     filtersMock.status = "Activo";
     filtersMock.showAnomalies = false;
+  });
+
+  afterEach(() => {
+    authTokenStore.removeToken();
+    server.resetHandlers();
   });
 
   it("builds filtersKey and opens the local quick action modal on row double click", () => {
@@ -174,38 +183,39 @@ describe("useTimeControl", () => {
     expect(accountingLockDateQueryMock).not.toHaveBeenCalled();
   });
 
-  it("exports streaming only when token exists", () => {
-    const locationSpy = vi.spyOn(window, "location", "get");
-    const hrefSetter = vi.fn();
-    locationSpy.mockReturnValue({
-      ...window.location,
-      set href(value: string) {
-        hrefSetter(value);
-      },
-      get href() {
-        return "http://localhost";
-      },
-    } as never);
+  it("exports streaming via Authorization Bearer without token query param only when token exists", async () => {
+    let capturedAuth: string | null = null;
+    let capturedUrl = "";
+    server.use(
+      http.get("http://localhost:4000/api/records/export", ({ request }) => {
+        capturedAuth = request.headers.get("authorization");
+        capturedUrl = request.url;
+        return new HttpResponse(new Blob(["col1,col2"], { type: "text/csv" }), {
+          status: 200,
+          headers: { "content-disposition": 'attachment; filename="marcajes.xlsx"' },
+        });
+      }),
+    );
 
     const { result } = renderHook(() => useTimeControl());
 
     authTokenStore.removeToken();
-    act(() => {
-      result.current.handleExportStreaming("csv");
+    await act(async () => {
+      await result.current.handleExportStreaming("csv");
     });
-    expect(hrefSetter).not.toHaveBeenCalled();
+    expect(capturedUrl).toBe("");
+    expect(triggerBrowserDownloadMock).not.toHaveBeenCalled();
 
     authTokenStore.setToken("token-123");
-    act(() => {
-      result.current.handleExportStreaming("excel");
+    await act(async () => {
+      await result.current.handleExportStreaming("excel");
     });
 
-    expect(hrefSetter).toHaveBeenCalledTimes(1);
-    expect(hrefSetter.mock.calls[0][0]).toContain("/records/export?");
-    expect(hrefSetter.mock.calls[0][0]).toContain("format=excel");
-    expect(hrefSetter.mock.calls[0][0]).toContain("token=token-123");
-
-    locationSpy.mockRestore();
+    expect(capturedAuth).toBe("Bearer token-123");
+    expect(capturedUrl).toContain("/records/export?");
+    expect(capturedUrl).toContain("format=excel");
+    expect(capturedUrl).not.toContain("token=");
+    expect(triggerBrowserDownloadMock).toHaveBeenCalledWith(expect.any(Blob), "marcajes.xlsx");
   });
 
   it("enables anomaly mode when anomaly status is selected in manual filters", () => {

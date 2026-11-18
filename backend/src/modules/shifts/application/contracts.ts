@@ -58,6 +58,7 @@ export interface AssignmentQuery {
   employeeId?: string | null;
   role?: string;
   showArchived?: boolean;
+  search?: string;
 }
 export interface MatrixInput {
   startDate: string;
@@ -109,7 +110,7 @@ export interface ShiftFlowDependencies<
       actor: string,
     ): Promise<Assignment>;
     deleteAssignment(id: string, actor: string): Promise<void>;
-    bulkAssignments(input: AssignmentInput[]): Promise<number>;
+    bulkAssignments(input: AssignmentInput[], actor?: string): Promise<number>;
     daily(id: string, date: Date): Promise<Schedule | null>;
     scheduled(date: Date): Promise<Scheduled[]>;
     month(id: string, year: number, month: number): Promise<Month>;

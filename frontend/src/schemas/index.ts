@@ -115,12 +115,10 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     openApi: "Employee",
     schema: employeeFormFieldsSchema,
     forms: ["EmployeeForm", "ImportModal"],
-    openApiUndeclaredFields: ["area", "workdayType"],
     stricterRequired: ["position"],
     divergences: [
       "rut: digito verificador (regla exclusiva del cliente)",
       "position: el formulario lo exige; el backend lo admite opcional",
-      "area/workdayType: el backend los acepta y los guarda, pero su schema OpenAPI no los declara",
     ],
   },
   {
@@ -153,9 +151,6 @@ export const FORM_SCHEMA_CONTRACTS: readonly FormSchemaContract[] = [
     openApi: "Login",
     schema: loginFormSchema,
     forms: ["LoginPage"],
-    divergences: [
-      "username/password vacios: el backend solo pide `required` (la longitud la decide la API); el formulario exige contenido con un `superRefine` porque la credencial se envia sin recortar",
-    ],
   },
   {
     id: "mfaCodeForm",
@@ -469,7 +464,7 @@ export type EmployeePayloadContract = AssertAssignable<
  * de la comparacion.
  */
 export type EmployeeFormPayloadContract = AssertAssignable<
-  Omit<z.output<typeof employeeFormFieldsSchema>, "area" | "workdayType">,
+  z.output<typeof employeeFormFieldsSchema>,
   components["schemas"]["Employee"]
 >;
 

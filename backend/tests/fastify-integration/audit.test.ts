@@ -159,7 +159,7 @@ describe("Spec022 audit on Fastify", () => {
         action: "UNHANDLED_ERROR",
         category: "SYSTEM",
         severity: "ERROR",
-        details: { message: "historic-secret", stack: "historic-secret" },
+        details: { message: "Failed token=historic-secret", stack: "historic-secret" },
         metadata: { body: { newPassword: "historic-secret" }, query: { token: "historic-secret" } },
       },
     });
@@ -184,29 +184,39 @@ describe("Spec022 audit on Fastify", () => {
     ).toContain("historic-secret");
   });
   it("rejects incomplete manual schema before creating a log", async () => {
+    expect((await http("POST", "/api/audit-logs", { action: "MANUAL" })).status).toBe(400);
+    expect(await prismaDirect.auditLog.count({ where: { action: "MANUAL" } })).toBe(0);
     expect(
       (await http("POST", "/api/audit-logs", { action: "MANUAL", category: "A" })).status,
-    ).toBe(400);
-    expect(await prismaDirect.auditLog.count({ where: { action: "MANUAL" } })).toBe(0);
+    ).toBe(201);
   });
   it("retains success when audit persistence fails", async () => {
     vi.spyOn(prisma.auditLog, "create").mockRejectedValueOnce(new Error("owned test failure"));
     expect((await http("POST", "/api/audit-logs", manual)).status).toBe(201);
     expect(await prismaDirect.auditLog.count({ where: { action: "MANUAL" } })).toBe(0);
   });
-  it.each(["Supervisor", "Reloj_Control", "Usuario"])(
-    "denies reads but allows manual POST for %s",
+  it.each(["Supervisor", "Reloj_Control", "Usuario", "Fiscalizador"])(
+    "denies reads (for non-auditor) and manual POST for %s",
     async (role) => {
       await prismaDirect.user.update({ where: { id: actorId }, data: { role: role as "Usuario" } });
-      for (const path of [
-        "/api/audit-logs",
-        "/api/audit-logs/export",
-        "/api/audit-logs/integrity-status",
-      ])
-        expect((await http("GET", path)).status).toBe(403);
-      expect((await http("POST", "/api/audit-logs", manual)).status).toBe(201);
+      if (role !== "Fiscalizador") {
+        for (const path of [
+          "/api/audit-logs",
+          "/api/audit-logs/export",
+          "/api/audit-logs/integrity-status",
+        ])
+          expect((await http("GET", path)).status).toBe(403);
+      }
+      expect((await http("POST", "/api/audit-logs", manual)).status).toBe(403);
     },
   );
+  it("allows manual POST for Supervisor_Elevado", async () => {
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Supervisor_Elevado" },
+    });
+    expect((await http("POST", "/api/audit-logs", manual)).status).toBe(201);
+  });
   it("Fiscalizador reads/exports/status but cannot verify or clean", async () => {
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Fiscalizador" } });
     await logs();

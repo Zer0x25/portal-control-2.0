@@ -229,10 +229,30 @@ export const correctionRequestFixture = {
   employeeId: "e-1",
   timeRecordId: "r-1",
   recordField: "entrada",
-  currentValue: "08:00",
-  requestedValue: "08:30",
+  originalValue: "2026-03-01T11:00:00.000Z",
+  requestedValue: "2026-03-01T11:30:00.000Z",
   reason: "Prueba",
-  attachment: null,
+};
+
+const correctionRecordFixture = {
+  ...correctionRequestFixture,
+  id: "correction-1",
+  status: "pending",
+  rejectionReason: null,
+  resolvedBy: null,
+  resolvedAt: null,
+  createdAt: "2026-03-01T12:00:00.000Z",
+  updatedAt: "2026-03-01T12:00:00.000Z",
+  isDeleted: false,
+  deletedAt: null,
+};
+
+const approvedCorrectionFixture = {
+  ...correctionRecordFixture,
+  status: "approved",
+  resolvedBy: "tester",
+  resolvedAt: "2026-03-01T13:00:00.000Z",
+  updatedAt: "2026-03-01T13:00:00.000Z",
 };
 
 /** Feriado de ejemplo (cumple el schema OpenAPI de `Holiday`). */
@@ -308,10 +328,10 @@ export const mutationHandlers = [
   http.post(mockUrl(ROUTES.config), () => HttpResponse.json({ data: null })),
 
   // Correcciones.
-  http.post(mockUrl(ROUTES.corrections), () => HttpResponse.json(correctionRequestFixture)),
-  http.patch(mockUrl(ROUTES.correctionStatus), () =>
-    HttpResponse.json({ ...correctionRequestFixture, status: "approved" }),
+  http.post(mockUrl(ROUTES.corrections), () =>
+    HttpResponse.json(correctionRecordFixture, { status: 201 }),
   ),
+  http.patch(mockUrl(ROUTES.correctionStatus), () => HttpResponse.json(approvedCorrectionFixture)),
 
   // Feriados.
   http.post(mockUrl(ROUTES.holidays), () => HttpResponse.json(holidayFixture)),
@@ -559,13 +579,13 @@ export const routeContracts: MockRouteContract[] = [
     method: "POST",
     path: ROUTES.corrections,
     requestBody: correctionRequestFixture,
-    responseBody: correctionRequestFixture,
+    responseBody: correctionRecordFixture,
   },
   {
     method: "PATCH",
     path: ROUTES.correctionStatus,
     requestBody: { status: "approved", resolvedBy: "tester" },
-    responseBody: { ...correctionRequestFixture, status: "approved" },
+    responseBody: approvedCorrectionFixture,
   },
   {
     method: "GET",

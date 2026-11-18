@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { meterService } from "../services/meterService";
 import { useToasts } from "./useToasts";
-import { MeterReadingItem } from "../types/dashboard";
+import { Schema } from "../services/apiClient";
 import { queryKeys } from "../lib/queryKeys";
 
 export const useMeterMutations = () => {
@@ -9,7 +9,7 @@ export const useMeterMutations = () => {
   const { addToast } = useToasts();
 
   const addReadingMutation = useMutation({
-    mutationFn: (newReadings: MeterReadingItem[]) => meterService.saveBulk(newReadings),
+    mutationFn: (newReadings: Schema<"MeterReading">[]) => meterService.saveBulk(newReadings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.meterReadings() });
       queryClient.invalidateQueries({ queryKey: queryKeys.config("meter_configs") });

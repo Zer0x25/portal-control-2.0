@@ -110,6 +110,10 @@ export const useScheduling = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: isLoadingCorrectionRequests,
+    isError: isErrorCorrectionRequests,
+    isFetchNextPageError: isFetchNextPageCorrectionRequestsError,
+    refetch: refetchCorrectionRequests,
   } = useCorrectionRequestsQuery(requestsStatus, sinceRequests, includeCorrectionRequests);
 
   const requests = infiniteRequests?.pages.flatMap((page) => page.requests) || [];
@@ -283,6 +287,10 @@ export const useScheduling = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoadingCorrectionRequests,
+    isErrorCorrectionRequests,
+    isFetchNextPageCorrectionRequestsError,
+    refetchCorrectionRequests,
 
     // Actions
     getRequestsForEmployee,

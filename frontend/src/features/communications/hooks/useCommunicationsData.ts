@@ -1,16 +1,20 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
-import { getSettingValue, setSettingValue, COUNTER_IDS } from "../../../utils/indexedDB";
+import { configService } from "../../../services/configService";
 import DOMPurify from "../../../utils/domPurify";
 import { logger } from "../../../utils/logger";
+
+const COMMUNICATIONS_CONFIG_KEY = "communications_content";
 
 export const useCommunicationsData = () => {
   const { currentUser } = useAuth();
   const { addToast } = useToasts();
 
   const [content, setContent] = useState("");
+  const [savedContent, setSavedContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const isAdmin = currentUser?.role === "Administrador";
@@ -26,11 +30,10 @@ export const useCommunicationsData = () => {
     const loadContent = async () => {
       setIsLoading(true);
       try {
-        const storedContent = await getSettingValue<string>(
-          COUNTER_IDS.COMMUNICATIONS_CONTENT_ID,
-          "",
-        );
-        setContent(storedContent);
+        const storedContent = await configService.get<string>(COMMUNICATIONS_CONFIG_KEY);
+        const resolved = typeof storedContent === "string" ? storedContent : "";
+        setContent(resolved);
+        setSavedContent(resolved);
       } catch (error) {
         logger.error("Error loading communications content:", error);
         addToast("Error al cargar los comunicados.", "error");
@@ -42,24 +45,35 @@ export const useCommunicationsData = () => {
   }, [addToast]);
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
-      await setSettingValue(COUNTER_IDS.COMMUNICATIONS_CONTENT_ID, content);
+      await configService.set(COMMUNICATIONS_CONFIG_KEY, content);
+      setSavedContent(content);
       addToast("Comunicado guardado con éxito.", "success");
       setIsEditing(false);
     } catch (error) {
       logger.error("Error saving communications content:", error);
       addToast("Error al guardar el comunicado.", "error");
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  const handleDiscard = useCallback(() => {
+    setContent(savedContent);
+    setIsEditing(false);
+  }, [savedContent]);
 
   return {
     content,
     safeContent,
     isLoading,
+    isSaving,
     isEditing,
     isAdmin,
     setContent,
     setIsEditing,
     handleSave,
+    handleDiscard,
   };
 };

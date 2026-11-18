@@ -233,3 +233,51 @@ it("maintenance admission denies delivery without touching a report", async () =
   expect(fixture.findUnique).not.toHaveBeenCalled();
   expect(fixture.render).not.toHaveBeenCalled();
 });
+
+it("escapes HTML in report name/description and delivers independently to all recipients", async () => {
+  fixture.report.name = 'Report <script>alert("x")</script>';
+  fixture.report.description = 'Desc & "quote"';
+  fixture.report.reportType = "calendar";
+  fixture.report.recipients = "fail@example.com, ok@example.com";
+  fixture.send
+    .mockResolvedValueOnce({ success: false, message: "SMTP error" })
+    .mockResolvedValueOnce({ success: true, message: "sent" });
+
+  await executeReport("r");
+
+  expect(fixture.send).toHaveBeenCalledTimes(2);
+  expect(fixture.send).toHaveBeenNthCalledWith(
+    1,
+    "fail@example.com",
+    expect.any(String),
+    expect.stringContaining("Report &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;"),
+    expect.any(Buffer),
+    expect.any(String),
+  );
+  expect(fixture.send).toHaveBeenNthCalledWith(
+    2,
+    "ok@example.com",
+    expect.any(String),
+    expect.stringContaining("Desc &amp; &quot;quote&quot;"),
+    expect.any(Buffer),
+    expect.any(String),
+  );
+  expect(fixture.send).toHaveBeenNthCalledWith(
+    2,
+    "ok@example.com",
+    expect.any(String),
+    expect.stringContaining("Calendario de Turnos"),
+    expect.any(Buffer),
+    expect.any(String),
+  );
+  expect(fixture.report.lastRunAt).not.toBeNull();
+});
+
+it("does not mark delivered when all recipients fail", async () => {
+  fixture.report.recipients = "a@example.com, b@example.com";
+  fixture.send.mockResolvedValue({ success: false, message: "fail" });
+
+  await expect(executeReport("r")).rejects.toThrow("No se pudo entregar el reporte");
+  expect(fixture.send).toHaveBeenCalledTimes(2);
+  expect(fixture.report.lastRunAt).toBeNull();
+});

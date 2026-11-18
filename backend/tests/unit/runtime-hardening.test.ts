@@ -1,22 +1,42 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAllowedOrigins, isOriginAllowed } from "../../src/utils/corsPolicy";
 
-const { userUpdateMock, auditLogMock, socketEmitMock } = vi.hoisted(() => ({
+const {
+  userUpdateMock,
+  userFindUniqueMock,
+  sessionDeleteManyMock,
+  auditLogMock,
+  socketEmitMock,
+  socketForceLogoutMock,
+} = vi.hoisted(() => ({
   userUpdateMock: vi.fn(),
+  userFindUniqueMock: vi.fn(),
+  sessionDeleteManyMock: vi.fn(),
   auditLogMock: vi.fn(),
   socketEmitMock: vi.fn(),
+  socketForceLogoutMock: vi.fn(),
 }));
 
-vi.mock("../../src/services/db", () => ({
-  default: { user: { update: userUpdateMock } },
-}));
-
+vi.mock("../../src/services/db", () => {
+  const tx = {
+    $queryRaw: vi.fn(async () => []),
+    user: { update: userUpdateMock, findUnique: userFindUniqueMock },
+    activeSession: { deleteMany: sessionDeleteManyMock },
+  };
+  return {
+    default: {
+      user: { update: userUpdateMock, findUnique: userFindUniqueMock },
+      activeSession: { deleteMany: sessionDeleteManyMock },
+    },
+    withDirectTransaction: vi.fn(async (cb: (client: typeof tx) => unknown) => cb(tx)),
+  };
+});
 vi.mock("../../src/services/auditService", () => ({
   auditService: { log: auditLogMock, logError: vi.fn().mockResolvedValue(undefined) },
 }));
 
 vi.mock("../../src/services/socketService", () => ({
-  SocketService: { emit: socketEmitMock },
+  SocketService: { emit: socketEmitMock, emitForceLogoutToUser: socketForceLogoutMock },
 }));
 
 // cryptoUtils hace fail-fast sin JWT_SECRET a nivel de módulo. Este archivo
@@ -57,6 +77,13 @@ describe("UserService.updateUser force flag (spec 002 H-06)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     service = new UserService();
+    userFindUniqueMock.mockResolvedValue({
+      id: "u-1",
+      username: "juan.perez",
+      role: "Usuario",
+      isForcePasswordChange: true,
+    });
+    sessionDeleteManyMock.mockResolvedValue({ count: 1 });
     userUpdateMock.mockImplementation(async ({ where, data }) => ({
       id: where.id,
       username: "juan.perez",

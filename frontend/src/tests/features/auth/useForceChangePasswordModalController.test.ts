@@ -12,7 +12,7 @@ const { useUsersMock, useToastsMock, addToastMock, changeOwnPasswordMock, onClos
   }));
 
 vi.mock("../../../hooks/useUsers", () => ({
-  useUsers: () => useUsersMock(),
+  useUsers: (...args: unknown[]) => useUsersMock(...args),
 }));
 
 vi.mock("../../../hooks/useToasts", () => ({
@@ -97,6 +97,7 @@ describe("useForceChangePasswordModalController", () => {
     });
 
     await waitFor(() => {
+      expect(useUsersMock).toHaveBeenCalledWith({ enabled: false });
       expect(changeOwnPasswordMock).toHaveBeenCalledWith({ newPassword: "abcdef" });
     });
     expect(addToastMock).toHaveBeenCalledWith("Contraseña actualizada con éxito.", "success");

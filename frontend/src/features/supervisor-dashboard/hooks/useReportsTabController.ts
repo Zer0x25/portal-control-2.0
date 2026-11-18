@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useToasts } from "../../../hooks/useToasts";
 import { useEmployees } from "../../../hooks/useEmployees";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
+import { timeRecordService } from "../../../services/timeRecordService";
 import {
   downloadReportExcel,
   downloadReportPDF,
@@ -80,12 +79,14 @@ export const useReportsTabController = () => {
     try {
       const employeeIds = singleEmployeeMode ? [filters.employeeId] : undefined;
       const area = !singleEmployeeMode ? filters.area : undefined;
+      const workdayType = filters.workdayType || undefined;
 
       const result = await getDetailedReport({
         startDate: filters.startDateISO,
         endDate: filters.endDateISO,
         employeeIds,
         area,
+        workdayType,
       });
 
       setIsSingleEmployeeReport(singleEmployeeMode);
@@ -156,20 +157,16 @@ export const useReportsTabController = () => {
       }
 
       try {
-        const token = authService.getToken();
-
         if (formatType === "csv" || formatType === "xml") {
-          const query = new URLSearchParams();
-          query.set("startDate", filters.startDateISO);
-          query.set("endDate", filters.endDateISO);
-          query.set("format", formatType);
-          if (filters.employeeId && filters.employeeId !== "ALL")
-            query.set("employeeId", filters.employeeId);
-          if (filters.area && filters.area !== "TODOS") query.set("area", filters.area);
-          query.set("token", token || "");
-
-          const downloadUrl = `${API_BASE_URL}/records/export?${query.toString()}`;
-          window.location.href = downloadUrl;
+          const { blob, filename } = await timeRecordService.downloadExport({
+            startDate: filters.startDateISO,
+            endDate: filters.endDateISO,
+            format: formatType,
+            employeeId:
+              filters.employeeId && filters.employeeId !== "ALL" ? filters.employeeId : undefined,
+            area: filters.area && filters.area !== "TODOS" ? filters.area : undefined,
+          });
+          triggerBrowserDownload(blob, filename);
           addToast(`Descarga de ${formatType.toUpperCase()} iniciada.`, "success");
           return;
         }
@@ -181,7 +178,8 @@ export const useReportsTabController = () => {
               endDate: filters.endDateISO,
               employeeId: filters.employeeId,
               area: filters.area,
-              mode: isSingleEmployeeReport ? "detailed" : "summary",
+              workdayType: filters.workdayType || undefined,
+              mode: isSingleEmployeeReport ? "compiled_detailed" : "summary",
             });
             triggerBrowserDownload(blob, filename);
             addToast("Descarga Excel iniciada", "success");
@@ -196,6 +194,7 @@ export const useReportsTabController = () => {
               endDate: filters.endDateISO,
               area: filters.area,
               employeeId: filters.employeeId,
+              workdayType: filters.workdayType || undefined,
             });
             triggerBrowserDownload(blob, filename);
             addToast("Reporte PDF generado correctamente.", "success");
@@ -218,6 +217,7 @@ export const useReportsTabController = () => {
         startDate: filters.startDateISO,
         endDate: filters.endDateISO,
         area: filters.area,
+        workdayType: filters.workdayType || undefined,
         mode: "summary",
       });
       triggerBrowserDownload(blob, filename);
@@ -225,7 +225,7 @@ export const useReportsTabController = () => {
     } catch {
       addToast("Falla en compilación", "error");
     }
-  }, [addToast, filters.area, filters.endDateISO, filters.startDateISO]);
+  }, [addToast, filters.area, filters.endDateISO, filters.startDateISO, filters.workdayType]);
 
   const handleExportPdfCompiled = useCallback(async () => {
     setShowPdfModeModal(false);
@@ -235,6 +235,7 @@ export const useReportsTabController = () => {
         startDate: filters.startDateISO,
         endDate: filters.endDateISO,
         area: filters.area,
+        workdayType: filters.workdayType || undefined,
         mode: "compiled_detailed",
       });
       triggerBrowserDownload(blob, filename);
@@ -242,7 +243,7 @@ export const useReportsTabController = () => {
     } catch {
       addToast("Falla en compilación", "error");
     }
-  }, [addToast, filters.area, filters.endDateISO, filters.startDateISO]);
+  }, [addToast, filters.area, filters.endDateISO, filters.startDateISO, filters.workdayType]);
 
   return {
     activeEmployees,

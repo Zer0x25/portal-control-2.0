@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router";
 
-export type ConfigTabId = "variables" | "email" | "master-data";
+export type ConfigTabId = "variables" | "email" | "scheduled-reports" | "master-data";
 
 interface UseConfigurationDataParams {
   defaultTab?: ConfigTabId;
 }
 
-const VALID_TABS: ConfigTabId[] = ["variables", "email", "master-data"];
+const VALID_TABS: ConfigTabId[] = ["variables", "email", "scheduled-reports", "master-data"];
 
 const isConfigTabId = (value: string | null): value is ConfigTabId => {
   return value !== null && VALID_TABS.includes(value as ConfigTabId);

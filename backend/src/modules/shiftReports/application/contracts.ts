@@ -1,14 +1,17 @@
 export interface ShiftReportQuery {
-  since?: string;
-  page?: string;
-  pageSize?: string;
+  since?: string | number;
+  page?: string | number;
+  pageSize?: string | number;
   status?: string;
+  search?: string;
+  date?: string;
 }
 export interface LogEntry {
   id: string;
   time: string;
   annotation: string;
   timestamp: number;
+  recordId?: string;
 }
 export interface SupplierEntry {
   id: string;
@@ -30,6 +33,7 @@ export interface ShiftReportInput {
   status?: string;
   date: string;
   logEntries?: string | LogEntry[];
+  removedLogEntryIds?: string[];
   supplierEntries?: string | SupplierEntry[];
 }
 export interface ShiftReportFlowDependencies<Row, List> {
@@ -38,5 +42,10 @@ export interface ShiftReportFlowDependencies<Row, List> {
     save(input: ShiftReportInput, actor: string): Promise<Row>;
     update?(id: string, input: Partial<ShiftReportInput>, actor: string): Promise<Row>;
     delete?(id: string, actor: string): Promise<void>;
+    addAttendanceNovelty?(
+      id: string,
+      input: { recordId: string; annotation: string; time: string },
+      actor: string,
+    ): Promise<unknown>;
   };
 }

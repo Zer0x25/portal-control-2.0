@@ -6,6 +6,7 @@ import {
   EnvelopeIcon,
   DocumentArrowDownIcon,
   ActivityIcon,
+  CalendarDaysIcon,
 } from "../../../components/ui/icons/index";
 import LazySectionFallback from "../../../components/ui/LazySectionFallback";
 import Container from "../../../components/ui/Container";
@@ -13,9 +14,10 @@ import TabNav from "../../../components/ui/TabNav";
 
 const GlobalVariablesView = React.lazy(() => import("../components/GlobalVariablesView"));
 const EmailCenterView = React.lazy(() => import("../containers/EmailCenter.container"));
+const ScheduledReportsView = React.lazy(() => import("../containers/ScheduledReports.container"));
 const MasterDataExportView = React.lazy(() => import("../containers/MasterDataExport.container"));
 
-export type ConfigurationTabId = "variables" | "email" | "master-data";
+export type ConfigurationTabId = "variables" | "email" | "scheduled-reports" | "master-data";
 
 export interface ConfigurationViewProps {
   activeTab: ConfigurationTabId;
@@ -29,6 +31,7 @@ const tabs: Array<{
 }> = [
   { id: "variables", label: "Variables Globales", icon: ShieldIcon },
   { id: "email", label: "Centro de Correos", icon: EnvelopeIcon },
+  { id: "scheduled-reports", label: "Reportes Programados", icon: CalendarDaysIcon },
   { id: "master-data", label: "Exportación de Datos", icon: DocumentArrowDownIcon },
 ];
 
@@ -77,6 +80,7 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
             <Suspense fallback={<LazySectionFallback rows={5} className="py-6" />}>
               {activeTab === "variables" && <GlobalVariablesView />}
               {activeTab === "email" && <EmailCenterView />}
+              {activeTab === "scheduled-reports" && <ScheduledReportsView />}
               {activeTab === "master-data" && <MasterDataExportView />}
             </Suspense>
           </div>

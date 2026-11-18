@@ -9,6 +9,7 @@ const {
   mutateResolveAsyncMock,
   refetchOpenShiftReportsMock,
   useReportsQueryMock,
+  addAttendanceNoveltyMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   closeQuickActionModalMock: vi.fn(),
@@ -16,6 +17,11 @@ const {
   mutateResolveAsyncMock: vi.fn(),
   refetchOpenShiftReportsMock: vi.fn(),
   useReportsQueryMock: vi.fn(),
+  addAttendanceNoveltyMock: vi.fn(),
+}));
+
+vi.mock("../../../services/shiftReportService", () => ({
+  shiftReportService: { addAttendanceNovelty: addAttendanceNoveltyMock },
 }));
 
 vi.mock("../../../hooks/useToasts", () => ({
@@ -161,6 +167,40 @@ describe("useTimeControlModals", () => {
     );
     expect(result.current.isAddNoveltyModalOpen).toBe(false);
     expect(closeQuickActionModalMock).not.toHaveBeenCalled();
+  });
+
+  it("persists a novelty for its record and keeps the dialog open on failure", async () => {
+    const { result } = renderHook(() =>
+      useTimeControlModals({ closeQuickActionModal: closeQuickActionModalMock }),
+    );
+    await act(async () => {
+      await result.current.handleAddCommentClick({
+        id: "t2",
+        employeeName: "Luis",
+        date: "2026-03-03",
+        entrada: "2026-03-03T08:00:00.000Z",
+      } as never);
+    });
+    addAttendanceNoveltyMock.mockRejectedValueOnce(new Error("turno cerrado"));
+    await act(async () => {
+      await result.current.handleSaveNovelty("Detalle", "09:30");
+    });
+    expect(result.current.isAddNoveltyModalOpen).toBe(true);
+    expect(addToastMock).toHaveBeenCalledWith(
+      expect.stringContaining("No se pudo guardar"),
+      "error",
+    );
+    addAttendanceNoveltyMock.mockResolvedValueOnce(undefined);
+    await act(async () => {
+      await result.current.handleSaveNovelty("Detalle", "09:30");
+    });
+    expect(addAttendanceNoveltyMock).toHaveBeenCalledWith("r1", {
+      recordId: "t2",
+      annotation: "Detalle",
+      time: "09:30",
+    });
+    expect(result.current.isAddNoveltyModalOpen).toBe(false);
+    expect(addToastMock).toHaveBeenCalledWith("Novedad agregada a la bitácora.", "success");
   });
 
   it("shows a load error instead of reporting that no shift is active", async () => {

@@ -109,6 +109,31 @@ describe("useTimeRecordsQuery anomaly filtering (spec 035 T4)", () => {
     expect(recorder.countOf("GET", "/api/records")).toBeGreaterThan(0);
   });
 
+  it("does not use IndexedDB for clocking state when the server fails", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/records`, () =>
+        HttpResponse.json({ message: "backend caido" }, { status: 400 }),
+      ),
+    );
+    idbGetAllMock.mockResolvedValue([{ id: "stale", employeeId: "e1", employeeName: "Ana" }]);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(
+      () =>
+        useTimeRecordsQuery({
+          pageSize: 5,
+          allowCache: false,
+          filters: { employeeId: "e1" },
+        }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
+    expect(idbGetAllMock).not.toHaveBeenCalled();
+  });
+
   it("does not repopulate stale cached rows when backend returns empty for a manual status filter", async () => {
     idbGetAllMock.mockResolvedValue([
       {
@@ -203,5 +228,43 @@ describe("useTimeRecordMutations punch error toast (spec 030 / spec 035 T4)", ()
     // El cuerpo sale al backend con el contrato real del endpoint.
     expect(punchBodies).toHaveLength(1);
     expect(punchBodies[0]).toMatchObject({ employeeId: "e1", source: "WEB" });
+  });
+
+  it("no invalida employeesKiosk ni emite rate_limited global en 429 cuando authScope es kiosk", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    const rateLimitedSpy = vi.fn();
+    window.addEventListener("rate_limited", rateLimitedSpy);
+
+    server.use(
+      http.post(`${TEST_API_URL}/records/punch`, () =>
+        HttpResponse.json({ message: "Demasiados intentos" }, { status: 429 }),
+      ),
+    );
+
+    const kioskWrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useTimeRecordMutations(), { wrapper: kioskWrapper });
+
+    await act(async () => {
+      await expect(
+        result.current.punchMutation.mutateAsync({
+          employeeId: "e1",
+          source: "KIOSK",
+          authScope: "kiosk",
+          suppressErrorToast: true,
+        }),
+      ).rejects.toThrow("Demasiados intentos");
+    });
+
+    expect(rateLimitedSpy).not.toHaveBeenCalled();
+    expect(invalidateSpy).not.toHaveBeenCalledWith(
+      expect.objectContaining({ queryKey: ["employeesKiosk"] }),
+    );
+    window.removeEventListener("rate_limited", rateLimitedSpy);
   });
 });

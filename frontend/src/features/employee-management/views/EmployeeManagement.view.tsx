@@ -17,7 +17,7 @@ const ImportModal = React.lazy(() => import("../components/ImportModal"));
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
-import type { Employee } from "../../../types";
+import type { Employee, User } from "../../../types";
 import type { EmployeeFormFieldsValues } from "../../../schemas/forms/employee";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
@@ -33,6 +33,8 @@ interface ImportFieldSchema {
 
 export interface EmployeeManagementViewProps {
   isEmbedded?: boolean;
+  allEmployees?: Employee[];
+  allUsers?: User[];
   areaList: string[];
   workdayTypeList: string[];
   isLoadingEmployees: boolean;
@@ -69,7 +71,7 @@ export interface EmployeeManagementViewProps {
   setIsImportModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleImportEmployees: (data: Partial<Employee>[]) => Promise<boolean>;
   setEmployeeToArchive: React.Dispatch<React.SetStateAction<Employee | null>>;
-  handleConfirmArchive: () => Promise<void>;
+  handleConfirmArchive: () => Promise<boolean | void>;
   setHistoryModalEmployee: React.Dispatch<React.SetStateAction<Employee | null>>;
   handleSelectEmployeeToArchive: (employee: Employee) => Promise<void>;
 }
@@ -80,6 +82,8 @@ export interface EmployeeManagementViewProps {
 export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (props) => {
   const {
     isEmbedded,
+    allEmployees,
+    allUsers,
     areaList,
     workdayTypeList,
     isLoadingEmployees,
@@ -142,7 +146,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
           Protocolo de Desvinculación
         </p>
         <ul className="text-[11px] text-orange-700 dark:text-orange-300 mt-2 space-y-1 font-semibold uppercase tracking-tight list-disc ml-4">
-          <li>Eliminación permanente del usuario de acceso.</li>
+          <li>Archivado del usuario de acceso y revocación de sesiones.</li>
           <li>Cierre de turnos activos al día de hoy.</li>
           <li>Eliminación de todas las planificaciones futuras.</li>
         </ul>
@@ -365,10 +369,13 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
           onCancel={handleCancel}
           employee={editingEmployee}
           nextEmployeeId={nextId}
-          existingEmployees={processedEmployees}
+          existingEmployees={allEmployees ?? processedEmployees}
           areaList={areaList}
           workdayTypeList={workdayTypeList}
-          hasLinkedUser={false}
+          hasLinkedUser={Boolean(
+            editingEmployee &&
+            (allUsers ?? []).some((user) => user.employeeId === editingEmployee.id),
+          )}
         />
       </CinematicModal>
 
@@ -377,9 +384,11 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
           <ConfirmationModal
             isOpen={!!employeeToArchive}
             onClose={() => setEmployeeToArchive(null)}
-            onConfirm={() => {
-              handleConfirmArchive();
-              setEmployeeToArchive(null);
+            onConfirm={async () => {
+              const ok = await handleConfirmArchive();
+              if (ok !== false) {
+                setEmployeeToArchive(null);
+              }
             }}
             title="Confirmar Archivo de Personal"
             message={archiveModalContent}

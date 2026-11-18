@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-import { ERROR_MESSAGES } from "../../utils/errorMessages";
 import type { UserRole } from "../../types/index";
-import { USER_ROLES, optionalText, requiredTextMin } from "./common";
+import { USER_ROLES, optionalNullableText, optionalText, requiredTextMin } from "./common";
+
+const USER_UPDATE_ROLES = [...USER_ROLES, "Archivado"] as const;
 
 /**
  * Spec 036 T5 (AC2): alta de usuario (`UserForm.tsx`).
@@ -25,8 +26,8 @@ export const userCreateFormSchema = z.object({
 export const userUpdateFormSchema = z.object({
   username: requiredTextMin("El usuario", 3).optional(),
   password: requiredTextMin("La contraseña", 6).optional(),
-  role: z.enum(USER_ROLES).optional(),
-  employeeId: optionalText(),
+  role: z.enum(USER_UPDATE_ROLES).optional(),
+  employeeId: optionalNullableText(),
 });
 
 /** Tipo de la entrada del formulario de alta de usuario. */
@@ -53,7 +54,7 @@ export interface UserFormValues {
   /** Nivel de autorizacion. */
   role: UserRole;
   /** Empleado vinculado (opcional). */
-  employeeId?: string;
+  employeeId?: string | null;
 }
 
 /**
@@ -78,23 +79,10 @@ export interface UserFormValidationContext {
  * La regla del alta (la contraseña es obligatoria) depende del contexto, asi
  * que vive en el `superRefine` del constructor y no en el schema base.
  */
-export const buildUserFormSchema = (context: UserFormValidationContext) =>
-  z
-    .object({
-      username: requiredTextMin("El usuario", 3),
-      password: requiredTextMin("La contraseña", 6).optional(),
-      role: z.enum(USER_ROLES),
-      employeeId: optionalText(),
-    })
-    .superRefine((values, ctx) => {
-      if (context.isEditing) return;
-      if (values.password === undefined || values.password.length < 6) {
-        // El formulario **no muestra** un campo de contraseña (muestra la
-        // temporal que el backend asigna), asi que el error es de formulario y
-        // no de campo: se muestra arriba, no junto a un input inexistente.
-        ctx.addIssue({
-          code: "custom",
-          message: ERROR_MESSAGES.required("La contraseña"),
-        });
-      }
-    });
+export const buildUserFormSchema = (_context: UserFormValidationContext) =>
+  z.object({
+    username: requiredTextMin("El usuario", 3),
+    password: requiredTextMin("La contraseña", 6).optional(),
+    role: z.enum(USER_UPDATE_ROLES),
+    employeeId: optionalNullableText(),
+  });

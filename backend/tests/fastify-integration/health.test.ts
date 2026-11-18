@@ -2,11 +2,14 @@ import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
 import { backupHealthService } from "../../src/services/backupHealthService";
-import { assertConnectedToTestDb } from "../integration/_support/testDb";
+import { AuthService } from "../../src/services/AuthService";
+import { prismaDirect } from "../../src/services/db";
+import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
 
 let app: FastifyInstance;
 beforeAll(async () => {
   await assertConnectedToTestDb();
+  await resetIntegrationDb();
   app = createFastifyRuntime({
     allowedOrigins: [],
     trustProxy: 1,
@@ -17,37 +20,62 @@ beforeAll(async () => {
 });
 afterEach(() => vi.restoreAllMocks());
 afterAll(async () => {
+  await resetIntegrationDb();
   await app?.close();
 });
 
-it("preserves degraded/200 health when backups are enabled and stale", async () => {
+it("preserves degraded/200 health without exposing internal details when unauthenticated", async () => {
   vi.spyOn(backupHealthService, "getStatus").mockReturnValue({
     enabled: true,
     stale: true,
     staleThresholdHours: 26,
     lastAttemptAt: null,
     lastSuccessAt: null,
-    lastError: null,
+    lastError: "secret internal error",
     latestFileAt: null,
     latestFileAgeHours: null,
   });
   const response = await app.inject({ url: "/api/health" });
   expect(response.statusCode).toBe(200);
-  expect(response.json()).toMatchObject({
+  const body = response.json();
+  expect(body).toMatchObject({
     success: true,
-    data: { status: "degraded", backup: { enabled: true, stale: true } },
+    data: { status: "degraded", database: { status: "OK" } },
   });
+  expect(body.data.system).toBeUndefined();
+  expect(body.data.backup).toBeUndefined();
+  expect(body.data.database.size).toBeUndefined();
 });
 
-it("exposes persistent instanceId and system details in health response", async () => {
+it("exposes full health details only to Administrador and persistent instanceId publicly", async () => {
   const first = await app.inject({ url: "/api/health" });
   expect(first.statusCode).toBe(200);
   const data1 = first.json().data;
   expect(data1.instanceId).toBeDefined();
   expect(typeof data1.instanceId).toBe("string");
   expect(data1.instanceId.length).toBeGreaterThan(0);
+  expect(data1.system).toBeUndefined();
 
   const second = await app.inject({ url: "/api/health" });
-  const data2 = second.json().data;
-  expect(data2.instanceId).toBe(data1.instanceId);
+  expect(second.json().data.instanceId).toBe(data1.instanceId);
+
+  const admin = await prismaDirect.user.create({
+    data: { username: "health-admin", role: "Administrador", passwordHash: "test-only" },
+  });
+  const { token: adminToken } = await AuthService.createSession(
+    admin.id,
+    admin.username,
+    admin.role,
+    undefined,
+    "spec120",
+  );
+  const adminRes = await app.inject({
+    url: "/api/health",
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  expect(adminRes.statusCode).toBe(200);
+  const adminData = adminRes.json().data;
+  expect(adminData.system?.nodeVersion).toBeDefined();
+  expect(adminData.database?.size).toBeDefined();
+  expect(adminData.backup).toBeDefined();
 });

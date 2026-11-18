@@ -31,14 +31,24 @@ function fields(value: unknown): Record<string, unknown> {
   const result = clean(value);
   return object(result) ? result : {};
 }
+function redactInlineSecrets(message: string): string {
+  return message
+    .replace(/(Bearer\s+)[A-Za-z0-9._~+/-]+=*/gi, `$1${marker}`)
+    .replace(/(postgres(?:ql)?:\/\/[^:\s]+:)[^@\s]+(@)/gi, `$1${marker}$2`)
+    .replace(
+      /((?:password|secret|token|api[_-]?key|credential)\s*[=:]\s*)([^\s,;]+)/gi,
+      `$1${marker}`,
+    );
+}
 export function redactAuditFields(action: string, details: unknown, metadata: unknown) {
   const result = {
     details: details == null ? null : fields(details),
     metadata: metadata == null ? null : fields(metadata),
   };
   if (action === "UNHANDLED_ERROR") {
-    if (result.details && "message" in result.details)
-      result.details.message = "Error al procesar solicitud";
+    if (result.details && typeof result.details.message === "string") {
+      result.details.message = redactInlineSecrets(result.details.message);
+    }
     if (result.details && "stack" in result.details) result.details.stack = marker;
     for (const key of ["body", "query"])
       if (result.metadata && key in result.metadata) result.metadata[key] = marker;

@@ -27,6 +27,7 @@ export function createShiftReportFlows<Row, List>(deps: ShiftReportFlowDependenc
             `No se puede iniciar turno. El turno de ${String(conflict.responsibleUser)} (Folio: ${String(conflict.folio)}) ya está abierto.`,
           );
         }
+        if (error instanceof AppError) throw error;
         throw new AppError(
           "Error al guardar reporte de turno: " +
             (error instanceof Error ? error.message : "Error desconocido"),
@@ -40,6 +41,15 @@ export function createShiftReportFlows<Row, List>(deps: ShiftReportFlowDependenc
         throw new AppError("Operación de actualización no soportada", 501, "NOT_IMPLEMENTED");
       }
       return deps.service.update(id, input, actor);
+    },
+    async addAttendanceNovelty(
+      id: string,
+      input: { recordId: string; annotation: string; time: string },
+      actor: string,
+    ) {
+      if (!deps.service.addAttendanceNovelty)
+        throw new AppError("Operación no soportada", 501, "NOT_IMPLEMENTED");
+      return deps.service.addAttendanceNovelty(id, input, actor);
     },
     async delete(id: string, actor = "SYSTEM") {
       if (!deps.service.delete) {

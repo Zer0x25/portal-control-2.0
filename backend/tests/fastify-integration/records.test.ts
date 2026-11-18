@@ -6,6 +6,8 @@ import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { EmailService } from "../../src/services/EmailService";
 import { SocketService } from "../../src/services/socketService";
+import { TimeRecordService } from "../../src/services/TimeRecordService";
+import { timeRecordIntegrityService } from "../../src/services/timeRecordIntegrityService";
 import { getChileDateISO } from "../../src/utils/timeUtils";
 import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
 import { httpClient } from "./_support/http";
@@ -99,6 +101,43 @@ describe("Spec 014 records on Fastify", () => {
         .integrityHash,
     ).toBeTruthy();
   });
+  it("verifies real predecessors when dates are interleaved and detects a changed record", async () => {
+    const rows = [
+      { id: "chain-a", date: "2026-01-01", createdAt: new Date("2026-01-01T00:00:00Z") },
+      { id: "chain-b", date: "2026-03-01", createdAt: new Date("2026-01-02T00:00:00Z") },
+      { id: "chain-c", date: "2026-02-01", createdAt: new Date("2026-01-03T00:00:00Z") },
+      { id: "chain-d", date: "2026-03-02", createdAt: new Date("2026-01-04T00:00:00Z") },
+    ];
+    for (const row of rows) {
+      await prismaDirect.timeRecord.create({
+        data: {
+          ...row,
+          employeeId: employee.id,
+          employeeName: employee.name,
+          status: "Completado",
+        },
+      });
+      await timeRecordIntegrityService.sealAfterMutation(prismaDirect, employee.id, row.id, {
+        skipAudit: true,
+      });
+    }
+    const url = `/api/records/integrity/verify?employeeId=${employee.id}&from=2026-03-01&to=2026-03-02`;
+    const verified = await http("GET", url);
+    expect(verified.status).toBe(200);
+    expect(verified.body.summary).toMatchObject({ checkedCount: 2, brokenCount: 0 });
+    await prismaDirect.timeRecord.update({
+      where: { id: "chain-d" },
+      data: { status: "Alterado" },
+    });
+    const altered = await http("GET", url);
+    expect(altered.status).toBe(200);
+    expect(altered.body.summary).toMatchObject({ checkedCount: 2, brokenCount: 1 });
+    expect(altered.body.broken).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ recordId: "chain-d", reason: "HASH_MISMATCH" }),
+      ]),
+    );
+  });
   it("uses persisted Usuario association for punch and rejects forced cooldown and missing employee", async () => {
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     const response = await http("POST", "/api/records/punch", {
@@ -113,8 +152,55 @@ describe("Spec 014 records on Fastify", () => {
       (await http("POST", "/api/records/punch", { employeeId: "forged", forcedType: "salida" }))
         .status,
     ).toBe(429);
-    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Supervisor_Elevado" },
+    });
     expect((await http("POST", "/api/records/punch", { employeeId: "missing" })).status).toBe(404);
+  });
+  it("allows Supervisor to read but denies record and punch mutations", async () => {
+    const created = await http("POST", "/api/records", write());
+    expect(created.status).toBe(200);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    expect((await http("GET", "/api/records")).status).toBe(200);
+    expect(
+      (
+        await http(
+          "GET",
+          `/api/records/export?format=csv&startDate=${today()}&endDate=${today()}`,
+          undefined,
+          token,
+          true,
+        )
+      ).status,
+    ).toBe(200);
+    expect((await http("POST", "/api/admin/trigger-autoclose", {})).status).toBe(403);
+    expect(
+      (
+        await http("POST", `/api/records/${created.body.id}/resolve-anomaly`, {
+          resolution: "ABSENCE_MARK",
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await http(
+          "GET",
+          `/api/records/integrity/verify?employeeId=${employee.id}&from=${today()}&to=${today()}`,
+        )
+      ).status,
+    ).toBe(200);
+    expect((await http("POST", "/api/records/punch", { employeeId: employee.id })).status).toBe(
+      403,
+    );
+    expect((await http("POST", "/api/records", write())).status).toBe(403);
+    expect((await http("POST", "/api/records/bulk", [write()])).status).toBe(403);
+    expect((await http("POST", "/api/records/auto-close", {})).status).toBe(403);
+    expect((await http("DELETE", `/api/records/${created.body.id}`)).status).toBe(403);
+    expect(
+      (await prismaDirect.timeRecord.findUniqueOrThrow({ where: { id: created.body.id } }))
+        .isDeleted,
+    ).toBe(false);
   });
   it("serializes concurrent entry punches with one row and a valid chain", async () => {
     const responses = await Promise.all(
@@ -143,6 +229,66 @@ describe("Spec 014 records on Fastify", () => {
     expect(valid.body).toEqual({ success: true, count: 1 });
     expect(events()[0]).toEqual(["timeRecord:batch_created", { count: 1 }]);
   });
+  it("rolls back the entire batch and its audit when row 51 conflicts, then commits a valid batch", async () => {
+    const rows = Array.from({ length: 51 }, (_, index) => write({ id: `atomic-${index}` }));
+    rows[50] = write({ id: "atomic-0" });
+    const failed = await http("POST", "/api/records/bulk", rows);
+    expect(failed.status).toBe(409);
+    expect(await prismaDirect.timeRecord.count()).toBe(0);
+    expect(await prismaDirect.auditLog.count({ where: { action: "CARGA_MASIVA_MARCAJES" } })).toBe(
+      0,
+    );
+    expect(
+      await prismaDirect.auditLog.count({ where: { action: "TIME_RECORD_HASH_CREATED" } }),
+    ).toBe(0);
+    expect(events()).toHaveLength(0);
+
+    rows[50] = write({ id: "atomic-50" });
+    const success = await http("POST", "/api/records/bulk", rows);
+    expect(success.status).toBe(200);
+    expect(success.body).toEqual({ success: true, count: 51 });
+    expect(await prismaDirect.timeRecord.count()).toBe(51);
+    expect(await prismaDirect.auditLog.count({ where: { action: "CARGA_MASIVA_MARCAJES" } })).toBe(
+      1,
+    );
+    expect(
+      await prismaDirect.auditLog.count({ where: { action: "TIME_RECORD_HASH_CREATED" } }),
+    ).toBe(51);
+    const verified = await http(
+      "GET",
+      `/api/records/integrity/verify?employeeId=${employee.id}&from=${today()}&to=${today()}`,
+    );
+    expect(verified.status).toBe(200);
+    expect(verified.body.summary).toMatchObject({ checkedCount: 51, brokenCount: 0 });
+  });
+  it("rejects batches exceeding 500 rows without persisting or auditing", async () => {
+    const rows = Array.from({ length: 501 }, (_, index) => write({ id: `limit-${index}` }));
+    expect((await http("POST", "/api/records/bulk", rows)).status).toBe(400);
+    expect(await prismaDirect.timeRecord.count()).toBe(0);
+    expect(
+      await prismaDirect.auditLog.count({
+        where: { action: { in: ["TIME_RECORD_HASH_CREATED", "CARGA_MASIVA_MARCAJES"] } },
+      }),
+    ).toBe(0);
+  });
+  it("accepts the maximum batch across 500 employees with complete audit", async () => {
+    const employees = Array.from({ length: 500 }, (_, index) => ({
+      ...employee,
+      id: `bulk-employee-${index}`,
+      rut: `${String(30000000 + index)}-1`,
+    }));
+    await prismaDirect.employee.createMany({ data: employees });
+    const rows = employees.map((item, index) =>
+      write({ id: `bulk-maximum-${index}`, employeeId: item.id }),
+    );
+    const response = await http("POST", "/api/records/bulk", rows);
+    expect(response.status).toBe(200);
+    expect(response.body.count).toBe(500);
+    expect(await prismaDirect.timeRecord.count()).toBe(500);
+    expect(
+      await prismaDirect.auditLog.count({ where: { action: "TIME_RECORD_HASH_CREATED" } }),
+    ).toBe(500);
+  }, 60000);
   it("preserves scoped list/export, date-range validation and no-association denial", async () => {
     await http("POST", "/api/records", write());
     await prismaDirect.employee.create({ data: { ...employee, id: "other", rut: "22222222-2" } });
@@ -241,6 +387,90 @@ describe("Spec 014 records on Fastify", () => {
       }
     },
   );
+  it("limits indicators to requested records and exposes no unrelated audit details", async () => {
+    const record = await http("POST", "/api/records", write());
+    expect(record.status).toBe(200);
+    const recordId = record.body.id as string;
+    await prismaDirect.auditLog.create({
+      data: {
+        actorUsername: "editor",
+        action: "TIME_RECORD_EDITED",
+        details: {
+          recordId,
+          oldValue: { entrada: "08:00" },
+          newValue: { entrada: "09:00" },
+          secret: "not exposed",
+        },
+      },
+    });
+    await prismaDirect.correctionRequest.create({
+      data: {
+        employeeId: employee.id,
+        timeRecordId: recordId,
+        recordField: "entrada",
+        originalValue: "08:00",
+        requestedValue: "09:00",
+        reason: "private reason",
+        status: "pending",
+      },
+    });
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    const result = await http("GET", `/api/records/indicators?ids=${encodeURIComponent(recordId)}`);
+    expect(result.status).toBe(200);
+    expect(result.body.edits).toHaveLength(1);
+    expect(result.body.edits[0].details).toMatchObject({
+      recordId,
+      fieldEdited: "entrada",
+      oldValue: "08:00",
+    });
+    expect(JSON.stringify(result.body)).not.toContain("not exposed");
+    expect(JSON.stringify(result.body)).not.toContain("private reason");
+    expect(result.body.pending).toHaveLength(1);
+    const unrelated = await http("GET", "/api/records/indicators?ids=missing");
+    expect(unrelated.body).toEqual({ edits: [], pending: [] });
+    const tooMany = Array.from({ length: 101 }, (_, index) => `r${index}`).join(",");
+    expect((await http("GET", `/api/records/indicators?ids=${tooMany}`)).status).toBe(400);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Reloj_Control" } });
+    expect(
+      (await http("GET", `/api/records/indicators?ids=${encodeURIComponent(recordId)}`)).status,
+    ).toBe(200);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
+    expect(
+      (await http("GET", `/api/records/indicators?ids=${encodeURIComponent(recordId)}`)).status,
+    ).toBe(403);
+  });
+  it("rechecks accounting closure inside the batch transaction", async () => {
+    const original = TimeRecordService.isRecordLocked.bind(TimeRecordService);
+    let first = true;
+    vi.spyOn(TimeRecordService, "isRecordLocked").mockImplementation(async (date, tx) => {
+      const locked = await original(date, tx);
+      if (first && !tx) {
+        first = false;
+        await prismaDirect.systemConfig.create({
+          data: { key: "accounting_lock_date", value: JSON.stringify(today()) },
+        });
+      }
+      return locked;
+    });
+    const result = await http("POST", "/api/records/bulk", [write()]);
+    expect(result.status).toBe(403);
+    expect(await prismaDirect.timeRecord.count()).toBe(0);
+  });
+  it("validates integrity limit and reports truncation", async () => {
+    const yesterday = getChileDateISO(new Date(Date.now() - 86400000));
+    expect((await http("POST", "/api/records", write({ date: yesterday }))).status).toBe(200);
+    expect((await http("POST", "/api/records", write())).status).toBe(200);
+    const query = `employeeId=${employee.id}&from=${yesterday}&to=${today()}`;
+    const limited = await http("GET", `/api/records/integrity/verify?${query}&limit=1`);
+    expect(limited.status).toBe(200);
+    expect(limited.body.summary).toMatchObject({ checkedCount: 1, truncated: true });
+    const all = await http("GET", `/api/records/integrity/verify?${query}&limit=2`);
+    expect(all.body.summary).toMatchObject({ checkedCount: 2, truncated: false });
+    expect((await http("GET", `/api/records/integrity/verify?${query}&limit=invalid`)).status).toBe(
+      400,
+    );
+    expect((await http("GET", `/api/records/integrity/verify?${query}&limit=0`)).status).toBe(400);
+  });
   it.each([
     ["POST", "/api/records", { employeeId: "e", date: "2026-10-06" }],
     ["POST", "/api/records/bulk", []],

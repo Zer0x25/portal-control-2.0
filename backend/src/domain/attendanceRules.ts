@@ -24,16 +24,8 @@ export function determineNextPunchAction(
   currentState: PunchState,
   forcedType?: string,
 ): PunchTransition {
-  // Canonical contract is camelCase (PunchSchema: entrada/salida/inicioColacion/finColacion).
-  // Accept legacy snake_case (inicio_colacion/fin_colacion) sent by older kiosk clients.
-  const normalized =
-    forcedType === "inicio_colacion"
-      ? "inicioColacion"
-      : forcedType === "fin_colacion"
-        ? "finColacion"
-        : forcedType;
   // 1. Forced overrides (Manual selection in UI)
-  if (normalized === "entrada") {
+  if (forcedType === "entrada") {
     if (currentState.entrada) throw new Error("ALREADY_PUNCHED_IN");
     return {
       action: "ENTRADA",
@@ -41,7 +33,8 @@ export function determineNextPunchAction(
       updateField: "entrada",
     };
   }
-  if (normalized === "inicioColacion") {
+  if (forcedType === "inicioColacion") {
+    if (!currentState.entrada) throw new Error("NO_ENTRY_RECORDED");
     if (currentState.inicioColacion) throw new Error("ALREADY_BREAK_STARTED");
     return {
       action: "INICIO_COLACION",
@@ -49,7 +42,8 @@ export function determineNextPunchAction(
       updateField: "inicioColacion",
     };
   }
-  if (normalized === "finColacion") {
+  if (forcedType === "finColacion") {
+    if (!currentState.entrada) throw new Error("NO_ENTRY_RECORDED");
     if (!currentState.inicioColacion) throw new Error("NO_BREAK_STARTED");
     if (currentState.finColacion) throw new Error("ALREADY_BREAK_FINISHED");
     return {
@@ -58,7 +52,8 @@ export function determineNextPunchAction(
       updateField: "finColacion",
     };
   }
-  if (normalized === "salida") {
+  if (forcedType === "salida") {
+    if (!currentState.entrada) throw new Error("NO_ENTRY_RECORDED");
     if (currentState.salida) throw new Error("ALREADY_PUNCHED_OUT");
     return {
       action: "SALIDA",

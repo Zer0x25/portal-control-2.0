@@ -5,6 +5,8 @@
 import React from "react";
 import NumericKeypad from "../../../components/ui/NumericKeypad";
 import Button from "../../../components/ui/Button";
+import Input from "../../../components/ui/Input";
+import EmptyState from "../../../components/ui/EmptyState";
 import Container from "../../../components/ui/Container";
 import SimpleConnectionIndicator from "../../../components/ui/SimpleConnectionIndicator";
 import {
@@ -61,6 +63,9 @@ export interface KioskViewProps {
     description: string;
   };
   isLoadingEmployees?: boolean;
+  isErrorEmployees?: boolean;
+  refetchKioskEmployees?: () => void;
+  isSubmitting?: boolean;
   filteredEmployees?: Employee[];
   formattedRutDisplay?: string;
   handleRutConfirm?: () => void;
@@ -89,6 +94,9 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
     confirmNewPin,
     setConfirmNewPin,
     isLoadingEmployees,
+    isErrorEmployees,
+    refetchKioskEmployees,
+    isSubmitting,
     filteredEmployees = [],
     formattedRutDisplay,
     handleRutConfirm,
@@ -104,41 +112,45 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
   } = props;
 
   const internalRenderHeader = () => (
-    <div className={`absolute top-4 left-6 right-6 flex justify-between items-center ${Z.overlay}`}>
+    <header
+      className={`w-full max-w-5xl flex justify-between items-center pt-2 pb-4 px-2 relative ${Z.overlay}`}
+    >
       <div className="hidden sm:flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-token-accent-brand flex items-center justify-center text-white shadow-lg shadow-token-accent-brand/20 border border-white/10 relative overflow-hidden group">
+        <div className="w-10 h-10 rounded-xl bg-token-accent-brand flex items-center justify-center text-token-text-onAccent shadow-lg shadow-token-accent-brand/20 border border-white/10 relative overflow-hidden group">
           <FingerPrintIcon className={`w-6 h-6 relative ${Z.sticky}`} />
         </div>
         <div className="hidden sm:block">
-          <h1 className="text-sm font-black text-white uppercase italic tracking-tighter leading-none">
+          <h1 className="text-sm font-black text-token-text-primary uppercase italic tracking-tighter leading-none">
             Portal Empleado
           </h1>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 ml-auto">
         {step !== "rut_input" && (
-          <button
+          <Button
+            variant="none"
             onClick={() => resetState && resetState()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-surface-stripe hover:bg-token-surface-active border border-token-border-subtle hover:border-token-border-technical text-xxs font-black text-token-text-tertiary hover:text-token-text-primary uppercase tracking-[0.2em] transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-surface-stripe hover:bg-token-surface-active border border-token-border-subtle hover:border-token-border-technical text-xxs font-black text-token-text-secondary hover:text-token-text-primary uppercase tracking-[0.2em] transition-all"
           >
             <ArrowUturnLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300 opacity-70 group-hover:opacity-100" />
             Atrás
-          </button>
+          </Button>
         )}
 
         {(step === "rut_input" || step === "employee_list") && (
-          <button
+          <Button
+            variant="none"
             data-testid="kiosk-exit-button"
             onClick={() => onLogout && onLogout()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-status-error/10 hover:bg-token-status-error/20 border border-token-status-error/10 hover:border-token-status-error/30 text-[10px] font-black text-token-status-error uppercase tracking-widest transition-all shadow-xl shadow-black/40"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-token-status-error/10 hover:bg-token-status-error/20 border border-token-status-error/10 hover:border-token-status-error/30 text-[10px] font-black text-token-status-error-text uppercase tracking-widest transition-all shadow-xl shadow-black/40"
           >
             <LogoutIcon className="w-4 h-4" />
             Salir
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </header>
   );
 
   const renderRutInput = () => (
@@ -146,7 +158,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       <div className="relative mb-5 sm:hidden">
         <div className="ambient-glow ambient-glow-prominent absolute inset-0 animate-pulse" />
         <div
-          className={`w-16 h-16 rounded-2xl bg-linear-to-br from-token-accent-brand via-indigo-600 to-token-accent-brand flex items-center justify-center text-white relative ${Z.sticky} border border-white/20 shadow-2xl`}
+          className={`w-16 h-16 rounded-2xl bg-linear-to-br from-token-accent-brand to-token-accent-brand flex items-center justify-center text-token-text-onAccent relative ${Z.sticky} border border-white/20 shadow-2xl`}
         >
           <FingerPrintIcon className="w-8 h-8" />
         </div>
@@ -154,7 +166,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-1">
         Identificación
       </h2>
-      <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
+      <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.3em] mb-4 text-center">
         Ingrese su RUT para comenzar
       </p>
 
@@ -162,33 +174,38 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         data-testid="kiosk-display"
         className="w-full h-14 bg-token-surface-card border border-token-border-technical rounded-2xl mb-2 flex items-center justify-center text-2xl font-black font-mono tracking-widest text-token-accent-brand shadow-inner"
       >
-        {formattedRutDisplay || <span className="opacity-20">00.000.000-0</span>}
+        {formattedRutDisplay || <span className="text-token-text-tertiary">00.000.000-0</span>}
       </div>
 
       <div className="h-6 mb-4">
         {props.rutError && (
           <p
             data-testid="kiosk-rut-error"
-            className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center"
+            role="alert"
+            aria-live="polite"
+            className="text-token-status-error-text text-[10px] font-black uppercase tracking-widest text-center"
           >
             {props.rutError}
           </p>
         )}
       </div>
 
-      <button
+      <Button
+        variant="none"
         onClick={() => setStep && setStep("employee_list")}
-        className="mb-4 text-[10px] font-black text-token-accent-brand hover:text-white uppercase tracking-[0.3em] transition-colors flex items-center gap-2"
+        className="mb-4 text-[10px] font-black text-token-accent-brand hover:text-token-text-primary uppercase tracking-[0.3em] transition-colors flex items-center gap-2"
       >
         <UsersIcon className="w-4 h-4" />
         Seleccionar de la lista
-      </button>
+      </Button>
 
       <NumericKeypad
         className="w-full"
         onInput={(val) => {
-          if (rutInput !== undefined && setRutInput && (rutInput as string).length < 9)
-            setRutInput((rutInput as string) + val);
+          if (rutInput === undefined || !setRutInput) return;
+          if (rutInput.endsWith("K") || rutInput.length >= 10) return;
+          if (val === "K" && (rutInput.length === 0 || rutInput.includes("K"))) return;
+          setRutInput(rutInput + val);
         }}
         onDelete={() => setRutInput && setRutInput((rutInput ?? "").slice(0, -1))}
         onConfirm={() => handleRutConfirm && handleRutConfirm()}
@@ -202,47 +219,54 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
         Lista de Personal
       </h2>
       <div className="relative mb-6">
-        <input
+        <Input
           type="search"
           placeholder="BUSCAR POR NOMBRE..."
           aria-label="Buscar por nombre en kiosco"
           value={searchTerm as string}
           onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
-          className="w-full h-12 bg-token-surface-card border border-token-border-technical rounded-xl px-4 text-xs font-black text-token-text-primary placeholder:text-token-text-tertiary focus:bg-token-surface-active focus:border-token-accent-brand/50 outline-none transition-all"
+          className="h-12 rounded-xl px-4 text-xs font-black"
           autoFocus
         />
       </div>
 
-      <div className="space-y-3 max-h-64 overflow-auto">
+      <div
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={0}
+        role="region"
+        aria-label="Lista de personal"
+        className="space-y-3 max-h-64 overflow-auto focus:outline-hidden"
+      >
         {filteredEmployees.map((emp) => (
-          <button
+          <Button
+            variant="none"
             key={emp.id}
             onClick={() => handleEmployeeSelect && handleEmployeeSelect(emp)}
-            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical hover:bg-token-surface-active transition-all"
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical hover:bg-token-surface-active transition-all text-left"
           >
             <div className="w-12 h-12 rounded-xl bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand font-black">
               {emp.name.charAt(0)}
             </div>
             <div className="flex-1 text-left">
               <div className="font-black text-sm text-token-text-primary">{emp.name}</div>
-              <div className="text-[11px] text-token-text-tertiary">{emp.area}</div>
+              <div className="text-[11px] text-token-text-secondary">{emp.area}</div>
             </div>
-            <div className="text-xs text-token-text-tertiary">{emp.workdayType}</div>
-          </button>
+            <div className="text-xs text-token-text-secondary">{emp.workdayType}</div>
+          </Button>
         ))}
       </div>
     </div>
   );
 
   const renderActions = () => (
-    <div className="space-y-6">
+    <div className="space-y-6" aria-busy={isSubmitting ? "true" : undefined}>
       <h2 className="text-xl font-black text-token-text-primary uppercase italic mb-2">Acciones</h2>
-      <p className="text-[10px] text-token-text-tertiary">{selectedEmployee?.name}</p>
+      <p className="text-[10px] text-token-text-secondary">{selectedEmployee?.name}</p>
 
       {clockStatusConfig && (
         <div className="rounded-2xl border border-token-border-technical bg-token-surface-stripe px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.25em]">
+            <span className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.25em]">
               Estado actual
             </span>
             <span
@@ -256,7 +280,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
       <div className="grid grid-cols-2 gap-3">
         {kioskActions.map((action) => {
-          const isDisabled = !isKioskArmed || !action.enabled;
+          const isDisabled = !isKioskArmed || !action.enabled || isSubmitting === true;
 
           return (
             <Button
@@ -264,30 +288,49 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
               variant="none"
               onClick={() => handleClockingAction && handleClockingAction(action.actionType)}
               disabled={isDisabled}
-              title={!isKioskArmed ? "Preparando..." : !action.enabled ? "No disponible" : ""}
+              title={
+                isSubmitting
+                  ? "Registrando..."
+                  : !isKioskArmed
+                    ? "Preparando..."
+                    : !action.enabled
+                      ? "No disponible"
+                      : ""
+              }
               // El fallback de Button (title -> aria-label) dejaría a las 4
               // acciones anunciándose igual ("No disponible"). Etiqueta
               // explícita: el tooltip visual se conserva, el lector oye la acción.
               aria-label={action.label}
               className={`w-full h-16 text-[10px] ${getClockingActionButtonClassName(action.actionType, isDisabled)}`}
             >
-              {action.label}
+              {isSubmitting ? "Registrando..." : action.label}
             </Button>
           );
         })}
       </div>
+
+      <Button
+        variant="secondary"
+        data-testid="kiosk-change-pin-button"
+        disabled={isSubmitting === true}
+        onClick={() => setStep?.("change_pin")}
+        className="w-full h-11 text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2"
+      >
+        <KeyIcon className="w-4 h-4" />
+        Cambiar mi PIN
+      </Button>
     </div>
   );
 
   const renderSuccess = () => (
     <div key="success" className="text-center py-6">
-      <div className="w-20 h-20 bg-green-500/20 rounded-[2.5rem] flex items-center justify-center text-green-500 mx-auto mb-6 border border-green-500/30">
+      <div className="w-20 h-20 bg-token-status-success/20 rounded-[2.5rem] flex items-center justify-center text-token-status-success mx-auto mb-6 border border-token-status-success/30">
         <CheckCircleIcon className="w-10 h-10" />
       </div>
       <h2 className="text-3xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
         ¡Completado!
       </h2>
-      <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.3em]">
+      <p className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em]">
         Registro procesado con éxito
       </p>
     </div>
@@ -295,60 +338,72 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
   const renderChangePin = () => (
     <div key="change_pin" className="flex flex-col items-center">
-      <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 mb-6 border border-orange-500/20">
+      <div className="w-16 h-16 rounded-2xl bg-token-status-warning/10 flex items-center justify-center text-token-status-warning mb-6 border border-token-status-warning/20">
         <KeyIcon className="w-8 h-8" />
       </div>
       <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
         Cambiar PIN
       </h2>
-      <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-8 text-center">
+      <p className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em] mb-8 text-center">
         {selectedEmployee?.name}
       </p>
 
       <div className="w-full mb-6">
-        <div className="w-full h-16 flex items-center justify-center gap-4 mb-2">
+        <div
+          role="status"
+          aria-label={`Nuevo PIN: ${newPin?.length ?? 0} de 4 dígitos ingresados`}
+          className="w-full h-16 flex items-center justify-center gap-4 mb-2"
+        >
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`w-12 h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${newPin && newPin.length > i ? "bg-token-accent-brand border-token-accent-brand text-token-text-primary" : "bg-token-surface-card border-token-border-technical text-token-text-tertiary"}`}
+              aria-hidden="true"
+              className={`w-12 h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${newPin && newPin.length > i ? "bg-token-accent-brand border-token-accent-brand text-token-text-onAccent" : "bg-token-surface-card border-token-border-technical text-token-text-tertiary"}`}
             >
               {newPin && newPin.length > i ? "●" : "○"}
             </div>
           ))}
         </div>
-        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest text-center mb-4">
+        <p className="text-xxs font-bold text-token-text-secondary uppercase tracking-widest text-center mb-4">
           Ingrese Nuevo PIN (4 dígitos)
         </p>
 
-        <div className="w-full h-16 flex items-center justify-center gap-4 mb-2">
+        <div
+          role="status"
+          aria-label={`Confirmar PIN: ${confirmNewPin?.length ?? 0} de 4 dígitos ingresados`}
+          className="w-full h-16 flex items-center justify-center gap-4 mb-2"
+        >
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`w-12 h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${confirmNewPin && confirmNewPin.length > i ? "bg-token-accent-brand border-token-accent-brand text-token-text-primary" : "bg-token-surface-card border-token-border-technical text-token-text-tertiary"}`}
+              aria-hidden="true"
+              className={`w-12 h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${confirmNewPin && confirmNewPin.length > i ? "bg-token-accent-brand border-token-accent-brand text-token-text-onAccent" : "bg-token-surface-card border-token-border-technical text-token-text-tertiary"}`}
             >
               {confirmNewPin && confirmNewPin.length > i ? "●" : "○"}
             </div>
           ))}
         </div>
-        <p className="text-xxs font-bold text-token-text-tertiary uppercase tracking-widest text-center">
+        <p className="text-xxs font-bold text-token-text-secondary uppercase tracking-widest text-center">
           Confirme Nuevo PIN
         </p>
       </div>
 
-      <button
+      <Button
+        variant="none"
         onClick={() => {
           setNewPin?.("");
           setConfirmNewPin?.("");
           setStep?.("actions");
         }}
-        className="mb-8 text-[10px] font-black text-token-text-tertiary hover:text-token-text-primary uppercase tracking-[0.3em] transition-colors"
+        className="mb-8 text-[10px] font-black text-token-text-secondary hover:text-token-text-primary uppercase tracking-[0.3em] transition-colors"
       >
         Cancelar
-      </button>
+      </Button>
 
       <NumericKeypad
         className="w-full"
         onInput={(val) => {
+          if (val === "K") return;
           if (newPin !== undefined && setNewPin && newPin.length < 4) {
             setNewPin(newPin + val);
           } else if (confirmNewPin !== undefined && setConfirmNewPin && confirmNewPin.length < 4) {
@@ -367,7 +422,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
   if (isLoadingEmployees) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-token-surface-stripe overflow-hidden relative">
+      <div className="min-h-dvh flex items-center justify-center bg-token-surface-stripe overflow-hidden relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
             className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-screen bg-[radial-gradient(circle_at_center,rgba(0,102,204,0.1)_0%,transparent_70%)] ${Z.base}`}
@@ -390,7 +445,7 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
       variant="fluid"
       noPadding
       data-ui-protected
-      className="min-h-dvh lg:min-h-screen bg-token-surface-stripe flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-token-accent-brand/30 selection:text-white"
+      className="min-h-dvh bg-token-surface-stripe flex flex-col items-center justify-between p-4 relative overflow-y-auto selection:bg-token-accent-brand/30 selection:text-token-text-onAccent"
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
@@ -405,67 +460,92 @@ const KioskView: React.FC<KioskViewProps> = (props) => {
 
       {props.renderHeader ? props.renderHeader() : internalRenderHeader()}
 
-      <div
-        data-testid="kiosk-step"
-        data-step={step}
-        className={`relative ${Z.sticky} w-full max-w-sm sm:max-w-[340px] bg-token-surface-card backdrop-blur-2xl rounded-[2.5rem] border border-token-border-technical shadow-4xl p-5 sm:p-6 overflow-hidden`}
-      >
-        <div className="contents">
-          {step === "rut_input" && renderRutInput()}
-          {step === "employee_list" && renderEmployeeList()}
-          {step === "pin_input" && (
-            <div className="flex flex-col items-center">
-              <div className="relative mb-4">
-                <div className="w-24 h-24 rounded-2xl bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand font-black text-2xl">
-                  {selectedEmployee?.name?.charAt(0)}
-                </div>
-              </div>
-              <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
-                Ingrese PIN
-              </h2>
-              <p className="text-xxs font-black text-token-text-tertiary uppercase tracking-[0.3em] mb-4 text-center">
-                {selectedEmployee?.name}
-              </p>
-
-              <div className="w-full h-16 mb-6 flex items-center justify-center gap-4">
-                {[0, 1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={`w-12 h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${pinInput && pinInput.length > i ? "bg-token-accent-brand border-token-accent-brand text-token-text-primary" : "bg-token-surface-card border-token-border-technical text-token-text-tertiary"}`}
-                  >
-                    {pinInput && pinInput.length > i ? "●" : "○"}
+      <main id="main-content" role="main" className="w-full flex justify-center my-auto py-4">
+        {isErrorEmployees ? (
+          <div className={`relative ${Z.sticky} w-full max-w-sm sm:max-w-[340px]`}>
+            <EmptyState
+              title="Error al cargar empleados"
+              description="No se pudo obtener la lista de personal. Verifique su conexión."
+              actionLabel="Reintentar"
+              onAction={() => refetchKioskEmployees?.()}
+            />
+          </div>
+        ) : (
+          <div
+            data-testid="kiosk-step"
+            data-step={step}
+            className={`relative ${Z.sticky} w-full max-w-sm sm:max-w-[340px] bg-token-surface-card backdrop-blur-2xl rounded-[2.5rem] border border-token-border-technical shadow-4xl p-5 sm:p-6 overflow-hidden`}
+          >
+            <div className="contents">
+              {step === "rut_input" && renderRutInput()}
+              {step === "employee_list" && renderEmployeeList()}
+              {step === "pin_input" && (
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <div className="w-24 h-24 rounded-2xl bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand font-black text-2xl">
+                      {selectedEmployee?.name?.charAt(0)}
+                    </div>
                   </div>
-                ))}
-              </div>
+                  <h2 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
+                    Ingrese PIN
+                  </h2>
+                  <p className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.3em] mb-4 text-center">
+                    {selectedEmployee?.name}
+                  </p>
 
-              {pinError && (
-                <p
-                  data-testid="kiosk-pin-error"
-                  className="text-red-500 text-[10px] font-black uppercase tracking-widest text-center mb-4"
-                >
-                  {pinError}
-                </p>
+                  <div
+                    role="status"
+                    aria-label={`${pinInput?.length ?? 0} de 4 dígitos ingresados`}
+                    className="w-full h-16 mb-6 flex items-center justify-center gap-4"
+                  >
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        aria-hidden="true"
+                        className={`w-12 h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${pinInput && pinInput.length > i ? "bg-token-accent-brand border-token-accent-brand text-token-text-onAccent" : "bg-token-surface-card border-token-border-technical text-token-text-tertiary"}`}
+                      >
+                        {pinInput && pinInput.length > i ? "●" : "○"}
+                      </div>
+                    ))}
+                  </div>
+
+                  {pinError && (
+                    <p
+                      data-testid="kiosk-pin-error"
+                      role="alert"
+                      aria-live="polite"
+                      className="text-token-status-error-text text-[10px] font-black uppercase tracking-widest text-center mb-4"
+                    >
+                      {pinError}
+                    </p>
+                  )}
+
+                  <NumericKeypad
+                    className="w-full"
+                    onInput={(val) => {
+                      if (val === "K") return;
+                      if (setPinInput && (pinInput || "").length < 4) {
+                        setPinInput((pinInput || "") + val);
+                      }
+                    }}
+                    onDelete={() => setPinInput && setPinInput((pinInput || "").slice(0, -1))}
+                    onConfirm={() => handlePinConfirm && handlePinConfirm()}
+                  />
+                </div>
               )}
 
-              <NumericKeypad
-                className="w-full"
-                onInput={(val) => setPinInput && setPinInput((pinInput || "") + val)}
-                onDelete={() => setPinInput && setPinInput((pinInput || "").slice(0, -1))}
-                onConfirm={() => handlePinConfirm && handlePinConfirm()}
-              />
+              {step === "actions" && renderActions()}
+              {step === "success" && renderSuccess()}
+              {step === "change_pin" && renderChangePin()}
             </div>
-          )}
 
-          {step === "actions" && renderActions()}
-          {step === "success" && renderSuccess()}
-          {step === "change_pin" && renderChangePin()}
-        </div>
+            <div className="ambient-glow ambient-glow-subtle absolute -bottom-12 -right-12 w-32 h-32" />
+            <div className="ambient-glow ambient-glow-light ambient-glow-subtle absolute -top-12 -left-12 w-32 h-32" />
+          </div>
+        )}
+      </main>
 
-        <div className="ambient-glow ambient-glow-subtle absolute -bottom-12 -right-12 w-32 h-32" />
-        <div className="ambient-glow ambient-glow-light ambient-glow-subtle absolute -top-12 -left-12 w-32 h-32" />
-      </div>
-
-      <div className={`fixed bottom-6 left-6 ${Z.dropdown}`}>
+      <div className={`w-full max-w-5xl flex justify-start pt-4 pb-2 px-2 relative ${Z.dropdown}`}>
         <div className="bg-token-surface-card backdrop-blur-xl border border-token-border-subtle px-4 py-2 rounded-full shadow-2xl">
           <SimpleConnectionIndicator />
         </div>

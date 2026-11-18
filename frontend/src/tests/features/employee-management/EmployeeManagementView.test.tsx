@@ -3,8 +3,13 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { EmployeeManagementView } from "../../../features/employee-management/views/EmployeeManagement.view";
 
+const employeeFormPropsSpy = vi.fn();
+
 vi.mock("../../../features/employee-management/components/EmployeeForm.container", () => ({
-  default: () => <div>EMPLOYEE-FORM</div>,
+  default: (props: Record<string, unknown>) => {
+    employeeFormPropsSpy(props);
+    return <div>EMPLOYEE-FORM</div>;
+  },
 }));
 vi.mock("../../../features/employee-management/components/EmployeeListCard", () => ({
   default: () => <div>EMPLOYEE-LIST</div>,
@@ -123,5 +128,47 @@ describe("EmployeeManagementView", () => {
     expect(container).toBeInTheDocument();
     expect(container).toHaveClass("max-w-[1440px]");
     expect(container).toHaveAttribute("data-ui-protected");
+  });
+
+  it("passes dynamic hasLinkedUser and full allEmployees list to EmployeeForm", () => {
+    employeeFormPropsSpy.mockClear();
+    const editingEmployee = baseProps.processedEmployees[0];
+    const allEmployees = [
+      ...baseProps.processedEmployees,
+      {
+        ...editingEmployee,
+        id: "e-arch",
+        name: "Archived",
+        status: "Archivado",
+      },
+    ];
+    const allUsers = [
+      {
+        id: "u-linked",
+        username: "ana",
+        role: "Usuario",
+        employeeId: "e1",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      },
+    ];
+
+    render(
+      <EmployeeManagementView
+        {...baseProps}
+        isFormVisible={true}
+        editingEmployee={editingEmployee}
+        allEmployees={allEmployees as never}
+        allUsers={allUsers as never}
+      />,
+    );
+
+    expect(employeeFormPropsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hasLinkedUser: true,
+        existingEmployees: allEmployees,
+      }),
+    );
   });
 });

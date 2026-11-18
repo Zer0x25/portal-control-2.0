@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Employee, Syncable, UserRole } from "../../../types/index";
 import { useEmployees } from "../../../hooks/useEmployees";
+import { useUsers } from "../../../hooks/useUsers";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 import { useAreaListQuery, useWorkdayTypeListQuery } from "../../../hooks/queries/useConfigQuery";
@@ -25,6 +26,7 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   const {
     employees: activeListStore,
     archivedEmployees: archivedListStore,
+    allEmployees,
     isLoadingEmployees,
     addEmployee,
     updateEmployee,
@@ -35,6 +37,8 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
     checkOpenRecord,
     refreshEmployees,
   } = useEmployees();
+  const { users: allUsers } = useUsers();
+  const allEmployeesList = allEmployees ?? [...activeListStore, ...archivedListStore];
 
   const { addToast } = useToasts();
   const { currentUser } = useAuth();
@@ -130,7 +134,7 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
   };
 
   const handleReactivate = async (employeeId: string) => {
-    const employee = processedEmployees.find((e) => e.id === employeeId);
+    const employee = archivedListStore.find((e) => e.id === employeeId);
     if (!employee) return;
     await reactivateEmployee(employee);
   };
@@ -189,9 +193,13 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
     return success;
   };
 
-  const handleConfirmArchive = async () => {
-    if (!employeeToArchive) return;
-    await archiveEmployee(employeeToArchive);
+  const handleConfirmArchive = async (): Promise<boolean> => {
+    if (!employeeToArchive) return false;
+    const ok = await archiveEmployee(employeeToArchive);
+    if (ok) {
+      setEmployeeToArchive(null);
+    }
+    return ok;
   };
 
   const requestSort = (_key: SortableEmployeeKey) => {
@@ -274,6 +282,8 @@ export const useEmployeeManagementData = ({ isEmbedded }: UseEmployeeManagementD
 
   return {
     isEmbedded,
+    allEmployees: allEmployeesList,
+    allUsers,
     areaList,
     workdayTypeList,
     isLoadingEmployees,

@@ -8,6 +8,8 @@ import {
   MFAValidateSchema,
 } from "../../../models/schemas/auth-user.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
+import { ForbiddenError } from "../../../utils/AppError";
+import { resolveAccessToken } from "../infrastructure/jwt";
 import {
   loginResponse,
   sessionResponse,
@@ -33,6 +35,11 @@ const context = (request: FastifyRequest) => ({
   user: request.user,
 });
 export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, options) => {
+  const adminOnly: onRequestHookHandler = async (request) => {
+    if (request.user?.role !== "Administrador") {
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    }
+  };
   const throttle = async (request: FastifyRequest, reply: Parameters<onRequestHookHandler>[1]) => {
     const blocked = await options.inspectFailures(request.ip || "unknown", request.body);
     if (blocked)
@@ -45,7 +52,7 @@ export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, opt
     "/api/auth/login",
     {
       schema: { response: { 200: loginResponse } },
-      preHandler: [throttle, validateRequest("body", LoginSchema)],
+      preHandler: [validateRequest("body", LoginSchema), throttle],
     },
     async (request, reply) => {
       const result = await options.flows.login(request.body, context(request));
@@ -56,7 +63,7 @@ export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, opt
     "/api/auth/kiosk-login",
     {
       schema: { response: { 200: kioskResponse } },
-      preHandler: [throttle, validateRequest("body", KioskLoginSchema)],
+      preHandler: [validateRequest("body", KioskLoginSchema), throttle],
     },
     async (request, reply) => {
       const result = await options.flows.kioskLogin(request.body, context(request));
@@ -77,7 +84,7 @@ export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, opt
     },
     async (request, reply) => {
       const result = await options.flows.logout(
-        request.headers.authorization?.split(" ")[1],
+        resolveAccessToken(request.headers.authorization),
         context(request),
       );
       return reply.code(result.status).send(result.body);
@@ -87,7 +94,7 @@ export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, opt
     "/api/auth/mfa/setup",
     {
       config: { requiresAuth: true },
-      onRequest: options.authenticate,
+      onRequest: [options.authenticate, adminOnly],
       schema: { response: { 200: setupResponse } },
       preHandler: validateRequest("body", ignoredBody),
     },
@@ -100,7 +107,7 @@ export const authPlugin: FastifyPluginAsync<AuthPluginOptions> = async (app, opt
     "/api/auth/mfa/verify",
     {
       config: { requiresAuth: true },
-      onRequest: options.authenticate,
+      onRequest: [options.authenticate, adminOnly],
       schema: { response: { 200: messageResponse } },
       preHandler: validateRequest("body", MFAVerifySchema),
     },

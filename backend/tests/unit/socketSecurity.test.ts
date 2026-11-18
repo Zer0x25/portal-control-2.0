@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { createServer } from "node:http";
 import { afterEach, expect, it, vi } from "vitest";
 import { SocketService } from "../../src/services/socketService";
@@ -166,4 +167,48 @@ it("enforces role and employee policy over real websocket frames without leaking
     expect(frames.join()).not.toContain("sensitive-source");
     expect(frames.some((frame) => frame.includes("unknown"))).toBe(false);
   }
+});
+
+it("emits auth:force_logout and disconnects targeted sockets by user, session, and employeeId", async () => {
+  const f = await fixture({
+    tok1: { id: "u1", username: "alice", role: "Supervisor" },
+    tok2: { id: "u1", username: "alice", role: "Supervisor" },
+    kioskTok: { id: "emp-1", username: "kiosk", role: "Kiosk_Employee", employeeId: "emp-1" },
+  });
+
+  const frames = new Map<string, string[]>();
+  const closed = new Set<string>();
+  for (const token of ["tok1", "tok2", "kioskTok"]) {
+    const { client } = await connect(f.url, token);
+    const list: string[] = [];
+    frames.set(token, list);
+    client.addEventListener("message", (event) => list.push(String(event.data)));
+    client.addEventListener("close", () => closed.add(token));
+  }
+
+  // Only tok1 should be forced out when revoking session tok1
+  SocketService.emitForceLogoutToSession("tok1", { reason: "LOGOUT" });
+  await vi.waitFor(() => {
+    expect(frames.get("tok1")!.some((m) => m.includes("auth:force_logout"))).toBe(true);
+    expect(closed.has("tok1")).toBe(true);
+  });
+  expect(frames.get("tok2")!.some((m) => m.includes("auth:force_logout"))).toBe(false);
+  expect(closed.has("tok2")).toBe(false);
+
+  // Remaining tok2 (same user u1) is forced out by emitForceLogoutToUser
+  SocketService.emitForceLogoutToUser("u1", {
+    reason: "PASSWORD_CHANGED",
+    exceptTokenHash: crypto.createHash("sha256").update("other-token").digest("hex"),
+  });
+  await vi.waitFor(() => {
+    expect(frames.get("tok2")!.some((m) => m.includes("auth:force_logout"))).toBe(true);
+    expect(closed.has("tok2")).toBe(true);
+  });
+
+  // Kiosk employee socket forced out by emitForceLogoutToEmployee
+  SocketService.emitForceLogoutToEmployee("emp-1", { reason: "EMPLOYEE_ARCHIVED" });
+  await vi.waitFor(() => {
+    expect(frames.get("kioskTok")!.some((m) => m.includes("auth:force_logout"))).toBe(true);
+    expect(closed.has("kioskTok")).toBe(true);
+  });
 });

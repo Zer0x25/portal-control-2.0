@@ -2,6 +2,7 @@ import React from "react";
 
 import MfaLoginModalView from "./MFALoginModal.view";
 import { useMfaLoginModalController } from "../hooks/useMfaLoginModalController";
+import type { User } from "../../../types/index";
 
 /**
  * Spec 036 T11: el container del formulario de codigo MFA de inicio de sesion.
@@ -14,7 +15,7 @@ export interface MfaLoginModalContainerProps {
   /** El modal esta abierto. */
   isOpen: boolean;
   /** El codigo fue validado. */
-  onSuccess: () => void;
+  onSuccess: (user?: User | null) => void;
   /** Cancela la verificacion. */
   onCancel: () => void;
 }

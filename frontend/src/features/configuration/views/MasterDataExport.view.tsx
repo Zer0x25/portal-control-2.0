@@ -53,9 +53,9 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
           Módulo de Exportación
         </h3>
         <div className="flex items-center gap-3 bg-token-surface-card px-4 py-2 rounded-sm border border-token-border-technical shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-(--status-success) animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-(--sidebar-text-active)" />
           <span className="text-[10px] font-bold text-token-text-secondary uppercase tracking-widest">
-            Server: Online
+            Exportación CSV / XML
           </span>
         </div>
       </div>
@@ -76,11 +76,15 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                   <div className="p-2 bg-token-surface-stripe rounded-sm border border-token-border-technical">
                     <CalendarDaysIcon className="w-5 h-5 text-token-text-tertiary" />
                   </div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-token-text-secondary">
+                  <label
+                    htmlFor="export-start-date"
+                    className="text-[11px] font-bold uppercase tracking-widest text-token-text-secondary"
+                  >
                     Fecha de Inicio
                   </label>
                 </div>
                 <Button
+                  id="export-start-date"
                   type="button"
                   variant="none"
                   onClick={() => setIsStartDatePickerOpen(true)}
@@ -108,11 +112,15 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
                   <div className="p-2 bg-token-surface-stripe rounded-sm border border-token-border-technical">
                     <CalendarDaysIcon className="w-5 h-5 text-token-text-tertiary" />
                   </div>
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-token-text-secondary">
+                  <label
+                    htmlFor="export-end-date"
+                    className="text-[11px] font-bold uppercase tracking-widest text-token-text-secondary"
+                  >
                     Fecha de Término
                   </label>
                 </div>
                 <Button
+                  id="export-end-date"
                   type="button"
                   variant="none"
                   onClick={() => setIsEndDatePickerOpen(true)}

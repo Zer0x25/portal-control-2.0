@@ -1,5 +1,5 @@
 import React, { Fragment, Suspense } from "react";
-import { Outlet } from "react-router";
+import { Navigate, Outlet } from "react-router";
 import PersistentLayoutView from "./PersistentLayout.view";
 import { usePersistentLayoutController } from "../../hooks/layout/usePersistentLayoutController";
 import { ROUTES } from "../../constants";
@@ -9,7 +9,10 @@ const AutoStartShiftAutomation = React.lazy(() => import("./AutoStartShiftAutoma
 const PersistentLayoutContainer: React.FC = () => {
   const controller = usePersistentLayoutController();
 
-  if (!controller.currentUser) return null;
+  if (controller.isAuthLoading) return null;
+  if (!controller.isAuthenticated || !controller.currentUser) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
 
   return (
     <PersistentLayoutView

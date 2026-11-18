@@ -8,7 +8,9 @@ import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { SocketService } from "../../src/services/socketService";
 import { companyPolicyStorage } from "../../src/services/companyPolicyStorage";
+import { ConfigService } from "../../src/services/ConfigService";
 import { configFlows } from "../../src/services/configFlows";
+import { closureValidationService } from "../../src/services/closureValidationService";
 import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
 import { httpClient } from "./_support/http";
 let fastify: FastifyInstance, token: string, actorId: string;
@@ -407,12 +409,21 @@ describe("Spec020 data/configs on Fastify", () => {
     expect(time.timezone).toBe("America/Santiago");
     expect(new Date(time.iso).getTime()).toBe(time.timestamp);
   });
-  it("stores SMTP credentials but redacts old and new values from persisted audits", async () => {
+  it("rejects direct POST /api/configs/:key writes to protected email keys", async () => {
+    const smtpRes = await http("POST", "/api/configs/SMTP_CONFIG", { value: { profiles: [] } });
+    expect(smtpRes.status).toBe(403);
+    expect(String(smtpRes.body.message)).toContain("/api/email/config");
+
+    const rulesRes = await http("POST", "/api/configs/EMAIL_NOTIFICATION_RULES", { value: {} });
+    expect(rulesRes.status).toBe(403);
+    expect(String(rulesRes.body.message)).toContain("/api/email/rules");
+  });
+  it("stores SMTP credentials via ConfigService but redacts old and new values from persisted audits", async () => {
     await prismaDirect.systemConfig.create({
       data: { key: "SMTP_CONFIG", value: JSON.stringify({ password: "old-smtp-fixture" }) },
     });
     const value = { profiles: [{ auth: { pass: "new-smtp-fixture" } }] };
-    expect((await http("POST", "/api/configs/SMTP_CONFIG", { value })).status).toBe(200);
+    await ConfigService.set("SMTP_CONFIG", value, "data-admin");
     const stored = await prismaDirect.systemConfig.findUniqueOrThrow({
       where: { key: "SMTP_CONFIG" },
     });
@@ -426,7 +437,7 @@ describe("Spec020 data/configs on Fastify", () => {
     });
     expect(JSON.stringify(audits)).not.toMatch(/old-smtp-fixture|new-smtp-fixture/);
   });
-  it("masks generic SMTP get/list/post and retains secret when saving a masked profile", async () => {
+  it("masks generic SMTP get/list and retains secret when ConfigService merges a masked profile", async () => {
     const value = {
       profiles: [
         { host: "smtp.invalid", user: "owner", port: 587, secure: false, pass: "smtp-fixture" },
@@ -438,9 +449,11 @@ describe("Spec020 data/configs on Fastify", () => {
     const read = await http("GET", "/api/configs/SMTP_CONFIG");
     expect(read.body.profiles[0].pass).toBe("********");
     expect(JSON.stringify((await http("GET", "/api/configs")).body)).not.toContain("smtp-fixture");
-    const saved = await http("POST", "/api/configs/SMTP_CONFIG", { value: read.body });
-    expect(saved.status).toBe(200);
-    expect(JSON.stringify(saved.body)).not.toContain("smtp-fixture");
+    const saved = await ConfigService.set("SMTP_CONFIG", read.body, "data-admin");
+    expect(saved).toEqual(value);
+    expect(JSON.stringify((await http("GET", "/api/configs/SMTP_CONFIG")).body)).not.toContain(
+      "smtp-fixture",
+    );
     expect(
       JSON.parse(
         (await prismaDirect.systemConfig.findUniqueOrThrow({ where: { key: "SMTP_CONFIG" } }))
@@ -448,7 +461,9 @@ describe("Spec020 data/configs on Fastify", () => {
       ),
     ).toEqual(value);
     read.body.profiles[0].host = "different.invalid";
-    expect((await http("POST", "/api/configs/SMTP_CONFIG", { value: read.body })).status).toBe(400);
+    await expect(ConfigService.set("SMTP_CONFIG", read.body, "data-admin")).rejects.toMatchObject({
+      statusCode: 400,
+    });
   });
   it("writes config JSON with one audit and event; supervisor elevated cannot write", async () => {
     const res = await http("POST", "/api/configs/custom", {
@@ -505,6 +520,7 @@ describe("Spec020 data/configs on Fastify", () => {
     expect(await prismaDirect.auditLog.count({ where: { action: "CONFIG_SET" } })).toBe(0);
     expect(emit).not.toHaveBeenCalled();
     expect((await http("GET", "/api/configs/validate-closure")).status).toBe(400);
+    expect((await http("GET", "/api/configs/validate-closure?date=not-a-date")).status).toBe(400);
   });
   it("closes valid period, preserves future-date 500 and fallback lock", async () => {
     expect((await http("GET", "/api/configs/accounting_lock_date")).body).toMatch(
@@ -524,6 +540,45 @@ describe("Spec020 data/configs on Fastify", () => {
       ).value,
     ).toBe('"2020-01-01"');
   });
+  it.each(["manual", "automatic"])(
+    "keeps the %s closure transaction alive during validation longer than five seconds",
+    async (kind) => {
+      const validate =
+        closureValidationService.validateManualClosure.bind(closureValidationService);
+      const delayedValidation = vi
+        .spyOn(closureValidationService, "validateManualClosure")
+        .mockImplementation(async (date) => {
+          await new Promise((resolve) => setTimeout(resolve, 5_200));
+          return validate(date);
+        });
+      try {
+        if (kind === "manual") {
+          expect(
+            (await http("POST", "/api/configs/accounting_lock_date", { value: "2020-01-01" }))
+              .status,
+          ).toBe(200);
+        } else {
+          expect(
+            await closureValidationService.triggerAccountingAutoClosureNow("data-admin"),
+          ).toMatchObject({ applied: true });
+        }
+        expect(delayedValidation).toHaveBeenCalledOnce();
+        expect(
+          await prismaDirect.systemConfig.count({ where: { key: "accounting_lock_date" } }),
+        ).toBe(1);
+        expect(
+          await prismaDirect.auditLog.count({
+            where: {
+              action: kind === "manual" ? "CONFIG_SET" : "CIERRE_CONTABLE_AUTOMATICO_APLICADO",
+            },
+          }),
+        ).toBe(1);
+      } finally {
+        delayedValidation.mockRestore();
+      }
+    },
+    20_000,
+  );
   it("preserves nested secret redaction in generic config audits", async () => {
     const value = { nested: { password: "test-only-password", pin: "1234" }, visible: true };
     expect((await http("POST", "/api/configs/custom", { value })).status).toBe(200);
@@ -892,5 +947,37 @@ describe("Spec027 brand logo (branding_logo)", () => {
     const reset = await http("GET", "/api/configs/public/brand-logo", undefined, null);
     expect(reset.status).toBe(200);
     expect(reset.body).toBeNull();
+  });
+
+  it("rejects Supervisor on meters routes and allows authenticated reads / admin-only writes on communications_content", async () => {
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    expect((await http("GET", "/api/meters")).status).toBe(403);
+    expect((await http("POST", "/api/meters/bulk", [])).status).toBe(403);
+
+    for (const role of [
+      "Fiscalizador",
+      "Supervisor",
+      "Reloj_Control",
+      "Supervisor_Elevado",
+    ] as const) {
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+      const empty = await http("GET", "/api/configs/communications_content");
+      expect(empty.status).toBe(200);
+      expect(empty.body).toBeNull();
+      expect(
+        (await http("POST", "/api/configs/communications_content", { value: "Hola" })).status,
+      ).toBe(403);
+    }
+
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    expect(
+      (await http("POST", "/api/configs/communications_content", { value: "Aviso importante" }))
+        .status,
+    ).toBe(200);
+
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Fiscalizador" } });
+    const readRes = await http("GET", "/api/configs/communications_content");
+    expect(readRes.status).toBe(200);
+    expect(readRes.body).toBe("Aviso importante");
   });
 });

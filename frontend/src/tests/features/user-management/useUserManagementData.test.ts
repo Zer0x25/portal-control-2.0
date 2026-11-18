@@ -109,18 +109,127 @@ describe("useUserManagementData", () => {
     expect(result.current.isFormVisible).toBe(false);
   });
 
-  it("requires password for new users and handles reset password flow", async () => {
+  it("enables Supervisor_Elevado to create and manage non-Administrador users only", () => {
+    mockCurrentUser = { id: "u-sup", role: "Supervisor_Elevado" };
+
     const { result } = renderHook(() => useUserManagementData());
+
+    expect(result.current.canCreateUsers).toBe(true);
+    expect(
+      result.current.canManageUser({
+        id: "u-admin",
+        username: "admin",
+        role: "Administrador",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      } as never),
+    ).toBe(false);
+    expect(
+      result.current.canManageUser({
+        id: "u-sup",
+        username: "sup",
+        role: "Supervisor_Elevado",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      } as never),
+    ).toBe(false);
+    expect(
+      result.current.canManageUser({
+        id: "u2",
+        username: "ana",
+        role: "Usuario",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      } as never),
+    ).toBe(true);
+  });
+
+  it("creates user with default temporary password, sends employeeId: null on unlink, and keeps modal open on failure", async () => {
+    addUserMock
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "u-new", username: "nuevo" });
+    updateUserMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+    const { result } = renderHook(() => useUserManagementData());
+
+    act(() => {
+      result.current.handleOpenNewForm();
+    });
 
     await act(async () => {
       await result.current.handleSaveUser({ username: "nuevo", role: "Usuario" as never });
     });
 
-    expect(addUserMock).not.toHaveBeenCalled();
-    expect(addToastMock).toHaveBeenCalledWith("La contraseña es requerida.", "warning");
+    expect(addUserMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        username: "nuevo",
+        password: "123456",
+        role: "Usuario",
+      }),
+    );
+    expect(result.current.isFormVisible).toBe(true);
+
+    await act(async () => {
+      await result.current.handleSaveUser({ username: "nuevo", role: "Usuario" as never });
+    });
+    expect(result.current.isFormVisible).toBe(false);
+
+    // Edit and unlink employeeId
+    act(() => {
+      result.current.handleEditUser({
+        id: "u2",
+        username: "ana",
+        role: "Usuario",
+        employeeId: "e1",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      } as never);
+    });
+
+    await act(async () => {
+      await result.current.handleSaveUser({
+        username: "ana",
+        role: "Supervisor" as never,
+        employeeId: "",
+      });
+    });
+
+    expect(updateUserMock).toHaveBeenCalledWith("u2", {
+      role: "Supervisor",
+      employeeId: null,
+    });
+    expect(result.current.isFormVisible).toBe(true);
+
+    await act(async () => {
+      await result.current.handleSaveUser({
+        username: "ana",
+        role: "Supervisor" as never,
+        employeeId: "",
+      });
+    });
+    expect(result.current.isFormVisible).toBe(false);
+  });
+
+  it("does not close modals or show success toast when delete or reset password fails", async () => {
+    updateUserMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    deleteUserMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+    const { result } = renderHook(() => useUserManagementData());
 
     act(() => {
       result.current.setUserToResetPassword({
+        id: "u2",
+        username: "ana",
+        role: "Usuario",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      } as never);
+      result.current.setUserToDelete({
         id: "u2",
         username: "ana",
         role: "Usuario",
@@ -132,8 +241,20 @@ describe("useUserManagementData", () => {
 
     await act(async () => {
       await result.current.handleConfirmResetPassword();
+      await result.current.handleDeleteUser();
     });
 
+    expect(result.current.userToResetPassword).not.toBeNull();
+    expect(result.current.userToDelete).not.toBeNull();
+    expect(addToastMock).not.toHaveBeenCalledWith(expect.any(String), "success");
+
+    await act(async () => {
+      await result.current.handleConfirmResetPassword();
+      await result.current.handleDeleteUser();
+    });
+
+    expect(result.current.userToResetPassword).toBeNull();
+    expect(result.current.userToDelete).toBeNull();
     expect(updateUserMock).toHaveBeenCalledWith("u2", {
       password: "123456",
       mustChangePassword: true,

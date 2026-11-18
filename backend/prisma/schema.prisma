@@ -259,12 +259,13 @@ model AssignedShift {
 }
 
 model Holiday {
-  id        String   @id @default(uuid())
-  date      String   @unique
-  name      String
-  type      String   @default("Nacional")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(uuid())
+  date           String   @unique
+  name           String
+  type           String   @default("Nacional")
+  isRenounceable Boolean  @default(false) @map("is_renounceable")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("holidays")
 }

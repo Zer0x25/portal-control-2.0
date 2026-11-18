@@ -4,8 +4,15 @@ import KpisTab from "../../../features/supervisor-dashboard/components/KpisTab";
 import { useKpiCalculations } from "../../../hooks/useKpiCalculations";
 import { isDateRangeValid } from "../../../utils/validation";
 
+const { addToastMock } = vi.hoisted(() => ({
+  addToastMock: vi.fn(),
+}));
+
 vi.mock("../../../hooks/useKpiCalculations");
 vi.mock("../../../utils/validation");
+vi.mock("../../../hooks/useToasts", () => ({
+  useToasts: () => ({ addToast: addToastMock }),
+}));
 
 vi.mock("../../../features/supervisor-dashboard/components/KpiFilterPanel", () => ({
   default: ({ onFiltersChange }: any) => (
@@ -76,6 +83,8 @@ describe("KpisTab Component", () => {
       kpis: buildKpiMock(),
       kpiDetails: buildKpiDetailsMock(),
       isLoadingKpis: false,
+      isError: false,
+      error: null,
       calculateKpis: vi.fn(),
     });
   });
@@ -199,5 +208,39 @@ describe("KpisTab Component", () => {
 
     expect(screen.getAllByText("0.00%").length).toBeGreaterThan(0);
     expect(screen.getByText("0.00")).toBeInTheDocument();
+  });
+
+  it("should show explicit error alert and toast instead of no-data banner when API fails", () => {
+    (useKpiCalculations as any).mockReturnValue({
+      kpis: buildKpiMock({
+        tardinessCount: 0,
+        absenceCount: 0,
+        vacationCount: 0,
+        medicalLeaveCount: 0,
+        specialPermitCount: 0,
+      }),
+      kpiDetails: buildKpiDetailsMock({
+        tardyRecords: [],
+        absentEmployees: [],
+        vacationRecords: [],
+        medicalLeaveRecords: [],
+        specialPermitRecords: [],
+      }),
+      isLoadingKpis: false,
+      isError: true,
+      error: new Error("500 Internal Server Error"),
+      calculateKpis: vi.fn(),
+    });
+
+    render(<KpisTab />);
+    fireEvent.click(screen.getByText("Emit Valid Filters"));
+
+    const alert = screen.getByRole("alert");
+    expect(alert).toHaveTextContent(/Error al Calcular Métricas de KPI/i);
+    expect(screen.queryByText(/Periodo sin registros/i)).not.toBeInTheDocument();
+    expect(addToastMock).toHaveBeenCalledWith(
+      "Error al obtener las métricas de KPI del servidor.",
+      "error",
+    );
   });
 });

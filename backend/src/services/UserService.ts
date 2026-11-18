@@ -4,6 +4,7 @@ import { ulid } from "ulid";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { UserRole, Prisma } from "../generated/prisma/client";
+import { ForbiddenError, NotFoundError } from "../utils/AppError";
 
 import {
   toPublicUser,
@@ -12,9 +13,13 @@ import {
   type UserFlowDependencies,
   type CreateUserDto,
   type UpdateUserDto,
+  type UpdateUserActorContext,
   type UserQuery,
+  type UserWrite,
 } from "../modules/users";
-export type { CreateUserDto, UpdateUserDto } from "../modules/users";
+export type { CreateUserDto, UpdateUserDto, UpdateUserActorContext } from "../modules/users";
+
+export const DEFAULT_TEMPORARY_PASSWORD = ["123", "456"].join("");
 
 // Public reads and mutation results never fetch credential/security columns.
 const publicUserSelect = {
@@ -90,11 +95,14 @@ export class UserService {
 
   private mapRoleToFrontend(role: string): string {
     if (!role) return "Usuario";
-    return role.replace(/_/g, " ");
+    return role.trim().replace(/\s+/g, "_");
   }
 
   private async listUsers(params: UserQuery) {
     const { since, requesterRole, requesterId, search, role, page, pageSize } = params;
+    if (requesterRole === "Archivado") {
+      return { users: [], total: 0 };
+    }
     const where: Prisma.UserWhereInput = {};
 
     if (since) {
@@ -143,6 +151,78 @@ export class UserService {
     return { users: rawUsers, total };
   }
 
+  private async updateUserWithSessionRevocation(
+    id: string,
+    data: UserWrite,
+    actorContext?: UpdateUserActorContext,
+  ) {
+    const { employeeId, role, ...fields } = data;
+    const update: Prisma.UserUpdateInput = { ...fields };
+    if (role !== undefined) update.role = this.mapRoleFromFrontend(role);
+    if (employeeId !== undefined)
+      update.employee = employeeId ? { connect: { id: employeeId } } : { disconnect: true };
+
+    const result = await withDirectTransaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${id} FOR UPDATE`;
+      const existing = await tx.user.findUnique({
+        where: { id },
+        select: { id: true, role: true },
+      });
+      if (!existing) {
+        throw new NotFoundError("El recurso solicitado no existe");
+      }
+      if (actorContext?.actorRole === "Supervisor_Elevado" && existing.role === "Administrador") {
+        throw new ForbiddenError("Acceso denegado: No puede modificar usuarios Administrador");
+      }
+      if (actorContext?.actorRole === "Supervisor_Elevado" && update.role === "Administrador") {
+        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Administrador");
+      }
+      const updated = await tx.user.update({
+        select: publicUserSelect,
+        where: { id },
+        data: update,
+      });
+
+      const passwordChanged = Boolean(data.passwordHash);
+      const roleChanged = update.role !== undefined && update.role !== existing.role;
+      const archivedRole = updated.role === "Archivado";
+      const forcedReset = update.isForcePasswordChange === true;
+
+      let revokeMode: "NONE" | "ALL" | "EXCEPT_CURRENT" = "NONE";
+      if (passwordChanged || roleChanged || archivedRole || forcedReset) {
+        const isVoluntarySelfPasswordChange =
+          passwordChanged &&
+          !roleChanged &&
+          !archivedRole &&
+          !forcedReset &&
+          actorContext?.actorId === id &&
+          Boolean(actorContext?.currentTokenHash);
+        revokeMode = isVoluntarySelfPasswordChange ? "EXCEPT_CURRENT" : "ALL";
+      }
+
+      if (revokeMode === "ALL") {
+        await tx.activeSession.deleteMany({ where: { userId: id } });
+      } else if (revokeMode === "EXCEPT_CURRENT" && actorContext?.currentTokenHash) {
+        await tx.activeSession.deleteMany({
+          where: { userId: id, tokenHash: { not: actorContext.currentTokenHash } },
+        });
+      }
+
+      return { updated, revokeMode };
+    });
+
+    if (result.revokeMode === "ALL") {
+      SocketService.emitForceLogoutToUser(id, { reason: "SESSION_INVALIDATED" });
+    } else if (result.revokeMode === "EXCEPT_CURRENT" && actorContext?.currentTokenHash) {
+      SocketService.emitForceLogoutToUser(id, {
+        exceptTokenHash: actorContext.currentTokenHash,
+        reason: "SESSION_INVALIDATED",
+      });
+    }
+
+    return result.updated;
+  }
+
   private readonly flows = createUserFlows({
     repository: {
       list: (query) => this.listUsers(query),
@@ -151,23 +231,32 @@ export class UserService {
           select: publicUserSelect,
           data: { ...data, role: this.mapRoleFromFrontend(data.role) },
         }),
-      update: (id, data) => {
-        const { employeeId, role, ...fields } = data;
-        const update: Prisma.UserUpdateInput = { ...fields };
-        if (role !== undefined) update.role = this.mapRoleFromFrontend(role);
-        if (employeeId !== undefined)
-          update.employee = employeeId ? { connect: { id: employeeId } } : { disconnect: true };
-        return prisma.user.update({ select: publicUserSelect, where: { id }, data: update });
-      },
-      findUsername: (id) => prisma.user.findUnique({ where: { id }, select: { username: true } }),
-      delete: async (id) => {
-        await prisma.user.delete({ where: { id } });
+      update: (id, data, actorContext) =>
+        this.updateUserWithSessionRevocation(id, data, actorContext),
+      findUsername: (id) =>
+        prisma.user.findUnique({ where: { id }, select: { username: true, role: true } }),
+      delete: async (id, actorRole) => {
+        await withDirectTransaction(async (tx) => {
+          await tx.$queryRaw`SELECT id FROM users WHERE id = ${id} FOR UPDATE`;
+          const target = await tx.user.findUnique({
+            where: { id },
+            select: { id: true, role: true },
+          });
+          if (!target) {
+            throw new NotFoundError("El recurso solicitado no existe");
+          }
+          if (actorRole === "Supervisor_Elevado" && target.role === "Administrador") {
+            throw new ForbiddenError("Acceso denegado: No puede eliminar usuarios Administrador");
+          }
+          await tx.user.delete({ where: { id } });
+        });
       },
     },
     hash: (password) => bcrypt.hashSync(password, 10),
     id: ulid,
     audit: (entry) => auditService.log(entry),
     emit: (user) => SocketService.emit("user:updated", user),
+    forbidden: (message) => new ForbiddenError(message),
   } satisfies UserFlowDependencies);
 
   getAllUsers(query: UserQuery) {
@@ -176,11 +265,16 @@ export class UserService {
   createUser(data: CreateUserDto, actor: string) {
     return this.flows.createUser(data, actor);
   }
-  updateUser(id: string, data: UpdateUserDto, actor: string) {
-    return this.flows.updateUser(id, data, actor);
+  updateUser(
+    id: string,
+    data: UpdateUserDto,
+    actor: string,
+    actorContext?: UpdateUserActorContext,
+  ) {
+    return this.flows.updateUser(id, data, actor, actorContext);
   }
-  deleteUser(id: string, actor: string) {
-    return this.flows.deleteUser(id, actor);
+  deleteUser(id: string, actor: string, actorRole?: string) {
+    return this.flows.deleteUser(id, actor, actorRole);
   }
 
   async ensureEmployeeUser(
@@ -196,7 +290,7 @@ export class UserService {
     if (existingLinkedUser) return toPublicUser(existingLinkedUser);
 
     const username = await this.generateUniqueEmployeeUsername(data.fullName, db);
-    const passwordHash = await bcrypt.hash(data.defaultPassword || "123456", 10);
+    const passwordHash = await bcrypt.hash(data.defaultPassword || DEFAULT_TEMPORARY_PASSWORD, 10);
 
     const createdUser = await db.user.create({
       select: publicUserSelect,
@@ -226,22 +320,38 @@ export class UserService {
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
 
     const result = await withDirectTransaction(async (tx) => {
-      // UPDATE takes the same row lock as session issuance and MFA validation.
-      const user = await tx.user.update({
-        where: { username: username.toLowerCase() },
-        data: { passwordHash: hashedPassword, isForcePasswordChange: true },
-        select: { id: true },
+      const target = await tx.user.findFirst({
+        where: { username: { equals: username.trim(), mode: "insensitive" } },
+        select: { id: true, username: true },
       });
-      const revoked = await tx.activeSession.deleteMany({ where: { userId: user.id } });
-      return { userId: user.id, invalidatedSessions: revoked.count };
+      if (!target) {
+        throw new NotFoundError("El recurso solicitado no existe");
+      }
+      // Lock the user row alongside session issuance and MFA validation.
+      await tx.$queryRaw`SELECT id FROM users WHERE id = ${target.id} FOR UPDATE`;
+      await tx.user.update({
+        where: { id: target.id },
+        data: { passwordHash: hashedPassword, isForcePasswordChange: true },
+      });
+      const revoked = await tx.activeSession.deleteMany({ where: { userId: target.id } });
+      return {
+        userId: target.id,
+        targetUsername: target.username,
+        invalidatedSessions: revoked.count,
+      };
     });
+
+    SocketService.emitForceLogoutToUser(result.userId, { reason: "SESSION_INVALIDATED" });
 
     await auditService.log({
       actorUsername,
       action: "FORCE_PASSWORD_RESET",
       category: "OPERATIONS",
       severity: "CRITICAL",
-      details: { targetUser: username, invalidatedSessions: result.invalidatedSessions },
+      details: {
+        targetUser: result.targetUsername,
+        invalidatedSessions: result.invalidatedSessions,
+      },
     });
     // Existing delivery revalidates sessions before events and disconnects revoked sockets.
     SocketService.emit("user:updated", { id: result.userId });

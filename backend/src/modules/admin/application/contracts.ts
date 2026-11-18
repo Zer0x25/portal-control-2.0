@@ -35,6 +35,7 @@ export interface AdminDependencies {
   }): Promise<{ deletedCount: number; target: string }>;
   operations: OperationPort;
   backup(): Promise<string>;
+  inspectBackup?(backupPath: string): Promise<{ filename: string; sizeBytes?: number }>;
   backupSuccess(): void;
   backups(): unknown;
   restore(filename: string): Promise<void>;

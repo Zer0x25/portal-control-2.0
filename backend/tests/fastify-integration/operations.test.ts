@@ -356,14 +356,15 @@ describe("Spec023 operations on Fastify", () => {
     const success = vi.spyOn(backupHealthService, "recordSuccess");
     const response = await http("POST", "/api/admin/trigger-backup", {});
     expect(response.status).toBe(200);
-    expect(response.body.data.backupPath).toBe("owned-backup.sql");
+    expect(response.body.data.filename).toBe("owned-backup.sql");
+    expect(response.body.data.backupPath).toBeUndefined();
     expect(success).toHaveBeenCalledOnce();
     await vi.waitFor(() => expect(systemOperationService.getSnapshot()).toBeNull());
     expect(
       await prismaDirect.auditLog.findFirst({ where: { action: "TRIGGER_BACKUP_MANUAL" } }),
     ).toMatchObject({
       actorUsername: "operations-admin",
-      details: { backupPath: "owned-backup.sql" },
+      details: { filename: "owned-backup.sql" },
     });
     vi.spyOn(backupHealthService, "getBackups").mockReturnValue([
       { name: "owned-backup.sql", createdAt: "2020-01-01Z", size: 5, sizeFormatted: "5 Bytes" },
@@ -686,6 +687,15 @@ describe("Spec023 operations on Fastify", () => {
     const job = await stoppedJob();
     expect(
       (await http("GET", `/api/maintenance/seed/phase2/logs?jobId=${job.id}&limit=bad`)).status,
-    ).toBe(500);
+    ).toBe(400);
+    expect(
+      (await http("POST", "/api/maintenance/seed/phase2/pause", { jobId: job.id })).status,
+    ).toBe(409);
+    expect(
+      (await http("POST", "/api/maintenance/seed/phase2/resume", { jobId: job.id })).status,
+    ).toBe(409);
+    expect(
+      (await http("POST", "/api/maintenance/seed/phase2/stop", { jobId: job.id })).status,
+    ).toBe(409);
   });
 });

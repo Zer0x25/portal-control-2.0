@@ -6,6 +6,7 @@ import {
   resetRateLimitEventLockForTests,
   type BinaryResponse,
 } from "./apiClient";
+import { authTokenStore } from "./authToken";
 
 function jsonResponse(
   body: unknown,
@@ -307,5 +308,45 @@ describe("apiClient (spec 034 Fase A)", () => {
     expect(result.ok).toBe(false);
     expect(result.status).toBe(404);
     expect(result.error).toBeInstanceOf(ApiHttpError);
+  });
+
+  it("emite rate_limited y NO unauthorized cuando /api/auth/login devuelve 429", async () => {
+    const unauthorized = vi.fn();
+    const rateLimited = vi.fn();
+    window.addEventListener("unauthorized", unauthorized);
+    window.addEventListener("rate_limited", rateLimited);
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse({ message: "Demasiados intentos" }, 429, { "Retry-After": "30" }),
+    );
+
+    await apiClient.post("/api/auth/login" as never, { body: {} as never }).catch(() => undefined);
+
+    expect(unauthorized).not.toHaveBeenCalled();
+    expect(rateLimited).toHaveBeenCalledTimes(1);
+    const detail = (rateLimited.mock.calls[0][0] as CustomEvent<{ retryAfter?: string | null }>)
+      .detail;
+    expect(detail.retryAfter).toBe("30");
+    window.removeEventListener("unauthorized", unauthorized);
+    window.removeEventListener("rate_limited", rateLimited);
+  });
+
+  it("usa kioskToken y no emite unauthorized ni borra authToken en 401 con authScope kiosk", async () => {
+    authTokenStore.setToken("portal-jwt");
+    authTokenStore.setKioskToken("kiosk-jwt");
+    const unauthorized = vi.fn();
+    window.addEventListener("unauthorized", unauthorized);
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ message: "Kiosk expirado" }, 401));
+
+    await apiClient
+      .get("/api/records" as never, { authScope: "kiosk", retry: false, dedup: false })
+      .catch(() => undefined);
+
+    const init = vi.mocked(fetch).mock.calls[0][1] as RequestInit;
+    expect((init.headers as Record<string, string>)["Authorization"]).toBe("Bearer kiosk-jwt");
+    expect(unauthorized).not.toHaveBeenCalled();
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+    window.removeEventListener("unauthorized", unauthorized);
+    authTokenStore.removeToken();
   });
 });

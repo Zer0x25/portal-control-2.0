@@ -109,4 +109,55 @@ describe("timeRecordIntegrityService", () => {
     expect(result.checkedCount).toBe(3);
     expect(result.brokenCount).toBe(0);
   });
+
+  it("checks only matching rows and enforces a strict limit across batches", async () => {
+    let previous: string | null = null;
+    const records = Array.from({ length: 5002 }, (_, index) => {
+      const row = {
+        id: `r${index}`,
+        employeeId: "EMP001",
+        date: index === 0 || index === 5000 ? "2026-01-01" : "2026-02-01",
+        entrada: null,
+        inicioColacion: null,
+        finColacion: null,
+        salida: null,
+        status: "Completado",
+        source: "TEST",
+        updatedAt: new Date("2026-01-01T00:00:00Z"),
+        integrityVersion: 1,
+      };
+      const hash = timeRecordIntegrityService.computeHash(
+        timeRecordIntegrityService.buildCanonicalPayload(row, previous),
+      );
+      const sealed = { ...row, integrityPrevHash: previous, integrityHash: hash };
+      previous = hash;
+      return sealed;
+    });
+    const tx = {
+      timeRecord: {
+        findMany: vi
+          .fn()
+          .mockResolvedValueOnce(records.slice(0, 5000))
+          .mockResolvedValueOnce(records.slice(5000))
+          .mockResolvedValue([]),
+      },
+    } as any;
+    const result = await timeRecordIntegrityService.verifyChain(tx, {
+      employeeId: "EMP001",
+      from: "2026-02-01",
+      to: "2026-02-01",
+      limit: 5000,
+    });
+    expect(result).toMatchObject({ checkedCount: 5000, brokenCount: 0, truncated: false });
+    expect(tx.timeRecord.findMany).toHaveBeenCalledTimes(3);
+    tx.timeRecord.findMany.mockReset().mockResolvedValueOnce(records.slice(0, 5000));
+    const first = await timeRecordIntegrityService.verifyChain(tx, {
+      from: "2026-02-01",
+      limit: 1,
+    });
+    expect(first).toMatchObject({ checkedCount: 1, brokenCount: 0, truncated: true });
+    await expect(timeRecordIntegrityService.verifyChain(tx, { limit: 0 })).rejects.toThrow(
+      RangeError,
+    );
+  });
 });

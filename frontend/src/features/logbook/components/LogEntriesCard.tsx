@@ -60,11 +60,15 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
       syncStatus: "pending",
     };
 
-    await onUpdateShift(updatedShift);
-    addToast(editingLogEntry ? "Novedad actualizada." : "Novedad agregada.", "success");
+    try {
+      await onUpdateShift(updatedShift);
+      addToast(editingLogEntry ? "Novedad actualizada." : "Novedad agregada.", "success");
 
-    setShowLogEntryModal(false);
-    setEditingLogEntry(null);
+      setShowLogEntryModal(false);
+      setEditingLogEntry(null);
+    } catch {
+      // Error toast already shown by onUpdateShift; keep modal open
+    }
   };
 
   const openEditLogEntryModal = (entry: LogbookEntryItem) => {
@@ -77,12 +81,17 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
     const updatedShift: ShiftReport = {
       ...activeShift,
       logEntries: activeShift.logEntries.filter((le) => le.id !== itemToDelete.id),
+      removedLogEntryIds: [itemToDelete.id],
       lastModified: Date.now(),
       syncStatus: "pending",
     };
-    await onUpdateShift(updatedShift);
-    addToast("Novedad eliminada.", "success");
-    setItemToDelete(null);
+    try {
+      await onUpdateShift(updatedShift);
+      addToast("Novedad eliminada.", "success");
+      setItemToDelete(null);
+    } catch {
+      // Error toast already shown by onUpdateShift
+    }
   };
 
   const renderMobileView = () => (

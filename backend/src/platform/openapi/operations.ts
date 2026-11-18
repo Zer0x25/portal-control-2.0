@@ -184,6 +184,31 @@
  *       - in: query
  *         name: format
  *         schema: { type: string, enum: [json, csv, xml, excel] }
+ *       - in: query
+ *         name: matchingView
+ *         description: Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error.
+ *         schema: { type: string, enum: ['true', 'false'] }
+ *       - in: query
+ *         name: employeeId
+ *         schema: { type: string }
+ *       - in: query
+ *         name: name
+ *         schema: { type: string }
+ *       - in: query
+ *         name: area
+ *         schema: { type: string }
+ *       - in: query
+ *         name: workdayType
+ *         schema: { type: string }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: showAnomalies
+ *         schema: { type: string, enum: ['true', 'false'] }
+ *       - in: query
+ *         name: cargo
+ *         schema: { type: string }
  *     responses:
  *       200:
  *         description: Archivo exportado o JSON
@@ -296,6 +321,7 @@
  *         application/json:
  *           schema:
  *             type: array
+ *             maxItems: 500
  *             items:
  *               $ref: '#/components/schemas/TimeRecordWrite'
  *     responses:
@@ -318,6 +344,25 @@
 
 /**
  * @openapi
+ * /api/records/indicators:
+ *   get:
+ *     summary: Indicadores de edición y solicitudes pendientes para jornadas visibles
+ *     tags: [Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: ids
+ *         required: true
+ *         description: Hasta 100 identificadores de jornada separados por comas.
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Datos mínimos de indicadores por jornada
+ */
+
+/**
+ * @openapi
  * /api/records/integrity/verify:
  *   get:
  *     summary: Verifica la integridad de la cadena de marcajes
@@ -334,6 +379,10 @@
  *       - in: query
  *         name: to
  *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: limit
+ *         description: Máximo de registros a verificar; la respuesta indica si el resultado fue truncado.
+ *         schema: { type: integer, minimum: 1 }
  *     responses:
  *       200:
  *         description: Resultado de la verificación
@@ -966,13 +1015,47 @@
  *     tags: [ShiftReports]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 1000000
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *       - in: query
+ *         name: since
+ *         schema:
+ *           type: string
+ *         description: Timestamp para consulta delta
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [open, closed]
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Búsqueda por folio, responsable o turno
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de turno (YYYY-MM-DD)
  *     responses:
  *       200:
  *         description: Lista de bitácoras
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ShiftReportListResponse'
+ *               $ref: '#/components/schemas/ShiftReportPaginatedResponse'
  */
 
 /**
@@ -992,6 +1075,39 @@
  *     responses:
  *       200:
  *         description: Bitácora guardada
+ */
+
+/**
+ * @openapi
+ * /api/shift-reports/{id}/attendance-novelties:
+ *   post:
+ *     summary: Agregar novedad de una jornada a la bitácora abierta
+ *     tags: [ShiftReports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [recordId, annotation, time]
+ *             properties:
+ *               recordId:
+ *                 type: string
+ *               annotation:
+ *                 type: string
+ *               time:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Novedad persistida
  */
 
 /**
@@ -1850,9 +1966,18 @@
  *         schema:
  *           type: string
  *       - in: query
+ *         name: workdayType
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: employeeId
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: mode
+ *         schema:
+ *           type: string
+ *           enum: [summary, compiled_detailed]
  *       - in: query
  *         name: viewMode
  *         schema:
@@ -1899,9 +2024,18 @@
  *         schema:
  *           type: string
  *       - in: query
+ *         name: workdayType
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: employeeId
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: mode
+ *         schema:
+ *           type: string
+ *           enum: [summary, compiled_detailed]
  *     responses:
  *       200:
  *         description: Archivo PDF
@@ -1957,11 +2091,17 @@
  *         name: area
  *         schema: { type: string }
  *       - in: query
+ *         name: cargo
+ *         schema: { type: string }
+ *       - in: query
+ *         name: workdayType
+ *         schema: { type: string }
+ *       - in: query
  *         name: employeeId
  *         schema: { type: string }
  *       - in: query
  *         name: mode
- *         schema: { type: string, enum: [summary, detailed] }
+ *         schema: { type: string, enum: [summary, compiled_detailed] }
  *     responses:
  *       200:
  *         description: Archivo Excel
@@ -1973,6 +2113,34 @@
  *   get:
  *     summary: Obtiene lista de empleados para modo Kiosko
  *     tags: [Employees]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: area
+ *         schema: { type: string }
+ *       - in: query
+ *         name: since
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Lista pública de empleados activos para Kiosko (sin PII)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/KioskEmployees'
+ *       400:
+ *         description: Parámetros de consulta inválidos
  */
 
 /**
@@ -2138,6 +2306,19 @@
  *     tags: [Corrections]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: since
+ *         schema: { type: string, pattern: '^[0-9]+$' }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, minimum: 1, maximum: 1000 }
+ *       - in: query
+ *         name: offset
+ *         schema: { type: integer, minimum: 0 }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [pending, approved, rejected] }
  *     responses:
  *       200:
  *         description: Lista de solicitudes
@@ -2164,6 +2345,16 @@
  *     responses:
  *       201:
  *         description: Solicitud creada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CorrectionRequestRecord'
+ *       400:
+ *         description: Datos inválidos o adjuntos no admitidos
+ *       403:
+ *         description: Jornada ajena o período cerrado
+ *       409:
+ *         description: Ya existe una solicitud pendiente para el campo
  */
 
 /**
@@ -2243,6 +2434,14 @@
  *     responses:
  *       200:
  *         description: Estado actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CorrectionRequestRecord'
+ *       403:
+ *         description: Período cerrado
+ *       409:
+ *         description: El campo cambió desde la solicitud
  */
 
 /**
@@ -2526,21 +2725,40 @@
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 token: { type: string }
- *                 requiresMFA: { type: boolean }
- *                 mustChangePassword: { type: boolean }
+ *               oneOf:
+ *                 - type: object
+ *                   required: [userId, username, role, token, mustChangePassword, mfaEnabled, message]
+ *                   properties:
+ *                     userId: { type: string }
+ *                     username: { type: string }
+ *                     role: { type: string }
+ *                     employeeId: { type: string, nullable: true }
+ *                     token: { type: string }
+ *                     mustChangePassword: { type: boolean }
+ *                     mfaEnabled: { type: boolean }
+ *                     message: { type: string }
+ *                 - type: object
+ *                   required: [mfaRequired, mfaToken, userId, message]
+ *                   properties:
+ *                     mfaRequired: { type: boolean }
+ *                     mfaToken: { type: string }
+ *                     userId: { type: string }
+ *                     message: { type: string }
+ *       400:
+ *         description: Error de validación en credenciales
  *       401:
  *         description: Credenciales inválidas
+ *       403:
+ *         description: Cuenta de usuario archivada
+ *       429:
+ *         description: Demasiados intentos fallidos
  */
 
 /**
  * @openapi
  * /api/auth/mfa/setup:
  *   post:
- *     summary: Genera secreto MFA y QR
+ *     summary: Genera secreto MFA y QR (Solo Administrador)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -2551,16 +2769,22 @@
  *           application/json:
  *             schema:
  *               type: object
+ *               required: [qrCode, secret, message]
  *               properties:
  *                 qrCode: { type: string }
  *                 secret: { type: string }
+ *                 message: { type: string }
+ *       403:
+ *         description: Requiere rol Administrador
+ *       409:
+ *         description: MFA ya habilitado
  */
 
 /**
  * @openapi
  * /api/auth/mfa/verify:
  *   post:
- *     summary: Habilita MFA tras verificar primer código
+ *     summary: Habilita MFA tras verificar primer código (Solo Administrador)
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -2569,12 +2793,23 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               token: { type: string }
+ *             $ref: '#/components/schemas/MFAVerify'
  *     responses:
  *       200:
  *         description: MFA habilitado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [message]
+ *               properties:
+ *                 message: { type: string }
+ *       400:
+ *         description: MFA no configurado o código inválido
+ *       403:
+ *         description: Requiere rol Administrador
+ *       409:
+ *         description: MFA ya habilitado
  */
 
 /**
@@ -2583,9 +2818,17 @@
  *   post:
  *     summary: Valida código MFA durante login
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MFAValidate'
  *     responses:
+ *       400:
+ *         description: Payload inválido
  *       401:
- *         description: Código o desafío inválido, expirado o MFA deshabilitado
+ *         description: Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado
  *       403:
  *         description: Cuenta archivada entre factores
  *       429:
@@ -2602,9 +2845,16 @@
  *           application/json:
  *             schema:
  *               type: object
+ *               required: [userId, username, role, token, mustChangePassword, mfaEnabled, message]
  *               properties:
+ *                 userId: { type: string }
+ *                 username: { type: string }
+ *                 role: { type: string }
+ *                 employeeId: { type: string, nullable: true }
  *                 token: { type: string }
  *                 mustChangePassword: { type: boolean }
+ *                 mfaEnabled: { type: boolean }
+ *                 message: { type: string }
  */
 
 /**
@@ -2626,9 +2876,23 @@
  *           application/json:
  *             schema:
  *               type: object
+ *               required: [success, employeeName, token, mustChangePin, message]
  *               properties:
+ *                 success: { type: boolean }
+ *                 employeeName: { type: string }
  *                 token: { type: string }
- *                 employee: { $ref: '#/components/schemas/Employee' }
+ *                 mustChangePin: { type: boolean }
+ *                 message: { type: string }
+ *       400:
+ *         description: Error de validación en credenciales
+ *       401:
+ *         description: PIN incorrecto
+ *       403:
+ *         description: Empleado archivado o PIN bloqueado
+ *       404:
+ *         description: Empleado no encontrado
+ *       429:
+ *         description: Demasiados intentos fallidos
  */
 
 /**
@@ -2637,9 +2901,18 @@
  *   post:
  *     summary: Cierra sesión del usuario
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Sesión cerrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [message]
+ *               properties:
+ *                 message: { type: string }
  */
 
 /**

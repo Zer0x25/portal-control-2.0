@@ -50,9 +50,11 @@ export const PERSISTED_QUERY_ROOTS: readonly string[] = [
   "correctionRequests",
   "dashboard",
   "employees",
+  "employeesKiosk",
   "holidays",
   "leaves",
   "meterReadings",
+  "monthlyPlan",
   "notes",
   "recordHistory",
   "shiftPatterns",
@@ -132,7 +134,36 @@ export const queryCachePersister = createAsyncStoragePersister({
  * Purga integral e idempotente del cache de queries. Se limita al store del
  * cache: nunca toca `SAPHRPortalDB` ni la cola offline de `syncSlice`.
  */
-export const purgePersistedQueryCache = async (): Promise<void> => {
+export const purgePersistedQueryCache = async (options?: {
+  preserveRoots?: readonly string[];
+}): Promise<void> => {
+  const preserveRoots = options?.preserveRoots ?? [];
+  if (preserveRoots.length > 0) {
+    try {
+      const raw = await indexedDbStorage.getItem(QUERY_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          clientState?: { queries?: Array<{ queryKey?: unknown[] }> };
+        };
+        const preservedQueries =
+          parsed.clientState?.queries?.filter(
+            (q) =>
+              Array.isArray(q.queryKey) &&
+              typeof q.queryKey[0] === "string" &&
+              preserveRoots.includes(q.queryKey[0]),
+          ) ?? [];
+
+        if (preservedQueries.length > 0 && parsed.clientState) {
+          parsed.clientState.queries = preservedQueries;
+          await indexedDbStorage.setItem(QUERY_CACHE_KEY, JSON.stringify(parsed));
+          return;
+        }
+      }
+    } catch (error) {
+      logger.warn("[QueryCache] Error preservando raices durante purge", error);
+    }
+  }
+
   const results = await Promise.allSettled([
     queryCachePersister.removeClient(),
     (async () => {

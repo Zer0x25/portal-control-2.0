@@ -1,4 +1,9 @@
-import { AuthError, ForbiddenError, ValidationError } from "../../../utils/AppError";
+import {
+  AuthError,
+  ForbiddenError,
+  RateLimitError,
+  ValidationError,
+} from "../../../utils/AppError";
 export interface LoginUser {
   id: string;
   username: string;
@@ -11,7 +16,7 @@ export interface LoginUser {
 export interface AuthFlowContext {
   ip?: string;
   userAgent?: string;
-  user?: { id: string; username: string };
+  user?: { id: string; username: string; role?: string };
 }
 export interface AuthFlowDependencies {
   service: {
@@ -42,13 +47,17 @@ export interface AuthFlowDependencies {
       reason?: string;
       token?: string;
       employeeName?: string;
+      mustChangePin?: boolean;
       attempts?: number;
       isBlocked?: boolean;
     }>;
-    revokeSession(token: string): Promise<void>;
+    revokeSession(token: string): Promise<{ username: string; userId: string } | null | void>;
     setupMFA(id: string, username: string): Promise<{ qrCode: string; secret: string }>;
     confirmMFASetup(id: string, token: string): Promise<boolean>;
-    validateMFALogin(token: string, code: string): Promise<{ success: boolean; user?: LoginUser }>;
+    validateMFALogin(
+      token: string,
+      code: string,
+    ): Promise<{ success: boolean; user?: LoginUser; actorUsername?: string; userId?: string }>;
   };
   failures: {
     record(ip: string, key: string): Promise<void>;
@@ -71,6 +80,13 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
     if (!context.user) throw new AuthError("No autorizado");
     return context.user;
   };
+  const requireAdminUser = (context: AuthFlowContext) => {
+    const user = requireUser(context);
+    if (user.role !== "Administrador") {
+      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
+    }
+    return user;
+  };
   const session = async (user: LoginUser, context: AuthFlowContext) => {
     if (!user.credentialStamp)
       throw new AuthError("Credenciales cambiaron; reinicia el inicio de sesión");
@@ -82,13 +98,15 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
       context.userAgent || "Unknown",
       user.credentialStamp,
     );
+    const canonicalRole = result.role ? result.role.trim().replace(/\s+/g, "_") : "Usuario";
     return {
       userId: user.id,
       username: user.username,
-      role: result.role ? result.role.replace(/_/g, " ") : "Usuario",
+      role: canonicalRole,
       employeeId: user.employeeId,
       token: result.token,
       mustChangePassword: user.isForcePasswordChange ?? false,
+      mfaEnabled: user.mfaEnabled,
     };
   };
   return {
@@ -157,13 +175,36 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
           message: "Verificación exitosa",
           employeeName: result.employeeName,
           token: result.token,
+          mustChangePin: Boolean(result.mustChangePin),
         });
       }
+      if (result.reason === "ARCHIVED")
+        return { status: 403, body: { message: "Empleado archivado o inactivo." } };
       await deps.failures.record(context.ip || "unknown", employeeId);
-      if (result.reason === "NOT_FOUND")
+      if (result.reason === "NOT_FOUND") {
+        await deps.audit({
+          actorUsername: "UNKNOWN_KIOSK_USER",
+          action: "KIOSK_PIN_FAILED",
+          category: "OPERATIONS",
+          severity: "WARNING",
+          outcome: "FAILURE",
+          details: { employeeId, reason: "NOT_FOUND" },
+          ipAddress: context.ip,
+        });
         return { status: 404, body: { message: "Empleado no encontrado" } };
-      if (result.reason === "BLOCKED")
+      }
+      if (result.reason === "BLOCKED") {
+        await deps.audit({
+          actorUsername: "UNKNOWN_KIOSK_USER",
+          action: "KIOSK_PIN_FAILED",
+          category: "OPERATIONS",
+          severity: "WARNING",
+          outcome: "FAILURE",
+          details: { employeeId, reason: "BLOCKED", isBlocked: true },
+          ipAddress: context.ip,
+        });
         return { status: 403, body: { message: "PIN bloqueado. Contacte a un administrador." } };
+      }
       const attempts = result.attempts || 0;
       await deps.audit({
         actorUsername: "UNKNOWN_KIOSK_USER",
@@ -175,7 +216,7 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
         ipAddress: context.ip,
       });
       return {
-        status: 401,
+        status: result.isBlocked ? 403 : 401,
         body: {
           success: false,
           message: result.isBlocked ? "PIN bloqueado por demasiados intentos." : "PIN incorrecto.",
@@ -184,9 +225,15 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
       };
     },
     async logout(token: string | undefined, context: AuthFlowContext) {
-      if (token) await deps.service.revokeSession(token);
+      let actorUsername = context.user?.username;
+      if (token) {
+        const revoked = await deps.service.revokeSession(token);
+        if (revoked && revoked.username) {
+          actorUsername = revoked.username;
+        }
+      }
       await deps.audit({
-        actorUsername: context.user?.username || "ANONYMOUS",
+        actorUsername: actorUsername || "ANONYMOUS",
         action: "LOGOUT",
         category: "AUTH",
         severity: "INFO",
@@ -196,7 +243,7 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
       return success({ message: "Logout exitoso" });
     },
     async setupMFA(context: AuthFlowContext) {
-      const user = requireUser(context);
+      const user = requireAdminUser(context);
       const result = await deps.service.setupMFA(user.id, user.username);
       return success({
         qrCode: result.qrCode,
@@ -205,7 +252,7 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
       });
     },
     async verifyMFASetup(input: { token: string }, context: AuthFlowContext) {
-      const user = requireUser(context);
+      const user = requireAdminUser(context);
       if (!(await deps.service.confirmMFASetup(user.id, input.token)))
         throw new ValidationError("Código de verificación inválido");
       await deps.audit({
@@ -219,8 +266,40 @@ export function createAuthFlows(deps: AuthFlowDependencies) {
       return success({ message: "MFA habilitado correctamente" });
     },
     async validateMFA(input: { mfaToken: string; code: string }, context: AuthFlowContext) {
-      const result = await deps.service.validateMFALogin(input.mfaToken, input.code);
-      if (!result.success) throw new AuthError("Código MFA incorrecto");
+      let result: {
+        success: boolean;
+        user?: LoginUser;
+        actorUsername?: string;
+        userId?: string;
+      };
+      try {
+        result = await deps.service.validateMFALogin(input.mfaToken, input.code);
+      } catch (error) {
+        if (error instanceof RateLimitError) {
+          await deps.audit({
+            actorUsername: error.actorUsername || "ANONYMOUS",
+            action: "MFA_FAILED",
+            category: "AUTH",
+            severity: "WARNING",
+            outcome: "FAILURE",
+            details: { reason: "MFA_RATE_LIMITED", retryAfter: error.retryAfter },
+            ipAddress: context.ip,
+          });
+        }
+        throw error;
+      }
+      if (!result.success) {
+        await deps.audit({
+          actorUsername: result.actorUsername || "ANONYMOUS",
+          action: "MFA_FAILED",
+          category: "AUTH",
+          severity: "WARNING",
+          outcome: "FAILURE",
+          details: { reason: "INVALID_CODE", ...(result.userId ? { userId: result.userId } : {}) },
+          ipAddress: context.ip,
+        });
+        throw new AuthError("Código MFA incorrecto");
+      }
       const user = result.user;
       if (!user) throw new Error("MFA result missing user");
       const body = await session(user, context);

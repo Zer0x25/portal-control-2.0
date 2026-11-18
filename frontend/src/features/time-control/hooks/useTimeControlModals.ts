@@ -8,6 +8,7 @@ import { useTimeRecordMutations } from "../../../hooks/queries/useTimeRecordsQue
 import { useAccountingLockDateQuery } from "../../../hooks/queries/useConfigQuery";
 import { useReportsQuery } from "../../../hooks/queries/useReportsQuery";
 import { logger } from "../../../utils/logger";
+import { shiftReportService } from "../../../services/shiftReportService";
 
 interface UseTimeControlModalsOptions {
   closeQuickActionModal: () => void;
@@ -36,6 +37,7 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
   const [isAddNoveltyModalOpen, setIsAddNoveltyModalOpen] = useState(false);
   const [noveltyInitialText, setNoveltyInitialText] = useState("");
   const [activeShiftForNovelty, setActiveShiftForNovelty] = useState<ShiftReport | null>(null);
+  const [recordForNovelty, setRecordForNovelty] = useState<DailyTimeRecord | null>(null);
 
   // Keep modal action props stable while each modal's own state changes.
   const handleDeleteClick = useCallback(
@@ -91,6 +93,7 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
         return;
       }
       setActiveShiftForNovelty(activeShift);
+      setRecordForNovelty(record);
       const timeToUse = record.entrada;
       setNoveltyInitialText(
         `Novedad sobre ${record.employeeName} (Registro del ${formatDisplayDateTime(timeToUse)}):\n`,
@@ -103,18 +106,25 @@ export const useTimeControlModals = ({ closeQuickActionModal }: UseTimeControlMo
 
   const handleSaveNovelty = useCallback(
     async (annotation: string, time: string) => {
-      if (!activeShiftForNovelty || !currentUser) return;
-
-      // In a real backend-centric app, we would call a service here
-      logger.warn("Saving novelty to backend (mock):", {
-        annotation,
-        time,
-        shiftFolio: activeShiftForNovelty.folio,
-      });
-      addToast("Novedad agregada (Simulación).", "success");
-      setIsAddNoveltyModalOpen(false);
+      if (!activeShiftForNovelty || !currentUser || !recordForNovelty) return;
+      try {
+        await shiftReportService.addAttendanceNovelty(activeShiftForNovelty.id, {
+          recordId: recordForNovelty.id,
+          annotation,
+          time,
+        });
+        addToast("Novedad agregada a la bitácora.", "success");
+        setIsAddNoveltyModalOpen(false);
+        void refetchOpenShiftReports();
+      } catch (error) {
+        logger.error("No se pudo guardar la novedad:", error);
+        addToast(
+          "No se pudo guardar la novedad. Verifica que el turno siga abierto e inténtalo nuevamente.",
+          "error",
+        );
+      }
     },
-    [activeShiftForNovelty, currentUser, addToast],
+    [activeShiftForNovelty, currentUser, recordForNovelty, addToast, refetchOpenShiftReports],
   );
 
   const handleEditClick = useCallback(

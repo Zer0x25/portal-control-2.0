@@ -12,7 +12,6 @@ import {
 import PageHeader from "../../../components/ui/PageHeader";
 import Card from "../../../components/ui/Card";
 import UserForm from "../components/UserForm.container";
-import MFASetupModal from "../../../features/auth/components/MFASetupModal.container";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import PremiumSearchInput from "../../../components/ui/PremiumSearchInput";
 import RoleBadge from "../../../components/ui/RoleBadge";
@@ -32,18 +31,17 @@ export interface UserManagementViewProps {
   userToResetPin: User | null;
   userToResetPassword: User | null;
   searchTerm: string;
-  isMFASetupOpen: boolean;
   isMobile: boolean;
   paginatedUsers: User[];
   sentinelRef: React.RefObject<HTMLDivElement | null>;
   setScrollRoot: React.Dispatch<React.SetStateAction<HTMLDivElement | null>>;
+  canCreateUsers?: boolean;
   canManageUser: (user: User) => boolean;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   handleOpenNewForm: () => void;
   handleEditUser: (user: User) => void;
   handleSaveUser: (data: UserFormValues) => Promise<void>;
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsMFASetupOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setUserToDelete: React.Dispatch<React.SetStateAction<User | null>>;
   setUserToResetPin: React.Dispatch<React.SetStateAction<User | null>>;
   setUserToResetPassword: React.Dispatch<React.SetStateAction<User | null>>;
@@ -69,7 +67,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
     userToResetPin,
     userToResetPassword,
     searchTerm,
-    isMFASetupOpen,
     isMobile,
     paginatedUsers,
     sentinelRef,
@@ -80,15 +77,20 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
     handleEditUser,
     handleSaveUser,
     setIsFormVisible,
-    setIsMFASetupOpen,
     setUserToDelete,
     setUserToResetPin,
     setUserToResetPassword,
     handleDeleteUser,
     handleConfirmResetPassword,
     handleConfirmResetPin,
-    refreshUsers,
   } = props;
+
+  const canCreateUsers =
+    props.canCreateUsers ??
+    Boolean(
+      currentUser &&
+      (currentUser.role === "Administrador" || currentUser.role === "Supervisor_Elevado"),
+    );
 
   const renderDesktopView = () => (
     <div className="border border-token-border-technical rounded-sm shadow-sm w-full overflow-hidden">
@@ -169,17 +171,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
                     >
                       <ShieldIcon className="w-4 h-4 text-token-text-tertiary" />
                     </Button>
-                    {currentUser?.id === user.id && !user.mfaEnabled && (
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => setIsMFASetupOpen(true)}
-                        aria-label="Configurar autenticación MFA"
-                        className="bg-indigo-600/10 border border-indigo-500/20"
-                      >
-                        <ShieldIcon className="w-4 h-4 text-indigo-600" />
-                      </Button>
-                    )}
                     <Button
                       size="xs"
                       variant="danger"
@@ -261,25 +252,37 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           title="Gestión de Accesos"
           subtitle="Control maestro de perfiles y permisos operativos"
           actions={
-            <Button
-              onClick={handleOpenNewForm}
-              className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm"
-            >
-              <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
-            </Button>
+            canCreateUsers ? (
+              <Button
+                onClick={handleOpenNewForm}
+                className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm"
+              >
+                <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
+              </Button>
+            ) : undefined
           }
         />
       )}
 
       <Card variant="premium" noPadding className="border-token-border-technical overflow-hidden">
         <div className="p-6 sm:p-8">
-          <div className="p-4 mb-6 bg-token-surface-stripe border border-token-border-technical rounded-sm">
-            <PremiumSearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Buscar por usuario o personal..."
-              shortcut="/"
-            />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 mb-6 bg-token-surface-stripe border border-token-border-technical rounded-sm">
+            <div className="flex-1">
+              <PremiumSearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar por usuario o personal..."
+                shortcut="/"
+              />
+            </div>
+            {isEmbedded && canCreateUsers && (
+              <Button
+                onClick={handleOpenNewForm}
+                className="px-6 h-11 bg-(--sidebar-text-active) text-white font-bold uppercase text-[11px] tracking-widest shadow-lg shadow-(--sidebar-text-active)/20 rounded-sm shrink-0"
+              >
+                <PlusCircleIcon className="w-5 h-5 mr-2" /> Nuevo Usuario
+              </Button>
+            )}
           </div>
 
           <div
@@ -323,15 +326,6 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
           existingUsers={allUsers}
         />
       </CinematicModal>
-
-      <MFASetupModal
-        isOpen={isMFASetupOpen}
-        onClose={() => setIsMFASetupOpen(false)}
-        onSuccess={() => {
-          setIsMFASetupOpen(false);
-          refreshUsers();
-        }}
-      />
 
       <ConfirmationModal
         isOpen={!!userToDelete}

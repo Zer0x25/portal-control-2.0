@@ -82,4 +82,114 @@ describe("KioskView", () => {
     expect(screen.getByRole("button", { name: "Fin Colación" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Fin Jornada" })).toBeDisabled();
   });
+
+  it("invokes onLogout when clicking kiosk-exit-button", () => {
+    const onLogout = vi.fn();
+
+    render(
+      <KioskView
+        step={"rut_input" as never}
+        setStep={vi.fn()}
+        rutInput=""
+        setRutInput={vi.fn()}
+        formattedRutDisplay=""
+        onLogout={onLogout}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("kiosk-exit-button"));
+    expect(onLogout).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders main landmark, alert roles on errors, and retry state on employee load error", () => {
+    const refetch = vi.fn();
+
+    const { rerender } = render(
+      <KioskView
+        step={"rut_input" as never}
+        setStep={vi.fn()}
+        rutInput=""
+        setRutInput={vi.fn()}
+        rutError="RUT no es válido."
+        pinError="PIN incorrecto."
+      />,
+    );
+
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByTestId("kiosk-rut-error")).toHaveAttribute("role", "alert");
+
+    rerender(
+      <KioskView
+        step={"pin_input" as never}
+        setStep={vi.fn()}
+        selectedEmployee={{ id: "emp-1", name: "Ana Test" } as never}
+        pinInput="12"
+        setPinInput={vi.fn()}
+        pinError="PIN incorrecto."
+      />,
+    );
+
+    expect(screen.getByTestId("kiosk-pin-error")).toHaveAttribute("role", "alert");
+    expect(screen.getByRole("status", { name: "2 de 4 dígitos ingresados" })).toBeInTheDocument();
+
+    rerender(
+      <KioskView
+        step={"rut_input" as never}
+        setStep={vi.fn()}
+        isErrorEmployees={true}
+        refetchKioskEmployees={refetch}
+      />,
+    );
+
+    expect(screen.getByText("Error al cargar empleados")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables actions with aria-busy when isSubmitting is true and supports change_pin button", () => {
+    const setStep = vi.fn();
+
+    render(
+      <KioskView
+        step={"actions" as never}
+        setStep={setStep}
+        selectedEmployee={{ id: "emp-1", name: "Ana Test" } as never}
+        isKioskArmed={true}
+        isSubmitting={true}
+        kioskActions={[
+          {
+            id: "jornada_inicio",
+            label: "Inicio Jornada",
+            enabled: true,
+            actionType: "jornada_inicio",
+          },
+        ]}
+        handleClockingAction={vi.fn()}
+      />,
+    );
+
+    const actionButton = screen.getByRole("button", { name: "Inicio Jornada" });
+    expect(actionButton).toBeDisabled();
+    expect(actionButton).toHaveTextContent("Registrando...");
+    expect(screen.getByTestId("kiosk-change-pin-button")).toBeDisabled();
+    expect(actionButton.closest("[aria-busy='true']")).toBeInTheDocument();
+  });
+
+  it("navigates to change_pin when clicking kiosk-change-pin-button", () => {
+    const setStep = vi.fn();
+
+    render(
+      <KioskView
+        step={"actions" as never}
+        setStep={setStep}
+        selectedEmployee={{ id: "emp-1", name: "Ana Test" } as never}
+        isKioskArmed={true}
+        isSubmitting={false}
+        kioskActions={[]}
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("kiosk-change-pin-button"));
+    expect(setStep).toHaveBeenCalledWith("change_pin");
+  });
 });

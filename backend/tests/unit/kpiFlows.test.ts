@@ -26,6 +26,8 @@ describe("KPI pure orchestration", () => {
       endDateExclusive: "2026-01-01-next",
       area: "A",
       employeeIds: undefined,
+      cargo: undefined,
+      workdayType: undefined,
     });
     await f.flows.detailed({
       startDate: "2026-01-01",
@@ -74,5 +76,27 @@ describe("KPI pure orchestration", () => {
     await expect(f.flows.summary({ startDate: "2026-01-01", endDate: "2026-01-01" })).rejects.toBe(
       error,
     );
+  });
+  it("maps employeeId -> employeeIds, departmentId -> area and propagates cargo/workdayType", async () => {
+    const f = fixture();
+    const year = 365.25 * 86400000;
+    f.dates.duration.mockReturnValue(5 * year);
+    await f.flows.summary({
+      startDate: "2021-01-01",
+      endDate: "2026-01-01",
+      employeeId: "emp-1",
+      departmentId: "Dept-A",
+      cargo: "Operador",
+      workdayType: "Ordinaria",
+    });
+    expect(f.service.summary).toHaveBeenCalledWith({
+      startDate: "2021-01-01",
+      endDate: "2026-01-01",
+      endDateExclusive: "2026-01-01-next",
+      employeeIds: ["emp-1"],
+      area: "Dept-A",
+      cargo: "Operador",
+      workdayType: "Ordinaria",
+    });
   });
 });

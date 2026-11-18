@@ -44,6 +44,7 @@ export interface DetailedReportRequest {
   endDate: string;
   employeeIds?: string[];
   area?: string;
+  workdayType?: string;
 }
 
 export interface DetailedReportResponse {

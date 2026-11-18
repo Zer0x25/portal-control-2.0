@@ -172,4 +172,23 @@ test.describe("Accesibilidad axe-core", () => {
     await openReportsTable(page, request);
     await expectNoBlockingA11y(page, "reports-table-dark", '[role="grid"]');
   });
+
+  test("kiosk light sin violaciones bloqueantes", async ({ page }) => {
+    await page.goto("/#/kiosk");
+    await expect(page.locator('[data-testid="kiosk-step"][data-step="rut_input"]')).toBeVisible({
+      timeout: 30000,
+    });
+    await page.waitForTimeout(1500);
+    await expectNoBlockingA11y(page, "kiosk-light");
+  });
+
+  test("kiosk dark sin violaciones bloqueantes", async ({ page }) => {
+    await gotoDark(page);
+    await page.goto("/#/kiosk");
+    await expect(page.locator('[data-testid="kiosk-step"][data-step="rut_input"]')).toBeVisible({
+      timeout: 30000,
+    });
+    await page.waitForTimeout(1500);
+    await expectNoBlockingA11y(page, "kiosk-dark");
+  });
 });

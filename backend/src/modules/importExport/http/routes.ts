@@ -8,7 +8,7 @@ import type {
 import multipart from "@fastify/multipart";
 import { UploadError } from "../../../utils/UploadError";
 import { z } from "zod";
-import { ForbiddenError } from "../../../utils/AppError";
+import { ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { ExportQuerySchema } from "../../../models/schemas/time-correction.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
 import { sendHttpStream } from "../../../platform/fastify/stream";
@@ -52,9 +52,10 @@ export const importExportPlugin: FastifyPluginAsync<{
           for await (const part of req.parts()) {
             if (part.type === "field") {
               if (part.fieldname === "schema") {
-                const next =
-                  typeof part.value === "string" ? part.value : JSON.stringify(part.value);
-                schema = schema !== undefined ? schema + "," + next : next;
+                if (schema !== undefined) {
+                  throw new ValidationError("Solo se permite un campo schema");
+                }
+                schema = typeof part.value === "string" ? part.value : JSON.stringify(part.value);
               }
               continue;
             }
@@ -92,7 +93,11 @@ export const importExportPlugin: FastifyPluginAsync<{
   app.get<{ Params: { id: string } }>(
     "/api/export/shift-report-pdf/:id",
     { ...elevated, preHandler: validateRequest("params", z.object({ id: z.string() })) },
-    async (req, reply) => sendPdf(reply, await options.service.shiftPdf(req.params.id)),
+    async (req, reply) => {
+      const file = await options.service.shiftPdf(req.params.id);
+      const safeId = req.params.id.replace(/[^a-zA-Z0-9_-]/g, "_");
+      return sendPdf(reply, { ...file, filename: `Reporte_Turno_${safeId}.pdf` });
+    },
   );
   app.get(
     "/api/export/report-excel",

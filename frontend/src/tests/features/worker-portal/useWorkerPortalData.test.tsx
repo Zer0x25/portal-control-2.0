@@ -13,6 +13,8 @@ const {
   useTimeRecordsMock,
   useUserClockingStatusMock,
   useEmployeesMock,
+  useSchedulingMock,
+  useAllPendingCorrectionRequestsQueryMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   punchMutateAsyncMock: vi.fn(),
@@ -21,6 +23,8 @@ const {
   useTimeRecordsMock: vi.fn(),
   useUserClockingStatusMock: vi.fn(),
   useEmployeesMock: vi.fn(),
+  useSchedulingMock: vi.fn(),
+  useAllPendingCorrectionRequestsQueryMock: vi.fn(),
 }));
 
 const employeeE1 = {
@@ -105,11 +109,12 @@ vi.mock("../../../hooks/useToasts", () => ({
 }));
 
 vi.mock("../../../hooks/useScheduling", () => ({
-  useScheduling: () => ({
-    requests: [],
-    getEmployeeDailyScheduleInfo: getEmployeeDailyScheduleInfoMock,
-    isLoadingSchedulingData: false,
-  }),
+  useScheduling: (...args: unknown[]) => useSchedulingMock(...args),
+}));
+
+vi.mock("../../../hooks/queries/useAllPendingCorrectionRequestsQuery", () => ({
+  useAllPendingCorrectionRequestsQuery: (...args: unknown[]) =>
+    useAllPendingCorrectionRequestsQueryMock(...args),
 }));
 
 vi.mock("../../../hooks/useMediaQuery", () => ({
@@ -133,6 +138,25 @@ describe("useWorkerPortalData (spec 028)", () => {
       scheduleText: "08:00 - 16:00",
       isWorkDay: true,
       planningStatus: "Programado",
+    });
+    useSchedulingMock.mockReturnValue({
+      requests: [],
+      getEmployeeDailyScheduleInfo: getEmployeeDailyScheduleInfoMock,
+      isLoadingSchedulingData: false,
+      fetchNextPage: vi.fn(),
+      hasNextPage: false,
+      isFetchingNextPage: false,
+      isLoadingCorrectionRequests: false,
+      isErrorCorrectionRequests: false,
+      isFetchNextPageCorrectionRequestsError: false,
+      refetchCorrectionRequests: vi.fn(),
+    });
+    useAllPendingCorrectionRequestsQueryMock.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      refetch: vi.fn(),
     });
     punchMutateAsyncMock.mockResolvedValue({ success: true, action: "ENTRADA" });
     server.use(
@@ -176,6 +200,9 @@ describe("useWorkerPortalData (spec 028)", () => {
       status: "in",
       time: "",
       isLoading: false,
+      isFetching: false,
+      isError: false,
+      refetch: vi.fn(),
     });
   });
 
@@ -247,6 +274,143 @@ describe("useWorkerPortalData (spec 028)", () => {
 
     expect(onRender).toHaveBeenCalledTimes(1);
     expect(result.current.status).toBe("en_jornada");
+  });
+
+  it("AC7: bloquea marcajes mientras carga el último registro y permite reintentar", async () => {
+    const retryMock = vi.fn();
+    useUserClockingStatusMock.mockReturnValue({
+      lastRecord: null,
+      isLoading: true,
+      isFetching: true,
+      isError: false,
+      refetch: retryMock,
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    expect(result.current.isClockingStatusUncertain).toBe(true);
+    expect(result.current.isClockingStatusLoading).toBe(true);
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+    expect(punchMutateAsyncMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.retryClockingStatus();
+    });
+    expect(retryMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("AC7: marca el estado como incierto y bloquea el marcaje si falla la consulta", async () => {
+    useUserClockingStatusMock.mockReturnValue({
+      lastRecord: recordR1,
+      isLoading: false,
+      isFetching: false,
+      isError: true,
+      refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    expect(result.current.isClockingStatusUncertain).toBe(true);
+    expect(result.current.isClockingStatusError).toBe(true);
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_fin");
+    });
+    expect(punchMutateAsyncMock).not.toHaveBeenCalled();
+  });
+
+  it("AC1/AC8: incluye pendientes completas, filtra el historial propio y carga páginas adicionales", async () => {
+    const request = {
+      id: "req-pending",
+      employeeId: "e1",
+      timeRecordId: "r2",
+      recordField: "entrada",
+      originalValue: "2026-02-10T12:00:00.000Z",
+      requestedValue: "2026-02-10T13:00:00.000Z",
+      reason: "Olvidé marcar",
+      status: "pending",
+      createdAt: 20,
+      lastModified: 20,
+      syncStatus: "synced",
+      isDeleted: false,
+    };
+    const historicalRequest = { ...request, id: "req-history", status: "rejected", createdAt: 30 };
+    const foreignRequest = { ...request, id: "req-foreign", employeeId: "e2" };
+    const fetchNextPageMock = vi.fn();
+    useSchedulingMock.mockReturnValue({
+      requests: [historicalRequest, foreignRequest],
+      getEmployeeDailyScheduleInfo: getEmployeeDailyScheduleInfoMock,
+      isLoadingSchedulingData: false,
+      fetchNextPage: fetchNextPageMock,
+      hasNextPage: true,
+      isFetchingNextPage: false,
+    });
+    useAllPendingCorrectionRequestsQueryMock.mockReturnValue({
+      data: [request],
+      isLoading: false,
+      isFetching: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    expect(result.current.requestsMap.get("r2-entrada")?.id).toBe("req-pending");
+    expect(result.current.correctionRequests.map((item) => item.id)).toEqual(["req-history"]);
+    expect(result.current.hasMoreCorrectionRequests).toBe(true);
+    await act(async () => {
+      result.current.loadMoreCorrectionRequests();
+    });
+    expect(fetchNextPageMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("AC8: reintenta la página fallida del historial y expone el error de carga", async () => {
+    const fetchNextPageMock = vi.fn();
+    useSchedulingMock.mockReturnValue({
+      requests: [],
+      getEmployeeDailyScheduleInfo: getEmployeeDailyScheduleInfoMock,
+      isLoadingSchedulingData: false,
+      fetchNextPage: fetchNextPageMock,
+      hasNextPage: true,
+      isFetchingNextPage: false,
+      isLoadingCorrectionRequests: false,
+      isErrorCorrectionRequests: true,
+      isFetchNextPageCorrectionRequestsError: true,
+      refetchCorrectionRequests: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    expect(result.current.isErrorCorrectionRequests).toBe(true);
+    expect(result.current.isCorrectionRequestsNextPageError).toBe(true);
+    await act(async () => {
+      await result.current.retryCorrectionRequests();
+    });
+    expect(fetchNextPageMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("AC1: no abre correcciones si la consulta completa de pendientes falla", async () => {
+    const refetchMock = vi.fn();
+    useAllPendingCorrectionRequestsQueryMock.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isFetching: false,
+      isError: true,
+      refetch: refetchMock,
+    });
+
+    const { result } = renderHook(() => useWorkerPortalData());
+
+    expect(result.current.isPendingCorrectionsUncertain).toBe(true);
+    act(() => {
+      result.current.openCorrectionModal(recordR1 as never, "entrada");
+    });
+    expect(result.current.modalState.isOpen).toBe(false);
+    await act(async () => {
+      await result.current.retryPendingCorrectionRequests();
+    });
+    expect(refetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("mantiene la carga visible mientras resuelve el empleado de fallback", async () => {

@@ -84,3 +84,27 @@ export const businessDateToUtcDate = (dateStr: BusinessDateCL): Date => {
   const [year, month, day] = dateStr.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
 };
+
+export const startOfBusinessDayCL = (date: Date = new Date()): Date =>
+  parseBusinessDateCL(formatBusinessDateCL(date));
+
+export const endOfBusinessDayCL = (value: string | Date): Date => {
+  const dateStr =
+    typeof value === "string" && isBusinessDateCL(value)
+      ? value
+      : formatBusinessDateCL(typeof value === "string" ? new Date(value) : value);
+  return toDate(`${dateStr}T23:59:59.999`, { timeZone: BUSINESS_TZ });
+};
+
+export const atBusinessTimeCL = (
+  dateStr: BusinessDateCL,
+  hour: number,
+  minute: number = 0,
+  second: number = 0,
+): Date => {
+  assertBusinessDateCL(dateStr);
+  const hh = String(hour).padStart(2, "0");
+  const mm = String(minute).padStart(2, "0");
+  const ss = String(second).padStart(2, "0");
+  return toDate(`${dateStr}T${hh}:${mm}:${ss}`, { timeZone: BUSINESS_TZ });
+};

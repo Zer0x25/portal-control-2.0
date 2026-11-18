@@ -14,6 +14,8 @@ export const useAuth = () =>
       validateMFACode: state.validateMFACode,
       isForcePasswordChangeModalOpen: state.currentUser?.mustChangePassword === true,
       clearMustChangePassword: state.clearMustChangePassword,
+      completeForcePasswordChange: state.completeForcePasswordChange,
+      markMfaEnabled: state.markMfaEnabled,
     })),
   );
 
@@ -23,6 +25,7 @@ export const useAuthShellControls = () =>
     useShallow((state) => ({
       isForcePasswordChangeModalOpen: state.currentUser?.mustChangePassword === true,
       clearMustChangePassword: state.clearMustChangePassword,
+      completeForcePasswordChange: state.completeForcePasswordChange,
       logout: state.logout,
     })),
   );

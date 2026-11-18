@@ -3,6 +3,7 @@ import type { FastifyPluginAsync, onRequestHookHandler } from "fastify";
 import { z } from "zod";
 import {
   CorrectionRequestSchema,
+  CorrectionQuerySchema,
   UpdateCorrectionStatusSchema,
 } from "../../../models/schemas/time-correction.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
@@ -30,7 +31,7 @@ export const correctionsPlugin: FastifyPluginAsync<{
   const params = z.object({ id: z.string() });
   app.get<{ Querystring: CorrectionQuery }>(
     "/api/corrections",
-    { ...read, preHandler: validateRequest("query", z.unknown()) },
+    { ...read, preHandler: validateRequest("query", CorrectionQuerySchema) },
     (req) => options.service.list(req.query, req.user),
   );
   app.get(

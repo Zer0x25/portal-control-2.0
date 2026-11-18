@@ -1,3 +1,4 @@
+export const MAX_BULK_TIME_RECORDS = 500;
 export type AnomalyResolution =
   "ABSENCE_MARK" | "SHIFT_HOURS_ACK" | "PERMIT_MARK" | "DAY_OFF_MARK" | "VACATION_MARK";
 export interface RecordPrincipal {
@@ -61,6 +62,11 @@ export interface ExportFilters {
   employeeId?: string;
   area?: string;
   cargo?: string;
+  name?: string;
+  workdayType?: string;
+  status?: string;
+  showAnomalies?: string;
+  matchingView?: boolean;
 }
 export interface IntegrityFilters {
   employeeId?: string;
@@ -72,6 +78,7 @@ export interface IntegrityResult {
   checkedCount: number;
   brokenCount: number;
   broken: unknown[];
+  truncated?: boolean;
 }
 /** Infrastructure payloads remain inferred; application does not depend on Prisma DTOs. */
 export interface RecordFlowDependencies<

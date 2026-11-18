@@ -44,6 +44,7 @@ export const useAssignmentManagerController = () => {
     employeeId: undefined,
     since: undefined,
     showArchived,
+    search: debouncedSearchTerm.trim() || undefined,
   });
 
   const flatAssignments = data?.pages.flatMap((page) => page.data) || [];

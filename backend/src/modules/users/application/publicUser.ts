@@ -25,7 +25,7 @@ export function toPublicUser(user: UserProjection): PublicUser {
   return {
     id: user.id,
     username: user.username,
-    role: user.role.replace(/_/g, " "),
+    role: user.role ? user.role.trim().replace(/\s+/g, "_") : "Usuario",
     employeeId: user.employeeId,
     mustChangePassword: user.isForcePasswordChange,
     mfaEnabled: user.mfaEnabled,

@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { ValidationError } from "../utils/AppError";
 import type { ImportSheet } from "../modules/importExport";
+export const MAX_IMPORT_PREVIEW_ROWS = 5000;
 /** exceljs ambient Buffer shadows Node Buffer; bridge only its load parameter. */
 type XlsxLoadBuffer = Parameters<ExcelJS.Xlsx["load"]>[0];
 export async function readImportWorkbook(file: Uint8Array): Promise<ImportSheet> {
@@ -21,6 +22,11 @@ export async function readImportWorkbook(file: Uint8Array): Promise<ImportSheet>
   const rows: Record<number, unknown>[] = [];
   worksheet.eachRow((row, number) => {
     if (number === 1) return;
+    if (rows.length >= MAX_IMPORT_PREVIEW_ROWS) {
+      throw new ValidationError(
+        `El archivo excede el máximo permitido de ${MAX_IMPORT_PREVIEW_ROWS} filas`,
+      );
+    }
     const cells: Record<number, unknown> = {};
     row.eachCell((cell, column) => {
       cells[column] = cell.value;

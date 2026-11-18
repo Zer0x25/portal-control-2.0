@@ -1,6 +1,7 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { timeRecordService } from "../../services/timeRecordService";
 import { leaveService } from "../../services/leaveService";
+import type { AuthTokenScope } from "../../services/authToken";
 import { AttendanceRecord, DailyTimeRecord } from "../../types/index";
 import { LeaveRecord } from "../../types/scheduling";
 import { useToasts } from "../useToasts";
@@ -27,6 +28,8 @@ export interface TimeRecordsFilterParams {
    * (evita el volcado completo sin filtros). No se envía al backend.
    */
   enabled?: boolean;
+  /** No usar IndexedDB ni datos anteriores para decisiones de marcaje. */
+  allowCache?: boolean;
 }
 
 // --- Query --
@@ -86,6 +89,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
   };
 
   useEffect(() => {
+    if (params.allowCache === false) return;
     idbGetAll<AttendanceRecord>(STORES.DAILY_TIME_RECORDS).then((data) => {
       if (data && data.length > 0) {
         // Sort by date descending for better initial view
@@ -93,7 +97,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
         setCachedData(sorted);
       }
     });
-  }, []);
+  }, [params.allowCache]);
 
   return useInfiniteQuery({
     queryKey: queryKeys.timeRecordsList(params),
@@ -118,6 +122,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
           page: pageParam as number,
         };
       } catch (error) {
+        if (params.allowCache === false) throw error;
         const cachedPage = await getCachedPage(pageParam as number);
         if (cachedPage) return cachedPage;
         throw error;
@@ -131,6 +136,7 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
     },
     initialPageParam: 1,
     placeholderData: (previousData) => {
+      if (params.allowCache === false) return undefined;
       if (previousData) return previousData;
       if (cachedData && cachedData.length > 0) {
         const cachedPage = buildCachedPage(cachedData, 1);
@@ -141,7 +147,8 @@ export const useTimeRecordsQuery = (params: TimeRecordsFilterParams) => {
       }
       return undefined;
     },
-    staleTime: 1000 * 60, // 1 minute fresh
+    staleTime: params.allowCache === false ? 0 : 1000 * 60, // decisiones de marcaje requieren consulta reciente
+    refetchOnMount: params.allowCache === false ? "always" : true,
   });
 };
 
@@ -183,7 +190,15 @@ export const useUserClockingStatus = (employeeId?: string) => {
     status = "out"; // No records ever
   }
 
-  return { status, time, lastRecord, isLoading: query.isLoading };
+  return {
+    status,
+    time,
+    lastRecord,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 };
 
 export interface PunchMutationInput {
@@ -192,6 +207,7 @@ export interface PunchMutationInput {
   forcedType?: string;
   latitude?: number;
   longitude?: number;
+  authScope?: AuthTokenScope;
   /**
    * El llamante muestra su propio toast en el catch: evita el toast genérico
    * del onError para no duplicar el error (spec 030).
@@ -216,6 +232,8 @@ export const useTimeRecordMutations = () => {
         data.source,
         data.forcedType,
         geolocation,
+        data.authScope,
+        { skipAuthEvents: data.authScope === "kiosk" },
       );
     },
     onSuccess: (result) => {
@@ -243,6 +261,7 @@ export const useTimeRecordMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auditLogs() });
       addToast("Registro actualizado", "success");
     },
     onError: (error: unknown) => {

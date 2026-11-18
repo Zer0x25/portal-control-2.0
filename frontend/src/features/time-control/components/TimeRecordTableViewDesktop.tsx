@@ -27,7 +27,7 @@ interface TimeRecordTableViewDesktopProps {
   isControlInternoEnabled: boolean;
   onViewHistory: (record: DailyTimeRecord) => void;
   editsMapAll: Map<string, AuditLog[]>;
-  pendingRequestsMap: Map<string, CorrectionRequest>;
+  pendingRequestsMap: Map<string, Pick<CorrectionRequest, "id" | "timeRecordId" | "status">>;
 }
 
 // Spec 037 T12: retain the dense record table and the mobile card with per-record actions; their virtual rows are 66/280 px.

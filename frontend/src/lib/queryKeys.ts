@@ -43,7 +43,7 @@ export const queryKeys = {
   /** Proyección mínima para las pantallas de Control de Horario. */
   employeeClockingOptions: resource("employees", () => ["employees", "clockingOptions"] as const),
   /** Listado de empleados para el kiosk (unico worker). */
-  employeesKiosk: resource("employees", () => ["employees", "kiosk"] as const),
+  employeesKiosk: resource("employeesKiosk", () => ["employeesKiosk"] as const),
 
   /* --- Configuración --- */
   /** Prefijo de la raiz `config` (invalida todas las claves de configuracion). */
@@ -68,10 +68,21 @@ export const queryKeys = {
     "assignedShifts",
     (filters: unknown) => ["assignedShifts", filters] as const,
   ),
+  /** Planificacion mensual por empleado, anio y mes. */
+  monthlyPlan: resource(
+    "monthlyPlan",
+    (employeeId: string, year: number, month: number) =>
+      ["monthlyPlan", employeeId, year, month] as const,
+  ),
 
   /* --- Marcaciones y tiempos --- */
   /** Marcaciones de tiempo. */
   timeRecords: resource("timeRecords", () => ["timeRecords"] as const),
+  timeRecordIndicators: resource("timeRecords", (ids?: string) =>
+    ids === undefined
+      ? (["timeRecords", "indicators"] as const)
+      : (["timeRecords", "indicators", ids] as const),
+  ),
   /** Marcaciones de tiempo con filtros. */
   timeRecordsList: resource("timeRecords", (params: unknown) => ["timeRecords", params] as const),
   /** Ultima marcacion de un empleado. */

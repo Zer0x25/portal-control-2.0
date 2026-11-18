@@ -4,7 +4,7 @@ import { emailService } from "../../../services/emailService";
 import { EmailNotificationRules } from "../../../types";
 import { useEmailRecipientsListQuery } from "../../../hooks/queries/useConfigQuery";
 import { useAppForm } from "../../../hooks/useAppForm";
-import { sendTestEmailFormSchema } from "../../../schemas/forms/smtp";
+import { emailRulesFormSchema, sendTestEmailFormSchema } from "../../../schemas/forms/smtp";
 
 /**
  * Spec 036 T10b (AC1, AC2, AC3): el formulario de **correo de prueba** del
@@ -40,6 +40,8 @@ export const useEmailCenterController = () => {
     latenessOver60: { enabled: false, recipient: "" },
   });
   const [isLoadingRules, setIsLoadingRules] = useState(true);
+  const [rulesLoadError, setRulesLoadError] = useState<string | null>(null);
+  const [isSavingRules, setIsSavingRules] = useState(false);
 
   /** Formulario del correo de prueba. */
   const manualEmailForm = useAppForm({
@@ -80,12 +82,23 @@ export const useEmailCenterController = () => {
     checkStatus();
     const loadRules = async () => {
       setIsLoadingRules(true);
-      const storedRules = await emailService.getRules();
-      setRules(storedRules);
-      setIsLoadingRules(false);
+      setRulesLoadError(null);
+      try {
+        const storedRules = await emailService.getRules();
+        setRules(storedRules);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "No se pudieron cargar las reglas de notificación.";
+        setRulesLoadError(message);
+        addToast(message, "error");
+      } finally {
+        setIsLoadingRules(false);
+      }
     };
     loadRules();
-  }, [checkStatus]);
+  }, [checkStatus, addToast]);
 
   const handleRuleChange = (
     ruleKey: keyof EmailNotificationRules,
@@ -109,11 +122,28 @@ export const useEmailCenterController = () => {
   };
 
   const handleSaveRules = async () => {
-    const result = await emailService.saveRules(rules);
-    if (result.success) {
-      addToast("Configuración de reglas guardada.", "success");
-    } else {
-      addToast(result.message, "error");
+    if (rulesLoadError) {
+      addToast(rulesLoadError, "error");
+      return;
+    }
+    const parsed = emailRulesFormSchema.safeParse(rules);
+    if (!parsed.success) {
+      addToast(
+        parsed.error.issues[0]?.message || "Las reglas de notificación no son válidas.",
+        "error",
+      );
+      return;
+    }
+    setIsSavingRules(true);
+    try {
+      const result = await emailService.saveRules(parsed.data);
+      if (result.success) {
+        addToast("Configuración de reglas guardada.", "success");
+      } else {
+        addToast(result.message, "error");
+      }
+    } finally {
+      setIsSavingRules(false);
     }
   };
 
@@ -133,6 +163,8 @@ export const useEmailCenterController = () => {
     isConfigModalOpen,
     rules,
     isLoadingRules,
+    rulesLoadError,
+    isSavingRules,
     setIsConfigModalOpen,
     checkStatus,
     handleRuleChange,

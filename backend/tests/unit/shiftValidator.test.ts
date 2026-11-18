@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { ShiftValidator } from "../../src/services/shift/ShiftValidator";
-import type { AssignedShift } from "../../src/generated/prisma/client";
+import type { AssignedShift, Prisma } from "../../src/generated/prisma/client";
 import type { PatternSchedule } from "../../src/services/schedulingService";
+import { schedulingService } from "../../src/services/schedulingService";
 import { toBusinessDateChile, addBusinessDaysChile } from "../../src/utils/timeUtils";
 
 const validator = new ShiftValidator();
@@ -88,6 +89,21 @@ describe("ShiftValidator (pure methods, no DB)", () => {
         day({ startTime: "08:00", endTime: "08:00", hasColacion: false }),
       ]);
       expect(result.isValid).toBe(false);
+    });
+
+    it("accepts a 14-day (7x7) pattern with dayIndex 0..13", async () => {
+      const days = Array.from({ length: 14 }, (_, i) =>
+        i >= 7
+          ? day({ dayIndex: i, isOffDay: true, startTime: null, endTime: null })
+          : day({ dayIndex: i }),
+      );
+      expect(await validator.validatePatternSchedules(days, 14)).toEqual({ isValid: true });
+    });
+
+    it("rejects dayIndex >= cycleLengthDays", async () => {
+      const result = await validator.validatePatternSchedules([day({ dayIndex: 14 })], 14);
+      expect(result.isValid).toBe(false);
+      expect(result.error).toContain("excede la duración del ciclo");
     });
   });
 
@@ -193,6 +209,110 @@ describe("ShiftValidator (pure methods, no DB)", () => {
         existing,
       );
       expect(conflicts).toEqual([]);
+    });
+  });
+
+  describe("calculateAverageWeeklyHours / validateWorkload", () => {
+    it("checks all affected assignments instead of only the latest one", async () => {
+      const mockDb = {
+        shiftPattern: {
+          findMany: vi.fn(async () => [
+            {
+              id: "p-heavy",
+              cycleLengthDays: 7,
+              dailySchedules: JSON.stringify(
+                Array.from({ length: 7 }, (_, i) =>
+                  day({ dayIndex: i, startTime: "08:00", endTime: "18:00", hasColacion: false }),
+                ),
+              ),
+            },
+            {
+              id: "p-light",
+              cycleLengthDays: 7,
+              dailySchedules: JSON.stringify(
+                Array.from({ length: 7 }, (_, i) =>
+                  i < 5
+                    ? day({ dayIndex: i, startTime: "09:00", endTime: "17:00", hasColacion: false })
+                    : day({ dayIndex: i, isOffDay: true, startTime: null, endTime: null }),
+                ),
+              ),
+            },
+          ]),
+        },
+        employee: {
+          findUnique: vi.fn(async () => ({ workdayType: "Ordinaria" })),
+        },
+        systemConfig: {
+          findUnique: vi.fn(async () => ({ value: "45" })),
+        },
+      } as unknown as Prisma.TransactionClient;
+
+      const existingFuture = [
+        assignment({
+          id: "future-1",
+          startDate: "2026-12-01",
+          endDate: "2026-12-31",
+          shiftPatternId: "p-light",
+        }),
+      ];
+
+      const result = await validator.validateWorkload(
+        "e1",
+        {
+          employeeId: "e1",
+          shiftPatternId: "p-heavy",
+          startDate: "2026-11-18",
+          endDate: "2026-11-30",
+        },
+        undefined,
+        existingFuture,
+        mockDb,
+      );
+
+      expect(result.isValid).toBe(false);
+      expect(result.weeklyHours).toBe(70);
+      expect(result.maxHours).toBe(45);
+    });
+  });
+
+  describe("validateRestPeriod", () => {
+    it("computes cycle dayIndex for startDate in Chile timezone and detects < 8h rest", async () => {
+      const spy = vi
+        .spyOn(schedulingService, "getEmployeeDailyScheduleInfo")
+        .mockResolvedValueOnce({
+          scheduleText: "16:00 - 23:00",
+          isWorkDay: true,
+          startTime: "16:00",
+          endTime: "23:00",
+        });
+
+      const pattern = {
+        cycleLengthDays: 2,
+        dailySchedules: [
+          day({ dayIndex: 0, isOffDay: true, startTime: null, endTime: null }),
+          day({ dayIndex: 1, isOffDay: false, startTime: "06:00", endTime: "14:00" }),
+        ],
+      };
+
+      const res = await validator.validateRestPeriod(
+        "e1",
+        "2026-11-20",
+        pattern,
+        undefined,
+        "2026-11-19",
+      );
+
+      expect(res.isValid).toBe(false);
+      expect(res.error).toContain("Descanso insuficiente (7.0h)");
+      spy.mockRestore();
+    });
+
+    it("returns valid when target day is an off day even if startTime is present", async () => {
+      const res = await validator.validateRestPeriod("e1", "2026-11-20", {
+        cycleLengthDays: 1,
+        dailySchedules: [day({ dayIndex: 0, isOffDay: true, startTime: "06:00" })],
+      });
+      expect(res).toEqual({ isValid: true });
     });
   });
 });

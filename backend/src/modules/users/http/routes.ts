@@ -1,4 +1,5 @@
 import type {} from "../../../platform/fastify/types";
+import crypto from "node:crypto";
 import type { FastifyPluginAsync, onRequestHookHandler } from "fastify";
 import { z } from "zod";
 import {
@@ -8,8 +9,14 @@ import {
   UserSchema,
 } from "../../../models/schemas/auth-user.schemas";
 import { validateRequest } from "../../../platform/fastify/validation";
-import { ForbiddenError } from "../../../utils/AppError";
-import type { CreateUserDto, UpdateUserDto, UserFlows } from "../application/flows";
+import { ForbiddenError, ValidationError } from "../../../utils/AppError";
+import { resolveAccessToken } from "../../auth";
+import {
+  mapUserRole,
+  type CreateUserDto,
+  type UpdateUserDto,
+  type UserFlows,
+} from "../application/flows";
 export interface UsersPluginOptions {
   service: UserFlows;
   authenticate: onRequestHookHandler;
@@ -17,20 +24,14 @@ export interface UsersPluginOptions {
 const params = z.object({ id: z.string() });
 // Validate without replacing input to preserve the public API contract.
 export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, options) => {
-  const admin: onRequestHookHandler = async (request) => {
-    if (request.user?.role !== "Administrador")
-      throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
-  };
-  // La página de gestión es legible por Supervisor_Elevado (solo lectura en
-  // frontend vía canManageUser); las escrituras siguen siendo admin-only.
-  const reader: onRequestHookHandler = async (request) => {
+  const manager: onRequestHookHandler = async (request) => {
     if (!request.user?.role || !["Administrador", "Supervisor_Elevado"].includes(request.user.role))
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
   };
-  const access = { config: { requiresAuth: true }, onRequest: [options.authenticate, admin] };
+  const access = { config: { requiresAuth: true }, onRequest: [options.authenticate, manager] };
   const readAccess = {
     config: { requiresAuth: true },
-    onRequest: [options.authenticate, reader],
+    onRequest: [options.authenticate, manager],
   };
   app.get<{ Querystring: z.input<typeof UserQuerySchema> }>(
     "/api/users",
@@ -60,14 +61,23 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
   app.post<{ Body: CreateUserDto }>(
     "/api/users",
     { ...access, preHandler: validateRequest("body", CreateUserSchema) },
-    async (request, reply) =>
-      reply
+    async (request, reply) => {
+      if (
+        request.user?.role === "Supervisor_Elevado" &&
+        mapUserRole(request.body.role) === "Administrador"
+      ) {
+        throw new ForbiddenError(
+          "Acceso denegado: No tiene permisos para crear usuarios Administrador",
+        );
+      }
+      return reply
         .code(201)
         .send(
           UserSchema.parse(
             await options.service.createUser(request.body, request.user?.username || "System"),
           ),
-        ),
+        );
+    },
   );
   app.put<{ Params: { id: string }; Body: UpdateUserDto }>(
     "/api/users/:id",
@@ -77,12 +87,13 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
       preHandler: [validateRequest("params", params), validateRequest("body", UpdateUserSchema)],
     },
     async (request) => {
-      const isAdmin = request.user?.role === "Administrador";
+      const actorRole = request.user?.role;
+      const isManager = actorRole === "Administrador" || actorRole === "Supervisor_Elevado";
       const isSelf = request.user?.id === request.params.id;
-      if (!isAdmin && !isSelf) {
+      if (!isManager && !isSelf) {
         throw new ForbiddenError("Acceso denegado: Se requieren permisos de Administrador");
       }
-      if (!isAdmin) {
+      if (!isManager) {
         const bodyKeys = Object.keys(request.body || {});
         const onlyPassword = bodyKeys.length > 0 && bodyKeys.every((k) => k === "password");
         if (!onlyPassword) {
@@ -91,11 +102,23 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
           );
         }
       }
+      if (
+        actorRole === "Supervisor_Elevado" &&
+        request.body.role &&
+        mapUserRole(request.body.role) === "Administrador"
+      ) {
+        throw new ForbiddenError("Acceso denegado: No puede asignar el rol Administrador");
+      }
+      const accessToken = resolveAccessToken(request.headers.authorization);
+      const currentTokenHash = accessToken
+        ? crypto.createHash("sha256").update(accessToken).digest("hex")
+        : undefined;
       return UserSchema.parse(
         await options.service.updateUser(
           request.params.id,
           request.body,
           request.user?.username || "System",
+          { actorId: request.user?.id, actorRole, currentTokenHash },
         ),
       );
     },
@@ -105,7 +128,14 @@ export const usersPlugin: FastifyPluginAsync<UsersPluginOptions> = async (app, o
     "/api/users/:id",
     { ...access, preHandler: validateRequest("params", params) },
     async (request, reply) => {
-      await options.service.deleteUser(request.params.id, request.user?.username || "System");
+      if (request.params.id === request.user?.id) {
+        throw new ValidationError("No puedes eliminar tu propia cuenta de usuario");
+      }
+      await options.service.deleteUser(
+        request.params.id,
+        request.user?.username || "System",
+        request.user?.role,
+      );
       return reply.code(204).send();
     },
   );

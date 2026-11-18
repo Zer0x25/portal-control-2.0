@@ -3,6 +3,7 @@ import { employeeService } from "../../services/employeeService";
 import { authService } from "../../services/authService";
 import { Employee } from "../../types";
 import { queryKeys } from "../../lib/queryKeys";
+import { useStore } from "../../store/useStore";
 
 /**
  * Colección remota de empleados (spec 032 T5): única fuente, sin espejo en
@@ -11,6 +12,7 @@ import { queryKeys } from "../../lib/queryKeys";
  */
 export const useEmployeesQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
 
   return useQuery<Employee[]>({
     queryKey: queryKeys.employees(),
@@ -20,20 +22,21 @@ export const useEmployeesQuery = (enabled = true) => {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 
 /** Proyección pequeña de empleados activos para Control de Horario. */
 export const useClockingEmployeeOptionsQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
 
   return useQuery({
     queryKey: queryKeys.employeeClockingOptions(),
     queryFn: () => employeeService.getClockingOptions(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60 * 24,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 

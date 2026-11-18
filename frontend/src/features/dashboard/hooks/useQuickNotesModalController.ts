@@ -45,7 +45,7 @@ export const INDICATOR_COLOR_MAP: Record<string, string> = {
  * Controlador del formulario de nota rapida (spec 036 T11).
  */
 export const useQuickNotesModalController = () => {
-  const { notes, isLoadingNotes, addNote, deleteNote } = useQuickNotes();
+  const { notes, isLoadingNotes, addNote, archiveNote, deleteNote } = useQuickNotes();
   const { currentUser } = useAuth();
 
   const colorOptions = Object.keys(COLOR_MAP);
@@ -80,6 +80,7 @@ export const useQuickNotesModalController = () => {
   };
 
   return {
+    archiveNote,
     canDelete,
     colorOptions,
     currentUser,

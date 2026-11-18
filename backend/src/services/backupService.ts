@@ -3,6 +3,7 @@ import fs, { createReadStream, createWriteStream } from "fs";
 import path from "path";
 import os from "os";
 import { logger } from "../utils/logger";
+import { NotFoundError, ValidationError } from "../utils/AppError";
 import { spawn, execFile } from "child_process";
 import { promisify } from "util";
 import { createGzip, createGunzip } from "zlib";
@@ -13,7 +14,7 @@ const execFileAsync = promisify(execFile);
 function spawnWithRedirect(
   command: string,
   args: string[],
-  options: { inputFile?: string; outputFile?: string },
+  options: { inputFile?: string; outputFile?: string; env?: NodeJS.ProcessEnv },
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const stdio: ("ignore" | "pipe" | number)[] = ["ignore", "ignore", "pipe"];
@@ -35,7 +36,7 @@ function spawnWithRedirect(
       return reject(err);
     }
 
-    const proc = spawn(command, args, { stdio });
+    const proc = spawn(command, args, { stdio, env: options.env ?? process.env });
 
     let stderr = "";
     if (proc.stderr) {
@@ -176,21 +177,71 @@ export class BackupService {
     await this.runPgDumpFromDocker(pgDumpUrl, backupPath);
   }
 
+  private parsePostgresConnection(url: string): {
+    host: string;
+    port: string;
+    user: string;
+    password: string;
+    database: string;
+  } {
+    const parsed = new URL(url);
+    return {
+      host: parsed.hostname || "localhost",
+      port: parsed.port || "5432",
+      user: decodeURIComponent(parsed.username || "postgres"),
+      password: decodeURIComponent(parsed.password || ""),
+      database: parsed.pathname.replace(/^\//, ""),
+    };
+  }
+
   private async runPgDumpFromHost(url: string, backupPath: string): Promise<void> {
+    const conn = this.parsePostgresConnection(url);
     // The vulnerability (Command Injection via execAsync) was previously mitigated here,
-    // we use spawnWithRedirect to pass arguments safely.
-    await spawnWithRedirect("pg_dump", ["--exclude-schema=portal_runtime", url], {
-      outputFile: backupPath,
-    });
+    // and credentials are passed via PGPASSWORD in env rather than CLI arguments.
+    await spawnWithRedirect(
+      "pg_dump",
+      [
+        "--exclude-schema=portal_runtime",
+        "-h",
+        conn.host,
+        "-p",
+        conn.port,
+        "-U",
+        conn.user,
+        "-d",
+        conn.database,
+      ],
+      {
+        outputFile: backupPath,
+        env: { ...process.env, PGPASSWORD: conn.password },
+      },
+    );
   }
 
   private async runPgDumpFromDocker(url: string, backupPath: string): Promise<void> {
+    const conn = this.parsePostgresConnection(url);
     const containerName = await this.resolveDockerContainerName();
     await spawnWithRedirect(
       "docker",
-      ["exec", containerName, "pg_dump", "--exclude-schema=portal_runtime", url],
+      [
+        "exec",
+        "-e",
+        "PGPASSWORD",
+        containerName,
+        "pg_dump",
+        "--exclude-schema=portal_runtime",
+        "-h",
+        conn.host,
+        "-p",
+        conn.port,
+        "-U",
+        conn.user,
+        "-d",
+        conn.database,
+      ],
       {
         outputFile: backupPath,
+        env: { ...process.env, PGPASSWORD: conn.password },
       },
     );
   }
@@ -201,14 +252,17 @@ export class BackupService {
    */
   async restoreDatabase(filename: string): Promise<void> {
     const safeFilename = path.basename(filename);
-    if (safeFilename !== filename) {
-      throw new Error("Invalid backup filename");
+    if (
+      safeFilename !== filename ||
+      !/^backup-pg-[a-zA-Z0-9._-]+\.sql(\.gz)?$/.test(safeFilename)
+    ) {
+      throw new ValidationError("Nombre de archivo de respaldo inválido");
     }
 
     const backupPath = path.join(this.backupDir, safeFilename);
 
     if (!fs.existsSync(backupPath)) {
-      throw new Error("Backup file not found");
+      throw new NotFoundError("Archivo de respaldo no encontrado");
     }
 
     const rawUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || "";
@@ -270,6 +324,7 @@ export class BackupService {
 
   private async runPsqlRestore(url: string, filePath: string): Promise<void> {
     const cleanUrl = this.toPgDumpUrl(url);
+    const conn = this.parsePostgresConnection(cleanUrl);
     const hostAvailable = this.backupMode === "auto" && (await this.isHostPsqlAvailable());
     // -1 covers BOTH the schema replacement and the dump. ON_ERROR_STOP makes
     // any SQL/meta-command failure abort psql and roll back the entire restore.
@@ -277,23 +332,35 @@ export class BackupService {
       "--no-psqlrc",
       "--set=ON_ERROR_STOP=on",
       "--single-transaction",
-      "--dbname",
-      cleanUrl,
+      "-h",
+      conn.host,
+      "-p",
+      conn.port,
+      "-U",
+      conn.user,
+      "-d",
+      conn.database,
       "--command",
       "DROP SCHEMA public CASCADE; CREATE SCHEMA public;",
       "--file=-",
     ];
+    const env = { ...process.env, PGPASSWORD: conn.password };
 
     if (this.backupMode === "docker" || (!hostAvailable && this.backupMode === "auto")) {
       const containerName = await this.resolveDockerContainerName();
       // We pipe the file content from HOST to DOCKER container input using spawnWithRedirect
-      await spawnWithRedirect("docker", ["exec", "-i", containerName, "psql", ...restoreArgs], {
-        inputFile: filePath,
-      });
+      await spawnWithRedirect(
+        "docker",
+        ["exec", "-i", "-e", "PGPASSWORD", containerName, "psql", ...restoreArgs],
+        {
+          inputFile: filePath,
+          env,
+        },
+      );
       return;
     }
 
-    await spawnWithRedirect("psql", restoreArgs, { inputFile: filePath });
+    await spawnWithRedirect("psql", restoreArgs, { inputFile: filePath, env });
   }
 
   private toPgDumpUrl(url: string): string {

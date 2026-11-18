@@ -41,6 +41,8 @@
           "rut": { "type": "string", "minLength": 8 },
           "name": { "type": "string", "minLength": 2 },
           "position": { "type": "string" },
+          "area": { "type": "string", "minLength": 1 },
+          "workdayType": { "type": "string", "minLength": 1 },
           "department": { "type": "string" },
           "email": { "type": "string", "format": "email" },
           "phone": { "type": "string" },
@@ -66,7 +68,7 @@
           "syncStatus": { "type": "string" },
           "lastModified": { "type": "number" }
         },
-        "required": ["rut", "name"]
+        "required": ["rut", "name", "area", "workdayType"]
       },
       "Department": {
         "type": "object",
@@ -101,13 +103,30 @@
       "EmployeeQuery": {
         "type": "object",
         "properties": {
-          "page": { "type": "string" },
-          "pageSize": { "type": "string" },
+          "page": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "pageSize": { "type": "string", "pattern": "^[1-9]\\d*$" },
           "search": { "type": "string" },
           "status": { "type": "string" },
           "area": { "type": "string" },
           "since": { "type": "string" }
         }
+      },
+      "KioskEmployee": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "rutHash": { "type": "string" },
+          "isPinBlocked": { "type": "boolean" },
+          "status": { "type": "string", "enum": ["Activo", "Archivado"] },
+          "area": { "type": "string" },
+          "workdayType": { "type": "string" }
+        },
+        "required": ["id", "name", "rutHash", "isPinBlocked", "status", "area", "workdayType"]
+      },
+      "KioskEmployees": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/KioskEmployee" }
       },
       "CreateUser": {
         "type": "object",
@@ -131,12 +150,18 @@
       },
       "KioskLogin": {
         "type": "object",
-        "properties": { "employeeId": { "type": "string" }, "pin": { "type": "string" } },
+        "properties": {
+          "employeeId": { "type": "string", "minLength": 1 },
+          "pin": { "type": "string", "pattern": "^\\d{4}$" }
+        },
         "required": ["employeeId", "pin"]
       },
       "Login": {
         "type": "object",
-        "properties": { "username": { "type": "string" }, "password": { "type": "string" } },
+        "properties": {
+          "username": { "type": "string", "minLength": 1 },
+          "password": { "type": "string", "minLength": 1 }
+        },
         "required": ["username", "password"]
       },
       "MFALogin": {
@@ -183,17 +208,19 @@
               "Supervisor",
               "Administrador",
               "Supervisor_Elevado",
-              "Fiscalizador"
+              "Fiscalizador",
+              "Archivado"
             ]
           },
-          "employeeId": { "type": "string" }
+          "employeeId": { "type": "string", "nullable": true },
+          "mustChangePassword": { "type": "boolean" }
         }
       },
       "UserQuery": {
         "type": "object",
         "properties": {
-          "page": { "type": "string" },
-          "pageSize": { "type": "string" },
+          "page": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "pageSize": { "type": "string", "pattern": "^[1-9]\\d*$" },
           "since": { "type": "string" },
           "search": { "type": "string" },
           "role": { "type": "string" }
@@ -213,9 +240,7 @@
               "Administrador",
               "Supervisor_Elevado",
               "Fiscalizador",
-              "Archivado",
-              "Reloj Control",
-              "Supervisor Elevado"
+              "Archivado"
             ]
           },
           "employeeId": { "type": "string", "nullable": true },
@@ -315,7 +340,8 @@
       },
       "BulkTimeRecord": {
         "type": "array",
-        "items": { "$ref": "#/components/schemas/TimeRecordWrite" }
+        "items": { "$ref": "#/components/schemas/TimeRecordWrite" },
+        "maxItems": 500
       },
       "TimeRecordWrite": {
         "type": "object",
@@ -332,19 +358,73 @@
         },
         "required": ["employeeId", "date"]
       },
+      "CorrectionQuery": {
+        "type": "object",
+        "properties": {
+          "since": { "type": "string", "pattern": "^\\d+$" },
+          "limit": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "offset": { "type": "string", "pattern": "^\\d+$" },
+          "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+        }
+      },
       "CorrectionRequestListResponse": {
-        "allOf": [
-          { "$ref": "#/components/schemas/ApiResponse" },
-          {
-            "type": "object",
-            "properties": {
-              "data": {
-                "type": "array",
-                "items": { "$ref": "#/components/schemas/CorrectionRequest" }
-              }
-            },
-            "required": ["data"]
-          }
+        "type": "object",
+        "properties": {
+          "requests": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                { "$ref": "#/components/schemas/CorrectionRequestRecord" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "lastModified": { "type": "number" },
+                    "syncStatus": { "type": "string" }
+                  },
+                  "required": ["lastModified", "syncStatus"]
+                }
+              ]
+            }
+          },
+          "total": { "type": "integer" }
+        },
+        "required": ["requests", "total"]
+      },
+      "CorrectionRequestRecord": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "employeeId": { "type": "string" },
+          "timeRecordId": { "type": "string" },
+          "recordField": { "type": "string" },
+          "originalValue": { "type": "string" },
+          "requestedValue": { "type": "string" },
+          "reason": { "type": "string" },
+          "status": { "type": "string" },
+          "rejectionReason": { "type": "string", "nullable": true },
+          "resolvedBy": { "type": "string", "nullable": true },
+          "resolvedAt": { "type": "string", "nullable": true, "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "isDeleted": { "type": "boolean" },
+          "deletedAt": { "type": "string", "nullable": true, "format": "date-time" }
+        },
+        "required": [
+          "id",
+          "employeeId",
+          "timeRecordId",
+          "recordField",
+          "originalValue",
+          "requestedValue",
+          "reason",
+          "status",
+          "rejectionReason",
+          "resolvedBy",
+          "resolvedAt",
+          "createdAt",
+          "updatedAt",
+          "isDeleted",
+          "deletedAt"
         ]
       },
       "CorrectionRequest": {
@@ -356,10 +436,18 @@
             "type": "string",
             "enum": ["entrada", "inicioColacion", "finColacion", "salida"]
           },
-          "currentValue": { "type": "string" },
+          "originalValue": { "type": "string", "nullable": true },
+          "currentValue": {
+            "type": "string",
+            "nullable": true,
+            "description": "Alias anterior de originalValue; el servidor captura el valor actual de la jornada."
+          },
           "requestedValue": { "type": "string", "format": "date-time" },
-          "reason": { "type": "string" },
-          "attachment": { "nullable": true }
+          "reason": { "type": "string", "minLength": 1 },
+          "attachment": {
+            "nullable": true,
+            "description": "No admitido: los adjuntos están deshabilitados."
+          }
         },
         "required": ["employeeId", "timeRecordId", "recordField", "requestedValue", "reason"]
       },
@@ -392,9 +480,10 @@
           "endDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
           "area": { "type": "string" },
           "cargo": { "type": "string" },
+          "workdayType": { "type": "string" },
           "employeeId": { "type": "string" },
           "viewMode": { "type": "string", "enum": ["month", "week", "day"] },
-          "mode": { "type": "string", "enum": ["summary", "detailed", "compiled_detailed"] }
+          "mode": { "type": "string", "enum": ["summary", "compiled_detailed"] }
         },
         "required": ["startDate", "endDate"]
       },
@@ -403,7 +492,8 @@
         "properties": {
           "employeeId": { "type": "string", "minLength": 1 },
           "from": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
-          "to": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+          "to": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "limit": { "type": "integer", "minimum": 0, "exclusiveMinimum": true }
         },
         "required": ["employeeId", "from", "to"]
       },
@@ -413,7 +503,10 @@
           "success": { "type": "boolean" },
           "action": { "type": "string" },
           "record": { "$ref": "#/components/schemas/AttendanceRecordResponse" },
-          "timestamp": { "type": "string" }
+          "timestamp": { "type": "string" },
+          "exceptionApplied": { "type": "boolean" },
+          "exceptionType": { "type": "string", "nullable": true },
+          "requiresReview": { "type": "boolean" }
         },
         "required": ["success", "action", "timestamp"]
       },
@@ -427,10 +520,27 @@
             "enum": ["entrada", "salida", "inicioColacion", "finColacion"]
           },
           "timestamp": { "type": "string" },
-          "latitude": { "type": "number" },
-          "longitude": { "type": "number" }
+          "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+          "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
         },
         "required": ["employeeId"]
+      },
+      "RecordExportQuery": {
+        "type": "object",
+        "properties": {
+          "startDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "endDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "format": { "type": "string", "enum": ["json", "csv", "xml", "excel"] },
+          "employeeId": { "type": "string" },
+          "area": { "type": "string" },
+          "cargo": { "type": "string" },
+          "name": { "type": "string" },
+          "workdayType": { "type": "string" },
+          "status": { "type": "string" },
+          "showAnomalies": { "type": "string", "enum": ["true", "false"] },
+          "matchingView": { "type": "string", "enum": ["true", "false"] }
+        },
+        "required": ["startDate", "endDate"]
       },
       "ResolveAnomaly": {
         "type": "object",
@@ -464,7 +574,7 @@
       "TimeRecordQuery": {
         "type": "object",
         "properties": {
-          "page": { "type": "string" },
+          "page": { "type": "string", "pattern": "^[1-9]\\d*$" },
           "pageSize": { "type": "string" },
           "since": { "type": "string" },
           "desde": { "type": "string" },
@@ -473,7 +583,10 @@
           "area": { "type": "string" },
           "workdayType": { "type": "string" },
           "status": { "type": "string" },
-          "employeeId": { "type": "string" }
+          "employeeId": { "type": "string" },
+          "showAnomalies": {
+            "anyOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false"] }]
+          }
         }
       },
       "UpdateCorrectionStatus": {
@@ -566,6 +679,8 @@
           "startDate": { "type": "string" },
           "endDate": { "type": "string" },
           "employeeId": { "type": "string" },
+          "type": { "type": "string" },
+          "search": { "type": "string" },
           "showArchived": { "type": "string" }
         }
       },
@@ -744,7 +859,7 @@
       "PatternSchedule": {
         "type": "object",
         "properties": {
-          "dayIndex": { "type": "integer", "minimum": 0, "maximum": 6 },
+          "dayIndex": { "type": "integer", "minimum": 0 },
           "startTime": { "type": "string", "nullable": true },
           "endTime": { "type": "string", "nullable": true },
           "isOffDay": { "type": "boolean" },
@@ -846,7 +961,10 @@
           "pageSize": { "type": "string" },
           "employeeId": { "type": "string" },
           "startDate": { "type": "string" },
-          "endDate": { "type": "string" }
+          "endDate": { "type": "string" },
+          "search": { "type": "string" },
+          "showArchived": { "type": "string" },
+          "since": { "type": "string" }
         }
       },
       "SuggestedPatternName": {
@@ -860,23 +978,15 @@
           "id": { "type": "string" },
           "timestamp": { "type": "string" },
           "actorUsername": { "type": "string" },
-          "action": { "type": "string" },
-          "category": { "type": "string" },
+          "action": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
           "severity": { "type": "string" },
           "outcome": { "type": "string" },
           "details": { "type": "object", "additionalProperties": { "nullable": true } },
           "ipAddress": { "type": "string", "nullable": true },
           "metadata": { "type": "object", "additionalProperties": { "nullable": true } }
         },
-        "required": [
-          "id",
-          "timestamp",
-          "actorUsername",
-          "action",
-          "category",
-          "severity",
-          "outcome"
-        ]
+        "required": ["action", "category"]
       },
       "ConfigEntry": {
         "type": "object",
@@ -910,13 +1020,53 @@
       "HealthStatus": {
         "type": "object",
         "properties": {
-          "status": { "type": "string", "enum": ["ok", "error"] },
-          "uptime": { "type": "number" },
+          "status": { "type": "string", "enum": ["healthy", "degraded"] },
+          "instanceId": { "type": "string", "minLength": 1 },
           "timestamp": { "type": "string" },
-          "database": { "type": "string" },
-          "services": { "type": "object", "additionalProperties": { "type": "string" } }
+          "responseTime": { "type": "number" },
+          "uptime": { "type": "number" },
+          "database": {
+            "type": "object",
+            "properties": {
+              "status": { "type": "string" },
+              "latency": { "type": "number" },
+              "size": { "type": "string" }
+            },
+            "required": ["status"]
+          },
+          "system": {
+            "type": "object",
+            "properties": {
+              "platform": { "type": "string" },
+              "arch": { "type": "string" },
+              "nodeVersion": { "type": "string" },
+              "cpus": { "type": "number" },
+              "memory": {
+                "type": "object",
+                "properties": {
+                  "rss": { "type": "number" },
+                  "heapTotal": { "type": "number" },
+                  "heapUsed": { "type": "number" }
+                },
+                "required": ["rss", "heapTotal", "heapUsed"]
+              },
+              "os": {
+                "type": "object",
+                "properties": {
+                  "freeMem": { "type": "number" },
+                  "totalMem": { "type": "number" },
+                  "loadAvg": { "type": "array", "items": { "type": "number" } }
+                },
+                "required": ["freeMem", "totalMem", "loadAvg"]
+              }
+            },
+            "required": ["platform", "arch", "nodeVersion", "cpus", "memory", "os"]
+          },
+          "backup": { "type": "object", "additionalProperties": { "nullable": true } },
+          "integrity": { "type": "object", "additionalProperties": { "nullable": true } },
+          "jobs": { "type": "object", "additionalProperties": { "nullable": true } }
         },
-        "required": ["status", "uptime", "timestamp", "database"]
+        "required": ["status", "instanceId", "timestamp", "database"]
       },
       "KpiSummaryRequest": {
         "type": "object",
@@ -927,7 +1077,9 @@
           "employeeId": { "type": "string" },
           "employeeIds": { "type": "array", "items": { "type": "string" } },
           "area": { "type": "string" },
-          "departmentId": { "type": "string" }
+          "departmentId": { "type": "string" },
+          "cargo": { "type": "string" },
+          "workdayType": { "type": "string" }
         },
         "required": ["startDate"]
       },
@@ -1355,6 +1507,11 @@
           "startTime": { "type": "string", "minLength": 1 },
           "endTime": { "type": "string", "nullable": true },
           "status": { "type": "string", "enum": ["open", "closed"] },
+          "removedLogEntryIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "maxItems": 100
+          },
           "logEntries": {
             "type": "array",
             "items": {
@@ -1363,7 +1520,8 @@
                 "id": { "type": "string", "minLength": 1 },
                 "time": { "type": "string", "minLength": 1 },
                 "annotation": { "type": "string", "minLength": 1 },
-                "timestamp": { "type": "number" }
+                "timestamp": { "type": "number" },
+                "recordId": { "type": "string", "minLength": 1 }
               },
               "required": ["id", "time", "annotation", "timestamp"]
             }
@@ -1397,7 +1555,6 @@
         },
         "required": [
           "date",
-          "folio",
           "shiftName",
           "responsibleUser",
           "startTime",
@@ -1405,6 +1562,27 @@
           "logEntries",
           "supplierEntries"
         ]
+      },
+      "ShiftReportPaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/ShiftReport" } },
+          "total": { "type": "number" },
+          "page": { "type": "number" },
+          "totalPages": { "type": "number" }
+        },
+        "required": ["data", "total", "page", "totalPages"]
+      },
+      "ShiftReportQuery": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "pageSize": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "since": { "type": "string", "pattern": "^\\d+$" },
+          "status": { "type": "string", "enum": ["open", "closed"] },
+          "search": { "type": "string" },
+          "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+        }
       }
     },
     "parameters": {},
@@ -1573,7 +1751,24 @@
             "in": "query",
             "name": "format",
             "schema": { "type": "string", "enum": ["json", "csv", "xml", "excel"] }
-          }
+          },
+          {
+            "in": "query",
+            "name": "matchingView",
+            "description": "Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error.",
+            "schema": { "type": "string", "enum": ["true", "false"] }
+          },
+          { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
+          { "in": "query", "name": "name", "schema": { "type": "string" } },
+          { "in": "query", "name": "area", "schema": { "type": "string" } },
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
+          { "in": "query", "name": "status", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "showAnomalies",
+            "schema": { "type": "string", "enum": ["true", "false"] }
+          },
+          { "in": "query", "name": "cargo", "schema": { "type": "string" } }
         ],
         "responses": { "200": { "description": "Archivo exportado o JSON" } }
       }
@@ -1658,6 +1853,7 @@
             "application/json": {
               "schema": {
                 "type": "array",
+                "maxItems": 500,
                 "items": { "$ref": "#/components/schemas/TimeRecordWrite" }
               }
             }
@@ -1674,6 +1870,23 @@
         "responses": { "200": { "description": "Proceso ejecutado" } }
       }
     },
+    "/api/records/indicators": {
+      "get": {
+        "summary": "Indicadores de edición y solicitudes pendientes para jornadas visibles",
+        "tags": ["Records"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ids",
+            "required": true,
+            "description": "Hasta 100 identificadores de jornada separados por comas.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Datos mínimos de indicadores por jornada" } }
+      }
+    },
     "/api/records/integrity/verify": {
       "get": {
         "summary": "Verifica la integridad de la cadena de marcajes",
@@ -1682,7 +1895,13 @@
         "parameters": [
           { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
           { "in": "query", "name": "from", "schema": { "type": "string", "format": "date" } },
-          { "in": "query", "name": "to", "schema": { "type": "string", "format": "date" } }
+          { "in": "query", "name": "to", "schema": { "type": "string", "format": "date" } },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Máximo de registros a verificar; la respuesta indica si el resultado fue truncado.",
+            "schema": { "type": "integer", "minimum": 1 }
+          }
         ],
         "responses": { "200": { "description": "Resultado de la verificación" } }
       }
@@ -2218,12 +2437,47 @@
         "summary": "Obtener todas las bitácoras de turno",
         "tags": ["ShiftReports"],
         "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000000 }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": { "type": "string" },
+            "description": "Timestamp para consulta delta"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": { "type": "string", "enum": ["open", "closed"] }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": { "type": "string" },
+            "description": "Búsqueda por folio, responsable o turno"
+          },
+          {
+            "in": "query",
+            "name": "date",
+            "schema": { "type": "string", "format": "date" },
+            "description": "Fecha de turno (YYYY-MM-DD)"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de bitácoras",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ShiftReportListResponse" }
+                "schema": { "$ref": "#/components/schemas/ShiftReportPaginatedResponse" }
               }
             }
           }
@@ -2240,6 +2494,33 @@
           }
         },
         "responses": { "200": { "description": "Bitácora guardada" } }
+      }
+    },
+    "/api/shift-reports/{id}/attendance-novelties": {
+      "post": {
+        "summary": "Agregar novedad de una jornada a la bitácora abierta",
+        "tags": ["ShiftReports"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["recordId", "annotation", "time"],
+                "properties": {
+                  "recordId": { "type": "string" },
+                  "annotation": { "type": "string" },
+                  "time": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Novedad persistida" } }
       }
     },
     "/api/shift-reports/{id}": {
@@ -2931,7 +3212,13 @@
           },
           { "in": "query", "name": "area", "schema": { "type": "string" } },
           { "in": "query", "name": "cargo", "schema": { "type": "string" } },
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
           { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": { "type": "string", "enum": ["summary", "compiled_detailed"] }
+          },
           {
             "in": "query",
             "name": "viewMode",
@@ -2966,7 +3253,13 @@
           },
           { "in": "query", "name": "area", "schema": { "type": "string" } },
           { "in": "query", "name": "cargo", "schema": { "type": "string" } },
-          { "in": "query", "name": "employeeId", "schema": { "type": "string" } }
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
+          { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": { "type": "string", "enum": ["summary", "compiled_detailed"] }
+          }
         ],
         "responses": {
           "200": {
@@ -3011,18 +3304,40 @@
             "required": true
           },
           { "in": "query", "name": "area", "schema": { "type": "string" } },
+          { "in": "query", "name": "cargo", "schema": { "type": "string" } },
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
           { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
           {
             "in": "query",
             "name": "mode",
-            "schema": { "type": "string", "enum": ["summary", "detailed"] }
+            "schema": { "type": "string", "enum": ["summary", "compiled_detailed"] }
           }
         ],
         "responses": { "200": { "description": "Archivo Excel" } }
       }
     },
     "/api/employees/kiosk": {
-      "get": { "summary": "Obtiene lista de empleados para modo Kiosko", "tags": ["Employees"] }
+      "get": {
+        "summary": "Obtiene lista de empleados para modo Kiosko",
+        "tags": ["Employees"],
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1 } },
+          { "in": "query", "name": "search", "schema": { "type": "string" } },
+          { "in": "query", "name": "status", "schema": { "type": "string" } },
+          { "in": "query", "name": "area", "schema": { "type": "string" } },
+          { "in": "query", "name": "since", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista pública de empleados activos para Kiosko (sin PII)",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/KioskEmployees" } }
+            }
+          },
+          "400": { "description": "Parámetros de consulta inválidos" }
+        }
+      }
     },
     "/api/employees/clocking-options": {
       "get": {
@@ -3146,6 +3461,20 @@
         "summary": "Obtener solicitudes de corrección",
         "tags": ["Corrections"],
         "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "in": "query", "name": "since", "schema": { "type": "string", "pattern": "^[0-9]+$" } },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 1000 }
+          },
+          { "in": "query", "name": "offset", "schema": { "type": "integer", "minimum": 0 } },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de solicitudes",
@@ -3167,7 +3496,19 @@
             "application/json": { "schema": { "$ref": "#/components/schemas/CorrectionRequest" } }
           }
         },
-        "responses": { "201": { "description": "Solicitud creada" } }
+        "responses": {
+          "201": {
+            "description": "Solicitud creada",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CorrectionRequestRecord" }
+              }
+            }
+          },
+          "400": { "description": "Datos inválidos o adjuntos no admitidos" },
+          "403": { "description": "Jornada ajena o período cerrado" },
+          "409": { "description": "Ya existe una solicitud pendiente para el campo" }
+        }
       }
     },
     "/api/corrections/stats": {
@@ -3238,7 +3579,18 @@
             }
           }
         },
-        "responses": { "200": { "description": "Estado actualizado" } }
+        "responses": {
+          "200": {
+            "description": "Estado actualizado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CorrectionRequestRecord" }
+              }
+            }
+          },
+          "403": { "description": "Período cerrado" },
+          "409": { "description": "El campo cambió desde la solicitud" }
+        }
       }
     },
     "/api/configs/public/company-policy": {
@@ -3495,24 +3847,54 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": { "type": "boolean" },
-                    "token": { "type": "string" },
-                    "requiresMFA": { "type": "boolean" },
-                    "mustChangePassword": { "type": "boolean" }
-                  }
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "userId",
+                        "username",
+                        "role",
+                        "token",
+                        "mustChangePassword",
+                        "mfaEnabled",
+                        "message"
+                      ],
+                      "properties": {
+                        "userId": { "type": "string" },
+                        "username": { "type": "string" },
+                        "role": { "type": "string" },
+                        "employeeId": { "type": "string", "nullable": true },
+                        "token": { "type": "string" },
+                        "mustChangePassword": { "type": "boolean" },
+                        "mfaEnabled": { "type": "boolean" },
+                        "message": { "type": "string" }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": ["mfaRequired", "mfaToken", "userId", "message"],
+                      "properties": {
+                        "mfaRequired": { "type": "boolean" },
+                        "mfaToken": { "type": "string" },
+                        "userId": { "type": "string" },
+                        "message": { "type": "string" }
+                      }
+                    }
+                  ]
                 }
               }
             }
           },
-          "401": { "description": "Credenciales inválidas" }
+          "400": { "description": "Error de validación en credenciales" },
+          "401": { "description": "Credenciales inválidas" },
+          "403": { "description": "Cuenta de usuario archivada" },
+          "429": { "description": "Demasiados intentos fallidos" }
         }
       }
     },
     "/api/auth/mfa/setup": {
       "post": {
-        "summary": "Genera secreto MFA y QR",
+        "summary": "Genera secreto MFA y QR (Solo Administrador)",
         "tags": ["Auth"],
         "security": [{ "bearerAuth": [] }],
         "responses": {
@@ -3522,34 +3904,61 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "qrCode": { "type": "string" }, "secret": { "type": "string" } }
+                  "required": ["qrCode", "secret", "message"],
+                  "properties": {
+                    "qrCode": { "type": "string" },
+                    "secret": { "type": "string" },
+                    "message": { "type": "string" }
+                  }
                 }
               }
             }
-          }
+          },
+          "403": { "description": "Requiere rol Administrador" },
+          "409": { "description": "MFA ya habilitado" }
         }
       }
     },
     "/api/auth/mfa/verify": {
       "post": {
-        "summary": "Habilita MFA tras verificar primer código",
+        "summary": "Habilita MFA tras verificar primer código (Solo Administrador)",
         "tags": ["Auth"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": {
-              "schema": { "type": "object", "properties": { "token": { "type": "string" } } }
-            }
+            "application/json": { "schema": { "$ref": "#/components/schemas/MFAVerify" } }
           }
         },
-        "responses": { "200": { "description": "MFA habilitado" } }
+        "responses": {
+          "200": {
+            "description": "MFA habilitado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": { "message": { "type": "string" } }
+                }
+              }
+            }
+          },
+          "400": { "description": "MFA no configurado o código inválido" },
+          "403": { "description": "Requiere rol Administrador" },
+          "409": { "description": "MFA ya habilitado" }
+        }
       }
     },
     "/api/auth/mfa/validate": {
       "post": {
         "summary": "Valida código MFA durante login",
         "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/MFAValidate" } }
+          }
+        },
         "responses": {
           "200": {
             "description": "Autenticación de dos pasos exitosa",
@@ -3557,15 +3966,33 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": [
+                    "userId",
+                    "username",
+                    "role",
+                    "token",
+                    "mustChangePassword",
+                    "mfaEnabled",
+                    "message"
+                  ],
                   "properties": {
+                    "userId": { "type": "string" },
+                    "username": { "type": "string" },
+                    "role": { "type": "string" },
+                    "employeeId": { "type": "string", "nullable": true },
                     "token": { "type": "string" },
-                    "mustChangePassword": { "type": "boolean" }
+                    "mustChangePassword": { "type": "boolean" },
+                    "mfaEnabled": { "type": "boolean" },
+                    "message": { "type": "string" }
                   }
                 }
               }
             }
           },
-          "401": { "description": "Código o desafío inválido, expirado o MFA deshabilitado" },
+          "400": { "description": "Payload inválido" },
+          "401": {
+            "description": "Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado"
+          },
           "403": { "description": "Cuenta archivada entre factores" },
           "429": {
             "description": "Cinco códigos incorrectos bloquean MFA durante cinco minutos",
@@ -3596,14 +4023,23 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "required": ["success", "employeeName", "token", "mustChangePin", "message"],
                   "properties": {
+                    "success": { "type": "boolean" },
+                    "employeeName": { "type": "string" },
                     "token": { "type": "string" },
-                    "employee": { "$ref": "#/components/schemas/Employee" }
+                    "mustChangePin": { "type": "boolean" },
+                    "message": { "type": "string" }
                   }
                 }
               }
             }
-          }
+          },
+          "400": { "description": "Error de validación en credenciales" },
+          "401": { "description": "PIN incorrecto" },
+          "403": { "description": "Empleado archivado o PIN bloqueado" },
+          "404": { "description": "Empleado no encontrado" },
+          "429": { "description": "Demasiados intentos fallidos" }
         }
       }
     },
@@ -3611,7 +4047,21 @@
       "post": {
         "summary": "Cierra sesión del usuario",
         "tags": ["Auth"],
-        "responses": { "200": { "description": "Sesión cerrada" } }
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sesión cerrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["message"],
+                  "properties": { "message": { "type": "string" } }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/audit-logs/export": {

@@ -107,4 +107,33 @@ describe("auditLogService sobre apiClient (spec 034 T9)", () => {
     expect(error).toBeInstanceOf(ApiHttpError);
     expect((error as ApiHttpError).status).toBe(403);
   });
+
+  it("downloadExport envia Bearer y devuelve blob y filename sin token en query", async () => {
+    let capturedAuth: string | null = null;
+    let capturedUrl = "";
+    server.use(
+      http.get("http://localhost:4000/api/audit-logs/export", ({ request }) => {
+        capturedAuth = request.headers.get("authorization");
+        capturedUrl = request.url;
+        return new HttpResponse(new Blob(["id,action"], { type: "text/csv" }), {
+          status: 200,
+          headers: { "content-disposition": 'attachment; filename="audit.csv"' },
+        });
+      }),
+    );
+
+    const result = await auditLogService.downloadExport({
+      startDate: "2026-03-01",
+      endDate: "2026-03-05",
+      format: "csv",
+    });
+
+    expect(capturedAuth).toBe("Bearer fixture");
+    expect(capturedUrl).toContain("startDate=2026-03-01");
+    expect(capturedUrl).toContain("endDate=2026-03-05");
+    expect(capturedUrl).toContain("format=csv");
+    expect(capturedUrl).not.toContain("token=");
+    expect(result.filename).toBe("audit.csv");
+    expect(result.blob).toBeInstanceOf(Blob);
+  });
 });

@@ -10,7 +10,10 @@ export const useAuditLogMutations = () => {
   const verifyIntegrity = useMutation({
     mutationFn: () => auditLogService.verifyIntegrity(),
     onSuccess: (data) => {
-      addToast(data.message || "Auditoría de integridad iniciada correctamente", "success");
+      addToast(
+        data.data?.message || data.message || "Auditoría de integridad iniciada correctamente",
+        "success",
+      );
       queryClient.invalidateQueries({ queryKey: queryKeys.integrityStatus() });
       queryClient.invalidateQueries({ queryKey: queryKeys.auditLogs() });
     },
@@ -22,7 +25,7 @@ export const useAuditLogMutations = () => {
   const cleanupLogs = useMutation({
     mutationFn: (months: number) => auditLogService.cleanup(months),
     onSuccess: (data) => {
-      addToast(data.message || "Limpieza de logs completada", "success");
+      addToast(data.data?.message || data.message || "Limpieza de logs completada", "success");
       queryClient.invalidateQueries({ queryKey: queryKeys.auditLogs() });
     },
     onError: (error: Error) => {

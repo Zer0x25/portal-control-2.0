@@ -2,7 +2,7 @@ import { isoDateSchema, numericString, syncAuditFields, z } from "./common";
 
 export const PatternScheduleSchema = z
   .object({
-    dayIndex: z.number().int().min(0).max(6),
+    dayIndex: z.number().int().min(0),
     startTime: z.string().nullable().optional(),
     endTime: z.string().nullable().optional(),
     isOffDay: z.boolean(),
@@ -84,6 +84,9 @@ export const ShiftQuerySchema = z.object({
   employeeId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  search: z.string().optional(),
+  showArchived: z.string().optional(),
+  since: z.string().optional(),
 });
 
 export const CalendarMatrixRequestSchema = z

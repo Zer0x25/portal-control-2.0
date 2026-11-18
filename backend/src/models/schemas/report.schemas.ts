@@ -1,7 +1,7 @@
 import { isoDateSchema, z } from "./common";
 import { ApiResponseSchema } from "./responses.schemas";
 
-import { calendarDateQuery } from "./dataQuery";
+import { calendarDateQuery, epochQuery, positiveQueryInteger } from "./dataQuery";
 import { hasReportTarget } from "../../utils/reportTarget";
 import { validReportCron } from "../../utils/reportCron";
 
@@ -75,18 +75,20 @@ export const ShiftReportSchema = z
   .object({
     id: z.string().optional(),
     date: isoDateSchema(),
-    folio: z.string().min(1),
+    folio: z.string().min(1).optional(),
     shiftName: z.string().min(1),
     responsibleUser: z.string().min(1),
     startTime: z.string().min(1),
     endTime: z.string().nullable().optional(),
     status: z.enum(["open", "closed"]),
+    removedLogEntryIds: z.array(z.string().min(1)).max(100).optional(),
     logEntries: z.array(
       z.object({
         id: z.string().min(1),
         time: z.string().min(1),
         annotation: z.string().min(1),
         timestamp: z.number(),
+        recordId: z.string().min(1).optional(),
       }),
     ),
     supplierEntries: z.array(
@@ -107,3 +109,21 @@ export const ShiftReportSchema = z
 export const ShiftReportListResponseSchema = ApiResponseSchema.extend({
   data: z.array(ShiftReportSchema),
 }).openapi("ShiftReportListResponse");
+
+export const ShiftReportQuerySchema = z.object({
+  page: positiveQueryInteger(1000000).optional(),
+  pageSize: positiveQueryInteger(100).optional(),
+  since: epochQuery.optional(),
+  status: z.enum(["open", "closed"]).optional(),
+  search: z.string().trim().optional(),
+  date: calendarDateQuery.optional(),
+});
+
+export const ShiftReportPaginatedResponseSchema = z
+  .object({
+    data: z.array(ShiftReportSchema),
+    total: z.number(),
+    page: z.number(),
+    totalPages: z.number(),
+  })
+  .openapi("ShiftReportPaginatedResponse");

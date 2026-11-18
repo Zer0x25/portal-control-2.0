@@ -58,7 +58,7 @@ export function createCorrectionFlows<Row, List, Stats, History>(
       try {
         return await deps.service.updateStatus(id, {
           status: input.status,
-          resolvedBy: input.resolvedBy || user.username,
+          resolvedBy: user.username,
           rejectionReason: input.rejectionReason,
           actorUsername: user.username,
           actorRole: user.role,

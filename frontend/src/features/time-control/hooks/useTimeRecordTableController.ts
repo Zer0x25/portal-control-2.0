@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useToasts } from "../../../hooks/useToasts";
-import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
-import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
-import { exportToPDF } from "../../../utils/export/index";
-import { formatDisplayDateTime } from "../../../utils/formatters";
-import { AugmentedTimeRecord, AuditLog, CorrectionRequest } from "../../../types/index";
+import { AugmentedTimeRecord, AuditLog } from "../../../types/index";
+import { useRecordIndicators, type PendingIndicator } from "./useRecordIndicators";
 
 interface UseTimeRecordTableControllerParams {
   records: AugmentedTimeRecord[];
-  onExportStreaming: (format: "csv" | "excel") => void;
+  onExportStreaming: (format: "csv" | "excel" | "pdf") => void | Promise<void>;
 }
 
 export const useTimeRecordTableController = ({
@@ -17,27 +13,16 @@ export const useTimeRecordTableController = ({
 }: UseTimeRecordTableControllerParams) => {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
-  const { addToast } = useToasts();
-  const { data: logsData } = useAuditLogsInfinite({
-    pageSize: 20,
-    filters: {},
-    sortBy: "timestamp",
-    sortOrder: "desc",
-  });
-  const logsPage = logsData?.pages[0] || { data: [], total: 0 };
-  const { requests: correctionRequests } = useCorrectionRequests(
-    undefined,
-    undefined,
-    "correction-requests",
-  );
+  const {
+    data: indicators,
+    isError: indicatorsError,
+    refetch: retryIndicators,
+  } = useRecordIndicators(records.map((record) => record.id));
 
   const editsMapAll = (() => {
     const globalLogMap = new Map<string, AuditLog[]>();
-    const logs = (logsPage.data || []) as AuditLog[];
-    if (logs.length === 0) return globalLogMap;
-
-    for (const log of logs) {
-      if (log.action === "Time Record Edited" && log.details?.recordId) {
+    for (const log of indicators?.edits ?? []) {
+      if (log.details?.recordId) {
         const rId = String(log.details.recordId);
         if (!globalLogMap.has(rId)) globalLogMap.set(rId, []);
         globalLogMap.get(rId)?.push(log);
@@ -47,8 +32,8 @@ export const useTimeRecordTableController = ({
   })();
 
   const pendingRequestsMap = (() => {
-    const map = new Map<string, CorrectionRequest>();
-    const currentRequests = (correctionRequests as CorrectionRequest[]) || [];
+    const map = new Map<string, PendingIndicator>();
+    const currentRequests = indicators?.pending ?? [];
     if (currentRequests.length === 0) return map;
 
     for (const req of currentRequests) {
@@ -72,51 +57,8 @@ export const useTimeRecordTableController = ({
   }, [isExportMenuOpen]);
 
   const handleExport = async (format: "csv" | "excel" | "pdf") => {
-    if (records.length === 0) {
-      addToast("No hay datos para exportar.", "info");
-      return;
-    }
-
     setIsExportMenuOpen(false);
-    const headers = [
-      "Área",
-      "Nombre",
-      "Fecha",
-      "Cargo",
-      "Inicio Jornada",
-      "Inicio Colación",
-      "Fin Colación",
-      "Fin Jornada",
-    ];
-    const data = records.map((r) => [
-      r.employeeArea,
-      r.employeeName,
-      r.date,
-      r.employeePosition,
-      formatDisplayDateTime(r.entrada),
-      formatDisplayDateTime(r.inicioColacion),
-      formatDisplayDateTime(r.finColacion),
-      formatDisplayDateTime(r.salida),
-    ]);
-
-    const filtersString = "Filtros aplicados desde la interfaz";
-    switch (format) {
-      case "csv":
-        onExportStreaming("csv");
-        addToast("Registros exportados a CSV.", "success");
-        return;
-      case "excel":
-        onExportStreaming("excel");
-        addToast("Registros exportados a EXCEL.", "success");
-        return;
-      case "pdf":
-        exportToPDF("Reporte de Registros de Horario", headers, data, filtersString);
-        addToast("Registros enviados a impresión (PDF).", "success");
-        return;
-      default:
-        addToast("Formato no soportado.", "error");
-        return;
-    }
+    await onExportStreaming(format);
   };
 
   return {
@@ -125,6 +67,8 @@ export const useTimeRecordTableController = ({
     handleExport,
     isExportMenuOpen,
     pendingRequestsMap,
+    indicatorsError,
+    retryIndicators,
     setIsExportMenuOpen,
   };
 };

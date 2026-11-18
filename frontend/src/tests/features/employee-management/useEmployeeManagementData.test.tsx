@@ -14,6 +14,8 @@ const {
   refreshEmployeesMock,
   exportToCSVMock,
   checkOpenRecordMock,
+  archiveEmployeeMock,
+  reactivateEmployeeMock,
 } = vi.hoisted(() => ({
   addToastMock: vi.fn(),
   addEmployeeMock: vi.fn(),
@@ -22,7 +24,11 @@ const {
   refreshEmployeesMock: vi.fn(),
   exportToCSVMock: vi.fn(),
   checkOpenRecordMock: vi.fn(),
+  archiveEmployeeMock: vi.fn(),
+  reactivateEmployeeMock: vi.fn(),
 }));
+
+let mockArchivedEmployees: Array<Record<string, unknown>> = [];
 
 vi.mock("../../../hooks/useEmployees", () => ({
   useEmployees: () => ({
@@ -40,16 +46,37 @@ vi.mock("../../../hooks/useEmployees", () => ({
         isDeleted: false,
       },
     ],
-    archivedEmployees: [],
+    archivedEmployees: mockArchivedEmployees,
+    allEmployees: [
+      {
+        id: "e1",
+        name: "Ana",
+        rut: "1-9",
+        position: "Operador",
+        area: "Ops",
+        workdayType: "Full",
+        status: "Activo",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      },
+      ...mockArchivedEmployees,
+    ],
     isLoadingEmployees: false,
     addEmployee: addEmployeeMock,
     updateEmployee: updateEmployeeMock,
     getNextEmployeeId: () => "E-100",
     createBulkEmployees: createBulkEmployeesMock,
-    archiveEmployee: vi.fn(),
-    reactivateEmployee: vi.fn(),
+    archiveEmployee: archiveEmployeeMock,
+    reactivateEmployee: reactivateEmployeeMock,
     checkOpenRecord: checkOpenRecordMock,
     refreshEmployees: refreshEmployeesMock,
+  }),
+}));
+
+vi.mock("../../../hooks/useUsers", () => ({
+  useUsers: () => ({
+    users: [{ id: "u-linked", username: "ana", role: "Usuario", employeeId: "e1" }],
   }),
 }));
 
@@ -75,6 +102,7 @@ describe("useEmployeeManagementData", () => {
   beforeEach(() => {
     authTokenStore.setToken("fixture");
     vi.clearAllMocks();
+    mockArchivedEmployees = [];
     server.use(
       http.get(
         "http://localhost:4000/api/employees/export",
@@ -179,5 +207,59 @@ describe("useEmployeeManagementData", () => {
         createUserAccount: true,
       }),
     );
+  });
+
+  it("resolves handleReactivate from archivedEmployees even outside processedEmployees", async () => {
+    mockArchivedEmployees = [
+      {
+        id: "e-arch",
+        name: "Carlos",
+        rut: "3-5",
+        position: "Operador",
+        area: "Ops",
+        workdayType: "Full",
+        status: "Archivado",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      },
+    ];
+    reactivateEmployeeMock.mockResolvedValue(true);
+
+    const { result } = renderHook(() => useEmployeeManagementData(), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.handleReactivate("e-arch");
+    });
+
+    expect(reactivateEmployeeMock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "e-arch", name: "Carlos" }),
+    );
+  });
+
+  it("awaits archiveEmployee result before clearing employeeToArchive", async () => {
+    archiveEmployeeMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+    const { result } = renderHook(() => useEmployeeManagementData(), { wrapper: createWrapper() });
+
+    act(() => {
+      result.current.setEmployeeToArchive({
+        id: "e1",
+        name: "Ana",
+      } as never);
+    });
+
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.handleConfirmArchive();
+    });
+    expect(ok).toBe(false);
+    expect(result.current.employeeToArchive).not.toBeNull();
+
+    await act(async () => {
+      ok = await result.current.handleConfirmArchive();
+    });
+    expect(ok).toBe(true);
+    expect(result.current.employeeToArchive).toBeNull();
   });
 });

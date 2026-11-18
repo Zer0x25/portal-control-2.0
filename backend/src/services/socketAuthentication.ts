@@ -20,28 +20,70 @@ export async function authorizeSocketTokens(tokens: string[]): Promise<Set<strin
     }
   }
   const stateful = [...candidates.values()].filter(({ user }) => user.role !== "Kiosk_Employee");
+  const kiosk = [...candidates.values()].filter(({ user }) => user.role === "Kiosk_Employee");
   const now = new Date();
-  const sessions = stateful.length
-    ? await prisma.activeSession.findMany({
-        where: { tokenHash: { in: stateful.map(({ hash }) => hash) }, expiresAt: { gt: now } },
-        select: { tokenHash: true, userId: true },
-      })
-    : [];
+  const kioskJtis = kiosk
+    .map(({ user }) => user.jti)
+    .filter((jti): jti is string => typeof jti === "string" && jti.length > 0);
+  const [sessions, kioskEmployees, activeKioskVerifications] = await Promise.all([
+    stateful.length
+      ? prisma.activeSession.findMany({
+          where: { tokenHash: { in: stateful.map(({ hash }) => hash) }, expiresAt: { gt: now } },
+          select: { tokenHash: true, userId: true },
+        })
+      : Promise.resolve([]),
+    kiosk.length
+      ? prisma.employee.findMany({
+          where: {
+            id: { in: [...new Set(kiosk.map(({ user }) => user.employeeId || user.id))] },
+            status: "Activo",
+            isPinBlocked: false,
+          },
+          select: { id: true },
+        })
+      : Promise.resolve([]),
+    kioskJtis.length
+      ? prisma.verification.findMany({
+          where: {
+            id: { in: kioskJtis.map((jti) => `kiosk-jti:${jti}`) },
+            expiresAt: { gt: now },
+          },
+          select: { id: true },
+        })
+      : Promise.resolve([]),
+  ]);
   const users = sessions.length
     ? await prisma.user.findMany({
         where: { id: { in: sessions.map(({ userId }) => userId) } },
-        select: { id: true, role: true },
+        select: { id: true, role: true, isForcePasswordChange: true },
       })
     : [];
   const byHash = new Map(sessions.map((session) => [session.tokenHash, session.userId]));
-  const byUser = new Map(users.map((user) => [user.id, user.role]));
+  const byUser = new Map(users.map((user) => [user.id, user]));
+  const activeEmployees = new Set(kioskEmployees.map((emp) => emp.id));
+  const activeKioskJtis = new Set(activeKioskVerifications.map((row) => row.id));
   const valid = new Set<string>();
   for (const [token, { user, hash }] of candidates) {
+    if (user.role === "Kiosk_Employee") {
+      if (
+        activeEmployees.has(user.employeeId || user.id) &&
+        user.jti &&
+        activeKioskJtis.has(`kiosk-jti:${user.jti}`)
+      ) {
+        valid.add(token);
+      }
+      continue;
+    }
+    const dbUser = byUser.get(user.id);
     if (
-      user.role === "Kiosk_Employee" ||
-      (byHash.get(hash) === user.id && byUser.get(user.id) === user.role)
-    )
+      byHash.get(hash) === user.id &&
+      dbUser &&
+      dbUser.role === user.role &&
+      dbUser.role !== "Archivado" &&
+      !dbUser.isForcePasswordChange
+    ) {
       valid.add(token);
+    }
   }
   // Better-auth sessions (token opaco, tabla sessions): batch en 2 queries.
   if (baCandidates.size) {
@@ -52,13 +94,13 @@ export async function authorizeSocketTokens(tokens: string[]): Promise<Set<strin
     const baUsers = baSessions.length
       ? await prisma.user.findMany({
           where: { id: { in: baSessions.map((s) => s.userId) } },
-          select: { id: true, role: true },
+          select: { id: true, role: true, isForcePasswordChange: true },
         })
       : [];
-    const baByUser = new Map(baUsers.map((u) => [u.id, u.role]));
-    const baValidUsers = new Set(baUsers.map((u) => u.id));
+    const baByUser = new Map(baUsers.map((u) => [u.id, u]));
     for (const s of baSessions) {
-      if (baValidUsers.has(s.userId) && baByUser.has(s.userId)) {
+      const dbUser = baByUser.get(s.userId);
+      if (dbUser && dbUser.role !== "Archivado" && !dbUser.isForcePasswordChange) {
         valid.add(s.token);
       }
     }

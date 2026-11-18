@@ -2,8 +2,12 @@ export interface KpiInput {
   startDate: string;
   endDate?: string;
   endDateExclusive?: string;
+  employeeId?: string;
   employeeIds?: string[];
   area?: string;
+  departmentId?: string;
+  cargo?: string;
+  workdayType?: string;
 }
 export interface KpiDependencies<Summary, Detailed, Overview, Daily> {
   service: {

@@ -3,6 +3,7 @@ export interface HolidayRecord {
   date: string;
   name: string;
   type: string;
+  isRenounceable: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

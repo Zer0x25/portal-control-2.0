@@ -1,10 +1,11 @@
 import prisma, { withDirectTransaction } from "./db";
+import { ACCOUNTING_TRANSACTION_OPTIONS } from "./accountingTransaction";
 import { SocketService } from "./socketService";
 import { OvertimeValidationService } from "./OvertimeValidationService";
 import { schedulingService } from "./schedulingService";
 import { parseBusinessDateChile } from "../utils/timeUtils";
 import { AppError } from "../utils/AppError";
-import { auditService } from "./auditService";
+import { redactAuditFields } from "../modules/audit";
 import { TimeRecordService } from "./TimeRecordService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { Prisma, TimeRecord } from "../generated/prisma/client";
@@ -31,7 +32,7 @@ export interface CreateCorrectionData {
   employeeId?: string;
   timeRecordId?: string;
   recordField?: string;
-  originalValue?: string;
+  originalValue?: string | null;
   requestedValue?: string;
   reason?: string;
 }
@@ -43,6 +44,48 @@ function requireLinkedEmployee(user: { role: string; employeeId?: string }) {
   if (isSelfOnly(user) && !user.employeeId) {
     throw new AppError("Usuario sin empleado vinculado.", 403, "FORBIDDEN");
   }
+}
+
+type AuditEntry = {
+  actorUsername: string;
+  action: string;
+  category: string;
+  severity?: string;
+  outcome?: string;
+  details?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+};
+
+async function writeAudit(tx: Prisma.TransactionClient, entry: AuditEntry) {
+  const safe = redactAuditFields(entry.action, entry.details, entry.metadata);
+  return tx.auditLog.create({
+    data: {
+      actorUsername: entry.actorUsername,
+      action: entry.action,
+      category: entry.category,
+      severity: entry.severity || "INFO",
+      outcome: entry.outcome || "SUCCESS",
+      details: safe.details as Prisma.InputJsonValue,
+      metadata: safe.metadata as Prisma.InputJsonValue,
+    },
+  });
+}
+
+async function lockAccounting(tx: Prisma.TransactionClient) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${"accounting_lock_date"}))`;
+}
+
+async function lockEmployeeRecords(tx: Prisma.TransactionClient, employeeId: string) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employeeId}))`;
+}
+
+function sameValue(left: string | null | undefined, right: string | null | undefined) {
+  const normalize = (value: string | null | undefined) => {
+    if (!value || value === "SIN REGISTRO") return "";
+    const time = Date.parse(value);
+    return Number.isNaN(time) ? value : String(time);
+  };
+  return normalize(left) === normalize(right);
 }
 
 export class CorrectionService {
@@ -76,7 +119,7 @@ export class CorrectionService {
     const total = await prisma.correctionRequest.count({ where });
     const requests = await prisma.correctionRequest.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: limit,
       skip: offset,
     });
@@ -110,7 +153,7 @@ export class CorrectionService {
     }
 
     const record = await prisma.timeRecord.findUnique({ where: { id: data.timeRecordId } });
-    if (!record) {
+    if (!record || record.isDeleted) {
       throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
     }
     // Las correcciones no pueden apuntar al futuro (spec 030).
@@ -211,41 +254,71 @@ export class CorrectionService {
       }
     }
 
-    // 3. Persistence
-    const request = await prisma.correctionRequest.create({
-      data: {
-        id: data.id,
-        employeeId: data.employeeId,
-        timeRecordId: data.timeRecordId,
-        recordField: data.recordField,
-        originalValue: data.originalValue || "",
-        requestedValue: data.requestedValue || "",
-        reason: data.reason,
-      },
-    });
-
-    // 4. Notification
-    const enrichedRequest = {
+    const result = await withDirectTransaction(async (tx) => {
+      // Orden: cierre, empleado y finalmente fila. Los demás escritores de
+      // jornada toman el mismo candado de empleado antes de sellar la cadena.
+      await lockAccounting(tx);
+      await lockEmployeeRecords(tx, record.employeeId);
+      await tx.$queryRaw`SELECT id FROM time_records WHERE id = ${record.id} FOR UPDATE`;
+      const locked = await tx.timeRecord.findUnique({ where: { id: record.id } });
+      if (!locked || locked.isDeleted)
+        throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
+      if (locked.employeeId !== data.employeeId)
+        throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
+      if (await TimeRecordService.isRecordLocked(locked.date, tx))
+        throw new AppError("El período está cerrado.", 403, "RECORD_LOCKED");
+      const field = data.recordField as CorrectableRecordField;
+      const existing = await tx.correctionRequest.findFirst({
+        where: { timeRecordId: locked.id, recordField: field, status: "pending", isDeleted: false },
+      });
+      if (existing)
+        throw new AppError(
+          "Ya existe una solicitud pendiente para esta jornada y campo.",
+          409,
+          "CORRECTION_PENDING",
+        );
+      await TimeRecordService.validateEditableRecord({
+        employeeId: locked.employeeId,
+        employeeWorkdayType: locked.employeeWorkdayType,
+        date: locked.date,
+        entrada: field === "entrada" ? data.requestedValue : locked.entrada,
+        inicioColacion: field === "inicioColacion" ? data.requestedValue : locked.inicioColacion,
+        finColacion: field === "finColacion" ? data.requestedValue : locked.finColacion,
+        salida: field === "salida" ? data.requestedValue : locked.salida,
+      });
+      const request = await tx.correctionRequest.create({
+        data: {
+          id: data.id,
+          employeeId: data.employeeId,
+          timeRecordId: locked.id,
+          recordField: field,
+          originalValue: locked[field] || "",
+          requestedValue: data.requestedValue || "",
+          reason: data.reason,
+        },
+      });
+      const audit = await writeAudit(tx, {
+        actorUsername: user.username || "SYSTEM",
+        action: "CORRECTION_REQUEST_CREATED",
+        category: "CTRL_HOURS",
+        details: {
+          requestId: request.id,
+          employeeId: request.employeeId,
+          timeRecordId: request.timeRecordId,
+          recordField: request.recordField,
+          status: request.status,
+        },
+      });
+      return { request, audit };
+    }, ACCOUNTING_TRANSACTION_OPTIONS);
+    const { request } = result;
+    SocketService.emit("correctionRequest:created", {
       ...request,
       lastModified: request.updatedAt.getTime(),
       syncStatus: "synced",
       isDeleted: false,
-    };
-    SocketService.emit("correctionRequest:created", enrichedRequest);
-    await auditService.log({
-      actorUsername: user.username || "SYSTEM",
-      action: "CORRECTION_REQUEST_CREATED",
-      category: "CTRL_HOURS",
-      severity: "INFO",
-      outcome: "SUCCESS",
-      details: {
-        requestId: request.id,
-        employeeId: request.employeeId,
-        timeRecordId: request.timeRecordId,
-        recordField: request.recordField,
-        status: request.status,
-      },
     });
+    SocketService.emitToAll("auditLog:created", result.audit);
 
     return request;
   }
@@ -297,6 +370,9 @@ export class CorrectionService {
 
     const now = new Date();
     const result = await withDirectTransaction(async (tx) => {
+      await lockAccounting(tx);
+      await lockEmployeeRecords(tx, currentRequest.employeeId);
+      await tx.$queryRaw`SELECT id FROM time_records WHERE id = ${currentRequest.timeRecordId} FOR UPDATE`;
       // Anti-carrera (2026-10-04): el guard de idempotencia se lee FUERA de
       // la tx, así que N approves concurrentes lo pasan todos y parchaban el
       // record N veces con N auditorías. El update condicional deja pasar a
@@ -313,7 +389,12 @@ export class CorrectionService {
       if (claimed.count === 0) {
         const settled = await tx.correctionRequest.findUnique({ where: { id } });
         if (!settled) throw new Error("NOT_FOUND");
-        return { updatedRequest: settled, updatedTimeRecord: null, alreadySettled: true };
+        return {
+          updatedRequest: settled,
+          updatedTimeRecord: null,
+          alreadySettled: true,
+          audits: [],
+        };
       }
       const updatedRequest = await tx.correctionRequest.findUnique({
         where: { id },
@@ -321,6 +402,7 @@ export class CorrectionService {
       if (!updatedRequest) throw new Error("NOT_FOUND");
 
       let updatedTimeRecord: TimeRecord | null = null;
+      const audits: Awaited<ReturnType<typeof writeAudit>>[] = [];
 
       if (status === "approved") {
         const validFields: CorrectableRecordField[] = [
@@ -339,12 +421,23 @@ export class CorrectionService {
           where: { id: currentRequest.timeRecordId },
         });
 
-        if (!currentTimeRecord) {
+        if (!currentTimeRecord || currentTimeRecord.isDeleted) {
           throw new AppError("Registro de tiempo no encontrado.", 404, "TIME_RECORD_NOT_FOUND");
         }
 
         if (currentTimeRecord.employeeId !== currentRequest.employeeId) {
           throw new AppError("La jornada no pertenece al empleado indicado.", 403, "FORBIDDEN");
+        }
+
+        if (await TimeRecordService.isRecordLocked(currentTimeRecord.date, tx)) {
+          throw new AppError("El período está cerrado.", 403, "RECORD_LOCKED");
+        }
+        if (!sameValue(currentTimeRecord[recordField], currentRequest.originalValue)) {
+          throw new AppError(
+            "El campo cambió desde la solicitud; debe crear una nueva.",
+            409,
+            "CORRECTION_STALE",
+          );
         }
 
         const patch: Record<string, string> = {
@@ -397,28 +490,50 @@ export class CorrectionService {
           currentRequest.timeRecordId,
         );
 
-        await auditService.log({
-          actorUsername: actorUsername || resolvedBy || "SYSTEM",
-          action: "TIME_RECORD_EDITED",
-          category: "CTRL_HOURS",
-          severity: "WARNING",
-          outcome: "SUCCESS",
-          details: {
-            recordId: currentRequest.timeRecordId,
-            correctionRequestId: currentRequest.id,
-            fieldEdited: recordField,
-            oldValue: {
-              [recordField]: currentTimeRecord[recordField] ?? null,
+        audits.push(
+          await writeAudit(tx, {
+            actorUsername: actorUsername || resolvedBy || "SYSTEM",
+            action: "TIME_RECORD_EDITED",
+            category: "CTRL_HOURS",
+            severity: "WARNING",
+            outcome: "SUCCESS",
+            details: {
+              recordId: currentRequest.timeRecordId,
+              correctionRequestId: currentRequest.id,
+              fieldEdited: recordField,
+              oldValue: {
+                [recordField]: currentTimeRecord[recordField] ?? null,
+              },
+              newValue: {
+                [recordField]: currentRequest.requestedValue,
+              },
             },
-            newValue: {
-              [recordField]: currentRequest.requestedValue,
-            },
-          },
-        });
+          }),
+        );
       }
 
-      return { updatedRequest, updatedTimeRecord, alreadySettled: false };
-    });
+      audits.push(
+        await writeAudit(tx, {
+          actorUsername: actorUsername || resolvedBy || "SYSTEM",
+          action: "CORRECTION_REQUEST_STATUS_UPDATED",
+          category: "CTRL_HOURS",
+          severity: status === "rejected" ? "WARNING" : "INFO",
+          outcome: "SUCCESS",
+          details: {
+            requestId: updatedRequest.id,
+            employeeId: updatedRequest.employeeId,
+            timeRecordId: updatedRequest.timeRecordId,
+            recordField: updatedRequest.recordField,
+            requestedValue: updatedRequest.requestedValue,
+            previousStatus: currentRequest.status,
+            newStatus: updatedRequest.status,
+            rejectionReason: updatedRequest.rejectionReason || null,
+          },
+          metadata: { actorRole: actorRole || null },
+        }),
+      );
+      return { updatedRequest, updatedTimeRecord, alreadySettled: false, audits };
+    }, ACCOUNTING_TRANSACTION_OPTIONS);
     const request = result.updatedRequest;
 
     // El perdedor de la carrera no re-emite ni re-audita: el ganador ya lo hizo.
@@ -448,26 +563,7 @@ export class CorrectionService {
           : null,
       });
     }
-    await auditService.log({
-      actorUsername: actorUsername || resolvedBy || "SYSTEM",
-      action: "CORRECTION_REQUEST_STATUS_UPDATED",
-      category: "CTRL_HOURS",
-      severity: status === "rejected" ? "WARNING" : "INFO",
-      outcome: "SUCCESS",
-      details: {
-        requestId: request.id,
-        employeeId: request.employeeId,
-        timeRecordId: request.timeRecordId,
-        recordField: request.recordField,
-        requestedValue: request.requestedValue,
-        previousStatus: currentRequest.status,
-        newStatus: request.status,
-        rejectionReason: request.rejectionReason || null,
-      },
-      metadata: {
-        actorRole: actorRole || null,
-      },
-    });
+    for (const audit of result.audits) SocketService.emitToAll("auditLog:created", audit);
 
     return request;
   }

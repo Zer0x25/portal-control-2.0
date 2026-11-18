@@ -22,6 +22,7 @@ const KpisTab: React.FC = () => {
     isDetailsModalOpen,
     modalData,
     isLoadingKpis,
+    isError,
     isNoDataPeriod,
     kpis,
     kpiDetails,
@@ -48,6 +49,22 @@ const KpisTab: React.FC = () => {
           </h3>
           <p className="text-[11px] font-semibold text-rose-400 mt-2 uppercase tracking-wide">
             El segmento cronológico de inicio es superior al de término
+          </p>
+        </div>
+      ) : isError ? (
+        <div
+          key="kpi-api-error"
+          role="alert"
+          className="flex flex-col items-center justify-center p-16 bg-rose-500/3 border border-rose-500/20 rounded-sm animate-in fade-in zoom-in-95"
+        >
+          <div className="w-14 h-14 rounded-full bg-rose-500/10 flex items-center justify-center mb-5">
+            <ExclamationTriangleIcon className="w-7 h-7 text-rose-500" />
+          </div>
+          <h3 className="text-[13px] font-bold text-rose-600 uppercase tracking-widest">
+            Error al Calcular Métricas de KPI
+          </h3>
+          <p className="text-[11px] font-semibold text-rose-400 mt-2 uppercase tracking-wide text-center">
+            No se pudieron obtener los indicadores del servidor. Intente nuevamente.
           </p>
         </div>
       ) : (

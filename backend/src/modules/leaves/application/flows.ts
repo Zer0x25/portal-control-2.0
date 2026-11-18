@@ -19,6 +19,8 @@ export function createLeaveFlows<Row, Item>(deps: LeaveFlowDependencies<Row, Ite
           startDate: query.startDate,
           endDate: query.endDate,
           employeeId: query.employeeId,
+          type: query.type,
+          search: query.search,
           showArchived: query.showArchived === "true",
         },
         { role: user?.role || "Usuario", employeeId: user?.employeeId ?? undefined },

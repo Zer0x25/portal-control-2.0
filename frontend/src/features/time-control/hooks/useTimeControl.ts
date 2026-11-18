@@ -1,14 +1,16 @@
 import { useMemo, useState } from "react";
 import { AttendanceRecord, DailyTimeRecord } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
+import { useToasts } from "../../../hooks/useToasts";
+import { authService } from "../../../services/authService";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
 import { useTimeControlScheduleEnrichment } from "./useTimeControlScheduleEnrichment";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { getContractAttendanceMetrics, getContractClockingStatus } from "../../../utils/mappings";
-import { authService } from "../../../services/authService";
-import { API_BASE_URL } from "../../../services/apiBase";
+import { exportTimeRecords } from "./exportTimeRecords";
+import { logger } from "../../../utils/logger";
 
 const RECORDS_PER_PAGE = 30;
 
@@ -23,6 +25,7 @@ const extractKPIs = (record: AttendanceRecord) => {
 
 export const useTimeControl = () => {
   const { currentUser } = useAuth();
+  const { addToast } = useToasts();
   const getEmployeeDailyScheduleInfo = useTimeControlScheduleEnrichment();
   // Decomposed hooks
   const filters = useTimeRecordFilters();
@@ -114,22 +117,32 @@ export const useTimeControl = () => {
     filtersKey,
     ...filters,
     ...modals,
-    handleExportStreaming: (format: "csv" | "excel") => {
-      const token = authService.getToken();
-      if (!token) return;
-
-      const params = new URLSearchParams();
-      params.append("startDate", desde);
-      params.append("endDate", hasta);
-      params.append("format", format);
-      params.append("token", token);
-
-      if (debouncedSearchName) params.append("name", debouncedSearchName);
-      if (area) params.append("area", area);
-      if (workdayType) params.append("workdayType", workdayType);
-
-      const url = `${API_BASE_URL}/records/export?${params.toString()}`;
-      window.location.href = url;
+    handleExportStreaming: async (format: "csv" | "excel" | "pdf") => {
+      if (!authService.getToken()) return;
+      try {
+        const exported = await exportTimeRecords(format, {
+          desde,
+          hasta,
+          name: debouncedSearchName,
+          area,
+          workdayType,
+          status: effectiveStatus,
+          showAnomalies: effectiveShowAnomalies,
+        });
+        if (!exported)
+          addToast("No hay datos para exportar o se bloqueó la ventana de impresión.", "info");
+        else
+          addToast(
+            format === "pdf" ? "Vista de impresión abierta." : "Registros exportados.",
+            "success",
+          );
+      } catch (error) {
+        logger.error("Error exporting time records:", error);
+        addToast(
+          error instanceof Error ? error.message : "Error al exportar registros de asistencia.",
+          "error",
+        );
+      }
     },
     filteredRecords: enrichedRecords, // Renamed for component compatibility
     totalRecords: infiniteData?.pages[0]?.total || 0,

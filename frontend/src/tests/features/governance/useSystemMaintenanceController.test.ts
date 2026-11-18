@@ -2,14 +2,14 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useSystemMaintenanceController } from "../../../features/governance/hooks/useSystemMaintenanceController";
 
-const { addToastMock, getAdminStatsMock, purgeSessionsMock, resetPasswordMock, confirmMock } =
-  vi.hoisted(() => ({
+const { addToastMock, getAdminStatsMock, purgeSessionsMock, resetPasswordMock } = vi.hoisted(
+  () => ({
     addToastMock: vi.fn(),
     getAdminStatsMock: vi.fn(),
     purgeSessionsMock: vi.fn(),
     resetPasswordMock: vi.fn(),
-    confirmMock: vi.fn(),
-  }));
+  }),
+);
 
 const STORE_STATE = { addToast: addToastMock };
 
@@ -50,8 +50,6 @@ describe("useSystemMaintenanceController", () => {
     getAdminStatsMock.mockResolvedValue({ usersCount: 1 });
     purgeSessionsMock.mockResolvedValue({ data: { message: "Sesiones purgadas" } });
     resetPasswordMock.mockResolvedValue({ data: { message: "Password actualizado" } });
-    confirmMock.mockReturnValue(true);
-    vi.spyOn(window, "confirm").mockImplementation(confirmMock);
   });
 
   it("resetea la contrasena recortando el usuario y sin tocar la clave", async () => {
@@ -114,20 +112,26 @@ describe("useSystemMaintenanceController", () => {
     expect(resetPasswordMock).not.toHaveBeenCalled();
   });
 
-  it("purga todas las sesiones cuando el usuario viene vacio", async () => {
+  it("purga todas las sesiones cuando el usuario viene vacio tras confirmar en ConfirmationModal", async () => {
     const { result } = renderHook(() => useSystemMaintenanceController());
 
     await act(async () => {
       result.current.purgeFormProps.onSubmit(SUBMIT_EVENT);
     });
 
+    expect(result.current.confirmDialog).not.toBeNull();
+    expect(purgeSessionsMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.confirmDialog?.onConfirm();
+    });
+
     await waitFor(() => {
       expect(purgeSessionsMock).toHaveBeenCalledWith(undefined);
     });
-    expect(confirmMock).toHaveBeenCalled();
   });
 
-  it("purga solo el usuario indicado", async () => {
+  it("purga solo el usuario indicado tras confirmar en ConfirmationModal", async () => {
     const { result } = renderHook(() => useSystemMaintenanceController());
 
     act(() => {
@@ -136,6 +140,12 @@ describe("useSystemMaintenanceController", () => {
 
     await act(async () => {
       result.current.purgeFormProps.onSubmit(SUBMIT_EVENT);
+    });
+
+    expect(result.current.confirmDialog).not.toBeNull();
+
+    await act(async () => {
+      await result.current.confirmDialog?.onConfirm();
     });
 
     await waitFor(() => {

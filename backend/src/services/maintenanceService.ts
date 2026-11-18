@@ -3,6 +3,7 @@ import { subYears, subMonths } from "date-fns";
 import { ulid } from "ulid";
 import { AuthService } from "./AuthService";
 import { ForbiddenError, ConflictError } from "../utils/AppError";
+import { logger } from "../utils/logger";
 
 /** Snapshot returned by {@link MaintenanceService.checkSystemHealth}. */
 type SystemHealthSummary = {
@@ -17,7 +18,7 @@ export class MaintenanceService {
    * @param years Number of years to keep logs for.
    */
   async rotateAuditLogs(): Promise<void> {
-    console.warn("--- Iniciando Rotación de Logs y Datos Operacionales (Política Escalonada) ---");
+    logger.info("Iniciando rotación de logs y datos operacionales");
     try {
       const now = new Date();
 
@@ -65,27 +66,32 @@ export class MaintenanceService {
         },
       });
 
-      // 6. Sesiones expiradas (ActiveSession) -> Limpieza inmediata de tokens vencidos
+      // 6. Sesiones expiradas (ActiveSession) y tokens consumidos expirados -> Limpieza inmediata
       const p6 = prisma.activeSession.deleteMany({
+        where: {
+          expiresAt: { lt: now },
+        },
+      });
+      const p7 = prisma.verification.deleteMany({
         where: {
           expiresAt: { lt: now },
         },
       });
 
       // Execute all cleanup tasks in parallel
-      const [r1, r2, r3, r4, r5, r6] = await Promise.all([p1, p2, p3, p4, p5, p6]);
+      const [r1, r2, r3, r4, r5, r6, r7] = await Promise.all([p1, p2, p3, p4, p5, p6, p7]);
 
-      console.warn(
-        `✅ Depuración Finalizada:
-         - Control Horario (>5 años): ${r1.count}
-         - Administración (>3 meses): ${r2.count}
-         - Infraestructura (>2 meses): ${r3.count}
-         - ShiftReport (>24 meses): ${r4.count}
-         - MeterReading (>24 meses): ${r5.count}
-         - ActiveSessions expiradas: ${r6.count}`,
-      );
+      logger.info("Depuración de rotación de logs finalizada", {
+        ctrlHours: r1.count,
+        admin: r2.count,
+        infra: r3.count,
+        shiftReport: r4.count,
+        meterReading: r5.count,
+        expiredSessions: r6.count,
+        expiredVerifications: r7.count,
+      });
     } catch (error) {
-      console.error("❌ Error en rotación de logs:", error);
+      logger.error("Error en rotación de logs", error);
       throw error;
     }
   }
@@ -94,12 +100,12 @@ export class MaintenanceService {
    * Refreshes the Materialized Views in PostgreSQL to update analytics data.
    */
   async refreshMaterializedViews(): Promise<void> {
-    console.warn("--- Iniciando Actualización de Vistas Materializadas ---");
+    logger.info("Iniciando actualización de vistas materializadas");
     try {
       await prisma.$executeRaw`REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_employee_kpis`;
-      console.warn("✅ Vistas Materializadas actualizadas con éxito.");
+      logger.info("Vistas materializadas actualizadas con éxito");
     } catch (error) {
-      console.error("❌ Error al actualizar Vistas Materializadas:", error);
+      logger.error("Error al actualizar vistas materializadas", error);
     }
   }
 
@@ -132,12 +138,12 @@ export class MaintenanceService {
             value: JSON.stringify(newId),
           },
         });
-        console.warn(`🆕 Nueva instancia de DB detectada. Generado InstanceID: ${newId}`);
+        logger.info("Nueva instancia de DB detectada", { instanceId: newId });
       } else {
-        console.warn(`🔗 Instancia de DB vinculada: ${JSON.parse(existing.value)}`);
+        logger.info("Instancia de DB vinculada", { instanceId: JSON.parse(existing.value) });
       }
     } catch (error) {
-      console.error("❌ Error al asegurar InstanceID de DB:", error);
+      logger.error("Error al asegurar InstanceID de DB", error);
     }
   }
 

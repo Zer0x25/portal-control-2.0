@@ -18,13 +18,18 @@ const HeaderContainer: React.FC<HeaderProps> = ({ toggleSidebar }) => {
       soundEnabled={controller.soundEnabled}
       isDropdownOpen={controller.isDropdownOpen}
       isChangePasswordModalOpen={controller.isChangePasswordModalOpen}
+      canConfigureMfa={controller.canConfigureMfa}
+      isMfaSetupModalOpen={controller.isMfaSetupModalOpen}
       isManualModalOpen={controller.isManualModalOpen}
       dropdownRef={controller.dropdownRef}
       onToggleSound={controller.toggleSound}
       onToggleDropdown={() => controller.setIsDropdownOpen((prev) => !prev)}
       onOpenChangePassword={controller.openChangePassword}
+      onOpenMfaSetup={controller.openMfaSetup}
       onOpenManual={controller.openManual}
       onCloseChangePassword={() => controller.setIsChangePasswordModalOpen(false)}
+      onCloseMfaSetup={() => controller.setIsMfaSetupModalOpen(false)}
+      onMfaSetupSuccess={controller.handleMfaSetupSuccess}
       onCloseManual={() => controller.setIsManualModalOpen(false)}
       onLogout={controller.handleLogout}
     />

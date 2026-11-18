@@ -7,6 +7,7 @@ import { NotFoundError } from "../../src/utils/AppError";
 
 vi.mock("../../src/services/db", () => {
   const mockPrisma = {
+    $executeRaw: vi.fn().mockResolvedValue(1),
     shiftReport: {
       findFirst: vi.fn(),
       update: vi.fn(),
@@ -76,7 +77,7 @@ describe("ShiftReportService update and delete anti-regression unit tests", () =
 
       const result = await ShiftReportService.update(
         "rep-1",
-        { shiftName: "Tarde", status: "closed" },
+        { folio: "999", shiftName: "Tarde", status: "closed" },
         "admin",
       );
 
@@ -112,7 +113,7 @@ describe("ShiftReportService update and delete anti-regression unit tests", () =
       expect(withDirectTransaction).toHaveBeenCalled();
       expect(prisma.shiftReport.update).toHaveBeenCalledWith({
         where: { id: "rep-1" },
-        data: { isDeleted: true },
+        data: { isDeleted: true, deletedAt: expect.any(Date) },
       });
 
       expect(auditService.log).toHaveBeenCalledWith({

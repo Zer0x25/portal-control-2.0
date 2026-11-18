@@ -60,6 +60,7 @@ vi.mock("../../services/shiftService", () => ({
 }));
 
 import { useEmployees } from "../../hooks/useEmployees";
+import { queryKeys } from "../../lib/queryKeys";
 
 describe("useEmployees archive timezone helper", () => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
@@ -95,7 +96,8 @@ describe("useEmployees archive timezone helper", () => {
     client.clear();
   });
 
-  it("loads the business date helper when archiving active assignments", async () => {
+  it("delegates archive atomically to backend and invalidates React Query caches without client-side user/assignment mutations", async () => {
+    const invalidateSpy = vi.spyOn(client, "invalidateQueries");
     const { result } = renderHook(() => useEmployees(), { wrapper });
     let archived = false;
 
@@ -104,11 +106,17 @@ describe("useEmployees archive timezone helper", () => {
     });
 
     expect(archived).toBe(true);
-    expect(mocks.refetchUsers).toHaveBeenCalledTimes(1);
-    expect(mocks.deleteUser).toHaveBeenCalledWith("user-1");
-    expect(mocks.updateAssignment).toHaveBeenCalledWith(
-      "assignment-1",
-      expect.objectContaining({ endDate: "2026-10-23" }),
-    );
+    expect(mocks.employeeUpdate).toHaveBeenCalledWith("employee-1", {
+      status: "Archivado",
+      lastModified: Date.now(),
+    });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.employees() });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.users() });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.assignedShifts() });
+    expect(mocks.refetchUsers).not.toHaveBeenCalled();
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+    expect(mocks.getAssignments).not.toHaveBeenCalled();
+    expect(mocks.updateAssignment).not.toHaveBeenCalled();
+    expect(mocks.addToast).toHaveBeenCalledWith("Empleado archivado correctamente.", "success");
   });
 });

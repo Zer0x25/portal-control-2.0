@@ -14,6 +14,8 @@ import { Link, useNavigate } from "react-router";
 import LiberalitasSignature from "../../../components/LiberalitasSignature";
 import { getDefaultRouteForRole } from "../../../utils/routeUtils";
 import { logger } from "../../../utils/logger";
+import { hasHttpStatus } from "../../../services/apiClient";
+import { useStore } from "../../../store/useStore";
 import BrandLogo from "../../../components/ui/BrandLogo";
 import MFALoginModal from "../components/MFALoginModal.container";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
@@ -28,7 +30,7 @@ const LoginPage: React.FC = () => {
 
   // Handle session restore: auto-redirect if already authenticated at root
   React.useEffect(() => {
-    if (isAuthenticated && currentUser) {
+    if (isAuthenticated && currentUser && !currentUser.mustChangePassword) {
       const redirectPath = getDefaultRouteForRole(currentUser.role, isControlInternoEnabled);
       navigate(redirectPath, { replace: true });
     }
@@ -60,15 +62,20 @@ const LoginPage: React.FC = () => {
         const response = await login(values.username, values.password);
         if (response && !("mfaRequired" in response && response.mfaRequired)) {
           const user = response as User;
-          const redirectPath = getDefaultRouteForRole(user.role, isControlInternoEnabled);
-          addToast(`¡Bienvenido, ${user.username}!`, "success");
-          navigate(redirectPath, { replace: true });
+          if (!user.mustChangePassword) {
+            const redirectPath = getDefaultRouteForRole(user.role, isControlInternoEnabled);
+            addToast(`¡Bienvenido, ${user.username}!`, "success");
+            navigate(redirectPath, { replace: true });
+          }
         }
       } catch (error) {
+        logger.error("Login error:", error);
+        if (hasHttpStatus(error, 429)) {
+          return;
+        }
         const errorMessage =
           error instanceof Error ? error.message : "Error de conexión con el servidor";
         addToast(errorMessage, "error");
-        logger.error("Login error:", error);
       }
     },
   });
@@ -83,15 +90,17 @@ const LoginPage: React.FC = () => {
   /** Escribe la contrasena. */
   const handlePasswordChange = (value: string) => form.setValue("password", value);
 
-  const handleMFASuccess = () => {
-    if (currentUser) {
-      const redirectPath = getDefaultRouteForRole(currentUser.role, isControlInternoEnabled);
-      addToast(`¡Bienvenido, ${currentUser.username}!`, "success");
-      navigate(redirectPath);
+  const handleMFASuccess = (authenticatedUser?: User | null) => {
+    const user = authenticatedUser ?? useStore.getState().currentUser ?? currentUser;
+    if (!user) return;
+    if (!user.mustChangePassword) {
+      const redirectPath = getDefaultRouteForRole(user.role, isControlInternoEnabled);
+      addToast(`¡Bienvenido, ${user.username}!`, "success");
+      navigate(redirectPath, { replace: true });
     }
   };
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !currentUser?.mustChangePassword) {
     return null;
   }
 

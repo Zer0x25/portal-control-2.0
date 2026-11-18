@@ -75,6 +75,7 @@ describe("ClockingPanel Component", () => {
     expect(screen.getByText(/Seleccione un empleado/i)).toBeInTheDocument();
     expect(useTimeRecordsQuery).toHaveBeenCalledWith({
       pageSize: 5,
+      allowCache: false,
       enabled: false,
       filters: { desde: "", hasta: "", employeeId: undefined },
     });
@@ -159,12 +160,39 @@ describe("ClockingPanel Component", () => {
     });
     expect(useTimeRecordsQuery).toHaveBeenLastCalledWith({
       pageSize: 5,
+      allowCache: false,
       enabled: true,
       filters: { desde: "", hasta: "", employeeId: "1" },
     });
 
     const inicioBtn = screen.getByRole("button", { name: /^Inicio$/i });
     expect(inicioBtn).not.toBeDisabled();
+  });
+
+  it("blocks clocking while loading or after failure, then recovers with a confirmed open shift", () => {
+    const query = vi.mocked(useTimeRecordsQuery);
+    query.mockReturnValue({ isLoading: true, isFetching: true } as ReturnType<
+      typeof useTimeRecordsQuery
+    >);
+    const view = render(<ClockingPanel isActionDisabled={false} roleBasedTooltip="" />);
+    fireEvent.change(screen.getByPlaceholderText(/Buscar empleado/i), {
+      target: { value: "Juan" },
+    });
+    fireEvent.click(screen.getByText("Juan Perez"));
+    expect(screen.getByText("Cargando...")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Inicio$/i })).toBeDisabled();
+    query.mockReturnValue({ data: { pages: [{ data: [] }] }, isError: true } as ReturnType<
+      typeof useTimeRecordsQuery
+    >);
+    view.rerender(<ClockingPanel isActionDisabled={false} roleBasedTooltip="test-error" />);
+    expect(screen.getByText("Estado no disponible")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Inicio$/i })).toBeDisabled();
+    query.mockReturnValue({
+      data: { pages: [{ data: [{ clockingStatus: "en_jornada" }] }] },
+    } as ReturnType<typeof useTimeRecordsQuery>);
+    view.rerender(<ClockingPanel isActionDisabled={false} roleBasedTooltip="test-recovered" />);
+    expect(screen.getByRole("button", { name: /^Inicio$/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^Fin$/i })).not.toBeDisabled();
   });
 
   it("should call mutateAsync when clicking 'Inicio'", async () => {

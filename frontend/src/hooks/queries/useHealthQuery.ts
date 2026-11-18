@@ -6,8 +6,8 @@ export interface HealthData {
   status: "healthy" | "degraded";
   instanceId?: string | null;
   timestamp: string;
-  uptime: number;
-  system: {
+  uptime?: number;
+  system?: {
     platform: string;
     arch: string;
     nodeVersion: string;
@@ -25,12 +25,12 @@ export interface HealthData {
   };
   database: {
     status: "OK" | "ERROR";
-    latency: number;
-    size: string;
+    latency?: number;
+    size?: string;
   };
-  backup: {
+  backup?: {
     enabled: boolean;
-    isScheduledEnabled: boolean;
+    isScheduledEnabled?: boolean;
     stale: boolean;
     staleThresholdHours: number;
     lastAttemptAt: string | null;
@@ -42,7 +42,7 @@ export interface HealthData {
     backupCount: number;
     mode?: string;
   };
-  integrity: {
+  integrity?: {
     status: string;
     lastRunAt: string | null;
     lastCheckedCount: number;
