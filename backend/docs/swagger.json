@@ -480,9 +480,10 @@
           "endDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
           "area": { "type": "string" },
           "cargo": { "type": "string" },
+          "workdayType": { "type": "string" },
           "employeeId": { "type": "string" },
           "viewMode": { "type": "string", "enum": ["month", "week", "day"] },
-          "mode": { "type": "string", "enum": ["summary", "detailed", "compiled_detailed"] }
+          "mode": { "type": "string", "enum": ["summary", "compiled_detailed"] }
         },
         "required": ["startDate", "endDate"]
       },
@@ -1044,7 +1045,9 @@
           "employeeId": { "type": "string" },
           "employeeIds": { "type": "array", "items": { "type": "string" } },
           "area": { "type": "string" },
-          "departmentId": { "type": "string" }
+          "departmentId": { "type": "string" },
+          "cargo": { "type": "string" },
+          "workdayType": { "type": "string" }
         },
         "required": ["startDate"]
       },
@@ -3122,7 +3125,13 @@
           },
           { "in": "query", "name": "area", "schema": { "type": "string" } },
           { "in": "query", "name": "cargo", "schema": { "type": "string" } },
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
           { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": { "type": "string", "enum": ["summary", "compiled_detailed"] }
+          },
           {
             "in": "query",
             "name": "viewMode",
@@ -3157,7 +3166,13 @@
           },
           { "in": "query", "name": "area", "schema": { "type": "string" } },
           { "in": "query", "name": "cargo", "schema": { "type": "string" } },
-          { "in": "query", "name": "employeeId", "schema": { "type": "string" } }
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
+          { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": { "type": "string", "enum": ["summary", "compiled_detailed"] }
+          }
         ],
         "responses": {
           "200": {
@@ -3202,11 +3217,13 @@
             "required": true
           },
           { "in": "query", "name": "area", "schema": { "type": "string" } },
+          { "in": "query", "name": "cargo", "schema": { "type": "string" } },
+          { "in": "query", "name": "workdayType", "schema": { "type": "string" } },
           { "in": "query", "name": "employeeId", "schema": { "type": "string" } },
           {
             "in": "query",
             "name": "mode",
-            "schema": { "type": "string", "enum": ["summary", "detailed"] }
+            "schema": { "type": "string", "enum": ["summary", "compiled_detailed"] }
           }
         ],
         "responses": { "200": { "description": "Archivo Excel" } }

@@ -2782,7 +2782,9 @@ export interface paths {
           endDate: string;
           area?: string;
           cargo?: string;
+          workdayType?: string;
           employeeId?: string;
+          mode?: "summary" | "compiled_detailed";
           viewMode?: "month" | "week" | "day";
         };
         header?: never;
@@ -2825,7 +2827,9 @@ export interface paths {
           endDate: string;
           area?: string;
           cargo?: string;
+          workdayType?: string;
           employeeId?: string;
+          mode?: "summary" | "compiled_detailed";
         };
         header?: never;
         path?: never;
@@ -2904,8 +2908,10 @@ export interface paths {
           startDate: string;
           endDate: string;
           area?: string;
+          cargo?: string;
+          workdayType?: string;
           employeeId?: string;
-          mode?: "summary" | "detailed";
+          mode?: "summary" | "compiled_detailed";
         };
         header?: never;
         path?: never;
@@ -5430,11 +5436,12 @@ export interface components {
       endDate: string;
       area?: string;
       cargo?: string;
+      workdayType?: string;
       employeeId?: string;
       /** @enum {string} */
       viewMode?: "month" | "week" | "day";
       /** @enum {string} */
-      mode?: "summary" | "detailed" | "compiled_detailed";
+      mode?: "summary" | "compiled_detailed";
     };
     IntegrityVerifyQuery: {
       employeeId: string;
@@ -5772,6 +5779,8 @@ export interface components {
       employeeIds?: string[];
       area?: string;
       departmentId?: string;
+      cargo?: string;
+      workdayType?: string;
     };
     RestoreBackup: {
       filename: string;

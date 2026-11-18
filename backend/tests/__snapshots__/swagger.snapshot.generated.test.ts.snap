@@ -1185,7 +1185,6 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "mode": {
             "enum": [
               "summary",
-              "detailed",
               "compiled_detailed",
             ],
             "type": "string",
@@ -1200,6 +1199,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "week",
               "day",
             ],
+            "type": "string",
+          },
+          "workdayType": {
             "type": "string",
           },
         },
@@ -1409,6 +1411,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "area": {
             "type": "string",
           },
+          "cargo": {
+            "type": "string",
+          },
           "departmentId": {
             "type": "string",
           },
@@ -1431,6 +1436,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           "startDate": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "workdayType": {
             "type": "string",
           },
         },
@@ -5498,8 +5506,26 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           {
             "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "compiled_detailed",
+              ],
               "type": "string",
             },
           },
@@ -5571,6 +5597,20 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           {
             "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
               "type": "string",
@@ -5582,7 +5622,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "schema": {
               "enum": [
                 "summary",
-                "detailed",
+                "compiled_detailed",
               ],
               "type": "string",
             },
@@ -5641,8 +5681,26 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           {
             "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "compiled_detailed",
+              ],
               "type": "string",
             },
           },

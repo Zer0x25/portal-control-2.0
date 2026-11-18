@@ -179,7 +179,7 @@ export const useReportsTabController = () => {
               employeeId: filters.employeeId,
               area: filters.area,
               workdayType: filters.workdayType || undefined,
-              mode: isSingleEmployeeReport ? "detailed" : "summary",
+              mode: isSingleEmployeeReport ? "compiled_detailed" : "summary",
             });
             triggerBrowserDownload(blob, filename);
             addToast("Descarga Excel iniciada", "success");

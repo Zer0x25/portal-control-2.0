@@ -1932,9 +1932,18 @@
  *         schema:
  *           type: string
  *       - in: query
+ *         name: workdayType
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: employeeId
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: mode
+ *         schema:
+ *           type: string
+ *           enum: [summary, compiled_detailed]
  *       - in: query
  *         name: viewMode
  *         schema:
@@ -1981,9 +1990,18 @@
  *         schema:
  *           type: string
  *       - in: query
+ *         name: workdayType
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: employeeId
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: mode
+ *         schema:
+ *           type: string
+ *           enum: [summary, compiled_detailed]
  *     responses:
  *       200:
  *         description: Archivo PDF
@@ -2039,11 +2057,17 @@
  *         name: area
  *         schema: { type: string }
  *       - in: query
+ *         name: cargo
+ *         schema: { type: string }
+ *       - in: query
+ *         name: workdayType
+ *         schema: { type: string }
+ *       - in: query
  *         name: employeeId
  *         schema: { type: string }
  *       - in: query
  *         name: mode
- *         schema: { type: string, enum: [summary, detailed] }
+ *         schema: { type: string, enum: [summary, compiled_detailed] }
  *     responses:
  *       200:
  *         description: Archivo Excel
