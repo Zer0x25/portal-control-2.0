@@ -160,6 +160,11 @@ export function createRecordFlows<
           employeeId,
           area: string(query.area),
           cargo: string(query.cargo),
+          name: string(query.name),
+          workdayType: string(query.workdayType),
+          status: string(query.status),
+          showAnomalies: string(query.showAnomalies),
+          matchingView: query.matchingView === "true",
         },
       };
     },
@@ -188,6 +193,7 @@ export function createRecordFlows<
         summary: {
           checkedCount: result.checkedCount,
           brokenCount: result.brokenCount,
+          truncated: result.truncated ?? false,
           scope: {
             employeeId: filters.employeeId ?? null,
             from: filters.from ?? null,

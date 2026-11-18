@@ -34,6 +34,7 @@ function normalizeLogEntry(entry: unknown, idx: number, fallbackTs: number): Log
     time: toTimeString(e.time, timestamp),
     annotation,
     timestamp,
+    ...(typeof e.recordId === "string" && e.recordId ? { recordId: e.recordId } : {}),
   };
 }
 

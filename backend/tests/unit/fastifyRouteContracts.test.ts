@@ -179,6 +179,7 @@ routes.push(
   ...[
     ["GET", "/api/shift-reports"],
     ["POST", "/api/shift-reports"],
+    ["POST", "/api/shift-reports/:id/attendance-novelties"],
     ["PATCH", "/api/shift-reports/:id"],
     ["DELETE", "/api/shift-reports/:id"],
     ["GET", "/api/shift-reports/export/:id"],

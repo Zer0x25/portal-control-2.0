@@ -27,6 +27,9 @@ const QuickActionModal = React.lazy(() =>
 );
 const AnomalyResolutionModal = React.lazy(() => import("../components/AnomalyResolutionModal"));
 const EditTimestampModal = React.lazy(() => import("../components/EditTimestampModal.container"));
+const AddNoveltyModal = React.lazy(
+  () => import("../../logbook/components/AddNoveltyModal.container"),
+);
 
 /* UI-PROTECTED: EDIT ONLY WITH HUMAN APPROVAL
    Presentational layer for TimeControl page.
@@ -74,7 +77,7 @@ export interface TimeControlViewProps {
   isApplyButtonEnabled: boolean;
   periodDisplayText?: string;
   activeQuickFilter: QuickFilterMode | null;
-  handleExportStreaming: (format: "csv" | "excel") => Promise<void> | void;
+  handleExportStreaming: (format: "csv" | "excel" | "pdf") => Promise<void> | void;
   handleViewHistory: (record: DailyTimeRecord) => void;
   totalRecords: number;
   filtersKey?: string;
@@ -265,6 +268,18 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
             onEdit={(record: AugmentedTimeRecord) => props.handleEditClick(record, "entrada")}
             onResolve={props.handleConfirmResolution}
             isProcessing={props.isProcessingResolution}
+          />
+        </React.Suspense>
+      )}
+
+      {props.isAddNoveltyModalOpen && (
+        <React.Suspense fallback={null}>
+          <AddNoveltyModal
+            isOpen={true}
+            onClose={() => props.setIsAddNoveltyModalOpen(false)}
+            onSave={props.handleSaveNovelty}
+            initialText={props.noveltyInitialText}
+            isEditing={false}
           />
         </React.Suspense>
       )}

@@ -9,6 +9,7 @@ export interface LogEntry {
   time: string;
   annotation: string;
   timestamp: number;
+  recordId?: string;
 }
 export interface SupplierEntry {
   id: string;
@@ -30,6 +31,7 @@ export interface ShiftReportInput {
   status?: string;
   date: string;
   logEntries?: string | LogEntry[];
+  removedLogEntryIds?: string[];
   supplierEntries?: string | SupplierEntry[];
 }
 export interface ShiftReportFlowDependencies<Row, List> {
@@ -38,5 +40,10 @@ export interface ShiftReportFlowDependencies<Row, List> {
     save(input: ShiftReportInput, actor: string): Promise<Row>;
     update?(id: string, input: Partial<ShiftReportInput>, actor: string): Promise<Row>;
     delete?(id: string, actor: string): Promise<void>;
+    addAttendanceNovelty?(
+      id: string,
+      input: { recordId: string; annotation: string; time: string },
+      actor: string,
+    ): Promise<unknown>;
   };
 }

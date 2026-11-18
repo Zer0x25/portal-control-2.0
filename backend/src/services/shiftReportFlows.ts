@@ -5,6 +5,8 @@ export const shiftReportFlows = createShiftReportFlows({
     list: (query) => ShiftReportService.list(query),
     save: (input, actor) => ShiftReportService.createOrUpdate(input, actor),
     update: (id, input, actor) => ShiftReportService.update(id, input, actor),
+    addAttendanceNovelty: (id, input, actor) =>
+      ShiftReportService.addAttendanceNovelty(id, input, actor),
     delete: (id, actor) => ShiftReportService.delete(id, actor),
   },
 });

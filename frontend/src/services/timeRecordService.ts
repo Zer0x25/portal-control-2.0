@@ -173,9 +173,13 @@ export const timeRecordService = {
     throw new Error("Respuesta invalida de /api/records/daily-attendance");
   },
 
-  async getExportData(startDate: string, endDate: string): Promise<AttendanceRecord[]> {
+  async getExportData(
+    startDate: string,
+    endDate: string,
+    filters: Record<string, string> = {},
+  ): Promise<AttendanceRecord[]> {
     const response = await apiClient.get(`${RECORDS_ENDPOINT}/export`, {
-      params: { startDate, endDate },
+      params: { startDate, endDate, ...filters } as never,
     });
 
     if (isRecordArray(response)) return response;
@@ -190,6 +194,9 @@ export const timeRecordService = {
     name?: string;
     area?: string;
     workdayType?: string;
+    status?: string;
+    showAnomalies?: boolean;
+    matchingView?: boolean;
   }): Promise<{ blob: Blob; filename: string }> {
     const queryParams: Record<string, string> = {
       startDate: params.startDate,
@@ -200,6 +207,9 @@ export const timeRecordService = {
     if (params.name) queryParams.name = params.name;
     if (params.area) queryParams.area = params.area;
     if (params.workdayType) queryParams.workdayType = params.workdayType;
+    if (params.status) queryParams.status = params.status;
+    if (params.showAnomalies) queryParams.showAnomalies = "true";
+    if (params.matchingView) queryParams.matchingView = "true";
 
     const response = await apiClient.get(`${RECORDS_ENDPOINT}/export`, {
       params: queryParams as never,

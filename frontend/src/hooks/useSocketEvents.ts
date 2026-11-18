@@ -102,6 +102,7 @@ export const useSocketEvents = () => {
       // -- Audit Log Events --
       const handleAuditLogCreated = () => {
         debouncedInvalidate("auditLogs", queryKeys.auditLogs(), 1000);
+        debouncedInvalidate("recordIndicators", queryKeys.timeRecordIndicators(), 1000);
       };
       socket.on("auditLog:created", handleAuditLogCreated);
 
@@ -117,6 +118,7 @@ export const useSocketEvents = () => {
       // -- Correction Request Events --
       const handleCorrectionUpdate = () => {
         debouncedInvalidate("correctionRequests", queryKeys.correctionRequests());
+        debouncedInvalidate("recordIndicators", queryKeys.timeRecordIndicators());
       };
       socket.on("correctionRequest:created", handleCorrectionUpdate);
       socket.on("correctionRequest:updated", handleCorrectionUpdate);

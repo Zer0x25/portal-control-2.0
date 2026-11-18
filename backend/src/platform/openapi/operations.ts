@@ -184,6 +184,31 @@
  *       - in: query
  *         name: format
  *         schema: { type: string, enum: [json, csv, xml, excel] }
+ *       - in: query
+ *         name: matchingView
+ *         description: Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error.
+ *         schema: { type: string, enum: ['true', 'false'] }
+ *       - in: query
+ *         name: employeeId
+ *         schema: { type: string }
+ *       - in: query
+ *         name: name
+ *         schema: { type: string }
+ *       - in: query
+ *         name: area
+ *         schema: { type: string }
+ *       - in: query
+ *         name: workdayType
+ *         schema: { type: string }
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: showAnomalies
+ *         schema: { type: string, enum: ['true', 'false'] }
+ *       - in: query
+ *         name: cargo
+ *         schema: { type: string }
  *     responses:
  *       200:
  *         description: Archivo exportado o JSON
@@ -296,6 +321,7 @@
  *         application/json:
  *           schema:
  *             type: array
+ *             maxItems: 500
  *             items:
  *               $ref: '#/components/schemas/TimeRecordWrite'
  *     responses:
@@ -318,6 +344,25 @@
 
 /**
  * @openapi
+ * /api/records/indicators:
+ *   get:
+ *     summary: Indicadores de edición y solicitudes pendientes para jornadas visibles
+ *     tags: [Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: ids
+ *         required: true
+ *         description: Hasta 100 identificadores de jornada separados por comas.
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Datos mínimos de indicadores por jornada
+ */
+
+/**
+ * @openapi
  * /api/records/integrity/verify:
  *   get:
  *     summary: Verifica la integridad de la cadena de marcajes
@@ -334,6 +379,10 @@
  *       - in: query
  *         name: to
  *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: limit
+ *         description: Máximo de registros a verificar; la respuesta indica si el resultado fue truncado.
+ *         schema: { type: integer, minimum: 1 }
  *     responses:
  *       200:
  *         description: Resultado de la verificación
@@ -992,6 +1041,39 @@
  *     responses:
  *       200:
  *         description: Bitácora guardada
+ */
+
+/**
+ * @openapi
+ * /api/shift-reports/{id}/attendance-novelties:
+ *   post:
+ *     summary: Agregar novedad de una jornada a la bitácora abierta
+ *     tags: [ShiftReports]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [recordId, annotation, time]
+ *             properties:
+ *               recordId:
+ *                 type: string
+ *               annotation:
+ *                 type: string
+ *               time:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Novedad persistida
  */
 
 /**

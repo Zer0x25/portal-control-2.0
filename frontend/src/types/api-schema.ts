@@ -205,6 +205,15 @@ export interface paths {
           startDate: string;
           endDate: string;
           format?: "json" | "csv" | "xml" | "excel";
+          /** @description Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error. */
+          matchingView?: "true" | "false";
+          employeeId?: string;
+          name?: string;
+          area?: string;
+          workdayType?: string;
+          status?: string;
+          showAnomalies?: "true" | "false";
+          cargo?: string;
         };
         header?: never;
         path?: never;
@@ -411,6 +420,43 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/records/indicators": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Indicadores de edición y solicitudes pendientes para jornadas visibles */
+    get: {
+      parameters: {
+        query: {
+          /** @description Hasta 100 identificadores de jornada separados por comas. */
+          ids: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Datos mínimos de indicadores por jornada */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/records/integrity/verify": {
     parameters: {
       query?: never;
@@ -425,6 +471,8 @@ export interface paths {
           employeeId?: string;
           from?: string;
           to?: string;
+          /** @description Máximo de registros a verificar; la respuesta indica si el resultado fue truncado. */
+          limit?: number;
         };
         header?: never;
         path?: never;
@@ -1283,6 +1331,50 @@ export interface paths {
       };
       responses: {
         /** @description Bitácora guardada */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/shift-reports/{id}/attendance-novelties": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Agregar novedad de una jornada a la bitácora abierta */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          "application/json": {
+            recordId: string;
+            annotation: string;
+            time: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Novedad persistida */
         200: {
           headers: {
             [name: string]: unknown;
@@ -5345,6 +5437,7 @@ export interface components {
       employeeId: string;
       from: string;
       to: string;
+      limit?: number;
     };
     PunchResponse: {
       success: boolean;
@@ -5363,6 +5456,22 @@ export interface components {
       timestamp?: string;
       latitude?: number;
       longitude?: number;
+    };
+    RecordExportQuery: {
+      startDate: string;
+      endDate: string;
+      /** @enum {string} */
+      format?: "json" | "csv" | "xml" | "excel";
+      employeeId?: string;
+      area?: string;
+      cargo?: string;
+      name?: string;
+      workdayType?: string;
+      status?: string;
+      /** @enum {string} */
+      showAnomalies?: "true" | "false";
+      /** @enum {string} */
+      matchingView?: "true" | "false";
     };
     ResolveAnomaly: {
       /** @enum {string} */
@@ -5917,11 +6026,13 @@ export interface components {
       endTime?: string | null;
       /** @enum {string} */
       status: "open" | "closed";
+      removedLogEntryIds?: string[];
       logEntries: {
         id: string;
         time: string;
         annotation: string;
         timestamp: number;
+        recordId?: string;
       }[];
       supplierEntries: {
         id: string;

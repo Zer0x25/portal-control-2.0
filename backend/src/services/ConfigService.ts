@@ -47,10 +47,12 @@ export class ConfigService {
       // Dynamic fallback for accounting_lock_date (Production resilience)
       if (key === "accounting_lock_date") {
         const now = getChileNow();
-        let targetMonth = now.getMonth(); // Previous month (0-indexed, Jan is 0)
+        // The previous calendar month is editable; the inclusive fallback is
+        // the last day of the month before it, matching isRecordLocked.
+        let targetMonth = now.getMonth() - 1;
         let targetYear = now.getFullYear();
-        if (targetMonth === 0) {
-          targetMonth = 12;
+        if (targetMonth <= 0) {
+          targetMonth += 12;
           targetYear -= 1;
         }
         return getMonthEndBusinessDateChile(targetYear, targetMonth);

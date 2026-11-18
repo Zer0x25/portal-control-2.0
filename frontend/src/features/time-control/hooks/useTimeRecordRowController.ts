@@ -11,7 +11,7 @@ interface UseTimeRecordRowControllerParams {
   accountingLockDate: string | null;
   roleBasedTooltip: string;
   externalEdits?: AuditLog[];
-  externalPendingRequest?: CorrectionRequest;
+  externalPendingRequest?: Pick<CorrectionRequest, "id" | "timeRecordId" | "status">;
 }
 
 export const useTimeRecordRowController = ({
@@ -23,17 +23,36 @@ export const useTimeRecordRowController = ({
 }: UseTimeRecordRowControllerParams) => {
   const editsMap = (() => {
     const map = new Map<string, { actor: string; timestamp: string; oldValue: string }>();
+    const fields: TimeRecordField[] = ["entrada", "inicioColacion", "finColacion", "salida"];
     (externalEdits || []).forEach((log) => {
-      const field = log.details?.fieldEdited as string;
-      if (!field) return;
-
-      const key = `${record.id}-${field}`;
-      if (!map.has(key)) {
-        map.set(key, {
-          actor: log.actorUsername,
-          timestamp: log.timestamp,
-          oldValue: (log.details?.oldValue as string) || "SIN DATOS",
-        });
+      const oldValue = log.details?.oldValue;
+      const newValue = log.details?.newValue;
+      const legacyField = log.details?.fieldEdited;
+      if (typeof legacyField === "string" && fields.some((field) => field === legacyField)) {
+        const key = `${record.id}-${legacyField}`;
+        if (!map.has(key)) {
+          map.set(key, {
+            actor: log.actorUsername,
+            timestamp: log.timestamp,
+            oldValue: typeof oldValue === "string" ? oldValue : "SIN DATOS",
+          });
+        }
+        return;
+      }
+      if (!oldValue || !newValue || typeof oldValue !== "object" || typeof newValue !== "object")
+        return;
+      const before = oldValue as Record<string, unknown>;
+      const after = newValue as Record<string, unknown>;
+      for (const field of fields) {
+        if (!(field in before) || !(field in after) || before[field] === after[field]) continue;
+        const key = `${record.id}-${field}`;
+        if (!map.has(key)) {
+          map.set(key, {
+            actor: log.actorUsername,
+            timestamp: log.timestamp,
+            oldValue: typeof before[field] === "string" ? before[field] : "SIN DATOS",
+          });
+        }
       }
     });
     return map;

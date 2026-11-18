@@ -5,14 +5,12 @@ import TimeRecordTable from "../../../features/time-control/components/TimeRecor
 import { EnrichedTimeRecord } from "../../../types/derived";
 import { useToasts } from "../../../hooks/useToasts";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
-import { useAuditLogsInfinite } from "../../../hooks/queries/useAuditLogsInfinite";
-import { useCorrectionRequests } from "../../../hooks/useCorrectionRequests";
+import { useRecordIndicators } from "../../../features/time-control/hooks/useRecordIndicators";
 
 // Mock hooks and components
 vi.mock("../../../hooks/useToasts");
 vi.mock("../../../hooks/useIntersectionObserver");
-vi.mock("../../../hooks/queries/useAuditLogsInfinite");
-vi.mock("../../../hooks/useCorrectionRequests");
+vi.mock("../../../features/time-control/hooks/useRecordIndicators");
 vi.mock("../../../hooks/useMediaQuery", () => ({
   useMediaQuery: vi.fn(),
 }));
@@ -128,13 +126,7 @@ describe("TimeRecordTable Component", () => {
     vi.mocked(useIntersectionObserver).mockReturnValue({
       isIntersecting: false,
     } as unknown as IntersectionObserverEntry);
-    vi.mocked(useAuditLogsInfinite).mockReturnValue({
-      data: { pages: [{ data: [], total: 0 }] },
-    } as never);
-    vi.mocked(useCorrectionRequests).mockReturnValue({
-      requests: [],
-      isLoading: false,
-    } as any);
+    vi.mocked(useRecordIndicators).mockReturnValue({ data: { edits: [], pending: [] } } as never);
   });
 
   const defaultProps = {
@@ -199,10 +191,7 @@ describe("TimeRecordTable Component", () => {
     fireEvent.click(csvBtn);
 
     expect(mockOnExportStreaming).toHaveBeenCalledWith("csv");
-    expect(mockAddToast).toHaveBeenCalledWith(
-      expect.stringContaining("exportados a CSV"),
-      "success",
-    );
+    expect(mockAddToast).not.toHaveBeenCalledWith(expect.anything(), "success");
   });
 
   it("should call fetchNextPage when sentinel is intersecting", () => {

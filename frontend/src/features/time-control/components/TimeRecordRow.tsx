@@ -32,7 +32,7 @@ interface TimeRecordRowProps {
   onViewHistory: (record: DailyTimeRecord) => void;
   layoutMode?: "table-row" | "table-row-div";
   externalEdits?: AuditLog[];
-  externalPendingRequest?: CorrectionRequest;
+  externalPendingRequest?: Pick<CorrectionRequest, "id" | "timeRecordId" | "status">;
 }
 
 // Virtualized rows keep their formatting and edit controller work stable while
@@ -148,7 +148,11 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
               )}
               {pendingRequest && (
                 <div className="absolute -top-1 -right-1">
-                  <ExclamationTriangleIcon className="w-3.5 h-3.5 text-token-status-warning drop-shadow-sm" />
+                  <ExclamationTriangleIcon
+                    role="img"
+                    aria-label="Solicitud de corrección pendiente"
+                    className="w-3.5 h-3.5 text-token-status-warning drop-shadow-sm"
+                  />
                 </div>
               )}
             </div>
@@ -274,7 +278,11 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
               )}
               {pendingRequest && (
                 <div className="absolute -top-1 -right-1">
-                  <ExclamationTriangleIcon className="w-3.5 h-3.5 text-token-status-warning drop-shadow-sm" />
+                  <ExclamationTriangleIcon
+                    role="img"
+                    aria-label="Solicitud de corrección pendiente"
+                    className="w-3.5 h-3.5 text-token-status-warning drop-shadow-sm"
+                  />
                 </div>
               )}
             </div>

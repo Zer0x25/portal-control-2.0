@@ -51,6 +51,18 @@ export const shiftReportService = {
     });
   },
 
+  async addAttendanceNovelty(
+    id: string,
+    input: { recordId: string; annotation: string; time: string },
+  ): Promise<void> {
+    await apiRequest({
+      method: "POST",
+      url: "/api/shift-reports/{id}/attendance-novelties",
+      path: { id },
+      body: input,
+    });
+  },
+
   async delete(id: string): Promise<void> {
     await apiRequest<void>({
       method: "DELETE",

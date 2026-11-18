@@ -14,6 +14,7 @@ export const useCorrectionRequests = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageCorrectionRequestsError,
     isLoadingSchedulingData: isLoadingRequests,
   } = useScheduling(status, since, { queryMode });
 
@@ -27,5 +28,6 @@ export const useCorrectionRequests = (
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError: isFetchNextPageCorrectionRequestsError,
   };
 };

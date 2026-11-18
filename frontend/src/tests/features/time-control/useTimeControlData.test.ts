@@ -2,7 +2,14 @@ import { renderHook } from "@testing-library/react";
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { useTimeControlData } from "../../../features/time-control/hooks/useTimeControlData";
 
-const configQueryState = vi.hoisted(() => ({ observerCalls: 0 }));
+const configQueryState = vi.hoisted(() => ({
+  observerCalls: 0,
+  lockDate: "2026-01-01" as string | null,
+}));
+
+vi.mock("../../../hooks/useBusinessNow", () => ({
+  useBusinessNow: () => new Date(2026, 10, 18, 12),
+}));
 
 vi.mock("../../../features/time-control/hooks/useTimeControl", () => ({
   useTimeControl: () => ({
@@ -63,12 +70,13 @@ vi.mock("../../../hooks/queries/useConfigQuery", () => ({
     configQueryState.observerCalls += 1;
     return { data: true, isLoading: false };
   },
-  useAccountingLockDateQuery: () => ({ data: "2026-01-01" }),
+  useAccountingLockDateQuery: () => ({ data: configQueryState.lockDate }),
 }));
 
 describe("useTimeControlData", () => {
   afterEach(() => {
     configQueryState.observerCalls = 0;
+    configQueryState.lockDate = "2026-01-01";
   });
 
   it("does not create a duplicate shell configuration observer", () => {
@@ -100,6 +108,17 @@ describe("useTimeControlData", () => {
     );
 
     expect(result.current.effectiveLockDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("uses the day before the automatic boundary while preserving an inclusive manual lock", () => {
+    configQueryState.lockDate = null;
+    const { result, rerender } = renderHook(() =>
+      useTimeControlData({ isControlInternoEnabled: true, isConfigLoading: false }),
+    );
+    expect(result.current.effectiveLockDate).toBe("2026-09-30");
+    configQueryState.lockDate = "2026-10-01";
+    rerender();
+    expect(result.current.effectiveLockDate).toBe("2026-10-01");
   });
 
   it("preserves a disabled configuration after loading", () => {

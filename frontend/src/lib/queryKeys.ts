@@ -72,6 +72,11 @@ export const queryKeys = {
   /* --- Marcaciones y tiempos --- */
   /** Marcaciones de tiempo. */
   timeRecords: resource("timeRecords", () => ["timeRecords"] as const),
+  timeRecordIndicators: resource("timeRecords", (ids?: string) =>
+    ids === undefined
+      ? (["timeRecords", "indicators"] as const)
+      : (["timeRecords", "indicators", ids] as const),
+  ),
   /** Marcaciones de tiempo con filtros. */
   timeRecordsList: resource("timeRecords", (params: unknown) => ["timeRecords", params] as const),
   /** Ultima marcacion de un empleado. */

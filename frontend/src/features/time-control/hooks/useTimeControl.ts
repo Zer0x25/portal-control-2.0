@@ -2,15 +2,14 @@ import { useMemo, useState } from "react";
 import { AttendanceRecord, DailyTimeRecord } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
+import { authService } from "../../../services/authService";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import { useTimeRecordFilters } from "./useTimeRecordFilters";
 import { useTimeControlModals } from "./useTimeControlModals";
 import { useTimeControlScheduleEnrichment } from "./useTimeControlScheduleEnrichment";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { getContractAttendanceMetrics, getContractClockingStatus } from "../../../utils/mappings";
-import { authService } from "../../../services/authService";
-import { timeRecordService } from "../../../services/timeRecordService";
-import { triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import { exportTimeRecords } from "./exportTimeRecords";
 import { logger } from "../../../utils/logger";
 
 const RECORDS_PER_PAGE = 30;
@@ -118,22 +117,31 @@ export const useTimeControl = () => {
     filtersKey,
     ...filters,
     ...modals,
-    handleExportStreaming: async (format: "csv" | "excel") => {
+    handleExportStreaming: async (format: "csv" | "excel" | "pdf") => {
       if (!authService.getToken()) return;
-
       try {
-        const { blob, filename } = await timeRecordService.downloadExport({
-          startDate: desde,
-          endDate: hasta,
-          format,
-          name: debouncedSearchName || undefined,
-          area: area || undefined,
-          workdayType: workdayType || undefined,
+        const exported = await exportTimeRecords(format, {
+          desde,
+          hasta,
+          name: debouncedSearchName,
+          area,
+          workdayType,
+          status: effectiveStatus,
+          showAnomalies: effectiveShowAnomalies,
         });
-        triggerBrowserDownload(blob, filename);
+        if (!exported)
+          addToast("No hay datos para exportar o se bloqueó la ventana de impresión.", "info");
+        else
+          addToast(
+            format === "pdf" ? "Vista de impresión abierta." : "Registros exportados.",
+            "success",
+          );
       } catch (error) {
         logger.error("Error exporting time records:", error);
-        addToast("Error al exportar registros de asistencia.", "error");
+        addToast(
+          error instanceof Error ? error.message : "Error al exportar registros de asistencia.",
+          "error",
+        );
       }
     },
     filteredRecords: enrichedRecords, // Renamed for component compatibility

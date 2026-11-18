@@ -81,12 +81,14 @@ export const ShiftReportSchema = z
     startTime: z.string().min(1),
     endTime: z.string().nullable().optional(),
     status: z.enum(["open", "closed"]),
+    removedLogEntryIds: z.array(z.string().min(1)).max(100).optional(),
     logEntries: z.array(
       z.object({
         id: z.string().min(1),
         time: z.string().min(1),
         annotation: z.string().min(1),
         timestamp: z.number(),
+        recordId: z.string().min(1).optional(),
       }),
     ),
     supplierEntries: z.array(

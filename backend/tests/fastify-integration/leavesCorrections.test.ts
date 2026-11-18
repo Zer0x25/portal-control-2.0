@@ -727,6 +727,19 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
       details: { newStatus: "rejected" },
     });
   });
+  it("allows Supervisor to approve a correction and update the linked record", async () => {
+    const request = await seedRequest();
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    const result = await http("PATCH", `/api/corrections/${request.id}/status`, {
+      status: "approved",
+      resolvedBy: "display",
+    });
+    expect(result.status).toBe(200);
+    expect(result.body.status).toBe("approved");
+    expect(
+      await prismaDirect.timeRecord.findUniqueOrThrow({ where: { id: "correction-record" } }),
+    ).toMatchObject({ salida: request.requestedValue, status: "Completado" });
+  });
   it("approves concurrently with one patch/audit/event winner and heals complete anomaly", async () => {
     const request = await seedRequest();
     const results = await Promise.all(

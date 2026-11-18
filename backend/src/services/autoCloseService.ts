@@ -1,5 +1,7 @@
 import prisma, { withDirectTransaction } from "./db";
 import { EmailService } from "./EmailService";
+import { logger } from "../utils/logger";
+import { SocketService } from "./socketService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { schedulingService } from "./schedulingService";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
@@ -24,68 +26,73 @@ function parseEntradaToTimestamp(entrada: string | null, date: string): number |
 }
 
 export const processAutoClosures = async () => {
-  console.warn("--- Iniciando proceso de Cierre Automático ---");
-  try {
-    const now = new Date();
-    const nowMs = now.getTime();
+  const now = new Date();
+  const openWhere = {
+    entrada: { not: null },
+    salida: null,
+    status: { notIn: ["Completado", "AnomaliaManual", "Ausente", "Feriado"] },
+    isDeleted: false,
+  };
+  const candidates = await prisma.timeRecord.findMany({ where: openWhere });
+  const expired = candidates.filter((record) => {
+    const entrada = parseEntradaToTimestamp(record.entrada, record.date);
+    return entrada !== null && now.getTime() - entrada >= FOURTEEN_HOURS_MS;
+  });
+  if (expired.length === 0) return 0;
 
-    // Buscar registros abiertos (que tengan entrada pero no salida, y no estén en estados terminales)
-    const openRecords = await prisma.timeRecord.findMany({
-      where: {
-        entrada: { not: null },
-        salida: null,
-        status: {
-          notIn: ["Completado", "AnomaliaManual", "Ausente", "Feriado"],
-        },
-        isDeleted: false,
-      },
-    });
+  const byEmployee = new Map<string, string[]>();
+  for (const record of expired) {
+    const ids = byEmployee.get(record.employeeId) ?? [];
+    ids.push(record.id);
+    byEmployee.set(record.employeeId, ids);
+  }
 
-    let closedCount = 0;
+  let closedCount = 0;
+  for (const [employeeId, ids] of byEmployee) {
+    const closedRecords = await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employeeId}))`;
 
-    for (const record of openRecords) {
-      if (!record.entrada) continue;
-
-      const entradaTime = parseEntradaToTimestamp(record.entrada, record.date);
-      if (!entradaTime) {
-        console.warn(
-          `[AUTO_CLOSE_SKIP] Registro ${record.id} omitido por formato de entrada invalido: ${record.entrada}`,
-        );
-        continue;
-      }
-      const elapsed = nowMs - entradaTime;
-
-      if (elapsed >= FOURTEEN_HOURS_MS) {
-        console.warn(
-          `Cerrando registro ${record.id} de ${record.employeeName} (Antigüedad: ${Math.round(elapsed / 3600000)}h)`,
-        );
-
-        // Note: virtualSalida calculation was removed as it was not used.
-
-        await withDirectTransaction(async (tx) => {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + record.employeeId}))`;
-          const closed = await tx.timeRecord.update({
-            where: { id: record.id },
-            data: {
-              status: "AnomaliaManual",
-              salida: null, // Dejar salida en blanco
-              justification: JSON.stringify({
-                type: "SYSTEM_ANOMALY",
-                reason: "AUTO_CLOSE_EXCEEDED_14H",
-                comment: "Cerrado automáticamente por exceder el límite de 14 horas de jornada.",
-                metadata: {
-                  autoClosedAt: now.toISOString(),
-                  threshold: 14,
-                },
-              }),
-              updatedAt: new Date(),
-            },
-          });
-          await timeRecordIntegrityService.sealAfterMutation(tx, closed.employeeId, closed.id);
+      // Candidates may have changed while waiting for the employee lock.
+      const current = await tx.timeRecord.findMany({
+        where: { ...openWhere, employeeId, id: { in: ids } },
+      });
+      const closedRecords = [];
+      for (const record of current) {
+        const entradaTime = parseEntradaToTimestamp(record.entrada, record.date);
+        if (entradaTime === null || now.getTime() - entradaTime < FOURTEEN_HOURS_MS) continue;
+        const elapsedHours = Math.round((now.getTime() - entradaTime) / 3600000);
+        const closedAt = new Date();
+        const closed = await tx.timeRecord.update({
+          where: { id: record.id },
+          data: {
+            status: "AnomaliaManual",
+            justification: JSON.stringify({
+              type: "SYSTEM_ANOMALY",
+              reason: "AUTO_CLOSE_EXCEEDED_14H",
+              comment: "Cerrado automáticamente por exceder el límite de 14 horas de jornada.",
+              metadata: {
+                autoClosedAt: closedAt.toISOString(),
+                threshold: 14,
+                originalDate: record.date,
+              },
+            }),
+            updatedAt: closedAt,
+          },
         });
-
-        // Registrar en auditoría (Bypass controller para simplicidad interna o llamar a una función de log)
-        await prisma.auditLog.create({
+        await timeRecordIntegrityService.sealAfterMutation(tx, closed.employeeId, closed.id, {
+          skipAudit: true,
+        });
+        const hashAudit = await tx.auditLog.create({
+          data: {
+            actorUsername: "SYSTEM",
+            action: record.integrityHash ? "TIME_RECORD_HASH_UPDATED" : "TIME_RECORD_HASH_CREATED",
+            category: "CTRL_HOURS",
+            severity: "INFO",
+            outcome: "SUCCESS",
+            details: { recordId: record.id, employeeId: record.employeeId },
+          },
+        });
+        const closureAudit = await tx.auditLog.create({
           data: {
             actorUsername: "SYSTEM",
             action: "Cierre Automático de Turno",
@@ -96,36 +103,29 @@ export const processAutoClosures = async () => {
               recordId: record.id,
               employeeName: record.employeeName,
               entrada: record.entrada,
-              elapsedHours: Math.round(elapsed / 3600000),
+              elapsedHours,
             }),
             ipAddress: "127.0.0.1",
           },
         });
+        closedRecords.push({ record, elapsedHours, hashAudit, closureAudit });
+      }
+      return closedRecords;
+    });
 
-        // Enviar notificación por correo
+    closedCount += closedRecords.length;
+    for (const { record, elapsedHours, hashAudit, closureAudit } of closedRecords) {
+      SocketService.emitToAll("auditLog:created", hashAudit);
+      SocketService.emitToAll("auditLog:created", closureAudit);
+      SocketService.emit("timeRecord:updated", { id: record.id, employeeId: record.employeeId });
+      if (record.entrada) {
         emailService
-          .notifyTimeRecordAutoClose(
-            record.employeeName,
-            record.entrada,
-            Math.round(elapsed / 3600000),
-          )
-          .catch((err) => console.error("Error sending auto-close email:", err));
-
-        closedCount++;
+          .notifyTimeRecordAutoClose(record.employeeName, record.entrada, elapsedHours)
+          .catch((error: unknown) => logger.error("Error sending auto-close email", error));
       }
     }
-
-    if (closedCount > 0) {
-      console.warn(`--- Cierre Automático Finalizado: ${closedCount} jornadas cerradas ---`);
-    } else {
-      console.warn("--- Cierre Automático Finalizado: No se encontraron jornadas vencidas ---");
-    }
-
-    return closedCount;
-  } catch (error) {
-    console.error("Error en proceso de cierre automático:", error);
-    throw error;
   }
+  return closedCount;
 };
 
 // 1. Get all active employees

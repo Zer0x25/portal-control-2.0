@@ -9,17 +9,21 @@ import { normalizeString } from "../utils/stringUtils";
 import { safeJsonParse } from "../utils/configUtils";
 import { Prisma } from "../generated/prisma/client";
 import { auditService } from "./auditService";
+import { SocketService } from "./socketService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { ulid } from "ulid";
 import { OvertimeValidationService } from "./OvertimeValidationService";
 import { schedulingService } from "./schedulingService";
 import { KpiEngine } from "./kpi/KpiEngine";
 import { KpiFormattingService } from "./kpi/KpiFormattingService";
-import { AppError } from "../utils/AppError";
+import { AppError, ForbiddenError, ValidationError } from "../utils/AppError";
+import { ACCOUNTING_TRANSACTION_OPTIONS } from "./accountingTransaction";
+import { MAX_BULK_TIME_RECORDS } from "../modules/records/application/contracts";
 import { logger } from "../utils/logger";
 import type { TimeRecord } from "../generated/prisma/client";
 import type { SchedulingContext } from "./schedulingService";
 import type { VerifyFilters } from "./timeRecordIntegrityService";
+import type { ExportFilters as ViewExportFilters } from "../modules/records/application/contracts";
 
 /**
  * Shape accepted by the record writers. Mirrors the persisted `TimeRecord` columns
@@ -796,52 +800,64 @@ export class TimeRecordService {
    * Procesa la carga masiva de marcajes.
    */
   static async createBulkRecords(records: TimeRecordInput[], actorUsername: string) {
+    if (records.length > MAX_BULK_TIME_RECORDS)
+      throw new ValidationError(`El lote admite hasta ${MAX_BULK_TIME_RECORDS} registros.`);
     const formatted = records.map((r) => ({
       ...r,
       justification: r.justification ? JSON.stringify(r.justification) : null,
       status: r.status || "Laborando",
     }));
 
-    const CHUNK_SIZE = 50;
-    for (let i = 0; i < formatted.length; i += CHUNK_SIZE) {
-      const chunk = formatted.slice(i, i + CHUNK_SIZE);
-      await withDirectTransaction(async (tx) => {
-        const sortedEmployeeIds = [...new Set(chunk.map((row) => row.employeeId))].sort();
-        for (const empId of sortedEmployeeIds) {
-          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + empId}))`;
-        }
-        const created: TimeRecord[] = [];
-        for (const row of chunk) {
-          const result = await tx.timeRecord.create({ data: row });
-          created.push(result);
-        }
+    const audits = await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${"accounting_lock_date"}))`;
+      const earliestDate = formatted.reduce<string | undefined>(
+        (earliest, row) => (!earliest || row.date < earliest ? row.date : earliest),
+        undefined,
+      );
+      if (earliestDate && (await this.isRecordLocked(earliestDate, tx))) {
+        throw new ForbiddenError("El lote contiene periodos cerrados.");
+      }
+      const sortedEmployeeIds = [...new Set(formatted.map((row) => row.employeeId))].sort();
+      for (const empId of sortedEmployeeIds) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + empId}))`;
+      }
 
-        const employees = new Map<string, string[]>();
-        for (const item of created) {
-          const list = employees.get(item.employeeId) ?? [];
-          list.push(item.id);
-          employees.set(item.employeeId, list);
-        }
-
-        for (const [employeeId, ids] of employees.entries()) {
-          for (const id of ids) {
-            await timeRecordIntegrityService.sealAfterMutation(
-              tx as Prisma.TransactionClient,
-              employeeId,
-              id,
-            );
-          }
-        }
+      const created = await tx.timeRecord.createManyAndReturn({ data: formatted });
+      const ordered = await tx.timeRecord.findMany({
+        where: { id: { in: created.map((row) => row.id) } },
+        orderBy: [{ employeeId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+        select: { id: true, employeeId: true },
       });
-    }
-
-    await auditService.log({
-      actorUsername,
-      action: "CARGA_MASIVA_MARCAJES",
-      category: "CTRL_HOURS",
-      severity: "INFO",
-      details: { count: records.length },
-    });
+      const firstByEmployee = new Map<string, string>();
+      for (const row of ordered) {
+        if (!firstByEmployee.has(row.employeeId)) firstByEmployee.set(row.employeeId, row.id);
+      }
+      for (const [employeeId, id] of firstByEmployee) {
+        await timeRecordIntegrityService.sealAfterMutation(tx, employeeId, id, { skipAudit: true });
+      }
+      const hashAudits = await tx.auditLog.createManyAndReturn({
+        data: created.map((row) => ({
+          actorUsername: "SYSTEM",
+          action: "TIME_RECORD_HASH_CREATED",
+          category: "CTRL_HOURS",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: { recordId: row.id, employeeId: row.employeeId },
+        })),
+      });
+      const bulkAudit = await tx.auditLog.create({
+        data: {
+          actorUsername,
+          action: "CARGA_MASIVA_MARCAJES",
+          category: "CTRL_HOURS",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: { count: records.length },
+        },
+      });
+      return [...hashAudits, bulkAudit];
+    }, ACCOUNTING_TRANSACTION_OPTIONS);
+    for (const audit of audits) SocketService.emitToAll("auditLog:created", audit);
 
     return records.length;
   }
@@ -1160,72 +1176,8 @@ export class TimeRecordService {
    * Procesa los cierres automáticos de jornadas abiertas.
    */
   static async processAutoClosures(): Promise<number> {
-    const now = new Date();
-    const nowMs = now.getTime();
-    const FOURTEEN_HOURS_MS = 14 * 60 * 60 * 1000;
-
-    // Get open records (aligning with autoCloseService >= 14h threshold to preserve night shifts)
-    const openRecords = await prisma.timeRecord.findMany({
-      where: {
-        entrada: { not: null },
-        salida: null,
-        status: {
-          notIn: ["Completado", "AnomaliaManual", "Ausente", "Feriado"],
-        },
-        isDeleted: false,
-      },
-    });
-
-    const expiredRecords = openRecords.filter((rec) => {
-      if (!rec.entrada) return false;
-      const direct = new Date(rec.entrada).getTime();
-      const entradaTime = Number.isFinite(direct)
-        ? direct
-        : /^\d{2}:\d{2}(:\d{2})?$/.test(rec.entrada)
-          ? new Date(
-              `${rec.date}T${rec.entrada.length === 5 ? `${rec.entrada}:00` : rec.entrada}Z`,
-            ).getTime()
-          : NaN;
-      return Number.isFinite(entradaTime) && nowMs - entradaTime >= FOURTEEN_HOURS_MS;
-    });
-
-    if (expiredRecords.length === 0) return 0;
-
-    const results = await withDirectTransaction(async (tx) => {
-      const sortedEmployeeIds = [...new Set(expiredRecords.map((rec) => rec.employeeId))].sort();
-      for (const empId of sortedEmployeeIds) {
-        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + empId}))`;
-      }
-      const updatedList = [];
-      for (const rec of expiredRecords) {
-        const updated = await tx.timeRecord.update({
-          where: { id: rec.id },
-          data: {
-            status: "AnomaliaManual",
-            salida: null, // Leave empty to force audit/repair
-            justification: JSON.stringify({
-              type: "SYSTEM_ANOMALY",
-              reason: "AUTO_CLOSE_EXCEEDED_14H",
-              comment: "Cerrado automáticamente por exceder el límite de 14 horas de jornada.",
-              metadata: {
-                autoClosedAt: now.toISOString(),
-                threshold: 14,
-                originalDate: rec.date,
-              },
-            }),
-          },
-        });
-        await timeRecordIntegrityService.sealAfterMutation(
-          tx as Prisma.TransactionClient,
-          updated.employeeId,
-          updated.id,
-        );
-        updatedList.push(updated);
-      }
-      return updatedList;
-    });
-
-    return results.length;
+    const { processAutoClosures } = await import("./autoCloseService");
+    return processAutoClosures();
   }
 
   /**
@@ -1279,6 +1231,35 @@ export class TimeRecordService {
     }
 
     return enriched;
+  }
+
+  /** Exporta exactamente la consulta de la pantalla, incluidas anomalías virtuales. */
+  static async listRecordsForViewExport(filters: ViewExportFilters) {
+    const limit = 10000;
+    const result = await this.listRecords({
+      page: 1,
+      pageSize: limit + 1,
+      desde: filters.startDate,
+      hasta: filters.endDate,
+      employeeId: filters.employeeId,
+      name: filters.name,
+      area: filters.area,
+      workdayType: filters.workdayType,
+      status: filters.status,
+      showAnomalies: filters.showAnomalies,
+    });
+    if (result.total > limit)
+      throw new AppError(
+        `La exportación admite hasta ${limit} registros. Acota los filtros.`,
+        400,
+        "EXPORT_LIMIT",
+      );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: [...new Set(result.data.map((row) => row.employeeId))] } },
+      select: { id: true, rut: true },
+    });
+    const ruts = new Map(employees.map((employee) => [employee.id, employee.rut]));
+    return result.data.map((row) => ({ ...row, employeeRut: ruts.get(row.employeeId) ?? null }));
   }
 
   /**

@@ -77,6 +77,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
     const updatedShift: ShiftReport = {
       ...activeShift,
       logEntries: activeShift.logEntries.filter((le) => le.id !== itemToDelete.id),
+      removedLogEntryIds: [itemToDelete.id],
       lastModified: Date.now(),
       syncStatus: "pending",
     };

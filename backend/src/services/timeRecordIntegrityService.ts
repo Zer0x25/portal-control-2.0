@@ -30,6 +30,7 @@ type VerifyResult = {
   checkedCount: number;
   brokenCount: number;
   broken: BrokenItem[];
+  truncated: boolean;
 };
 
 const INTEGRITY_VERSION = 1;
@@ -218,20 +219,17 @@ export const timeRecordIntegrityService = {
   },
 
   async verifyChain(tx: TxLike, filters: VerifyFilters): Promise<VerifyResult> {
+    if (filters.limit !== undefined && (!Number.isInteger(filters.limit) || filters.limit < 1)) {
+      throw new RangeError("limit must be a positive integer");
+    }
     const batchSize = 5000;
     const broken: BrokenItem[] = [];
     let checkedCount = 0;
-    let prevHashByEmployee = new Map<string, string | null>();
+    let truncated = false;
+    const prevHashByEmployee = new Map<string, string | null>();
 
     const where: Prisma.TimeRecordWhereInput = {
       employeeId: filters.employeeId,
-      date:
-        filters.from || filters.to
-          ? {
-              gte: filters.from,
-              lte: filters.to,
-            }
-          : undefined,
     };
 
     let cursorId: string | undefined;
@@ -249,11 +247,19 @@ export const timeRecordIntegrityService = {
 
       for (const record of records) {
         const expectedPrevHash = prevHashByEmployee.get(record.employeeId) ?? null;
-
-        // If we are starting a NEW employee in this batch, we might need
-        // to fetch their last known integrity hash from DB if we don't have it in the map.
-        // However, the current logic assumes we are verifying a CONTINUOUS chain
-        // from the start of the filter.
+        // Chain order is creation time and ID, not business date. Rows outside
+        // the requested range can therefore be predecessors of rows inside it.
+        prevHashByEmployee.set(record.employeeId, record.integrityHash ?? null);
+        if (
+          (filters.from && record.date < filters.from) ||
+          (filters.to && record.date > filters.to)
+        ) {
+          continue;
+        }
+        if (filters.limit !== undefined && checkedCount >= filters.limit) {
+          truncated = true;
+          break;
+        }
 
         const expectedHash = this.computeHash(this.buildCanonicalPayload(record, expectedPrevHash));
         const actualHash = record.integrityHash ?? null;
@@ -291,21 +297,19 @@ export const timeRecordIntegrityService = {
           });
         }
 
-        prevHashByEmployee.set(record.employeeId, actualHash ?? expectedHash);
         checkedCount++;
       }
 
       cursorId = records[records.length - 1].id;
 
-      // Safety limit for the total verification (user requested capability for 1.2M,
-      // but we should probably still have a reasonable default or filter)
-      if (filters.limit && checkedCount >= filters.limit) break;
+      if (truncated) break;
     }
 
     const result: VerifyResult = {
       checkedCount,
       brokenCount: broken.length,
       broken,
+      truncated,
     };
     const byReason = {
       missingHash: broken.filter((x) => x.reason === "MISSING_HASH").length,

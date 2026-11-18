@@ -109,6 +109,31 @@ describe("useTimeRecordsQuery anomaly filtering (spec 035 T4)", () => {
     expect(recorder.countOf("GET", "/api/records")).toBeGreaterThan(0);
   });
 
+  it("does not use IndexedDB for clocking state when the server fails", async () => {
+    server.use(
+      http.get(`${TEST_API_URL}/records`, () =>
+        HttpResponse.json({ message: "backend caido" }, { status: 400 }),
+      ),
+    );
+    idbGetAllMock.mockResolvedValue([{ id: "stale", employeeId: "e1", employeeName: "Ana" }]);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+    const { result } = renderHook(
+      () =>
+        useTimeRecordsQuery({
+          pageSize: 5,
+          allowCache: false,
+          filters: { employeeId: "e1" },
+        }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
+    expect(idbGetAllMock).not.toHaveBeenCalled();
+  });
+
   it("does not repopulate stale cached rows when backend returns empty for a manual status filter", async () => {
     idbGetAllMock.mockResolvedValue([
       {

@@ -86,6 +86,7 @@ afterAll(async () => {
 const routes = [
   ["GET", "/api/shift-reports"],
   ["POST", "/api/shift-reports"],
+  ["POST", "/api/shift-reports/seed-report/attendance-novelties"],
   ["PATCH", "/api/shift-reports/seed-report"],
   ["DELETE", "/api/shift-reports/seed-report"],
   ["GET", "/api/shift-reports/export/missing"],
@@ -95,6 +96,67 @@ describe("Spec 017 shift reports on Fastify", () => {
     () => fastify,
     () => token,
   );
+  it("persists concurrent attendance novelties in the open log and rejects closed shifts and Supervisor", async () => {
+    await prismaDirect.employee.create({
+      data: {
+        id: "novelty-employee",
+        name: "Ana",
+        rut: "11111111-1",
+        position: "Ops",
+        area: "Ops",
+        workdayType: "Artículo 22",
+      },
+    });
+    await prismaDirect.timeRecord.create({
+      data: {
+        id: "novelty-record",
+        employeeId: "novelty-employee",
+        employeeName: "Ana",
+        date: today(),
+        status: "Ausente",
+      },
+    });
+    expect((await http("POST", "/api/shift-reports", body())).status).toBe(200);
+    const url = "/api/shift-reports/shift-report/attendance-novelties";
+    const payload = (annotation: string) => ({
+      recordId: "novelty-record",
+      annotation,
+      time: "09:30",
+    });
+    const responses = await Promise.all([
+      http("POST", url, payload("Primera")),
+      http("POST", url, payload("Segunda")),
+    ]);
+    expect(responses.map((r) => r.status)).toEqual([200, 200]);
+    const listed = await http("GET", "/api/shift-reports?status=open");
+    expect(listed.body.data[0].logEntries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ recordId: "novelty-record", annotation: "Primera" }),
+        expect.objectContaining({ recordId: "novelty-record", annotation: "Segunda" }),
+      ]),
+    );
+    expect((await http("POST", "/api/shift-reports", body({ folio: "001" }))).status).toBe(409);
+    const entries = listed.body.data[0].logEntries;
+    const removedId = entries.find((entry: { recordId?: string }) => entry.recordId).id;
+    const deletion = await http("PATCH", "/api/shift-reports/shift-report", {
+      logEntries: entries.filter((entry: { id: string }) => entry.id !== removedId),
+      removedLogEntryIds: [removedId],
+    });
+    expect(deletion.status).toBe(200);
+    expect(deletion.body.logEntries).toHaveLength(2);
+    expect(deletion.body.logEntries.some((entry: { id: string }) => entry.id === removedId)).toBe(
+      false,
+    );
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    expect((await http("POST", url, payload("Denegada"))).status).toBe(403);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    await prismaDirect.shiftReport.update({
+      where: { id: "shift-report" },
+      data: { status: "closed" },
+    });
+    expect((await http("POST", url, payload("Cerrado"))).status).toBe(409);
+    expect(await prismaDirect.auditLog.count({ where: { action: "LOG_ENTRY_ADDED" } })).toBe(2);
+  });
   it("opens, reports structured conflict, closes and assigns next generated folio", async () => {
     const created = await http("POST", "/api/shift-reports", body());
     expect(created.status).toBe(200);

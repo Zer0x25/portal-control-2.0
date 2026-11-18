@@ -411,6 +411,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "items": {
           "$ref": "#/components/schemas/TimeRecordWrite",
         },
+        "maxItems": 500,
         "type": "array",
       },
       "CalendarMatrixRequest": {
@@ -1314,6 +1315,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "type": "string",
           },
+          "limit": {
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "integer",
+          },
           "to": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "type": "string",
@@ -2151,6 +2157,64 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         ],
       },
+      "RecordExportQuery": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "cargo": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "format": {
+            "enum": [
+              "json",
+              "csv",
+              "xml",
+              "excel",
+            ],
+            "type": "string",
+          },
+          "matchingView": {
+            "enum": [
+              "true",
+              "false",
+            ],
+            "type": "string",
+          },
+          "name": {
+            "type": "string",
+          },
+          "showAnomalies": {
+            "enum": [
+              "true",
+              "false",
+            ],
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+          "workdayType": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "startDate",
+          "endDate",
+        ],
+        "type": "object",
+      },
       "ResetPassword": {
         "properties": {
           "newPassword": {
@@ -2919,6 +2983,10 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                   "minLength": 1,
                   "type": "string",
                 },
+                "recordId": {
+                  "minLength": 1,
+                  "type": "string",
+                },
                 "time": {
                   "minLength": 1,
                   "type": "string",
@@ -2935,6 +3003,14 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               ],
               "type": "object",
             },
+            "type": "array",
+          },
+          "removedLogEntryIds": {
+            "items": {
+              "minLength": 1,
+              "type": "string",
+            },
+            "maxItems": 100,
             "type": "array",
           },
           "responsibleUser": {
@@ -6722,6 +6798,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                 "items": {
                   "$ref": "#/components/schemas/TimeRecordWrite",
                 },
+                "maxItems": 500,
                 "type": "array",
               },
             },
@@ -6823,6 +6900,71 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "type": "string",
             },
           },
+          {
+            "description": "Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error.",
+            "in": "query",
+            "name": "matchingView",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "showAnomalies",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
         ],
         "responses": {
           "200": {
@@ -6835,6 +6977,35 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         ],
         "summary": "Exportación masiva de marcaciones para nómina",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/indicators": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Hasta 100 identificadores de jornada separados por comas.",
+            "in": "query",
+            "name": "ids",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos mínimos de indicadores por jornada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Indicadores de edición y solicitudes pendientes para jornadas visibles",
         "tags": [
           "Records",
         ],
@@ -6864,6 +7035,15 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "schema": {
               "format": "date",
               "type": "string",
+            },
+          },
+          {
+            "description": "Máximo de registros a verificar; la respuesta indica si el resultado fue truncado.",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "minimum": 1,
+              "type": "integer",
             },
           },
         ],
@@ -7299,6 +7479,60 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         ],
         "summary": "Actualizar una bitácora de turno existente",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+    },
+    "/api/shift-reports/{id}/attendance-novelties": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "annotation": {
+                    "type": "string",
+                  },
+                  "recordId": {
+                    "type": "string",
+                  },
+                  "time": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "recordId",
+                  "annotation",
+                  "time",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Novedad persistida",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Agregar novedad de una jornada a la bitácora abierta",
         "tags": [
           "ShiftReports",
         ],

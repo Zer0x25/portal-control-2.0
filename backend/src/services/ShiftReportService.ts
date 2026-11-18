@@ -6,12 +6,17 @@ import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
 import { formatDateUTCISO } from "../utils/timeUtils";
 import { AppError, NotFoundError } from "../utils/AppError";
+import { ConflictError, ForbiddenError } from "../utils/AppError";
+import { TimeRecordService } from "./TimeRecordService";
+import { ACCOUNTING_TRANSACTION_OPTIONS } from "./accountingTransaction";
+import { ulid } from "ulid";
 
 export interface LogEntry {
   id: string;
   time: string;
   annotation: string;
   timestamp: number;
+  recordId?: string;
 }
 
 export interface SupplierEntry {
@@ -47,6 +52,7 @@ type ShiftReportInput = {
   status?: string;
   date: string;
   logEntries?: string | LogEntry[];
+  removedLogEntryIds?: string[];
   supplierEntries?: string | SupplierEntry[];
 };
 
@@ -198,6 +204,20 @@ export class ShiftReportService {
         const newNormalized = normalizeShiftReportEntries(newLogRaw, newSupplierRaw, Date.now());
         const newLogEntries = newNormalized.logEntries;
         const newSupplierEntries = newNormalized.supplierEntries;
+
+        // A stale full-report save must not silently erase attendance-linked entries.
+        if (
+          oldLogEntries.some(
+            (entry) =>
+              entry.recordId &&
+              !data.removedLogEntryIds?.includes(entry.id) &&
+              !newLogEntries.some(
+                (next) => next.id === entry.id && next.recordId === entry.recordId,
+              ),
+          )
+        ) {
+          throw new ConflictError("La bitácora cambió; recarga antes de guardar.");
+        }
 
         // Detect Logbook Changes
         for (const entry of newLogEntries) {
@@ -379,6 +399,74 @@ export class ShiftReportService {
     return enriched;
   }
 
+  static async addAttendanceNovelty(
+    id: string,
+    input: { recordId: string; annotation: string; time: string },
+    actorUsername: string,
+  ) {
+    const result = await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${"accounting_lock_date"}))`;
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17017, 1)`;
+      const report = await tx.shiftReport.findFirst({ where: { id, isDeleted: false } });
+      if (!report || report.status !== "open")
+        throw new ConflictError("El turno ya no está abierto.");
+      const firstRecord = await tx.timeRecord.findFirst({
+        where: { id: input.recordId, isDeleted: false },
+        select: { employeeId: true },
+      });
+      if (!firstRecord) throw new NotFoundError("Jornada no encontrada");
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + firstRecord.employeeId}))`;
+      const record = await tx.timeRecord.findFirst({
+        where: { id: input.recordId, isDeleted: false },
+      });
+      if (!record) throw new NotFoundError("Jornada no encontrada");
+      if (await TimeRecordService.isRecordLocked(record.date, tx))
+        throw new ForbiddenError("La jornada está bloqueada por cierre contable.");
+      const normalized = normalizeShiftReportEntries(
+        report.logEntries,
+        report.supplierEntries,
+        report.updatedAt.getTime(),
+      );
+      const entry = {
+        id: ulid(),
+        recordId: record.id,
+        annotation: input.annotation.trim(),
+        time: input.time,
+        timestamp: Date.now(),
+      };
+      const updated = await tx.shiftReport.update({
+        where: { id },
+        data: { logEntries: JSON.stringify([...normalized.logEntries, entry]) },
+      });
+      const audit = await tx.auditLog.create({
+        data: {
+          actorUsername,
+          action: "LOG_ENTRY_ADDED",
+          category: "OPERATIONS",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: {
+            shiftFolio: report.folio,
+            entryId: entry.id,
+            recordId: record.id,
+            annotation: entry.annotation,
+          },
+        },
+      });
+      return { updated, entry, audit, normalized };
+    }, ACCOUNTING_TRANSACTION_OPTIONS);
+    SocketService.emitToAll("auditLog:created", result.audit);
+    SocketService.emit("shiftReport:updated", {
+      ...result.updated,
+      date: formatDateUTCISO(result.updated.date),
+      logEntries: [...result.normalized.logEntries, result.entry],
+      supplierEntries: result.normalized.supplierEntries,
+      syncStatus: "synced",
+      lastModified: result.updated.updatedAt.getTime(),
+    });
+    return result.entry;
+  }
+
   /**
    * Partially updates an existing shift report by ID.
    */
@@ -405,6 +493,7 @@ export class ShiftReportService {
         status: data.status ?? existing.status,
         date: data.date ?? formatDateUTCISO(existing.date),
         logEntries: data.logEntries ?? existing.logEntries,
+        removedLogEntryIds: data.removedLogEntryIds,
         supplierEntries: data.supplierEntries ?? existing.supplierEntries,
       },
       actorUsername,
@@ -422,6 +511,7 @@ export class ShiftReportService {
       throw new NotFoundError("Reporte de turno no encontrado");
     }
     await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17017, 1)`;
       await tx.shiftReport.update({
         where: { id },
         data: { isDeleted: true },

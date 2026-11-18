@@ -1,5 +1,6 @@
 import { calendarDateQuery } from "./dataQuery";
 import { isoDateSchema, positiveIntString, z } from "./common";
+import { MAX_BULK_TIME_RECORDS } from "../../modules/records/application/contracts";
 
 export const TimeRecordWriteSchema = z
   .object({
@@ -96,7 +97,10 @@ export const AttendanceRecordResponseSchema = z
   })
   .openapi("AttendanceRecordResponse");
 
-export const BulkTimeRecordSchema = z.array(TimeRecordWriteSchema).openapi("BulkTimeRecord");
+export const BulkTimeRecordSchema = z
+  .array(TimeRecordWriteSchema)
+  .max(MAX_BULK_TIME_RECORDS)
+  .openapi("BulkTimeRecord");
 
 export const TimeRecordListResponseSchema = z
   .object({
@@ -253,6 +257,22 @@ export const DailyAttendanceQuerySchema = z.object({
   employeeId: z.string().optional(),
 });
 
+export const RecordExportQuerySchema = z
+  .object({
+    startDate: calendarDateQuery,
+    endDate: calendarDateQuery,
+    format: z.enum(["json", "csv", "xml", "excel"]).optional(),
+    employeeId: z.string().optional(),
+    area: z.string().optional(),
+    cargo: z.string().optional(),
+    name: z.string().optional(),
+    workdayType: z.string().optional(),
+    status: z.string().optional(),
+    showAnomalies: z.enum(["true", "false"]).optional(),
+    matchingView: z.enum(["true", "false"]).optional(),
+  })
+  .refine((value) => value.startDate <= value.endDate, "Rango de fechas invertido");
+
 export const DailyAttendanceRowSchema = z
   .object({
     date: z.string(),
@@ -270,6 +290,7 @@ export const IntegrityVerifyQuerySchema = z.object({
   employeeId: z.string().min(1, "ID de empleado es requerido"),
   from: isoDateSchema("Formato de fecha inválido"),
   to: isoDateSchema("Formato de fecha inválido"),
+  limit: z.coerce.number().int().positive().optional(),
 });
 
 export const ExportQuerySchema = z

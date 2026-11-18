@@ -1,106 +1,37 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useTimeRecordTableController } from "../../../features/time-control/hooks/useTimeRecordTableController";
-import { AugmentedTimeRecord } from "../../../types";
+import type { AugmentedTimeRecord } from "../../../types";
 
-const {
-  useToastsMock,
-  useAuditLogsInfiniteMock,
-  useCorrectionRequestsMock,
-  exportToPDFMock,
-  addToastMock,
-  onExportStreamingMock,
-} = vi.hoisted(() => ({
-  useToastsMock: vi.fn(),
-  useAuditLogsInfiniteMock: vi.fn(),
-  useCorrectionRequestsMock: vi.fn(),
-  exportToPDFMock: vi.fn(),
-  addToastMock: vi.fn(),
-  onExportStreamingMock: vi.fn(),
-}));
-
-vi.mock("../../../hooks/useToasts", () => ({
-  useToasts: () => useToastsMock(),
-}));
-
-vi.mock("../../../hooks/queries/useAuditLogsInfinite", () => ({
-  useAuditLogsInfinite: (...args: unknown[]) => useAuditLogsInfiniteMock(...args),
-}));
-
-vi.mock("../../../hooks/useCorrectionRequests", () => ({
-  useCorrectionRequests: (...args: unknown[]) => useCorrectionRequestsMock(...args),
-}));
-
-vi.mock("../../../utils/export/index", () => ({
-  exportToPDF: (...args: unknown[]) => exportToPDFMock(...args),
+const { indicators, onExport } = vi.hoisted(() => ({ indicators: vi.fn(), onExport: vi.fn() }));
+vi.mock("../../../features/time-control/hooks/useRecordIndicators", () => ({
+  useRecordIndicators: (...args: unknown[]) => indicators(...args),
 }));
 
 describe("useTimeRecordTableController", () => {
-  it("builds pendingRequestsMap and editsMapAll from external data", () => {
-    useToastsMock.mockReturnValue({ addToast: addToastMock });
-    useAuditLogsInfiniteMock.mockReturnValue({
+  it("uses scoped indicators for the visible rows", () => {
+    indicators.mockReturnValue({
       data: {
-        pages: [
-          {
-            data: [
-              {
-                action: "Time Record Edited",
-                details: { recordId: "r1" },
-              },
-            ],
-          },
-        ],
+        edits: [{ id: "a", action: "TIME_RECORD_EDITED", details: { recordId: "r1" } }],
+        pending: [{ id: "p", timeRecordId: "r1", status: "pending" }],
       },
     });
-    useCorrectionRequestsMock.mockReturnValue({
-      requests: [
-        { timeRecordId: "r1", status: "pending" },
-        { timeRecordId: "r2", status: "approved" },
-      ],
-    });
-
+    const records = [{ id: "r1" }] as AugmentedTimeRecord[];
     const { result } = renderHook(() =>
-      useTimeRecordTableController({
-        records: [],
-        onExportStreaming: onExportStreamingMock,
-      }),
+      useTimeRecordTableController({ records, onExportStreaming: onExport }),
     );
-
+    expect(indicators).toHaveBeenCalledWith(["r1"]);
     expect(result.current.editsMapAll.get("r1")).toHaveLength(1);
     expect(result.current.pendingRequestsMap.has("r1")).toBe(true);
-    expect(result.current.pendingRequestsMap.has("r2")).toBe(false);
-    expect(useCorrectionRequestsMock).toHaveBeenCalledWith(
-      undefined,
-      undefined,
-      "correction-requests",
-    );
   });
-
-  it("exports csv through streaming callback", async () => {
-    useToastsMock.mockReturnValue({ addToast: addToastMock });
-    useAuditLogsInfiniteMock.mockReturnValue({ data: { pages: [{ data: [] }] } });
-    useCorrectionRequestsMock.mockReturnValue({ requests: [] });
-
+  it("delegates export without reporting false success", async () => {
+    indicators.mockReturnValue({ data: { edits: [], pending: [] } });
     const { result } = renderHook(() =>
-      useTimeRecordTableController({
-        records: [
-          {
-            id: "r1",
-            employeeArea: "A1",
-            employeeName: "Ana",
-            employeePosition: "Operador",
-            date: "2026-03-05",
-          } as unknown as AugmentedTimeRecord,
-        ],
-        onExportStreaming: onExportStreamingMock,
-      }),
+      useTimeRecordTableController({ records: [], onExportStreaming: onExport }),
     );
-
     await act(async () => {
       await result.current.handleExport("csv");
     });
-
-    expect(onExportStreamingMock).toHaveBeenCalledWith("csv");
-    expect(addToastMock).toHaveBeenCalledWith("Registros exportados a CSV.", "success");
+    expect(onExport).toHaveBeenCalledWith("csv");
   });
 });

@@ -133,8 +133,8 @@ describe("ConfigService unit tests", () => {
       vi.spyOn(timeUtils, "getChileNow").mockReturnValue(mockDate);
 
       const result = await ConfigService.get("accounting_lock_date");
-      // For March (month 2 in 0-indexed), targetMonth should be 2 (February)
-      expect(result).toBe(timeUtils.getMonthEndBusinessDateChile(2026, 2));
+      // February remains editable; the inclusive lock ends in January.
+      expect(result).toBe(timeUtils.getMonthEndBusinessDateChile(2026, 1));
 
       // Test roll-over when now is January (month 0 in 0-indexed)
       vi.mocked(prisma.systemConfig.findUnique).mockResolvedValueOnce(null);
@@ -142,8 +142,14 @@ describe("ConfigService unit tests", () => {
       vi.spyOn(timeUtils, "getChileNow").mockReturnValue(mockJan);
 
       const resultJan = await ConfigService.get("accounting_lock_date");
-      // targetMonth = 12, targetYear = 2025
-      expect(resultJan).toBe(timeUtils.getMonthEndBusinessDateChile(2025, 12));
+      // December remains editable; the inclusive lock ends in November.
+      expect(resultJan).toBe(timeUtils.getMonthEndBusinessDateChile(2025, 11));
+
+      vi.mocked(prisma.systemConfig.findUnique).mockResolvedValueOnce(null);
+      vi.spyOn(timeUtils, "getChileNow").mockReturnValue(new Date(2026, 1, 10));
+      expect(await ConfigService.get("accounting_lock_date")).toBe(
+        timeUtils.getMonthEndBusinessDateChile(2025, 12),
+      );
     });
   });
 
