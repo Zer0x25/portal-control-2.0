@@ -1,13 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { holidayService, CreateHolidayPayload } from "../services/holidayService";
+import {
+  holidayService,
+  CreateHolidayPayload,
+  UpdateHolidayPayload,
+} from "../services/holidayService";
 import { useToasts } from "./useToasts";
-import { Holiday, BulkCreateHolidayPayload } from "../types/scheduling";
+import { BulkCreateHolidayPayload } from "../types/scheduling";
 import { queryKeys } from "../lib/queryKeys";
 
 export const useHolidayMutations = () => {
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
-  type UpdateHolidayPayload = Partial<Pick<Holiday, "name" | "date" | "type">>;
 
   const createHolidayMutation = useMutation({
     mutationFn: (holiday: CreateHolidayPayload) => holidayService.create(holiday),
@@ -38,7 +41,7 @@ export const useHolidayMutations = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.holidays() });
       queryClient.invalidateQueries({ queryKey: queryKeys.calendarMatrix() });
-      addToast(`${data.added} feriados nuevos cargados.`, "success");
+      addToast(`${data.total} feriados sincronizados para ${data.year}.`, "success");
     },
     onError: (error: Error) => {
       addToast(error.message, "error");

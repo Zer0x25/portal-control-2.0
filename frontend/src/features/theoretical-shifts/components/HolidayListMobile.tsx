@@ -83,10 +83,15 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1 min-w-0 pr-2">
                     <h3 className="text-sm font-bold text-token-text-primary truncate">{h.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
                         {h.type}
                       </span>
+                      {h.isRenounceable && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-token-status-error/15 text-token-status-error border border-token-status-error/30">
+                          Irrenunciable
+                        </span>
+                      )}
                     </div>
                   </div>
 
