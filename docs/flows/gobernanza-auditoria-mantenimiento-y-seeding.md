@@ -1,6 +1,6 @@
 # Flujo: Gobernanza, Auditoría, Mantenimiento y Seeding (`gobernanza-auditoria-mantenimiento-y-seeding`)
 
-**Estado:** `AS_IS_DOCUMENTADO`
+**Estado:** `BUGS_REPRODUCIDOS`
 **Última actualización:** 2026-11-18
 **Módulos backend:** `audit`, `admin`, `maintenance`, `HealthService`, `AdminService`, `auditService`, `securityAuditService`, `integrityMaintenanceService`, `backupService`, `backupHealthService`, `maintenanceService`, `seedingJobService`, `runtimeJobs`, `schedulerService`
 **Módulos frontend:** `governance` (`GovernanceHub`, `IntegritySummaryView`, `SecurityInsights`, `AuditLogsView`, `SystemMaintenance`, `BackupListModal`, `HealthStatusView`), `configuration` (`DeveloperPanel`, `SeedingOptionsModal`, `SeedingProgressModal`), `HealthDashboard`, `sidebarMenu`, `App.tsx`
@@ -121,3 +121,17 @@ Todos exigen `authenticate` + `admin` (`Administrador`), desactivan compresión 
 13. **Event loop / N+1 / `$extends`:** FS síncrono (`readdirSync`/`statSync`) en `backupHealthService.ts` llamado por `/api/health`; `runAutoRechainIfNeeded()` (`integrityMaintenanceService.ts:132-145`) ejecuta `sealAfterMutation` registro a registro; `rotateAuditLogs()` (`maintenanceService.ts:55,62,74`) borra `ShiftReport`/`MeterReading` sin `skipTrigger: true`.
 14. **`console.warn`/`console.error` en producción:** Presente en `maintenanceService.ts`, `HealthService.ts`, `securityAuditService.ts`, `db.ts`, `runtimeControlService.ts`.
 15. **UI, Render y A11y en Frontend:** `AuditLogDesktopRow`/`AuditLogMobileRow` definidos dentro de `AuditLogsViewView` (remonta filas en cada render), falta de `EmptyState`, filas `<div>` sin `role="button"`/`tabIndex`/`onKeyDown`, `ExportLogsModal` sin `role="dialog"`/`Escape`, botón "Restaurar" invisible sin hover en `BackupListModal.view.tsx:101`, `window.confirm` nativo en `SystemMaintenance`, e `<input type="date">` nativo en `AuditLogFilterPanel`.
+
+---
+
+## 3. Resultados Reproducidos en Fase 2 (2026-11-18)
+
+Reproducción ejecutada por `ga-api-repro` (staging + Fastify aislado sobre PostgreSQL 18.4, 30/30 baseline tests passing) y `ga-ui-repro` (Playwright headless sobre `http://127.0.0.1:8080`, usuarios temporales eliminados tras la prueba):
+
+- **Confirmado — RBAC Frontend vs Backend (`403`):** `Supervisor_Elevado` y `Fiscalizador` acceden a `#/admin/governance` con todas las pestañas visibles, recibiendo `403` en `GET /api/admin/security-insights` (pestaña `Seguridad` queda en blanco, `textLen=175`) y `GET /api/admin/stats` (pestaña `Mantenimiento`), además de `403` para `Fiscalizador` al pulsar **"Ejecutar Auditoría Profunda"** (`GET /api/audit-logs/verify-integrity`).
+- **Confirmado — Filtro `Acción` roto en UI:** escribir `"LOGIN"` en `"Filtrar por acción..."` en `#/admin/governance?tab=audit` no dispara ninguna petición `GET /api/audit-logs` (`useAuditLogsController.ts:51-58` omite `action`).
+- **Confirmado — Toast genérico en `verifyIntegrity`:** el backend retorna `data.message: "Auditoría criptográfica completada..."` (`200`), pero la UI muestra `"Auditoría de integridad iniciada correctamente"` (`useAuditLogMutations.ts:13`).
+- **Confirmado — UI/A11y en Auditoría y Sistema:** filas de auditoría sin `role`/`tabIndex` (`tabIndex: null`), `ExportLogsModal` sin `role="dialog"`/`Escape`, ausencia de `EmptyState` al filtrar sin resultados, botón `Restaurar` en `BackupListModal` con `opacity: 0` incluso al hacer `.focus()`, y `window.confirm` nativo al restaurar.
+- **Confirmado — `GET /api/health` público + drift:** retorna `200` sin auth exponiendo `nodeVersion`, `platform`, `arch`, `cpus`, `memory`, `os.loadAvg`, `database.size` y `backup.lastError`; falla validación contra `HealthStatusSchema`.
+- **Confirmado — `POST /api/audit-logs` y redacción:** roles `Usuario` y `Reloj_Control` obtienen `201`; `AuditLogSchema` exige `id`/`timestamp`/`actorUsername` ignorados por el servidor; `UNHANDLED_ERROR` guarda `details.message = "Error al procesar solicitud"` y `metadata.body/query = "[REDACTED]"` al redactar antes de persistir; `AdminService.getSecurityInsights()` devuelve `recentAlerts` sin redactar.
+- **Confirmado — Backups y Seeding:** `POST /api/admin/trigger-backup` devuelve `data.backupPath` absoluto; `POST /api/admin/restore` con `../etc/passwd` o archivo inexistente responde `500 INTERNAL_ERROR`; `GET /api/maintenance/seed/phase2/logs?jobId=any-id&limit=abc` responde `500` por `take: NaN`; `POST /api/maintenance/seed/phase2/pause` sobre job `completed` responde `200`.
