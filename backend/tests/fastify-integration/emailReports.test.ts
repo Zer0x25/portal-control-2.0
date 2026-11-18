@@ -104,9 +104,9 @@ describe("Spec019 email/reports on Fastify", () => {
         })
       ).status,
     ).toBe(400);
-    expect((await http("POST", "/api/email/verify", { ...profile, host: "127.0.0.1" })).status).toBe(
-      400,
-    );
+    expect(
+      (await http("POST", "/api/email/verify", { ...profile, host: "127.0.0.1" })).status,
+    ).toBe(400);
     const oldShape = {
       host: profile.host,
       port: 587,

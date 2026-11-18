@@ -451,9 +451,9 @@ describe("Spec020 data/configs on Fastify", () => {
     expect(JSON.stringify((await http("GET", "/api/configs")).body)).not.toContain("smtp-fixture");
     const saved = await ConfigService.set("SMTP_CONFIG", read.body, "data-admin");
     expect(saved).toEqual(value);
-    expect(
-      JSON.stringify((await http("GET", "/api/configs/SMTP_CONFIG")).body),
-    ).not.toContain("smtp-fixture");
+    expect(JSON.stringify((await http("GET", "/api/configs/SMTP_CONFIG")).body)).not.toContain(
+      "smtp-fixture",
+    );
     expect(
       JSON.parse(
         (await prismaDirect.systemConfig.findUniqueOrThrow({ where: { key: "SMTP_CONFIG" } }))

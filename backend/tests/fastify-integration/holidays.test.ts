@@ -206,7 +206,12 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
     const missing = await app.inject({
       method: "POST",
       url: "/api/holidays",
-      payload: { id: "missing-holiday-id", date: "2026-10-20", name: "No Existe", type: "Nacional" },
+      payload: {
+        id: "missing-holiday-id",
+        date: "2026-10-20",
+        name: "No Existe",
+        type: "Nacional",
+      },
       headers: actor.headers,
     });
     expect(missing.statusCode).toBe(404);

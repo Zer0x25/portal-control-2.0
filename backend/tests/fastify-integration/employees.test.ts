@@ -517,7 +517,12 @@ describe("Spec 013 employees on Fastify", () => {
     expect(createdIds).toEqual(["EMP-1002", "EMP-1003", "EMP-1004", "EMP-1005"]);
 
     // 3. Invalid pagination query params -> 400 VALIDATION_ERROR
-    for (const qs of ["page=0&pageSize=1", "page=-1&pageSize=1", "page=abc&pageSize=1", "page=1&pageSize=201"]) {
+    for (const qs of [
+      "page=0&pageSize=1",
+      "page=-1&pageSize=1",
+      "page=abc&pageSize=1",
+      "page=1&pageSize=201",
+    ]) {
       const bad = await http("GET", `/api/employees?${qs}`);
       expect(bad.status).toBe(400);
       expect(bad.body.code).toBe("VALIDATION_ERROR");

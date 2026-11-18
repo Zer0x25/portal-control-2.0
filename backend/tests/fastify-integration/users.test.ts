@@ -370,7 +370,12 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
 
   it("[Spec 116] validates pagination, supports employeeId: null, blocks self-delete, and enforces Supervisor_Elevado hierarchy", async () => {
     // 1. Invalid pagination -> 400 VALIDATION_ERROR
-    for (const qs of ["page=0&pageSize=1", "page=-1&pageSize=1", "page=abc&pageSize=1", "page=1&pageSize=201"]) {
+    for (const qs of [
+      "page=0&pageSize=1",
+      "page=-1&pageSize=1",
+      "page=abc&pageSize=1",
+      "page=1&pageSize=201",
+    ]) {
       const bad = await http("GET", `/api/users?${qs}`);
       expect(bad.status).toBe(400);
       expect(bad.body.code).toBe("VALIDATION_ERROR");
@@ -400,7 +405,9 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
       employeeId: emp.id,
     });
     expect(linked.status).toBe(201);
-    expect((await http("PUT", `/api/users/${linked.body.id}`, { username: "   " })).status).toBe(400);
+    expect((await http("PUT", `/api/users/${linked.body.id}`, { username: "   " })).status).toBe(
+      400,
+    );
     const unlinked = await http("PUT", `/api/users/${linked.body.id}`, { employeeId: null });
     expect(unlinked.status).toBe(200);
     expect(unlinked.body.employeeId).toBeNull();
@@ -478,14 +485,8 @@ describe("Spec 012 users on Fastify HTTP and PostgreSQL", () => {
 
     // Allowed: delete non-Admin
     expect(
-      (
-        await http(
-          "DELETE",
-          `/api/users/${createdByElevated.body.id}`,
-          undefined,
-          elevatedToken,
-        )
-      ).status,
+      (await http("DELETE", `/api/users/${createdByElevated.body.id}`, undefined, elevatedToken))
+        .status,
     ).toBe(204);
   });
 });

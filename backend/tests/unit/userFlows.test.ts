@@ -111,10 +111,13 @@ describe("Spec 012 shared users flows", () => {
     await f.flows.updateUser("u", { employeeId: null }, "admin");
     expect(f.repository.update).toHaveBeenCalledWith("u", { employeeId: null });
 
-    f.repository.findUsername.mockResolvedValueOnce({ username: "root", role: "Administrador" } as never);
-    await expect(
-      f.flows.deleteUser("u-admin", "elevated", "Supervisor_Elevado"),
-    ).rejects.toThrow("No puede eliminar usuarios Administrador");
+    f.repository.findUsername.mockResolvedValueOnce({
+      username: "root",
+      role: "Administrador",
+    } as never);
+    await expect(f.flows.deleteUser("u-admin", "elevated", "Supervisor_Elevado")).rejects.toThrow(
+      "No puede eliminar usuarios Administrador",
+    );
     expect(f.repository.delete).not.toHaveBeenCalled();
   });
 });

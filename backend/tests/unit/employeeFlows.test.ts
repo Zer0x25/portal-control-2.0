@@ -143,13 +143,7 @@ describe("Employee application contracts", () => {
       "EMPLEADO_ACTUALIZADO",
     ]);
     expect(f.tx.ensureUser).not.toHaveBeenCalled();
-    expect(f.tx.syncStatus).toHaveBeenCalledWith(
-      row.id,
-      "Activo",
-      "Archivado",
-      row.name,
-      row.rut,
-    );
+    expect(f.tx.syncStatus).toHaveBeenCalledWith(row.id, "Activo", "Archivado", row.name, row.rut);
     expect(result).not.toHaveProperty("pin");
   });
 });

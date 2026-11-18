@@ -110,7 +110,7 @@ describe("EmailService security & SSRF guard", () => {
     const res = await service.sendEmail(
       "to@example.com",
       "Asunto",
-      'Hola <script>alert("xss")</script> & \'test\'\nSegunda línea',
+      "Hola <script>alert(\"xss\")</script> & 'test'\nSegunda línea",
     );
     expect(res.success).toBe(true);
     expect(mocks.sendMail).toHaveBeenCalledWith(
@@ -150,7 +150,13 @@ describe("EmailService security & SSRF guard", () => {
       message: "No se pudo enviar el correo",
     });
     await expect(
-      service.sendEmailWithAttachment("to@example.com", "Sub", "<p>Body</p>", Buffer.from("x"), "a.txt"),
+      service.sendEmailWithAttachment(
+        "to@example.com",
+        "Sub",
+        "<p>Body</p>",
+        Buffer.from("x"),
+        "a.txt",
+      ),
     ).resolves.toEqual({
       success: false,
       message: "No se pudo enviar el correo",

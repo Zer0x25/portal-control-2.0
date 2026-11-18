@@ -375,7 +375,9 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     for (const role of ["Reloj_Control", "Fiscalizador"] as const) {
       await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
       expect((await http("GET", "/api/leaves")).status).toBe(200);
-      expect((await http("POST", "/api/leaves", leave({ startDate: date(5), endDate: date(6) }))).status).toBe(403);
+      expect(
+        (await http("POST", "/api/leaves", leave({ startDate: date(5), endDate: date(6) }))).status,
+      ).toBe(403);
       expect((await http("DELETE", "/api/leaves/leave-readonly-target")).status).toBe(403);
     }
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Reloj_Control" } });
