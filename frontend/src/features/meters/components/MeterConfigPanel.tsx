@@ -69,15 +69,16 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingConfig || !editingConfig.name?.trim()) {
       addToast("El nombre del medidor es requerido.", "warning");
       return;
     }
 
+    const isNew = Boolean(editingConfig.id?.startsWith("new-"));
     let updatedConfigs: MeterConfig[];
 
-    if (editingConfig.id?.startsWith("new-")) {
+    if (isNew) {
       // It's a new config
       if (meterConfigs.length >= MAX_METERS) {
         addToast(`Límite de ${MAX_METERS} medidores activos alcanzado.`, "error");
@@ -99,19 +100,30 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
           : c,
       );
     }
-    updateMeterConfigs(updatedConfigs, actor);
-    setEditingConfig(null);
+
+    try {
+      await updateMeterConfigs(updatedConfigs, actor);
+      addToast(isNew ? "Medidor agregado con éxito." : "Medidor actualizado con éxito.", "success");
+      setEditingConfig(null);
+    } catch {
+      addToast("Error al guardar la configuración del medidor.", "error");
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!configToDelete) return;
     const updatedConfigs = meterConfigs.map((c) =>
       c.id === configToDelete.id
         ? { ...c, isDeleted: true, lastModified: Date.now(), syncStatus: "pending" as const }
         : c,
     );
-    updateMeterConfigs(updatedConfigs, actor);
-    setConfigToDelete(null);
+    try {
+      await updateMeterConfigs(updatedConfigs, actor);
+      addToast("Medidor eliminado con éxito.", "success");
+      setConfigToDelete(null);
+    } catch {
+      addToast("Error al eliminar el medidor.", "error");
+    }
   };
 
   const availableUnits = (() => {
@@ -139,6 +151,8 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
               Configurar Medidores
             </h2>
             <Button
+              id="close-meter-config-panel"
+              aria-label="Cerrar panel de configuración de medidores"
               onClick={onClose}
               variant="secondary"
               size="sm"
@@ -159,10 +173,15 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5">
+                    <label
+                      htmlFor="meter-category-select"
+                      className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
+                    >
                       Categoría
                     </label>
                     <select
+                      id="meter-category-select"
+                      aria-label="Categoría"
                       value={editingConfig.category}
                       onChange={(e) =>
                         handleFieldChange("category", e.target.value as MeterCategory)
@@ -177,10 +196,15 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5">
+                    <label
+                      htmlFor="meter-unit-select"
+                      className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
+                    >
                       Unidad
                     </label>
                     <select
+                      id="meter-unit-select"
+                      aria-label="Unidad"
                       value={editingConfig.unit}
                       onChange={(e) => handleFieldChange("unit", e.target.value)}
                       className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
@@ -195,10 +219,15 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5">
+                  <label
+                    htmlFor="meter-type-select"
+                    className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
+                  >
                     Tipo de Medición
                   </label>
                   <select
+                    id="meter-type-select"
+                    aria-label="Tipo de Medición"
                     value={editingConfig.type}
                     onChange={(e) => handleFieldChange("type", e.target.value as MeterType)}
                     className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
@@ -221,10 +250,22 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
                 )}
 
                 <div className="flex gap-2">
-                  <Button onClick={handleSave} variant="primary" size="sm">
+                  <Button
+                    id="save-meter-config-btn"
+                    aria-label="Guardar medidor"
+                    onClick={handleSave}
+                    variant="primary"
+                    size="sm"
+                  >
                     Guardar
                   </Button>
-                  <Button onClick={handleCancelEdit} variant="secondary" size="sm">
+                  <Button
+                    id="cancel-meter-config-btn"
+                    aria-label="Cancelar edición de medidor"
+                    onClick={handleCancelEdit}
+                    variant="secondary"
+                    size="sm"
+                  >
                     Cancelar
                   </Button>
                 </div>
@@ -232,6 +273,8 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
             ) : (
               <>
                 <Button
+                  id="add-meter-config-btn"
+                  aria-label="Añadir Nuevo Medidor"
                   onClick={handleStartAdd}
                   className="w-full flex items-center justify-center gap-2 mb-2 bg-token-accent-brand"
                   disabled={isLimitReached}
@@ -272,6 +315,8 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
                     </div>
                     <div className="space-x-1">
                       <Button
+                        id={`edit-meter-${config.id}`}
+                        aria-label={`Editar medidor ${config.name}`}
                         onClick={() => handleStartEdit(config)}
                         size="sm"
                         variant="secondary"
@@ -281,6 +326,8 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
                         <EditIcon className="w-4 h-4" />
                       </Button>
                       <Button
+                        id={`delete-meter-${config.id}`}
+                        aria-label={`Eliminar medidor ${config.name}`}
                         onClick={() => setConfigToDelete(config)}
                         size="sm"
                         variant="danger"

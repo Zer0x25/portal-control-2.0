@@ -4,6 +4,38 @@ import { apiClient, Schema } from "./apiClient";
 type SDKMeterReading = Schema<"MeterReading">;
 type PaginatedMeterReadingResponse = Schema<"PaginatedMeterReadingResponse">;
 
+type MeterReadingPayload = SDKMeterReading & {
+  normalizedValue?: number;
+  delta?: number;
+  eventType?: MeterReadingItem["eventType"];
+  previousReadingId?: string;
+};
+
+const toMeterReadingItem = (raw: MeterReadingPayload): MeterReadingItem => {
+  const parsedTimestamp =
+    typeof raw.timestamp === "number"
+      ? raw.timestamp
+      : raw.timestamp
+        ? new Date(raw.timestamp).getTime()
+        : Date.now();
+  const safeTimestamp = Number.isNaN(parsedTimestamp) ? Date.now() : parsedTimestamp;
+  return {
+    id: raw.id ?? "",
+    meterConfigId: raw.meterConfigId,
+    timestamp: safeTimestamp,
+    authorUsername: raw.authorUsername,
+    value: raw.value,
+    isRecharge: Boolean(raw.isRecharge),
+    normalizedValue: raw.normalizedValue ?? raw.value,
+    delta: raw.delta ?? 0,
+    eventType: raw.eventType ?? "UNKNOWN",
+    previousReadingId: raw.previousReadingId,
+    syncStatus: (raw.syncStatus as MeterReadingItem["syncStatus"]) ?? "synced",
+    lastModified: raw.lastModified ?? safeTimestamp,
+    isDeleted: Boolean(raw.isDeleted),
+  };
+};
+
 export const meterService = {
   /**
    * Obtiene todas las lecturas de medidores.
@@ -15,7 +47,7 @@ export const meterService = {
 
     // Both possible responses have a 'data' property which is an array of MeterReading
     const data = response.data || [];
-    return data as unknown as MeterReadingItem[];
+    return data.map(toMeterReadingItem);
   },
 
   /**
@@ -61,7 +93,7 @@ export const meterService = {
     const result = response as PaginatedMeterReadingResponse;
 
     return {
-      data: (result.data || []) as unknown as MeterReadingItem[],
+      data: (result.data || []).map(toMeterReadingItem),
       pagination: result.pagination || { total: 0, page: 1, totalPages: 1 },
     };
   },
@@ -69,12 +101,12 @@ export const meterService = {
   /**
    * Guarda lecturas en lote.
    */
-  async saveBulk(readings: Partial<MeterReadingItem>[]): Promise<MeterReadingItem[]> {
+  async saveBulk(readings: SDKMeterReading[]): Promise<MeterReadingItem[]> {
     const response = await apiClient.post("/api/meters/bulk", {
-      body: readings as unknown as SDKMeterReading[],
+      body: readings,
     });
 
     const data = response.data || [];
-    return data as unknown as MeterReadingItem[];
+    return data.map(toMeterReadingItem);
   },
 };

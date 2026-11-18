@@ -15,6 +15,8 @@ export const shiftReportService = {
       page?: number;
       pageSize?: number;
       status?: string;
+      search?: string;
+      date?: string;
     } = {},
   ): Promise<{
     data: ShiftReport[];
@@ -22,6 +24,10 @@ export const shiftReportService = {
     page: number;
     totalPages: number;
   }> {
+    const clean = (value: string | undefined): string | undefined => {
+      const trimmed = value?.trim();
+      return trimmed ? trimmed : undefined;
+    };
     return apiRequest<ShiftReportListResponse>({
       method: "GET",
       url: "/api/shift-reports",
@@ -30,6 +36,8 @@ export const shiftReportService = {
         page: params.page || undefined,
         pageSize: params.pageSize || undefined,
         status: params.status,
+        search: clean(params.search),
+        date: clean(params.date),
       },
     });
   },

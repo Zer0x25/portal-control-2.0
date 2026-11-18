@@ -5,9 +5,15 @@ import { queryKeys } from "../../lib/queryKeys";
 export interface ShiftReportsFilterParams {
   pageSize: number;
   status?: "open" | "closed";
+  search?: string;
+  date?: string;
+  enabled?: boolean;
 }
 
-export const useShiftReportsInfinite = (params: ShiftReportsFilterParams) => {
+export const useShiftReportsInfinite = ({
+  enabled = true,
+  ...params
+}: ShiftReportsFilterParams) => {
   return useInfiniteQuery({
     queryKey: queryKeys.shiftReportsList(params),
     queryFn: async ({ pageParam = 1 }) => {
@@ -29,5 +35,6 @@ export const useShiftReportsInfinite = (params: ShiftReportsFilterParams) => {
     },
     initialPageParam: 1,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled,
   });
 };

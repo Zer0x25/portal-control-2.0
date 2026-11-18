@@ -167,7 +167,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                     className="w-full sm:w-auto px-10 h-11 bg-(--status-error) hover:bg-(--status-error)/90 text-white font-bold text-[11px] uppercase tracking-widest rounded-sm flex items-center justify-center gap-2.5 shadow-md shadow-(--status-error)/10"
                   >
                     <CloseIcon className="w-4 h-4" />
-                    Cerrar Guardía
+                    Cerrar Guardia
                   </Button>
                 </div>
               </div>
@@ -250,8 +250,8 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
           onClose={() => setShowCloseShiftConfirmation(false)}
           onConfirm={executeCloseShift}
           title="Confirmar Cierre de Turno"
-          message="Â¿EstÃ¡ seguro de que desea cerrar el turno actual? Esta acciÃ³n no se puede deshacer."
-          confirmText="SÃ­, Cerrar Turno"
+          message="¿Está seguro de que desea cerrar el turno actual? Esta acción no se puede deshacer."
+          confirmText="Sí, Cerrar Turno"
           confirmVariant="danger"
         />
       )}

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { noteService } from "../services/noteService";
 import { useToasts } from "./useToasts";
-import { QuickNote } from "../types/index";
+import { Schema } from "../services/apiClient";
 import { queryKeys } from "../lib/queryKeys";
 
 export const useNoteMutations = () => {
@@ -9,7 +9,8 @@ export const useNoteMutations = () => {
   const { addToast } = useToasts();
 
   const createNoteMutation = useMutation({
-    mutationFn: (note: QuickNote) => noteService.create(note),
+    mutationFn: (note: Omit<Schema<"QuickNote">, "createdAt"> & { createdAt?: string | number }) =>
+      noteService.create(note),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notes() });
       addToast("Nota creada exitosamente", "success");

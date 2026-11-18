@@ -37,14 +37,16 @@ export const noteService = {
   /**
    * Crea una nueva nota rápida.
    */
-  async create(note: QuickNote): Promise<QuickNote> {
+  async create(
+    note: Omit<SDKQuickNote, "createdAt"> & { createdAt?: string | number },
+  ): Promise<QuickNote> {
     const response = await apiClient.post("/api/notes", {
       body: {
         content: note.content,
         authorUsername: note.authorUsername,
         color: note.color,
         reminderEnabled: note.reminderEnabled,
-      } as unknown as never,
+      },
     });
 
     const data =

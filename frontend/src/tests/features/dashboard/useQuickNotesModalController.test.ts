@@ -2,12 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { useQuickNotesModalController } from "../../../features/dashboard/hooks/useQuickNotesModalController";
 
-const { useQuickNotesMock, useAuthMock, addNoteMock, deleteNoteMock } = vi.hoisted(() => ({
-  useQuickNotesMock: vi.fn(),
-  useAuthMock: vi.fn(),
-  addNoteMock: vi.fn(),
-  deleteNoteMock: vi.fn(),
-}));
+const { useQuickNotesMock, useAuthMock, addNoteMock, archiveNoteMock, deleteNoteMock } = vi.hoisted(
+  () => ({
+    useQuickNotesMock: vi.fn(),
+    useAuthMock: vi.fn(),
+    addNoteMock: vi.fn(),
+    archiveNoteMock: vi.fn(),
+    deleteNoteMock: vi.fn(),
+  }),
+);
 
 vi.mock("../../../hooks/useQuickNotes", () => ({
   useQuickNotes: () => useQuickNotesMock(),
@@ -23,6 +26,7 @@ const setup = () => {
     notes: [],
     isLoadingNotes: false,
     addNote: addNoteMock,
+    archiveNote: archiveNoteMock,
     deleteNote: deleteNoteMock,
   });
   useAuthMock.mockReturnValue({ currentUser: { username: "ana", role: "Supervisor" } });
@@ -78,5 +82,6 @@ describe("useQuickNotesModalController", () => {
 
     expect(result.current.canDelete("other-user")).toBe(true);
     expect(result.current.canDelete("admin")).toBe(true);
+    expect(result.current.archiveNote).toBe(archiveNoteMock);
   });
 });
