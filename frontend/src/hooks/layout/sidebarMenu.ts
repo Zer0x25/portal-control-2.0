@@ -15,6 +15,7 @@ import {
   SparklesIcon,
 } from "../../components/ui/icons/index";
 import { ROUTES } from "../../constants";
+import { ROLES } from "../../utils/mappings";
 import type { UserRole } from "../../types";
 
 export interface SidebarMenuItem {
@@ -124,6 +125,8 @@ export const buildSidebarMenuByRole = ({
     items.push({ to: ROUTES.DESIGN_SYSTEM, icon: SparklesIcon, label: "Design System" });
   }
 
-  items.push({ to: ROUTES.CONFIGURATION, icon: CogIcon, label: "Config" });
+  if (role === ROLES.ADMIN || role === ROLES.SUPERVISOR_ELEVATED) {
+    items.push({ to: ROUTES.CONFIGURATION, icon: CogIcon, label: "Config" });
+  }
   return items;
 };

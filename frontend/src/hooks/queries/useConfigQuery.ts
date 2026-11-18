@@ -70,8 +70,7 @@ export const useEmailRecipientsListQuery = (enabled = true) => {
   const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<string[]>({
     queryKey: queryKeys.config("email_recipients"),
-    queryFn: async () =>
-      (await configService.get<string[]>("email_recipients")) ?? ["info@test.lan"],
+    queryFn: async () => (await configService.get<string[]>("email_recipients")) ?? [],
     staleTime: 1000 * 60 * 5,
     enabled: hasToken && !isForcePasswordChange && enabled,
   });

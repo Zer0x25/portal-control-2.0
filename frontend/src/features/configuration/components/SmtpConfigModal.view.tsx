@@ -87,6 +87,9 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
         />
 
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="smtp-config-modal-title"
           className="relative bg-token-surface-card rounded-lg shadow-2xl border border-token-border-technical w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
           onClick={(e) => e.stopPropagation()}
         >
@@ -97,7 +100,10 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
                 <CogIcon className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-token-text-primary leading-none">
+                <h3
+                  id="smtp-config-modal-title"
+                  className="text-sm font-black uppercase tracking-[0.2em] text-token-text-primary leading-none"
+                >
                   Gestión de Perfiles SMTP
                 </h3>
                 <p className="text-[10px] text-token-text-tertiary font-bold uppercase tracking-widest mt-1.5">
@@ -107,6 +113,8 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
             </div>
             <Button
               variant="none"
+              type="button"
+              aria-label="Cerrar"
               onClick={onClose}
               className="w-10 h-10 rounded-full flex items-center justify-center text-token-text-tertiary hover:bg-token-surface-hover hover:text-token-text-primary transition-all shadow-none"
             >

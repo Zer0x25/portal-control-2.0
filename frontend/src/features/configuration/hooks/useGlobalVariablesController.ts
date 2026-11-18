@@ -97,6 +97,16 @@ export const useGlobalVariablesController = () => {
   }, [globalMaxWeeklyHours, isLoading]);
 
   useEffect(() => {
+    if (brandLogo) {
+      setLogoWidthInput(String(brandLogo.width));
+      setLogoHeightInput(String(brandLogo.height));
+    } else if (brandLogo === null) {
+      setLogoWidthInput("512");
+      setLogoHeightInput("188");
+    }
+  }, [brandLogo]);
+
+  useEffect(() => {
     configService
       .getPublicCompanyPolicy()
       .then((meta) => setPolicyMeta(meta))
@@ -222,7 +232,11 @@ export const useGlobalVariablesController = () => {
       addToast("Por favor, ingrese un número válido de horas (ej. 1-168).", "error");
       return;
     }
-    await updateConfig({ key: "global_max_hours", value: newMaxHours });
+    try {
+      await updateConfig({ key: "global_max_hours", value: newMaxHours });
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    }
   };
 
   const handleAddArea = async () => {
@@ -236,8 +250,12 @@ export const useGlobalVariablesController = () => {
       return;
     }
     const newList = [...areaList, trimmedArea];
-    await updateConfig({ key: "area_list", value: newList });
-    setNewAreaName("");
+    try {
+      await updateConfig({ key: "area_list", value: newList });
+      setNewAreaName("");
+    } catch {
+      // updateConfig ya muestra el toast de error; preservar input.
+    }
   };
 
   const handleDeleteArea = (area: string) => {
@@ -252,8 +270,12 @@ export const useGlobalVariablesController = () => {
   const handleConfirmDeleteArea = async () => {
     if (!areaToDelete) return;
     const newList = areaList.filter((area: string) => area !== areaToDelete);
-    await updateConfig({ key: "area_list", value: newList });
-    setAreaToDelete(null);
+    try {
+      await updateConfig({ key: "area_list", value: newList });
+      setAreaToDelete(null);
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    }
   };
 
   const handleAddWorkdayType = async () => {
@@ -267,8 +289,12 @@ export const useGlobalVariablesController = () => {
       return;
     }
     const newList = [...workdayTypeList, trimmedType];
-    await updateConfig({ key: "workday_types", value: newList });
-    setNewWorkdayTypeName("");
+    try {
+      await updateConfig({ key: "workday_types", value: newList });
+      setNewWorkdayTypeName("");
+    } catch {
+      // updateConfig ya muestra el toast de error; preservar input.
+    }
   };
 
   const handleDeleteWorkdayType = (type: string) => {
@@ -286,8 +312,12 @@ export const useGlobalVariablesController = () => {
   const handleConfirmDeleteWorkdayType = async () => {
     if (!workdayTypeToDelete) return;
     const newList = workdayTypeList.filter((type: string) => type !== workdayTypeToDelete);
-    await updateConfig({ key: "workday_types", value: newList });
-    setWorkdayTypeToDelete(null);
+    try {
+      await updateConfig({ key: "workday_types", value: newList });
+      setWorkdayTypeToDelete(null);
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    }
   };
 
   const handleAddEmailRecipient = async () => {
@@ -311,8 +341,12 @@ export const useGlobalVariablesController = () => {
       return;
     }
     const newList = [...emailRecipientsList, trimmedEmail];
-    await updateConfig({ key: "email_recipients", value: newList });
-    setNewEmailRecipient("");
+    try {
+      await updateConfig({ key: "email_recipients", value: newList });
+      setNewEmailRecipient("");
+    } catch {
+      // updateConfig ya muestra el toast de error; preservar input.
+    }
   };
 
   const handleDeleteEmailRecipient = (email: string) => {
@@ -322,8 +356,12 @@ export const useGlobalVariablesController = () => {
   const handleConfirmDeleteEmailRecipient = async () => {
     if (!emailRecipientToDelete) return;
     const newList = emailRecipientsList.filter((email: string) => email !== emailRecipientToDelete);
-    await updateConfig({ key: "email_recipients", value: newList });
-    setEmailRecipientToDelete(null);
+    try {
+      await updateConfig({ key: "email_recipients", value: newList });
+      setEmailRecipientToDelete(null);
+    } catch {
+      // updateConfig ya muestra el toast de error.
+    }
   };
 
   const logoPreviewSrc = !brandLogo

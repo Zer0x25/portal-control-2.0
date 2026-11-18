@@ -219,7 +219,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
               <div className="flex items-end gap-3 flex-col sm:flex-row">
                 <div className="flex-1 w-full">
                   <Input
-                    label="NUEVO PROCOLO/TIPO"
+                    label="NUEVO PROTOCOLO/TIPO"
                     id="newWorkdayTypeName"
                     value={newWorkdayTypeName}
                     onChange={(e) => setNewWorkdayTypeName(e.target.value)}
@@ -373,6 +373,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                 </div>
                 <Switch
                   checked={isControlInternoEnabled}
+                  aria-label="Habilitar módulo Control Interno"
                   onChange={(val) =>
                     updateConfig({
                       key: "is_control_interno_enabled",

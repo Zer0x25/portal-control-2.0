@@ -42,4 +42,22 @@ describe("buildSidebarMenuByRole", () => {
       expect(items.some((item) => item.to === ROUTES.SUPERVISOR_DASHBOARD)).toBe(true);
     }
   });
+
+  it("shows Config only to Administrador and Supervisor_Elevado", () => {
+    for (const role of ["Administrador", "Supervisor_Elevado"] as const) {
+      const items = buildSidebarMenuByRole({
+        role,
+        isControlInternoEnabled: true,
+      });
+      expect(items.some((item) => item.to === ROUTES.CONFIGURATION)).toBe(true);
+    }
+
+    for (const role of ["Supervisor", "Reloj_Control", "Usuario", "Fiscalizador"] as const) {
+      const items = buildSidebarMenuByRole({
+        role,
+        isControlInternoEnabled: true,
+      });
+      expect(items.some((item) => item.to === ROUTES.CONFIGURATION)).toBe(false);
+    }
+  });
 });

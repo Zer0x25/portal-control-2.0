@@ -32,7 +32,9 @@ describe("Configuration SubViews Coverage (Tanda 5)", () => {
 
     expect(screen.getByTestId("page-container")).toBeInTheDocument();
     expect(screen.getByText("Módulo de Exportación")).toBeInTheDocument();
-    expect(screen.getByText("Server: Online")).toBeInTheDocument();
+    expect(screen.getByText("Exportación CSV / XML")).toBeInTheDocument();
+    expect(screen.getByLabelText("Fecha de Inicio")).toHaveAttribute("id", "export-start-date");
+    expect(screen.getByLabelText("Fecha de Término")).toHaveAttribute("id", "export-end-date");
 
     const csvButton = screen.getByRole("button", { name: /Planilla Operativa \(CSV\)/i });
     fireEvent.click(csvButton);

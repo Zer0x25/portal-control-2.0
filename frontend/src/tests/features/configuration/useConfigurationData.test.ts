@@ -36,4 +36,10 @@ describe("useConfigurationData", () => {
     expect(result.current.activeTab).toBe("master-data");
     expect(setSearchParamsMock).toHaveBeenCalledWith({ tab: "master-data" });
   });
+
+  it("supports scheduled-reports tab from query param", () => {
+    currentSearchParams = new URLSearchParams("tab=scheduled-reports");
+    const { result } = renderHook(() => useConfigurationData());
+    expect(result.current.activeTab).toBe("scheduled-reports");
+  });
 });

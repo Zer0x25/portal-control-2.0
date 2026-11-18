@@ -27,6 +27,7 @@ interface EmailServiceStatus {
 }
 
 interface RuleEditorProps {
+  id: string;
   title: string;
   description: string;
   rule: { enabled: boolean; recipient: string };
@@ -35,6 +36,7 @@ interface RuleEditorProps {
 }
 
 const RuleEditor: React.FC<RuleEditorProps> = ({
+  id,
   title,
   description,
   rule,
@@ -54,9 +56,11 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
           </p>
         </div>
 
-        <label className="relative inline-flex items-center cursor-pointer">
+        <label htmlFor={id} className="relative inline-flex items-center cursor-pointer">
           <input
+            id={id}
             type="checkbox"
+            aria-label={`Habilitar regla: ${title}`}
             className="sr-only peer"
             checked={rule.enabled}
             onChange={(e) => onFieldChange("enabled", e.target.checked)}
@@ -114,6 +118,8 @@ export interface EmailCenterViewProps {
   isConfigModalOpen: boolean;
   rules: EmailNotificationRules;
   isLoadingRules: boolean;
+  rulesLoadError?: string | null;
+  isSavingRules?: boolean;
   setIsConfigModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   checkStatus: () => Promise<void>;
   handleRuleChange: (
@@ -143,6 +149,8 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
   isConfigModalOpen,
   rules,
   isLoadingRules,
+  rulesLoadError = null,
+  isSavingRules = false,
   setIsConfigModalOpen,
   checkStatus,
   handleRuleChange,
@@ -261,7 +269,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                   aria-label="Para, destinatario del correo"
                   aria-invalid={toError ? "true" : undefined}
                   aria-describedby={toError ? `${manualEmailFormProps.id}-to-error` : undefined}
-                  className="w-full bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
+                  className="w-full bg-transparent border-none outline-none text-[12px] font-bold tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
                 />
                 {toError && (
                   <p
@@ -292,7 +300,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                   aria-describedby={
                     subjectError ? `${manualEmailFormProps.id}-subject-error` : undefined
                   }
-                  className="w-full bg-transparent border-none outline-none text-[12px] font-bold uppercase tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
+                  className="w-full bg-transparent border-none outline-none text-[12px] font-bold tracking-tight text-token-text-primary placeholder:text-token-text-tertiary/40 focus:ring-0"
                 />
                 {subjectError && (
                   <p
@@ -370,9 +378,22 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 Sincronizando Motor de Reglas
               </p>
             </div>
+          ) : rulesLoadError ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-(--status-error) p-6 text-center">
+              <ExclamationTriangleIcon className="w-10 h-10" />
+              <p className="text-[11px] font-bold uppercase tracking-wider">{rulesLoadError}</p>
+              <Button
+                onClick={handleSaveRules}
+                disabled
+                className="w-full h-14 bg-token-surface-card border border-(--sidebar-text-active) text-(--sidebar-text-active) text-[11px] font-bold uppercase tracking-[0.2em] rounded-sm opacity-40"
+              >
+                Guardar Configuraciones de Alerta
+              </Button>
+            </div>
           ) : (
             <div className="space-y-4 flex-1">
               <RuleEditor
+                id="rule-autoCloseShift"
                 title="Cierres Masivos de Turno"
                 description="Alerta sobre jornadas críticas detectadas (>14h)."
                 rule={rules.autoCloseShift}
@@ -380,6 +401,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 emailRecipientsList={emailRecipientsList}
               />
               <RuleEditor
+                id="rule-latenessOver15"
                 title="Desviación de Ingreso (>15m)"
                 description="Detecta retrasos moderados en el cronograma."
                 rule={rules.latenessOver15}
@@ -387,6 +409,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
                 emailRecipientsList={emailRecipientsList}
               />
               <RuleEditor
+                id="rule-latenessOver60"
                 title="Atrasos Críticos (>60m)"
                 description="Notificación de urgencia por ausencias prolongadas."
                 rule={rules.latenessOver60}
@@ -397,9 +420,11 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
               <div className="mt-8 pt-6 border-t border-token-border-technical">
                 <Button
                   onClick={handleSaveRules}
-                  className="w-full h-14 bg-token-surface-card border border-(--sidebar-text-active) text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white text-[11px] font-bold uppercase tracking-[0.2em] transition-all rounded-sm"
+                  disabled={isSavingRules || Boolean(rulesLoadError)}
+                  loading={isSavingRules}
+                  className="w-full h-14 bg-token-surface-card border border-(--sidebar-text-active) text-(--sidebar-text-active) hover:bg-(--sidebar-text-active) hover:text-white text-[11px] font-bold uppercase tracking-[0.2em] transition-all rounded-sm disabled:opacity-40"
                 >
-                  Guardar Configuraciones de Alerta
+                  {isSavingRules ? "Guardando..." : "Guardar Configuraciones de Alerta"}
                 </Button>
               </div>
             </div>
