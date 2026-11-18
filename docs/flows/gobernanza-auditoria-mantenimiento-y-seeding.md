@@ -1,7 +1,8 @@
 # Flujo: Gobernanza, Auditoría, Mantenimiento y Seeding (`gobernanza-auditoria-mantenimiento-y-seeding`)
 
-**Estado:** `BUGS_REPRODUCIDOS`
+**Estado:** `SINCRONIZADO_Y_VERIFICADO`
 **Última actualización:** 2026-11-18
+**Spec de cierre:** [Spec 120](../../specs/120-corregir-gobernanza-auditoria-mantenimiento/spec.md)
 **Módulos backend:** `audit`, `admin`, `maintenance`, `HealthService`, `AdminService`, `auditService`, `securityAuditService`, `integrityMaintenanceService`, `backupService`, `backupHealthService`, `maintenanceService`, `seedingJobService`, `runtimeJobs`, `schedulerService`
 **Módulos frontend:** `governance` (`GovernanceHub`, `IntegritySummaryView`, `SecurityInsights`, `AuditLogsView`, `SystemMaintenance`, `BackupListModal`, `HealthStatusView`), `configuration` (`DeveloperPanel`, `SeedingOptionsModal`, `SeedingProgressModal`), `HealthDashboard`, `sidebarMenu`, `App.tsx`
 
@@ -135,3 +136,24 @@ Reproducción ejecutada por `ga-api-repro` (staging + Fastify aislado sobre Post
 - **Confirmado — `GET /api/health` público + drift:** retorna `200` sin auth exponiendo `nodeVersion`, `platform`, `arch`, `cpus`, `memory`, `os.loadAvg`, `database.size` y `backup.lastError`; falla validación contra `HealthStatusSchema`.
 - **Confirmado — `POST /api/audit-logs` y redacción:** roles `Usuario` y `Reloj_Control` obtienen `201`; `AuditLogSchema` exige `id`/`timestamp`/`actorUsername` ignorados por el servidor; `UNHANDLED_ERROR` guarda `details.message = "Error al procesar solicitud"` y `metadata.body/query = "[REDACTED]"` al redactar antes de persistir; `AdminService.getSecurityInsights()` devuelve `recentAlerts` sin redactar.
 - **Confirmado — Backups y Seeding:** `POST /api/admin/trigger-backup` devuelve `data.backupPath` absoluto; `POST /api/admin/restore` con `../etc/passwd` o archivo inexistente responde `500 INTERNAL_ERROR`; `GET /api/maintenance/seed/phase2/logs?jobId=any-id&limit=abc` responde `500` por `take: NaN`; `POST /api/maintenance/seed/phase2/pause` sobre job `completed` responde `200`.
+
+---
+
+## 4. Cierre y Verificación (Spec 120, 2026-11-18)
+
+- **Backend (`ed1b88b`):**
+  - `GET /api/health` público minimizado (`status`, `instanceId`, `timestamp`, `database.status`, `responseTime`) y detalle completo exclusivo para sesión `Administrador`; `HealthStatusSchema` y SDK OpenAPI sincronizados.
+  - `POST /api/audit-logs` restringido a `elevated` con `AuditLogSchema` actualizado (`id`, `timestamp`, `actorUsername` opcionales); `UNHANDLED_ERROR` preserva `details.message`; `AdminService.getSecurityInsights()` redacta `recentAlerts`.
+  - `POST /api/admin/trigger-backup` omite `finalPath` absoluto; `backupService.ts` usa `PGPASSWORD` en entorno en lugar de credenciales en CLI; `restoreDatabase` devuelve `ValidationError` (`400`) y `NotFoundError` (`404`).
+  - `GET /api/maintenance/seed/phase2/logs` valida `jobId` y `limit` con Zod; `seedingJobService` valida existencia y transiciones de estado (`404`/`409`).
+  - Migración de `setHours` local a helpers `America/Santiago` en `timePolicy.ts` y reemplazo de `console.*` por `logger` estructurado.
+- **Frontend (`12b39f6`):**
+  - RBAC alineado: `#/admin/tools` exclusivo `Administrador`, `GovernanceHub` filtra pestañas por rol (`Supervisor_Elevado` y `Fiscalizador` acceden a `integrity`, `audit`, `health`), `IntegritySummaryView` oculta "Ejecutar Auditoría Profunda" a `Fiscalizador`, y `SecurityInsights` muestra estado de error con reintento.
+  - Filtro `action` conectado en `useAuditLogsController.ts`; toast específico `data.data?.message` en `useAuditLogMutations.ts`.
+  - `AuditLogDesktopRow`/`MobileRow` extraídos fuera del render con `EmptyState` y soporte de teclado (`role="button"`, `tabIndex={0}`, `Enter`/`Space`); `ExportLogsModal` con `role="dialog"` y `Escape`; `BackupListModal` con `group-focus-within:opacity-100`; `window.confirm` reemplazado por `ConfirmationModal`; `HealthStatusView` adaptado al payload mínimo público.
+- **Verificación ejecutada:**
+  - `npm run lint:budget`: `0` errors / `0` warnings en backend y frontend.
+  - `cd backend && npm run check && npm run check:sdk` y `cd frontend && npm run check`: PASS.
+  - Vitest frontend (`src/tests/features/governance/`): 6/6 archivos, 25/25 tests PASS.
+  - Vitest backend (`spec120GovernanceFixes.test.ts`, `auditRedaction.test.ts`, `api-contract.test.ts`, `swagger.snapshot.generated.test.ts`): 4/4 archivos, 12/12 tests PASS.
+  - Staging (`http://127.0.0.1:8080`, `compose.staging.yaml`): verificación API (`curl`) y Playwright (`ga-verifier`) PASS con `0` errores HTTP >=400, `0` `console.error` y `0` `pageerror`.
