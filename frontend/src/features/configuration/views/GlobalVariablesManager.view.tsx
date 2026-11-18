@@ -374,12 +374,12 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                 <Switch
                   checked={isControlInternoEnabled}
                   aria-label="Habilitar módulo Control Interno"
-                  onChange={(val) =>
+                  onChange={(val) => {
                     updateConfig({
                       key: "is_control_interno_enabled",
                       value: val,
-                    })
-                  }
+                    }).catch(() => undefined);
+                  }}
                   size="md"
                 />
               </div>
