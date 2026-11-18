@@ -22,6 +22,7 @@ export type GovernanceHubTabId = "integrity" | "security" | "audit" | "system" |
 
 export interface GovernanceHubViewProps {
   activeTab: GovernanceHubTabId;
+  allowedTabs?: GovernanceHubTabId[];
   handleTabChange: (tabId: GovernanceHubTabId) => void;
 }
 
@@ -42,8 +43,14 @@ const tabs: Array<{
 */
 export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
   activeTab,
+  allowedTabs,
   handleTabChange,
 }) => {
+  const visibleTabs = allowedTabs ? tabs.filter((tab) => allowedTabs.includes(tab.id)) : tabs;
+  const resolvedActiveTab = visibleTabs.some((tab) => tab.id === activeTab)
+    ? activeTab
+    : (visibleTabs[0]?.id ?? "integrity");
+
   return (
     <Container
       variant="wide"
@@ -64,7 +71,7 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
         ariaLabel="Secciones de gobernanza"
         testId="governance-tabs"
         tabTestIdPrefix="governance-tab"
-        tabs={tabs.map((tab) => {
+        tabs={visibleTabs.map((tab) => {
           const Icon = tab.icon;
           return {
             id: tab.id,
@@ -72,18 +79,18 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
             icon: <Icon className="w-4 h-4" />,
           };
         })}
-        activeTab={activeTab}
+        activeTab={resolvedActiveTab}
         onTabChange={handleTabChange}
       />
 
       <div className="min-h-[600px]">
-        <div key={activeTab} className="animate-in fade-in slide-in-from-right-1">
+        <div key={resolvedActiveTab} className="animate-in fade-in slide-in-from-right-1">
           <Suspense fallback={<LazySectionFallback rows={6} className="py-6" />}>
-            {activeTab === "integrity" && <IntegritySummaryView />}
-            {activeTab === "security" && <SecurityInsightsView />}
-            {activeTab === "audit" && <AuditLogsView />}
-            {activeTab === "system" && <SystemMaintenanceView />}
-            {activeTab === "health" && <HealthStatusView />}
+            {resolvedActiveTab === "integrity" && <IntegritySummaryView />}
+            {resolvedActiveTab === "security" && <SecurityInsightsView />}
+            {resolvedActiveTab === "audit" && <AuditLogsView />}
+            {resolvedActiveTab === "system" && <SystemMaintenanceView />}
+            {resolvedActiveTab === "health" && <HealthStatusView />}
           </Suspense>
         </div>
       </div>

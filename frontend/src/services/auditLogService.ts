@@ -53,6 +53,9 @@ export interface AuditIntegrityStatus {
 /** Respuesta de las operaciones de escritura (el toast usa `message`). */
 interface AuditActionResponse {
   message?: string;
+  data?: {
+    message?: string;
+  };
   [key: string]: unknown;
 }
 

@@ -50,6 +50,7 @@ export const useAuditLogsController = () => {
       sortOrder: "desc" as "asc" | "desc",
       filters: {
         actorUsername: debouncedFilters.actorUsername,
+        action: debouncedFilters.action,
         category: debouncedFilters.categories,
         severity: debouncedFilters.severities,
         outcome: debouncedFilters.outcomes,

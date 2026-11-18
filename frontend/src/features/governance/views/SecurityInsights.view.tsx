@@ -26,6 +26,7 @@ interface SecurityStats {
 
 export interface SecurityInsightsViewProps {
   loading: boolean;
+  error?: string | null;
   stats: SecurityStats | null;
   alerts: AuditLog[];
   fetchInsights: () => Promise<void>;
@@ -33,6 +34,7 @@ export interface SecurityInsightsViewProps {
 
 export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
   loading,
+  error,
   stats,
   alerts,
   fetchInsights,
@@ -45,7 +47,46 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
     );
   }
 
-  if (!stats) return null;
+  if (error && !stats) {
+    return (
+      <Container variant="standard" noPadding data-ui-protected>
+        <Card className="p-8 text-center space-y-4 border-token-status-error/30 bg-token-status-error/5">
+          <div className="mx-auto w-12 h-12 rounded-full bg-token-status-error/10 flex items-center justify-center">
+            <ExclamationTriangleIcon className="w-6 h-6 text-token-status-error" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-tight">
+              No se pudo cargar la inteligencia de seguridad
+            </h3>
+            <p className="text-xs text-token-text-secondary" role="alert">
+              {error}
+            </p>
+          </div>
+          <div className="pt-2">
+            <Button
+              variant="secondary"
+              onClick={fetchInsights}
+              loading={loading}
+              className="h-10 px-4 rounded-sm border border-token-border-technical"
+            >
+              <ArrowPathIcon className="w-4 h-4 mr-2" />
+              Reintentar
+            </Button>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <Container variant="standard" noPadding data-ui-protected>
+        <Card className="p-8 text-center text-xs text-token-text-tertiary">
+          Sin datos de inteligencia de seguridad disponibles.
+        </Card>
+      </Container>
+    );
+  }
 
   return (
     <Container variant="standard" noPadding data-ui-protected className="space-y-6">

@@ -13,6 +13,7 @@ export const useBackupListModalController = ({ isOpen, onClose }: BackupListModa
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState<string | null>(null);
+  const [pendingRestoreFilename, setPendingRestoreFilename] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const { addToast } = useStore(
@@ -42,17 +43,17 @@ export const useBackupListModalController = ({ isOpen, onClose }: BackupListModa
   };
 
   const handleRestore = async (filename: string) => {
-    if (
-      !window.confirm(
-        `ADVERTENCIA: ¿Estás seguro de restaurar el backup ${filename}?\n\nEsta acción ELIMINARÁ todos los datos actuales y los reemplazará con el contenido del respaldo.\n\nEsta acción NO se puede deshacer.`,
-      )
-    ) {
-      return;
-    }
+    setPendingRestoreFilename(filename);
+  };
 
-    if (!window.confirm("CONFIRMACIÓN FINAL: ¿Realmente deseas sobrescribir la base de datos?")) {
-      return;
-    }
+  const cancelRestore = () => {
+    setPendingRestoreFilename(null);
+  };
+
+  const confirmRestore = async () => {
+    const filename = pendingRestoreFilename;
+    if (!filename) return;
+    setPendingRestoreFilename(null);
 
     setRestoring(filename);
     try {
@@ -78,7 +79,10 @@ export const useBackupListModalController = ({ isOpen, onClose }: BackupListModa
     backups,
     loading,
     restoring,
+    pendingRestoreFilename,
     error,
     handleRestore,
+    cancelRestore,
+    confirmRestore,
   };
 };

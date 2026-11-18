@@ -236,14 +236,19 @@ const App: React.FC = () => {
               element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=audit`} replace />}
             />
             <Route
-              path={ROUTES.ADMIN_TOOLS}
-              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />}
-            />
-            <Route
               path={ROUTES.INTEGRITY_DASHBOARD}
               element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
             />
           </Route>
+
+          <Route
+            path={ROUTES.ADMIN_TOOLS}
+            element={
+              <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                <Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             element={
