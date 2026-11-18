@@ -2,28 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 
-const { kioskFetch, portalEmployeesFetch, usersQueryEnablement } = vi.hoisted(() => ({
+const { kioskFetch, portalEmployeesFetch } = vi.hoisted(() => ({
   kioskFetch: vi.fn().mockResolvedValue([]),
   portalEmployeesFetch: vi.fn().mockResolvedValue([]),
-  usersQueryEnablement: [] as boolean[],
 }));
 
 vi.mock("../../services/employeeService", () => ({
   employeeService: {
     getKioskEmployees: (...args: unknown[]) => kioskFetch(...args),
     getAll: (...args: unknown[]) => portalEmployeesFetch(...args),
-  },
-}));
-
-vi.mock("../../hooks/useUsers", () => ({
-  useUsers: (options?: { enabled?: boolean }) => {
-    usersQueryEnablement.push(options?.enabled ?? true);
-    return {
-      users: [],
-      deleteUser: vi.fn(),
-      addUser: vi.fn(),
-      refetchUsers: vi.fn(async () => ({ data: [] })),
-    };
   },
 }));
 
@@ -48,7 +35,6 @@ describe("query pública de empleados para kiosco", () => {
   beforeEach(() => {
     kioskFetch.mockClear();
     portalEmployeesFetch.mockClear();
-    usersQueryEnablement.length = 0;
     client = new QueryClient({
       defaultOptions: { queries: { retry: false, gcTime: 0 } },
     });
@@ -67,7 +53,6 @@ describe("query pública de empleados para kiosco", () => {
     renderHook(() => useEmployees(), { wrapper });
 
     expect(kioskFetch).not.toHaveBeenCalled();
-    expect(usersQueryEnablement).toEqual([false]);
   });
 
   it("mantiene la carga pública de kiosco sin requerir un token ni disparar GET /api/employees", async () => {
@@ -75,7 +60,6 @@ describe("query pública de empleados para kiosco", () => {
 
     await waitFor(() => expect(kioskFetch).toHaveBeenCalledTimes(1));
     expect(portalEmployeesFetch).not.toHaveBeenCalled();
-    expect(usersQueryEnablement).toEqual([false]);
   });
 
   it("expone isError real y refetchKioskEmployees cuando falla la carga pública de kiosco", async () => {

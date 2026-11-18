@@ -1,6 +1,6 @@
 # Flujo: Gestión de personal y usuarios (`gestion-personal-y-usuarios`)
 
-- **Estado:** `REPLICADO_CON_HALLAZGOS` — Fase 2 completada; `7` bugs confirmados y `3` dudas de negocio abiertas.
+- **Estado:** `SINCRONIZADO_Y_VERIFICADO` — Spec 116 implementada y verificada localmente y en staging (ver sección 7).
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `personnel-management`, `employee-management`, `user-management`, `employees`, `users`, `EmployeeService`, `UserService`, `useEmployeeManagementData`, `useUserManagementData`, `useEmployees`, `useUsers`. En UI, `#/personnel-management` y `#/employee-management` admiten `Administrador`, `Supervisor_Elevado`, `Supervisor` y `Reloj_Control`; `#/user-management` admite `Administrador` y `Supervisor_Elevado` (`App.tsx`). En API, `/api/employees*` varía según endpoint (`kiosk` público, `GET /api/employees` y `clocking-options` autenticados sin `Kiosk_Employee`, escrituras para `Administrador`/`Supervisor_Elevado`/`Supervisor`/`Reloj_Control`, `PUT /api/employees/:id` también para `Kiosk_Employee` sobre sí mismo); `/api/users*` admite `Administrador` y `Supervisor_Elevado` en `GET`, solo `Administrador` en `POST`/`DELETE`, y `Administrador` o propio usuario (solo `password`) en `PUT /api/users/:id`.
 - **Entradas:** UI `#/personnel-management` (redirecciones `#/employee-management` -> `?tab=employees` y `#/user-management` -> `?tab=users`); API `GET /api/employees/kiosk`, `GET /api/employees/clocking-options`, `GET/POST /api/employees`, `PUT /api/employees/:id`, `POST /api/employees/bulk`, `GET /api/employees/export`, `GET/POST /api/users`, `PUT/DELETE /api/users/:id`.
@@ -102,7 +102,7 @@ flowchart TD
   - Al editar usuario y elegir `"-- SIN ASIGNAR --"`, `PUT /api/users/:id` omite `employeeId` del body y la vinculación previa persiste tras recargar.
   - Con fallo `500` simulado en `**/api/users/**`, resetear contraseña cierra el modal y muestra toast falso positivo `ÉXITO`, y guardar usuario cierra el modal sin toast de error.
 
-## 5. Bugs confirmados
+## 5. Bugs confirmados (resueltos en Spec 116)
 
 - **[BUG-01]** Pestaña `"Accesos"` sin botón `"Nuevo Usuario"` en modo embebido (`UserManagement.view.tsx`) y `UserForm` bloqueado por validación Zod (`password` vacío vs mínimo 6 caracteres sin input en pantalla).
 - **[BUG-02]** `EmployeeManagement.view.tsx` fija `hasLinkedUser={false}` en edición y valida RUT duplicado solo contra `processedEmployees` en lugar de todos los empleados (`active + archived`).
@@ -112,8 +112,18 @@ flowchart TD
 - **[BUG-06]** `EmployeeService` guarda PIN inicial en texto plano si el RUT tiene puntos, `resolveEmployeeId` colisiona en `POST /api/employees` concurrentes, `EmployeeFlows.update` ejecuta `ensureUser`/`syncEmployeeStatus` fuera de transacción y `createBulkEmployees` no es transaccional.
 - **[BUG-07]** `DELETE /api/users/:id` permite que un `Administrador` se elimine a sí mismo.
 
-## 6. Dudas de negocio abiertas
+## 6. Dudas de negocio resueltas
 
-- **[DUDA-01]** **Ciclo de vida del `User` al archivar/reactivar un empleado:** ¿Mantener al usuario en BD con `role: "Archivado"` y restaurarlo al reactivar (quitando `DELETE /api/users/:id` y `POST /api/users` redundantes del frontend) o eliminarlo físicamente también en backend?
-- **[DUDA-02]** **Permisos de `Supervisor_Elevado` en `"Accesos"` / `/api/users`:** ¿Mantener `Supervisor_Elevado` en solo lectura en `"Accesos"` (ocultando botón `"Nuevo Usuario"` y acciones de escritura para ese rol) o habilitarle creación/edición de usuarios?
-- **[DUDA-03]** **Visibilidad en `GET /api/employees` para `Usuario` sin `employeeId` y `Supervisor`:** ¿Alinear `GET /api/employees` con `clocking-options` (`[]` para `Usuario` sin `employeeId` y filtro por `area` para `Supervisor`) o solo restringir `Usuario` sin `employeeId` manteniendo todas las áreas para `Supervisor`?
+- **[DUDA-01] (`1.A`):** El ciclo de vida del `User` al archivar/reactivar un empleado se delega al backend (`PUT /api/employees/:id`), conservando el usuario con `role: "Archivado"` y restaurándolo a `"Usuario"` al reactivar, sin `DELETE`/`POST` redundantes desde el frontend.
+- **[DUDA-02] (`2.B`):** `Supervisor_Elevado` queda habilitado en UI y `/api/users*` para crear, editar y eliminar usuarios no-`Administrador`, con bloqueo estricto en backend y UI sobre cuentas o asignación de rol `"Administrador"`.
+- **[DUDA-03] (`3.A`):** `GET /api/employees` queda alineado con `clocking-options` (`[]` para `Usuario` sin `employeeId` y filtrado por `area` para `Supervisor`).
+
+## 7. Verificación de correcciones (Spec 116)
+
+- **Backend:** `npm run check`, `npm run lint`, `npm run check:sdk` (`✅ SDK is fully synchronized.`), `npm run test:schemas-refactor` (`3/3`, `12/12`), unitarios (`tests/unit/employeeFlows.test.ts`, `employeeServicePin.anti-regression.test.ts`, `employeeServiceList.test.ts`, `userFlows.test.ts`) e integración PostgreSQL 18.4 (`run-fastify-isolated.cjs tests/fastify-integration/employees.test.ts tests/fastify-integration/users.test.ts`) en verde.
+- **Frontend:** `npm run check`, `npm run lint`, `10/10` archivos y `52/52` tests (`personnel-management`, `employee-management`, `user-management`, `employeeAndUserForms.test.tsx`, `useEmployeesQueryGating.test.tsx`, `useUsersQuery.test.tsx`) en verde.
+- **Staging vivo (`http://127.0.0.1:8080`, Playwright headless):**
+  - `Administrador` en `?tab=users`: botón `"Nuevo Usuario"` visible, alta con `"123456"` -> `201`, desvinculación de `employeeId` envía `null` y persiste tras recargar, fallo `500` simulado mantiene modal abierto y muestra toast de error.
+  - `Supervisor_Elevado` en `?tab=users`: botón `"Nuevo Usuario"` visible, acciones habilitadas en no-`Administrador`, fila `Administrador` protegida sin edición/borrado, y API devuelve `403` ante mutación o escalación de `"Administrador"`.
+  - `"Empleados"`: `hasLinkedUser` oculta `"Generar Cuenta de Acceso Asociada"` cuando ya hay usuario vinculado, RUT duplicado de archivado bloqueado en cliente, archivar/reactivar dispara solo `PUT /api/employees/:id`.
+  - API: `GET /api/users?page=0&pageSize=1` y `?page=abc&pageSize=1` -> `400`, auto-eliminación `DELETE /api/users/<self>` -> `400 VALIDATION_ERROR`.
