@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.41.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.40.1...v8.41.0) (2026-11-18)
+
+
+### Features
+
+* **qa:** complete 11-flow QA and SDD audit with fixes (Specs 111-120) ([#168](https://github.com/Zer0x25/portal-control-2.0/issues/168)) ([c3457d7](https://github.com/Zer0x25/portal-control-2.0/commit/c3457d76fb0ad4adcbcfac56d45591371c7036ea))
+
 ## [8.40.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.40.0...v8.40.1) (2026-11-12)
 
 
