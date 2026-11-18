@@ -7,6 +7,8 @@ import { SocketService } from "../../src/services/socketService";
 vi.mock("../../src/services/db", () => ({
   default: {
     holiday: {
+      create: vi.fn(),
+      update: vi.fn(),
       upsert: vi.fn(),
       findUnique: vi.fn(),
       delete: vi.fn(),
@@ -49,12 +51,13 @@ describe("HolidayService", () => {
   });
 
   describe("upsertHoliday", () => {
-    it("successfully creates/updates a holiday with explicit id and type", async () => {
+    it("successfully updates an existing holiday by id with explicit type and isRenounceable", async () => {
       const holidayData = {
         id: "custom-id-1",
         date: "2026-05-01",
         name: "Día del Trabajador",
-        type: "Irrenunciable",
+        type: "Nacional",
+        isRenounceable: true,
       };
 
       const mockResult = {
@@ -62,20 +65,20 @@ describe("HolidayService", () => {
         date: holidayData.date,
         name: holidayData.name,
         type: holidayData.type,
+        isRenounceable: true,
       };
 
-      vi.mocked(prisma.holiday.upsert).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.holiday.update).mockResolvedValue(mockResult as never);
 
       const result = await service.upsertHoliday(holidayData, "admin-user");
 
-      expect(prisma.holiday.upsert).toHaveBeenCalledWith({
-        where: { date: "2026-05-01" },
-        update: { name: "Día del Trabajador", type: "Irrenunciable" },
-        create: {
-          id: "custom-id-1",
+      expect(prisma.holiday.update).toHaveBeenCalledWith({
+        where: { id: "custom-id-1" },
+        data: {
           date: "2026-05-01",
           name: "Día del Trabajador",
-          type: "Irrenunciable",
+          type: "Nacional",
+          isRenounceable: true,
         },
       });
 
@@ -90,7 +93,7 @@ describe("HolidayService", () => {
       expect(result).toEqual(mockResult);
     });
 
-    it("uses default ULID and default type 'Nacional' when not provided", async () => {
+    it("creates a new holiday with default ULID, type 'Nacional', and isRenounceable false when id is omitted", async () => {
       const holidayData = {
         date: "2026-09-18",
         name: "Fiestas Patrias",
@@ -101,20 +104,20 @@ describe("HolidayService", () => {
         date: holidayData.date,
         name: holidayData.name,
         type: "Nacional",
+        isRenounceable: false,
       };
 
-      vi.mocked(prisma.holiday.upsert).mockResolvedValue(mockResult as never);
+      vi.mocked(prisma.holiday.create).mockResolvedValue(mockResult as never);
 
       const result = await service.upsertHoliday(holidayData, "editor-user");
 
-      expect(prisma.holiday.upsert).toHaveBeenCalledWith({
-        where: { date: "2026-09-18" },
-        update: { name: "Fiestas Patrias", type: "Nacional" },
-        create: {
+      expect(prisma.holiday.create).toHaveBeenCalledWith({
+        data: {
           id: "mocked-ulid-123",
           date: "2026-09-18",
           name: "Fiestas Patrias",
           type: "Nacional",
+          isRenounceable: false,
         },
       });
 
@@ -129,8 +132,31 @@ describe("HolidayService", () => {
       expect(result).toEqual(mockResult);
     });
 
+    it("maps P2002 on create/update to ConflictError and P2025 on update to NotFoundError", async () => {
+      vi.mocked(prisma.holiday.create).mockRejectedValueOnce({ code: "P2002" });
+      await expect(
+        service.upsertHoliday({ date: "2026-09-18", name: "Duplicado" }, "admin-user"),
+      ).rejects.toMatchObject({ statusCode: 409 });
+
+      vi.mocked(prisma.holiday.update).mockRejectedValueOnce({ code: "P2025" });
+      await expect(
+        service.upsertHoliday(
+          { id: "missing-id", date: "2026-09-18", name: "Inexistente" },
+          "admin-user",
+        ),
+      ).rejects.toMatchObject({ statusCode: 404 });
+
+      vi.mocked(prisma.holiday.update).mockRejectedValueOnce({ code: "P2002" });
+      await expect(
+        service.upsertHoliday(
+          { id: "existing-id", date: "2026-09-18", name: "Fecha ocupada" },
+          "admin-user",
+        ),
+      ).rejects.toMatchObject({ statusCode: 409 });
+    });
+
     it("propagates database errors and does not log audit or emit socket events", async () => {
-      vi.mocked(prisma.holiday.upsert).mockRejectedValue(new Error("Database connection error"));
+      vi.mocked(prisma.holiday.create).mockRejectedValue(new Error("Database connection error"));
 
       await expect(
         service.upsertHoliday({ date: "2026-12-25", name: "Navidad" }, "admin-user"),
@@ -248,17 +274,24 @@ describe("HolidayService", () => {
       expect(prisma.holiday.upsert).toHaveBeenCalledTimes(2);
       expect(prisma.holiday.upsert).toHaveBeenNthCalledWith(1, {
         where: { date: "2026-01-01" },
-        update: { name: "Año Nuevo", type: "Nacional" },
-        create: { id: "h-1", date: "2026-01-01", name: "Año Nuevo", type: "Nacional" },
+        update: { name: "Año Nuevo", type: "Nacional", isRenounceable: false },
+        create: {
+          id: "h-1",
+          date: "2026-01-01",
+          name: "Año Nuevo",
+          type: "Nacional",
+          isRenounceable: false,
+        },
       });
       expect(prisma.holiday.upsert).toHaveBeenNthCalledWith(2, {
         where: { date: "2026-12-25" },
-        update: { name: "Navidad", type: "Nacional" },
+        update: { name: "Navidad", type: "Nacional", isRenounceable: false },
         create: {
           id: "mocked-ulid-123",
           date: "2026-12-25",
           name: "Navidad",
           type: "Nacional",
+          isRenounceable: false,
         },
       });
 

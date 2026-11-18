@@ -173,7 +173,7 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
     expect(deleted.body).toEqual({ success: true, message: "Ausencia finalizada" });
     expect(
       await prismaDirect.leaveRecord.findUnique({ where: { id: "leave-edit" } }),
-    ).toMatchObject({ isDeleted: true, endDate: date(-1) });
+    ).toMatchObject({ isDeleted: true, endDate: date(3) });
     const rows = await prismaDirect.timeRecord.findMany({ orderBy: { date: "asc" } });
     expect(rows.map((r) => r.isDeleted)).toEqual([true, false, true]);
     expect((await http("GET", "/api/leaves?showArchived=true")).body.data).toHaveLength(0);
@@ -370,10 +370,15 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
       expect(SocketService.emit).not.toHaveBeenCalled();
     },
   );
-  it("allows Reloj_Control leaves but refuses correction resolution", async () => {
+  it("allows Reloj_Control and Fiscalizador read-only leaves and refuses writes and correction resolution", async () => {
+    await http("POST", "/api/leaves", leave({ id: "leave-readonly-target" }));
+    for (const role of ["Reloj_Control", "Fiscalizador"] as const) {
+      await prismaDirect.user.update({ where: { id: actorId }, data: { role } });
+      expect((await http("GET", "/api/leaves")).status).toBe(200);
+      expect((await http("POST", "/api/leaves", leave({ startDate: date(5), endDate: date(6) }))).status).toBe(403);
+      expect((await http("DELETE", "/api/leaves/leave-readonly-target")).status).toBe(403);
+    }
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Reloj_Control" } });
-    expect((await http("POST", "/api/leaves", leave())).status).toBe(201);
-    expect((await http("GET", "/api/leaves")).status).toBe(200);
     expect(
       (
         await http("PATCH", "/api/corrections/missing/status", {
@@ -382,6 +387,33 @@ describe("Spec 016 leaves/corrections on Fastify", () => {
         })
       ).status,
     ).toBe(403);
+  });
+  it("filters leaves on the server by type and employee search (name/RUT)", async () => {
+    const otherEmp = await prismaDirect.employee.create({
+      data: {
+        id: "search-emp",
+        name: "María González",
+        rut: "98765432-1",
+        position: "Analyst",
+        area: "HR",
+        workdayType: "Normal",
+      },
+    });
+    await http("POST", "/api/leaves", leave({ id: "l-vac", type: "Vacaciones" }));
+    await http(
+      "POST",
+      "/api/leaves",
+      leave({ id: "l-med", employeeId: otherEmp.id, type: "Licencia Médica" }),
+    );
+    const byType = await http("GET", "/api/leaves?type=Vacaciones");
+    expect(byType.status).toBe(200);
+    expect(byType.body.data.map((r: { id: string }) => r.id)).toEqual(["l-vac"]);
+    const byName = await http("GET", "/api/leaves?search=González");
+    expect(byName.status).toBe(200);
+    expect(byName.body.data.map((r: { id: string }) => r.id)).toEqual(["l-med"]);
+    const byRut = await http("GET", "/api/leaves?search=98765432");
+    expect(byRut.status).toBe(200);
+    expect(byRut.body.data.map((r: { id: string }) => r.id)).toEqual(["l-med"]);
   });
   it("validates correction input and denies foreign ownership with the exact legacy payload", async () => {
     await seedRecord();

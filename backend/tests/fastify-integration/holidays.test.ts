@@ -11,7 +11,7 @@ let app: FastifyInstance;
 const body = { date: "2026-10-10", name: "Feriado integración", type: "Nacional" };
 async function session(
   username: string,
-  role: "Supervisor" | "Usuario" = "Supervisor",
+  role: "Supervisor" | "Usuario" | "Reloj_Control" | "Fiscalizador" = "Supervisor",
   claimRole: string = role,
 ) {
   const user = await prismaDirect.user.create({
@@ -119,25 +119,112 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
         async () =>
           (
             await prisma.auditLog.findMany({
-              where: { action: "HOLIDAY_UPSERT", actorUsername: { in: ["alice", "bob"] } },
+              where: {
+                action: { in: ["HOLIDAY_UPSERT", "HOLIDAY_CREATE"] },
+                actorUsername: { in: ["alice", "bob"] },
+              },
             })
           ).length,
       )
       .toBe(4);
     expect(events).toHaveBeenCalledTimes(2);
   });
-  it("denies writes with the persisted role even when JWT claims administrator", async () => {
-    const actor = await session("reader", "Usuario", "Administrador");
+  it("denies writes for Usuario, Reloj_Control, and Fiscalizador while allowing GET for Reloj_Control and Fiscalizador", async () => {
+    const reader = await session("reader", "Usuario", "Administrador");
     for (const [method, url, payload] of [
       ["POST", "/api/holidays", body],
       ["POST", "/api/holidays/bulk", [body]],
       ["POST", "/api/holidays/sync", { year: 2026 }],
       ["DELETE", "/api/holidays/id", undefined],
     ] as const)
-      expect((await app.inject({ method, url, payload, headers: actor.headers })).statusCode).toBe(
+      expect((await app.inject({ method, url, payload, headers: reader.headers })).statusCode).toBe(
         403,
       );
+    for (const role of ["Reloj_Control", "Fiscalizador"] as const) {
+      const ro = await session(`ro-${role}`, role);
+      expect(
+        (await app.inject({ url: "/api/holidays?showArchived=true", headers: ro.headers }))
+          .statusCode,
+      ).toBe(200);
+      for (const [method, url, payload] of [
+        ["POST", "/api/holidays", body],
+        ["POST", "/api/holidays/bulk", [body]],
+        ["POST", "/api/holidays/sync", { year: 2026 }],
+        ["DELETE", "/api/holidays/id", undefined],
+      ] as const)
+        expect((await app.inject({ method, url, payload, headers: ro.headers })).statusCode).toBe(
+          403,
+        );
+    }
     expect(await prisma.holiday.count()).toBe(0);
+  });
+  it("supports isRenounceable, updates date by id without 409, and rejects duplicate date without id or colliding id", async () => {
+    const actor = await session("editor-supervisor");
+    const first = await app.inject({
+      method: "POST",
+      url: "/api/holidays",
+      payload: { ...body, isRenounceable: true },
+      headers: actor.headers,
+    });
+    expect(first.statusCode).toBe(201);
+    const firstJson = first.json();
+    expect(firstJson.isRenounceable).toBe(true);
+
+    // Duplicate date without id -> 409
+    const dup = await app.inject({
+      method: "POST",
+      url: "/api/holidays",
+      payload: { date: body.date, name: "Duplicado", type: "Nacional" },
+      headers: actor.headers,
+    });
+    expect(dup.statusCode).toBe(409);
+
+    // Edit by id moving date -> 201 and same id
+    const moved = await app.inject({
+      method: "POST",
+      url: "/api/holidays",
+      payload: {
+        id: firstJson.id,
+        date: "2026-10-15",
+        name: "Feriado Movido",
+        type: "Regional",
+        isRenounceable: false,
+      },
+      headers: actor.headers,
+    });
+    expect(moved.statusCode).toBe(201);
+    expect(moved.json()).toMatchObject({
+      id: firstJson.id,
+      date: "2026-10-15",
+      name: "Feriado Movido",
+      type: "Regional",
+      isRenounceable: false,
+    });
+    expect(await prisma.holiday.count()).toBe(1);
+
+    // Edit non-existent id -> 404
+    const missing = await app.inject({
+      method: "POST",
+      url: "/api/holidays",
+      payload: { id: "missing-holiday-id", date: "2026-10-20", name: "No Existe", type: "Nacional" },
+      headers: actor.headers,
+    });
+    expect(missing.statusCode).toBe(404);
+
+    // Edit by id to an already occupied date -> 409
+    await app.inject({
+      method: "POST",
+      url: "/api/holidays",
+      payload: { date: "2026-10-25", name: "Otro", type: "Nacional" },
+      headers: actor.headers,
+    });
+    const collision = await app.inject({
+      method: "POST",
+      url: "/api/holidays",
+      payload: { id: firstJson.id, date: "2026-10-25", name: "Colisión", type: "Nacional" },
+      headers: actor.headers,
+    });
+    expect(collision.statusCode).toBe(409);
   });
   it("validates entire bulk, then creates and deletes with actual DB status mapping", async () => {
     const actor = await session("bulk-supervisor");
@@ -189,7 +276,10 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
         new Response(
           JSON.stringify({
             status: "success",
-            data: [{ date: "2026-01-01", title: "Año Nuevo", inalienable: true }],
+            data: [
+              { date: "2026-01-01", title: "Año Nuevo", inalienable: true },
+              { date: "2026-04-03", title: "Viernes Santo", inalienable: false },
+            ],
           }),
           { headers: { "content-type": "application/json" } },
         ),
@@ -202,9 +292,15 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
       headers: actor.headers,
     });
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ success: true, total: 1, year: 2026 });
-    expect(await prisma.holiday.count()).toBe(1);
-    expect(events).toHaveBeenCalledWith("holiday:updated", { type: "sync", count: 1 });
+    expect(response.json()).toEqual({ success: true, total: 2, year: 2026 });
+    expect(await prisma.holiday.count()).toBe(2);
+    expect(
+      (await prisma.holiday.findUniqueOrThrow({ where: { date: "2026-01-01" } })).isRenounceable,
+    ).toBe(false);
+    expect(
+      (await prisma.holiday.findUniqueOrThrow({ where: { date: "2026-04-03" } })).isRenounceable,
+    ).toBe(true);
+    expect(events).toHaveBeenCalledWith("holiday:updated", { type: "sync", count: 2 });
     fetcher.mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -236,7 +332,7 @@ describe("Fastify + shared authentication + extended Prisma on real PostgreSQL",
         })
       ).statusCode,
     ).toBe(500);
-    expect(await prisma.holiday.count()).toBe(1);
+    expect(await prisma.holiday.count()).toBe(2);
     expect(events).toHaveBeenCalledTimes(1);
     expect(
       await prisma.auditLog.count({

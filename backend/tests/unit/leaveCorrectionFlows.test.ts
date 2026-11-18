@@ -29,13 +29,24 @@ function corrections() {
 describe("Spec 016 application TDD", () => {
   it("preserves leave numeric defaults and response envelope", async () => {
     const f = leaves();
-    expect(await f.flows.list({ page: "2", pageSize: "0", showArchived: "true" }, user)).toEqual({
+    expect(
+      await f.flows.list(
+        { page: "2", pageSize: "0", showArchived: "true", type: "Vacaciones", search: "ana" },
+        user,
+      ),
+    ).toEqual({
       success: true,
       data: [],
       meta: { total: 3, page: 2, pageSize: 50, totalPages: 1 },
     });
     expect(f.service.list).toHaveBeenCalledWith(
-      expect.objectContaining({ page: 2, pageSize: 50, showArchived: true }),
+      expect.objectContaining({
+        page: 2,
+        pageSize: 50,
+        showArchived: true,
+        type: "Vacaciones",
+        search: "ana",
+      }),
       { role: "Usuario", employeeId: "e" },
     );
   });

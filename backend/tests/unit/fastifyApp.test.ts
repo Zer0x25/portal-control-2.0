@@ -44,13 +44,37 @@ function fixture(config: Partial<FastifyConfig> = {}) {
     return value;
   }
   const seenContexts: (string | undefined)[] = [];
+  const trackWrite = async <T>(data: T) => {
+    seenContexts.push(requestContext.getStore()?.username);
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    seenContexts.push(requestContext.getStore()?.username);
+    return data;
+  };
   const repository = {
-    upsert: vi.fn(async (data: { id: string; date: string; name: string; type: string }) => {
-      seenContexts.push(requestContext.getStore()?.username);
-      await new Promise((resolve) => setTimeout(resolve, 2));
-      seenContexts.push(requestContext.getStore()?.username);
-      return { ...data, createdAt: new Date(0), updatedAt: new Date(0) };
-    }),
+    create: vi.fn(
+      async (data: {
+        id: string;
+        date: string;
+        name: string;
+        type: string;
+        isRenounceable: boolean;
+      }) => trackWrite({ ...data, createdAt: new Date(0), updatedAt: new Date(0) }),
+    ),
+    updateById: vi.fn(
+      async (
+        id: string,
+        data: { date: string; name: string; type: string; isRenounceable: boolean },
+      ) => trackWrite({ id, ...data, createdAt: new Date(0), updatedAt: new Date(0) }),
+    ),
+    upsertByDate: vi.fn(
+      async (data: {
+        id: string;
+        date: string;
+        name: string;
+        type: string;
+        isRenounceable: boolean;
+      }) => trackWrite({ ...data, createdAt: new Date(0), updatedAt: new Date(0) }),
+    ),
     findSummary: vi.fn(async () => ({ date: body.date, name: body.name })),
     delete: vi.fn(async () => ({})),
   };
@@ -265,7 +289,8 @@ describe("Fastify foundation with real JWT/session rules", () => {
   ] as const)("rejects unauthenticated %s %s before effects", async (method, url, payload) => {
     const f = fixture();
     expect((await f.app.inject({ method, url, payload })).statusCode).toBe(401);
-    expect(f.repository.upsert).not.toHaveBeenCalled();
+    expect(f.repository.create).not.toHaveBeenCalled();
+    expect(f.repository.upsertByDate).not.toHaveBeenCalled();
     expect(f.repository.delete).not.toHaveBeenCalled();
     expect(f.provider.list).not.toHaveBeenCalled();
   });
@@ -279,12 +304,12 @@ describe("Fastify foundation with real JWT/session rules", () => {
     });
     expect(response.statusCode).toBe(400);
     expect(response.json().code).toBe("INVALID_JSON");
-    expect(f.repository.upsert).not.toHaveBeenCalled();
+    expect(f.repository.create).not.toHaveBeenCalled();
   });
   it("builds without listening or database activity", () => {
     const f = fixture();
     expect(f.app.server.listening).toBe(false);
-    expect(f.repository.upsert).not.toHaveBeenCalled();
+    expect(f.repository.create).not.toHaveBeenCalled();
   });
   it("serves authenticated GET and legacy pagination mapping", async () => {
     const f = fixture();
@@ -348,7 +373,8 @@ describe("Fastify foundation with real JWT/session rules", () => {
         headers: { authorization: `Bearer ${f.token("reader", "Usuario", "Administrador")}` },
       });
       expect(response.statusCode).toBe(403);
-      expect(f.repository.upsert).not.toHaveBeenCalled();
+      expect(f.repository.create).not.toHaveBeenCalled();
+      expect(f.repository.upsertByDate).not.toHaveBeenCalled();
       expect(f.repository.delete).not.toHaveBeenCalled();
       expect(f.provider.list).not.toHaveBeenCalled();
       expect(f.audit).not.toHaveBeenCalled();
@@ -409,13 +435,14 @@ describe("Fastify foundation with real JWT/session rules", () => {
     });
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ success: false, code: "VALIDATION_ERROR" });
-    expect(f.repository.upsert).not.toHaveBeenCalled();
+    expect(f.repository.create).not.toHaveBeenCalled();
+    expect(f.repository.upsertByDate).not.toHaveBeenCalled();
     expect(f.provider.list).not.toHaveBeenCalled();
   });
   it("keeps request context isolated across concurrent awaits", async () => {
     const f = fixture();
     const actors: string[] = [];
-    f.repository.upsert.mockImplementation(async (row) => {
+    f.repository.create.mockImplementation(async (row) => {
       const before = requestContext.getStore()?.username;
       await new Promise((resolve) => setTimeout(resolve, before === "alice" ? 15 : 1));
       expect(requestContext.getStore()?.username).toBe(before);

@@ -19,6 +19,7 @@ export interface HolidayUpsertData {
   date: string;
   name: string;
   type?: string | null;
+  isRenounceable?: boolean;
 }
 
 /** Row shape of a bulk import; same fields as an upsert payload. */
@@ -27,6 +28,7 @@ export interface BulkHolidayInput {
   date: string;
   name: string;
   type?: string | null;
+  isRenounceable?: boolean;
 }
 
 export class HolidayService {
@@ -51,6 +53,8 @@ export class HolidayService {
   private commands() {
     return createHolidayCommands({
       repository: createPrismaHolidayCommands({
+        create: (args) => prisma.holiday.create(args),
+        update: (args) => prisma.holiday.update(args),
         upsert: (args) => prisma.holiday.upsert(args),
         findUnique: (args) => prisma.holiday.findUnique(args),
         delete: (args) => prisma.holiday.delete(args),
