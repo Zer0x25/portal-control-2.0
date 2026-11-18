@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
+import { useAppForm } from "../../../hooks/useAppForm";
 import { useToasts } from "../../../hooks/useToasts";
 import {
   scheduledReportService,
@@ -41,6 +42,97 @@ const EMPTY_FORM: ScheduledReportFormValues = {
 
 const cronRegex = /^(\S+\s+){4}\S+$/;
 const emailSchema = z.string().trim().email();
+
+const scheduledReportFormSchema = z
+  .object({
+    name: z.string(),
+    description: z.string(),
+    reportType: z.enum([
+      "attendance_summary",
+      "overtime",
+      "anomalies",
+      "shift_coverage",
+      "calendar",
+      "detailed",
+      "shift_report",
+    ]),
+    frequency: z.enum(["daily", "weekly", "monthly"]),
+    cronExpression: z.string(),
+    recipientsText: z.string(),
+    shiftReportId: z.string(),
+    isActive: z.boolean(),
+  })
+  .superRefine((values, ctx) => {
+    if (!values.name.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["name"],
+        message: "El nombre del reporte es obligatorio.",
+      });
+    }
+
+    if (!cronRegex.test(values.cronExpression.trim())) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["cronExpression"],
+        message: "La expresión cron debe tener 5 campos (ej. 0 8 * * *).",
+      });
+    }
+
+    const recipients = values.recipientsText
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    if (recipients.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["recipientsText"],
+        message: "Debe ingresar al menos un destinatario válido.",
+      });
+    } else {
+      for (const recipient of recipients) {
+        if (!emailSchema.safeParse(recipient).success) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["recipientsText"],
+            message: `Correo destinatario inválido: ${recipient}`,
+          });
+          break;
+        }
+      }
+    }
+
+    if (values.reportType === "shift_report" && !values.shiftReportId.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["shiftReportId"],
+        message: "El tipo 'Reporte de Turno' requiere indicar un ID de reporte de turno.",
+      });
+    }
+  });
+
+const buildScheduledReportPayload = (values: ScheduledReportFormValues): ScheduledReportInput => {
+  const name = values.name.trim();
+  const description = values.description.trim();
+  const cronExpression = values.cronExpression.trim();
+  const recipients = values.recipientsText
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const shiftReportId = values.shiftReportId.trim();
+
+  return {
+    name,
+    ...(description ? { description } : {}),
+    reportType: values.reportType,
+    frequency: values.frequency,
+    cronExpression,
+    recipients,
+    ...(values.reportType === "shift_report" ? { filters: { shiftReportId } } : {}),
+    isActive: values.isActive,
+  };
+};
 
 export const validateScheduledReportForm = (
   values: ScheduledReportFormValues,
@@ -104,9 +196,7 @@ export const useScheduledReportsController = () => {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<ScheduledReport | null>(null);
-  const [formValues, setFormValues] = useState<ScheduledReportFormValues>(EMPTY_FORM);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [reportToDelete, setReportToDelete] = useState<ScheduledReport | null>(null);
@@ -131,16 +221,43 @@ export const useScheduledReportsController = () => {
     loadReports();
   }, [loadReports]);
 
+  const form = useAppForm<ScheduledReportFormValues, ScheduledReportInput>({
+    schema: scheduledReportFormSchema,
+    defaultValues: EMPTY_FORM,
+    normalize: (values) => values,
+    serialize: buildScheduledReportPayload,
+    onSubmit: async (payload) => {
+      setSubmitError(null);
+      try {
+        if (editingReport) {
+          await scheduledReportService.update(editingReport.id, payload);
+          addToast("Reporte programado actualizado correctamente.", "success");
+        } else {
+          await scheduledReportService.create(payload);
+          addToast("Reporte programado creado correctamente.", "success");
+        }
+        setIsFormOpen(false);
+        setEditingReport(null);
+        await loadReports();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "No se pudo guardar el reporte programado.";
+        setSubmitError(message);
+        addToast(message, "error");
+      }
+    },
+  });
+
   const openCreateModal = () => {
     setEditingReport(null);
-    setFormValues(EMPTY_FORM);
-    setFormError(null);
+    form.reset(EMPTY_FORM);
+    setSubmitError(null);
     setIsFormOpen(true);
   };
 
   const openEditModal = (report: ScheduledReport) => {
     setEditingReport(report);
-    setFormValues({
+    form.reset({
       name: report.name,
       description: report.description ?? "",
       reportType: report.reportType,
@@ -150,16 +267,16 @@ export const useScheduledReportsController = () => {
       shiftReportId: report.filters?.shiftReportId ?? "",
       isActive: report.isActive,
     });
-    setFormError(null);
+    setSubmitError(null);
     setIsFormOpen(true);
   };
 
   const closeFormModal = useCallback(() => {
-    if (isSaving) return;
+    if (form.isSubmitting) return;
     setIsFormOpen(false);
     setEditingReport(null);
-    setFormError(null);
-  }, [isSaving]);
+    setSubmitError(null);
+  }, [form.isSubmitting]);
 
   useEffect(() => {
     if (!isFormOpen) return;
@@ -176,48 +293,14 @@ export const useScheduledReportsController = () => {
     field: K,
     value: ScheduledReportFormValues[K],
   ) => {
-    setFormValues((prev) => {
-      const next = { ...prev, [field]: value };
-      if (field === "frequency" && !editingReport) {
-        const freq = value as ScheduledReportFrequency;
-        if (Object.values(DEFAULT_CRON_BY_FREQUENCY).includes(prev.cronExpression)) {
-          next.cronExpression = DEFAULT_CRON_BY_FREQUENCY[freq];
-        }
+    form.setValue(field, value);
+    if (field === "frequency" && !editingReport) {
+      const freq = value as ScheduledReportFrequency;
+      if (Object.values(DEFAULT_CRON_BY_FREQUENCY).includes(form.values.cronExpression)) {
+        form.setValue("cronExpression", DEFAULT_CRON_BY_FREQUENCY[freq]);
       }
-      return next;
-    });
-    setFormError(null);
-  };
-
-  const handleSave = async (event?: { preventDefault: () => void }) => {
-    event?.preventDefault();
-    const validation = validateScheduledReportForm(formValues);
-    if (validation.valid === false) {
-      setFormError(validation.message);
-      return;
     }
-
-    setIsSaving(true);
-    setFormError(null);
-    try {
-      if (editingReport) {
-        await scheduledReportService.update(editingReport.id, validation.payload);
-        addToast("Reporte programado actualizado correctamente.", "success");
-      } else {
-        await scheduledReportService.create(validation.payload);
-        addToast("Reporte programado creado correctamente.", "success");
-      }
-      setIsFormOpen(false);
-      setEditingReport(null);
-      await loadReports();
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "No se pudo guardar el reporte programado.";
-      setFormError(message);
-      addToast(message, "error");
-    } finally {
-      setIsSaving(false);
-    }
+    setSubmitError(null);
   };
 
   const handleToggle = async (report: ScheduledReport) => {
@@ -261,9 +344,12 @@ export const useScheduledReportsController = () => {
     loadError,
     isFormOpen,
     editingReport,
-    formValues,
-    formError,
-    isSaving,
+    formValues: form.values,
+    formError: submitError ?? form.formError ?? null,
+    getError: form.getError,
+    isSaving: form.isSubmitting,
+    formProps: form.formProps,
+    submit: form.submit,
     togglingId,
     reportToDelete,
     isDeleting,
@@ -272,7 +358,6 @@ export const useScheduledReportsController = () => {
     openEditModal,
     closeFormModal,
     handleFieldChange,
-    handleSave,
     handleToggle,
     setReportToDelete,
     handleConfirmDelete,

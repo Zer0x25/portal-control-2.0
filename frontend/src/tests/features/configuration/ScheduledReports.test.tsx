@@ -122,9 +122,9 @@ describe("useScheduledReportsController & ScheduledReportsView", () => {
     });
 
     await act(async () => {
-      await result.current.handleSave();
+      result.current.submit();
     });
-    expect(scheduledReportService.create).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(scheduledReportService.create).toHaveBeenCalledTimes(1));
 
     await act(async () => {
       await result.current.handleToggle(sampleReport);
@@ -163,7 +163,15 @@ describe("useScheduledReportsController & ScheduledReportsView", () => {
           isActive: true,
         }}
         formError={null}
+        getError={vi.fn()}
         isSaving={false}
+        formProps={{
+          id: "scheduled-reports-form",
+          noValidate: true,
+          onSubmit: vi.fn(),
+          "data-app-form": "scheduled-reports-form",
+        }}
+        submit={vi.fn()}
         togglingId={null}
         reportToDelete={null}
         isDeleting={false}
@@ -172,7 +180,6 @@ describe("useScheduledReportsController & ScheduledReportsView", () => {
         openEditModal={vi.fn()}
         closeFormModal={closeFormModal}
         handleFieldChange={vi.fn()}
-        handleSave={vi.fn()}
         handleToggle={vi.fn()}
         setReportToDelete={setReportToDelete}
         handleConfirmDelete={vi.fn()}
