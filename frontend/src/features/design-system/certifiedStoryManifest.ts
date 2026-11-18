@@ -1181,7 +1181,10 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     category: "domain-component",
     tokens: [
       "token-accent-brand",
+      "token-border-focus",
+      "token-border-technical",
       "token-status-error",
+      "token-surface-header",
       "token-text-primary",
       "token-text-secondary",
     ],
