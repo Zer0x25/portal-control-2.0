@@ -62,7 +62,7 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
 
   // Grid layout
   // Date | Name | Type | Actions
-  const gridTemplateColumns = "160px minmax(200px, 1fr) 140px 100px";
+  const gridTemplateColumns = "140px minmax(200px, 1fr) 210px 100px";
 
   return (
     <div className="flex flex-col h-full bg-token-surface-card border border-token-border-technical rounded-lg shadow-sm overflow-hidden">
@@ -123,10 +123,15 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
                   <div className={`pl-4 font-medium truncate ${TEXT_SECONDARY}`}>{h.name}</div>
 
                   {/* Type */}
-                  <div className="flex justify-center">
+                  <div className="flex justify-center items-center gap-1.5">
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-token-status-warning/15 text-token-status-warning border border-token-status-warning/30">
                       {h.type}
                     </span>
+                    {h.isRenounceable && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-token-status-error/15 text-token-status-error border border-token-status-error/30">
+                        Irrenunciable
+                      </span>
+                    )}
                   </div>
 
                   {/* Actions */}

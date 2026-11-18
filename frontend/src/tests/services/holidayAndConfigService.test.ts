@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { authTokenStore } from "../../services/authToken";
 import { holidayService } from "../../services/holidayService";
+import { leaveService } from "../../services/leaveService";
 import { configService } from "../../services/configService";
 import { ApiHttpError } from "../../services/apiClient";
 import { server } from "../mocks/server";
@@ -26,7 +27,7 @@ describe("holidayService and configService anti-regression", () => {
           capturedUrl = request.url;
           capturedBody = await request.json();
           capturedContentType = request.headers.get("content-type");
-          return HttpResponse.json({ total: 5, added: 3, skipped: 2 });
+          return HttpResponse.json({ success: true, total: 5, year: 2027 });
         }),
       );
 
@@ -35,7 +36,7 @@ describe("holidayService and configService anti-regression", () => {
       expect(capturedUrl).toContain("/sync");
       expect(capturedContentType).toContain("application/json");
       expect(capturedBody).toEqual({ year: 2027 });
-      expect(result).toEqual({ total: 5, added: 3, skipped: 2 });
+      expect(result).toEqual({ success: true, total: 5, year: 2027 });
     });
 
     it("defaults to current year when year argument is omitted", async () => {
@@ -43,7 +44,7 @@ describe("holidayService and configService anti-regression", () => {
       server.use(
         http.post("http://localhost:4000/api/holidays/sync", async ({ request }) => {
           capturedBody = await request.json();
-          return HttpResponse.json({ total: 1, added: 1, skipped: 0 });
+          return HttpResponse.json({ success: true, total: 1, year: new Date().getFullYear() });
         }),
       );
 
@@ -65,6 +66,68 @@ describe("holidayService and configService anti-regression", () => {
       expect(error).toBeInstanceOf(ApiHttpError);
       expect((error as ApiHttpError).status).toBe(500);
       expect((error as ApiHttpError).message).toBe("No se pudo sincronizar");
+    });
+  });
+
+  describe("holidayService.create & update with isRenounceable", () => {
+    it("sends isRenounceable flag on create and update", async () => {
+      const capturedBodies: unknown[] = [];
+      server.use(
+        http.post("http://localhost:4000/api/holidays", async ({ request }) => {
+          const body = (await request.json()) as Record<string, unknown>;
+          capturedBodies.push(body);
+          return HttpResponse.json({
+            id: body.id ?? "h-1",
+            name: body.name,
+            date: body.date,
+            type: body.type,
+            isRenounceable: Boolean(body.isRenounceable),
+            lastModified: 1,
+            syncStatus: "synced",
+            isDeleted: false,
+          });
+        }),
+      );
+
+      const created = await holidayService.create({
+        name: "Navidad",
+        date: "2026-12-25",
+        type: "Nacional",
+        isRenounceable: true,
+      });
+      expect(created.isRenounceable).toBe(true);
+
+      const updated = await holidayService.update("h-1", { isRenounceable: false });
+      expect(updated.isRenounceable).toBe(false);
+      expect(capturedBodies).toEqual([
+        { name: "Navidad", date: "2026-12-25", type: "Nacional", isRenounceable: true },
+        { id: "h-1", isRenounceable: false },
+      ]);
+    });
+  });
+
+  describe("leaveService.getLeaves filters", () => {
+    it("forwards type and search query params to GET /api/leaves", async () => {
+      let capturedSearchParams: URLSearchParams | null = null;
+      server.use(
+        http.get("http://localhost:4000/api/leaves", ({ request }) => {
+          capturedSearchParams = new URL(request.url).searchParams;
+          return HttpResponse.json({
+            data: [],
+            meta: { total: 0, page: 1, pageSize: 50, totalPages: 1 },
+          });
+        }),
+      );
+
+      await leaveService.getLeaves({
+        page: 1,
+        pageSize: 50,
+        type: "Vacaciones",
+        search: "Ana",
+      });
+
+      expect(capturedSearchParams?.get("type")).toBe("Vacaciones");
+      expect(capturedSearchParams?.get("search")).toBe("Ana");
     });
   });
 
