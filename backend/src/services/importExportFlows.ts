@@ -14,7 +14,7 @@ export const importExportFlows = createImportExportFlows<ExcelHttpStream, Buffer
         z
           .object({
             prop: z.string().trim().min(1),
-            type: z.string().min(1).optional(),
+            type: z.enum(["String", "Number", "Boolean", "Date"]).optional(),
             required: z.boolean().optional(),
           })
           .strict(),

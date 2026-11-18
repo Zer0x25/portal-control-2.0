@@ -139,7 +139,10 @@ export class ScheduledReportService {
       ...report,
       filters: safeJsonParse(report.filters),
       recipients: report.recipients
-        ? report.recipients.split(",").map((email) => email.trim())
+        ? report.recipients
+            .split(",")
+            .map((email) => email.trim())
+            .filter(Boolean)
         : [],
     };
   }

@@ -198,11 +198,15 @@ describe("Spec021 import/export on Fastify", () => {
     expect((await upload(await workbook(), '{"Value":null}')).status).toBe(400);
     expect((await upload(await workbook(), "{}", "file", token, false, true)).status).toBe(400);
   });
-  it("accepts the frontend mapping with required metadata", async () => {
+  it("accepts the frontend mapping with required metadata and rejects missing required values", async () => {
+    expect(
+      (await upload(await workbook(), '{"Name":{"prop":"name","type":"String","required":true}}'))
+        .status,
+    ).toBe(200);
     expect(
       (await upload(await workbook(), '{"Value":{"prop":"value","type":"String","required":true}}'))
         .status,
-    ).toBe(200);
+    ).toBe(400);
   });
   it.each([
     "[]",

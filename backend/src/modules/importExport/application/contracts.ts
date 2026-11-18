@@ -1,6 +1,7 @@
 export interface ImportMapping {
   prop: string;
   type?: string;
+  required?: boolean;
 }
 export interface ImportSheet {
   headers: (string | undefined)[];

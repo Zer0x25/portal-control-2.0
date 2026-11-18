@@ -10,6 +10,10 @@ import { toCaughtError } from "../../../utils/caughtError";
 import type { ConfigDependencies, PolicyFile } from "./contracts";
 const policyKey = "company_policy_meta",
   url = "/api/configs/public/company-policy/file";
+const PROTECTED_CONFIG_REDIRECTS = new Map<string, string>([
+  ["SMTP_CONFIG", "/api/email/config"],
+  ["EMAIL_NOTIFICATION_RULES", "/api/email/rules"],
+]);
 function object(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object";
 }
@@ -38,6 +42,12 @@ export function createConfigFlows<Time, Closure>(deps: ConfigDependencies<Time, 
     },
     set: async (key: unknown, value: unknown, actor?: string) => {
       const valid = keyValue(key);
+      const protectedRedirect = PROTECTED_CONFIG_REDIRECTS.get(valid);
+      if (protectedRedirect) {
+        throw new ForbiddenError(
+          `Clave protegida (${valid}): usa ${protectedRedirect} para actualizarla`,
+        );
+      }
       // Spec 027: la clave de marca se valida en el flow (400 en español).
       // `null` restablece al asset empaquetado (el GET público retorna null → fallback).
       const prepared =
