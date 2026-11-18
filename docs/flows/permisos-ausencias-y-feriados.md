@@ -1,10 +1,10 @@
 # Flujo: Permisos, ausencias y feriados (`permisos-ausencias-y-feriados`)
 
-- **Estado:** `AS_IS_DOCUMENTADO` — Fase 1 (AS-IS) documentada por inspección estática; pendiente Fase 2 (replicación controlada).
+- **Estado:** `CON_HALLAZGOS` — Fase 2 completada el 2026-11-18 con replicación en PostgreSQL 18.4 efímero, Fastify inject y Playwright headless sobre staging (`http://127.0.0.1:8080`). Pendiente definición de `DUDA-01..03` para pasar a Fase 3 (SDD).
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `theoretical-shifts` (pestañas `leaves` y `holidays`), `leaves`, `holidays`, `LeaveService`, `HolidayService`, `useLeaveManagerController`, `useHolidayManagerController`, `useTimeRecords`, `schedulingService`. En UI, `#/theoretical-shifts` admite `Administrador`, `Supervisor_Elevado` y `Supervisor` (`App.tsx`). En API, `/api/leaves*` (GET/POST/DELETE) y las escrituras de `/api/holidays*` (`POST /api/holidays`, `POST /api/holidays/bulk`, `POST /api/holidays/sync`, `DELETE /api/holidays/:id`) admiten `Administrador`, `Supervisor_Elevado`, `Supervisor` y `Reloj_Control`; `GET /api/holidays` admite cualquier usuario autenticado.
 - **Entradas:** UI `#/theoretical-shifts?tab=leaves` (`LeaveManager`), `#/theoretical-shifts?tab=holidays` (`HolidayManager`); API `GET/POST /api/leaves`, `DELETE /api/leaves/:id`, `GET/POST /api/holidays`, `POST /api/holidays/bulk`, `POST /api/holidays/sync`, `DELETE /api/holidays/:id`.
-- **Alcance de evidencia:** inspección estática del código del checkout actual (`backend/` y `frontend/`). En Fase 1 no se ejecutaron pruebas ni se observaron respuestas HTTP o navegador.
+- **Alcance de evidencia:** Fase 1 (inspección estática) + Fase 2 (ejecución de pruebas unitarias e integración Fastify/PostgreSQL 18.4, replicación HTTP en Fastify + PostgreSQL efímero y Playwright headless en staging `http://127.0.0.1:8080`).
 
 ## 1. Diagrama AS-IS
 
@@ -64,12 +64,34 @@ flowchart TD
 
 ## 4. Dudas para revisión humana
 
-*(Pendiente de Fase 2 para consolidar preguntas de producto/negocio junto con la evidencia de replicación.)*
+1. **[DUDA-01] Permisos de `Reloj_Control` en `/api/leaves*` y `/api/holidays*`:**
+   - **Opción A (recomendada, consistente con Spec 114):** Restringir `Reloj_Control` (y `Fiscalizador`) a **solo lectura** en `/api/leaves` (o bloquear escritura en ambos módulos) y mantener `#/theoretical-shifts` bloqueado para `Reloj_Control`.
+   - **Opción B:** Habilitar a `Reloj_Control` también en UI (`#/theoretical-shifts`) para gestionar ausencias/feriados.
+2. **[DUDA-02] Campo `isRenounceable` en `Holiday`:**
+   - **Opción A (sin migración de DB):** Eliminar `isRenounceable` de `HolidaySchema` y `holidayFormSchema` (manteniendo los tipos `Nacional | Regional | Específico`), y corregir `prismaHolidayCommands.upsert` para actualizar por `id` cuando viene `id` (evitando el `409` al cambiar la fecha de un feriado).
+   - **Opción B (con migración Prisma):** Agregar columna `is_renounceable` a `holidays`, persistirla en CRUD/sync con Boostr (`inalienable`) y exponerla en `HolidayForm`.
+3. **[DUDA-03] Recorte de `endDate` al eliminar una ausencia (`DELETE /api/leaves/:id`):**
+   - **Opción A (recomendada):** Preservar el `endDate` original del registro al hacer soft-delete (`isDeleted: true`, `deletedAt`) en vez de sobrescribir `endDate` con `yesterday`.
+   - **Opción B:** Mantener la sobrescritura de `endDate = yesterday` como "finalización anticipada".
 
 ## 5. Inventario de pruebas y plan para Fase 2
 
-| Área | Evidencia de pruebas existentes (inventario, sin ejecutar) | Replicación propuesta |
+| Área | Evidencia de pruebas existentes (ejecutadas en Fase 2) | Resultado observado |
 | :--- | :--- | :--- |
-| Backend `leaves` (API, reglas, materialización) | `backend/tests/fastify-integration/leavesCorrections.test.ts`, `backend/tests/unit/leaveCorrectionFlows.test.ts` | Probar en PostgreSQL efímero + Fastify inject: `POST /api/leaves` crear/editar/acortar, `409 LEAVE_OVERLAP`, `LIMIT_7_DAYS_EXCEEDED`, `DELETE /api/leaves/:id` (regla 7d, 24h archivado y mutación de `endDate`), permisos por rol (`Reloj_Control`, `Usuario`, `Fiscalizador`). |
-| Backend `holidays` (API, sync, Prisma) | `backend/tests/fastify-integration/holidays.test.ts`, `backend/tests/holidays-architecture.test.ts`, `backend/tests/unit/holidays/getHolidays.test.ts`, `holidayService.test.ts`, `holidayService.sync.test.ts` | Probar `GET /api/holidays` (paginado vs plano, `search`, `showArchived`, `DISABLE_HOLIDAY_AUTOSYNC`), `POST /api/holidays` al cambiar fecha de un feriado existente, `POST /api/holidays/sync` (shape de respuesta), y `DELETE /api/holidays/:id` con ID inexistente. |
-| Frontend UI (`#/theoretical-shifts?tab=leaves` y `holidays`) | `frontend/src/tests/services/holidayAndConfigService.test.ts` | Replicar en Playwright contra staging local: registrar/editar/eliminar ausencia en `LeaveManager` (verificar doble POST / toast 409), crear/editar fecha/sincronizar feriados en `HolidayManager` (verificar toast `undefined` y duplicación al editar fecha). |
+| Backend `leaves` (API, reglas, materialización) | `backend/tests/unit/leaveCorrectionFlows.test.ts` (4/4), `backend/tests/fastify-integration/leavesCorrections.test.ts` (42/42 en PostgreSQL 18.4) | **46/46 OK**. |
+| Backend `holidays` (API, sync, arquitectura) | `backend/tests/unit/holidayService.test.ts` (11/11), `holidayService.sync.test.ts` (6/6), `holidays/getHolidays.test.ts` (7/7), `backend/tests/fastify-integration/holidays.test.ts` (7/7), `backend/tests/holidays-architecture.test.ts` (120/122; 2 fallos previos ajenos en `Employees` y `Records`) | **31/31 OK** en pruebas propias de `holidays`. |
+
+## 6. Hallazgos confirmados en Fase 2 (Replicación controlada)
+
+1. **`BUG-01` (Alta) — Doble `POST /api/leaves` al registrar una ausencia en `LeaveManager`:**
+   - **Evidencia Playwright (`#/theoretical-shifts?tab=leaves`):** Al registrar ausencia (`2026-11-18`..`2026-11-18`), `useLeaveManagerController.onSubmit` dispara 2 peticiones `POST /api/leaves` con ~47 ms de diferencia: la 1ª responde `201` (toast `ÉXITO Ausencia registrada exitosamente`) y la 2ª (vía `justifyRecordsForLeave` sin `id` y `notes: "Justificación masiva"`) responde `409` `LEAVE_OVERLAP` (`"La ausencia se superpone con otra ausencia activa."`), mostrando toast `ERROR`, error de consola `409 (Conflict)` y dejando el formulario abierto sin resetear.
+2. **`BUG-02` (Media) — Toast `undefined feriados nuevos cargados.` al sincronizar feriados:**
+   - **Evidencia API + Playwright (`#/theoretical-shifts?tab=holidays`):** `POST /api/holidays/sync` (`{"year":2026}`) responde `200` `{"success":true,"total":16,"year":2026}`. `useHolidayMutations.ts` lee `data.added`, mostrando el toast `ÉXITO undefined feriados nuevos cargados.`.
+3. **`BUG-03` (Media) — Error `409 CONFLICT` al cambiar la fecha de un feriado existente:**
+   - **Evidencia API + Playwright:** Al editar un feriado creado (`2026-11-25`, `id: 01M7QK3D012EV89JK3VTZ7GZD4`) y cambiarle la fecha a `2026-11-26`, el backend ejecuta `prisma.holiday.upsert({ where: { date } })` e intenta `create` con el `id` existente, fallando por `Unique constraint` en `holidays_pkey` con `409 CONFLICT` (`"Ya existe un registro con este unknown"`). En la UI se muestra el toast de error y el feriado no se actualiza.
+4. **`BUG-04` (Baja) — Campo fantasma `isRenounceable` en `HolidaySchema`:**
+   - **Evidencia API + DB:** `POST /api/holidays` con `isRenounceable: true` responde `201` pero descarta el campo porque `model Holiday` en Prisma no lo define. (`DELETE /api/holidays/non-existent-id` sí devuelve `404 NOT_FOUND` correctamente).
+5. **`BUG-05` (Media) — Desalineación de roles (`Reloj_Control` y `Usuario`):**
+   - **Evidencia API + Playwright:** En API, `Reloj_Control` obtiene `200` en `GET /api/leaves` y `201` en `POST /api/leaves`; en Playwright, al navegar a `#/theoretical-shifts` es bloqueado y redirigido a `#/dashboard`. `Usuario` y `Fiscalizador` reciben `403` en `GET /api/leaves` (la rama `user.role === "Usuario"` en `LeaveService.list` es código muerto).
+6. **`BUG-06` (Baja) — Mutación de `endDate` al eliminar ausencia y filtrado parcial en cliente:**
+   - **Evidencia DB:** `DELETE /api/leaves/:id` sobre licencia futura (`2026-11-19..2026-11-21`) devuelve `200`, marca `isDeleted: true` en `LeaveRecord` y `TimeRecord`, pero sobrescribe `endDate` del `LeaveRecord` a `"2026-11-17"` (ayer). En UI, `LeaveManager` filtra `filterEmployeeName` y `filterType` solo sobre las páginas cargadas (de a 50).
