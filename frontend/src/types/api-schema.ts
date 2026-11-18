@@ -5707,6 +5707,9 @@ export interface components {
       employeeId?: string;
       startDate?: string;
       endDate?: string;
+      search?: string;
+      showArchived?: string;
+      since?: string;
     };
     SuggestedPatternName: {
       suggestedName: string;

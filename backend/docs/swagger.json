@@ -853,7 +853,7 @@
       "PatternSchedule": {
         "type": "object",
         "properties": {
-          "dayIndex": { "type": "integer", "minimum": 0, "maximum": 6 },
+          "dayIndex": { "type": "integer", "minimum": 0 },
           "startTime": { "type": "string", "nullable": true },
           "endTime": { "type": "string", "nullable": true },
           "isOffDay": { "type": "boolean" },
@@ -955,7 +955,10 @@
           "pageSize": { "type": "string" },
           "employeeId": { "type": "string" },
           "startDate": { "type": "string" },
-          "endDate": { "type": "string" }
+          "endDate": { "type": "string" },
+          "search": { "type": "string" },
+          "showArchived": { "type": "string" },
+          "since": { "type": "string" }
         }
       },
       "SuggestedPatternName": {

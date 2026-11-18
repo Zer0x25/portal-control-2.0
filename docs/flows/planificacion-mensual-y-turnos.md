@@ -1,6 +1,6 @@
 # Flujo: Planificación mensual y turnos (`planificacion-mensual-y-turnos`)
 
-- **Estado:** `REPLICACION_PARCIAL` — Fase 2 ejecutada sobre PostgreSQL 18.4 desechable, Fastify inject y Playwright headless; pendiente decisión sobre dudas abiertas para Fase 3/4.
+- **Estado:** `SINCRONIZADO_Y_VERIFICADO` — Spec 114 implementada y verificada localmente (ver sección 7).
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `theoretical-shifts`, `planning`, `shift-calendar`, `shifts`, `schedulingService`, `MonthlyShiftService`, `shiftRotationService`. UI `#/theoretical-shifts` y `#/planning/monthly` admiten `Administrador`, `Supervisor_Elevado` y `Supervisor`; `#/shift-calendar` admite además `Usuario` y `Reloj_Control` (no `Fiscalizador`). En API, los endpoints de escritura de `/api/shifts/*` admiten `Administrador`, `Supervisor_Elevado`, `Supervisor` y `Reloj_Control`; los de lectura admiten cualquier usuario autenticado (con alcance propio para `Usuario` y `Kiosk_Employee`).
 - **Entradas:** UI `#/theoretical-shifts` (pestañas `patterns`, `assignments`, `leaves`, `holidays`), `#/planning/monthly`, `#/shift-calendar`; API `GET/POST/PUT/DELETE /api/shifts/patterns*`, `POST /api/shifts/patterns/bulk`, `GET/POST/PUT/DELETE /api/shifts/assignments*`, `POST /api/shifts/assignments/bulk`, `GET /api/shifts/schedule/employee/:id`, `GET /api/shifts/schedule/employees-on-date`, `GET /api/shifts/schedule/employee/:id/month`, `POST /api/shifts/schedule/matrix`, `GET/POST /api/shifts/monthly-plan*`, `GET /api/shifts/suggest-pattern-name`, `POST /api/shifts/validate-conflicts`; Job `rotateIndefiniteShifts`.
@@ -66,9 +66,11 @@ flowchart TD
 
 ## 4. Dudas para revisión humana
 
-1. **[DUDA-01] ABIERTA:** ¿`#/planning/monthly` debe implementarse/conectarse a `/api/shifts/monthly-plan*` o debe retirarse/mantenerse deshabilitado junto con sus endpoints?
-2. **[DUDA-02] ABIERTA:** ¿`Reloj_Control` debe tener permisos de escritura en `/api/shifts/*` o debe restringirse a lectura como refleja la UI? ¿`Fiscalizador` debe poder acceder en modo solo lectura a `#/shift-calendar`?
-3. **[DUDA-03] ABIERTA:** Al guardar un plan mensual (`MonthlyShiftService`), si el empleado tenía una asignación indefinida o multi-mes previa, ¿debe preservarse/continuarse esa asignación a partir del mes siguiente?
+El usuario aprobó las tres definiciones el 2026-11-18 e incorporadas en la [spec 114](../../specs/114-corregir-planificacion-mensual-y-turnos/spec.md):
+
+1. **[DUDA-01] DECIDIDA (opción 1.A):** Conectar `#/planning/monthly` a `/api/shifts/monthly-plan*` y `GET /api/shifts/suggest-pattern-name` mediante un asistente funcional.
+2. **[DUDA-02] DECIDIDA:** `Reloj_Control` y `Fiscalizador` operan en solo lectura en `/api/shifts/*` y tienen acceso de solo lectura a `#/shift-calendar` (sin acceso a `#/theoretical-shifts` ni `#/planning/monthly`).
+3. **[DUDA-03] DECIDIDA:** Al cargar un plan mensual con fecha límite (`monthEndIso`), la asignación anterior se cierra a la fecha de corte previa y manda la nueva fecha límite (no se restaura automáticamente en meses posteriores).
 
 ## 5. Inventario de pruebas y plan para Fase 2
 
@@ -99,3 +101,13 @@ El 2026-11-18 se ejecutó replicación controlada mediante Fastify inject con Po
   - En API, `Reloj_Control` pudo ejecutar `POST /patterns` (`201`), `POST /assignments` (`201`) y `POST /monthly-plan` (`200`), pero en staging UI fue redirigido con «Acceso denegado» en `#/theoretical-shifts` y `#/planning/monthly` (sí accedió a `#/shift-calendar`). `Fiscalizador` leyó `GET /patterns`, `GET /assignments` y `POST /schedule/matrix` (`200`), pero en UI fue redirigido con «Acceso denegado» en las 3 rutas.
   - Con 55 asignaciones activas en staging (`pageSize=50`), buscar un trabajador de la página 2 en `#/theoretical-shifts?tab=assignments` mostró `0` resultados hasta cargar más páginas.
   - En `#/shift-calendar`, el cambio de vistas `Mes`/`Semana`/`Día` y la descarga de PDF (`GET /api/export/calendar-pdf` -> `200`) funcionaron; el botón `ICS` habilitado tras seleccionar empleado no disparó evento de descarga en Playwright (sin toast de error).
+
+## 7. Implementación y verificación (Fase 4)
+
+La [spec 114](../../specs/114-corregir-planificacion-mensual-y-turnos/spec.md) resuelve `BUG-01` a `BUG-08` y `ANOMALÍA-01` incorporando las decisiones del usuario (`DUDA-01` a `DUDA-03`):
+
+- **Esquemas, contratos y consulta (`ANOMALÍA-01`, `BUG-01`, `BUG-02`):** `ShiftQuerySchema` declara `search`, `showArchived` y `since`; `PatternScheduleSchema.dayIndex` admite ciclos > 7 días y `ShiftValidator.validatePatternSchedules` valida `dayIndex < cycleLengthDays`. `ShiftService.getAssignments` combina `isDeleted: false`, `showArchived`, rango (`startDate`/`endDate`, incluyendo `endDate: null`) y `search` mediante `AND`. Se sincronizaron `backend/docs/swagger.json` y `frontend/src/types/api-schema.ts` (`npm run check:sdk` en verde).
+- **Validadores, concurrencia y rutas masivas (`BUG-03`, `BUG-04`):** `shifts/application/flows.ts` mapea errores de 7 días (`antigüedad`), `6x1`, `masiva`, `ciclo` y `duración` a `400 ValidationError`. `validateRestPeriod` y `validateConsecutiveWorkdays` operan con fechas/horas de `America/Santiago` y el `dayIndex` real del ciclo; `validateWorkload` evalúa todas las asignaciones afectadas. `assignShift`, `updateAssignment` y `bulkAssignShifts` ejecutan en `withDirectTransaction` con bloqueo `FOR UPDATE` por empleado y auditoría; `bulkCreatePatterns` valida todos los horarios en transacción.
+- **Plan mensual y rotación automática (`BUG-05`, `BUG-07`):** `MonthlyShiftService.createMonthlyPlan` filtra `isDeleted: false`, adquiere `FOR UPDATE` por empleado en `withDirectTransaction`, cierra asignaciones previas a la fecha de corte (respetando la nueva fecha límite), aplica soft-delete (`isDeleted: true, deletedAt`) a las posteriores al inicio, puebla `employeeName`/`shiftPatternName`, admite opciones de colación/feriados, registra auditoría y emite eventos Socket.IO. `rotateIndefiniteShifts` filtra `isDeleted: false`, usa `toBusinessDateChile()` y ejecuta cierre + creación sucesora en `withDirectTransaction`.
+- **Roles y UI (`BUG-06`, `BUG-08`):** `Reloj_Control` y `Fiscalizador` quedan en solo lectura en `/api/shifts/*` (`403` en mutaciones) y acceden en solo lectura a `#/shift-calendar` (`App.tsx` y `sidebarMenu.ts`), manteniendo `#/theoretical-shifts` y `#/planning/monthly` restringidos a `Administrador`, `Supervisor_Elevado` y `Supervisor`. `WizardContainer.tsx` en `#/planning/monthly` conecta con `GET /api/shifts/monthly-plan/:employeeId/:year/:month`, `GET /api/shifts/suggest-pattern-name` y `POST /api/shifts/monthly-plan`. `useAssignmentManagerController` delega `search` al servidor para >50 asignaciones, y `exportToIcs` / `useShiftCalendarData` corrigen fallback de horas y nombre de descarga `.ics`.
+- **Pruebas ejecutadas tras integración:** `cd backend && npm run check && npm run lint && npm run check:sdk` en verde (`0/0`), `cd frontend && npm run check && npm run lint` en verde (`0/0`), `69/69` pruebas unitarias backend (8 archivos), `34/34` pruebas Fastify integration (`shifts.test.ts` sobre PostgreSQL 18.4 desechable), `21/21` pruebas unitarias frontend (8 archivos) y `npm run docs:check` en verde.
