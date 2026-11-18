@@ -104,17 +104,18 @@ export const downloadReportPDF = async (filters: {
   endDate: string;
   employeeId?: string;
   area?: string;
+  workdayType?: string;
   mode?: "summary" | "compiled_detailed";
 }): Promise<{ blob: Blob; filename: string }> => {
   try {
     const response = await apiClient.get("/api/export/report-pdf", {
-      // `mode` lo acepta el backend (ExportQuerySchema) pero no lo documenta
-      // el swagger: se envia igualmente.
+      // TODO(spec-117): retirar cast `as never` tras regenerar OpenAPI/SDK (`npm run check:sdk`) con `mode` y `workdayType`.
       params: {
         startDate: filters.startDate,
         endDate: filters.endDate,
         employeeId: filters.employeeId,
         area: filters.area,
+        workdayType: filters.workdayType,
         mode: filters.mode,
       } as never,
       responseType: "binary",
@@ -143,15 +144,18 @@ export const downloadReportExcel = async (filters: {
   endDate: string;
   employeeId?: string;
   area?: string;
-  mode?: "summary" | "detailed";
+  workdayType?: string;
+  mode?: "summary" | "detailed" | "compiled_detailed";
 }): Promise<{ blob: Blob; filename: string }> => {
   try {
     const response = await apiClient.get("/api/export/report-excel", {
+      // TODO(spec-117): retirar cast `as never` tras regenerar OpenAPI/SDK (`npm run check:sdk`) con `mode` y `workdayType`.
       params: {
         startDate: filters.startDate,
         endDate: filters.endDate,
         employeeId: filters.employeeId,
         area: filters.area,
+        workdayType: filters.workdayType,
         mode: filters.mode,
       } as never,
       responseType: "binary",

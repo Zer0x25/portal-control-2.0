@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { authTokenStore } from "../../services/authToken";
 import {
+  downloadReportExcel,
+  downloadReportPDF,
   getDashboardOverview,
   getDailyPlanningSummary,
   getDetailedReport,
@@ -83,5 +85,52 @@ describe("kpiService contracts", () => {
 
     const body = capturedBody as { employeeIds: string[]; startDate: string; endDate: string };
     expect(body.employeeIds).toEqual(["e1", "e2"]);
+  });
+
+  it("forwards workdayType in getDetailedReport, downloadReportPDF and downloadReportExcel", async () => {
+    let detailedBody: unknown;
+    let pdfQuery: URLSearchParams | undefined;
+    let excelQuery: URLSearchParams | undefined;
+
+    server.use(
+      http.post("http://localhost:4000/api/kpis/detailed-report", async ({ request }) => {
+        detailedBody = await request.json();
+        return HttpResponse.json({ summary: [], details: {} });
+      }),
+      http.get("http://localhost:4000/api/export/report-pdf", ({ request }) => {
+        pdfQuery = new URL(request.url).searchParams;
+        return new HttpResponse(new Blob(["pdf"], { type: "application/pdf" }), { status: 200 });
+      }),
+      http.get("http://localhost:4000/api/export/report-excel", ({ request }) => {
+        excelQuery = new URL(request.url).searchParams;
+        return new HttpResponse(new Blob(["xlsx"], { type: "application/vnd.ms-excel" }), {
+          status: 200,
+        });
+      }),
+    );
+
+    await getDetailedReport({
+      startDate: "2026-03-01",
+      endDate: "2026-03-02",
+      workdayType: "Parcial",
+    });
+    await downloadReportPDF({
+      startDate: "2026-03-01",
+      endDate: "2026-03-02",
+      workdayType: "Parcial",
+      mode: "summary",
+    });
+    await downloadReportExcel({
+      startDate: "2026-03-01",
+      endDate: "2026-03-02",
+      workdayType: "Parcial",
+      mode: "summary",
+    });
+
+    expect(detailedBody).toMatchObject({ workdayType: "Parcial" });
+    expect(pdfQuery?.get("workdayType")).toBe("Parcial");
+    expect(pdfQuery?.get("mode")).toBe("summary");
+    expect(excelQuery?.get("workdayType")).toBe("Parcial");
+    expect(excelQuery?.get("mode")).toBe("summary");
   });
 });

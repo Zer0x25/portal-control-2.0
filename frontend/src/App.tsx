@@ -273,12 +273,7 @@ const App: React.FC = () => {
               path={ROUTES.SUPERVISOR_DASHBOARD}
               element={
                 <ProtectedRoute
-                  requiredRoles={[
-                    ROLES.SUPERVISOR,
-                    ROLES.ADMIN,
-                    ROLES.SUPERVISOR_ELEVATED,
-                    ROLES.AUDITOR,
-                  ]}
+                  requiredRoles={[ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}
                 >
                   <SupervisorDashboardPage />
                 </ProtectedRoute>

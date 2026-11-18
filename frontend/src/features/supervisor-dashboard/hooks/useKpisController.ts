@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useKpiCalculations } from "../../../hooks/useKpiCalculations";
+import { useToasts } from "../../../hooks/useToasts";
 import { Employee, DailyTimeRecord } from "../../../types";
 import { isDateRangeValid } from "../../../utils/validation";
 
@@ -26,7 +27,32 @@ export const useKpisController = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [modalData, setModalData] = useState<ModalData | null>(null);
 
-  const { kpis, kpiDetails, isLoadingKpis, calculateKpis } = useKpiCalculations();
+  const { addToast } = useToasts();
+  const {
+    kpis,
+    kpiDetails,
+    isLoadingKpis,
+    isError = false,
+    error = null,
+    calculateKpis,
+  } = useKpiCalculations();
+
+  const hasToastedErrorRef = useRef(false);
+  const lastErrorRef = useRef<unknown>(null);
+
+  useEffect(() => {
+    if (!isError) {
+      hasToastedErrorRef.current = false;
+      lastErrorRef.current = null;
+      return;
+    }
+
+    if (!hasToastedErrorRef.current || (error && lastErrorRef.current !== error)) {
+      hasToastedErrorRef.current = true;
+      lastErrorRef.current = error;
+      addToast("Error al obtener las métricas de KPI del servidor.", "error");
+    }
+  }, [isError, error, addToast]);
 
   const handleFiltersChange = (newFilters: KpisFilters) => {
     let isValid = true;
@@ -59,6 +85,7 @@ export const useKpisController = () => {
 
   const isNoDataPeriod =
     !isLoadingKpis &&
+    !isError &&
     Boolean(filters.startDate && filters.endDate) &&
     !hasDetailData &&
     !hasAggregateData;
@@ -101,6 +128,8 @@ export const useKpisController = () => {
     isDetailsModalOpen,
     modalData,
     isLoadingKpis,
+    isError,
+    error,
     isNoDataPeriod,
 
     // Datos calculados

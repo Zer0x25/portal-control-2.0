@@ -164,4 +164,67 @@ describe("useReportsTabController", () => {
     expect(triggerBrowserDownloadMock).toHaveBeenCalledWith(expect.any(Blob), "reporte.csv");
     expect(triggerBrowserDownloadMock).toHaveBeenCalledWith(expect.any(Blob), "reporte.xml");
   });
+
+  it("propagates workdayType to detailed-report, excel and pdf exports", async () => {
+    let detailedReportBody: unknown;
+    const excelParams: URLSearchParams[] = [];
+    const pdfParams: URLSearchParams[] = [];
+
+    server.use(
+      http.post("http://localhost:4000/api/kpis/detailed-report", async ({ request }) => {
+        detailedReportBody = await request.json();
+        return HttpResponse.json({
+          summary: [{ employeeId: "e1", name: "Ana", totalHoursWorked: 8 }],
+          details: {},
+        });
+      }),
+      http.get("http://localhost:4000/api/export/report-excel", ({ request }) => {
+        excelParams.push(new URL(request.url).searchParams);
+        return new HttpResponse(new Blob(["mock"], { type: "application/vnd.ms-excel" }), {
+          status: 200,
+          headers: { "content-disposition": 'attachment; filename="Reporte_Asistencia.xlsx"' },
+        });
+      }),
+      http.get("http://localhost:4000/api/export/report-pdf", ({ request }) => {
+        pdfParams.push(new URL(request.url).searchParams);
+        return new HttpResponse(new Blob(["mock"], { type: "application/pdf" }), {
+          status: 200,
+          headers: { "content-disposition": 'attachment; filename="Reporte_Asistencia.pdf"' },
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useReportsTabController());
+
+    act(() => {
+      result.current.handleFiltersChange({
+        employeeId: "",
+        area: "A1",
+        workdayType: "Completa",
+        startDateISO: "2026-03-01",
+        endDateISO: "2026-03-05",
+      });
+    });
+
+    await act(async () => {
+      await result.current.handleGenerateReport();
+    });
+
+    expect(detailedReportBody).toMatchObject({
+      area: "A1",
+      workdayType: "Completa",
+    });
+
+    await act(async () => {
+      await result.current.handleExport("excel");
+      await result.current.handleExportPdfSummary();
+      await result.current.handleExportPdfCompiled();
+    });
+
+    expect(excelParams[0]?.get("workdayType")).toBe("Completa");
+    expect(pdfParams[0]?.get("workdayType")).toBe("Completa");
+    expect(pdfParams[0]?.get("mode")).toBe("summary");
+    expect(pdfParams[1]?.get("workdayType")).toBe("Completa");
+    expect(pdfParams[1]?.get("mode")).toBe("compiled_detailed");
+  });
 });
