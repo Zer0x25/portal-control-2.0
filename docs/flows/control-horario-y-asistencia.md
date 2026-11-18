@@ -1,10 +1,10 @@
 # Flujo: Control horario y asistencia (`control-horario-y-asistencia`)
 
-- **Estado:** `AS_IS_DOCUMENTADO` — inspección estática Fase 1; falta replicación en vivo.
-- **Última actualización:** 2026-11-17
+- **Estado:** `REPLICADO_CON_FALLAS` — Fase 2 parcial; evidencia y límites en la sección 6.
+- **Última actualización:** 2026-11-18
 - **Módulos / actores:** `time-control`, `records`, `corrections`, planificación y cierre contable. Operadores: `Administrador`, `Supervisor_Elevado`, `Supervisor`, `Reloj_Control` y `Fiscalizador`; el trabajador y el kiosco tienen flujos propios ([portal](portal-trabajador-y-correcciones.md), [kiosco](marcaje-kiosco.md)).
 - **Entradas:** UI `/#/time-control`; `GET /api/records`, `GET /api/records/daily-attendance`, `POST /api/records`, `POST /api/records/bulk`, `DELETE /api/records/:id`, `POST /api/records/punch`, `POST /api/records/auto-close`, `POST /api/records/:id/resolve-anomaly`, `GET /api/records/integrity/verify`, `GET /api/records/export`; consultas y resolución de correcciones; tarea `processAutoClosures`.
-- **Alcance de evidencia:** código del checkout actual, incluidos cambios locales existentes. No se ejecutaron pruebas ni se observaron respuestas HTTP, navegador o datos reales durante esta fase. Las anomalías son hipótesis comprobables, no bugs confirmados.
+- **Alcance de evidencia:** código del checkout actual, incluidos cambios locales existentes. En Fase 1 no se ejecutaron pruebas ni se observaron respuestas HTTP o navegador. Las hipótesis y las fallas verificadas posteriormente se distinguen en la sección 6.
 
 ## 1. Diagrama AS-IS
 
@@ -80,6 +80,23 @@ flowchart TD
 | Exportación y recorrido          | `frontend/e2e/auth-security.spec.ts` prueba bearer en exportación; `frontend/e2e/user-flows.spec.ts` contiene ciclo de asistencia; `frontend/e2e/gap-coverage.spec.ts`                                                                                                                                                               | Comparar contenido CSV/Excel/PDF con filtros y varias páginas, y comprobar errores de descarga.     |
 | Correcciones y automatismos      | `backend/tests/fastify-integration/leavesCorrections.test.ts`, `backend/tests/integration/correction-approve-race.test.ts`, `backend/tests/unit/correctionServiceSeal.anti-regression.test.ts`; `backend/src/services/runtimeJobs.ts`                                                                                                | Validar indicadores y eventos; comparar endpoint y job con reloj controlado y limpieza de datos QA. |
 
-## 6. Historial de sincronización
+## 6. Replicación parcial (Fase 2)
+
+El 2026-11-18 se usó PostgreSQL 18.4 desechable con migraciones y datos sintéticos. Cada resultado indica si se comprobó mediante servicios, hooks, HTTP o navegador:
+
+- **[BUG-01] Verificación de integridad de rango parcial (alto, abierto; ANOMALÍA-08):** una cadena íntegra de tres registros devolvió 3 comprobados y 0 roturas; un rango intermedio de dos registros devolvió 1 `PREV_HASH_MISMATCH`. Un caso con fecha intercalada fuera del orden de creación también arrojó una rotura falsa. Además, `limit=1` comprobó los tres registros de la muestra; hay que contrastar el contrato esperado del límite.
+- **[BUG-02] Lote parcialmente persistido tras fallo posterior (alto, abierto; ANOMALÍA-09):** un lote sintético de 51 filas falló por ID duplicado en la última; persistieron 50 filas y no apareció auditoría `CARGA_MASIVA_MARCAJES`. La prueba invocó el servicio, no la ruta HTTP. La operación usa transacciones por fragmento; debe definirse el contrato de atomicidad y auditoría esperado.
+- **[BUG-03] Cierre manual sobrescribe una salida concurrente (crítico, abierto; ANOMALÍA-10):** tras la consulta de jornadas abiertas se intercaló una actualización real de PostgreSQL que dejó una salida completada antes del bloqueo del cierre. `TimeRecordService.processAutoClosures` devolvió 1, cambió la fila a `AnomaliaManual` y dejó `salida=null`; el verificador de hash no detectó roturas. Es una intercalación controlada a nivel de servicio, no se ejecutaron dos solicitudes HTTP concurrentes ni el job alternativo.
+- **[ANOMALÍA-04] Límite de cierre:** con reloj fijado al 18-11-2026 el hook consideró bloqueado el 01-10, mientras `isRecordLocked` devolvió `false` sin cierre manual o con cierre manual al 30-09, y `true` con cierre manual al 01-10. Se comprobó mediante pruebas de unidad; falta confirmar comportamiento de navegador y política deseada.
+- **[BUG-04] Opciones de filtro incompletas (media, abierto; ANOMALÍA-02):** en staging con 55 registros QA dentro de un rango de siete días, los selectores solo mostraron las categorías presentes en la primera página de 50; el área y tipo de jornada del registro 55 quedaron omitidos.
+- **[BUG-05] CSV ignora el filtro de nombre (alta, abierto; ANOMALÍA-01):** la búsqueda `QA Persona 55` dejó una fila visible, pero el CSV respondió `200` y contenía 55 filas, incluidas otras personas; la petición sí enviaba el nombre. Se verificó CSV en escritorio; no se extrapola el resultado a Excel ni a otros filtros.
+- **[BUG-06] Consola habilita marcaje incorrecto durante carga o fallo (alta, abierto; ANOMALÍA-03):** con jornada QA abierta se retrasó seis segundos la consulta de registros del empleado; durante la espera `Inicio` estuvo habilitado y `Fin` deshabilitado. Tras la respuesta se mostró `EN JORNADA`, con los botones en el estado opuesto. Al interceptar la consulta con `503` se mostró `FUERA DE JORNADA` con inicio habilitado. No se enviaron marcajes.
+- **[BUG-07] Indicador de edición ausente (media, abierto; ANOMALÍA-06):** una edición de salida mediante `POST /api/records` respondió `200`; el historial y la API de auditoría mostraron `TIME_RECORD_EDITED`, pero la celda no mostró «Editado por». La edición figuraba en la primera página: no se demostró que la paginación fuese la causa ni se verificó aquí el indicador de correcciones pendientes.
+- **[BUG-08] Acción de novedad no abre formulario (media, abierto; ANOMALÍA-05):** al pulsar «Agregar novedad» con un turno QA abierto, la consulta de reportes respondió `200` con ese turno y ninguna entrada; no apareció diálogo ni campo de texto, y el turno permaneció sin novedades. Se comprobó en escritorio.
+
+El PostgreSQL y sus datos sintéticos fueron eliminados al terminar. Las pruebas de interfaz usaron un segundo stack desechable, reconstruido para escritorio con rol administrador; sus contenedores, red y volúmenes también se eliminaron. Excel y PDF, móvil y el job alternativo siguen sin contrastar. La cobertura de Fase 2 continúa parcial.
+
+## 7. Historial de sincronización
 
 - `2026-11-17`: extracción estática Fase 1; diez anomalías y cinco dudas pendientes. Sin replicación ni pruebas ejecutadas en esta inspección.
+- `2026-11-18`: Fase 2 iniciada con PostgreSQL aislado; ocho bugs reproducidos en servicios o staging de escritorio y límite de cierre contrastado a nivel de unidad; la cobertura sigue siendo parcial.
