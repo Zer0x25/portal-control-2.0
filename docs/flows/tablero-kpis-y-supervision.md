@@ -1,6 +1,6 @@
 # Flujo: Tablero, KPIs y supervisión (`tablero-kpis-y-supervision`)
 
-- **Estado:** `AS_IS_DOCUMENTADO` — Fase 1 completada sobre código actual; pendiente replicación controlada (Fase 2).
+- **Estado:** `REPLICACION_COMPLETADA` — Fase 2 completada con evidencia HTTP/PostgreSQL 18.4 y Playwright staging; pendiente resolución de dudas de negocio (`DUDA-01..03`) para iniciar Fase 3 (Spec 117).
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `dashboard`, `supervisor-dashboard`, `kpis`, `importExport`, `records`, `config`. Operadores previstos en UI/API: `Administrador`, `Supervisor_Elevado`, `Supervisor`, `Reloj_Control` y `Fiscalizador` (con divergencia UI vs API detallada en sección 3).
 - **Entradas:** UI `#/dashboard`, `#/dashboard-supervisor` (tabs `dashboard`, `kpis`, `analytics`, `employees`, `reports`, `shifts`); API `POST /api/kpis/summary`, `POST /api/kpis/detailed-report`, `GET /api/kpis/overview`, `GET /api/kpis/daily-planning`, `GET /api/export/report-pdf`, `GET /api/export/report-excel`, `GET /api/export/calendar-pdf`.
@@ -71,3 +71,33 @@ flowchart TD
 6. **[ANOMALÍA-06] `specialPermitCount` / `specialPermitRecords` / `specialPermitRate` siempre en 0.** `KpiAggregationService.ts:15,25,43-60` y `KpiFormattingService.ts:29` declaran métricas de permisos especiales pero `aggregateEmployeeSummary` nunca clasifica días con permiso especial.
 7. **[ANOMALÍA-07] Alcance por área de `Supervisor` y manejo de errores en `KpisTab`.** `GET /api/kpis/overview` y `GET /api/kpis/daily-planning` no filtran por área asignada del `Supervisor`, y `useKpisController` no muestra feedback visual (toast/alerta) cuando falla `POST /api/kpis/summary`.
 8. **[ANOMALÍA-08] Cache miss en meses cerrados fuera de transacción y `AnalyticsTab` con arrays vacíos.** `KpiStatsService.ts:102,168-216` materializa `monthlyEmployeeStats` por empleado sin transacción en cache miss; en frontend `useAnalyticsTabController.ts:1-9` devuelve `heatmapData = []` y `trendData = []` estáticos.
+
+## 4. Resultados de replicación controlada (Fase 2)
+
+### 4.1 Pruebas ejecutadas
+
+- **Backend Fastify HTTP (PostgreSQL 18.4 aislado):** `node scripts/run-fastify-isolated.cjs tests/fastify-integration/kpis.test.ts tests/fastify-integration/importExport.test.ts` -> **2 archivos, 54/54 tests pasaron** (`kpis.test.ts`: 20, `importExport.test.ts`: 34).
+- **Backend unitarios:** `npx vitest run tests/unit/kpiFlows.test.ts tests/KpiAggregationService.test.ts tests/KpiEngine.test.ts` -> **3 archivos, 15/15 tests pasaron** (`tests/integration/kpi.integration.test.ts` requiere harness con DB en `127.0.0.1:5432`).
+- **Frontend Vitest:** `npx vitest run src/tests/services/kpiService.contract.test.ts src/tests/hooks/useKpiCalculations.test.tsx src/tests/features/supervisor-dashboard/ src/tests/features/dashboard/DashboardView.test.tsx src/tests/components/supervisor/` -> **10 archivos, 40/40 tests pasaron**.
+
+### 4.2 Bugs y comportamientos confirmados
+
+- **BUG-01 (`ANOMALÍA-02` confirmada):** En `GET /api/export/report-excel?employeeId=other-emp` como rol `Usuario`, `prepareExcel` (`backend/src/modules/importExport/application/flows.ts:64-76`) capturó `ForbiddenError` y devolvió `500` `{ code: "EXPORT_REPORT_EXCEL_ERROR" }` en lugar de `403`.
+- **BUG-02 (`ANOMALÍA-03` confirmada):** Con `?mode=detailed`, `GET /api/export/report-pdf` devolvió `400 VALIDATION_ERROR` y `GET /api/export/report-excel` devolvió `500 EXPORT_REPORT_EXCEL_ERROR` por divergencia entre `ExportQuerySchema` y `ControllerExportQuerySchema`; en frontend `kpiService.ts` usa `as never` para enviar `mode`.
+- **BUG-03 (`ANOMALÍA-05` confirmada):** Con una jornada de 4h sobre turno de 8h, en mes cerrado (`2020-01`) `POST /api/kpis/summary` devolvió `totalOvertimeHours: -4` y `overtimePercentage: -100`, mientras en mes abierto devolvió `totalOvertimeHours: 0`.
+- **BUG-04 (`ANOMALÍA-06` confirmada):** Con un `TimeRecord` de `status: "Permiso Especial"`, `POST /api/kpis/summary` devolvió `specialPermitCount: 0`, `specialPermitRate: 0` y `kpiDetails.specialPermitRecords: []`.
+- **BUG-05 (`ANOMALÍA-07` UI confirmada en Playwright):** Al simular `500` en `POST /api/kpis/summary` desde `KpisTab` en `http://127.0.0.1:8080/#/dashboard-supervisor`, `useKpiCalculations` / `useKpisController` no mostró toast ni `[role="alert"]`, silenciando el fallo con métricas en `0` y el mensaje falso `"PERIODO SIN REGISTROS: NO HAY DATA OPERATIVA DISPONIBLE EN LA VENTANA SELECCIONADA."`.
+- **BUG-06 (`ANOMALÍA-04` confirmada):** `POST /api/kpis/detailed-report` con `{ employeeId: "emp-1", departmentId: "Ops" }` ignoró ambos filtros e incluyó empleados `Archivado`. En `ReportsTab`, seleccionar `workdayType: "Ordinaria"` no lo envió en el body de `POST /api/kpis/detailed-report` ni en las exportaciones PDF/Excel. En `Excel`, `cargo` también se ignora.
+- **Confirmado sin error en flujo feliz staging (`admin`):** `#/dashboard` y todas las pestañas de `#/dashboard-supervisor` (`Resumen Hoy`, `Indicadores`, `Analytics`, `Reportes` con descarga PDF `summary`/`compiled_detailed` y Excel, `Turnos`) operaron con `200 OK` y `0` errores de consola. Se confirmó también que `useAnalyticsTabController.ts` devuelve `heatmapData = []` y `trendData = []` estáticos.
+
+## 5. Dudas pendientes para el usuario (Fase 3)
+
+1. **`DUDA-01` — Rol `Fiscalizador` en `#/dashboard-supervisor` y `/api/kpis/*`:**
+   - **A)** Permitir a `Fiscalizador` consultar `/api/kpis/overview`, `/api/kpis/daily-planning`, `/api/kpis/summary` y `/api/kpis/detailed-report` en modo solo lectura (alineado con `App.tsx` y `sidebarMenu.ts`).
+   - **B)** Quitar acceso a `#/dashboard-supervisor` y `Supervisión` en UI para `Fiscalizador`, manteniendo `/api/kpis/*` restringido.
+2. **`DUDA-02` — Empleados archivados en KPIs históricos y filtro `workdayType` en Reportes:**
+   - **A)** Incluir empleados archivados/inactivos en `KpiReportService.getEmployees` **solo si tienen registros o planificación en el rango consultado**, y propagar `workdayType` en `detailed-report`/exportaciones.
+   - **B)** Filtrar siempre `status: "Activo"` en `KpiReportService.getEmployees` (igual que `overview` y `daily-planning`), y propagar `workdayType`.
+3. **`DUDA-03` — `AnalyticsTab` (`heatmapData`/`trendData`) y alcance por área para `Supervisor`:**
+   - **A)** Mantener `overview`/`daily-planning` globales y dejar `AnalyticsTab` fuera del alcance de corrección funcional en Spec 117 (solo corregir errores/contratos de KPIs y Export).
+   - **B)** Filtrar `overview`/`daily-planning` por área del `Supervisor` y/o conectar `heatmapData`/`trendData` en `AnalyticsTab` desde `daily-attendance`.
