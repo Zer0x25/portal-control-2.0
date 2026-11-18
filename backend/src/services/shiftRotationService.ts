@@ -1,6 +1,6 @@
-﻿import prisma from "./db";
+﻿import prisma, { withDirectTransaction } from "./db";
 import { ulid } from "ulid";
-import { formatDateUTCISO, parseDateOnlyUTC } from "../utils/timeUtils";
+import { formatDateUTCISO, parseDateOnlyUTC, toBusinessDateChile } from "../utils/timeUtils";
 import { toCaughtError } from "../utils/caughtError";
 
 const disableShiftRotation = process.env.DISABLE_SHIFT_ROTATION === "true";
@@ -24,12 +24,11 @@ export const rotateIndefiniteShifts = async () => {
   }
 
   try {
-    const now = new Date();
-    const todayStr = formatDateUTCISO(now);
+    const todayStr = toBusinessDateChile();
     const today = parseDateOnlyUTC(todayStr);
 
     const indefiniteAssignments = await prisma.assignedShift.findMany({
-      where: { endDate: null },
+      where: { endDate: null, isDeleted: false },
       take: rotationMaxPerRun,
     });
 
@@ -41,9 +40,9 @@ export const rotateIndefiniteShifts = async () => {
     const patternIds = Array.from(new Set(indefiniteAssignments.map((a) => a.shiftPatternId)));
     const patterns = await prisma.shiftPattern.findMany({
       where: { id: { in: patternIds } },
-      select: { id: true, cycleLengthDays: true },
+      select: { id: true, name: true, cycleLengthDays: true },
     });
-    const patternsMap = new Map<string, { id: string; cycleLengthDays: number }>(
+    const patternsMap = new Map<string, { id: string; name: string; cycleLengthDays: number }>(
       patterns.map((p) => [p.id, p]),
     );
 
@@ -76,47 +75,51 @@ export const rotateIndefiniteShifts = async () => {
 
         for (let attempt = 0; attempt <= rotationRetryCount; attempt++) {
           try {
-            // Avoid interactive transactions under PgBouncer pressure:
-            // close current row atomically and create the successor row.
-            const updated = await prisma.assignedShift.updateMany({
-              where: { id: ass.id, endDate: null },
-              data: { endDate: newEndDateStr },
-            });
-            if (updated.count === 0) {
-              rotated = false;
-              break;
-            }
+            const didRotate = await withDirectTransaction(async (tx) => {
+              const updated = await tx.assignedShift.updateMany({
+                where: { id: ass.id, endDate: null, isDeleted: false },
+                data: { endDate: newEndDateStr },
+              });
+              if (updated.count === 0) {
+                return false;
+              }
 
-            await prisma.assignedShift.create({
-              data: {
-                id: ulid(),
-                employeeId: ass.employeeId,
-                shiftPatternId: ass.shiftPatternId,
-                startDate: nextStartDateStr,
-                endDate: null,
-              },
-            });
-
-            if (auditPerItem) {
-              await prisma.auditLog.create({
+              await tx.assignedShift.create({
                 data: {
-                  actorUsername: "SYSTEM",
-                  action: "AUTOMATIC_SHIFT_ROTATION",
-                  category: "SHIFT_MGMT",
-                  severity: "INFO",
-                  outcome: "SUCCESS",
-                  details: JSON.stringify({
-                    employeeId: ass.employeeId,
-                    patternId: ass.shiftPatternId,
-                    closedAssignmentId: ass.id,
-                    closedOn: newEndDateStr,
-                    newStartDate: nextStartDateStr,
-                  }),
-                  ipAddress: "127.0.0.1",
+                  id: ulid(),
+                  employeeId: ass.employeeId,
+                  employeeName: ass.employeeName,
+                  shiftPatternId: ass.shiftPatternId,
+                  shiftPatternName: ass.shiftPatternName ?? pattern.name,
+                  startDate: nextStartDateStr,
+                  endDate: null,
                 },
               });
-            }
-            rotated = true;
+
+              if (auditPerItem) {
+                await tx.auditLog.create({
+                  data: {
+                    actorUsername: "SYSTEM",
+                    action: "AUTOMATIC_SHIFT_ROTATION",
+                    category: "SHIFT_MGMT",
+                    severity: "INFO",
+                    outcome: "SUCCESS",
+                    details: JSON.stringify({
+                      employeeId: ass.employeeId,
+                      patternId: ass.shiftPatternId,
+                      closedAssignmentId: ass.id,
+                      closedOn: newEndDateStr,
+                      newStartDate: nextStartDateStr,
+                    }),
+                    ipAddress: "127.0.0.1",
+                  },
+                });
+              }
+
+              return true;
+            });
+
+            rotated = didRotate;
             break;
           } catch (txErr: unknown) {
             const isP2028 = toCaughtError(txErr).code === "P2028";

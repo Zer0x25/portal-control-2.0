@@ -427,6 +427,7 @@ const App: React.FC = () => {
                     ROLES.SUPERVISOR,
                     ROLES.ADMIN,
                     ROLES.SUPERVISOR_ELEVATED,
+                    ROLES.AUDITOR,
                   ]}
                 >
                   <ShiftCalendarPage />

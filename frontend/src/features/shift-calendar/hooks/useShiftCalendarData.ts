@@ -294,14 +294,30 @@ export const useShiftCalendarData = () => {
     const { startDate, endDate } = getDateRange(viewMode, calendarAnchor(displayDate));
     const start = formatDateUTCISO(startDate);
     const end = formatDateUTCISO(endDate);
+    const parseTimesFallback = (
+      startTime?: string,
+      endTime?: string,
+      scheduleText?: string,
+    ): { startTime?: string; endTime?: string } => {
+      if (startTime && endTime) return { startTime, endTime };
+      const match = scheduleText?.match(/(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})/);
+      if (match) return { startTime: match[1], endTime: match[2] };
+      return { startTime, endTime };
+    };
+
     const events: IcsShiftEvent[] = [];
     scheduleMap.forEach((dayData, date) => {
       if (date < start || date > end) return;
       if (dayData.type === "employee" && dayData.data.isWorkDay) {
+        const times = parseTimesFallback(
+          dayData.data.startTime,
+          dayData.data.endTime,
+          dayData.data.scheduleText,
+        );
         events.push({
           date,
-          startTime: dayData.data.startTime,
-          endTime: dayData.data.endTime,
+          startTime: times.startTime,
+          endTime: times.endTime,
           patternName: dayData.data.shiftPatternName || "Turno",
         });
       } else if (dayData.type === "group") {

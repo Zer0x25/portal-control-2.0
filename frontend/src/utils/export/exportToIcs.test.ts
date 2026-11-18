@@ -45,4 +45,18 @@ describe("ICS export", () => {
     ).toBe(false);
     expect(triggerBrowserDownload).not.toHaveBeenCalled();
   });
+
+  it("sanitizes unsafe filename characters and trims shift times", () => {
+    vi.mocked(triggerBrowserDownload).mockClear();
+    expect(
+      exportShiftScheduleToICS(
+        [{ date: "2026-11-16", startTime: " 08:00 ", endTime: " 17:00 ", patternName: "Día" }],
+        { calendarName: "Turnos", filename: "Turnos_Ana/Soto:Test", employeeName: "Ana/Soto" },
+      ),
+    ).toBe(true);
+    expect(triggerBrowserDownload).toHaveBeenCalledWith(
+      expect.any(Blob),
+      "Turnos_Ana_Soto_Test.ics",
+    );
+  });
 });
