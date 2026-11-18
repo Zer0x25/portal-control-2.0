@@ -1,6 +1,6 @@
 # Flujo: Configuración, Correo y Reportes Programados (`configuracion-correo-y-reportes-programados`)
 
-**Estado:** `AS_IS_DOCUMENTADO`
+**Estado:** `BUGS_REPLICADOS`
 **Última actualización:** 2026-11-18
 **Módulos backend:** `configs`, `emailReports`, `importExport`, `schedulerService`, `runtimeJobs`
 **Módulos frontend:** `configuration` (`GlobalVariablesManager`, `EmailCenter`, `SmtpConfigModal`, `MasterDataExport`), `employee-management` (`ImportModal` para `/api/import/preview`), `sidebarMenu`, `App.tsx`
@@ -108,3 +108,29 @@ Todas las rutas del plugin usan `base`: `onRequest: [options.authenticate, eleva
    - `EmailCenter`: `handleSaveRules` no valida `emailRulesFormSchema` ni tiene estado `isSaving`; `emailService.getRules` retorna `false` silencioso ante fallo de red/500 (riesgo de sobrescritura); `To:` tiene clase `uppercase`; `Server: Online` en `MasterDataExport` está hardcodeado.
    - `GlobalVariablesManager`: `updateConfig` (`mutateAsync`) sin `try/catch` en altas; fallback `["info@test.lan"]` en `useConfigQuery.ts:74`; `logoWidthInput`/`logoHeightInput` no sincronizan con valor cargado; typo `"NUEVO PROCOLO/TIPO"`.
    - Brechas de accesibilidad (`SmtpConfigModal` sin `role="dialog"`/`aria-modal`/Escape, inputs/switches/labels sin asociación).
+
+---
+
+## 3. Evidencia de Reproducción (Fase 2 — 2026-11-18)
+
+### 3.1 Backend (PostgreSQL 18.4 + Fastify aislado)
+
+1. **`POST /api/configs/:key` bypass SMTP & Rules (P0 — Confirmado):** `POST /api/configs/SMTP_CONFIG` con `{"value":{"arbitraryField":"pwned","pass":"plaintext-secret-123"}}` respondió `200` y persistió `pass` en texto plano en `system_configs`. `POST /api/configs/EMAIL_NOTIFICATION_RULES` guardó reglas arbitrarias sin validar `EmailRulesSchema`.
+2. **SSRF / host interno en `POST /api/email/verify` y `POST /api/email/config` (P1 — Confirmado):** aceptó `127.0.0.1:25` y `169.254.169.254:80`, invocando `nodemailer.createTransport` y persistiendo `169.254.169.254`.
+3. **Bugs en `EmailService`, `schedulerService` y `ScheduledReportService` (P1/P2 — Confirmados):**
+   - `getSmtpConfig()` fuera de `try/catch`: payload GCM corrupto provocó `500` en `POST /api/email/send-test` y rechazo no capturado en `sendEmailWithAttachment`.
+   - Inyección HTML sin escape en `sendTestEmail` (`message`) y `executeReport` (`report.name`).
+   - `executeReportWork` aborta al primer destinatario fallido y deja `lastRunAt: null` aunque haya enviado a destinatarios previos.
+   - `getReportTypeName` imprime `"calendar"` literal (no mapea `calendar`, `detailed`, `shift_report`).
+   - `ScheduledReportService.normalize` retiene strings vacíos en `recipients` cuando hay comas extra.
+4. **`GET /api/configs/validate-closure` (P2 — Confirmado):** `?date=not-a-date` pasa `preHandler: noQuery` (`z.unknown()`) y retorna `200`.
+5. **`POST /api/import/preview` (P1/P2 — Confirmado):** 1501 filas retornadas completas sin tope; múltiples campos `schema` se concatenan con `,` rompiendo `JSON.parse` (`400`); ignora `type != "String"` y `required: true`.
+6. **Asimetría `Supervisor_Elevado` vs `Administrador` (P2 — Confirmado):** `Supervisor_Elevado` recibe `200` en `POST /api/email/rules` y `GET /api/configs/SMTP_CONFIG`, pero `403` en `POST /api/configs/EMAIL_NOTIFICATION_RULES`.
+
+### 3.2 Frontend (Staging `http://127.0.0.1:8080` + Vitest)
+
+1. **Sidebar vs `ProtectedRoute` (P1 — Confirmado):** `Supervisor` y `Reloj_Control` ven `Config` (`data-testid="nav-item-configuration"`) en el sidebar, pero al navegar `ProtectedRoute` los redirige con error de acceso denegado.
+2. **Ausencia de UI para `/api/scheduled-reports*` (P1 — Confirmado):** `#/configuration` solo tiene 3 tabs (`variables`, `email`, `master-data`) y `0` llamadas a `/api/scheduled-reports*`.
+3. **`GlobalVariablesManager` (P1/P2 — Confirmados):** fallback engañoso `info@test.lan` cuando falta `email_recipients`; `POST /api/configs/*` con `500` genera `pageerror` no capturado en `handleAddArea`/`WorkdayType`/`EmailRecipient`; `logoWidthInput`/`logoHeightInput` quedan en `512`/`188` sin sincronizar con valor guardado; typo `"NUEVO PROCOLO/TIPO"`; `<Switch>` sin `aria-label`.
+4. **`EmailCenter` y `SmtpConfigModal` (P1/P2 — Confirmados):** `SmtpConfigModal` permite activar un slot vacío y guardar sin validar los 3 slots, carece de `role="dialog"`/`aria-modal`/`Escape`/`aria-label` en botón cerrar; `handleSaveRules` envía regla activa con `recipient: ""` y sin `disabled`/`loading`; `emailService.getRules` retorna `false` silencioso en fallo; input `Para:` tiene clase `uppercase`; checkboxes de `RuleEditor` sin `id`/`aria-label`/`label for`.
+5. **`MasterDataExport` (P2 — Confirmado):** `"Server: Online"` estático y `<label>` de fechas sin `htmlFor`.
