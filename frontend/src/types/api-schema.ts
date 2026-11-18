@@ -5737,13 +5737,13 @@ export interface components {
       suggestedName: string;
     };
     AuditLog: {
-      id: string;
-      timestamp: string;
-      actorUsername: string;
+      id?: string;
+      timestamp?: string;
+      actorUsername?: string;
       action: string;
       category: string;
-      severity: string;
-      outcome: string;
+      severity?: string;
+      outcome?: string;
       details?: {
         [key: string]: unknown;
       };
@@ -5773,12 +5773,40 @@ export interface components {
     };
     HealthStatus: {
       /** @enum {string} */
-      status: "ok" | "error";
-      uptime: number;
+      status: "healthy" | "degraded";
+      instanceId: string;
       timestamp: string;
-      database: string;
-      services?: {
-        [key: string]: string;
+      responseTime?: number;
+      uptime?: number;
+      database: {
+        status: string;
+        latency?: number;
+        size?: string;
+      };
+      system?: {
+        platform: string;
+        arch: string;
+        nodeVersion: string;
+        cpus: number;
+        memory: {
+          rss: number;
+          heapTotal: number;
+          heapUsed: number;
+        };
+        os: {
+          freeMem: number;
+          totalMem: number;
+          loadAvg: number[];
+        };
+      };
+      backup?: {
+        [key: string]: unknown;
+      };
+      integrity?: {
+        [key: string]: unknown;
+      };
+      jobs?: {
+        [key: string]: unknown;
       };
     };
     KpiSummaryRequest: {

@@ -56,14 +56,18 @@ export const maintenancePlugin: FastifyPluginAsync<{
       body(SeedPhase2JobSchema),
       (req) => run(req.body),
     );
+  const SeedPhase2LogsQuerySchema = z.object({
+    jobId: z.string().min(1, "jobId es requerido"),
+    limit: z.coerce.number().int().min(1).max(1000).default(100),
+  });
   app.get<{ Querystring: { jobId?: string } }>(
     "/api/maintenance/seed/phase2/status",
     query,
     (req) => options.service.status(req.query),
   );
-  app.get<{ Querystring: { jobId?: string; limit?: string } }>(
+  app.get<{ Querystring: { jobId: string; limit?: number } }>(
     "/api/maintenance/seed/phase2/logs",
-    query,
+    { ...base, preHandler: validateRequest("query", SeedPhase2LogsQuerySchema) },
     (req) => options.service.logs(req.query),
   );
 };

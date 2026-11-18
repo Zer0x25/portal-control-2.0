@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { logger } from "../utils/logger";
 
 class RuntimeControlService {
   private handler?: (reason: string) => void;
@@ -21,16 +22,16 @@ class RuntimeControlService {
     }
 
     setTimeout(() => {
-      console.warn(`[RUNTIME] Restart scheduled: ${reason}`);
+      logger.warn(`[RUNTIME] Restart scheduled: ${reason}`);
 
       if (process.env.NODE_ENV === "development") {
         const touchFile = path.resolve(__dirname, "../index.ts");
         try {
           const time = new Date();
           fs.utimesSync(touchFile, time, time);
-          console.warn("Triggered dev restart by touching", touchFile);
+          logger.warn("Triggered dev restart by touching file", { touchFile });
         } catch (error) {
-          console.error("Failed to touch file for restart, falling back to exit", error);
+          logger.error("Failed to touch file for restart, falling back to exit", error);
           process.exit(0);
         }
         return;

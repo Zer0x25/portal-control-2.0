@@ -14,6 +14,7 @@ import { prisma } from "./db";
 import * as Sentry from "@sentry/node";
 import { logger } from "../utils/logger";
 import { requestContext } from "../utils/context";
+import { addBusinessDaysCL, atBusinessTimeCL, formatBusinessDateCL } from "../utils/timePolicy";
 import { jobTelemetryService } from "./jobTelemetryService";
 
 import { createRuntimeLifecycle } from "../modules/runtime";
@@ -200,10 +201,10 @@ export function createRuntimeJobs() {
 
           const getDelayToNextDailyRunMs = () => {
             const now = new Date();
-            const next = new Date(now);
-            next.setHours(dailyHour, dailyMinute, 0, 0);
+            const todayStr = formatBusinessDateCL(now);
+            let next = atBusinessTimeCL(todayStr, dailyHour, dailyMinute, 0);
             if (next.getTime() <= now.getTime()) {
-              next.setDate(next.getDate() + 1);
+              next = atBusinessTimeCL(addBusinessDaysCL(todayStr, 1), dailyHour, dailyMinute, 0);
             }
             return next.getTime() - now.getTime();
           };

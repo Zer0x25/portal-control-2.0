@@ -11,6 +11,7 @@ import { integrityMaintenanceService } from "./integrityMaintenanceService";
 import { maintenanceService } from "./maintenanceService";
 import { seedingJobService } from "./seedingJobService";
 import { toBusinessDateChile } from "../utils/timeUtils";
+import { addBusinessDaysCL, formatBusinessDateCL, parseBusinessDateCL } from "../utils/timePolicy";
 import { nextReportRun, REPORT_TIMEZONE } from "../utils/reportCron";
 import { AppError } from "../utils/AppError";
 import { escapeHtml } from "../utils/htmlEscape";
@@ -44,9 +45,8 @@ function startMaintenanceJobs() {
   void lifecycle.run(runLockedMaintenance);
   const scheduleNext = () => {
     const now = new Date();
-    const next = new Date(now);
-    next.setDate(now.getDate() + 1);
-    next.setHours(0, 0, 0, 0);
+    const tomorrow = addBusinessDaysCL(formatBusinessDateCL(now), 1);
+    const next = parseBusinessDateCL(tomorrow);
     lifecycle.after(next.getTime() - now.getTime(), async () => {
       await runLockedMaintenance();
       scheduleNext();

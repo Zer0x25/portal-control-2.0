@@ -978,23 +978,15 @@
           "id": { "type": "string" },
           "timestamp": { "type": "string" },
           "actorUsername": { "type": "string" },
-          "action": { "type": "string" },
-          "category": { "type": "string" },
+          "action": { "type": "string", "minLength": 1 },
+          "category": { "type": "string", "minLength": 1 },
           "severity": { "type": "string" },
           "outcome": { "type": "string" },
           "details": { "type": "object", "additionalProperties": { "nullable": true } },
           "ipAddress": { "type": "string", "nullable": true },
           "metadata": { "type": "object", "additionalProperties": { "nullable": true } }
         },
-        "required": [
-          "id",
-          "timestamp",
-          "actorUsername",
-          "action",
-          "category",
-          "severity",
-          "outcome"
-        ]
+        "required": ["action", "category"]
       },
       "ConfigEntry": {
         "type": "object",
@@ -1028,13 +1020,53 @@
       "HealthStatus": {
         "type": "object",
         "properties": {
-          "status": { "type": "string", "enum": ["ok", "error"] },
-          "uptime": { "type": "number" },
+          "status": { "type": "string", "enum": ["healthy", "degraded"] },
+          "instanceId": { "type": "string", "minLength": 1 },
           "timestamp": { "type": "string" },
-          "database": { "type": "string" },
-          "services": { "type": "object", "additionalProperties": { "type": "string" } }
+          "responseTime": { "type": "number" },
+          "uptime": { "type": "number" },
+          "database": {
+            "type": "object",
+            "properties": {
+              "status": { "type": "string" },
+              "latency": { "type": "number" },
+              "size": { "type": "string" }
+            },
+            "required": ["status"]
+          },
+          "system": {
+            "type": "object",
+            "properties": {
+              "platform": { "type": "string" },
+              "arch": { "type": "string" },
+              "nodeVersion": { "type": "string" },
+              "cpus": { "type": "number" },
+              "memory": {
+                "type": "object",
+                "properties": {
+                  "rss": { "type": "number" },
+                  "heapTotal": { "type": "number" },
+                  "heapUsed": { "type": "number" }
+                },
+                "required": ["rss", "heapTotal", "heapUsed"]
+              },
+              "os": {
+                "type": "object",
+                "properties": {
+                  "freeMem": { "type": "number" },
+                  "totalMem": { "type": "number" },
+                  "loadAvg": { "type": "array", "items": { "type": "number" } }
+                },
+                "required": ["freeMem", "totalMem", "loadAvg"]
+              }
+            },
+            "required": ["platform", "arch", "nodeVersion", "cpus", "memory", "os"]
+          },
+          "backup": { "type": "object", "additionalProperties": { "nullable": true } },
+          "integrity": { "type": "object", "additionalProperties": { "nullable": true } },
+          "jobs": { "type": "object", "additionalProperties": { "nullable": true } }
         },
-        "required": ["status", "uptime", "timestamp", "database"]
+        "required": ["status", "instanceId", "timestamp", "database"]
       },
       "KpiSummaryRequest": {
         "type": "object",

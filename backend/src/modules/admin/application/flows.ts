@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { NotFoundError, ValidationError } from "../../../utils/AppError";
 import { toCaughtError } from "../../../utils/caughtError";
 import type { AdminActor, AdminDependencies, AdminRespond } from "./contracts";
@@ -79,15 +81,27 @@ export function createAdminFlows(deps: AdminDependencies) {
       });
       try {
         const backupPath = await deps.backup();
+        const filename = path.basename(backupPath);
+        const sizeBytes = await fs.promises
+          .stat(backupPath)
+          .then((s) => s.size)
+          .catch(() => undefined);
         deps.backupSuccess();
         await deps.audit({
           actorUsername,
           action: "TRIGGER_BACKUP_MANUAL",
           category: "OPERATIONS",
           severity: "WARNING",
-          details: { backupPath },
+          details: { filename, ...(sizeBytes !== undefined ? { sizeBytes } : {}) },
         });
-        send({ success: true, data: { message: "Backup ejecutado exitosamente.", backupPath } });
+        send({
+          success: true,
+          data: {
+            message: "Backup ejecutado exitosamente.",
+            filename,
+            ...(sizeBytes !== undefined ? { sizeBytes } : {}),
+          },
+        });
       } finally {
         await deps.operations.finish();
       }

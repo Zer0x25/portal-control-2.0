@@ -40,7 +40,7 @@ export const auditPlugin: FastifyPluginAsync<{
   );
   app.post<{ Body: AuditEntry }>(
     "/api/audit-logs",
-    { ...session, preHandler: validateRequest("body", AuditLogSchema) },
+    { ...write, preHandler: validateRequest("body", AuditLogSchema) },
     async (req, reply) =>
       reply
         .code(201)

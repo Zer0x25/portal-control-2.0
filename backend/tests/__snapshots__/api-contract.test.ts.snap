@@ -196,12 +196,14 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       "AuditLog": {
         "properties": {
           "action": {
+            "minLength": 1,
             "type": "string",
           },
           "actorUsername": {
             "type": "string",
           },
           "category": {
+            "minLength": 1,
             "type": "string",
           },
           "details": {
@@ -234,13 +236,8 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
         },
         "required": [
-          "id",
-          "timestamp",
-          "actorUsername",
           "action",
           "category",
-          "severity",
-          "outcome",
         ],
         "type": "object",
       },
@@ -1185,7 +1182,6 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "mode": {
             "enum": [
               "summary",
-              "detailed",
               "compiled_detailed",
             ],
             "type": "string",
@@ -1200,6 +1196,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
               "week",
               "day",
             ],
+            "type": "string",
+          },
+          "workdayType": {
             "type": "string",
           },
         },
@@ -1238,21 +1237,120 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
       },
       "HealthStatus": {
         "properties": {
-          "database": {
-            "type": "string",
-          },
-          "services": {
+          "backup": {
             "additionalProperties": {
-              "type": "string",
+              "nullable": true,
             },
             "type": "object",
           },
+          "database": {
+            "properties": {
+              "latency": {
+                "type": "number",
+              },
+              "size": {
+                "type": "string",
+              },
+              "status": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "status",
+            ],
+            "type": "object",
+          },
+          "instanceId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "integrity": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "jobs": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "responseTime": {
+            "type": "number",
+          },
           "status": {
             "enum": [
-              "ok",
-              "error",
+              "healthy",
+              "degraded",
             ],
             "type": "string",
+          },
+          "system": {
+            "properties": {
+              "arch": {
+                "type": "string",
+              },
+              "cpus": {
+                "type": "number",
+              },
+              "memory": {
+                "properties": {
+                  "heapTotal": {
+                    "type": "number",
+                  },
+                  "heapUsed": {
+                    "type": "number",
+                  },
+                  "rss": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "rss",
+                  "heapTotal",
+                  "heapUsed",
+                ],
+                "type": "object",
+              },
+              "nodeVersion": {
+                "type": "string",
+              },
+              "os": {
+                "properties": {
+                  "freeMem": {
+                    "type": "number",
+                  },
+                  "loadAvg": {
+                    "items": {
+                      "type": "number",
+                    },
+                    "type": "array",
+                  },
+                  "totalMem": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "freeMem",
+                  "totalMem",
+                  "loadAvg",
+                ],
+                "type": "object",
+              },
+              "platform": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "platform",
+              "arch",
+              "nodeVersion",
+              "cpus",
+              "memory",
+              "os",
+            ],
+            "type": "object",
           },
           "timestamp": {
             "type": "string",
@@ -1263,7 +1361,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
         },
         "required": [
           "status",
-          "uptime",
+          "instanceId",
           "timestamp",
           "database",
         ],
@@ -1409,6 +1507,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "area": {
             "type": "string",
           },
+          "cargo": {
+            "type": "string",
+          },
           "departmentId": {
             "type": "string",
           },
@@ -1431,6 +1532,9 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
           "startDate": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "workdayType": {
             "type": "string",
           },
         },
@@ -3107,7 +3211,6 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
         },
         "required": [
           "date",
-          "folio",
           "shiftName",
           "responsibleUser",
           "startTime",
@@ -3137,6 +3240,63 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
             "type": "object",
           },
         ],
+      },
+      "ShiftReportPaginatedResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ShiftReport",
+            },
+            "type": "array",
+          },
+          "page": {
+            "type": "number",
+          },
+          "total": {
+            "type": "number",
+          },
+          "totalPages": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "totalPages",
+        ],
+        "type": "object",
+      },
+      "ShiftReportQuery": {
+        "properties": {
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "page": {
+            "pattern": "^[1-9]\\d*$",
+            "type": "string",
+          },
+          "pageSize": {
+            "pattern": "^[1-9]\\d*$",
+            "type": "string",
+          },
+          "search": {
+            "type": "string",
+          },
+          "since": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "open",
+              "closed",
+            ],
+            "type": "string",
+          },
+        },
+        "type": "object",
       },
       "SuggestedPatternName": {
         "properties": {
@@ -5498,8 +5658,26 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
           {
             "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "compiled_detailed",
+              ],
               "type": "string",
             },
           },
@@ -5571,6 +5749,20 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
           {
             "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
               "type": "string",
@@ -5582,7 +5774,7 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
             "schema": {
               "enum": [
                 "summary",
-                "detailed",
+                "compiled_detailed",
               ],
               "type": "string",
             },
@@ -5641,8 +5833,26 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           },
           {
             "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "compiled_detailed",
+              ],
               "type": "string",
             },
           },
@@ -7364,12 +7574,68 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
     },
     "/api/shift-reports": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "description": "Timestamp para consulta delta",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "open",
+                "closed",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "description": "Búsqueda por folio, responsable o turno",
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Fecha de turno (YYYY-MM-DD)",
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShiftReportListResponse",
+                  "$ref": "#/components/schemas/ShiftReportPaginatedResponse",
                 },
               },
             },

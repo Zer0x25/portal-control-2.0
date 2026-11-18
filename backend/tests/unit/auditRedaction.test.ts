@@ -18,10 +18,13 @@ it("redacts historical protected configs and nested credential fields without mu
   });
   expect(details.newValue.pass).toBe("secret");
 });
-it("removes unhandled error message/stack and entire body/query, including old records", () => {
+it("preserves unhandled error message while redacting inline secrets, stack, and body/query", () => {
   const result = redactAuditFields(
     "UNHANDLED_ERROR",
-    { message: "secret echoed in SQL", stack: "secret" },
+    {
+      message: "Query failed: Bearer secretToken123 password=secret",
+      stack: "secret stack trace",
+    },
     {
       path: "/api/admin/reset-password",
       method: "POST",
@@ -30,6 +33,10 @@ it("removes unhandled error message/stack and entire body/query, including old r
     },
   );
   expect(JSON.stringify(result)).not.toContain("secret");
+  expect(result.details).toMatchObject({
+    message: "Query failed: Bearer [REDACTED] password=[REDACTED]",
+    stack: "[REDACTED]",
+  });
   expect(result.metadata).toMatchObject({
     path: "/api/admin/reset-password",
     method: "POST",

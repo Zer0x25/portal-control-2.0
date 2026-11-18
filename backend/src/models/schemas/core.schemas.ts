@@ -8,13 +8,13 @@ export const RestoreBackupSchema = z
 
 export const AuditLogSchema = z
   .object({
-    id: z.string(),
-    timestamp: z.string(),
-    actorUsername: z.string(),
-    action: z.string(),
-    category: z.string(),
-    severity: z.string(),
-    outcome: z.string(),
+    id: z.string().optional(),
+    timestamp: z.string().optional(),
+    actorUsername: z.string().optional(),
+    action: z.string().min(1),
+    category: z.string().min(1),
+    severity: z.string().optional(),
+    outcome: z.string().optional(),
     details: z.record(z.string(), z.unknown()).optional(),
     ipAddress: z.string().nullable().optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
@@ -41,11 +41,37 @@ export const ConfigEntrySchema = z
 
 export const HealthStatusSchema = z
   .object({
-    status: z.enum(["ok", "error"]),
-    uptime: z.number(),
+    status: z.enum(["healthy", "degraded"]),
+    instanceId: z.string().min(1),
     timestamp: z.string(),
-    database: z.string(),
-    services: z.record(z.string(), z.string()).optional(),
+    responseTime: z.number().optional(),
+    uptime: z.number().optional(),
+    database: z.object({
+      status: z.string(),
+      latency: z.number().optional(),
+      size: z.string().optional(),
+    }),
+    system: z
+      .object({
+        platform: z.string(),
+        arch: z.string(),
+        nodeVersion: z.string(),
+        cpus: z.number(),
+        memory: z.object({
+          rss: z.number(),
+          heapTotal: z.number(),
+          heapUsed: z.number(),
+        }),
+        os: z.object({
+          freeMem: z.number(),
+          totalMem: z.number(),
+          loadAvg: z.array(z.number()),
+        }),
+      })
+      .optional(),
+    backup: z.record(z.string(), z.unknown()).optional(),
+    integrity: z.record(z.string(), z.unknown()).optional(),
+    jobs: z.record(z.string(), z.unknown()).optional(),
   })
   .openapi("HealthStatus");
 

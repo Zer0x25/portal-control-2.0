@@ -1,9 +1,10 @@
 import prisma from "./db";
+import { redactAuditFields } from "../modules/audit";
+import { startOfBusinessDayCL } from "../utils/timePolicy";
 
 export class AdminService {
   static async getSystemStats() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfBusinessDayCL();
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     // ⚡ Bolt Optimization: Batch system stats queries
@@ -76,7 +77,10 @@ export class AdminService {
         mfaAdoption,
         criticalAlertsCount: recentAlerts.filter((l) => l.severity === "CRITICAL").length,
       },
-      recentAlerts,
+      recentAlerts: recentAlerts.map((log) => ({
+        ...log,
+        ...redactAuditFields(log.action, log.details, log.metadata),
+      })),
     };
   }
 }

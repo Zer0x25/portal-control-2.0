@@ -78,6 +78,7 @@ export interface FastifyDependencies {
       healthStatus: "healthy" | "degraded";
       instanceId: string;
     };
+    getPublicHealth?(): Promise<{ database: { status: string } }>;
     getDetailedHealth(): Promise<{ database: { status: string } }>;
   };
   maintenance(): { type: string } | null;
@@ -249,9 +250,22 @@ export function buildFastifyApp(
     allowedHeaders: ["Content-Type", "Authorization"],
   });
   app.register(compress);
-  app.get("/api/health", async (_request, reply) => {
+  app.get("/api/health", async (request, reply) => {
     const start = Date.now();
-    const data = await deps.health.getDetailedHealth();
+    let isAdmin = false;
+    const token = resolveAccessToken(request.headers.authorization);
+    if (token) {
+      try {
+        const user = await deps.authenticate(token, request.url, request.method);
+        isAdmin = user.role === "Administrador";
+      } catch {
+        // Public health falls back to minimal payload when token is invalid or expired.
+      }
+    }
+    const data =
+      isAdmin || !deps.health.getPublicHealth
+        ? await deps.health.getDetailedHealth()
+        : await deps.health.getPublicHealth();
     const failure = data.database.status !== "OK";
     return reply
       .code(failure ? 503 : 200)

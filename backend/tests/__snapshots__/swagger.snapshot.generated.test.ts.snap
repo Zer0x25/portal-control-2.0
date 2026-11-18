@@ -196,12 +196,14 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "AuditLog": {
         "properties": {
           "action": {
+            "minLength": 1,
             "type": "string",
           },
           "actorUsername": {
             "type": "string",
           },
           "category": {
+            "minLength": 1,
             "type": "string",
           },
           "details": {
@@ -234,13 +236,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         },
         "required": [
-          "id",
-          "timestamp",
-          "actorUsername",
           "action",
           "category",
-          "severity",
-          "outcome",
         ],
         "type": "object",
       },
@@ -1240,21 +1237,120 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       },
       "HealthStatus": {
         "properties": {
-          "database": {
-            "type": "string",
-          },
-          "services": {
+          "backup": {
             "additionalProperties": {
-              "type": "string",
+              "nullable": true,
             },
             "type": "object",
           },
+          "database": {
+            "properties": {
+              "latency": {
+                "type": "number",
+              },
+              "size": {
+                "type": "string",
+              },
+              "status": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "status",
+            ],
+            "type": "object",
+          },
+          "instanceId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "integrity": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "jobs": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "responseTime": {
+            "type": "number",
+          },
           "status": {
             "enum": [
-              "ok",
-              "error",
+              "healthy",
+              "degraded",
             ],
             "type": "string",
+          },
+          "system": {
+            "properties": {
+              "arch": {
+                "type": "string",
+              },
+              "cpus": {
+                "type": "number",
+              },
+              "memory": {
+                "properties": {
+                  "heapTotal": {
+                    "type": "number",
+                  },
+                  "heapUsed": {
+                    "type": "number",
+                  },
+                  "rss": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "rss",
+                  "heapTotal",
+                  "heapUsed",
+                ],
+                "type": "object",
+              },
+              "nodeVersion": {
+                "type": "string",
+              },
+              "os": {
+                "properties": {
+                  "freeMem": {
+                    "type": "number",
+                  },
+                  "loadAvg": {
+                    "items": {
+                      "type": "number",
+                    },
+                    "type": "array",
+                  },
+                  "totalMem": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "freeMem",
+                  "totalMem",
+                  "loadAvg",
+                ],
+                "type": "object",
+              },
+              "platform": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "platform",
+              "arch",
+              "nodeVersion",
+              "cpus",
+              "memory",
+              "os",
+            ],
+            "type": "object",
           },
           "timestamp": {
             "type": "string",
@@ -1265,7 +1361,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "required": [
           "status",
-          "uptime",
+          "instanceId",
           "timestamp",
           "database",
         ],
