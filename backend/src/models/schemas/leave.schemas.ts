@@ -40,5 +40,7 @@ export const LeaveQuerySchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   employeeId: z.string().optional(),
+  type: z.string().optional(),
+  search: z.string().optional(),
   showArchived: z.string().optional(),
 });

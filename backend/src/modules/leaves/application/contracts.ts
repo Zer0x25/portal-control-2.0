@@ -9,6 +9,8 @@ export interface LeaveQuery {
   startDate?: string;
   endDate?: string;
   employeeId?: string;
+  type?: string;
+  search?: string;
   showArchived?: string;
 }
 export interface LeaveInput {
@@ -26,6 +28,8 @@ export interface LeaveListParams {
   startDate?: string;
   endDate?: string;
   employeeId?: string;
+  type?: string;
+  search?: string;
   showArchived: boolean;
 }
 export interface LeaveListResult<Item> {

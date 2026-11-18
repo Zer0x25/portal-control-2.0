@@ -79,13 +79,25 @@ describe("HolidayService.syncExternalHolidays", () => {
     expect(prisma.holiday.upsert).toHaveBeenCalledTimes(2);
     expect(prisma.holiday.upsert).toHaveBeenNthCalledWith(1, {
       where: { date: "2024-01-01" },
-      update: { name: "Año Nuevo", type: "Nacional" },
-      create: { id: "mocked-ulid", date: "2024-01-01", name: "Año Nuevo", type: "Nacional" },
+      update: { name: "Año Nuevo", type: "Nacional", isRenounceable: false },
+      create: {
+        id: "mocked-ulid",
+        date: "2024-01-01",
+        name: "Año Nuevo",
+        type: "Nacional",
+        isRenounceable: false,
+      },
     });
     expect(prisma.holiday.upsert).toHaveBeenNthCalledWith(2, {
       where: { date: "2024-03-29" },
-      update: { name: "Viernes Santo", type: "Regional" },
-      create: { id: "mocked-ulid", date: "2024-03-29", name: "Viernes Santo", type: "Regional" },
+      update: { name: "Viernes Santo", type: "Regional", isRenounceable: true },
+      create: {
+        id: "mocked-ulid",
+        date: "2024-03-29",
+        name: "Viernes Santo",
+        type: "Regional",
+        isRenounceable: true,
+      },
     });
 
     expect(auditService.log).toHaveBeenCalledWith({

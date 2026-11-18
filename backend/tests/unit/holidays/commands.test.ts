@@ -7,7 +7,18 @@ import {
 function fixture() {
   const deps: HolidayCommandDependencies = {
     repository: {
-      upsert: vi.fn(async (data) => ({ ...data, createdAt: new Date(0), updatedAt: new Date(0) })),
+      create: vi.fn(async (data) => ({ ...data, createdAt: new Date(0), updatedAt: new Date(0) })),
+      updateById: vi.fn(async (id, data) => ({
+        id,
+        ...data,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+      })),
+      upsertByDate: vi.fn(async (data) => ({
+        ...data,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+      })),
       findSummary: vi.fn(async () => ({ date: "2026-01-01", name: "Año Nuevo" })),
       delete: vi.fn(async () => ({})),
     },
@@ -26,20 +37,41 @@ function fixture() {
 }
 
 describe("Holiday commands without infrastructure", () => {
-  it("upserts by input/default type and publishes the persisted row after audit", async () => {
+  it("creates by input/default type and publishes the persisted row after audit", async () => {
     const { deps, commands } = fixture();
     const row = await commands.upsert({ date: "2026-01-01", name: "Año Nuevo" }, "supervisor");
-    expect(deps.repository.upsert).toHaveBeenCalledWith({
+    expect(deps.repository.create).toHaveBeenCalledWith({
       id: "new-id",
       date: "2026-01-01",
       name: "Año Nuevo",
       type: "Nacional",
+      isRenounceable: false,
     });
     expect(deps.audit).toHaveBeenCalledWith({
       actorUsername: "supervisor",
       action: "HOLIDAY_UPSERT",
       category: "OPERATIONS",
       details: { date: row.date, name: row.name },
+    });
+    expect(deps.emit).toHaveBeenCalledWith(row);
+  });
+  it("updates by id when id is provided", async () => {
+    const { deps, commands } = fixture();
+    const row = await commands.upsert(
+      {
+        id: "existing-id",
+        date: "2026-01-02",
+        name: "Feriado Editado",
+        type: "Regional",
+        isRenounceable: true,
+      },
+      "supervisor",
+    );
+    expect(deps.repository.updateById).toHaveBeenCalledWith("existing-id", {
+      date: "2026-01-02",
+      name: "Feriado Editado",
+      type: "Regional",
+      isRenounceable: true,
     });
     expect(deps.emit).toHaveBeenCalledWith(row);
   });
@@ -54,7 +86,7 @@ describe("Holiday commands without infrastructure", () => {
         "bulk-actor",
       ),
     ).toBe(2);
-    expect(deps.repository.upsert).toHaveBeenCalledTimes(2);
+    expect(deps.repository.upsertByDate).toHaveBeenCalledTimes(2);
     expect(deps.audit).toHaveBeenCalledWith(
       expect.objectContaining({
         actorUsername: "bulk-actor",
@@ -81,7 +113,7 @@ describe("Holiday commands without infrastructure", () => {
     const { deps, commands } = fixture();
     let concurrentCount = 0;
     let maxConcurrent = 0;
-    vi.mocked(deps.repository.upsert).mockImplementation(async (row) => {
+    vi.mocked(deps.repository.upsertByDate).mockImplementation(async (row) => {
       concurrentCount++;
       if (concurrentCount > maxConcurrent) {
         maxConcurrent = concurrentCount;
@@ -96,8 +128,11 @@ describe("Holiday commands without infrastructure", () => {
       year: 2026,
     });
     expect(maxConcurrent).toBeGreaterThan(1);
-    expect(deps.repository.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "Regional" }),
+    expect(deps.repository.upsertByDate).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "Regional", isRenounceable: true }),
+    );
+    expect(deps.repository.upsertByDate).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "Nacional", isRenounceable: false }),
     );
     expect(deps.audit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,13 +147,13 @@ describe("Holiday commands without infrastructure", () => {
     const { deps, commands } = fixture();
     vi.mocked(deps.provider.list).mockRejectedValue(new Error("provider invalid"));
     await expect(commands.sync(2025)).rejects.toThrow("provider invalid");
-    expect(deps.repository.upsert).not.toHaveBeenCalled();
+    expect(deps.repository.upsertByDate).not.toHaveBeenCalled();
     expect(deps.audit).not.toHaveBeenCalled();
     expect(deps.emit).not.toHaveBeenCalled();
   });
   it("write failure is propagated without publishing success", async () => {
     const { deps, commands } = fixture();
-    vi.mocked(deps.repository.upsert).mockRejectedValue(new Error("db failure"));
+    vi.mocked(deps.repository.upsertByDate).mockRejectedValue(new Error("db failure"));
     await expect(commands.bulk([{ date: "2026-01-01", name: "Uno" }], "actor")).rejects.toThrow(
       "db failure",
     );
