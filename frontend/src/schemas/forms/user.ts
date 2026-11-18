@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 import type { UserRole } from "../../types/index";
-import { USER_ROLES, optionalText, requiredTextMin } from "./common";
+import { USER_ROLES, optionalNullableText, optionalText, requiredTextMin } from "./common";
+
+const USER_UPDATE_ROLES = [...USER_ROLES, "Archivado"] as const;
 
 /**
  * Spec 036 T5 (AC2): alta de usuario (`UserForm.tsx`).
@@ -24,8 +26,8 @@ export const userCreateFormSchema = z.object({
 export const userUpdateFormSchema = z.object({
   username: requiredTextMin("El usuario", 3).optional(),
   password: requiredTextMin("La contraseña", 6).optional(),
-  role: z.enum(USER_ROLES).optional(),
-  employeeId: optionalText(),
+  role: z.enum(USER_UPDATE_ROLES).optional(),
+  employeeId: optionalNullableText(),
 });
 
 /** Tipo de la entrada del formulario de alta de usuario. */
@@ -52,7 +54,7 @@ export interface UserFormValues {
   /** Nivel de autorizacion. */
   role: UserRole;
   /** Empleado vinculado (opcional). */
-  employeeId?: string;
+  employeeId?: string | null;
 }
 
 /**
@@ -81,6 +83,6 @@ export const buildUserFormSchema = (_context: UserFormValidationContext) =>
   z.object({
     username: requiredTextMin("El usuario", 3),
     password: requiredTextMin("La contraseña", 6).optional(),
-    role: z.enum(USER_ROLES),
-    employeeId: optionalText(),
+    role: z.enum(USER_UPDATE_ROLES),
+    employeeId: optionalNullableText(),
   });

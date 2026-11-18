@@ -5133,6 +5133,8 @@ export interface components {
       rut: string;
       name: string;
       position?: string;
+      area: string;
+      workdayType: string;
       department?: string;
       /** Format: email */
       email?: string;
@@ -5247,8 +5249,9 @@ export interface components {
         | "Supervisor"
         | "Administrador"
         | "Supervisor_Elevado"
-        | "Fiscalizador";
-      employeeId?: string;
+        | "Fiscalizador"
+        | "Archivado";
+      employeeId?: string | null;
       mustChangePassword?: boolean;
     };
     UserQuery: {

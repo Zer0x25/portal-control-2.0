@@ -11,7 +11,12 @@ import {
 import { validateRequest } from "../../../platform/fastify/validation";
 import { ForbiddenError, ValidationError } from "../../../utils/AppError";
 import { resolveAccessToken } from "../../auth";
-import { mapUserRole, type CreateUserDto, type UpdateUserDto, type UserFlows } from "../application/flows";
+import {
+  mapUserRole,
+  type CreateUserDto,
+  type UpdateUserDto,
+  type UserFlows,
+} from "../application/flows";
 export interface UsersPluginOptions {
   service: UserFlows;
   authenticate: onRequestHookHandler;

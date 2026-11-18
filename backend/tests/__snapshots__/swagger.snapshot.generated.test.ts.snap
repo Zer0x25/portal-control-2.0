@@ -997,6 +997,10 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "address": {
             "type": "string",
           },
+          "area": {
+            "minLength": 1,
+            "type": "string",
+          },
           "bankName": {
             "type": "string",
           },
@@ -1085,10 +1089,16 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "nullable": true,
             "type": "string",
           },
+          "workdayType": {
+            "minLength": 1,
+            "type": "string",
+          },
         },
         "required": [
           "rut",
           "name",
+          "area",
+          "workdayType",
         ],
         "type": "object",
       },
@@ -3345,6 +3355,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "UpdateUser": {
         "properties": {
           "employeeId": {
+            "nullable": true,
             "type": "string",
           },
           "mustChangePassword": {
@@ -3362,6 +3373,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "Administrador",
               "Supervisor_Elevado",
               "Fiscalizador",
+              "Archivado",
             ],
             "type": "string",
           },
@@ -3433,9 +3445,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "UserQuery": {
         "properties": {
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "role": {

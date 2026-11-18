@@ -41,6 +41,8 @@
           "rut": { "type": "string", "minLength": 8 },
           "name": { "type": "string", "minLength": 2 },
           "position": { "type": "string" },
+          "area": { "type": "string", "minLength": 1 },
+          "workdayType": { "type": "string", "minLength": 1 },
           "department": { "type": "string" },
           "email": { "type": "string", "format": "email" },
           "phone": { "type": "string" },
@@ -66,7 +68,7 @@
           "syncStatus": { "type": "string" },
           "lastModified": { "type": "number" }
         },
-        "required": ["rut", "name"]
+        "required": ["rut", "name", "area", "workdayType"]
       },
       "Department": {
         "type": "object",
@@ -206,18 +208,19 @@
               "Supervisor",
               "Administrador",
               "Supervisor_Elevado",
-              "Fiscalizador"
+              "Fiscalizador",
+              "Archivado"
             ]
           },
-          "employeeId": { "type": "string" },
+          "employeeId": { "type": "string", "nullable": true },
           "mustChangePassword": { "type": "boolean" }
         }
       },
       "UserQuery": {
         "type": "object",
         "properties": {
-          "page": { "type": "string" },
-          "pageSize": { "type": "string" },
+          "page": { "type": "string", "pattern": "^[1-9]\\d*$" },
+          "pageSize": { "type": "string", "pattern": "^[1-9]\\d*$" },
           "since": { "type": "string" },
           "search": { "type": "string" },
           "role": { "type": "string" }
