@@ -675,6 +675,8 @@
           "startDate": { "type": "string" },
           "endDate": { "type": "string" },
           "employeeId": { "type": "string" },
+          "type": { "type": "string" },
+          "search": { "type": "string" },
           "showArchived": { "type": "string" }
         }
       },

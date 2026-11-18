@@ -1464,6 +1464,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "pageSize": {
             "type": "string",
           },
+          "search": {
+            "type": "string",
+          },
           "showArchived": {
             "type": "string",
           },
@@ -1471,6 +1474,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "startDate": {
+            "type": "string",
+          },
+          "type": {
             "type": "string",
           },
         },
@@ -1961,7 +1967,6 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "number",
           },
           "dayIndex": {
-            "maximum": 6,
             "minimum": 0,
             "type": "integer",
           },
@@ -2947,6 +2952,15 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "pageSize": {
+            "type": "string",
+          },
+          "search": {
+            "type": "string",
+          },
+          "showArchived": {
+            "type": "string",
+          },
+          "since": {
             "type": "string",
           },
           "startDate": {

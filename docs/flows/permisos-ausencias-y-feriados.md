@@ -1,6 +1,6 @@
 # Flujo: Permisos, ausencias y feriados (`permisos-ausencias-y-feriados`)
 
-- **Estado:** `CON_HALLAZGOS` — Fase 2 completada el 2026-11-18 con replicación en PostgreSQL 18.4 efímero, Fastify inject y Playwright headless sobre staging (`http://127.0.0.1:8080`). Pendiente definición de `DUDA-01..03` para pasar a Fase 3 (SDD).
+- **Estado:** `SINCRONIZADO_Y_VERIFICADO` — Spec 115 implementada y verificada localmente (ver sección 7).
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `theoretical-shifts` (pestañas `leaves` y `holidays`), `leaves`, `holidays`, `LeaveService`, `HolidayService`, `useLeaveManagerController`, `useHolidayManagerController`, `useTimeRecords`, `schedulingService`. En UI, `#/theoretical-shifts` admite `Administrador`, `Supervisor_Elevado` y `Supervisor` (`App.tsx`). En API, `/api/leaves*` (GET/POST/DELETE) y las escrituras de `/api/holidays*` (`POST /api/holidays`, `POST /api/holidays/bulk`, `POST /api/holidays/sync`, `DELETE /api/holidays/:id`) admiten `Administrador`, `Supervisor_Elevado`, `Supervisor` y `Reloj_Control`; `GET /api/holidays` admite cualquier usuario autenticado.
 - **Entradas:** UI `#/theoretical-shifts?tab=leaves` (`LeaveManager`), `#/theoretical-shifts?tab=holidays` (`HolidayManager`); API `GET/POST /api/leaves`, `DELETE /api/leaves/:id`, `GET/POST /api/holidays`, `POST /api/holidays/bulk`, `POST /api/holidays/sync`, `DELETE /api/holidays/:id`.
@@ -91,3 +91,12 @@ El usuario aprobó las tres definiciones el 2026-11-18 e incorporadas en la [spe
    - **Evidencia API + Playwright:** En API, `Reloj_Control` obtiene `200` en `GET /api/leaves` y `201` en `POST /api/leaves`; en Playwright, al navegar a `#/theoretical-shifts` es bloqueado y redirigido a `#/dashboard`. `Usuario` y `Fiscalizador` reciben `403` en `GET /api/leaves` (la rama `user.role === "Usuario"` en `LeaveService.list` es código muerto).
 6. **`BUG-06` (Baja) — Mutación de `endDate` al eliminar ausencia y filtrado parcial en cliente:**
    - **Evidencia DB:** `DELETE /api/leaves/:id` sobre licencia futura (`2026-11-19..2026-11-21`) devuelve `200`, marca `isDeleted: true` en `LeaveRecord` y `TimeRecord`, pero sobrescribe `endDate` del `LeaveRecord` a `"2026-11-17"` (ayer). En UI, `LeaveManager` filtra `filterEmployeeName` y `filterType` solo sobre las páginas cargadas (de a 50).
+
+## 7. Verificación de Spec 115
+
+- **Backend checks & OpenAPI:** `cd backend && npm run check && npm run lint && npm run check:sdk` -> OK (`✅ SDK is fully synchronized.`); `npm run test:schemas-refactor` -> 3 archivos, `10/10` pasando.
+- **Backend unitarios (`leaves` / `holidays`):** `leaveCorrectionFlows.test.ts`, `holidayService.test.ts`, `holidayService.sync.test.ts`, `holidays/getHolidays.test.ts`, `holidays/commands.test.ts` -> 5 archivos, `36/36` pasando.
+- **Backend integración Fastify + PostgreSQL 18.4 (21 migraciones incluyendo `20261118122100_add_holiday_is_renounceable`):** `leavesCorrections.test.ts` (`43/43`) y `holidays.test.ts` (`8/8`) -> `51/51` pasando (incluyendo `Reloj_Control` y `Fiscalizador` en solo lectura `200` `GET /api/leaves` / `403` `POST`/`DELETE`, preservación de `endDate` en `DELETE`, `isRenounceable` en CRUD/sync y actualización de fecha por `id`).
+- **Frontend:** `cd frontend && npm run check && npm run lint` -> OK; `vitest run src/tests/services/holidayAndConfigService.test.ts src/tests/features/theoretical-shifts/` -> 5 archivos, `18/18` pasando.
+- **Playwright en staging (`http://127.0.0.1:8080`):** `LeaveManager` (`Administrador`) envía 1 solo `POST /api/leaves` (`201`) y cierra/resetea el formulario sin `409`; `HolidayManager` (`Administrador`) crea feriado con `isRenounceable`, muestra badge «Irrenunciable», cambia la fecha sin `409` ni duplicación, y «Cargar del Año» muestra `"16 feriados sincronizados para 2026."`; `#/theoretical-shifts` permanece bloqueado para `Reloj_Control`.
+- **Documentación:** `npm run docs:check` -> `OK (552 markdown, 31 ADR indexados)`.

@@ -1,6 +1,6 @@
 # Spec 115: Corregir flujo de permisos, ausencias y feriados
 
-- **Estado:** En progreso (Fase 3 SDD)
+- **Estado:** Implementado y verificado (Fase 4 SDD)
 - **Flujo origen:** [permisos-ausencias-y-feriados.md](../../docs/flows/permisos-ausencias-y-feriados.md)
 - **Fecha:** 2026-11-18
 

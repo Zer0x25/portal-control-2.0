@@ -5548,6 +5548,8 @@ export interface components {
       startDate?: string;
       endDate?: string;
       employeeId?: string;
+      type?: string;
+      search?: string;
       showArchived?: string;
     };
     LeaveResponse: components["schemas"]["ApiResponse"] & {
