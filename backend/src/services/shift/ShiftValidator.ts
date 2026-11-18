@@ -1,4 +1,5 @@
-import { AssignedShift } from "../../generated/prisma/client";
+import { AssignedShift, Prisma } from "../../generated/prisma/client";
+import { toDate } from "date-fns-tz";
 import prisma from "../db";
 import {
   PatternSchedule,
@@ -10,10 +11,14 @@ import { AssignmentCreateInput } from "./types";
 import {
   addBusinessDaysChile,
   compareBusinessDate,
-  formatDateUTCISO,
-  parseDateOnlyUTC,
+  parseBusinessDateChile,
+  parseTimeToMinutes,
   toBusinessDateChile,
 } from "../../utils/timeUtils";
+import { differenceInCalendarDaysCL } from "../../utils/timePolicy";
+
+const CHILE_TZ = "America/Santiago";
+type DbClient = typeof prisma | Prisma.TransactionClient;
 
 export class ShiftValidator {
   /**
@@ -30,11 +35,20 @@ export class ShiftValidator {
     return { isValid: true };
   }
 
-  async validatePatternSchedules(dailySchedules: PatternSchedule[]): Promise<{
+  async validatePatternSchedules(
+    dailySchedules: PatternSchedule[],
+    cycleLengthDays?: number,
+  ): Promise<{
     isValid: boolean;
     error?: string;
   }> {
     for (const day of dailySchedules) {
+      if (cycleLengthDays !== undefined && (day.dayIndex < 0 || day.dayIndex >= cycleLengthDays)) {
+        return {
+          isValid: false,
+          error: `El horario del día ${day.dayIndex + 1} excede la duración del ciclo (${cycleLengthDays} días).`,
+        };
+      }
       if (day.isOffDay) continue;
       if (!day.startTime || !day.endTime) {
         return { isValid: false, error: `El día ${day.dayIndex + 1} no tiene horario definido.` };
@@ -103,14 +117,16 @@ export class ShiftValidator {
     newAssignment?: AssignmentCreateInput | Partial<AssignmentCreateInput>,
     excludeAssignmentId?: string,
     providedExistingAssignments?: AssignedShift[],
+    db: DbClient = prisma,
   ) {
     const weeklyHours = await this.calculateAverageWeeklyHours(
       employeeId,
       newAssignment,
       excludeAssignmentId,
       providedExistingAssignments,
+      db,
     );
-    const employee = await prisma.employee.findUnique({
+    const employee = await db.employee.findUnique({
       where: { id: employeeId },
       select: { workdayType: true },
     });
@@ -119,7 +135,7 @@ export class ShiftValidator {
       return { isValid: true, weeklyHours, maxHours: Infinity, isExempt: true };
     }
 
-    const config = await prisma.systemConfig.findUnique({ where: { key: "max_weekly_hours" } });
+    const config = await db.systemConfig.findUnique({ where: { key: "max_weekly_hours" } });
     const maxHours = config ? parseFloat(config.value) : 45;
 
     return { isValid: weeklyHours <= maxHours, weeklyHours, maxHours, isExempt: false };
@@ -130,10 +146,11 @@ export class ShiftValidator {
     newAssignment?: Partial<AssignmentCreateInput>,
     excludeAssignmentId?: string,
     providedExistingAssignments?: AssignedShift[],
+    db: DbClient = prisma,
   ) {
     let assignments = providedExistingAssignments;
     if (!assignments) {
-      assignments = await prisma.assignedShift.findMany({
+      assignments = await db.assignedShift.findMany({
         where: {
           employeeId,
           isDeleted: false,
@@ -154,36 +171,52 @@ export class ShiftValidator {
       shiftPatternId: a.shiftPatternId,
     }));
 
-    if (newAssignment) {
+    if (newAssignment?.shiftPatternId) {
       relevantAssignments.push({
         startDate: newAssignment.startDate!,
-        shiftPatternId: newAssignment.shiftPatternId!,
+        shiftPatternId: newAssignment.shiftPatternId,
       });
       relevantAssignments.sort((a, b) => a.startDate.localeCompare(b.startDate));
     }
 
     if (relevantAssignments.length === 0) return 0;
 
-    const latest = relevantAssignments[relevantAssignments.length - 1];
-    const pattern = await prisma.shiftPattern.findUnique({ where: { id: latest.shiftPatternId } });
+    const patternIds = [...new Set(relevantAssignments.map((a) => a.shiftPatternId))];
+    const patterns = await db.shiftPattern.findMany({
+      where: { id: { in: patternIds } },
+    });
+    const patternMap = new Map(patterns.map((p) => [p.id, p]));
 
-    if (!pattern || pattern.cycleLengthDays <= 0) return 0;
+    let maxWeeklyHours = 0;
+    for (const ass of relevantAssignments) {
+      const pattern = patternMap.get(ass.shiftPatternId);
+      if (!pattern || pattern.cycleLengthDays <= 0) continue;
 
-    const dailySchedules = JSON.parse(pattern.dailySchedules);
-    const totalHours = dailySchedules.reduce(
-      (sum: number, day: PatternSchedule) => sum + this.calculateNetHours(day),
-      0,
-    );
+      const dailySchedules: PatternSchedule[] =
+        typeof pattern.dailySchedules === "string"
+          ? JSON.parse(pattern.dailySchedules)
+          : pattern.dailySchedules;
+      const totalHours = dailySchedules.reduce(
+        (sum: number, day: PatternSchedule) => sum + this.calculateNetHours(day),
+        0,
+      );
+      const weeklyHours = (totalHours / pattern.cycleLengthDays) * 7;
+      if (weeklyHours > maxWeeklyHours) {
+        maxWeeklyHours = weeklyHours;
+      }
+    }
 
-    return (totalHours / pattern.cycleLengthDays) * 7;
+    return maxWeeklyHours;
   }
 
   async validateRestPeriod(
     employeeId: string,
     startDateStr: string,
-    pattern: { dailySchedules: string | PatternSchedule[] },
+    pattern: { dailySchedules: string | PatternSchedule[]; cycleLengthDays?: number },
+    context?: SchedulingContext,
+    assignmentStartDateStr?: string,
   ): Promise<{ isValid: boolean; error?: string }> {
-    // 1. Determine start time of the new assignment's FIRST day
+    // 1. Determine start time of the assignment's target day in Chile business dates
     const days: PatternSchedule[] =
       typeof pattern.dailySchedules === "string"
         ? JSON.parse(pattern.dailySchedules || "[]")
@@ -191,38 +224,44 @@ export class ShiftValidator {
 
     if (days.length === 0) return { isValid: true };
 
-    const startDateDate = new Date(startDateStr + "T12:00:00");
-    // Since this is a NEW assignment, startDate IS the start. So diff = 0.
-    const dayIndex = 0;
+    const cycleLen =
+      pattern.cycleLengthDays && pattern.cycleLengthDays > 0
+        ? pattern.cycleLengthDays
+        : days.length;
+    const diffDays = assignmentStartDateStr
+      ? differenceInCalendarDaysCL(assignmentStartDateStr, startDateStr)
+      : 0;
+    const dayIndex = diffDays >= 0 ? diffDays % cycleLen : 0;
     const firstDaySchedule = days.find((d) => d.dayIndex === dayIndex) || days[0];
 
-    if (!firstDaySchedule || !firstDaySchedule.startTime) {
-      // If first day is Off, no rest conflict possible for START of shift.
+    if (!firstDaySchedule || firstDaySchedule.isOffDay || !firstDaySchedule.startTime) {
+      // If target day is Off, no rest conflict possible for START of shift.
       return { isValid: true };
     }
 
-    const newShiftStart = new Date(`${startDateStr}T${firstDaySchedule.startTime}:00`);
+    const newShiftStart = toDate(`${startDateStr}T${firstDaySchedule.startTime}:00`, {
+      timeZone: CHILE_TZ,
+    });
 
-    // 2. Fetch PREVIOUS DAY schedule
-    const prevDate = new Date(startDateDate);
-    prevDate.setDate(prevDate.getDate() - 1);
+    // 2. Fetch PREVIOUS DAY schedule using Chile business date
+    const prevDateStr = addBusinessDaysChile(startDateStr, -1);
+    const prevDate = parseBusinessDateChile(prevDateStr);
 
-    const prevSchedule = await schedulingService.getEmployeeDailyScheduleInfo(employeeId, prevDate);
+    const prevSchedule = await schedulingService.getEmployeeDailyScheduleInfo(
+      employeeId,
+      prevDate,
+      context,
+    );
 
     if (prevSchedule && prevSchedule.endTime && prevSchedule.isWorkDay) {
-      // Calculate Prev End Time
-      // If endTime < startTime, it crosses midnight => ends on startDate
-      const prevDateStr = formatDateUTCISO(prevDate);
+      // If endTime < startTime, it crosses midnight => ends on startDateStr
+      const pStart = prevSchedule.startTime ? parseTimeToMinutes(prevSchedule.startTime) : 0;
+      const pEnd = parseTimeToMinutes(prevSchedule.endTime);
+      const prevEndDateStr = pEnd < pStart ? startDateStr : prevDateStr;
 
-      // Heuristic for midnight crossing
-      const pStart = prevSchedule.startTime ? parseInt(prevSchedule.startTime.split(":")[0]) : 0;
-      const pEnd = parseInt(prevSchedule.endTime.split(":")[0]);
-
-      let prevShiftEnd = new Date(`${prevDateStr}T${prevSchedule.endTime}:00`);
-      if (pEnd < pStart) {
-        // Ends next day (which is startDate)
-        prevShiftEnd.setDate(prevShiftEnd.getDate() + 1);
-      }
+      const prevShiftEnd = toDate(`${prevEndDateStr}T${prevSchedule.endTime}:00`, {
+        timeZone: CHILE_TZ,
+      });
 
       const diffMs = newShiftStart.getTime() - prevShiftEnd.getTime();
       const diffHours = diffMs / (1000 * 60 * 60);
@@ -244,8 +283,12 @@ export class ShiftValidator {
     endDateStr: string | null,
     patternId: string,
     excludeAssignmentId?: string,
+    providedContext?: SchedulingContext,
+    db: DbClient = prisma,
   ): Promise<{ isValid: boolean; error?: string }> {
-    const pattern = await prisma.shiftPattern.findUnique({ where: { id: patternId } });
+    const pattern = providedContext
+      ? providedContext.shiftPatterns.find((p) => p.id === patternId)
+      : await db.shiftPattern.findUnique({ where: { id: patternId } });
     if (!pattern) return { isValid: true };
 
     // Exception Rule: 7x7, 10x10, or long cycles
@@ -258,87 +301,103 @@ export class ShiftValidator {
       return { isValid: true };
     }
 
-    const startObj = parseDateOnlyUTC(startDateStr);
-    const checkStart = new Date(startObj);
-    checkStart.setDate(checkStart.getDate() - 7);
+    const startIso = addBusinessDaysChile(startDateStr, -7);
+    const endIso = endDateStr
+      ? addBusinessDaysChile(endDateStr, 7)
+      : addBusinessDaysChile(startDateStr, 45);
 
-    let checkEnd = new Date(startObj);
-    if (endDateStr) {
-      checkEnd = parseDateOnlyUTC(endDateStr);
-      checkEnd.setDate(checkEnd.getDate() + 7);
+    let context: SchedulingContext;
+    if (providedContext) {
+      const filteredExisting = excludeAssignmentId
+        ? providedContext.assignedShifts.filter((a) => a.id !== excludeAssignmentId)
+        : providedContext.assignedShifts;
+      const virtualAssignment: AssignedShift = {
+        id: "virtual-new",
+        employeeId,
+        employeeName: null,
+        shiftPatternId: patternId,
+        shiftPatternName: null,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false,
+        deletedAt: null,
+      };
+      context = {
+        ...providedContext,
+        assignedShifts: [...filteredExisting, virtualAssignment],
+        indexedShifts: undefined,
+      };
     } else {
-      checkEnd.setDate(checkEnd.getDate() + 45);
+      const [existingShifts, leaves, holidays, patterns] = await Promise.all([
+        db.assignedShift.findMany({
+          where: {
+            employeeId,
+            isDeleted: false,
+            startDate: { lte: endIso },
+            OR: [{ endDate: null }, { endDate: { gte: startIso } }],
+            ...(excludeAssignmentId ? { NOT: { id: excludeAssignmentId } } : {}),
+          },
+        }),
+        db.leaveRecord.findMany({
+          where: {
+            employeeId,
+            isDeleted: false,
+            startDate: { lte: endIso },
+            endDate: { gte: startIso },
+          },
+        }),
+        db.holiday.findMany({
+          where: { date: { gte: startIso, lte: endIso } },
+        }),
+        db.shiftPattern.findMany({ where: { isDeleted: false } }),
+      ]);
+
+      const virtualAssignment: AssignedShift = {
+        id: "virtual-new",
+        employeeId,
+        employeeName: null,
+        shiftPatternId: patternId,
+        shiftPatternName: null,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isDeleted: false,
+        deletedAt: null,
+      };
+
+      const allShifts = [...existingShifts, virtualAssignment];
+
+      const patternsWithSchedules = patterns.map((p) => ({
+        ...p,
+        dailySchedules:
+          typeof p.dailySchedules === "string" ? JSON.parse(p.dailySchedules) : p.dailySchedules,
+      })) as ShiftPatternWithSchedules[];
+
+      context = {
+        assignedShifts: allShifts,
+        shiftPatterns: patternsWithSchedules,
+        leaves,
+        holidays,
+      };
     }
-
-    const startIso = formatDateUTCISO(checkStart);
-    const endIso = formatDateUTCISO(checkEnd);
-
-    const [existingShifts, leaves, holidays, patterns] = await Promise.all([
-      prisma.assignedShift.findMany({
-        where: {
-          employeeId,
-          isDeleted: false,
-          startDate: { lte: endIso },
-          OR: [{ endDate: null }, { endDate: { gte: startIso } }],
-          ...(excludeAssignmentId ? { NOT: { id: excludeAssignmentId } } : {}),
-        },
-      }),
-      prisma.leaveRecord.findMany({
-        where: {
-          employeeId,
-          isDeleted: false,
-          startDate: { lte: endIso },
-          endDate: { gte: startIso },
-        },
-      }),
-      prisma.holiday.findMany({
-        where: { date: { gte: startIso, lte: endIso } },
-      }),
-      prisma.shiftPattern.findMany({ where: { isDeleted: false } }),
-    ]);
-
-    const virtualAssignment: AssignedShift = {
-      id: "virtual-new",
-      employeeId,
-      employeeName: null,
-      shiftPatternId: patternId,
-      shiftPatternName: null,
-      startDate: startDateStr,
-      endDate: endDateStr,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isDeleted: false,
-      deletedAt: null,
-    };
-
-    const allShifts = [...existingShifts, virtualAssignment];
-
-    const patternsWithSchedules = patterns.map((p) => ({
-      ...p,
-      dailySchedules:
-        typeof p.dailySchedules === "string" ? JSON.parse(p.dailySchedules) : p.dailySchedules,
-    })) as ShiftPatternWithSchedules[];
-
-    const context: SchedulingContext = {
-      assignedShifts: allShifts,
-      shiftPatterns: patternsWithSchedules,
-      leaves: leaves,
-      holidays: holidays,
-    };
 
     let consecutiveWorkDays = 0;
 
-    for (let d = new Date(checkStart); d <= checkEnd; d.setDate(d.getDate() + 1)) {
+    for (let dIso = startIso; dIso <= endIso; dIso = addBusinessDaysChile(dIso, 1)) {
+      const d = parseBusinessDateChile(dIso);
       const info = await schedulingService.getEmployeeDailyScheduleInfo(employeeId, d, context);
 
       // Exception: If the assigned pattern has a cycle > 7, we skip this validation (Exceptional jornadas like 7x7)
       const assignment = context.assignedShifts.find(
-        (a) => d >= new Date(a.startDate) && (!a.endDate || d <= new Date(a.endDate)),
+        (a) => dIso >= a.startDate && (!a.endDate || dIso <= a.endDate),
       );
-      const pattern = assignment
+      const activePattern = assignment
         ? context.shiftPatterns.find((p) => p.id === assignment.shiftPatternId)
         : null;
-      if (pattern && pattern.cycleLengthDays > 7) {
+      if (activePattern && activePattern.cycleLengthDays > 7) {
         continue;
       }
 
@@ -351,7 +410,7 @@ export class ShiftValidator {
       if (consecutiveWorkDays > 6) {
         return {
           isValid: false,
-          error: `Regla 6x1 excedida: Se detectaron mas de 6 días consecutivos de trabajo (alcanzado el ${formatDateUTCISO(d)}).`,
+          error: `Regla 6x1 excedida: Se detectaron mas de 6 días consecutivos de trabajo (alcanzado el ${dIso}).`,
         };
       }
     }

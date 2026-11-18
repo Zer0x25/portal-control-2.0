@@ -92,6 +92,48 @@ describe("Shift application TDD", () => {
     f.service.deletePattern.mockRejectedValueOnce({ code: "P2025", message: "missing" });
     await expect(f.flows.deletePattern("missing")).resolves.toBeUndefined();
   });
+
+  it("maps 7-day past (antigüedad), 6x1, and bulk pattern/assignment errors to 400 ValidationError", async () => {
+    const f = fixture();
+    f.service.assign.mockRejectedValueOnce(
+      new Error("No se pueden registrar o editar registros con más de 7 días de antigüedad."),
+    );
+    await expect(f.flows.assign({ employeeId: "e" }, "actor")).rejects.toMatchObject({
+      statusCode: 400,
+    });
+
+    f.service.updateAssignment.mockRejectedValueOnce(
+      new Error("Regla 6x1 excedida: Se detectaron mas de 6 días consecutivos de trabajo."),
+    );
+    await expect(f.flows.updateAssignment("a1", {}, "actor")).rejects.toMatchObject({
+      statusCode: 400,
+    });
+
+    f.service.deleteAssignment.mockRejectedValueOnce(
+      new Error("No se pueden registrar o editar registros con más de 7 días de antigüedad."),
+    );
+    await expect(f.flows.deleteAssignment("a1", "actor")).rejects.toMatchObject({
+      statusCode: 400,
+    });
+
+    f.service.bulkPatterns.mockRejectedValueOnce(
+      new Error("El horario del día 15 excede la duración del ciclo (14 días)."),
+    );
+    await expect(f.flows.bulkPatterns([])).rejects.toMatchObject({ statusCode: 400 });
+
+    f.service.bulkAssignments.mockRejectedValueOnce(new Error("Regla 6x1 excedida"));
+    await expect(f.flows.bulkAssignments([], "actor")).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
+  it("forwards search parameter on assignments and actor on bulkAssignments", async () => {
+    const f = fixture();
+    await f.flows.assignments({ search: "Juan" }, { role: "Administrador" });
+    expect(f.service.assignments).toHaveBeenCalledWith(expect.objectContaining({ search: "Juan" }));
+    await f.flows.bulkAssignments([], "admin-user");
+    expect(f.service.bulkAssignments).toHaveBeenCalledWith([], "admin-user");
+  });
   it("preserves monthly-plan conversion/rest payload and response, with missing-parameter errors", async () => {
     const f = fixture();
     const body = {
