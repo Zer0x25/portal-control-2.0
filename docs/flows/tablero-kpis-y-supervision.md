@@ -1,6 +1,6 @@
 # Flujo: Tablero, KPIs y supervisión (`tablero-kpis-y-supervision`)
 
-- **Estado:** `REPLICACION_COMPLETADA` — Fase 2 completada con evidencia HTTP/PostgreSQL 18.4 y Playwright staging; pendiente resolución de dudas de negocio (`DUDA-01..03`) para iniciar Fase 3 (Spec 117).
+- **Estado:** `SINCRONIZADO_Y_VERIFICADO` — Spec 117 implementada, contratos OpenAPI/SDK sincronizados y verificada en staging (`http://127.0.0.1:8080`) con `0` bugs abiertos y `0` dudas.
 - **Última actualización:** 2026-11-18
 - **Módulos / actores:** `dashboard`, `supervisor-dashboard`, `kpis`, `importExport`, `records`, `config`. Operadores previstos en UI/API: `Administrador`, `Supervisor_Elevado`, `Supervisor`, `Reloj_Control` y `Fiscalizador` (con divergencia UI vs API detallada en sección 3).
 - **Entradas:** UI `#/dashboard`, `#/dashboard-supervisor` (tabs `dashboard`, `kpis`, `analytics`, `employees`, `reports`, `shifts`); API `POST /api/kpis/summary`, `POST /api/kpis/detailed-report`, `GET /api/kpis/overview`, `GET /api/kpis/daily-planning`, `GET /api/export/report-pdf`, `GET /api/export/report-excel`, `GET /api/export/calendar-pdf`.
@@ -90,14 +90,13 @@ flowchart TD
 - **BUG-06 (`ANOMALÍA-04` confirmada):** `POST /api/kpis/detailed-report` con `{ employeeId: "emp-1", departmentId: "Ops" }` ignoró ambos filtros e incluyó empleados `Archivado`. En `ReportsTab`, seleccionar `workdayType: "Ordinaria"` no lo envió en el body de `POST /api/kpis/detailed-report` ni en las exportaciones PDF/Excel. En `Excel`, `cargo` también se ignora.
 - **Confirmado sin error en flujo feliz staging (`admin`):** `#/dashboard` y todas las pestañas de `#/dashboard-supervisor` (`Resumen Hoy`, `Indicadores`, `Analytics`, `Reportes` con descarga PDF `summary`/`compiled_detailed` y Excel, `Turnos`) operaron con `200 OK` y `0` errores de consola. Se confirmó también que `useAnalyticsTabController.ts` devuelve `heatmapData = []` y `trendData = []` estáticos.
 
-## 5. Dudas pendientes para el usuario (Fase 3)
+## 5. Decisiones resueltas y verificación final (Spec 117)
 
-1. **`DUDA-01` — Rol `Fiscalizador` en `#/dashboard-supervisor` y `/api/kpis/*`:**
-   - **A)** Permitir a `Fiscalizador` consultar `/api/kpis/overview`, `/api/kpis/daily-planning`, `/api/kpis/summary` y `/api/kpis/detailed-report` en modo solo lectura (alineado con `App.tsx` y `sidebarMenu.ts`).
-   - **B)** Quitar acceso a `#/dashboard-supervisor` y `Supervisión` en UI para `Fiscalizador`, manteniendo `/api/kpis/*` restringido.
-2. **`DUDA-02` — Empleados archivados en KPIs históricos y filtro `workdayType` en Reportes:**
-   - **A)** Incluir empleados archivados/inactivos en `KpiReportService.getEmployees` **solo si tienen registros o planificación en el rango consultado**, y propagar `workdayType` en `detailed-report`/exportaciones.
-   - **B)** Filtrar siempre `status: "Activo"` en `KpiReportService.getEmployees` (igual que `overview` y `daily-planning`), y propagar `workdayType`.
-3. **`DUDA-03` — `AnalyticsTab` (`heatmapData`/`trendData`) y alcance por área para `Supervisor`:**
-   - **A)** Mantener `overview`/`daily-planning` globales y dejar `AnalyticsTab` fuera del alcance de corrección funcional en Spec 117 (solo corregir errores/contratos de KPIs y Export).
-   - **B)** Filtrar `overview`/`daily-planning` por área del `Supervisor` y/o conectar `heatmapData`/`trendData` en `AnalyticsTab` desde `daily-attendance`.
+1. **`DUDA-01` (`1.B`):** `Fiscalizador` (`ROLES.AUDITOR`) fue retirado de `#/dashboard-supervisor` (`frontend/src/App.tsx`) y de `Supervisión` en el sidebar (`sidebarMenu.ts`), manteniendo `/api/kpis/*` restringido en backend.
+2. **`DUDA-02` (`2.A`):** `KpiReportService` incluye empleados `Archivado` únicamente cuando tienen `TimeRecord`, `LeaveRecord` o `AssignedShift` en el rango consultado (manteniendo `status: "Activo"` en `overview`, `daily-planning` y `calendar-pdf`); `workdayType` y `cargo` se propagan desde `ReportsTab` hasta `detailed-report`, PDF y Excel.
+3. **`DUDA-03` (`3.A`):** `overview`/`daily-planning` permanecen globales y `AnalyticsTab` quedó fuera del alcance de Spec 117.
+4. **Cierre técnico (`BUG-01..06`):** `prepareExcel` propaga `AppError` (`403`/`400`), `ExportQuerySchema` y `ControllerExportQuerySchema` unificaron `mode` (`"summary" | "compiled_detailed"`) junto con `swagger.json` y `api-schema.ts` (eliminando `as never`), `KpiStatsService` aplica `Math.max(0, ...)` en meses cerrados, `KpiAggregationService` acumula `Permiso` y `Permiso Especial`, `KpisTab` expone errores con toast + `[role="alert"]`, y `createKpiFlows` mapea `employeeId` y `departmentId`.
+5. **Verificación posterior al último cambio:**
+   - Backend: `npm run check`, `npm run check:sdk` (`✅ SDK is fully synchronized`), `npm run test:schemas-refactor` (3 archivos, 12/12), `vitest` unitarios KPI (3 archivos, 16/16), `run-fastify-isolated.cjs` `kpis.test.ts` + `importExport.test.ts` (2 archivos, 57/57).
+   - Frontend: `npm run check`, `npm run lint`, `vitest` KPIs/Dashboard/Sidebar (8 archivos, 30/30).
+   - Global: `npm run lint:budget` (`0/0`), `npm run docs:check` (`OK`), Playwright + HTTP en `portal-control-staging` (`http://127.0.0.1:8080`) PASS completo.

@@ -1,6 +1,6 @@
 # Spec 117: Corregir flujo `tablero-kpis-y-supervision`
 
-- **Estado:** En progreso (Fase 3 — SDD)
+- **Estado:** Completada (verificada en CI local y staging)
 - **Fecha:** 2026-11-18
 - **Flujo asociado:** [docs/flows/tablero-kpis-y-supervision.md](../../docs/flows/tablero-kpis-y-supervision.md)
 - **Decisiones del usuario:** `1.B; 2.A; 3.A`
