@@ -718,7 +718,7 @@ it.each([
   "$bulk enforces 1/10 MiB limits before invoking application",
   async ({ single, bulk, key, method, status, body }) => {
     const f = fixture();
-    const headers = { authorization: `Bearer ${f.token()}` };
+    const headers = { authorization: `Bearer ${f.token("admin", "Administrador")}` };
     const effect =
       key === "records"
         ? f.deps.records.bulk
@@ -787,7 +787,7 @@ it.each([
 
 it("shift reports reject oversized bodies and terminate unexpected pre-stream failure", async () => {
   const f = fixture();
-  const headers = { authorization: `Bearer ${f.token()}` };
+  const headers = { authorization: `Bearer ${f.token("admin", "Administrador")}` };
   expect(
     (
       await f.app.inject({

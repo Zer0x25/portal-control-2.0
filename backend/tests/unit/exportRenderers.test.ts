@@ -16,7 +16,7 @@ vi.mock("../../src/services/db", () => ({
     timeRecord: { findMany: data.records },
     shiftPattern: { findMany: data.patterns },
     assignedShift: { findMany: data.assignments },
-    shiftReport: { findUnique: data.shiftReport },
+    shiftReport: { findUnique: data.shiftReport, findFirst: data.shiftReport },
   },
 }));
 vi.mock("../../src/services/schedulingService", () => ({
