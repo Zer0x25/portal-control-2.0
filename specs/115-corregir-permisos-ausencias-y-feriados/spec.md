@@ -40,7 +40,7 @@ La Fase 2 de replicación controlada (`50dbbec`) confirmó 6 bugs entre `LeaveMa
 
 ## Criterios de aceptación
 
-- `cd backend && npm run db:generate && npm run check && npm run lint && npm run check:sdk` pasa sin errores ni advertencias (`0/0`).
-- `cd frontend && npm run check && npm run lint` pasa sin errores ni advertencias (`0/0`).
-- `cd backend && npx vitest run tests/unit/leaveCorrectionFlows.test.ts tests/unit/holidayService.test.ts tests/unit/holidayService.sync.test.ts tests/unit/holidays/getHolidays.test.ts` y `node scripts/run-fastify-isolated.cjs tests/fastify-integration/leavesCorrections.test.ts` y `holidays.test.ts` pasan al 100%.
-- En staging / Playwright: registrar una ausencia envía 1 solo `POST /api/leaves` (`201`) y cierra el formulario; editar la fecha de un feriado existente lo mueve sin `409` ni duplicación; «Cargar del Año» muestra el conteo real sin `undefined`; `isRenounceable` se guarda y visualiza; `Reloj_Control` y `Fiscalizador` reciben `200` en `GET /api/leaves` y `403` en mutaciones.
+- [x] `cd backend && npm run db:generate && npm run check && npm run lint && npm run check:sdk` pasa sin errores ni advertencias (`0/0`).
+- [x] `cd frontend && npm run check && npm run lint` pasa sin errores ni advertencias (`0/0`).
+- [x] `cd backend && npx vitest run tests/unit/leaveCorrectionFlows.test.ts tests/unit/holidayService.test.ts tests/unit/holidayService.sync.test.ts tests/unit/holidays/getHolidays.test.ts` y `node scripts/run-fastify-isolated.cjs tests/fastify-integration/leavesCorrections.test.ts` y `holidays.test.ts` pasan al 100%.
+- [x] En staging / Playwright: registrar una ausencia envía 1 solo `POST /api/leaves` (`201`) y cierra el formulario; editar la fecha de un feriado existente lo mueve sin `409` ni duplicación; «Cargar del Año» muestra el conteo real sin `undefined`; `isRenounceable` se guarda y visualiza; `Reloj_Control` y `Fiscalizador` reciben `200` en `GET /api/leaves` y `403` en mutaciones.

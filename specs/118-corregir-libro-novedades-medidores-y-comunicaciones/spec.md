@@ -49,13 +49,13 @@
      - Agregar botón `Archivar` en `QuickNotesModal.view.tsx` conectado a `archiveNote` (`PUT /api/notes/:id`), con confirmación o feedback claro.
      - Eliminar casts `as unknown as never` / `as unknown as QuickNote` en `noteService.ts` y `useQuickNotes.ts` tras sincronizar OpenAPI/SDK.
 
-## Criterios de Aceptación
+## Criterios de aceptación
 
-1. `POST /api/meters/bulk` desde la UI de `#/meter-readings` responde `201` sin error de validación `timestamp`.
-2. `GET /api/shift-reports` rechaza `page=abc`, `page=-1`, `pageSize=99999` con `400 VALIDATION_ERROR` y soporta `search` y `date` server-side.
-3. `GET /api/export/shift-report-pdf/:id` y `GET /api/shift-reports/export/:id` devuelven `404` tanto para IDs inexistentes como para reportes soft-deleted (`isDeleted: true`), y `DELETE /api/shift-reports/:id` setea `deletedAt`.
-4. `Supervisor` recibe `403` en `/api/shift-reports*` y `/api/meters*`; `Fiscalizador` ve `"Comunicados"` solo con `isControlInternoEnabled` activo y lee `#/communications` sin toast de error.
-5. En `#/logbook`, un fallo `500` al guardar novedad/proveedor no muestra toast de éxito ni cierra el modal; `ClosedReportsModal` no consulta cerrada, formatea fechas y filtra server-side; los textos sin mojibake ni typos.
-6. En `#/communications`, editar y pulsar `"Descartar"` restaura el texto guardado; publicar persiste en backend y es visible tras recargar o con otro usuario autorizado.
-7. En `QuickNotesModal`, existe botón para archivar notas (`PUT /api/notes/:id`).
-8. `npm run check`, `npm run check:sdk`, `npm run lint:budget` (0/0), `npm run docs:check`, tests unitarios e integración en PostgreSQL 18.4, y verificación en staging (`http://127.0.0.1:8080`) pasan sin regresiones.
+- [x] `POST /api/meters/bulk` desde la UI de `#/meter-readings` responde `201` sin error de validación `timestamp`.
+- [x] `GET /api/shift-reports` rechaza `page=abc`, `page=-1`, `pageSize=99999` con `400 VALIDATION_ERROR` y soporta `search` y `date` server-side.
+- [x] `GET /api/export/shift-report-pdf/:id` y `GET /api/shift-reports/export/:id` devuelven `404` tanto para IDs inexistentes como para reportes soft-deleted (`isDeleted: true`), y `DELETE /api/shift-reports/:id` setea `deletedAt`.
+- [x] `Supervisor` recibe `403` en `/api/shift-reports*` y `/api/meters*`; `Fiscalizador` ve `"Comunicados"` solo con `isControlInternoEnabled` activo y lee `#/communications` sin toast de error.
+- [x] En `#/logbook`, un fallo `500` al guardar novedad/proveedor no muestra toast de éxito ni cierra el modal; `ClosedReportsModal` no consulta cerrada, formatea fechas y filtra server-side; los textos sin mojibake ni typos.
+- [x] En `#/communications`, editar y pulsar `"Descartar"` restaura el texto guardado; publicar persiste en backend y es visible tras recargar o con otro usuario autorizado.
+- [x] En `QuickNotesModal`, existe botón para archivar notas (`PUT /api/notes/:id`).
+- [x] `npm run check`, `npm run check:sdk`, `npm run lint:budget` (0/0), `npm run docs:check`, tests unitarios e integración en PostgreSQL 18.4, y verificación en staging (`http://127.0.0.1:8080`) pasan sin regresiones.

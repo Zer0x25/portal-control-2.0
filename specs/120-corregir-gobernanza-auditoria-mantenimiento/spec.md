@@ -60,3 +60,11 @@ Corregir las desincronizaciones de RBAC, brechas de seguridad/exposición de dat
 - `BackupListModal.view.tsx`: añadir `group-focus-within:opacity-100` (y visibilidad en touch/focus) al botón **"Restaurar"**.
 - `SystemMaintenance`: reemplazar `window.confirm(...)` por `ConfirmationModal` del design system.
 - `HealthStatusView.tsx`: adaptar tarjetas de telemetría para soportar el payload mínimo público sin errores cuando el usuario no es `Administrador` (y mostrar detalle extendido cuando esté disponible).
+
+## Criterios de aceptación
+
+- [x] Matriz RBAC frontend/backend alineada (`ROLES.ADMIN` estricto en `/api/admin/*`, `/api/maintenance/*` y pestañas de `GovernanceHub`, sin `403` ni llamadas innecesarias para `Supervisor_Elevado` o `Fiscalizador`).
+- [x] `GET /api/health` minimizado para no autenticados y telemetría completa restringida a `Administrador`; `trigger-backup` omite `finalPath`; `POST /api/audit-logs` restringido a `elevated` con `AuditLogSchema` válido; `recentAlerts` redactado.
+- [x] Endurecimiento de `pg_dump`/`psql` (`PGPASSWORD`), `restoreDatabase` (`400`/`404`), `seedingJobService` (límite Zod y guardas de estado), timezone `America/Santiago` en mantenimiento/auditoría y reemplazo de `console.*` por `logger`.
+- [x] Filtro `action`, toast de `verifyIntegrity`, `EmptyState` + accesibilidad por teclado, `ExportLogsModal` (`Escape`), `BackupListModal` (`group-focus-within:opacity-100`) y `ConfirmationModal` en `SystemMaintenance`.
+- [x] `npm run lint:budget` (`0/0`), `npm run docs:check`, `check:sdk`, suites unitarias/integración Fastify y verificación live en `portal-control-staging` en verde.

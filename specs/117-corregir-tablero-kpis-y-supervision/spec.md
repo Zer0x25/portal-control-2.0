@@ -39,11 +39,11 @@ Tras la documentación AS-IS y la replicación controlada (Fase 2) sobre `#/dash
 
 ## 2. Criterios de aceptación
 
-- `Fiscalizador` no ve `Supervisión` en el sidebar y es redirigido fuera de `#/dashboard-supervisor` en frontend; en backend `/api/kpis/*` sigue respondiendo `403`.
-- `GET /api/export/report-excel` responde `403` ante `ForbiddenError` (ej. `Usuario` solicitando otro empleado) y `400` ante `ValidationError`.
-- `?mode=detailed` es rechazado consistentemente con `400` por validación Fastify (`ExportQuerySchema` alineado con `ControllerExportQuerySchema`), y `kpiService.ts` envía `mode` sin `as never` tras `check:sdk`.
-- Un empleado `Archivado` sin actividad ni turnos en el rango queda excluido de `POST /api/kpis/summary` y `detailed-report`, pero sí se incluye si tuvo registros, permisos o turnos en ese rango.
-- En meses cerrados y abiertos, una jornada con déficit diario produce `0` horas extra (nunca negativa).
-- Los registros con `Permiso Especial` o `Permiso` incrementan `specialPermitCount`, `specialPermitRate` y `kpiDetails.specialPermitRecords`.
-- En `KpisTab`, un fallo `500` de `POST /api/kpis/summary` muestra alerta de error explícita y toast, nunca `"PERIODO SIN REGISTROS"`.
-- `ReportsTab` envía `workdayType` tanto en `POST /api/kpis/detailed-report` como en `GET /api/export/report-pdf` y `report-excel`, y backend filtra correctamente por `employeeId`, `departmentId`, `cargo` y `workdayType`.
+- [x] `Fiscalizador` no ve `Supervisión` en el sidebar y es redirigido fuera de `#/dashboard-supervisor` en frontend; en backend `/api/kpis/*` sigue respondiendo `403`.
+- [x] `GET /api/export/report-excel` responde `403` ante `ForbiddenError` (ej. `Usuario` solicitando otro empleado) y `400` ante `ValidationError`.
+- [x] `?mode=detailed` es rechazado consistentemente con `400` por validación Fastify (`ExportQuerySchema` alineado con `ControllerExportQuerySchema`), y `kpiService.ts` envía `mode` sin `as never` tras `check:sdk`.
+- [x] Un empleado `Archivado` sin actividad ni turnos en el rango queda excluido de `POST /api/kpis/summary` y `detailed-report`, pero sí se incluye si tuvo registros, permisos o turnos en ese rango.
+- [x] En meses cerrados y abiertos, una jornada con déficit diario produce `0` horas extra (nunca negativa).
+- [x] Los registros con `Permiso Especial` o `Permiso` incrementan `specialPermitCount`, `specialPermitRate` y `kpiDetails.specialPermitRecords`.
+- [x] En `KpisTab`, un fallo `500` de `POST /api/kpis/summary` muestra alerta de error explícita y toast, nunca `"PERIODO SIN REGISTROS"`.
+- [x] `ReportsTab` envía `workdayType` tanto en `POST /api/kpis/detailed-report` como en `GET /api/export/report-pdf` y `report-excel`, y backend filtra correctamente por `employeeId`, `departmentId`, `cargo` y `workdayType`.

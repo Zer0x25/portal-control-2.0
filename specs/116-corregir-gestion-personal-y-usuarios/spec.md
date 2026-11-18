@@ -52,11 +52,11 @@ Durante la replicación controlada (Fase 2) en Fastify + PostgreSQL 18.4 y Playw
 
 ## 4. Criterios de aceptación
 
-1. En `#/personnel-management?tab=users`, tanto `Administrador` como `Supervisor_Elevado` ven el botón `"Nuevo Usuario"`, pueden crear usuarios con contraseña temporal `"123456"` sin bloqueo Zod, y `Supervisor_Elevado` solo ve acciones de escritura sobre usuarios no-`Administrador`.
-2. Archivar y reactivar un empleado con usuario vinculado ejecuta solo `PUT /api/employees/:id`, preservando el usuario en estado `"Archivado"` y restaurándolo al reactivar sin duplicados ni `409`.
-3. Desvincular `employeeId` en `UserForm` envía `null`, persiste en PostgreSQL y sobrevive recargas; ante error HTTP, el modal no se cierra ni muestra éxito falso.
-4. `GET /api/users?page=0&pageSize=1` y `?page=abc&pageSize=1` responden `400 VALIDATION_ERROR` (nunca `500`).
-5. `POST /api/employees` con RUT con puntos hashea el PIN inicial con bcrypt, resuelve IDs concurrentes sin colisión `409`, incluye `area`, `workdayType` y metadatos de sync en contrato y OpenAPI/SDK.
-6. `GET /api/employees` devuelve `[]` para `Usuario` sin `employeeId` y filtra por `area` para `Supervisor`.
-7. `DELETE /api/users/:id` con el propio ID del usuario autenticado es rechazado sin eliminar la cuenta.
-8. `npm run check`, `npm run lint`, `npm run check:sdk`, pruebas unitarias, de integración Fastify/PostgreSQL 18.4, `lint:budget` (`0/0`), `docs:check` y verificación headless en staging pasan al 100%.
+- [x] En `#/personnel-management?tab=users`, tanto `Administrador` como `Supervisor_Elevado` ven el botón `"Nuevo Usuario"`, pueden crear usuarios con contraseña temporal `"123456"` sin bloqueo Zod, y `Supervisor_Elevado` solo ve acciones de escritura sobre usuarios no-`Administrador`.
+- [x] Archivar y reactivar un empleado con usuario vinculado ejecuta solo `PUT /api/employees/:id`, preservando el usuario en estado `"Archivado"` y restaurándolo al reactivar sin duplicados ni `409`.
+- [x] Desvincular `employeeId` en `UserForm` envía `null`, persiste en PostgreSQL y sobrevive recargas; ante error HTTP, el modal no se cierra ni muestra éxito falso.
+- [x] `GET /api/users?page=0&pageSize=1` y `?page=abc&pageSize=1` responden `400 VALIDATION_ERROR` (nunca `500`).
+- [x] `POST /api/employees` con RUT con puntos hashea el PIN inicial con bcrypt, resuelve IDs concurrentes sin colisión `409`, incluye `area`, `workdayType` y metadatos de sync en contrato y OpenAPI/SDK.
+- [x] `GET /api/employees` devuelve `[]` para `Usuario` sin `employeeId` y filtra por `area` para `Supervisor`.
+- [x] `DELETE /api/users/:id` con el propio ID del usuario autenticado es rechazado sin eliminar la cuenta.
+- [x] `npm run check`, `npm run lint`, `npm run check:sdk`, pruebas unitarias, de integración Fastify/PostgreSQL 18.4, `lint:budget` (`0/0`), `docs:check` y verificación headless en staging pasan al 100%.

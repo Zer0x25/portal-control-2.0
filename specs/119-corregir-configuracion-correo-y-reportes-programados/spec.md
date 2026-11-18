@@ -66,10 +66,10 @@ Derivado de Fase 2 (`docs/flows/configuracion-correo-y-reportes-programados.md`)
 
 ---
 
-## 3. Criterios de Aceptación
+## 3. Criterios de aceptación
 
-- `npm run lint:budget` en `0/0`.
-- `npm run docs:check` OK.
-- `cd backend && npm run check && npm run check:sdk` OK.
-- Tests unitarios e integración Fastify (PostgreSQL 18.4) cubriendo RF-01..RF-04 sin regresiones.
-- Tests unitarios frontend cubriendo RF-05..RF-06 y verificación en `portal-control-staging` (`http://127.0.0.1:8080`).
+- [x] `npm run lint:budget` en `0/0`.
+- [x] `npm run docs:check` OK.
+- [x] `cd backend && npm run check && npm run check:sdk` OK.
+- [x] Tests unitarios e integración Fastify (PostgreSQL 18.4) cubriendo RF-01..RF-04 sin regresiones.
+- [x] Tests unitarios frontend cubriendo RF-05..RF-06 y verificación en `portal-control-staging` (`http://127.0.0.1:8080`).
