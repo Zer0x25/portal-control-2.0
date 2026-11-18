@@ -66,6 +66,8 @@ export const KpiSummaryRequestSchema = z
     employeeIds: z.array(z.string()).optional(),
     area: z.string().optional(),
     departmentId: z.string().optional(),
+    cargo: z.string().optional(),
+    workdayType: z.string().optional(),
   })
   .refine((v) => Boolean(v.endDate || v.endDateExclusive), {
     message: "Debe informar endDate o endDateExclusive",

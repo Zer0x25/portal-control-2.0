@@ -34,6 +34,8 @@ describe("KpiAggregationService", () => {
           { status: "Ausente", isoDate: "2026-01-11", actualClocks: "-" } as any,
           { status: "Vacaciones", isoDate: "2026-01-12", actualClocks: "-" } as any,
           { status: "Licencia Médica", isoDate: "2026-01-13", actualClocks: "-" } as any,
+          { status: "Permiso", isoDate: "2026-01-14", actualClocks: "-" } as any,
+          { status: "Permiso Especial", isoDate: "2026-01-15", actualClocks: "-" } as any,
         ],
       },
       summary,
@@ -47,9 +49,14 @@ describe("KpiAggregationService", () => {
     expect(summary.absenceCount).toBe(1);
     expect(summary.vacationCount).toBe(1);
     expect(summary.medicalLeaveCount).toBe(1);
+    expect(summary.specialPermitCount).toBe(2);
     expect(details.tardyRecords).toHaveLength(1);
     expect(details.absentEmployees).toHaveLength(1);
     expect(details.vacationRecords).toHaveLength(1);
     expect(details.medicalLeaveRecords).toHaveLength(1);
+    expect(details.specialPermitRecords).toEqual([
+      { employeeName: "Jane Doe", date: "2026-01-14" },
+      { employeeName: "Jane Doe", date: "2026-01-15" },
+    ]);
   });
 });

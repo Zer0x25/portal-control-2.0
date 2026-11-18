@@ -44,6 +44,7 @@ export function createImportExportFlows<TSink extends ExportSink, TBytes extends
         }
         filters.area = undefined;
         filters.cargo = undefined;
+        filters.workdayType = undefined;
         if (kind === "detailed") filters.mode = undefined;
       }
       const rendering = { ...filters, ...(kind === "calendar" ? { mode: undefined } : {}) };
@@ -70,7 +71,8 @@ export function createImportExportFlows<TSink extends ExportSink, TBytes extends
         )
           throw new ForbiddenError("Acceso denegado: Solo puede exportar su propio reporte");
         return filters;
-      } catch {
+      } catch (error) {
+        if (error instanceof AppError) throw error;
         throw excelFailure();
       }
     },

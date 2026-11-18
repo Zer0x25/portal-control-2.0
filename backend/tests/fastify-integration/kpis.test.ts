@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { createFastifyRuntime } from "../../src/fastify/runtime";
 import { KpiStatsService } from "../../src/services/kpi/KpiStatsService";
 import { KpiCache } from "../../src/services/kpi/KpiCache";
+import { serializeMonthlyBreakdown } from "../../src/services/kpi/monthlyBreakdown";
 import { withDirectTransaction, prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { getChileDateISO } from "../../src/utils/timeUtils";
@@ -160,6 +161,15 @@ describe("Spec 018 KPI on Fastify", () => {
         await http("POST", "/api/kpis/summary", {
           startDate: "2020-01-01",
           endDate: "2024-01-01",
+          employeeId: "missing",
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await http("POST", "/api/kpis/summary", {
+          startDate: "2020-01-01",
+          endDate: "2026-01-01",
           employeeId: "missing",
         })
       ).status,
@@ -495,6 +505,115 @@ describe("Spec 018 KPI on Fastify", () => {
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     expect((await http(method, url, body)).status).toBe(403);
     expect(await prismaDirect.monthlyEmployeeStats.count()).toBe(0);
+  });
+  it("supports employeeId, departmentId, cargo, workdayType and includes inactive employees only with range activity", async () => {
+    const date = today();
+    await seedRecord(date);
+    await prismaDirect.employee.create({
+      data: {
+        id: "kpi-archived-active",
+        name: "Archived Active",
+        rut: "99887766-5",
+        position: "Supervisor",
+        area: "Logistica",
+        workdayType: "Artículo 22",
+        status: "Archivado",
+        pin: "pin-1",
+      },
+    });
+    await prismaDirect.timeRecord.create({
+      data: {
+        employeeId: "kpi-archived-active",
+        employeeName: "Archived Active",
+        date,
+        entrada: `${date}T12:00:00.000Z`,
+        salida: `${date}T16:00:00.000Z`,
+        status: "Completado",
+        scheduledStartTime: "09:00",
+        scheduledEndTime: "13:00",
+        scheduledHours: 4,
+        scheduledColacionMinutes: 0,
+      },
+    });
+    await prismaDirect.employee.create({
+      data: {
+        id: "kpi-archived-idle",
+        name: "Archived Idle",
+        rut: "55443322-1",
+        position: "Supervisor",
+        area: "Logistica",
+        workdayType: "Artículo 22",
+        status: "Archivado",
+        pin: "pin-2",
+      },
+    });
+
+    const byEmployeeId = await http("POST", "/api/kpis/summary", {
+      ...range(date),
+      employeeId: employee.id,
+    });
+    expect(byEmployeeId.status).toBe(200);
+    expect(byEmployeeId.body.kpis.totalWorkedHours).toBe(8);
+
+    const byDeptAndWorkday = await http("POST", "/api/kpis/detailed-report", {
+      ...range(date),
+      departmentId: "Logistica",
+      cargo: "Supervisor",
+      workdayType: "Artículo 22",
+    });
+    expect(byDeptAndWorkday.status).toBe(200);
+    expect(
+      byDeptAndWorkday.body.summary.map((row: { employeeId: string }) => row.employeeId),
+    ).toEqual(["kpi-archived-active"]);
+
+    const overview = await http("GET", "/api/kpis/overview");
+    expect(overview.status).toBe(200);
+    expect(overview.body.teamStatus.total).toBe(1);
+  });
+  it("clamps negative overtime to 0 when reading locked month dailyBreakdown", async () => {
+    await prismaDirect.employee.create({ data: employee });
+    await prismaDirect.systemConfig.create({
+      data: { key: "accounting_lock_date", value: "2026-02-01" },
+    });
+    const sourceRevision = await new KpiCache().getSourceRevision();
+    const janDays = Array.from({ length: 31 }, (_, idx) => {
+      const dd = String(idx + 1).padStart(2, "0");
+      return {
+        date: `${dd}-01-2026`,
+        isoDate: `2026-01-${dd}`,
+        dayOfWeek: "jue",
+        scheduledShift: "09:00-17:00",
+        actualClocks: "09:00-15:00",
+        scheduledHours: 8,
+        workedHours: 6,
+        overtime: -2,
+        colacionMinutes: 0,
+        differenceHours: -2,
+        isHoliday: false,
+        status: "Normal",
+      };
+    });
+    await prismaDirect.monthlyEmployeeStats.create({
+      data: {
+        employeeId: employee.id,
+        month: "2026-01",
+        totalWorkedHours: 6,
+        totalOvertime: -2,
+        totalScheduled: 8,
+        tardinessCount: 0,
+        absenceCount: 0,
+        vacationDays: 0,
+        medicalLeaveDays: 0,
+        dailyBreakdown: serializeMonthlyBreakdown(janDays, sourceRevision),
+      },
+    });
+
+    const summary = await http("POST", "/api/kpis/summary", {
+      startDate: "2026-01-15",
+      endDate: "2026-01-15",
+    });
+    expect(summary.status).toBe(200);
+    expect(summary.body.kpis.totalOvertimeHours).toBe(0);
   });
 });
 

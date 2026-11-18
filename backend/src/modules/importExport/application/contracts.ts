@@ -15,6 +15,7 @@ export interface ExportFilters {
   endDate: string;
   area?: string;
   cargo?: string;
+  workdayType?: string;
   employeeId?: string;
   viewMode?: "month" | "week" | "day";
   mode?: "summary" | "compiled_detailed";

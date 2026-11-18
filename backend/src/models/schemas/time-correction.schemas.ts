@@ -299,9 +299,10 @@ export const ExportQuerySchema = z
     endDate: calendarDateQuery,
     area: z.string().optional(),
     cargo: z.string().optional(),
+    workdayType: z.string().optional(),
     employeeId: z.string().optional(),
     viewMode: z.enum(["month", "week", "day"]).optional(),
-    mode: z.enum(["summary", "detailed", "compiled_detailed"]).optional(),
+    mode: z.enum(["summary", "compiled_detailed"]).optional(),
   })
   .refine((value) => value.startDate <= value.endDate, "Rango de fechas invertido");
 

@@ -47,6 +47,8 @@ export const importExportFlows = createImportExportFlows<ExcelHttpStream, Buffer
       endDate: filters.endDate,
       employeeId: filters.employeeId,
       area: filters.area,
+      cargo: filters.cargo,
+      workdayType: filters.workdayType,
       mode: filters.mode,
     });
   },

@@ -333,7 +333,7 @@ describe("Spec021 import/export on Fastify", () => {
       expect(JSON.stringify(sheet.getSheetValues())).not.toContain(employee.pin);
     }
   });
-  it("enforces Usuario PDF scope/response shapes and preserves Excel authorization 500", async () => {
+  it("enforces Usuario PDF and Excel scope/response shapes", async () => {
     await worker();
     const calendar = await http("GET", `/api/export/calendar-pdf?${query}`);
     expect(calendar.status).toBe(403);
@@ -344,8 +344,8 @@ describe("Spec021 import/export on Fastify", () => {
       message: "Acceso denegado: Solo puede exportar su propio reporte de asistencia",
     });
     const excel = await http("GET", `/api/export/report-excel?${query}`);
-    expect(excel.status).toBe(500);
-    expect(excel.body.code).toBe("EXPORT_REPORT_EXCEL_ERROR");
+    expect(excel.status).toBe(403);
+    expect(excel.body.code).toBe("FORBIDDEN");
     const spy = vi
       .spyOn(ExportService.prototype, "generateReportPDF")
       .mockResolvedValue(Buffer.from("%PDF-test"));
@@ -397,19 +397,50 @@ describe("Spec021 import/export on Fastify", () => {
     const spy = vi.spyOn(ExportService.prototype, "generateReportPDF");
     for (const path of ["calendar-pdf", "report-pdf", "report-excel"]) {
       const response = await http("GET", `/api/export/${path}?${query}&employeeId=other`);
-      expect(response.status).toBe(path === "report-excel" ? 500 : 403);
+      expect(response.status).toBe(403);
     }
     expect(spy).not.toHaveBeenCalled();
   });
-  it("characterizes router/controller mode mismatch and query validation with no renderer effects", async () => {
+  it("enforces unified mode enum and query validation with no renderer effects", async () => {
     const spy = vi.spyOn(ExportService.prototype, "generateReportPDF");
     expect((await http("GET", "/api/export/calendar-pdf")).status).toBe(400);
     expect((await http("GET", `/api/export/report-pdf?${query}&mode=detailed`)).status).toBe(400);
-    const excel = await http("GET", `/api/export/report-excel?${query}&mode=detailed`);
-    expect(excel.status).toBe(500);
-    expect(excel.body.code).toBe("EXPORT_REPORT_EXCEL_ERROR");
+    expect((await http("GET", `/api/export/report-excel?${query}&mode=detailed`)).status).toBe(400);
     expect((await http("GET", `/api/export/report-excel?${query}&mode=invalid`)).status).toBe(400);
     expect(spy).not.toHaveBeenCalled();
+  });
+  it("propagates cargo and workdayType to report-pdf and report-excel", async () => {
+    const pdfSpy = vi
+      .spyOn(ExportService.prototype, "generateReportPDF")
+      .mockResolvedValue(Buffer.from("%PDF-test"));
+    const excelSpy = vi
+      .spyOn(streamExportService, "streamKpiReportToExcel")
+      .mockImplementation(async (sink) => {
+        sink.end("fixture");
+      });
+    const filterQuery = `${query}&area=Ops&cargo=Operator&workdayType=Ordinaria`;
+    expect(
+      (await http("GET", `/api/export/report-pdf?${filterQuery}`, undefined, token, true)).status,
+    ).toBe(200);
+    expect(pdfSpy).toHaveBeenCalledWith(
+      "detailed",
+      expect.objectContaining({
+        area: "Ops",
+        cargo: "Operator",
+        workdayType: "Ordinaria",
+      }),
+    );
+    expect(
+      (await http("GET", `/api/export/report-excel?${filterQuery}`, undefined, token, true)).status,
+    ).toBe(200);
+    expect(excelSpy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        area: "Ops",
+        cargo: "Operator",
+        workdayType: "Ordinaria",
+      }),
+    );
   });
   it("rejects impossible/reversed calendar dates without rendering and blocks Kiosk_Employee from exports", async () => {
     const spy = vi

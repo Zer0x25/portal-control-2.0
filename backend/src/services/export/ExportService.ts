@@ -14,6 +14,7 @@ interface ReportFilters {
   employeeId?: string;
   viewMode?: "month" | "week" | "day";
   cargo?: string;
+  workdayType?: string;
   mode?: "summary" | "compiled_detailed";
   shiftReportId?: string;
 }
@@ -750,6 +751,8 @@ export class ExportService {
         startDate,
         endDate,
         area: filters.area,
+        cargo: filters.cargo,
+        workdayType: filters.workdayType,
         employeeIds: filters.employeeId ? [filters.employeeId] : undefined,
       });
 
