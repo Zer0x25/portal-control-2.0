@@ -1,7 +1,8 @@
 # Flujo: Configuración, Correo y Reportes Programados (`configuracion-correo-y-reportes-programados`)
 
-**Estado:** `BUGS_REPLICADOS`
+**Estado:** `SINCRONIZADO_Y_VERIFICADO`
 **Última actualización:** 2026-11-18
+**Spec de cierre:** [Spec 119](../../specs/119-corregir-configuracion-correo-y-reportes-programados/spec.md)
 **Módulos backend:** `configs`, `emailReports`, `importExport`, `schedulerService`, `runtimeJobs`
 **Módulos frontend:** `configuration` (`GlobalVariablesManager`, `EmailCenter`, `SmtpConfigModal`, `MasterDataExport`), `employee-management` (`ImportModal` para `/api/import/preview`), `sidebarMenu`, `App.tsx`
 
@@ -134,3 +135,21 @@ Todas las rutas del plugin usan `base`: `onRequest: [options.authenticate, eleva
 3. **`GlobalVariablesManager` (P1/P2 — Confirmados):** fallback engañoso `info@test.lan` cuando falta `email_recipients`; `POST /api/configs/*` con `500` genera `pageerror` no capturado en `handleAddArea`/`WorkdayType`/`EmailRecipient`; `logoWidthInput`/`logoHeightInput` quedan en `512`/`188` sin sincronizar con valor guardado; typo `"NUEVO PROCOLO/TIPO"`; `<Switch>` sin `aria-label`.
 4. **`EmailCenter` y `SmtpConfigModal` (P1/P2 — Confirmados):** `SmtpConfigModal` permite activar un slot vacío y guardar sin validar los 3 slots, carece de `role="dialog"`/`aria-modal`/`Escape`/`aria-label` en botón cerrar; `handleSaveRules` envía regla activa con `recipient: ""` y sin `disabled`/`loading`; `emailService.getRules` retorna `false` silencioso en fallo; input `Para:` tiene clase `uppercase`; checkboxes de `RuleEditor` sin `id`/`aria-label`/`label for`.
 5. **`MasterDataExport` (P2 — Confirmado):** `"Server: Online"` estático y `<label>` de fechas sin `htmlFor`.
+
+---
+
+## 4. Cierre y Verificación Post-Fix (Spec 119 — 2026-11-18)
+
+- **Backend (`0894d31`)**:
+  - `POST /api/configs/:key` bloquea `SMTP_CONFIG` y `EMAIL_NOTIFICATION_RULES` con `403`.
+  - `GET /api/configs/validate-closure` valida `query.date` (`YYYY-MM-DD`, `400` en formato inválido).
+  - Protección SSRF SMTP (`utils/smtpHostGuard.ts` con override `SMTP_ALLOW_PRIVATE_HOSTS`), `getSmtpConfig()` dentro de `try/catch`, y `escapeHtml` (`utils/htmlEscape.ts`) en `EmailService.sendEmail` y `schedulerService`.
+  - `schedulerService`: `getReportTypeName` completo, envío independiente por destinatario (`Promise.allSettled`), `logger` + `LockService.withLock` en `startMaintenanceJobs`; `ScheduledReportService.normalize` filtra vacíos.
+  - `POST /api/import/preview`: rechaza múltiples `schema`, tope `5000` filas, valida `required` y coerción de tipos.
+- **Frontend (`d3ba683`, `200b019`)**:
+  - `sidebarMenu.ts`: `Config` visible solo para `Administrador` y `Supervisor_Elevado`.
+  - `GlobalVariablesManager`: sin fallback `info@test.lan`, manejo de errores en `updateConfig` (incluyendo `<Switch>` Control Interno), sincronización de dimensiones del logo, label `"NUEVO PROTOCOLO/TIPO"`, `aria-label` en `<Switch>`.
+  - `EmailCenter` & `SmtpConfigModal`: `getRules` propaga error y bloquea guardado, `emailRulesFormSchema` + `isSavingRules`, `Para:` sin `uppercase`, `id`/`aria-label` en checkboxes, modal accesible (`role="dialog"`, `aria-modal`, `Escape`, `aria-label="Cerrar"`), validación por perfil activo/parcial sin exigir otros slots vacíos.
+  - `MasterDataExport`: `htmlFor`/`id` en pickers de fecha, sin `"Server: Online"` estático.
+  - Nueva pestaña `scheduled-reports` (`ScheduledReports`) en `#/configuration` con CRUD completo, toggle y eliminación.
+- **Verificación en vivo (`http://127.0.0.1:8080`)**: todos los checks API y Playwright headless PASS (`0` `console.error`, `0` `pageerror` tras el fix `200b019`).

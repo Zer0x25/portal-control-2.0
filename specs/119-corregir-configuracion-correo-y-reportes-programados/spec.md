@@ -1,7 +1,7 @@
 # Spec 119: Corregir Configuración, Correo, Importación y Reportes Programados
 
 **Flujo:** `configuracion-correo-y-reportes-programados`
-**Estado:** `EN_PROGRESO`
+**Estado:** `COMPLETADO`
 **Fecha:** 2026-11-18
 
 ---
