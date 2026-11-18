@@ -312,10 +312,11 @@ describe("useHolidayManagerController (spec 036 T8)", () => {
 
     const body = await bodyOf("POST", HOLIDAYS_PATH);
 
-    expect(Object.keys(body).sort()).toEqual(["date", "name", "type"]);
+    expect(Object.keys(body).sort()).toEqual(["date", "isRenounceable", "name", "type"]);
     expect(body.name).toBe("Navidad");
     expect(body.date).toBe(twoBusinessDaysAhead);
     expect(body.type).toBe("Nacional");
+    expect(body.isRenounceable).toBe(false);
   });
 });
 
