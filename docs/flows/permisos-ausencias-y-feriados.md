@@ -64,15 +64,11 @@ flowchart TD
 
 ## 4. Dudas para revisión humana
 
-1. **[DUDA-01] Permisos de `Reloj_Control` en `/api/leaves*` y `/api/holidays*`:**
-   - **Opción A (recomendada, consistente con Spec 114):** Restringir `Reloj_Control` (y `Fiscalizador`) a **solo lectura** en `/api/leaves` (o bloquear escritura en ambos módulos) y mantener `#/theoretical-shifts` bloqueado para `Reloj_Control`.
-   - **Opción B:** Habilitar a `Reloj_Control` también en UI (`#/theoretical-shifts`) para gestionar ausencias/feriados.
-2. **[DUDA-02] Campo `isRenounceable` en `Holiday`:**
-   - **Opción A (sin migración de DB):** Eliminar `isRenounceable` de `HolidaySchema` y `holidayFormSchema` (manteniendo los tipos `Nacional | Regional | Específico`), y corregir `prismaHolidayCommands.upsert` para actualizar por `id` cuando viene `id` (evitando el `409` al cambiar la fecha de un feriado).
-   - **Opción B (con migración Prisma):** Agregar columna `is_renounceable` a `holidays`, persistirla en CRUD/sync con Boostr (`inalienable`) y exponerla en `HolidayForm`.
-3. **[DUDA-03] Recorte de `endDate` al eliminar una ausencia (`DELETE /api/leaves/:id`):**
-   - **Opción A (recomendada):** Preservar el `endDate` original del registro al hacer soft-delete (`isDeleted: true`, `deletedAt`) en vez de sobrescribir `endDate` con `yesterday`.
-   - **Opción B:** Mantener la sobrescritura de `endDate = yesterday` como "finalización anticipada".
+El usuario aprobó las tres definiciones el 2026-11-18 e incorporadas en la [spec 115](../../specs/115-corregir-permisos-ausencias-y-feriados/spec.md):
+
+1. **[DUDA-01] DECIDIDA (opción 1.A):** `Reloj_Control` y `Fiscalizador` operan en **solo lectura** en `/api/leaves` y `/api/holidays`, manteniendo `#/theoretical-shifts` bloqueado para ambos.
+2. **[DUDA-02] DECIDIDA (opción 2.B):** Agregar columna `is_renounceable` (`isRenounceable`) a `Holiday` mediante migración Prisma, poblarla desde Boostr (`!inalienable`), exponerla en `HolidayForm` y listas, y actualizar por `id` al editar feriados.
+3. **[DUDA-03] DECIDIDA (opción 3.A):** Preservar el `endDate` original del `LeaveRecord` en `DELETE /api/leaves/:id` al marcar `isDeleted: true` y `deletedAt`.
 
 ## 5. Inventario de pruebas y plan para Fase 2
 
