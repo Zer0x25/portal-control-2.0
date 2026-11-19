@@ -48,7 +48,7 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
   editsMapAll,
   pendingRequestsMap,
 }) => {
-  const { parentRef, sentinelRef, virtualizer } = useInfiniteVirtualizedList({
+  const { parentRef, sentinelRef, virtualItems, totalSize } = useInfiniteVirtualizedList({
     count: records.length,
     estimateSize: 66,
     overscan: 20,
@@ -128,13 +128,13 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
         >
           <div
             style={{
-              height: `${virtualizer.getTotalSize()}px`,
+              height: `${totalSize}px`,
               width: "100%",
               position: "relative",
               willChange: "transform",
             }}
           >
-            {virtualizer.getVirtualItems().map((virtualItem) => {
+            {virtualItems.map((virtualItem) => {
               const record = records[virtualItem.index];
               if (!record) return null;
               return (

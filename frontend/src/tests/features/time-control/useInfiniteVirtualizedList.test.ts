@@ -26,7 +26,8 @@ describe("useInfiniteVirtualizedList", () => {
 
     expect(result.current.parentRef.current).toBe(null);
     expect(result.current.sentinelRef.current).toBe(null);
-    expect(result.current.virtualizer).toBeDefined();
+    expect(result.current.virtualItems).toBeDefined();
+    expect(result.current.totalSize).toBe(20 * 66);
     expect(useIntersectionObserverMock).toHaveBeenCalled();
   });
 });

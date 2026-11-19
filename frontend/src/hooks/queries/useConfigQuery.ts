@@ -78,12 +78,13 @@ export const useEmailRecipientsListQuery = (enabled = true) => {
 
 export const useControlInternoEnabledQuery = () => {
   const hasToken = !!authService.getToken();
+  const isAuthenticated = useStore((state) => state.isAuthenticated);
   const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<boolean>({
     queryKey: queryKeys.config("is_control_interno_enabled"),
     queryFn: async () => (await configService.get<boolean>("is_control_interno_enabled")) ?? true,
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken && !isForcePasswordChange,
+    enabled: hasToken && isAuthenticated && !isForcePasswordChange,
   });
 };
 

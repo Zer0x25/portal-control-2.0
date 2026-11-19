@@ -29,6 +29,7 @@ export const useRequestsTabVirtualizer = ({
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
 
   useEffect(() => {
     if (virtualItems.length === 0) return;
@@ -39,5 +40,5 @@ export const useRequestsTabVirtualizer = ({
     }
   }, [hasNextPage, isFetchingNextPage, requests.length, fetchNextPage, virtualItems]);
 
-  return { parentRef, rowVirtualizer };
+  return { parentRef, virtualItems, totalSize };
 };
