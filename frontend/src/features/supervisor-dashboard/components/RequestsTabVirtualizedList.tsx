@@ -29,7 +29,7 @@ export const VirtualizedRequestList: FC<{
   fetchNextPage,
   getEmployeeName,
 }) => {
-  const { parentRef, rowVirtualizer } = useRequestsTabVirtualizer({
+  const { parentRef, virtualItems, totalSize } = useRequestsTabVirtualizer({
     requests,
     itemHeight,
     hasNextPage,
@@ -49,12 +49,12 @@ export const VirtualizedRequestList: FC<{
     >
       <div
         style={{
-          height: `${rowVirtualizer.getTotalSize()}px`,
+          height: `${totalSize}px`,
           width: "100%",
           position: "relative",
         }}
       >
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+        {virtualItems.map((virtualRow) => {
           const req = requests[virtualRow.index];
           if (!req) return null;
 

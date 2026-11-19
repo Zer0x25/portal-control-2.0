@@ -43,7 +43,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
   pendingRequestsMap,
   editsMapAll,
 }) => {
-  const { parentRef, sentinelRef, virtualizer } = useInfiniteVirtualizedList({
+  const { parentRef, sentinelRef, virtualItems, totalSize } = useInfiniteVirtualizedList({
     count: records.length,
     estimateSize: 280,
     overscan: 5,
@@ -82,13 +82,13 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
     >
       <div
         style={{
-          height: `${virtualizer.getTotalSize()}px`,
+          height: `${totalSize}px`,
           width: "100%",
           position: "relative",
           willChange: "transform",
         }}
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
+        {virtualItems.map((virtualItem) => {
           const record = records[virtualItem.index];
           if (!record) return null;
 
@@ -118,7 +118,7 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
           );
         })}
       </div>
-      {virtualizer.getVirtualItems().length === 0 && !isLoading && (
+      {virtualItems.length === 0 && !isLoading && (
         <p className="text-center text-sm text-token-text-tertiary py-4">
           No hay registros que coincidan con su filtro.
         </p>

@@ -42,9 +42,15 @@ export const useInfiniteVirtualizedList = ({
     },
   });
 
+  // Se calculan dentro del hook (compiler bail-out de `useVirtualizer`) para evitar
+  // que React Compiler memoize `getVirtualItems()` al array vacío del primer render.
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+
   return {
     parentRef,
     sentinelRef,
-    virtualizer,
+    virtualItems,
+    totalSize,
   };
 };
