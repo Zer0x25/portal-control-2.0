@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.42.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.41.0...v8.42.0) (2026-11-20)
+
+
+### Features
+
+* **logbook:** support pedestrian and visit entries in logbook modals ([5a9278b](https://github.com/Zer0x25/portal-control-2.0/commit/5a9278b64fea29c04becd5757a5cfb7c350ab2d1))
+* **logbook:** support pedestrian and visit entries in logbook modals ([c3a0ad1](https://github.com/Zer0x25/portal-control-2.0/commit/c3a0ad1cb3bb84b93fbda1e67bbe69eddfb7aec8))
+
+
+### Bug Fixes
+
+* **frontend:** resolve virtualized list compiler bailout, startup config dedup and E2E selectors ([#170](https://github.com/Zer0x25/portal-control-2.0/issues/170)) ([58a33ac](https://github.com/Zer0x25/portal-control-2.0/commit/58a33aca80eecfe9638aa807a988c4e7264c20db))
+
 ## [8.41.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.40.1...v8.41.0) (2026-11-18)
 
 
