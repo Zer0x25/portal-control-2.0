@@ -136,6 +136,118 @@ describe("Spec 017 shift reports on Fastify", () => {
     );
     expect((await http("POST", "/api/shift-reports", body({ id: "next" }))).body.folio).toBe("002");
   });
+  it("round-trips an empty pedestrian plate without changing vehicle normalization", async () => {
+    const entries = [
+      supplier({
+        id: "pedestrian",
+        entryType: "visit",
+        arrivalMode: "pedestrian",
+        licensePlate: "",
+      }),
+      supplier({
+        id: "vehicle",
+        entryType: "provider",
+        arrivalMode: "vehicle",
+        licensePlate: "AA-BB-11",
+      }),
+    ];
+
+    const invalidVehicle = await http(
+      "POST",
+      "/api/shift-reports",
+      body({
+        supplierEntries: [
+          supplier({
+            id: "invalid-vehicle",
+            entryType: "provider",
+            arrivalMode: "vehicle",
+            licensePlate: "",
+          }),
+        ],
+      }),
+    );
+    expect(invalidVehicle.status).toBe(400);
+    expect(invalidVehicle.body).toMatchObject({
+      success: false,
+      code: "VALIDATION_ERROR",
+      message: "Error de validación",
+      errors: [
+        {
+          field: "supplierEntries.0.licensePlate",
+          message: "Too small: expected string to have >=1 characters",
+        },
+      ],
+    });
+    expect(await prismaDirect.shiftReport.count()).toBe(0);
+
+    const saved = await http("POST", "/api/shift-reports", body({ supplierEntries: entries }));
+    expect(saved.status).toBe(200);
+    expect(saved.body.supplierEntries).toMatchObject([
+      { id: "pedestrian", arrivalMode: "pedestrian", licensePlate: "" },
+      { id: "vehicle", arrivalMode: "vehicle", licensePlate: "AA-BB-11" },
+    ]);
+
+    const stored = await prismaDirect.shiftReport.findUniqueOrThrow({
+      where: { id: "shift-report" },
+    });
+    expect(JSON.parse(stored.supplierEntries)).toMatchObject([
+      { id: "pedestrian", arrivalMode: "pedestrian", licensePlate: "" },
+      { id: "vehicle", arrivalMode: "vehicle", licensePlate: "AA-BB-11" },
+    ]);
+    const listed = await http("GET", "/api/shift-reports");
+    expect(listed.body.data[0].supplierEntries).toMatchObject([
+      { id: "pedestrian", arrivalMode: "pedestrian", licensePlate: "" },
+      { id: "vehicle", arrivalMode: "vehicle", licensePlate: "AA-BB-11" },
+    ]);
+  });
+
+  it("persists supplier entry type and arrival mode through create, storage, and list", async () => {
+    const invalid = await http(
+      "POST",
+      "/api/shift-reports",
+      body({ supplierEntries: [supplier({ entryType: "employee" })] }),
+    );
+    expect(invalid.status).toBe(400);
+    expect(await prismaDirect.shiftReport.count()).toBe(0);
+
+    const entries = [
+      supplier({
+        id: "visit-on-foot",
+        company: "Guest",
+        licensePlate: "N/A",
+        driverName: "Visitor",
+        entryType: "visit",
+        arrivalMode: "pedestrian",
+      }),
+      supplier({
+        id: "provider-by-car",
+        entryType: "provider",
+        arrivalMode: "vehicle",
+      }),
+    ];
+
+    const saved = await http("POST", "/api/shift-reports", body({ supplierEntries: entries }));
+    expect(saved.status).toBe(200);
+    expect(saved.body.folio).toBe("001");
+    expect(saved.body.supplierEntries).toMatchObject([
+      { id: "visit-on-foot", entryType: "visit", arrivalMode: "pedestrian" },
+      { id: "provider-by-car", entryType: "provider", arrivalMode: "vehicle" },
+    ]);
+
+    const stored = await prismaDirect.shiftReport.findUniqueOrThrow({
+      where: { id: "shift-report" },
+    });
+    expect(JSON.parse(stored.supplierEntries)).toMatchObject([
+      { id: "visit-on-foot", entryType: "visit", arrivalMode: "pedestrian", company: "Guest" },
+      { id: "provider-by-car", entryType: "provider", arrivalMode: "vehicle", company: "ACME" },
+    ]);
+    const listed = await http("GET", "/api/shift-reports");
+    expect(listed.body.data[0].supplierEntries).toMatchObject([
+      { id: "visit-on-foot", entryType: "visit", arrivalMode: "pedestrian" },
+      { id: "provider-by-car", entryType: "provider", arrivalMode: "vehicle" },
+    ]);
+  });
+
   it("normalizes/sorts saved entries and audits add/edit/delete with actual actor", async () => {
     const initial = await http(
       "POST",

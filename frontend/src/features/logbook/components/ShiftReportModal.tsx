@@ -264,7 +264,17 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
                         {se.driverName}
                       </span>
                       <p className="text-xxs font-medium text-token-text-tertiary mt-1.5">
-                        PATENTE: {se.licensePlate} • PAX: {se.paxCount}
+                        {se.entryType === "visit"
+                          ? "VISITA • "
+                          : se.entryType === "provider"
+                            ? "PROVEEDOR • "
+                            : ""}
+                        {se.licensePlate?.trim()
+                          ? `PATENTE: ${se.licensePlate}`
+                          : se.arrivalMode === "pedestrian"
+                            ? "A PIE"
+                            : "SIN PATENTE"}{" "}
+                        • PAX: {se.paxCount}
                       </p>
                     </div>
                     <div className="flex flex-col justify-center">

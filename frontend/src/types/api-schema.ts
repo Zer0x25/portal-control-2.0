@@ -5680,6 +5680,11 @@ export interface components {
       supplierEntries: {
         id: string;
         time: string;
+        /** @enum {string} */
+        entryType?: "visit" | "provider";
+        /** @enum {string} */
+        arrivalMode?: "pedestrian" | "vehicle";
+        /** @description Requerida para vehículos y entradas sin arrivalMode; puede ser vacía cuando arrivalMode es pedestrian. */
         licensePlate: string;
         driverName: string;
         paxCount: number;

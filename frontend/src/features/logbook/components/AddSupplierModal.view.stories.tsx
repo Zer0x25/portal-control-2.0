@@ -10,6 +10,8 @@ const meta = {
     onClose: () => undefined,
     isEditing: false,
     values: {
+      entryType: "provider",
+      arrivalMode: "vehicle",
       licensePlate: "AB-CD-12",
       driverName: "Juan Pérez",
       paxCount: 2,
@@ -18,6 +20,8 @@ const meta = {
       time: "08:30",
     },
     getError: () => undefined,
+    handleEntryTypeChange: () => undefined,
+    handleArrivalModeChange: () => undefined,
     handleLicensePlateChange: () => undefined,
     handleDriverNameChange: () => undefined,
     handleCompanyChange: () => undefined,
@@ -28,7 +32,6 @@ const meta = {
     openTimePicker: () => undefined,
     closeTimePicker: () => undefined,
     isSubmitting: false,
-    submit: () => undefined,
     formProps: {
       id: "supplier-story",
       noValidate: true,

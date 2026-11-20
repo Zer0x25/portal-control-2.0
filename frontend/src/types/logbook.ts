@@ -9,6 +9,8 @@ export interface LogbookEntryItem {
 
 export interface SupplierEntry {
   id: string;
+  entryType?: "visit" | "provider";
+  arrivalMode?: "pedestrian" | "vehicle";
   time: string;
   licensePlate: string;
   driverName: string;

@@ -758,6 +758,87 @@ it.each([
   expect(f.deps.emailReports.create).not.toHaveBeenCalled();
 });
 
+it("shift reports accept pedestrian entries without plates and require plates for vehicles", async () => {
+  const f = fixture();
+  const headers = { authorization: `Bearer ${f.token()}` };
+  const report = (arrivalMode: "pedestrian" | "vehicle", licensePlate: string) => ({
+    id: "isolated-shift",
+    date: "2026-10-10",
+    folio: "001",
+    shiftName: "Day",
+    responsibleUser: "Operator",
+    startTime: "2026-10-10T12:00:00.000Z",
+    status: "open",
+    logEntries: [],
+    supplierEntries: [
+      {
+        id: `entry-${arrivalMode}`,
+        time: "10:00",
+        entryType: arrivalMode === "vehicle" ? "provider" : "visit",
+        arrivalMode,
+        licensePlate,
+        driverName: "Test person",
+        paxCount: 0,
+        company: "Isolated test",
+        reason: "Public route validation",
+        timestamp: 1,
+      },
+    ],
+  });
+
+  const pedestrian = await f.app.inject({
+    method: "POST",
+    url: "/api/shift-reports",
+    headers,
+    payload: report("pedestrian", ""),
+  });
+  expect(pedestrian.statusCode).toBe(200);
+  expect(f.deps.shiftReports.save).toHaveBeenCalledTimes(1);
+  expect(f.deps.shiftReports.save).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      supplierEntries: [expect.objectContaining({ arrivalMode: "pedestrian", licensePlate: "" })],
+    }),
+    "supervisor",
+  );
+
+  const vehicle = await f.app.inject({
+    method: "POST",
+    url: "/api/shift-reports",
+    headers,
+    payload: report("vehicle", "AB-CD-12"),
+  });
+  expect(vehicle.statusCode).toBe(200);
+  expect(f.deps.shiftReports.save).toHaveBeenCalledTimes(2);
+  expect(f.deps.shiftReports.save).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      supplierEntries: [
+        expect.objectContaining({ arrivalMode: "vehicle", licensePlate: "AB-CD-12" }),
+      ],
+    }),
+    "supervisor",
+  );
+
+  const missingVehiclePlate = await f.app.inject({
+    method: "POST",
+    url: "/api/shift-reports",
+    headers,
+    payload: report("vehicle", ""),
+  });
+  expect(missingVehiclePlate.statusCode).toBe(400);
+  expect(missingVehiclePlate.json()).toMatchObject({
+    success: false,
+    code: "VALIDATION_ERROR",
+    message: "Error de validación",
+    errors: [
+      {
+        field: "supplierEntries.0.licensePlate",
+        message: "Too small: expected string to have >=1 characters",
+      },
+    ],
+  });
+  expect(f.deps.shiftReports.save).toHaveBeenCalledTimes(2);
+});
+
 it("shift reports reject oversized bodies and terminate unexpected pre-stream failure", async () => {
   const f = fixture();
   const headers = { authorization: `Bearer ${f.token()}` };

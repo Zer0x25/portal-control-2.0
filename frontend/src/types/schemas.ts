@@ -125,6 +125,8 @@ const LogbookEntryItemSchema = z.object({
 
 const SupplierEntrySchema = z.object({
   id: z.string(),
+  entryType: z.enum(["visit", "provider"]).optional(),
+  arrivalMode: z.enum(["pedestrian", "vehicle"]).optional(),
   time: z.string(),
   licensePlate: z.string(),
   driverName: z.string(),

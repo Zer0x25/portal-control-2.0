@@ -90,16 +90,32 @@ export const ShiftReportSchema = z
       }),
     ),
     supplierEntries: z.array(
-      z.object({
-        id: z.string().min(1),
-        time: z.string().min(1),
-        licensePlate: z.string().min(1),
-        driverName: z.string().min(1),
-        paxCount: z.number(),
-        company: z.string().min(1),
-        reason: z.string().min(1),
-        timestamp: z.number(),
-      }),
+      z
+        .object({
+          id: z.string().min(1),
+          time: z.string().min(1),
+          entryType: z.enum(["visit", "provider"]).optional(),
+          arrivalMode: z.enum(["pedestrian", "vehicle"]).optional(),
+          licensePlate: z
+            .string()
+            .describe(
+              "Requerida para vehículos y entradas sin arrivalMode; puede ser vacía cuando arrivalMode es pedestrian.",
+            ),
+          driverName: z.string().min(1),
+          paxCount: z.number(),
+          company: z.string().min(1),
+          reason: z.string().min(1),
+          timestamp: z.number(),
+        })
+        .superRefine((entry, context) => {
+          if (entry.arrivalMode !== "pedestrian" && entry.licensePlate.trim().length === 0) {
+            context.addIssue({
+              code: "custom",
+              path: ["licensePlate"],
+              message: "Too small: expected string to have >=1 characters",
+            });
+          }
+        }),
     ),
   })
   .openapi("ShiftReport");

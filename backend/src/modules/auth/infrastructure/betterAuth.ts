@@ -4,6 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { bearer, twoFactor } from "better-auth/plugins";
 import bcryptjs from "bcryptjs";
 import type { PrismaClient } from "../../../generated/prisma/client";
+import { getAllowedOrigins } from "../../../utils/corsPolicy";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -12,10 +13,13 @@ function requireEnv(name: string): string {
 }
 
 export function createAuth(prisma: PrismaClient) {
+  const trustedOrigins = getAllowedOrigins().filter((origin) => origin !== "*");
+
   return betterAuth({
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     baseURL: requireEnv("BETTER_AUTH_URL"),
     secret: requireEnv("BETTER_AUTH_SECRET"),
+    ...(trustedOrigins.length > 0 ? { trustedOrigins } : {}),
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,

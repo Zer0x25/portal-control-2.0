@@ -44,6 +44,8 @@ const AddSupplierModalContainer: React.FC<AddSupplierModalContainerProps> = ({
       isEditing={isEditing}
       values={controller.values}
       getError={controller.getError}
+      handleEntryTypeChange={controller.handleEntryTypeChange}
+      handleArrivalModeChange={controller.handleArrivalModeChange}
       handleLicensePlateChange={controller.handleLicensePlateChange}
       handleDriverNameChange={controller.handleDriverNameChange}
       handleCompanyChange={controller.handleCompanyChange}
@@ -54,7 +56,6 @@ const AddSupplierModalContainer: React.FC<AddSupplierModalContainerProps> = ({
       openTimePicker={controller.openTimePicker}
       closeTimePicker={controller.closeTimePicker}
       isSubmitting={controller.isSubmitting}
-      submit={controller.submit}
       formProps={controller.formProps}
     />
   );

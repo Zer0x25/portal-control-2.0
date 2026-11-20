@@ -11,6 +11,34 @@ const adapter = new PrismaPg({
 });
 const prisma = new PrismaClient({ adapter });
 
+async function ensureBetterAuthCredentialAccount(user: {
+  id: string;
+  username: string;
+  email: string | null;
+  passwordHash: string;
+}) {
+  if (!user.email) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { email: `${user.username}@portal.local` },
+    });
+  }
+  const existingAccount = await prisma.account.findFirst({
+    where: { userId: user.id, providerId: "credential" },
+    select: { id: true },
+  });
+  if (!existingAccount) {
+    await prisma.account.create({
+      data: {
+        userId: user.id,
+        accountId: user.id,
+        providerId: "credential",
+        password: user.passwordHash,
+      },
+    });
+  }
+}
+
 async function main() {
   const isProd = process.env.NODE_ENV === "production";
 
@@ -43,6 +71,8 @@ async function main() {
   // Staging runs NODE_ENV=production but still needs the e2e worker to
   // run the suite against a prod build. Opt-in only via SEED_E2E_USERS=1
   // (compose.staging.yaml); never on real prod. Idempotent + non-destructive.
+  await ensureBetterAuthCredentialAccount(admin);
+
   const seedE2eUsers = (process.env.SEED_E2E_USERS || "").trim() === "1";
   if (isProd && !seedE2eUsers) {
     console.log("Production mode: seeded admin user only.");
@@ -88,6 +118,8 @@ async function main() {
           employeeId: employee.id,
         },
       });
+
+  await ensureBetterAuthCredentialAccount(testUser);
 
   console.log({
     adminUsername: admin.username,

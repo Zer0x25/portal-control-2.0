@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "02-compacto.html",
+  "handoffs": {
+    "02-compacto.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-11-20T17:39:40.922Z",
+      "startedAt": "2026-11-20T17:39:43.126Z",
+      "implementedAt": null,
+      "note": "Verificación en navegador: teclado y modo móvil comprobados; revisión independiente pendiente por error de cuota.",
+      "previewUrl": "http://localhost:5173/"
+    }
+  }
+}

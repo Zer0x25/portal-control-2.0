@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useAppForm } from "../../../hooks/useAppForm";
+import { normalizeFormValues, useAppForm } from "../../../hooks/useAppForm";
 import { localSupplierFormSchema, type LocalSupplierFormValues } from "../../../schemas/forms/note";
 import { formatTime } from "../../../utils/formatters";
 import type { SupplierEntry } from "../../../types/index";
@@ -15,9 +15,9 @@ import type { SupplierEntry } from "../../../types/index";
  * `disabled` del boton). Ahora:
  *
  * - el estado vive en `useAppForm` (spec 036 AC1);
- * - las reglas viven en el schema (`localSupplierFormSchema`: patente con el
- *   formato de la pantalla, conductor, empresa, motivo y hora `HH:mm`
- *   obligatorios, pasajeros no negativos) (spec 036 AC2);
+ * - las reglas viven en el schema (`localSupplierFormSchema`: patente
+ *   obligatoria solo para vehículos, conductor, empresa, motivo y hora
+ *   `HH:mm` obligatorios, pasajeros no negativos) (spec 036 AC2);
  * - los errores salen junto al campo, con su mensaje en el mapa central
  *   (spec 036 AC3).
  *
@@ -25,8 +25,8 @@ import type { SupplierEntry } from "../../../types/index";
  * contraparte en el backend, asi que el schema no se verifica contra el
  * OpenAPI.
  *
- * El payload no cambia: el modal sigue entregando los mismos seis campos
- * (spec 036 T13).
+ * La entrada también conserva la clasificación de tipo y modo de llegada,
+ * además de los seis campos operativos existentes.
  */
 
 /** Opciones del hook del formulario de proveedor. */
@@ -59,6 +59,8 @@ export const formatLicensePlateInput = (input: string): string => {
 
 /** Valores iniciales del formulario a partir del registro en edicion. */
 const toFormValues = (initialData: SupplierEntry | null | undefined): LocalSupplierFormValues => ({
+  entryType: initialData?.entryType ?? (initialData ? "provider" : "visit"),
+  arrivalMode: initialData?.arrivalMode ?? (initialData?.licensePlate ? "vehicle" : "pedestrian"),
   licensePlate: initialData?.licensePlate ?? "",
   driverName: initialData?.driverName ?? "",
   paxCount: initialData?.paxCount ?? 0,
@@ -79,8 +81,22 @@ export const useSupplierFormController = ({
   const form = useAppForm<LocalSupplierFormValues>({
     schema: localSupplierFormSchema,
     defaultValues: toFormValues(initialData),
+    normalize: (values) => ({
+      ...normalizeFormValues(values),
+      // Preserve empty strings here: the schema uses non-aborting checks so
+      // plate validation still runs when another required field is blank.
+      entryType: values.entryType,
+      arrivalMode: values.arrivalMode,
+      licensePlate: values.licensePlate.trim(),
+      driverName: values.driverName.trim(),
+      company: values.company.trim(),
+      reason: values.reason.trim(),
+      time: values.time.trim(),
+    }),
     onSubmit: async (values) => {
       await onSave({
+        entryType: values.entryType,
+        arrivalMode: values.arrivalMode,
         licensePlate: values.licensePlate,
         driverName: values.driverName,
         paxCount: values.paxCount,
@@ -109,6 +125,15 @@ export const useSupplierFormController = ({
     setValue("licensePlate", formatLicensePlateInput(value));
   };
 
+  const handleEntryTypeChange = (value: "visit" | "provider") => {
+    setValue("entryType", value);
+  };
+
+  const handleArrivalModeChange = (value: "pedestrian" | "vehicle") => {
+    setValue("arrivalMode", value);
+    setValue("licensePlate", value === "pedestrian" ? "" : form.values.licensePlate);
+  };
+
   const handleDriverNameChange = (value: string) => {
     setValue("driverName", value);
   };
@@ -135,6 +160,8 @@ export const useSupplierFormController = ({
   return {
     values: form.values,
     getError: form.getError,
+    handleEntryTypeChange,
+    handleArrivalModeChange,
     handleLicensePlateChange,
     handleDriverNameChange,
     handleCompanyChange,
