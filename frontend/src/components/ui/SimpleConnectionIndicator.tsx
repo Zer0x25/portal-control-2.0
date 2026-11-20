@@ -9,7 +9,7 @@ const SimpleConnectionIndicator: React.FC = () => {
     return (
       <div className="flex items-center md:space-x-2 bg-white/10 backdrop-blur-sm p-1.5 md:p-2 rounded-xl">
         <div className="h-3 w-3 rounded-full bg-yellow-500 animate-pulse" />
-        <span className="hidden md:block text-[10px] font-black text-white uppercase tracking-widest">
+        <span className="hidden md:block text-[10px] font-black text-token-text-primary uppercase tracking-widest">
           Conectando...
         </span>
       </div>

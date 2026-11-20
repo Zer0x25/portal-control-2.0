@@ -1,4 +1,6 @@
+import React from "react";
 import { renderHook, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { authTokenStore } from "../../../services/authToken";
 import { useLogbookData } from "../../../features/logbook/hooks/useLogbookData";
@@ -99,6 +101,15 @@ vi.mock("../../../hooks/queries/useReportsQuery", () => ({
   }),
 }));
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  const wrapper = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(QueryClientProvider, { client: queryClient }, children);
+  return { wrapper, queryClient };
+};
+
 describe("useLogbookData", () => {
   beforeEach(() => {
     authTokenStore.setToken("fixture");
@@ -119,14 +130,16 @@ describe("useLogbookData", () => {
   });
 
   it("resolves responsible employee display name", () => {
-    const { result } = renderHook(() => useLogbookData());
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useLogbookData(), { wrapper });
 
     expect(result.current.getResponsibleDisplayName("admin")).toBe("Ana Pérez");
     expect(result.current.getResponsibleDisplayName("unknown")).toBe("unknown");
   });
 
   it("handles start shift and close report details query cleanup", async () => {
-    const { result } = renderHook(() => useLogbookData());
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useLogbookData(), { wrapper });
 
     await act(async () => {
       await result.current.handleStartShift();
@@ -159,5 +172,46 @@ describe("useLogbookData", () => {
     });
 
     expect(setSearchParamsMock).toHaveBeenCalled();
+  });
+
+  it("rethrows errors from handleUpdateShift when save fails", async () => {
+    server.use(
+      http.post("http://localhost:4000/api/shift-reports", () =>
+        HttpResponse.json({ message: "Save failed" }, { status: 500 }),
+      ),
+    );
+    const { wrapper } = createWrapper();
+    const { result } = renderHook(() => useLogbookData(), { wrapper });
+
+    await expect(
+      result.current.handleUpdateShift({
+        id: "r1",
+        folio: "101",
+        date: "2026-03-03",
+        shiftName: "Turno Día",
+        responsibleUser: "admin",
+        startTime: "2026-03-03T08:00:00.000Z",
+        status: "open",
+        logEntries: [],
+        supplierEntries: [],
+        reportCreatedAt: "2026-03-03T08:00:00.000Z",
+        updatedAt: "2026-03-03T08:00:00.000Z",
+        lastModified: 0,
+        syncStatus: "synced",
+        isDeleted: false,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("invalidates shiftReports queries when executeCloseShift succeeds", async () => {
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    const { result } = renderHook(() => useLogbookData(), { wrapper });
+
+    await act(async () => {
+      await result.current.executeCloseShift();
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["shiftReports"] });
   });
 });

@@ -5,6 +5,10 @@ import { Z } from "../../constants/zScale";
 const SessionExpiredOverlay: React.FC = () => {
   return (
     <div
+      data-testid="session-expired-overlay"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="session-expired-title"
       className={`fixed inset-0 ${Z.max} flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in`}
     >
       <div className="bg-token-surface-card rounded-2xl p-8 shadow-2xl max-w-md w-full text-center border border-token-border-subtle relative overflow-hidden animate-in fade-in zoom-in-90">
@@ -16,7 +20,12 @@ const SessionExpiredOverlay: React.FC = () => {
             <ShieldIcon className="w-10 h-10 text-red-600 dark:text-red-400" />
           </div>
 
-          <h2 className="text-2xl font-black text-token-text-primary mb-2">Sesión Expirada</h2>
+          <h2
+            id="session-expired-title"
+            className="text-2xl font-black text-token-text-primary mb-2"
+          >
+            Sesión Expirada
+          </h2>
 
           <p className="text-token-text-secondary text-sm mb-8 px-4">
             Por tu seguridad, hemos cerrado tu sesión debido a inactividad o expiración de

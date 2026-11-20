@@ -27,7 +27,7 @@ interface TimeRecordTableViewDesktopProps {
   isControlInternoEnabled: boolean;
   onViewHistory: (record: DailyTimeRecord) => void;
   editsMapAll: Map<string, AuditLog[]>;
-  pendingRequestsMap: Map<string, CorrectionRequest>;
+  pendingRequestsMap: Map<string, Pick<CorrectionRequest, "id" | "timeRecordId" | "status">>;
 }
 
 // Spec 037 T12: retain the dense record table and the mobile card with per-record actions; their virtual rows are 66/280 px.
@@ -48,7 +48,7 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
   editsMapAll,
   pendingRequestsMap,
 }) => {
-  const { parentRef, sentinelRef, virtualizer } = useInfiniteVirtualizedList({
+  const { parentRef, sentinelRef, virtualItems, totalSize } = useInfiniteVirtualizedList({
     count: records.length,
     estimateSize: 66,
     overscan: 20,
@@ -128,13 +128,13 @@ const TimeRecordTableViewDesktop: React.FC<TimeRecordTableViewDesktopProps> = ({
         >
           <div
             style={{
-              height: `${virtualizer.getTotalSize()}px`,
+              height: `${totalSize}px`,
               width: "100%",
               position: "relative",
               willChange: "transform",
             }}
           >
-            {virtualizer.getVirtualItems().map((virtualItem) => {
+            {virtualItems.map((virtualItem) => {
               const record = records[virtualItem.index];
               if (!record) return null;
               return (

@@ -8,12 +8,11 @@ import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { useIntersectionObserver } from "../../../hooks/useIntersectionObserver";
 import type { UserFormValues } from "../../../schemas/forms/user";
+import { DEFAULT_TEMPORARY_PASSWORD } from "../../../constants";
 
 interface UseUserManagementDataParams {
   isEmbedded?: boolean;
 }
-
-const DEFAULT_RESET_CREDENTIAL = ["123", "456"].join("");
 
 export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParams = {}) => {
   const {
@@ -34,7 +33,6 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
   const [userToResetPin, setUserToResetPin] = useState<User | null>(null);
   const [userToResetPassword, setUserToResetPassword] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isMFASetupOpen, setIsMFASetupOpen] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -77,10 +75,19 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
     setVisibleCount(pageSize);
   }, [debouncedSearchTerm, pageSize]);
 
+  const canCreateUsers = Boolean(
+    currentUser &&
+    (currentUser.role === "Administrador" || currentUser.role === "Supervisor_Elevado"),
+  );
+
   const canManageUser = (user: User) => {
     if (!currentUser) return false;
+    if (currentUser.id === user.id) return false;
     if (currentUser.role === "Administrador") {
-      return currentUser.id !== user.id;
+      return true;
+    }
+    if (currentUser.role === "Supervisor_Elevado") {
+      return user.role !== "Administrador";
     }
     return false;
   };
@@ -102,18 +109,21 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
   const handleSaveUser = async (data: UserFormValues) => {
     if (!currentUser) return;
     if (editingUser) {
-      await updateUser(editingUser.id, { role: data.role, employeeId: data.employeeId });
-    } else {
-      if (!data.password) {
-        addToast("La contraseña es requerida.", "warning");
-        return;
-      }
-      await addUser({
-        username: data.username,
-        password: data.password,
+      const ok = await updateUser(editingUser.id, {
         role: data.role,
-        employeeId: data.employeeId,
+        employeeId: data.employeeId || null,
+      });
+      if (!ok) return;
+      addToast(`Usuario ${editingUser.username} actualizado.`, "success");
+    } else {
+      const created = await addUser({
+        username: data.username,
+        password: data.password || DEFAULT_TEMPORARY_PASSWORD,
+        role: data.role,
+        employeeId: data.employeeId || undefined,
       } as unknown as User);
+      if (!created) return;
+      addToast(`Usuario ${data.username} creado correctamente.`, "success");
     }
     refreshUsers();
     setIsFormVisible(false);
@@ -121,23 +131,27 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
 
   const handleDeleteUser = async () => {
     if (!userToDelete || !currentUser) return;
-    await deleteUser(userToDelete.id);
+    const ok = await deleteUser(userToDelete.id);
+    if (!ok) return;
     refreshUsers();
+    addToast(`Usuario ${userToDelete.username} eliminado.`, "success");
     setUserToDelete(null);
   };
 
   const handleConfirmResetPin = async () => {
     if (!userToResetPin?.employeeId) return;
-    await resetEmployeePin(userToResetPin.employeeId);
+    const ok = await resetEmployeePin(userToResetPin.employeeId);
+    if (!ok) return;
     setUserToResetPin(null);
   };
 
   const handleConfirmResetPassword = async () => {
     if (!userToResetPassword) return;
-    await updateUser(userToResetPassword.id, {
-      password: DEFAULT_RESET_CREDENTIAL,
+    const ok = await updateUser(userToResetPassword.id, {
+      password: DEFAULT_TEMPORARY_PASSWORD,
       mustChangePassword: true,
     });
+    if (!ok) return;
     refreshUsers();
     addToast(`Contraseña reseteada para ${userToResetPassword.username}.`, "success");
     setUserToResetPassword(null);
@@ -155,19 +169,18 @@ export const useUserManagementData = ({ isEmbedded }: UseUserManagementDataParam
     userToResetPin,
     userToResetPassword,
     searchTerm,
-    isMFASetupOpen,
     isMobile,
     paginatedUsers,
     hasNextPage,
     sentinelRef,
     setScrollRoot,
+    canCreateUsers,
     canManageUser,
     setSearchTerm,
     handleOpenNewForm,
     handleEditUser,
     handleSaveUser,
     setIsFormVisible,
-    setIsMFASetupOpen,
     setUserToDelete,
     setUserToResetPin,
     setUserToResetPassword,

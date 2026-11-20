@@ -29,9 +29,7 @@ export const shiftsPlugin: FastifyPluginAsync<{
   const supervisor: onRequestHookHandler = async (req) => {
     if (
       !req.user?.role ||
-      !["Administrador", "Supervisor_Elevado", "Supervisor", "Reloj_Control"].includes(
-        req.user.role,
-      )
+      !["Administrador", "Supervisor_Elevado", "Supervisor"].includes(req.user.role)
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };
@@ -116,7 +114,8 @@ export const shiftsPlugin: FastifyPluginAsync<{
       bodyLimit: 10 * 1024 * 1024,
       preHandler: validateRequest("body", BulkAssignedShiftSchema),
     },
-    async (req, reply) => reply.code(201).send(await options.service.bulkAssignments(req.body)),
+    async (req, reply) =>
+      reply.code(201).send(await options.service.bulkAssignments(req.body, actor(req.user))),
   );
   app.get<{ Params: { id: string }; Querystring: ShiftQuery }>(
     "/api/shifts/schedule/employee/:id",

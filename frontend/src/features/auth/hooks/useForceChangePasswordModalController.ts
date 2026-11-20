@@ -33,7 +33,7 @@ interface UseForceChangePasswordModalControllerParams {
   /** El modal esta abierto. */
   readonly isOpen: boolean;
   /** Limpia la señal de sesión que activa este modal bloqueante. */
-  readonly onClose: () => void;
+  readonly onClose: () => void | Promise<void>;
 }
 
 /** Controlador del formulario de cambio de contraseña forzado (spec 036 T11). */
@@ -41,7 +41,7 @@ export const useForceChangePasswordModalController = ({
   isOpen,
   onClose,
 }: UseForceChangePasswordModalControllerParams) => {
-  const { changeOwnPassword } = useUsers();
+  const { changeOwnPassword } = useUsers({ enabled: false });
   const { addToast } = useToasts();
 
   const form = useAppForm<ChangePasswordFormValues, { password: string }>({
@@ -61,7 +61,7 @@ export const useForceChangePasswordModalController = ({
         addToast("Contraseña actualizada con éxito.", "success");
         // El modal es bloqueante: sin boton de cierre ni Escape. Solo se
         // cierra cuando el usuario guarda.
-        onClose();
+        await onClose();
       }
     },
   });

@@ -4,6 +4,7 @@ const recordProperties = {
   date: { type: "string" },
   name: { type: "string" },
   type: { type: "string" },
+  isRenounceable: { type: "boolean" },
   createdAt: { type: "string", format: "date-time" },
   updatedAt: { type: "string", format: "date-time" },
 };

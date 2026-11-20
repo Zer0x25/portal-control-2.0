@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { useMeterReadings } from "../../../hooks/useMeterReadings";
+import { useToasts } from "../../../hooks/useToasts";
 import {
   buildMeterReadingsSchema,
   type MeterReadingInput,
@@ -58,6 +59,7 @@ export const useMeterReadingsFormController = ({
   onSaved,
 }: UseMeterReadingsFormControllerOptions = {}) => {
   const { readings, isLoadingReadings, addReading, meterConfigs } = useMeterReadings();
+  const { addToast } = useToasts();
 
   /** Configuracion de cada medidor, por id. */
   const metersById = Object.fromEntries(
@@ -120,8 +122,10 @@ export const useMeterReadingsFormController = ({
         )
         .map(([meterConfigId, value]) => ({ meterConfigId, value: value.trim() })),
     onSubmit: async (payload) => {
-      // Sin lecturas no se envia nada (igual que antes de la migracion).
-      if (payload.length === 0) return;
+      if (payload.length === 0) {
+        addToast("Ingrese al menos una lectura para registrar.", "info");
+        return;
+      }
       const success = await addReading(payload);
       if (success) {
         clearForm();

@@ -1,4 +1,4 @@
-import { request as apiRequest } from "./apiClient";
+import { request as apiRequest, type BinaryResponse } from "./apiClient";
 import { AuditLog } from "../types/index";
 
 /**
@@ -53,6 +53,9 @@ export interface AuditIntegrityStatus {
 /** Respuesta de las operaciones de escritura (el toast usa `message`). */
 interface AuditActionResponse {
   message?: string;
+  data?: {
+    message?: string;
+  };
   [key: string]: unknown;
 }
 
@@ -159,5 +162,28 @@ export const auditLogService = {
     });
 
     return (result?.data || result) as AuditIntegrityStatus;
+  },
+
+  async downloadExport(params: {
+    startDate: string;
+    endDate: string;
+    format: "csv" | "xml";
+  }): Promise<{ blob: Blob; filename: string }> {
+    const binary = await apiRequest<BinaryResponse>({
+      method: "GET",
+      url: "/api/audit-logs/export",
+      params: {
+        startDate: params.startDate,
+        endDate: params.endDate,
+        format: params.format,
+      },
+      responseType: "binary",
+    });
+
+    return {
+      blob: binary.blob,
+      filename:
+        binary.filename ?? `Auditoria_${params.startDate}_al_${params.endDate}.${params.format}`,
+    };
   },
 };

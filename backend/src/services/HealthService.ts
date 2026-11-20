@@ -1,6 +1,7 @@
 import prisma from "./db";
 import os from "os";
 import { randomUUID } from "node:crypto";
+import { logger } from "../utils/logger";
 
 const BOOT_INSTANCE_ID = process.env.INSTANCE_ID || randomUUID();
 import { backupHealthService } from "./backupHealthService";
@@ -11,6 +12,15 @@ import { jobTelemetryService } from "./jobTelemetryService";
 type BackupStatus = ReturnType<typeof backupHealthService.getStatus>;
 type IntegrityStatus = ReturnType<typeof integrityStatusService.getSnapshot>;
 type JobStatus = ReturnType<typeof jobTelemetryService.getSnapshot>;
+
+export interface HealthPublicDetails {
+  status: "healthy" | "degraded";
+  instanceId: string;
+  timestamp: string;
+  database: {
+    status: string;
+  };
+}
 
 export interface HealthDetails {
   status: "healthy" | "degraded";
@@ -77,6 +87,31 @@ export class HealthService {
   }
 
   /**
+   * Gathers minimal public health status without exposing system internals.
+   */
+  static async getPublicHealth(): Promise<HealthPublicDetails> {
+    let dbStatus = "OK";
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+    } catch (error) {
+      logger.error("HealthService DB error:", error);
+      dbStatus = "ERROR";
+    }
+
+    const backupStatus = backupHealthService.getStatus();
+    const healthy = isHealthHealthy(dbStatus === "OK", backupStatus);
+
+    return {
+      status: healthy ? "healthy" : "degraded",
+      instanceId: BOOT_INSTANCE_ID,
+      timestamp: new Date().toISOString(),
+      database: {
+        status: dbStatus,
+      },
+    };
+  }
+
+  /**
    * Gathers comprehensive health metrics from DB, OS, and internal services.
    */
   static async getDetailedHealth(): Promise<HealthDetails> {
@@ -100,7 +135,7 @@ export class HealthService {
       `) as { size: string }[];
       dbSize = sizeResult[0]?.size || "Error";
     } catch (error) {
-      console.error("HealthService DB error:", error);
+      logger.error("HealthService DB error:", error);
       dbStatus = "ERROR";
     }
 

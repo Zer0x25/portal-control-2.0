@@ -9,16 +9,21 @@ import { normalizeString } from "../utils/stringUtils";
 import { safeJsonParse } from "../utils/configUtils";
 import { Prisma } from "../generated/prisma/client";
 import { auditService } from "./auditService";
+import { SocketService } from "./socketService";
 import { timeRecordIntegrityService } from "./timeRecordIntegrityService";
 import { ulid } from "ulid";
 import { OvertimeValidationService } from "./OvertimeValidationService";
 import { schedulingService } from "./schedulingService";
 import { KpiEngine } from "./kpi/KpiEngine";
 import { KpiFormattingService } from "./kpi/KpiFormattingService";
-import { AppError } from "../utils/AppError";
+import { AppError, ForbiddenError, ValidationError } from "../utils/AppError";
+import { ACCOUNTING_TRANSACTION_OPTIONS } from "./accountingTransaction";
+import { MAX_BULK_TIME_RECORDS } from "../modules/records";
+import { logger } from "../utils/logger";
 import type { TimeRecord } from "../generated/prisma/client";
 import type { SchedulingContext } from "./schedulingService";
 import type { VerifyFilters } from "./timeRecordIntegrityService";
+import type { ExportFilters as ViewExportFilters } from "../modules/records";
 
 /**
  * Shape accepted by the record writers. Mirrors the persisted `TimeRecord` columns
@@ -156,6 +161,18 @@ export class TimeRecordService {
   }
 
   static async enrichRecord(rec: TimeRecord, context?: SchedulingContext) {
+    let parsedJustification: unknown = rec.justification;
+    if (rec.justification && typeof rec.justification === "string") {
+      try {
+        parsedJustification = JSON.parse(rec.justification);
+      } catch (error) {
+        logger.error(`[TimeRecordService.enrichRecord] Invalid justification JSON for ${rec.id}`, {
+          error,
+        });
+        parsedJustification = rec.justification;
+      }
+    }
+
     // 1. Basic Enrichement (Legacy/Persistence Sync)
     const enriched = {
       ...rec,
@@ -163,10 +180,7 @@ export class TimeRecordService {
       inicioColacionTimestamp: rec.inicioColacion ? new Date(rec.inicioColacion).getTime() : null,
       finColacionTimestamp: rec.finColacion ? new Date(rec.finColacion).getTime() : null,
       salidaTimestamp: rec.salida ? new Date(rec.salida).getTime() : null,
-      justification:
-        rec.justification && typeof rec.justification === "string"
-          ? JSON.parse(rec.justification)
-          : rec.justification,
+      justification: parsedJustification,
       syncStatus: "synced",
       lastModified: rec.updatedAt?.getTime() || Date.now(),
       isDeleted: rec.isDeleted || false,
@@ -202,26 +216,28 @@ export class TimeRecordService {
           lateMinutes,
         };
       } catch (error) {
-        console.error(
-          `[TimeRecordService.enrichRecord] Failed to enrich KPI for ${rec.id}:`,
+        logger.error(`[TimeRecordService.enrichRecord] Failed to enrich KPI for ${rec.id}`, {
           error,
-        );
+        });
       }
     }
 
     return enriched;
   }
 
-  static async isRecordLocked(recordDate: string): Promise<boolean> {
+  static async isRecordLocked(
+    recordDate: string,
+    client?: Prisma.TransactionClient,
+  ): Promise<boolean> {
     try {
       const now = new Date();
       const chileDate = getChileDateISO(now);
       const [currYear, currMonth] = chileDate.split("-").map(Number);
 
       // 1. Manual Accounting Lock
-      const lockConfig = await prisma.systemConfig.findUnique({
-        where: { key: "accounting_lock_date" },
-      });
+      const lockConfig = client
+        ? await client.systemConfig.findUnique({ where: { key: "accounting_lock_date" } })
+        : await prisma.systemConfig.findUnique({ where: { key: "accounting_lock_date" } });
       if (lockConfig && lockConfig.value) {
         const manualLockDate = safeJsonParse<string>(lockConfig.value);
         if (manualLockDate && typeof manualLockDate === "string") {
@@ -242,8 +258,8 @@ export class TimeRecordService {
 
       return false;
     } catch (error) {
-      console.error("Error checking lock status:", error);
-      return false;
+      logger.error("Error checking lock status:", { error });
+      return true;
     }
   }
 
@@ -384,26 +400,6 @@ export class TimeRecordService {
    * Crea o actualiza un registro de tiempo con validación de horas extras e integridad.
    */
   static async saveRecord(recordData: TimeRecordInput, actorUsername: string) {
-    // Normalize identity: if caller doesn't send id, reuse existing employee/day row.
-    // This prevents duplicate records for the same employee and business date.
-    // New rows mint their id here (2026-10-04): Prisma rejects
-    // findUnique/upsert with id undefined (500), and the route contract
-    // (createOrUpdate, id opcional) promises create sin id pre-acuñado.
-    if (!recordData.id && recordData.employeeId && recordData.date) {
-      const existing = await prisma.timeRecord.findFirst({
-        where: {
-          employeeId: recordData.employeeId,
-          date: recordData.date,
-          isDeleted: false,
-        },
-        orderBy: { updatedAt: "desc" },
-      });
-      if (existing) {
-        recordData.id = existing.id;
-      }
-    }
-    recordData.id ??= ulid();
-
     const data: Prisma.TimeRecordUncheckedCreateInput = {
       employeeId: recordData.employeeId,
       employeeName: recordData.employeeName,
@@ -435,6 +431,22 @@ export class TimeRecordService {
     });
 
     return await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + data.employeeId}))`;
+      if (!recordData.id && recordData.employeeId && recordData.date) {
+        const existing = await tx.timeRecord.findFirst({
+          where: {
+            employeeId: recordData.employeeId,
+            date: recordData.date,
+            isDeleted: false,
+          },
+          orderBy: { updatedAt: "desc" },
+        });
+        if (existing) {
+          recordData.id = existing.id;
+        }
+      }
+      recordData.id ??= ulid();
+
       const oldValue = await tx.timeRecord.findUnique({ where: { id: recordData.id } });
 
       // Automatic state cleaning: if anomaly state is now complete (entrada + salida), set to Completado
@@ -517,6 +529,7 @@ export class TimeRecordService {
     }
 
     return await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + record.employeeId}))`;
       let result;
 
       if (isVirtual) {
@@ -787,48 +800,64 @@ export class TimeRecordService {
    * Procesa la carga masiva de marcajes.
    */
   static async createBulkRecords(records: TimeRecordInput[], actorUsername: string) {
+    if (records.length > MAX_BULK_TIME_RECORDS)
+      throw new ValidationError(`El lote admite hasta ${MAX_BULK_TIME_RECORDS} registros.`);
     const formatted = records.map((r) => ({
       ...r,
       justification: r.justification ? JSON.stringify(r.justification) : null,
       status: r.status || "Laborando",
     }));
 
-    const CHUNK_SIZE = 50;
-    for (let i = 0; i < formatted.length; i += CHUNK_SIZE) {
-      const chunk = formatted.slice(i, i + CHUNK_SIZE);
-      await withDirectTransaction(async (tx) => {
-        const created: TimeRecord[] = [];
-        for (const row of chunk) {
-          const result = await tx.timeRecord.create({ data: row });
-          created.push(result);
-        }
+    const audits = await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(17018, hashtext(${"accounting_lock_date"}))`;
+      const earliestDate = formatted.reduce<string | undefined>(
+        (earliest, row) => (!earliest || row.date < earliest ? row.date : earliest),
+        undefined,
+      );
+      if (earliestDate && (await this.isRecordLocked(earliestDate, tx))) {
+        throw new ForbiddenError("El lote contiene periodos cerrados.");
+      }
+      const sortedEmployeeIds = [...new Set(formatted.map((row) => row.employeeId))].sort();
+      for (const empId of sortedEmployeeIds) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + empId}))`;
+      }
 
-        const employees = new Map<string, string[]>();
-        for (const item of created) {
-          const list = employees.get(item.employeeId) ?? [];
-          list.push(item.id);
-          employees.set(item.employeeId, list);
-        }
-
-        for (const [employeeId, ids] of employees.entries()) {
-          for (const id of ids) {
-            await timeRecordIntegrityService.sealAfterMutation(
-              tx as Prisma.TransactionClient,
-              employeeId,
-              id,
-            );
-          }
-        }
+      const created = await tx.timeRecord.createManyAndReturn({ data: formatted });
+      const ordered = await tx.timeRecord.findMany({
+        where: { id: { in: created.map((row) => row.id) } },
+        orderBy: [{ employeeId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+        select: { id: true, employeeId: true },
       });
-    }
-
-    await auditService.log({
-      actorUsername,
-      action: "CARGA_MASIVA_MARCAJES",
-      category: "CTRL_HOURS",
-      severity: "INFO",
-      details: { count: records.length },
-    });
+      const firstByEmployee = new Map<string, string>();
+      for (const row of ordered) {
+        if (!firstByEmployee.has(row.employeeId)) firstByEmployee.set(row.employeeId, row.id);
+      }
+      for (const [employeeId, id] of firstByEmployee) {
+        await timeRecordIntegrityService.sealAfterMutation(tx, employeeId, id, { skipAudit: true });
+      }
+      const hashAudits = await tx.auditLog.createManyAndReturn({
+        data: created.map((row) => ({
+          actorUsername: "SYSTEM",
+          action: "TIME_RECORD_HASH_CREATED",
+          category: "CTRL_HOURS",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: { recordId: row.id, employeeId: row.employeeId },
+        })),
+      });
+      const bulkAudit = await tx.auditLog.create({
+        data: {
+          actorUsername,
+          action: "CARGA_MASIVA_MARCAJES",
+          category: "CTRL_HOURS",
+          severity: "INFO",
+          outcome: "SUCCESS",
+          details: { count: records.length },
+        },
+      });
+      return [...hashAudits, bulkAudit];
+    }, ACCOUNTING_TRANSACTION_OPTIONS);
+    for (const audit of audits) SocketService.emitToAll("auditLog:created", audit);
 
     return records.length;
   }
@@ -1147,50 +1176,8 @@ export class TimeRecordService {
    * Procesa los cierres automáticos de jornadas abiertas.
    */
   static async processAutoClosures(): Promise<number> {
-    const now = new Date();
-    const chileDate = getChileDateISO(now);
-
-    // Get open records from previous days
-    const openRecords = await prisma.timeRecord.findMany({
-      where: {
-        status: { in: ["Laborando", "Colacion"] },
-        date: { lt: chileDate },
-        isDeleted: false,
-      },
-    });
-
-    if (openRecords.length === 0) return 0;
-
-    const results = await withDirectTransaction(async (tx) => {
-      const updatedList = [];
-      for (const rec of openRecords) {
-        const updated = await tx.timeRecord.update({
-          where: { id: rec.id },
-          data: {
-            status: "AnomaliaManual",
-            salida: null, // Leave empty to force audit/repair
-            justification: JSON.stringify({
-              type: "SYSTEM_ANOMALY",
-              reason: "AUTO_CLOSE_END_OF_DAY",
-              comment: "Cerrado automáticamente al final del día por sistema pendiendo revisión.",
-              metadata: {
-                autoClosedAt: now.toISOString(),
-                originalDate: rec.date,
-              },
-            }),
-          },
-        });
-        await timeRecordIntegrityService.sealAfterMutation(
-          tx as Prisma.TransactionClient,
-          updated.employeeId,
-          updated.id,
-        );
-        updatedList.push(updated);
-      }
-      return updatedList;
-    });
-
-    return results.length;
+    const { processAutoClosures } = await import("./autoCloseService");
+    return processAutoClosures();
   }
 
   /**
@@ -1246,6 +1233,35 @@ export class TimeRecordService {
     return enriched;
   }
 
+  /** Exporta exactamente la consulta de la pantalla, incluidas anomalías virtuales. */
+  static async listRecordsForViewExport(filters: ViewExportFilters) {
+    const limit = 10000;
+    const result = await this.listRecords({
+      page: 1,
+      pageSize: limit + 1,
+      desde: filters.startDate,
+      hasta: filters.endDate,
+      employeeId: filters.employeeId,
+      name: filters.name,
+      area: filters.area,
+      workdayType: filters.workdayType,
+      status: filters.status,
+      showAnomalies: filters.showAnomalies,
+    });
+    if (result.total > limit)
+      throw new AppError(
+        `La exportación admite hasta ${limit} registros. Acota los filtros.`,
+        400,
+        "EXPORT_LIMIT",
+      );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: [...new Set(result.data.map((row) => row.employeeId))] } },
+      select: { id: true, rut: true },
+    });
+    const ruts = new Map(employees.map((employee) => [employee.id, employee.rut]));
+    return result.data.map((row) => ({ ...row, employeeRut: ruts.get(row.employeeId) ?? null }));
+  }
+
   /**
    * Elimina un registro con integridad y auditoría.
    */
@@ -1258,6 +1274,7 @@ export class TimeRecordService {
     }
 
     await withDirectTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + record.employeeId}))`;
       const deleted = await tx.timeRecord.update({
         where: { id },
         data: { isDeleted: true, deletedAt: new Date() },

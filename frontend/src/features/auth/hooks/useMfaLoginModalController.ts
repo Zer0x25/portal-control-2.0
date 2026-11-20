@@ -4,6 +4,9 @@ import { useAppForm } from "../../../hooks/useAppForm";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
 import { mfaLoginFormSchema, type MfaLoginFormValues } from "../../../schemas/forms/auth";
+import { hasHttpStatus } from "../../../services/apiClient";
+import type { User } from "../../../types/index";
+import { logger } from "../../../utils/logger";
 
 /**
  * Spec 036 T11 (AC1, AC2, AC3): formulario del **codigo MFA de inicio de
@@ -30,7 +33,7 @@ export interface UseMfaLoginModalControllerOptions {
   /** El modal esta abierto. */
   readonly isOpen: boolean;
   /** El codigo MFA fue validado (el login continua). */
-  readonly onSuccess: () => void;
+  readonly onSuccess: (user?: User | null) => void;
 }
 
 /** Controlador del formulario de codigo MFA (spec 036 T11). */
@@ -48,10 +51,14 @@ export const useMfaLoginModalController = ({
     serialize: (values) => values.code,
     onSubmit: async (code) => {
       try {
-        await validateMFACode(code);
+        const user = await validateMFACode(code);
         addToast("Verificación exitosa", "success");
-        onSuccess();
+        onSuccess(user ?? undefined);
       } catch (error) {
+        logger.error("MFA validation error:", error);
+        if (hasHttpStatus(error, 429)) {
+          return;
+        }
         addToast(error instanceof Error ? error.message : "Código inválido", "error");
       }
     },

@@ -15,7 +15,8 @@ export interface CorrectionInput {
   employeeId?: string;
   timeRecordId?: string;
   recordField?: string;
-  originalValue?: string;
+  originalValue?: string | null;
+  currentValue?: string | null;
   requestedValue?: string;
   reason?: string;
 }

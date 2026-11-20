@@ -8,7 +8,7 @@ export const messageResponse = {
 export const sessionResponse = {
   type: "object",
   additionalProperties: false,
-  required: ["userId", "username", "role", "token", "mustChangePassword", "message"],
+  required: ["userId", "username", "role", "token", "mustChangePassword", "mfaEnabled", "message"],
   properties: {
     userId: string,
     username: string,
@@ -16,6 +16,7 @@ export const sessionResponse = {
     employeeId: { type: ["string", "null"] },
     token: string,
     mustChangePassword: { type: "boolean" },
+    mfaEnabled: { type: "boolean" },
     message: string,
   },
 };
@@ -38,11 +39,12 @@ export const loginResponse = {
 export const kioskResponse = {
   type: "object",
   additionalProperties: false,
-  required: ["success", "employeeName", "token", "message"],
+  required: ["success", "employeeName", "token", "mustChangePin", "message"],
   properties: {
     success: { type: "boolean", const: true },
     employeeName: string,
     token: string,
+    mustChangePin: { type: "boolean" },
     message: string,
   },
 };

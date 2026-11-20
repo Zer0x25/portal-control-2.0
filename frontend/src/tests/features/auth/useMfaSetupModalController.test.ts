@@ -154,4 +154,21 @@ describe("useMfaSetupModalController", () => {
       expect(verifyMock).toHaveBeenCalledTimes(1);
     });
   });
+
+  it("cierra el modal al presionar Escape cuando esta abierto", () => {
+    onCloseMock.mockClear();
+    renderHook(() =>
+      useMfaSetupModalController({
+        isOpen: true,
+        onSuccess: onSuccessMock,
+        onClose: onCloseMock,
+      }),
+    );
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    });
+
+    expect(onCloseMock).toHaveBeenCalledTimes(1);
+  });
 });

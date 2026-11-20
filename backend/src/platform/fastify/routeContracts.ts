@@ -130,6 +130,7 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
     "GET /api/records",
     "GET /api/records/daily-attendance",
     "GET /api/records/export",
+    "GET /api/records/indicators",
     "POST /api/records",
     "POST /api/records/bulk",
     "POST /api/records/auto-close",
@@ -271,6 +272,7 @@ export function assertMigratedRouteContracts(routes: readonly RouteEntry[]): voi
       [
         "GET /api/shift-reports",
         "POST /api/shift-reports",
+        "POST /api/shift-reports/:id/attendance-novelties",
         "PATCH /api/shift-reports/:id",
         "DELETE /api/shift-reports/:id",
         "GET /api/shift-reports/export/:id",

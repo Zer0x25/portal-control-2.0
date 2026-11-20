@@ -85,18 +85,19 @@ test.describe.serial("TD-004: cierre de huecos e2e", () => {
     // Modal SMTP abre y cierra sin guardar (no muta config global).
     await page.getByRole("button", { name: /configurar smtp/i }).click();
     await expect(page.getByText(/gestión de perfiles smtp/i)).toBeVisible({ timeout: 10000 });
-    await page.getByRole("button", { name: /^cerrar$/i }).click();
+    await page.getByRole("button", { name: /^cerrar$/i }).last().click();
   });
 
-  test("planning/monthly: stub documentado como en construcción", async ({ page, request }) => {
+  test("planning/monthly: wizard de planificación mensual operativo", async ({ page, request }) => {
     await loginFast(page, request, "admin");
     await page.goto("/#/planning/monthly");
     await expect(page.getByRole("heading", { name: /planificación mensual/i })).toBeVisible({
       timeout: 30000,
     });
-    await expect(page.getByRole("heading", { name: /módulo en construcción/i })).toBeVisible({
+    await expect(page.getByText(/configuración del plan mensual/i)).toBeVisible({
       timeout: 10000,
     });
+    await expect(page.locator("#monthly-plan-employee")).toBeVisible({ timeout: 10000 });
   });
 
   test("governance: triggers funcionales de solo lectura", async ({ page, request }) => {

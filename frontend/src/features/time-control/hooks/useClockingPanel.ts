@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { ClockingStatus } from "../../../types/index";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import type { ClockingEmployeeOption } from "../../../services/employeeService";
@@ -23,6 +23,7 @@ export interface ClockingPanelState {
   filteredEmployees: ClockingEmployeeOption[];
   statusLabels: Record<ClockingStatus, string>;
   isLoadingRecords: boolean;
+  isRecordStatusUnavailable: boolean;
 }
 
 export interface ClockingPanelActions {
@@ -56,12 +57,18 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     },
     [activeEmployees],
   );
-  const [clockStatus, setClockStatus] = useState<ClockingStatus>("fuera");
   const isSubmittingRef = useRef(false);
 
   // Query for the selected employee's latest record
-  const { data: employeeRecordsQuery, isLoading: isLoadingRecords } = useTimeRecordsQuery({
+  const {
+    data: employeeRecordsQuery,
+    isLoading,
+    isFetching,
+    isError,
+    isPlaceholderData,
+  } = useTimeRecordsQuery({
     pageSize: 5,
+    allowCache: false,
     enabled: Boolean(selectedEmployeeId),
     filters: {
       desde: "",
@@ -69,29 +76,17 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
       employeeId: selectedEmployeeId || undefined,
     },
   });
-  const employeeRecordsData = useMemo(
-    () => employeeRecordsQuery?.pages[0]?.data ?? [],
-    [employeeRecordsQuery?.pages],
+  const isLoadingRecords = Boolean(
+    selectedEmployeeId && (isLoading || isFetching || isPlaceholderData),
   );
-
-  // Update clock status when employee or records change
-  useEffect(() => {
-    if (!selectedEmployeeId || !employeeRecordsData) {
-      if (!selectedEmployeeId) {
-        setClockStatus("fuera");
-      }
-      return;
-    }
-
-    const latestRecord = employeeRecordsData[0];
-    if (!latestRecord) {
-      setClockStatus("fuera");
-      return;
-    }
-
-    const status = getContractClockingStatus(latestRecord, () => "fuera");
-    setClockStatus(status);
-  }, [selectedEmployeeId, employeeRecordsData]);
+  const latestRecord = employeeRecordsQuery?.pages[0]?.data[0];
+  const isRecordStatusUnavailable = Boolean(
+    selectedEmployeeId &&
+    (isError || !employeeRecordsQuery || (latestRecord && !latestRecord.clockingStatus)),
+  );
+  const clockStatus: ClockingStatus = latestRecord
+    ? getContractClockingStatus(latestRecord, () => "fuera")
+    : "fuera";
 
   const selectedEmployee = activeEmployees.find((e) => e.id === selectedEmployeeId) || null;
 
@@ -109,7 +104,6 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
 
       if (!term.trim()) {
         _setSelectedEmployeeId(null);
-        setClockStatus("fuera");
         return;
       }
 
@@ -177,7 +171,12 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
   };
 
   const performActionAndReset = async (type: ClockingActionType) => {
-    if (!selectedEmployeeId || isSubmittingRef.current) {
+    if (
+      !selectedEmployeeId ||
+      isLoadingRecords ||
+      isRecordStatusUnavailable ||
+      isSubmittingRef.current
+    ) {
       if (!selectedEmployeeId) addToast("Por favor, seleccione un empleado.", "warning");
       return;
     }
@@ -188,7 +187,6 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     if (success) {
       setSearchTerm("");
       setSelectedEmployeeId(null);
-      setClockStatus("fuera");
     }
   };
 
@@ -221,10 +219,11 @@ export const useClockingPanel = (): ClockingPanelState & ClockingPanelActions =>
     selectedEmployeeId,
     selectedEmployee,
     clockStatus,
-    isSubmitting: isSubmittingRef.current,
+    isSubmitting: punchMutation.isPending,
     filteredEmployees,
     statusLabels,
     isLoadingRecords,
+    isRecordStatusUnavailable,
 
     // Actions
     setSearchTerm: handleSearchTermChange,

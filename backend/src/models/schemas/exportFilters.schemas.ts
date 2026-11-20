@@ -6,6 +6,7 @@ export const ControllerExportQuerySchema = z
     endDate: calendarDateQuery,
     area: z.string().optional(),
     cargo: z.string().optional(),
+    workdayType: z.string().optional(),
     employeeId: z.string().optional(),
     viewMode: z.enum(["month", "week", "day"]).default("month"),
     mode: z.enum(["summary", "compiled_detailed"]).optional(), // New parameter

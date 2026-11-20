@@ -3,14 +3,16 @@ import { shiftService } from "../../services/shiftService";
 import { PaginationOptions } from "../../types/scheduling";
 import { queryKeys } from "../../lib/queryKeys";
 
-export const useAssignedShiftsInfiniteQuery = (filters: PaginationOptions) => {
+export const useAssignedShiftsInfiniteQuery = (
+  filters: PaginationOptions & { search?: string },
+) => {
   return useInfiniteQuery({
     queryKey: queryKeys.assignedShiftsList(filters),
     queryFn: async ({ pageParam = 1 }) => {
       const result = await shiftService.getAssignments({
         ...filters,
         page: pageParam as number,
-        pageSize: 50,
+        pageSize: filters.pageSize ?? 50,
       });
       return result;
     },

@@ -3,49 +3,55 @@ import { configService } from "../../services/configService";
 import type { BrandLogo } from "../../services/configService";
 import { authService } from "../../services/authService";
 import { queryKeys } from "../../lib/queryKeys";
+import { useStore } from "../../store/useStore";
 
 export const useConfigQuery = <T = unknown>(key: string) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<T | null>({
     queryKey: queryKeys.config(key),
     queryFn: () => configService.get<T>(key),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: hasToken,
+    enabled: hasToken && !isForcePasswordChange,
   });
 };
 
 export const useAccountingLockDateQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<string | null>({
     queryKey: queryKeys.config("accounting_lock_date"),
     queryFn: () => configService.get<string>("accounting_lock_date"),
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 
 export const useGlobalMaxWeeklyHoursQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<number>({
     queryKey: queryKeys.config("global_max_hours"),
     queryFn: async () => (await configService.get<number>("global_max_hours")) ?? 44,
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 
 export const useAreaListQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<string[]>({
     queryKey: queryKeys.config("area_list"),
     queryFn: async () => (await configService.get<string[]>("area_list")) ?? ["Otros"],
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 
 export const useWorkdayTypeListQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<string[]>({
     queryKey: queryKeys.config("workday_types"),
     queryFn: async () =>
@@ -55,28 +61,30 @@ export const useWorkdayTypeListQuery = (enabled = true) => {
         "Part-Time",
       ],
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 
 export const useEmailRecipientsListQuery = (enabled = true) => {
   const hasToken = !!authService.getToken();
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<string[]>({
     queryKey: queryKeys.config("email_recipients"),
-    queryFn: async () =>
-      (await configService.get<string[]>("email_recipients")) ?? ["info@test.lan"],
+    queryFn: async () => (await configService.get<string[]>("email_recipients")) ?? [],
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken && enabled,
+    enabled: hasToken && !isForcePasswordChange && enabled,
   });
 };
 
 export const useControlInternoEnabledQuery = () => {
   const hasToken = !!authService.getToken();
+  const isAuthenticated = useStore((state) => state.isAuthenticated);
+  const isForcePasswordChange = useStore((state) => state.currentUser?.mustChangePassword === true);
   return useQuery<boolean>({
     queryKey: queryKeys.config("is_control_interno_enabled"),
     queryFn: async () => (await configService.get<boolean>("is_control_interno_enabled")) ?? true,
     staleTime: 1000 * 60 * 5,
-    enabled: hasToken,
+    enabled: hasToken && isAuthenticated && !isForcePasswordChange,
   });
 };
 

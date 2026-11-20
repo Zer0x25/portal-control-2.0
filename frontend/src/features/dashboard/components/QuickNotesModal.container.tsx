@@ -22,6 +22,7 @@ const QuickNotesModalContainer: React.FC<QuickNotesModalProps> = ({ isOpen, onCl
       colorOptions={controller.colorOptions}
       onColorChange={controller.handleColorChange}
       onContentChange={controller.handleContentChange}
+      onArchiveNote={controller.archiveNote}
       onDeleteNote={controller.deleteNote}
       canDelete={controller.canDelete}
       isSubmitting={controller.isSubmitting}

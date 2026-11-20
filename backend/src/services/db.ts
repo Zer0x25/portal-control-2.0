@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { requestContext } from "../utils/context";
 import { SocketService } from "./socketService";
+import { logger } from "../utils/logger";
 
 const prismaLogConfig: Prisma.PrismaClientOptions["log"] = ["error", "warn"];
 
@@ -168,7 +169,7 @@ function createExtendedClient(client: PrismaClient) {
                       });
                     })
                     .catch((err) =>
-                      console.error(`[Audit-DB-Ext] Failed to log ${model} ${operation}:`, err),
+                      logger.error(`[Audit-DB-Ext] Failed to log ${model} ${operation}`, err),
                     );
                 }
 

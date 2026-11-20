@@ -4,12 +4,7 @@ import Button from "../../../components/ui/Button";
 import Badge from "../../../components/ui/Badge";
 import PaginationControls from "../../../components/ui/PaginationControls";
 import SortableHeader from "../../../components/ui/SortableHeader";
-import {
-  EditIcon,
-  KeyIcon,
-  ArchiveBoxIcon,
-  ArrowUturnLeftIcon,
-} from "../../../components/ui/icons/index";
+import { EditIcon, ArchiveBoxIcon, ArrowUturnLeftIcon } from "../../../components/ui/icons/index";
 import { Z } from "../../../constants/zScale";
 
 type SortableEmployeeKey = keyof Employee;
@@ -259,15 +254,6 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           title="Editar"
                         >
                           <EditIcon className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {}}
-                          className="p-2! shadow-sm rounded-md border-token-border-technical hover:bg-purple-500 hover:text-white"
-                          title="Cambiar PIN (Simulado)"
-                        >
-                          <KeyIcon className="w-4 h-4" />
                         </Button>
                         {canArchive && (
                           <Button

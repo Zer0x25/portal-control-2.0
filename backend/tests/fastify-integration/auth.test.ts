@@ -13,6 +13,7 @@ import { createFastifyRuntime } from "../../src/fastify/runtime";
 import { prismaDirect } from "../../src/services/db";
 import { AuthService } from "../../src/services/AuthService";
 import { clearLoginFailures } from "../../src/services/loginFailures";
+import { SocketService } from "../../src/services/socketService";
 import { assertConnectedToTestDb, resetIntegrationDb } from "../integration/_support/testDb";
 
 let app: FastifyInstance;
@@ -55,7 +56,7 @@ async function employee() {
       area: "Ops",
       workdayType: "Normal",
       status: "Activo",
-      pin: "1234",
+      pin: bcrypt.hashSync("1234", 4),
     },
   });
 }
@@ -182,7 +183,10 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       }
     },
   );
-  it("logout is public/idempotent, revokes persisted session and audit actor remains anonymous", async () => {
+  it("logout is idempotent, revokes persisted session, emits force logout and attributes real actorUsername", async () => {
+    const forceSessionSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToSession")
+      .mockImplementation(() => {});
     await user();
     const token = (await login()).json().token;
     for (let i = 0; i < 2; i++) {
@@ -194,6 +198,10 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       expect(response.statusCode).toBe(200);
       expect(response.json()).toEqual({ message: "Logout exitoso" });
     }
+    expect(forceSessionSpy).toHaveBeenCalledWith(hash(token), {
+      isHash: true,
+      reason: "SESSION_INVALIDATED",
+    });
     expect(
       await prismaDirect.activeSession.findUnique({ where: { tokenHash: hash(token) } }),
     ).toBeNull();
@@ -205,12 +213,17 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     });
     expect(
       await prismaDirect.auditLog.count({
+        where: { action: "LOGOUT", actorUsername: "alice" },
+      }),
+    ).toBe(2);
+    expect(
+      await prismaDirect.auditLog.count({
         where: { action: "LOGOUT", actorUsername: "ANONYMOUS" },
       }),
-    ).toBe(3);
+    ).toBe(1);
   });
   it("rejects persisted session expiry and removes expired row", async () => {
-    await user();
+    await user("alice", "Administrador");
     const token = (await login()).json().token;
     await prismaDirect.activeSession.update({
       where: { tokenHash: hash(token) },
@@ -222,9 +235,11 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     ).toBe(401);
     expect(await prismaDirect.activeSession.count()).toBe(0);
   });
-  it("real QR setup and TOTP verify enable MFA, then challenge completion creates exactly one session", async () => {
-    const actor = await user();
+  it("real QR setup and TOTP verify enable MFA, then challenge completion creates exactly one session and updates lastLogin", async () => {
+    const actor = await user("alice", "Administrador");
     const access = (await login()).json().token;
+    const afterLogin = await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } });
+    expect(afterLogin.lastLogin).toBeInstanceOf(Date);
     const setup = await app.inject({
       method: "POST",
       url: "/api/auth/mfa/setup",
@@ -258,6 +273,7 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       (await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).mfaEnabled,
     ).toBe(true);
     await prismaDirect.activeSession.deleteMany();
+    await prismaDirect.user.update({ where: { id: actor.id }, data: { lastLogin: null } });
     const challenge = await login();
     expect(challenge.statusCode).toBe(200);
     const { mfaToken: migratedPending } = challenge.json();
@@ -279,8 +295,12 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     expect(complete.statusCode).toBe(200);
     expect(complete.json()).toMatchObject({
       mustChangePassword: false,
+      mfaEnabled: true,
       message: "Autenticación de dos pasos exitosa",
     });
+    expect(
+      (await prismaDirect.user.findUniqueOrThrow({ where: { id: actor.id } })).lastLogin,
+    ).toBeInstanceOf(Date);
     expect(await prismaDirect.activeSession.count()).toBe(1);
     expect(
       await prismaDirect.auditLog.count({
@@ -319,14 +339,75 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
     expect(claims).toMatchObject({ role: "Kiosk_Employee", employeeId: emp.id });
     expect(claims.exp! - claims.iat!).toBe(300);
     expect(await prismaDirect.activeSession.count()).toBe(0);
+    const kioskToken = migrated.json().token as string;
+    for (const deniedUrl of [
+      "/api/holidays?showArchived=true",
+      "/api/records/daily-attendance?startDate=2026-01-01&endDate=2026-01-02",
+      "/api/records/export?format=json",
+      "/api/shifts/assignments",
+      "/api/corrections",
+      "/api/records?employeeId=OTHER-EMP",
+    ]) {
+      expect((await app.inject({ url: deniedUrl, headers: headers(kioskToken) })).statusCode).toBe(
+        403,
+      );
+    }
     expect(
       (
         await app.inject({
-          url: "/api/holidays?showArchived=true",
-          headers: headers(migrated.json().token),
+          method: "PUT",
+          url: "/api/employees/OTHER-EMP",
+          headers: headers(kioskToken),
+          payload: { pin: "9999" },
+        })
+      ).statusCode,
+    ).toBe(403);
+
+    expect(
+      (
+        await app.inject({
+          url: `/api/records?employeeId=${emp.id}&pageSize=1`,
+          headers: headers(kioskToken),
         })
       ).statusCode,
     ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/records/punch",
+          headers: headers(kioskToken),
+          payload: { employeeId: emp.id, source: "KIOSK_PIN", forcedType: "entrada" },
+        })
+      ).statusCode,
+    ).not.toBe(403);
+    expect(
+      (
+        await app.inject({
+          method: "PUT",
+          url: `/api/employees/${emp.id}`,
+          headers: headers(kioskToken),
+          payload: { pin: "4321" },
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/auth/logout",
+          headers: headers(kioskToken),
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          url: `/api/records?employeeId=${emp.id}`,
+          headers: headers(kioskToken),
+        })
+      ).statusCode,
+    ).toBe(401);
     await prismaDirect.employee.update({
       where: { id: emp.id },
       data: { pin: bcrypt.hashSync("5678", 4), pinFailedAttempts: 2 },
@@ -336,15 +417,25 @@ describe("Fastify auth on disposable PostgreSQL with real bcrypt/JWT/MFA/session
       (await prismaDirect.employee.findUniqueOrThrow({ where: { id: emp.id } })).pinFailedAttempts,
     ).toBe(0);
     await prismaDirect.employee.update({ where: { id: emp.id }, data: { pin: null } });
-    expect((await kiosk(emp.rut.slice(0, 4))).statusCode).toBe(200);
+    expect((await kiosk(emp.rut.slice(0, 4))).statusCode).toBe(401);
+    await prismaDirect.employee.update({ where: { id: emp.id }, data: { status: "Archivado" } });
+    expect((await kiosk(emp.rut.slice(0, 4))).statusCode).toBe(403);
   });
-  it("five wrong PINs block employee and preserve 401/403/404 bodies", async () => {
+  it("five wrong PINs block employee with 403 on 5th failure and rejects non-numeric PIN with 400", async () => {
     await employee();
-    for (let attempts = 1; attempts <= 5; attempts++) {
-      const response = await kiosk("wrong");
+    expect((await kiosk("abcd")).statusCode).toBe(400);
+    for (let attempts = 1; attempts <= 4; attempts++) {
+      const response = await kiosk("9999");
       expect(response.statusCode).toBe(401);
       expect(response.json()).toMatchObject({ success: false, attempts });
     }
+    const fifth = await kiosk("9999");
+    expect(fifth.statusCode).toBe(403);
+    expect(fifth.json()).toMatchObject({
+      success: false,
+      message: "PIN bloqueado por demasiados intentos.",
+      attempts: 5,
+    });
     const emp = await prismaDirect.employee.findUniqueOrThrow({ where: { id: "employee-test" } });
     expect(emp.isPinBlocked).toBe(true);
     expect(emp.pinFailedAttempts).toBe(5);
@@ -581,10 +672,10 @@ describe("Spec 010 MFA and PIN security", () => {
   });
   it("serializes eight concurrent bad PINs to attempts 1..5 and keeps later valid PIN blocked", async () => {
     const emp = await employee();
-    const responses = await Promise.all(Array.from({ length: 8 }, () => kiosk("wrong")));
+    const responses = await Promise.all(Array.from({ length: 8 }, () => kiosk("9999")));
     const failures = responses.filter((r) => r.statusCode === 401);
-    expect(failures.map((r) => r.json().attempts).sort()).toEqual([1, 2, 3, 4, 5]);
-    expect(responses.filter((r) => r.statusCode === 403)).toHaveLength(3);
+    expect(failures.map((r) => r.json().attempts).sort()).toEqual([1, 2, 3, 4]);
+    expect(responses.filter((r) => r.statusCode === 403)).toHaveLength(4);
     expect(await prismaDirect.employee.findUniqueOrThrow({ where: { id: emp.id } })).toMatchObject({
       pinFailedAttempts: 5,
       isPinBlocked: true,
@@ -607,6 +698,27 @@ describe("Spec 010 MFA and PIN security", () => {
     expect(blocked.json().message).toContain(
       "Debe actualizar su contraseña temporal antes de continuar",
     );
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/auth/mfa/setup",
+          headers: headers(userToken),
+        })
+      ).statusCode,
+    ).toBe(403);
+    expect(
+      (
+        await app.inject({
+          method: "DELETE",
+          url: `/api/users/${forced.id}`,
+          headers: headers(userToken),
+        })
+      ).statusCode,
+    ).toBe(403);
+    expect((await app.inject({ url: "/api/health", headers: headers(userToken) })).statusCode).toBe(
+      200,
+    );
 
     const updateRes = await app.inject({
       method: "PUT",
@@ -621,5 +733,223 @@ describe("Spec 010 MFA and PIN security", () => {
       headers: headers(userToken),
     });
     expect(unblocked.statusCode).toBe(200);
+  });
+
+  it("[BUG-20] rejects empty/whitespace login and kiosk payloads with 400 before throttle or LOGIN_FAILED", async () => {
+    await user("empty-target", "Supervisor");
+    await employee();
+
+    for (const payload of [
+      {},
+      { username: "", password: "x" },
+      { username: "   ", password: "x" },
+      { username: "empty-target", password: "" },
+    ]) {
+      const res = await app.inject({ method: "POST", url: "/api/auth/login", payload });
+      expect(res.statusCode).toBe(400);
+      expect(res.json().code).toBe("VALIDATION_ERROR");
+    }
+    for (const payload of [
+      {},
+      { employeeId: "", pin: "1234" },
+      { employeeId: " ", pin: "1234" },
+      { employeeId: "employee-test", pin: "" },
+    ]) {
+      const res = await app.inject({ method: "POST", url: "/api/auth/kiosk-login", payload });
+      expect(res.statusCode).toBe(400);
+      expect(res.json().code).toBe("VALIDATION_ERROR");
+    }
+    expect(await prismaDirect.auditLog.count({ where: { action: "LOGIN_FAILED" } })).toBe(0);
+    expect(await prismaDirect.auditLog.count({ where: { action: "KIOSK_PIN_FAILED" } })).toBe(0);
+  });
+
+  it("[BUG-03][BUG-08][DUDA-09] returns canonical underscore roles, blocks Archivado sessions, and rejects ?token=", async () => {
+    const reloj = await user("reloj-actor", "Reloj_Control");
+    const supElev = await user("supelev-actor", "Supervisor_Elevado");
+
+    const rLogin = await login("reloj-actor");
+    expect(rLogin.statusCode).toBe(200);
+    expect(rLogin.json()).toMatchObject({ role: "Reloj_Control", mfaEnabled: false });
+
+    const sLogin = await login("supelev-actor");
+    expect(sLogin.statusCode).toBe(200);
+    expect(sLogin.json()).toMatchObject({ role: "Supervisor_Elevado", mfaEnabled: false });
+    const supToken = sLogin.json().token as string;
+
+    expect(
+      (
+        await app.inject({
+          url: `/api/holidays?token=${encodeURIComponent(supToken)}`,
+        })
+      ).statusCode,
+    ).toBe(401);
+
+    await prismaDirect.user.update({ where: { id: supElev.id }, data: { role: "Archivado" } });
+    expect(
+      (await app.inject({ url: "/api/holidays", headers: headers(supToken) })).statusCode,
+    ).toBe(403);
+    expect(
+      (await prismaDirect.user.findUniqueOrThrow({ where: { id: reloj.id } })).lastLogin,
+    ).toBeInstanceOf(Date);
+  });
+
+  it("[DUDA-01][BUG-04][BUG-09][BUG-10] locks MFA setup/verify to Admin, blocks overwrite, enforces single-use mfaToken, and audits MFA_FAILED", async () => {
+    const sup = await user("non-admin-mfa", "Supervisor");
+    const supToken = (await login(sup.username)).json().token as string;
+    expect(
+      (await app.inject({ method: "POST", url: "/api/auth/mfa/setup", headers: headers(supToken) }))
+        .statusCode,
+    ).toBe(403);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/auth/mfa/verify",
+          headers: headers(supToken),
+          payload: { token: "123456" },
+        })
+      ).statusCode,
+    ).toBe(403);
+
+    const admin = await user("admin-mfa", "Administrador");
+    const adminToken = (await login(admin.username)).json().token as string;
+    // Verify before setup must return 400 (not 500)
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/auth/mfa/verify",
+          headers: headers(adminToken),
+          payload: { token: "123456" },
+        })
+      ).statusCode,
+    ).toBe(400);
+
+    const setup = await app.inject({
+      method: "POST",
+      url: "/api/auth/mfa/setup",
+      headers: headers(adminToken),
+    });
+    expect(setup.statusCode).toBe(200);
+    const activeSecret = setup.json().secret as string;
+    const validCode = speakeasy.totp({ secret: activeSecret, encoding: "base32" });
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/auth/mfa/verify",
+          headers: headers(adminToken),
+          payload: { token: validCode },
+        })
+      ).statusCode,
+    ).toBe(200);
+
+    // Calling /setup again while mfaEnabled === true must fail 409 without overwriting secret or disabling MFA
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/auth/mfa/setup",
+          headers: headers(adminToken),
+        })
+      ).statusCode,
+    ).toBe(409);
+    const intact = await prismaDirect.user.findUniqueOrThrow({ where: { id: admin.id } });
+    expect(intact.mfaEnabled).toBe(true);
+    expect(intact.mfaSecret).toBe(activeSecret);
+
+    // Clear sessions and test concurrent single-use mfaToken + MFA_FAILED audit on wrong code & 429
+    await prismaDirect.activeSession.deleteMany();
+    const challenge = await login(admin.username);
+    const mfaToken = challenge.json().mfaToken as string;
+
+    const badVerify = await app.inject({
+      method: "POST",
+      url: "/api/auth/mfa/validate",
+      payload: { mfaToken, code: "000000" },
+    });
+    expect(badVerify.statusCode).toBe(401);
+    expect(
+      await prismaDirect.auditLog.count({
+        where: { action: "MFA_FAILED", actorUsername: admin.username, outcome: "FAILURE" },
+      }),
+    ).toBe(1);
+
+    const freshCode = speakeasy.totp({ secret: activeSecret, encoding: "base32" });
+    const [r1, r2] = await Promise.all([
+      app.inject({
+        method: "POST",
+        url: "/api/auth/mfa/validate",
+        payload: { mfaToken, code: freshCode },
+      }),
+      app.inject({
+        method: "POST",
+        url: "/api/auth/mfa/validate",
+        payload: { mfaToken, code: freshCode },
+      }),
+    ]);
+    expect([r1.statusCode, r2.statusCode].sort()).toEqual([200, 401]);
+    expect(await prismaDirect.activeSession.count({ where: { userId: admin.id } })).toBe(1);
+
+    // Trigger 429 MFA rate limit and verify MFA_FAILED audit
+    const secondChallenge = (await login(admin.username)).json().mfaToken as string;
+    let saw429 = false;
+    for (let i = 0; i < 6; i++) {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/auth/mfa/validate",
+        payload: { mfaToken: secondChallenge, code: "000000" },
+      });
+      if (res.statusCode === 429) {
+        saw429 = true;
+        break;
+      }
+    }
+    expect(saw429).toBe(true);
+    expect(
+      await prismaDirect.auditLog.count({
+        where: { action: "MFA_FAILED", actorUsername: admin.username, outcome: "FAILURE" },
+      }),
+    ).toBeGreaterThanOrEqual(5);
+  });
+
+  it("[BUG-14][ANOMALÍA-22] purge-sessions and admin reset-password support case-insensitive username and emit auth:force_logout", async () => {
+    const forceUserSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToUser")
+      .mockImplementation(() => {});
+    const admin = await user("root-admin", "Administrador");
+    const target = await user("MixedCaseUser", "Usuario");
+    const adminToken = (await login(admin.username)).json().token as string;
+    const targetToken = (await login(target.username)).json().token as string;
+    expect(targetToken).toBeTruthy();
+
+    const purge = await app.inject({
+      method: "POST",
+      url: "/api/admin/purge-sessions",
+      headers: headers(adminToken),
+      payload: { username: "mixedcaseuser" },
+    });
+    expect(purge.statusCode).toBe(200);
+    expect(await prismaDirect.activeSession.count({ where: { userId: target.id } })).toBe(0);
+    expect(forceUserSpy).toHaveBeenCalledWith(
+      target.id,
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
+
+    forceUserSpy.mockClear();
+    const targetLogin2 = (await login(target.username)).json().token as string;
+    expect(targetLogin2).toBeTruthy();
+    const reset = await app.inject({
+      method: "POST",
+      url: "/api/admin/reset-password",
+      headers: headers(adminToken),
+      payload: { username: "MIXEDCASEUSER", newPassword: "ResetPassword999!" },
+    });
+    expect(reset.statusCode).toBe(200);
+    expect(await prismaDirect.activeSession.count({ where: { userId: target.id } })).toBe(0);
+    expect(forceUserSpy).toHaveBeenCalledWith(
+      target.id,
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
   });
 });

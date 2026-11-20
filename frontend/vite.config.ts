@@ -160,6 +160,9 @@ export default defineConfig(({ mode }) => {
                   // Validación zod de IndexedDB: solo se importa en writes de caché.
                   "**/assets/validation-*.js",
                   "**/assets/idbValidation-*.js",
+                  // Herramientas dev-only: se cachean bajo demanda vía StaleWhileRevalidate.
+                  "**/assets/DesignSystemCatalog.container-*.js",
+                  "**/assets/DeveloperPanel.container-*.js",
                 ],
                 runtimeCaching: [
                   {

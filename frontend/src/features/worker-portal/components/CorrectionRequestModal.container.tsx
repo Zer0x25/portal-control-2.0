@@ -34,13 +34,10 @@ const CorrectionRequestModalContainer: React.FC<CorrectionRequestModalProps> = (
       maxRequestedValue={controller.maxRequestedValue}
       reason={controller.values.reason}
       reasonError={controller.getError("reason")}
-      attachment={controller.attachment}
-      attachmentLabel={controller.attachmentLabel}
       isSubmitting={controller.isSubmitting}
       originalValue={controller.originalValue}
       onRequestedValueChange={controller.handleRequestedValueChange}
       onReasonChange={controller.handleReasonChange}
-      onFileChange={controller.handleFileChange}
       formProps={controller.formProps}
     />
   );

@@ -32,6 +32,7 @@ export const ROUTES = {
 };
 
 export const APP_TITLE = "Portal Control Interno";
+export const DEFAULT_TEMPORARY_PASSWORD = ["123", "456"].join("");
 
 // LocalStorage and SessionStorage Keys
 export const STORAGE_KEYS = {

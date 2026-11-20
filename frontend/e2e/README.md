@@ -47,12 +47,28 @@ salvo que se pruebe el login mismo (`[data-testid="login-form"]`).
 - Accesibilidad (axe-core, core+serious): login, dashboard, planificador
   (calendario de turnos) y worker-portal, en tema claro y oscuro.
 - Modales: `modal-dialog` genérico (con `role="dialog"` + `aria-labelledby`);
-  MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`.
+  MFA con `mfa-login-modal`/`mfa-login-form` y `mfa-setup-modal`/`mfa-setup-form`
+  (disparado desde `mfa-setup-button` en el menú de usuario de `app-header`
+  solo para `Administrador` con `mfaEnabled === false`), y overlay de expiración
+  `session-expired-overlay` (`role="alertdialog"`, `aria-labelledby="session-expired-title"`).
 - Kiosco (`/#/kiosk`): fuera del shell (sin `app-shell`/`main-content`);
   `page-container`, `kiosk-step[data-step]`
   (`rut_input|employee_list|pin_input|actions|success|change_pin`), `kiosk-display`,
   `kiosk-keypad`, `kiosk-key-<1..9,K,0>`, `kiosk-key-delete`, `kiosk-key-confirm`,
-  `kiosk-exit-button`, `kiosk-rut-error`, `kiosk-pin-error`.
+  `kiosk-change-pin-button`, `kiosk-exit-button`, `kiosk-rut-error`, `kiosk-pin-error`.
+- Portal del trabajador (`/#/worker-portal`): acciones de marcaje
+  `worker-clock-action-<action>` (`jornada_inicio|colacion_inicio|colacion_fin|jornada_fin`),
+  reintento condicional `worker-clocking-status-retry`; filtros de mes
+  `worker-month-quick-<YYYY-MM>` y `worker-month-select`; descarga `worker-export-pdf`;
+  corrección por registro/campo `worker-correction-action-<recordId>-<field>`
+  (`entrada|inicioColacion|finColacion|salida`); reintentos condicionales
+  `worker-pending-corrections-retry` y `worker-correction-history-retry`, carga adicional
+  `worker-correction-history-load-more`, e historial `correction-history-entry`.
+  Modal de corrección: `worker-correction-modal`, `worker-correction-modal-close`,
+  `worker-correction-modal-form`, `worker-correction-requested-value`,
+  `worker-correction-reason`, `worker-correction-modal-cancel` y
+  `worker-correction-modal-submit`. Los controles conservan sus nombres visibles o
+  etiquetas accesibles; los botones de acción de marcaje también exponen `aria-label`.
 
 ## Regresión visual (spec 035, AC4)
 

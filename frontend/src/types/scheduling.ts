@@ -14,9 +14,13 @@ export interface Holiday extends Syncable {
   date: string;
   name: string;
   type: "Nacional" | "Regional" | "Específico";
+  isRenounceable?: boolean;
 }
 
-export type BulkCreateHolidayPayload = Pick<Holiday, "name" | "date" | "type"> & { id?: string };
+export type BulkCreateHolidayPayload = Pick<
+  Holiday,
+  "name" | "date" | "type" | "isRenounceable"
+> & { id?: string };
 
 export interface Justification {
   type: LeaveRecord["type"] | "AUTO_CLOSE" | "MANUAL_REPAIR" | "SYSTEM_ANOMALY";
@@ -79,6 +83,8 @@ export interface PaginationOptions {
   startDate?: string;
   endDate?: string;
   employeeId?: string;
+  type?: string;
+  search?: string;
   role?: string;
   since?: string;
   showArchived?: boolean;

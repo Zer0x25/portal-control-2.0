@@ -13,6 +13,9 @@ const mockPrisma = vi.hoisted(() => ({
   activeSession: {
     deleteMany: vi.fn(),
   },
+  verification: {
+    deleteMany: vi.fn(),
+  },
   systemConfig: {
     findUnique: vi.fn(),
     create: vi.fn(),
@@ -36,6 +39,7 @@ describe("maintenanceService log rotation and cleanups (anti-regression)", () =>
     mockPrisma.shiftReport.deleteMany.mockResolvedValue({ count: 1 });
     mockPrisma.meterReading.deleteMany.mockResolvedValue({ count: 2 });
     mockPrisma.activeSession.deleteMany.mockResolvedValue({ count: 12 });
+    mockPrisma.verification.deleteMany.mockResolvedValue({ count: 2 });
     mockPrisma.$executeRawUnsafe.mockResolvedValue(1);
   });
 
@@ -82,6 +86,11 @@ describe("maintenanceService log rotation and cleanups (anti-regression)", () =>
 
     // Check activeSessions cleanup deletes where expiresAt < now
     expect(mockPrisma.activeSession.deleteMany).toHaveBeenCalledWith({
+      where: {
+        expiresAt: { lt: fixedNow },
+      },
+    });
+    expect(mockPrisma.verification.deleteMany).toHaveBeenCalledWith({
       where: {
         expiresAt: { lt: fixedNow },
       },

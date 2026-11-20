@@ -14,8 +14,10 @@ import { queryClient } from "../../lib/queryClient";
  * queue (`wipeAllData`), cuya cola de escritura es invariante.
  */
 const resetPersistedQueryCache = async (ownerId: string | null): Promise<void> => {
-  await purgePersistedQueryCache();
-  queryClient.clear();
+  await purgePersistedQueryCache({ preserveRoots: ["employeesKiosk"] });
+  queryClient.removeQueries({
+    predicate: (query) => query.queryKey[0] !== "employeesKiosk",
+  });
   if (ownerId) {
     localStorage.setItem(QUERY_CACHE_OWNER_KEY, ownerId);
   } else {
@@ -27,7 +29,11 @@ const getEmployeeIdFromToken = (token?: string): string | undefined => {
   if (!token) return undefined;
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1] || "")) as { employeeId?: string | null };
+    const rawSegment = token.split(".")[1] || "";
+    if (!rawSegment) return undefined;
+    const base64 = rawSegment.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(padded)) as { employeeId?: string | null };
     return payload.employeeId ?? undefined;
   } catch {
     return undefined;
@@ -42,10 +48,15 @@ export interface AuthSlice {
   mfaToken: string | null;
   login: (username: string, password: string) => Promise<LoginResponse | User>;
   validateMFACode: (code: string) => Promise<User | null>;
-  logout: () => void;
+  logout: () => Promise<void>;
   _verifyAuth: () => Promise<void>;
-  _handleSuccessfulLogin: (loginResponse: LoginResponse) => Promise<User>;
+  _handleSuccessfulLogin: (
+    loginResponse: LoginResponse,
+    options?: { mfaVerified?: boolean },
+  ) => Promise<User>;
   clearMustChangePassword: () => void;
+  completeForcePasswordChange: () => Promise<void>;
+  markMfaEnabled: () => void;
 }
 
 import { LoginResponse } from "../../services/authService";
@@ -61,9 +72,18 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
   _verifyAuth: async () => {
     set({ isAuthLoading: true });
     const storedUser = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    if (storedUser) {
+    if (storedUser && authService.isAuthenticated()) {
       try {
-        const user = JSON.parse(storedUser);
+        const rawUser = JSON.parse(storedUser) as User;
+        if (!rawUser?.id) {
+          throw new Error("Stored user missing id");
+        }
+        const user: User = {
+          ...rawUser,
+          role: (typeof rawUser.role === "string"
+            ? rawUser.role.replace(/ /g, "_")
+            : rawUser.role) as UserRole,
+        };
 
         // AC2.1: si el cache persistido pertenece a otra cuenta, se purga
         // antes de hidratar para no exponer datos de un usuario previo.
@@ -73,17 +93,21 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
 
         set({ currentUser: user, isAuthenticated: true, isAuthLoading: false });
 
-        // Re-trigger global sync to populate store from IDB or Server
-        get()
-          .initializeAppData()
-          .catch((err) => {
-            logger.error("Failed to initialize app data on session restore:", err);
-          });
+        if (!user.mustChangePassword) {
+          // Re-trigger global sync to populate store from IDB or Server
+          get()
+            .initializeAppData()
+            .catch((err) => {
+              logger.error("Failed to initialize app data on session restore:", err);
+            });
+        }
         return;
       } catch (e) {
         logger.warn("Error parsing stored user:", e);
       }
     }
+    sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    authService.removeToken();
     set({ currentUser: null, isAuthenticated: false, isAuthLoading: false });
   },
 
@@ -141,14 +165,17 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     set({ isAuthLoading: true });
     try {
       const loginResponse = await authService.validateMFACode(mfaToken, code);
-      return await get()._handleSuccessfulLogin(loginResponse);
+      return await get()._handleSuccessfulLogin(loginResponse, { mfaVerified: true });
     } catch (error) {
       set({ isAuthLoading: false });
       throw error;
     }
   },
 
-  _handleSuccessfulLogin: async (loginResponse: LoginResponse) => {
+  _handleSuccessfulLogin: async (
+    loginResponse: LoginResponse,
+    options?: { mfaVerified?: boolean },
+  ) => {
     const lastUserId = localStorage.getItem(STORAGE_KEYS.LAST_LOGGED_USER_ID);
     const isNewUser = lastUserId !== loginResponse.userId;
 
@@ -159,6 +186,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       await resetPersistedQueryCache(loginResponse.userId);
       localStorage.removeItem(STORAGE_KEYS.LAST_SYNC_TIMESTAMP);
       localStorage.setItem(STORAGE_KEYS.LAST_LOGGED_USER_ID, loginResponse.userId);
+      set({ lastSyncTime: null });
     } else {
       localStorage.setItem(QUERY_CACHE_OWNER_KEY, loginResponse.userId);
     }
@@ -168,16 +196,35 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
       getEmployeeIdFromToken(loginResponse.token) ??
       getEmployeeIdFromToken(authService.getToken() || undefined);
 
+    const normalizedRole = (loginResponse.role?.replace(/ /g, "_") || "Usuario") as UserRole;
+
     const user: User = {
       id: loginResponse.userId,
       username: loginResponse.username,
-      role: loginResponse.role as UserRole,
+      role: normalizedRole,
       employeeId: resolvedEmployeeId,
       isDeleted: false,
       lastModified: Date.now(),
       syncStatus: "synced",
       mustChangePassword: loginResponse.mustChangePassword === true,
+      mfaEnabled: loginResponse.mfaEnabled ?? options?.mfaVerified === true,
     };
+
+    if (user.mustChangePassword) {
+      set({
+        currentUser: user,
+        isAuthenticated: true,
+        isAuthLoading: false,
+        mfaRequired: false,
+        mfaToken: null,
+        isInitialSync: false,
+        currentSyncStep: "",
+        syncProgress: 0,
+        isSyncing: false,
+      });
+      sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      return user;
+    }
 
     set({
       currentUser: user,
@@ -202,6 +249,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     set({
       currentUser: null,
       isAuthenticated: false,
+      isAuthLoading: false,
+      mfaRequired: false,
+      mfaToken: null,
       isInitialSync: false,
       currentSyncStep: "",
       syncProgress: 0,
@@ -217,7 +267,9 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     // La validación se hace en el login (si el ID cambia, se limpia todo).
 
     sessionStorage.clear();
-    window.location.href = ROUTES.LOGIN; // Redirección limpia
+    if (window.location.hash !== `#${ROUTES.LOGIN}`) {
+      window.location.hash = `#${ROUTES.LOGIN}`;
+    }
   },
 
   clearMustChangePassword: () => {
@@ -225,6 +277,29 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSlice> = (set, 
     if (!currentUser?.mustChangePassword) return;
 
     const updatedUser = { ...currentUser, mustChangePassword: false };
+    set({ currentUser: updatedUser });
+    sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
+  },
+
+  completeForcePasswordChange: async () => {
+    const currentUser = get().currentUser;
+    if (!currentUser) return;
+
+    if (currentUser.mustChangePassword) {
+      const updatedUser = { ...currentUser, mustChangePassword: false };
+      set({ currentUser: updatedUser });
+      sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
+    }
+
+    await queryClient.invalidateQueries();
+    await get().initializeAppData();
+  },
+
+  markMfaEnabled: () => {
+    const currentUser = get().currentUser;
+    if (!currentUser || currentUser.mfaEnabled) return;
+
+    const updatedUser = { ...currentUser, mfaEnabled: true };
     set({ currentUser: updatedUser });
     sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
   },

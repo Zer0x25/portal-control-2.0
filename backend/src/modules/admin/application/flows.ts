@@ -79,15 +79,25 @@ export function createAdminFlows(deps: AdminDependencies) {
       });
       try {
         const backupPath = await deps.backup();
+        const { filename, sizeBytes } = deps.inspectBackup
+          ? await deps.inspectBackup(backupPath)
+          : { filename: backupPath.split(/[/\\]/).pop() || backupPath, sizeBytes: undefined };
         deps.backupSuccess();
         await deps.audit({
           actorUsername,
           action: "TRIGGER_BACKUP_MANUAL",
           category: "OPERATIONS",
           severity: "WARNING",
-          details: { backupPath },
+          details: { filename, ...(sizeBytes !== undefined ? { sizeBytes } : {}) },
         });
-        send({ success: true, data: { message: "Backup ejecutado exitosamente.", backupPath } });
+        send({
+          success: true,
+          data: {
+            message: "Backup ejecutado exitosamente.",
+            filename,
+            ...(sizeBytes !== undefined ? { sizeBytes } : {}),
+          },
+        });
       } finally {
         await deps.operations.finish();
       }

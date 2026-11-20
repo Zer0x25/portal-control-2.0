@@ -1,8 +1,11 @@
 import { z } from "./common";
+import { isSafeSmtpHost } from "../../utils/smtpHostGuard";
+
+const safeSmtpHostMessage = "El servidor SMTP no puede apuntar a direcciones locales o privadas";
 
 export const SmtpProfileSchema = z
   .object({
-    host: z.string().trim(),
+    host: z.string().trim().refine(isSafeSmtpHost, safeSmtpHostMessage),
     port: z.number().int().min(1).max(65535),
     secure: z.boolean(),
     user: z.string().trim(),
@@ -16,7 +19,7 @@ export const SmtpProfileSchema = z
   .strict();
 
 export const SmtpVerifySchema = SmtpProfileSchema.extend({
-  host: z.string().trim().min(1),
+  host: z.string().trim().min(1).refine(isSafeSmtpHost, safeSmtpHostMessage),
   fromEmail: z.string().trim().email(),
 });
 

@@ -86,6 +86,7 @@ afterAll(async () => {
 const routes = [
   ["GET", "/api/shift-reports"],
   ["POST", "/api/shift-reports"],
+  ["POST", "/api/shift-reports/seed-report/attendance-novelties"],
   ["PATCH", "/api/shift-reports/seed-report"],
   ["DELETE", "/api/shift-reports/seed-report"],
   ["GET", "/api/shift-reports/export/missing"],
@@ -95,6 +96,67 @@ describe("Spec 017 shift reports on Fastify", () => {
     () => fastify,
     () => token,
   );
+  it("persists concurrent attendance novelties in the open log and rejects closed shifts and Supervisor", async () => {
+    await prismaDirect.employee.create({
+      data: {
+        id: "novelty-employee",
+        name: "Ana",
+        rut: "11111111-1",
+        position: "Ops",
+        area: "Ops",
+        workdayType: "Artículo 22",
+      },
+    });
+    await prismaDirect.timeRecord.create({
+      data: {
+        id: "novelty-record",
+        employeeId: "novelty-employee",
+        employeeName: "Ana",
+        date: today(),
+        status: "Ausente",
+      },
+    });
+    expect((await http("POST", "/api/shift-reports", body())).status).toBe(200);
+    const url = "/api/shift-reports/shift-report/attendance-novelties";
+    const payload = (annotation: string) => ({
+      recordId: "novelty-record",
+      annotation,
+      time: "09:30",
+    });
+    const responses = await Promise.all([
+      http("POST", url, payload("Primera")),
+      http("POST", url, payload("Segunda")),
+    ]);
+    expect(responses.map((r) => r.status)).toEqual([200, 200]);
+    const listed = await http("GET", "/api/shift-reports?status=open");
+    expect(listed.body.data[0].logEntries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ recordId: "novelty-record", annotation: "Primera" }),
+        expect.objectContaining({ recordId: "novelty-record", annotation: "Segunda" }),
+      ]),
+    );
+    expect((await http("POST", "/api/shift-reports", body({ folio: "001" }))).status).toBe(409);
+    const entries = listed.body.data[0].logEntries;
+    const removedId = entries.find((entry: { recordId?: string }) => entry.recordId).id;
+    const deletion = await http("PATCH", "/api/shift-reports/shift-report", {
+      logEntries: entries.filter((entry: { id: string }) => entry.id !== removedId),
+      removedLogEntryIds: [removedId],
+    });
+    expect(deletion.status).toBe(200);
+    expect(deletion.body.logEntries).toHaveLength(2);
+    expect(deletion.body.logEntries.some((entry: { id: string }) => entry.id === removedId)).toBe(
+      false,
+    );
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    expect((await http("POST", url, payload("Denegada"))).status).toBe(403);
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+    await prismaDirect.shiftReport.update({
+      where: { id: "shift-report" },
+      data: { status: "closed" },
+    });
+    expect((await http("POST", url, payload("Cerrado"))).status).toBe(409);
+    expect(await prismaDirect.auditLog.count({ where: { action: "LOG_ENTRY_ADDED" } })).toBe(2);
+  });
   it("opens, reports structured conflict, closes and assigns next generated folio", async () => {
     const created = await http("POST", "/api/shift-reports", body());
     expect(created.status).toBe(200);
@@ -461,6 +523,75 @@ describe("Spec 017 shift reports on Fastify", () => {
     expect((await http("POST", "/api/shift-reports", body())).status).toBe(200);
     expect((await http("GET", "/api/shift-reports")).status).toBe(200);
     expect((await http("GET", "/api/shift-reports/export/missing")).status).toBe(404);
+  });
+
+  it("rejects Supervisor on all shift-reports routes, validates query params, filters search/date, keeps folio immutable, and sets deletedAt", async () => {
+    await seedReport({
+      id: "rep-alpha",
+      folio: "101",
+      shiftName: "Noche",
+      responsibleUser: "Carlos Perez",
+      date: new Date("2026-05-10T00:00:00.000Z"),
+    });
+    await seedReport({
+      id: "rep-beta",
+      folio: "102",
+      shiftName: "Mañana",
+      responsibleUser: "Maria Lopez",
+      date: new Date("2026-05-11T00:00:00.000Z"),
+    });
+
+    // Supervisor is excluded from shift-reports
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Supervisor" } });
+    for (const [method, url] of routes) {
+      const payload =
+        method === "POST" ? body() : method === "PATCH" ? { shiftName: "Patched" } : undefined;
+      expect((await http(method, url, payload)).status).toBe(403);
+    }
+
+    await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Administrador" } });
+
+    // Query validation
+    for (const badQuery of [
+      "page=0",
+      "pageSize=101",
+      "status=invalid",
+      "date=2026-02-30",
+      "since=NaN",
+    ]) {
+      expect((await http("GET", `/api/shift-reports?${badQuery}`)).status).toBe(400);
+    }
+
+    // Search & date filters
+    const bySearch = await http("GET", "/api/shift-reports?search=carlos");
+    expect(bySearch.status).toBe(200);
+    expect(bySearch.body.data.map((r: { id: string }) => r.id)).toEqual(["rep-alpha"]);
+
+    const byDate = await http("GET", "/api/shift-reports?date=2026-05-11");
+    expect(byDate.status).toBe(200);
+    expect(byDate.body.data.map((r: { id: string }) => r.id)).toEqual(["rep-beta"]);
+
+    // Optional folio on POST
+    const { folio: _omit, ...withoutFolio } = body({ id: "no-folio-post" });
+    const created = await http("POST", "/api/shift-reports", withoutFolio);
+    expect(created.status).toBe(200);
+    expect(created.body.folio).toBe("103");
+
+    // Immutable folio on PATCH
+    const patched = await http("PATCH", "/api/shift-reports/rep-alpha", {
+      folio: "999",
+      shiftName: "Noche Extendida",
+    });
+    expect(patched.status).toBe(200);
+    expect(patched.body.folio).toBe("101");
+
+    // Delete sets deletedAt and excludes from Excel export
+    expect((await http("DELETE", "/api/shift-reports/rep-alpha")).status).toBe(204);
+    const deletedRow = await prismaDirect.shiftReport.findUniqueOrThrow({
+      where: { id: "rep-alpha" },
+    });
+    expect(deletedRow.deletedAt).toBeInstanceOf(Date);
+    expect((await http("GET", "/api/shift-reports/export/rep-alpha")).status).toBe(404);
   });
   it("partially updates a shift report with PATCH and rejects missing report with 404", async () => {
     await seedReport({ id: "to-patch", folio: "050", shiftName: "OldShift" });

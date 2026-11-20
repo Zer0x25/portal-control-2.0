@@ -1,6 +1,6 @@
 import { calendarDateQuery } from "./dataQuery";
-import { isoDateSchema, numericString, z } from "./common";
-import { ApiResponseSchema } from "./responses.schemas";
+import { isoDateSchema, positiveIntString, z } from "./common";
+import { MAX_BULK_TIME_RECORDS } from "../../modules/records";
 
 export const TimeRecordWriteSchema = z
   .object({
@@ -97,7 +97,10 @@ export const AttendanceRecordResponseSchema = z
   })
   .openapi("AttendanceRecordResponse");
 
-export const BulkTimeRecordSchema = z.array(TimeRecordWriteSchema).openapi("BulkTimeRecord");
+export const BulkTimeRecordSchema = z
+  .array(TimeRecordWriteSchema)
+  .max(MAX_BULK_TIME_RECORDS)
+  .openapi("BulkTimeRecord");
 
 export const TimeRecordListResponseSchema = z
   .object({
@@ -114,8 +117,8 @@ export const PunchSchema = z
     source: z.string().optional(),
     forcedType: z.enum(["entrada", "salida", "inicioColacion", "finColacion"]).optional(),
     timestamp: z.string().optional(),
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
+    latitude: z.number().min(-90).max(90).optional(),
+    longitude: z.number().min(-180).max(180).optional(),
   })
   .openapi("Punch");
 
@@ -125,6 +128,9 @@ export const PunchResponseSchema = z
     action: z.string(),
     record: AttendanceRecordResponseSchema.optional(),
     timestamp: z.string(),
+    exceptionApplied: z.boolean().optional(),
+    exceptionType: z.string().nullable().optional(),
+    requiresReview: z.boolean().optional(),
   })
   .openapi("PunchResponse");
 
@@ -133,10 +139,21 @@ export const CorrectionRequestSchema = z
     employeeId: z.string(),
     timeRecordId: z.string(),
     recordField: z.enum(["entrada", "inicioColacion", "finColacion", "salida"]),
-    currentValue: z.string().optional(),
+    originalValue: z.string().nullable().optional(),
+    currentValue: z
+      .string()
+      .nullable()
+      .optional()
+      .describe(
+        "Alias anterior de originalValue; el servidor captura el valor actual de la jornada.",
+      ),
     requestedValue: z.iso.datetime({ offset: true }),
-    reason: z.string(),
-    attachment: z.any().optional(),
+    reason: z.string().trim().min(1, "El motivo es obligatorio."),
+    attachment: z.unknown().optional().describe("No admitido: los adjuntos están deshabilitados."),
+  })
+  .refine((data) => data.attachment === undefined, {
+    message: "Los adjuntos no están disponibles.",
+    path: ["attachment"],
   })
   .refine((data) => new Date(data.requestedValue).getTime() <= Date.now(), {
     message: "No se puede solicitar una corrección con fecha futura.",
@@ -161,14 +178,69 @@ export const UpdateCorrectionStatusSchema = z
   })
   .openapi("UpdateCorrectionStatus");
 
-export const CorrectionRequestListResponseSchema = ApiResponseSchema.extend({
-  data: z.array(CorrectionRequestSchema),
-}).openapi("CorrectionRequestListResponse");
+export const CorrectionQuerySchema = z.object({
+  since: z
+    .string()
+    .regex(/^\d+$/)
+    .refine((value) => Number.isSafeInteger(Number(value)))
+    .optional(),
+  limit: z
+    .string()
+    .regex(/^[1-9]\d*$/)
+    .refine((value) => Number.isSafeInteger(Number(value)) && Number(value) <= 1000)
+    .optional(),
+  offset: z
+    .string()
+    .regex(/^\d+$/)
+    .refine((value) => Number.isSafeInteger(Number(value)))
+    .optional(),
+  status: z.enum(["pending", "approved", "rejected"]).optional(),
+});
 
+export const CorrectionRequestRecordSchema = z
+  .object({
+    id: z.string(),
+    employeeId: z.string(),
+    timeRecordId: z.string(),
+    recordField: z.string(),
+    originalValue: z.string(),
+    requestedValue: z.string(),
+    reason: z.string(),
+    status: z.string(),
+    rejectionReason: z.string().nullable(),
+    resolvedBy: z.string().nullable(),
+    resolvedAt: z.iso.datetime().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
+    isDeleted: z.boolean(),
+    deletedAt: z.iso.datetime().nullable(),
+  })
+  .openapi("CorrectionRequestRecord");
+
+export const CorrectionRequestListResponseSchema = z
+  .object({
+    requests: z.array(
+      CorrectionRequestRecordSchema.extend({ lastModified: z.number(), syncStatus: z.string() }),
+    ),
+    total: z.number().int(),
+  })
+  .openapi("CorrectionRequestListResponse");
 export const TimeRecordQuerySchema = z.object({
-  page: numericString.optional(),
-  pageSize: numericString.optional(),
-  since: numericString.optional(),
+  page: positiveIntString.optional(),
+  pageSize: z
+    .string()
+    .transform((val) => Number(val))
+    .refine((val) => Number.isInteger(val) && (val >= 1 || val === -1), {
+      message: "pageSize debe ser un entero >= 1 o -1",
+    })
+    .optional(),
+  since: z
+    .string()
+    .transform((val) => Number(val))
+    .refine((val) => Number.isFinite(val) && val >= 0, {
+      message: "since debe ser un timestamp numérico válido",
+    })
+    .optional(),
   desde: z.string().optional(),
   hasta: z.string().optional(),
   name: z.string().optional(),
@@ -176,6 +248,7 @@ export const TimeRecordQuerySchema = z.object({
   workdayType: z.string().optional(),
   status: z.string().optional(),
   employeeId: z.string().optional(),
+  showAnomalies: z.union([z.boolean(), z.enum(["true", "false"])]).optional(),
 });
 
 export const DailyAttendanceQuerySchema = z.object({
@@ -183,6 +256,22 @@ export const DailyAttendanceQuerySchema = z.object({
   hasta: z.string().optional(),
   employeeId: z.string().optional(),
 });
+
+export const RecordExportQuerySchema = z
+  .object({
+    startDate: calendarDateQuery,
+    endDate: calendarDateQuery,
+    format: z.enum(["json", "csv", "xml", "excel"]).optional(),
+    employeeId: z.string().optional(),
+    area: z.string().optional(),
+    cargo: z.string().optional(),
+    name: z.string().optional(),
+    workdayType: z.string().optional(),
+    status: z.string().optional(),
+    showAnomalies: z.enum(["true", "false"]).optional(),
+    matchingView: z.enum(["true", "false"]).optional(),
+  })
+  .refine((value) => value.startDate <= value.endDate, "Rango de fechas invertido");
 
 export const DailyAttendanceRowSchema = z
   .object({
@@ -201,6 +290,7 @@ export const IntegrityVerifyQuerySchema = z.object({
   employeeId: z.string().min(1, "ID de empleado es requerido"),
   from: isoDateSchema("Formato de fecha inválido"),
   to: isoDateSchema("Formato de fecha inválido"),
+  limit: z.coerce.number().int().positive().optional(),
 });
 
 export const ExportQuerySchema = z
@@ -209,9 +299,10 @@ export const ExportQuerySchema = z
     endDate: calendarDateQuery,
     area: z.string().optional(),
     cargo: z.string().optional(),
+    workdayType: z.string().optional(),
     employeeId: z.string().optional(),
     viewMode: z.enum(["month", "week", "day"]).optional(),
-    mode: z.enum(["summary", "detailed", "compiled_detailed"]).optional(),
+    mode: z.enum(["summary", "compiled_detailed"]).optional(),
   })
   .refine((value) => value.startDate <= value.endDate, "Rango de fechas invertido");
 

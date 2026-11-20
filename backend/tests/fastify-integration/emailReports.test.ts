@@ -96,6 +96,17 @@ describe("Spec019 email/reports on Fastify", () => {
     expect((await http("POST", "/api/email/config", { ...multi, host: "obsolete" })).status).toBe(
       400,
     );
+    expect(
+      (
+        await http("POST", "/api/email/config", {
+          ...wireConfig,
+          profiles: [{ ...profile, host: "169.254.169.254" }, profile, profile],
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (await http("POST", "/api/email/verify", { ...profile, host: "127.0.0.1" })).status,
+    ).toBe(400);
     const oldShape = {
       host: profile.host,
       port: 587,

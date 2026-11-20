@@ -46,15 +46,15 @@ describe("useTimeRecordRowController", () => {
         externalEdits: [
           {
             id: "l1",
-            action: "Time Record Edited",
+            action: "TIME_RECORD_EDITED",
             actorUsername: "admin",
             timestamp: "2026-03-10T10:00:00.000Z",
             lastModified: Date.now(),
             syncStatus: "synced",
             isDeleted: false,
             details: {
-              fieldEdited: "entrada",
-              oldValue: "2026-03-10T08:00:00.000Z",
+              oldValue: { entrada: "2026-03-10T08:00:00.000Z", salida: null },
+              newValue: { entrada: "2026-03-10T08:15:00.000Z", salida: null },
             },
           } as unknown as AuditLog,
         ],
@@ -77,6 +77,7 @@ describe("useTimeRecordRowController", () => {
 
     const editInfo = result.current.getCellEditInfo("entrada");
     expect(editInfo?.actor).toBe("admin");
+    expect(result.current.getCellEditInfo("salida")).toBeUndefined();
     expect(result.current.pendingRequest?.id).toBe("c1");
   });
 });

@@ -61,9 +61,9 @@ export class SecurityAuditService {
     });
 
     if (suspiciousRecords.length > 0) {
-      console.warn(
-        `[🚨] SEGURIDAD: Se detectaron ${suspiciousRecords.length} modificaciones en periodos BLOQUEADOS.`,
-      );
+      logger.warn("Modificaciones detectadas en periodos bloqueados", {
+        count: suspiciousRecords.length,
+      });
 
       const VIOLATION_THRESHOLD = 10;
 

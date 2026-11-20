@@ -2,9 +2,11 @@ import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, expect, it, afterEach } from "vitest";
+import { http, HttpResponse } from "msw";
 
 import { useKpiCalculations } from "../../hooks/useKpiCalculations";
 import { queryKeys } from "../../lib/queryKeys";
+import { server } from "../mocks/server";
 import { recordRequests, type RequestRecorder } from "../mocks/requests";
 import type { Employee } from "../../types";
 
@@ -117,5 +119,27 @@ describe("useKpiCalculations sobre MSW (spec 035 T4)", () => {
 
     expect(recorder.total()).toBe(0);
     expect(result.current.isLoadingKpis).toBe(false);
+  });
+
+  it("expone isError y error cuando POST /api/kpis/summary falla con 500", async () => {
+    server.use(
+      http.post("http://localhost:4000/api/kpis/summary", () =>
+        HttpResponse.json({ message: "Internal Server Error" }, { status: 500 }),
+      ),
+    );
+    const { wrapper } = setup();
+
+    const { result } = renderHook(() => useKpiCalculations(), { wrapper });
+
+    await act(async () => {
+      result.current.calculateKpis({
+        employees: [employee],
+        startDate: "2026-03-01",
+        endDate: "2026-03-31",
+      });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error).toBeInstanceOf(Error);
   });
 });

@@ -6,6 +6,8 @@ export {
   type UserFlowDependencies,
   type CreateUserDto,
   type UpdateUserDto,
+  type UpdateUserActorContext,
   type UserQuery,
+  type UserWrite,
 } from "./application/flows";
 export { usersPlugin } from "./http/routes";

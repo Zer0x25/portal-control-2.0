@@ -5,6 +5,7 @@ export interface LogbookEntryItem {
   time: string;
   annotation: string;
   timestamp: number;
+  recordId?: string;
 }
 
 export interface SupplierEntry {
@@ -30,6 +31,7 @@ export interface ShiftReport extends Syncable {
   endTime?: string;
   status: "open" | "closed";
   logEntries: LogbookEntryItem[];
+  removedLogEntryIds?: string[];
   supplierEntries: SupplierEntry[];
   reportCreatedAt: string; // ISO String
   updatedAt: string; // ISO String

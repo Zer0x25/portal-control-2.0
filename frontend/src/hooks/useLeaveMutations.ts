@@ -17,6 +17,7 @@ export const useLeaveMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.leaves() });
       queryClient.invalidateQueries({ queryKey: queryKeys.calendarMatrix() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
       addToast("Ausencia registrada exitosamente", "success");
     },
     onError: (error: Error) => {
@@ -29,6 +30,7 @@ export const useLeaveMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.leaves() });
       queryClient.invalidateQueries({ queryKey: queryKeys.calendarMatrix() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.timeRecords() });
       addToast("Ausencia finalizada exitosamente", "success");
     },
     onError: (error: Error) => {

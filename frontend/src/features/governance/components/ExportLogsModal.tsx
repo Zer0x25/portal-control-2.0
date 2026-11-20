@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useToasts } from "../../../hooks/useToasts";
 import Button from "../../../components/ui/Button";
 import {
@@ -27,6 +27,17 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
   const [endDate, setEndDate] = useState(today);
   const [isExporting, setIsExporting] = useState(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const handleExport = async (format: AuditLogExportFormat) => {
     if (!startDate || !endDate) {
       addToast("Por favor, seleccione un rango de fechas completo.", "warning");
@@ -54,7 +65,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
     addToast(`Iniciando exportación a ${format.toUpperCase()}...`, "info");
 
     try {
-      startDownload(startDate, endDate, format);
+      await startDownload(startDate, endDate, format);
 
       addToast(`Descarga de ${format.toUpperCase()} iniciada.`, "success");
       onClose();
@@ -75,6 +86,9 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
         />
 
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-logs-modal-title"
           className="relative w-full max-w-lg overflow-visible rounded-2xl border border-token-border-technical bg-token-surface-card p-8 shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
           onClick={(e) => e.stopPropagation()}
         >
@@ -84,7 +98,10 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-token-accent-brand/60">
                 Seguridad de Datos
               </p>
-              <h3 className="text-2xl font-black text-token-text-primary uppercase tracking-tight">
+              <h3
+                id="export-logs-modal-title"
+                className="text-2xl font-black text-token-text-primary uppercase tracking-tight"
+              >
                 Exportar Auditoría
               </h3>
             </div>

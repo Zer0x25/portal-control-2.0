@@ -52,7 +52,7 @@ describe("useQuickActionModalController", () => {
   });
 
   it("locks record and prioritizes accounting lock tooltip", () => {
-    useAuthMock.mockReturnValue({ currentUser: { role: "Supervisor Elevado" } });
+    useAuthMock.mockReturnValue({ currentUser: { role: "Supervisor_Elevado" } });
     useAccountingLockDateQueryMock.mockReturnValue({ data: "2026-03-10" });
     useControlInternoEnabledQueryMock.mockReturnValue({ data: true });
 
@@ -71,6 +71,7 @@ describe("useQuickActionModalController", () => {
       }),
     );
 
+    expect(result.current.allowEdit).toBe(true);
     expect(result.current.isLocked).toBe(true);
     expect(result.current.finalTooltip).toBe("Registro bloqueado por cierre contable.");
   });

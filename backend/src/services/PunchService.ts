@@ -103,6 +103,47 @@ export class PunchService {
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employeeId}))`;
           const employee = await tx.employee.findUnique({ where: { id: employeeId } });
           if (!employee) throw new Error("EMPLOYEE_NOT_FOUND");
+          if (employee.status !== "Activo") throw new Error("EMPLOYEE_INACTIVE");
+
+          // Atomic 15s cooldown based on actual punch timestamps (never updatedAt).
+          const recentPunches = await tx.timeRecord.findMany({
+            where: {
+              employeeId,
+              isDeleted: false,
+              OR: [
+                { entrada: { not: null } },
+                { inicioColacion: { not: null } },
+                { finColacion: { not: null } },
+                { salida: { not: null } },
+              ],
+            },
+            orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+            take: 5,
+            select: {
+              entrada: true,
+              inicioColacion: true,
+              finColacion: true,
+              salida: true,
+            },
+          });
+          let latestPunchMs = -Infinity;
+          for (const item of recentPunches) {
+            for (const fieldValue of [
+              item.entrada,
+              item.inicioColacion,
+              item.finColacion,
+              item.salida,
+            ]) {
+              if (!fieldValue) continue;
+              const parsedMs = Date.parse(fieldValue);
+              if (Number.isFinite(parsedMs) && parsedMs > latestPunchMs) {
+                latestPunchMs = parsedMs;
+              }
+            }
+          }
+          if (latestPunchMs >= now.getTime() - 15000) {
+            throw new Error("PUNCH_COOLDOWN");
+          }
 
           // Bloqueo por licencia de día completo (spec 030): una licencia,
           // vacación o permiso vigente hoy impide marcar. El marcaje no debe
@@ -125,11 +166,23 @@ export class PunchService {
               isDeleted: false,
               OR: [
                 {
+                  date: serverDate,
                   status: {
-                    notIn: ["Completado", "Ausente", "Feriado"],
+                    notIn: ["Completado", "Feriado"],
                   },
                 },
-                { status: "Ausente", date: serverDate },
+                {
+                  date: { lt: serverDate },
+                  status: {
+                    notIn: [
+                      "Completado",
+                      "Ausente",
+                      "Feriado",
+                      "AnomaliaManual",
+                      "SinMarcajeTurnoAsignado",
+                    ],
+                  },
+                },
               ],
             },
             orderBy: { updatedAt: "desc" },
@@ -142,7 +195,11 @@ export class PunchService {
           if (record && record.date !== serverDate) {
             if (record.date > serverDate) {
               record = null;
-            } else if (LEAVE_DAY_STATUSES.includes(record.status) && !hasAnyPunch(record)) {
+            } else if (
+              record.status === "AnomaliaManual" ||
+              record.status === "SinMarcajeTurnoAsignado" ||
+              (LEAVE_DAY_STATUSES.includes(record.status) && !hasAnyPunch(record))
+            ) {
               record = null;
             }
           }
@@ -154,6 +211,15 @@ export class PunchService {
               data: {
                 status: "AnomaliaManual",
                 salida: null,
+                justification: JSON.stringify({
+                  type: "SYSTEM_ANOMALY",
+                  reason: "AUTO_CLOSE_EXCEEDED_14H",
+                  comment: "Cerrado automáticamente por exceder el límite de 14 horas de jornada.",
+                  metadata: {
+                    autoClosedAt: now.toISOString(),
+                    threshold: 14,
+                  },
+                }),
                 updatedAt: new Date(),
               },
             });
@@ -247,8 +313,15 @@ export class PunchService {
             if (updateField === "entrada") {
               const existingRecord = await tx.timeRecord.findFirst({
                 where: { employeeId, date: serverDate, entrada: { not: null }, isDeleted: false },
+                select: { id: true, status: true },
               });
-              if (existingRecord) throw new Error("ALREADY_PUNCHED_IN");
+              if (existingRecord) {
+                throw new Error(
+                  existingRecord.status === "Completado"
+                    ? "WORKDAY_FINISHED"
+                    : "ALREADY_PUNCHED_IN",
+                );
+              }
             }
 
             let snapshotData: ScheduleSnapshot = {};
@@ -279,8 +352,8 @@ export class PunchService {
                 [updateField]: serverTime,
                 status: nextStatus,
                 source: source || "KIOSK_BACKEND",
-                entradaLatitude: latitude || null,
-                entradaLongitude: longitude || null,
+                entradaLatitude: latitude ?? null,
+                entradaLongitude: longitude ?? null,
                 ...snapshotData,
               },
             });
@@ -317,12 +390,28 @@ export class PunchService {
             }
 
             if (autoJustification) {
-              dataToUpdate.justification = JSON.stringify(autoJustification);
+              const existingJustification = parseJustification(record.justification);
+              const existingMetadata = isRecord(existingJustification.metadata)
+                ? existingJustification.metadata
+                : undefined;
+              dataToUpdate.justification = JSON.stringify(
+                existingMetadata?.replacedAbsenceByPunch
+                  ? {
+                      ...autoJustification,
+                      metadata: {
+                        replacedAbsenceByPunch: existingMetadata.replacedAbsenceByPunch,
+                        replacedAt: existingMetadata.replacedAt,
+                        replacedBy: existingMetadata.replacedBy,
+                        replacedSource: existingMetadata.replacedSource,
+                      },
+                    }
+                  : autoJustification,
+              );
             }
 
             if (updateField === "entrada" || updateField === "salida") {
-              dataToUpdate[`${updateField}Latitude`] = latitude || null;
-              dataToUpdate[`${updateField}Longitude`] = longitude || null;
+              dataToUpdate[`${updateField}Latitude`] = latitude ?? null;
+              dataToUpdate[`${updateField}Longitude`] = longitude ?? null;
             }
 
             finalRecord = await tx.timeRecord.update({
@@ -416,7 +505,13 @@ export class PunchService {
           await emailService.notifyTardiness(
             employeeName,
             schedule.startTime,
-            now.toLocaleTimeString(),
+            now.toLocaleTimeString("es-CL", {
+              timeZone: "America/Santiago",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            }),
             delay,
           );
       }

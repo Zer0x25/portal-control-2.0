@@ -113,10 +113,12 @@ export class ConflictError extends AppError {
 /** Operational throttling error shared by HTTP adapters. */
 export class RateLimitError extends AppError {
   public readonly retryAfter: number;
+  public readonly actorUsername?: string;
 
-  constructor(retryAfter: number) {
+  constructor(retryAfter: number, actorUsername?: string) {
     super("Demasiados intentos MFA. Intente más tarde.", 429, "MFA_RATE_LIMITED");
     this.retryAfter = Math.max(1, Math.ceil(retryAfter));
+    this.actorUsername = actorUsername;
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }

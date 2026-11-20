@@ -56,7 +56,7 @@ export const employeeService = {
    * Obtiene lista de empleados para modo Kiosko.
    */
   async getKioskEmployees(): Promise<Employee[]> {
-    const response = await apiClient.get("/api/employees/kiosk");
+    const response = await apiClient.get("/api/employees/kiosk", { skipAuthHeader: true });
     return response as unknown as Employee[];
   },
 
@@ -77,6 +77,18 @@ export const employeeService = {
     const response = await apiClient.put("/api/employees/{id}", {
       path: { id },
       body: employee as unknown as EmployeeSchema,
+    });
+    return response as unknown as Employee;
+  },
+
+  /**
+   * Actualiza exclusivamente el PIN desde sesión Kiosko (`kioskToken`).
+   */
+  async updateKioskPin(id: string, pin: string): Promise<Employee> {
+    const response = await apiClient.put("/api/employees/{id}", {
+      path: { id },
+      body: { pin } as unknown as EmployeeSchema,
+      authScope: "kiosk",
     });
     return response as unknown as Employee;
   },

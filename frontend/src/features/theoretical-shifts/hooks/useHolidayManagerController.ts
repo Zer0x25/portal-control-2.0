@@ -57,36 +57,38 @@ export const useHolidayManagerController = () => {
   /** Schema con la regla que depende del contexto (fecha ya ocupada). */
   const schema = buildHolidayFormSchema({ existingDates });
 
-  const form = useAppForm<HolidayFormValues, { name: string; date: string; type: Holiday["type"] }>(
-    {
-      schema,
-      defaultValues: { name: "", date: "", type: "Nacional" },
-      /**
-       * El payload viaja tal cual lo recibia el backend antes de la
-       * migracion (spec 036 T13): sin campos derivados.
-       */
-      serialize: (values) => ({
-        name: values.name,
-        date: values.date,
-        type: values.type,
-      }),
-      onSubmit: async (values) => {
-        if (editingHoliday) {
-          await createHoliday({ ...values, id: editingHoliday.id });
-        } else {
-          await createHoliday(values);
-        }
-        handleCancelForm();
-      },
+  const form = useAppForm<
+    HolidayFormValues,
+    { name: string; date: string; type: Holiday["type"]; isRenounceable: boolean }
+  >({
+    schema,
+    defaultValues: { name: "", date: "", type: "Nacional", isRenounceable: false },
+    /**
+     * El payload viaja tal cual lo recibia el backend antes de la
+     * migracion (spec 036 T13): sin campos derivados.
+     */
+    serialize: (values) => ({
+      name: values.name,
+      date: values.date,
+      type: values.type,
+      isRenounceable: Boolean(values.isRenounceable),
+    }),
+    onSubmit: async (values) => {
+      if (editingHoliday) {
+        await createHoliday({ ...values, id: editingHoliday.id });
+      } else {
+        await createHoliday(values);
+      }
+      handleCancelForm();
     },
-  );
+  });
 
   const { setValue, reset } = form;
 
   const handleCancelForm = () => {
     setEditingHoliday(null);
     setIsFormVisible(false);
-    reset({ name: "", date: "", type: "Nacional" });
+    reset({ name: "", date: "", type: "Nacional", isRenounceable: false });
   };
 
   const handleEditClick = (holiday: Holiday) => {
@@ -104,6 +106,7 @@ export const useHolidayManagerController = () => {
       setValue("name", editingHoliday.name);
       setValue("date", editingHoliday.date);
       setValue("type", editingHoliday.type);
+      setValue("isRenounceable", Boolean(editingHoliday.isRenounceable));
     }
   }, [editingHoliday, setValue]);
 

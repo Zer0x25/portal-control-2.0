@@ -36,12 +36,19 @@ describe("Monthly KPI cache contract", () => {
       expect(readMonthlyBreakdown(raw, 2026, 9, "42")).toBeNull();
     },
   );
-  it("rejects an obsolete source generation and version 1", () => {
+  it("rejects an obsolete source generation and previous cache versions", () => {
     const rows = days(2026, 9);
     expect(readMonthlyBreakdown(serializeMonthlyBreakdown(rows, "41"), 2026, 9, "42")).toBeNull();
-    expect(
-      readMonthlyBreakdown(JSON.stringify({ version: 1, days: rows }), 2026, 9, "42"),
-    ).toBeNull();
+    for (const version of [1, 2]) {
+      expect(
+        readMonthlyBreakdown(
+          JSON.stringify({ version, sourceRevision: "42", days: rows }),
+          2026,
+          9,
+          "42",
+        ),
+      ).toBeNull();
+    }
   });
   it("rejects missing, duplicate, wrong-month and malformed days", () => {
     const rows = days(2026, 9);
@@ -54,7 +61,7 @@ describe("Monthly KPI cache contract", () => {
     ]) {
       expect(
         readMonthlyBreakdown(
-          JSON.stringify({ version: 2, sourceRevision: "42", days: invalid }),
+          JSON.stringify({ version: 3, sourceRevision: "42", days: invalid }),
           2026,
           9,
           "42",

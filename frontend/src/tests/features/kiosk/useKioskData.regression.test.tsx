@@ -1,16 +1,22 @@
+import React from "react";
+import { createHash } from "node:crypto";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { authTokenStore } from "../../../services/authToken";
+import { ApiHttpError } from "../../../services/apiClient";
 import { useKioskData } from "../../../features/kiosk/hooks/useKioskData";
 import { server } from "../../mocks/server";
 import { http, HttpResponse } from "msw";
 
-const { addToastMock, punchMutateAsyncMock, geolocationMock, loggerErrorMock } = vi.hoisted(() => ({
-  addToastMock: vi.fn(),
-  punchMutateAsyncMock: vi.fn(),
-  geolocationMock: vi.fn(),
-  loggerErrorMock: vi.fn(),
-}));
+const { addToastMock, punchMutateAsyncMock, geolocationMock, loggerErrorMock, updateKioskPinMock } =
+  vi.hoisted(() => ({
+    addToastMock: vi.fn(),
+    punchMutateAsyncMock: vi.fn(),
+    geolocationMock: vi.fn(),
+    loggerErrorMock: vi.fn(),
+    updateKioskPinMock: vi.fn(async () => true),
+  }));
 
 const employeeK1 = {
   id: "k1",
@@ -19,19 +25,21 @@ const employeeK1 = {
   position: "Operador",
   workdayType: "Full",
   status: "Activo",
-  rut: "12.345.678-5",
+  rutHash: createHash("sha256").update("12345678-5").digest("hex"),
   isPinBlocked: false,
 };
 
+const navigateMock = vi.fn();
+
 vi.mock("react-router", () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
 }));
 
 vi.mock("../../../hooks/useEmployees", () => ({
   useEmployees: () => ({
     activeEmployees: [employeeK1],
     isLoadingEmployees: false,
-    updateEmployee: vi.fn(async () => true),
+    updateKioskPin: updateKioskPinMock,
   }),
 }));
 
@@ -65,7 +73,16 @@ vi.mock("../../../utils/indexedDB", () => ({
 }));
 
 describe("useKioskData (spec 029)", () => {
+  let queryClient: QueryClient;
+
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
     authTokenStore.setToken("fixture");
     vi.clearAllMocks();
     geolocationMock.mockResolvedValue({ latitude: -33.4, longitude: -70.6 });
@@ -74,6 +91,9 @@ describe("useKioskData (spec 029)", () => {
       http.post("http://localhost:4000/api/auth/kiosk-login", () =>
         HttpResponse.json({ success: true, message: "ok" }),
       ),
+      http.post("http://localhost:4000/api/auth/logout", () =>
+        HttpResponse.json({ message: "ok" }),
+      ),
       http.get("http://localhost:4000/api/records", () =>
         HttpResponse.json({ data: [], total: 0, page: 1, totalPages: 1 }),
       ),
@@ -81,18 +101,20 @@ describe("useKioskData (spec 029)", () => {
   });
 
   afterEach(() => {
+    queryClient.clear();
     authTokenStore.removeToken();
+    authTokenStore.removeKioskToken();
     server.resetHandlers();
   });
 
-  it("auditoria v8.31.2: la entrada por teclado del RUT normaliza los puntos del rut almacenado", async () => {
-    const { result } = renderHook(() => useKioskData());
+  it("auditoria v8.31.2: la entrada por teclado del RUT compara contra rutHash SHA-256", async () => {
+    const { result } = renderHook(() => useKioskData(), { wrapper });
 
     act(() => {
       result.current.setRutInput("123456785");
     });
-    act(() => {
-      result.current.handleRutConfirm();
+    await act(async () => {
+      await result.current.handleRutConfirm();
     });
 
     await waitFor(() => {
@@ -100,8 +122,8 @@ describe("useKioskData (spec 029)", () => {
     });
   });
 
-  it("AC1: reenvía latitude/longitude al marcar inicio de jornada", async () => {
-    const { result } = renderHook(() => useKioskData());
+  it("AC1: reenvía latitude/longitude y source KIOSK al marcar inicio de jornada", async () => {
+    const { result } = renderHook(() => useKioskData(), { wrapper });
 
     act(() => {
       result.current.handleEmployeeSelect(employeeK1 as never);
@@ -118,6 +140,7 @@ describe("useKioskData (spec 029)", () => {
     expect(punchMutateAsyncMock).toHaveBeenCalledWith(
       expect.objectContaining({
         employeeId: "k1",
+        source: "KIOSK",
         forcedType: "entrada",
         latitude: -33.4,
         longitude: -70.6,
@@ -128,7 +151,7 @@ describe("useKioskData (spec 029)", () => {
 
   it("AC1b: sin posición igual marca (sin coords) y avisa éxito", async () => {
     geolocationMock.mockResolvedValue(null);
-    const { result } = renderHook(() => useKioskData());
+    const { result } = renderHook(() => useKioskData(), { wrapper });
 
     act(() => {
       result.current.handleEmployeeSelect(employeeK1 as never);
@@ -142,7 +165,7 @@ describe("useKioskData (spec 029)", () => {
     });
 
     expect(punchMutateAsyncMock).toHaveBeenCalledWith(
-      expect.objectContaining({ employeeId: "k1", forcedType: "entrada" }),
+      expect.objectContaining({ employeeId: "k1", source: "KIOSK", forcedType: "entrada" }),
     );
     const lastCall = punchMutateAsyncMock.mock.calls[punchMutateAsyncMock.mock.calls.length - 1][0];
     expect(lastCall).not.toHaveProperty("latitude");
@@ -153,7 +176,7 @@ describe("useKioskData (spec 029)", () => {
   it("AC2: fallo de punch muestra toast y usa logger (no console.error)", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     punchMutateAsyncMock.mockRejectedValueOnce(new Error("network down"));
-    const { result } = renderHook(() => useKioskData());
+    const { result } = renderHook(() => useKioskData(), { wrapper });
 
     act(() => {
       result.current.handleEmployeeSelect(employeeK1 as never);
@@ -166,7 +189,7 @@ describe("useKioskData (spec 029)", () => {
       await result.current.handleClockingAction("jornada_inicio");
     });
 
-    expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/error/i), "error");
+    expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/network down/i), "error");
     expect(loggerErrorMock).toHaveBeenCalled();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
@@ -178,7 +201,7 @@ describe("useKioskData (spec 029)", () => {
         "El empleado tiene licencia, vacaciones o permiso aprobado para hoy. Elimine la licencia con un supervisor para poder marcar.",
       ),
     );
-    const { result } = renderHook(() => useKioskData());
+    const { result } = renderHook(() => useKioskData(), { wrapper });
 
     act(() => {
       result.current.handleEmployeeSelect(employeeK1 as never);
@@ -192,5 +215,174 @@ describe("useKioskData (spec 029)", () => {
     });
 
     expect(addToastMock).toHaveBeenCalledWith(expect.stringMatching(/licencia/i), "error");
+  });
+
+  it("aisla kioskToken de authToken al verificar PIN, consultar registros, actualizar PIN y limpiar en resetState/onLogout/unmount", async () => {
+    authTokenStore.setToken("portal-jwt");
+    let recordsAuthHeader: string | null = null;
+    let recordsEmployeeFilter: string | null = null;
+
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json({ success: true, message: "ok", token: "kiosk-jwt" }),
+      ),
+      http.get("http://localhost:4000/api/records", ({ request }) => {
+        recordsAuthHeader = request.headers.get("authorization");
+        recordsEmployeeFilter = new URL(request.url).searchParams.get("employeeId");
+        return HttpResponse.json({ data: [], total: 0, page: 1, totalPages: 1 });
+      }),
+    );
+
+    const { result, unmount } = renderHook(() => useKioskData(), { wrapper });
+
+    act(() => {
+      result.current.handleEmployeeSelect(employeeK1 as never);
+      result.current.setPinInput("2468");
+    });
+
+    await waitFor(() => {
+      expect(result.current.step).toBe("actions");
+    });
+
+    expect(authTokenStore.getKioskToken()).toBe("kiosk-jwt");
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+    expect(recordsAuthHeader).toBe("Bearer kiosk-jwt");
+    expect(recordsEmployeeFilter).toBe("k1");
+
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+    expect(punchMutateAsyncMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        employeeId: "k1",
+        authScope: "kiosk",
+      }),
+    );
+
+    act(() => {
+      result.current.setNewPin("1357");
+      result.current.setConfirmNewPin("1357");
+    });
+    await act(async () => {
+      await result.current.handleSetNewPin();
+    });
+    expect(updateKioskPinMock).toHaveBeenCalledWith("k1", "1357");
+
+    act(() => {
+      result.current.resetState();
+    });
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+
+    authTokenStore.setKioskToken("kiosk-jwt-2");
+    await act(async () => {
+      await result.current.onLogout();
+    });
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+    expect(navigateMock).toHaveBeenCalled();
+
+    authTokenStore.setKioskToken("kiosk-jwt-3");
+    unmount();
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(authTokenStore.getToken()).toBe("portal-jwt");
+  });
+
+  it("redirige a change_pin si mustChangePin === true y bloquea PIN igual al prefijo de RUT", async () => {
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json({
+          success: true,
+          message: "ok",
+          token: "kiosk-jwt",
+          mustChangePin: true,
+        }),
+      ),
+    );
+
+    const { result } = renderHook(() => useKioskData(), { wrapper });
+
+    act(() => {
+      result.current.setRutInput("123456785");
+    });
+    await act(async () => {
+      await result.current.handleRutConfirm();
+    });
+    act(() => {
+      result.current.setPinInput("1234");
+    });
+
+    await waitFor(() => {
+      expect(result.current.step).toBe("change_pin");
+    });
+
+    act(() => {
+      result.current.setNewPin("1234");
+      result.current.setConfirmNewPin("1234");
+    });
+    await act(async () => {
+      await result.current.handleSetNewPin();
+    });
+
+    expect(updateKioskPinMock).not.toHaveBeenCalled();
+    expect(addToastMock).toHaveBeenCalledWith(
+      expect.stringMatching(/primeros 4 dígitos/i),
+      "error",
+    );
+  });
+
+  it("invalida employeesKiosk en bloqueo 403 y redirige a rut_input en punch 401", async () => {
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    server.use(
+      http.post("http://localhost:4000/api/auth/kiosk-login", () =>
+        HttpResponse.json(
+          { message: "PIN bloqueado por intentos", code: "PIN_BLOCKED" },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    const { result } = renderHook(() => useKioskData(), { wrapper });
+
+    act(() => {
+      result.current.handleEmployeeSelect(employeeK1 as never);
+      result.current.setPinInput("0000");
+    });
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["employeesKiosk"] });
+      expect(result.current.step).toBe("rut_input");
+    });
+
+    authTokenStore.setKioskToken("expired-jwt");
+    punchMutateAsyncMock.mockRejectedValueOnce(
+      new ApiHttpError("Token expirado", 401, "/api/records/punch", { code: "UNAUTHORIZED" }),
+    );
+    act(() => {
+      result.current.handleEmployeeSelect(employeeK1 as never);
+    });
+    await act(async () => {
+      await result.current.handleClockingAction("jornada_inicio");
+    });
+
+    expect(authTokenStore.getKioskToken()).toBeNull();
+    expect(result.current.step).toBe("rut_input");
+    expect(addToastMock).toHaveBeenCalledWith("Sesión expirada. Ingrese nuevamente.", "error");
+  });
+
+  it("soporta teclado físico para RUT y PIN", async () => {
+    const { result } = renderHook(() => useKioskData(), { wrapper });
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "1" }));
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "2" }));
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "k" }));
+    });
+    expect(result.current.rutInput).toBe("12K");
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace" }));
+    });
+    expect(result.current.rutInput).toBe("12");
   });
 });

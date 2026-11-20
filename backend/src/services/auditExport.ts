@@ -1,4 +1,5 @@
 import { redactAuditFields, type AuditQuery } from "../modules/audit";
+import { endOfBusinessDayCL, isBusinessDateCL, parseBusinessDateCL } from "../utils/timePolicy";
 import type { ExcelHttpStream } from "../utils/httpStream";
 export async function streamAuditExport(res: ExcelHttpStream, filters: AuditQuery) {
   const { startDate, endDate, format = "json", actor, category, severity, outcome } = filters;
@@ -36,13 +37,12 @@ export async function streamAuditExport(res: ExcelHttpStream, filters: AuditQuer
 
   if (startDate) {
     whereClauses.push(`timestamp >= $${paramIndex}`);
-    params.push(new Date(startDate));
+    params.push(isBusinessDateCL(startDate) ? parseBusinessDateCL(startDate) : new Date(startDate));
     paramIndex++;
   }
 
   if (endDate) {
-    const end = new Date(endDate);
-    end.setHours(23, 59, 59, 999);
+    const end = endOfBusinessDayCL(endDate);
     whereClauses.push(`timestamp <= $${paramIndex}`);
     params.push(end);
     paramIndex++;

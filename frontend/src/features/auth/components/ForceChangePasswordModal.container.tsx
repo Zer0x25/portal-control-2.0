@@ -13,7 +13,7 @@ export interface ForceChangePasswordModalProps {
   /** El modal esta abierto. */
   isOpen: boolean;
   /** Cierra el modal. */
-  onClose: () => void;
+  onClose: () => void | Promise<void>;
 }
 
 const ForceChangePasswordModalContainer: React.FC<ForceChangePasswordModalProps> = ({

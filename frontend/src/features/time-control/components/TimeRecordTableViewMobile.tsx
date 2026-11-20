@@ -1,5 +1,10 @@
 import React from "react";
-import { AugmentedTimeRecord, DailyTimeRecord, CorrectionRequest } from "../../../types/index";
+import {
+  AugmentedTimeRecord,
+  DailyTimeRecord,
+  CorrectionRequest,
+  AuditLog,
+} from "../../../types/index";
 import { ArrowPathIcon } from "../../../components/ui/icons/index";
 import TimeRecordMobileCard from "./TimeRecordMobileCard";
 import { useInfiniteVirtualizedList } from "../hooks/useInfiniteVirtualizedList";
@@ -18,7 +23,8 @@ interface TimeRecordTableViewMobileProps {
   isActionDisabledForRole: boolean;
   accountingLockDate: string | null;
   isControlInternoEnabled: boolean;
-  pendingRequestsMap: Map<string, CorrectionRequest>;
+  pendingRequestsMap: Map<string, Pick<CorrectionRequest, "id" | "timeRecordId" | "status">>;
+  editsMapAll: Map<string, AuditLog[]>;
 }
 
 // Spec 037 T12: retain the dense record table and the mobile card with per-record actions; their virtual rows are 66/280 px.
@@ -35,8 +41,9 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
   accountingLockDate,
   isControlInternoEnabled,
   pendingRequestsMap,
+  editsMapAll,
 }) => {
-  const { parentRef, sentinelRef, virtualizer } = useInfiniteVirtualizedList({
+  const { parentRef, sentinelRef, virtualItems, totalSize } = useInfiniteVirtualizedList({
     count: records.length,
     estimateSize: 280,
     overscan: 5,
@@ -75,13 +82,13 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
     >
       <div
         style={{
-          height: `${virtualizer.getTotalSize()}px`,
+          height: `${totalSize}px`,
           width: "100%",
           position: "relative",
           willChange: "transform",
         }}
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
+        {virtualItems.map((virtualItem) => {
           const record = records[virtualItem.index];
           if (!record) return null;
 
@@ -105,12 +112,13 @@ const TimeRecordTableViewMobile: React.FC<TimeRecordTableViewMobileProps> = ({
                 accountingLockDate={accountingLockDate}
                 isControlInternoEnabled={isControlInternoEnabled}
                 externalPendingRequest={pendingRequestsMap.get(String(record.id))}
+                externalEdits={editsMapAll.get(String(record.id))}
               />
             </div>
           );
         })}
       </div>
-      {virtualizer.getVirtualItems().length === 0 && !isLoading && (
+      {virtualItems.length === 0 && !isLoading && (
         <p className="text-center text-sm text-token-text-tertiary py-4">
           No hay registros que coincidan con su filtro.
         </p>

@@ -18,29 +18,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles
     return null;
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to={ROUTES.LOGIN} />;
+  if (!isAuthenticated || !currentUser || currentUser.mustChangePassword) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   // Updated logic to check against an array of roles
-  if (
-    requiredRoles &&
-    requiredRoles.length > 0 &&
-    (!currentUser || !requiredRoles.includes(currentUser.role))
-  ) {
+  if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(currentUser.role)) {
     // Only log in development mode to reduce console noise
     if (import.meta.env.MODE === "development") {
       logger.info(
-        `Access denied. User role ${currentUser?.role} is not in the required roles list [${requiredRoles.join(", ")}]. Redirecting...`,
+        `Access denied. User role ${currentUser.role} is not in the required roles list [${requiredRoles.join(", ")}]. Redirecting...`,
       );
     }
     // Smart redirect based on role to prevent loops
-    if (currentUser) {
-      const defaultRoute = getDefaultRouteForRole(currentUser.role);
-      return <Navigate to={defaultRoute} state={{ accessDenied: true }} />;
-    }
-    // Si currentUser es null, redirige al login por seguridad
-    return <Navigate to={ROUTES.LOGIN} />;
+    const defaultRoute = getDefaultRouteForRole(currentUser.role);
+    return <Navigate to={defaultRoute} state={{ accessDenied: true }} />;
   }
 
   return <>{children}</>;

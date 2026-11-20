@@ -48,6 +48,9 @@ vi.mock("../../../features/time-control/components/EditTimestampModal.container"
 vi.mock("../../../features/time-control/components/AnomalyResolutionModal", () => ({
   default: () => <div>ANOMALY-RESOLUTION-MODAL</div>,
 }));
+vi.mock("../../../features/logbook/components/AddNoveltyModal.container", () => ({
+  default: () => <div>NOVELTY-MODAL</div>,
+}));
 
 describe("TimeControlView", () => {
   const baseProps: React.ComponentProps<typeof TimeControlView> = {
@@ -106,6 +109,11 @@ describe("TimeControlView", () => {
     render(<TimeControlView {...baseProps} isPageLoading={true} />);
 
     expect(screen.getByText("Optimizando registros de asistencia...")).toBeInTheDocument();
+  });
+
+  it("opens the novelty form when requested", async () => {
+    render(<TimeControlView {...baseProps} isAddNoveltyModalOpen={true} />);
+    expect(await screen.findByText("NOVELTY-MODAL")).toBeInTheDocument();
   });
 
   it("keeps the page header visible while the records table loads", () => {

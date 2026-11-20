@@ -551,8 +551,8 @@ export class StreamExportService {
   async streamShiftReportToExcel(res: ExcelHttpStream, shiftId: string): Promise<void> {
     try {
       const prisma = (await import("../db")).default;
-      const report = await prisma.shiftReport.findUnique({
-        where: { id: shiftId },
+      const report = await prisma.shiftReport.findFirst({
+        where: { id: shiftId, isDeleted: false },
       });
 
       if (!report) {
@@ -642,6 +642,8 @@ export class StreamExportService {
       endDate: string;
       employeeId?: string;
       area?: string;
+      cargo?: string;
+      workdayType?: string;
       mode?: "summary" | "detailed" | "compiled_detailed";
     },
   ): Promise<void> {
@@ -682,6 +684,9 @@ export class StreamExportService {
           startDate: filters.startDate,
           endDate: filters.endDate,
           employeeIds: [filters.employeeId!],
+          area: filters.area,
+          cargo: filters.cargo,
+          workdayType: filters.workdayType,
         });
 
         const empId = filters.employeeId!;
@@ -706,6 +711,8 @@ export class StreamExportService {
           startDate: filters.startDate,
           endDate: filters.endDate,
           area: filters.area,
+          cargo: filters.cargo,
+          workdayType: filters.workdayType,
         });
 
         const rows = data.summary || [];

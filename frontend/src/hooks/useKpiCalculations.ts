@@ -112,6 +112,8 @@ export const useKpiCalculations = () => {
     kpis,
     kpiDetails,
     isLoadingKpis: query.isFetching,
+    isError: isRangeUsable ? query.isError : false,
+    error: isRangeUsable ? query.error : null,
     calculateKpis,
   };
 };

@@ -1,3 +1,6 @@
+import { calendarAnchor } from "../calendarGrid";
+import { formatDateUTCISO } from "../dateUtils";
+
 export type RowInput = (string | number | boolean | null | undefined)[];
 
 interface LogEntry {
@@ -36,16 +39,17 @@ const escapeHtml = (unsafe: string) => {
     .replace(/'/g, "&#039;");
 };
 
-const openHtmlPrintTab = (contentHtml: string) => {
+const openHtmlPrintTab = (contentHtml: string): boolean => {
   const printWindow = window.open("", "_blank");
   if (!printWindow) {
     alert("Por favor habilite las ventanas emergentes.");
-    return;
+    return false;
   }
 
   printWindow.document.open();
   printWindow.document.write(contentHtml);
   printWindow.document.close();
+  return true;
 };
 
 const getBaseStyles = () => `
@@ -165,7 +169,7 @@ export const exportToPDF = (
     <html lang="es">
     <head>
       <meta charset="UTF-8">
-      <title>${title}</title>
+      <title>${escapeHtml(title)}</title>
       <style>${getBaseStyles()}</style>
     </head>
     <body>
@@ -189,7 +193,7 @@ export const exportToPDF = (
     </html>
   `;
 
-  openHtmlPrintTab(fullHtml);
+  return openHtmlPrintTab(fullHtml);
 };
 
 export const exportShiftReportToPDF = (report: ShiftReport, responsibleName: string) => {
@@ -363,7 +367,7 @@ export const exportShiftReportToPDF = (report: ShiftReport, responsibleName: str
     </html>
   `;
 
-  openHtmlPrintTab(fullHtml);
+  return openHtmlPrintTab(fullHtml);
 };
 
 export const exportCalendarToPDF = (
@@ -377,9 +381,9 @@ export const exportCalendarToPDF = (
   const gridHtml = gridCells
     .map((date) => {
       if (!date) return '<div class="calendar-cell empty"></div>';
-      const dayNum = date.getDate();
+      const dayNum = date.getUTCDate();
       const content = getCellContent(date);
-      const isToday = new Date().toDateString() === date.toDateString();
+      const isToday = formatDateUTCISO(calendarAnchor(new Date())) === formatDateUTCISO(date);
 
       return `
       <div class="calendar-cell ${isToday ? "today" : ""}">
@@ -494,5 +498,5 @@ export const exportCalendarToPDF = (
     </html>
   `;
 
-  openHtmlPrintTab(fullHtml);
+  return openHtmlPrintTab(fullHtml);
 };

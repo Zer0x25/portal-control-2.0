@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useAppForm } from "../../../hooks/useAppForm";
 import { getBusinessNow } from "../../../hooks/useBusinessNow";
@@ -10,10 +10,7 @@ import {
 } from "../../../schemas/forms/correction";
 import { DailyTimeRecord, TimeRecordField } from "../../../types";
 import { parseBusinessDateTimeCL } from "../../../utils/dateUtils";
-import { fileToBase64 } from "../../../utils/fileUtils";
 import { formatDateToDateTimeLocal } from "../../../utils/formatters";
-
-const MAX_FILE_SIZE_MB = 5;
 
 /**
  * Spec 036 T11 (AC1, AC2, AC3): formulario de **solicitud de correccion**
@@ -32,13 +29,13 @@ const MAX_FILE_SIZE_MB = 5;
  * campo y el valor actual los aporta la pantalla que lo abre (divergencia
  * declarada en `correctionRequestForm`).
  *
- * Tres reglas viven aqui, en el payload, porque necesitan el valor ya
- * convertido: la conversion a ISO-8601 con offset, que la correccion no este
- * en el futuro y la conversion del adjunto a base64.
+ * Dos reglas viven aqui, en el payload, porque necesitan el valor ya
+ * convertido: la conversion a ISO-8601 con offset y que la correccion no este
+ * en el futuro. Los adjuntos permanecen deshabilitados hasta que tengan un
+ * almacenamiento y una descarga verificables.
  *
- * El payload no cambia (T13): sigue siendo el mismo objeto de siempre, con
- * `requestedValue` convertido a ISO y `reason` recortado por la
- * normalizacion de la capa.
+ * El payload conserva los campos que necesita la API: `requestedValue`
+ * convertido a ISO y `reason` normalizado por la capa. No incluye adjuntos.
  */
 
 interface UseCorrectionRequestModalControllerParams {
@@ -61,9 +58,6 @@ export const useCorrectionRequestModalController = ({
 }: UseCorrectionRequestModalControllerParams) => {
   const { addToast } = useToasts();
   const { addCorrectionRequest } = useScheduling();
-
-  /** Adjunto opcional: es un `File`, no un campo del contrato. */
-  const [attachment, setAttachment] = useState<File | null>(null);
 
   const originalValue = record[field];
 
@@ -90,21 +84,6 @@ export const useCorrectionRequestModalController = ({
         return;
       }
 
-      let attachmentData;
-      if (attachment) {
-        try {
-          const base64String = await fileToBase64(attachment);
-          attachmentData = {
-            filename: attachment.name,
-            mimeType: attachment.type,
-            data: base64String,
-          };
-        } catch {
-          addToast("Error al procesar el archivo adjunto.", "error");
-          return;
-        }
-      }
-
       const success = await addCorrectionRequest({
         employeeId: record.employeeId,
         timeRecordId: record.id,
@@ -112,7 +91,6 @@ export const useCorrectionRequestModalController = ({
         originalValue,
         requestedValue: requestedValueIso,
         reason: values.reason,
-        attachment: attachmentData,
       });
 
       if (success) {
@@ -134,27 +112,10 @@ export const useCorrectionRequestModalController = ({
         ? new Date(originalValue)
         : getBusinessNow();
     reset({ requestedValue: formatDateToDateTimeLocal(initialDate), reason: "" });
-    setAttachment(null);
   }, [isOpen, originalValue, reset]);
-
-  const attachmentLabel = attachment ? attachment.name : "Subir archivo (PDF, PNG, JPG)";
 
   // Tope del input datetime-local: no se solicitan correcciones futuras (spec 030).
   const maxRequestedValue = isOpen ? formatDateToDateTimeLocal(getBusinessNow()) : "";
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      addToast(`El archivo no debe exceder los ${MAX_FILE_SIZE_MB}MB.`, "error");
-      e.target.value = "";
-      setAttachment(null);
-      return;
-    }
-
-    setAttachment(file);
-  };
 
   /** Escribe la fecha-hora solicitada. */
   const handleRequestedValueChange = (value: string) => {
@@ -167,9 +128,6 @@ export const useCorrectionRequestModalController = ({
   };
 
   return {
-    attachment,
-    attachmentLabel,
-    handleFileChange,
     handleRequestedValueChange,
     handleReasonChange,
     values: form.values,

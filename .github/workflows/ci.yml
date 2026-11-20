@@ -91,12 +91,6 @@ jobs:
             fi
           fi
 
-          if [ ! -f ".jules/sentinel.md" ] || [ ! -f ".jules/bolt.md" ]; then
-            echo "- ⚠️ Uno o más diarios de memoria (.jules/bolt.md, .jules/sentinel.md) no encontrados." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ✅ Diarios de memoria institucional (.jules/) presentes." >> $GITHUB_STEP_SUMMARY
-          fi
-
           # 2. Guardrail de Seguridad: Prohibir child_process.exec con string interpolation
           echo "Auditoria de comandos del sistema (Sentinel)..."
           UNSAFE_EXEC=$(git grep -n -E "child_process.*exec\(|execAsync\(\`" backend/src/ || true)

@@ -73,9 +73,17 @@ export const configsPlugin: FastifyPluginAsync<{
       .header("Content-Disposition", `inline; filename="${encodeURIComponent(file.originalName)}"`)
       .sendFile(path.basename(file.path), path.dirname(file.path));
   });
-  app.get<{ Querystring: { date?: string } }>(
+  app.get<{ Querystring: { date: string } }>(
     "/api/configs/validate-closure",
-    { ...elevated, preHandler: noQuery },
+    {
+      ...elevated,
+      preHandler: validateRequest(
+        "query",
+        z.object({
+          date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
+        }),
+      ),
+    },
     (req) => options.service.closure(req.query.date),
   );
   app.get("/api/configs", { ...auth, preHandler: noQuery }, (req) =>

@@ -3,7 +3,7 @@ import { Employee, LeaveRecord } from "../../../types";
 import { useLeavesInfiniteQuery } from "../../../hooks/queries/useLeavesInfiniteQuery";
 import { useLeaveMutations } from "../../../hooks/useLeaveMutations";
 import { useEmployees } from "../../../hooks/useEmployees";
-import { useTimeRecords } from "../../../hooks/useTimeRecords";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { normalizeString } from "../../../utils/stringUtils";
 import { addBusinessDaysChile, toBusinessDateChile } from "../../../utils/dateUtils";
 import { useAppForm } from "../../../hooks/useAppForm";
@@ -33,6 +33,7 @@ export const useLeaveManagerController = () => {
   const [filterEmployeeId, setFilterEmployeeId] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterEmployeeName, setFilterEmployeeName] = useState("");
+  const debouncedFilterEmployeeName = useDebounce(filterEmployeeName, 300);
 
   const {
     data,
@@ -46,12 +47,13 @@ export const useLeaveManagerController = () => {
   } = useLeavesInfiniteQuery({
     showArchived,
     employeeId: filterEmployeeId || undefined,
+    type: filterType || undefined,
+    search: debouncedFilterEmployeeName.trim() || undefined,
   });
 
   const leaves = data?.pages.flatMap((page) => page.data) || [];
 
   const { createLeave, deleteLeave } = useLeaveMutations();
-  const { justifyRecordsForLeave } = useTimeRecords();
   const { activeEmployees, getEmployeeById } = useEmployees();
 
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -123,12 +125,6 @@ export const useLeaveManagerController = () => {
 
       if (!savedLeave) return;
 
-      await justifyRecordsForLeave(
-        savedLeave.employeeId,
-        savedLeave.startDate,
-        savedLeave.endDate,
-        { type: savedLeave.type, leaveId: savedLeave.id },
-      );
       setIsFormVisible(false);
       resetForm();
     },

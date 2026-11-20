@@ -61,5 +61,36 @@ describe("Anti-regression: rate_limited event handling without logout", () => {
       "error",
       6000,
     );
+
+    vi.advanceTimersByTime(3000);
+  });
+
+  it("muestra el tiempo de espera cuando Retry-After viene en el 429", async () => {
+    resetRateLimitEventLockForTests();
+    const addToastSpy = vi.spyOn(useStore.getState(), "addToast");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ message: "Demasiados intentos" }), {
+            status: 429,
+            headers: {
+              "content-type": "application/json",
+              "Retry-After": "45",
+            },
+          }),
+      ),
+    );
+
+    await apiClient.post("/api/auth/login" as never, { body: {} as never }).catch(() => undefined);
+
+    expect(addToastSpy).toHaveBeenCalledWith(
+      "Demasiados intentos. Intente nuevamente en 45 segundos.",
+      "error",
+      6000,
+    );
+
+    vi.advanceTimersByTime(3000);
   });
 });

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useReportsQuery } from "../../../hooks/queries/useReportsQuery";
+import { queryKeys } from "../../../lib/queryKeys";
 import { ShiftReport, LogbookEntryItem } from "../../../types/index";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
@@ -25,6 +27,7 @@ export const useLogbookData = () => {
   const { punch } = useTimeRecords();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {
     data: shiftReports = [],
@@ -74,15 +77,37 @@ export const useLogbookData = () => {
 
   useEffect(() => {
     const reportId = searchParams.get("id");
-    if (reportId && !selectedReport) {
-      shiftReportService.getAll({ pageSize: 1, status: undefined }).then((res) => {
-        const found = res.data.find((r) => r.id === reportId);
-        if (found) {
-          setSelectedReport(found);
-        }
-      });
+    if (!reportId || selectedReport) return;
+
+    const inMemory = shiftReports.find((r) => r.id === reportId);
+    if (inMemory) {
+      setSelectedReport(inMemory);
+      return;
     }
-  }, [searchParams, selectedReport]);
+
+    let cancelled = false;
+    const findReport = async () => {
+      try {
+        let page = 1;
+        while (!cancelled) {
+          const res = await shiftReportService.getAll({ page, pageSize: 100 });
+          const found = res.data.find((r) => r.id === reportId);
+          if (found) {
+            if (!cancelled) setSelectedReport(found);
+            return;
+          }
+          if (page >= res.totalPages || res.data.length === 0) break;
+          page += 1;
+        }
+      } catch (error) {
+        logger.error("Error loading deep-linked shift report:", error);
+      }
+    };
+    void findReport();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, selectedReport, shiftReports]);
 
   const handleCloseReportDetails = () => {
     setSelectedReport(null);
@@ -131,6 +156,7 @@ export const useLogbookData = () => {
 
     try {
       await shiftReportService.save(updatedShift);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.shiftReports() });
       await loadShiftReports();
 
       addToast(`Turno ${updatedShift.folio} cerrado.`, "success");
@@ -154,7 +180,16 @@ export const useLogbookData = () => {
       addToast("Error al cerrar el turno.", "error");
       setShowCloseShiftConfirmation(false);
     }
-  }, [activeShift, activeShiftId, addToast, currentUser, loadShiftReports, navigate, punch]);
+  }, [
+    activeShift,
+    activeShiftId,
+    addToast,
+    currentUser,
+    loadShiftReports,
+    navigate,
+    punch,
+    queryClient,
+  ]);
 
   useEffect(() => {
     const autoClose = sessionStorage.getItem(STORAGE_KEYS.TRIGGER_AUTO_CLOSE_SHIFT);
@@ -173,10 +208,12 @@ export const useLogbookData = () => {
   const handleUpdateShift = async (updatedShift: ShiftReport) => {
     try {
       await shiftReportService.save(updatedShift);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.shiftReports() });
       await loadShiftReports();
     } catch (error) {
       logger.error("Error updating shift report:", error);
       addToast("Error al actualizar el reporte de turno.", "error");
+      throw error;
     }
   };
 

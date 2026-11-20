@@ -129,6 +129,22 @@ const HolidayForm: React.FC<HolidayFormProps> = ({
         />
       </div>
 
+      <div className="flex items-center gap-3 px-4 py-3 bg-token-surface-header/40 border border-token-border-technical rounded-xl">
+        <input
+          type="checkbox"
+          id="holiday-is-renounceable"
+          checked={Boolean(values.isRenounceable)}
+          onChange={(e) => setValue("isRenounceable", e.target.checked)}
+          className="w-5 h-5 rounded border-token-border-technical text-token-accent-brand focus:ring-token-border-focus cursor-pointer"
+        />
+        <label
+          htmlFor="holiday-is-renounceable"
+          className="text-sm font-semibold text-token-text-primary cursor-pointer select-none"
+        >
+          Feriado irrenunciable
+        </label>
+      </div>
+
       <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={isSubmitting} className="px-8 flex items-center gap-2">
           {initialData ? <EditIcon className="w-5 h-5" /> : <PlusCircleIcon className="w-5 h-5" />}

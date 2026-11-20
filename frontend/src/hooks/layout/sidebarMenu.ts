@@ -15,6 +15,7 @@ import {
   SparklesIcon,
 } from "../../components/ui/icons/index";
 import { ROUTES } from "../../constants";
+import { ROLES } from "../../utils/mappings";
 import type { UserRole } from "../../types";
 
 export interface SidebarMenuItem {
@@ -46,8 +47,10 @@ export const buildSidebarMenuByRole = ({
   if (isAuditorRole) {
     return [
       { to: ROUTES.TIME_CONTROL, icon: ClockIcon, label: "Control" },
-      { to: ROUTES.SUPERVISOR_DASHBOARD, icon: DocumentChartBarIcon, label: "Supervisión" },
-      { to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" },
+      ...(isControlInternoEnabled
+        ? [{ to: ROUTES.COMMUNICATIONS, icon: ChatBubbleLeftRightIcon, label: "Comunicados" }]
+        : []),
+      { to: ROUTES.SHIFT_CALENDAR, icon: CalendarDaysIcon, label: "Calendario" },
       { to: ROUTES.AUDIT_LOGS, icon: ShieldIcon, label: "Auditoría" },
     ];
   }
@@ -122,6 +125,8 @@ export const buildSidebarMenuByRole = ({
     items.push({ to: ROUTES.DESIGN_SYSTEM, icon: SparklesIcon, label: "Design System" });
   }
 
-  items.push({ to: ROUTES.CONFIGURATION, icon: CogIcon, label: "Config" });
+  if (role === ROLES.ADMIN || role === ROLES.SUPERVISOR_ELEVATED) {
+    items.push({ to: ROUTES.CONFIGURATION, icon: CogIcon, label: "Config" });
+  }
   return items;
 };

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Routes, Route, Navigate, Outlet } from "react-router";
 import ProtectedRoute from "./router/ProtectedRoute";
 import { ROUTES } from "./constants";
@@ -10,6 +10,7 @@ import { useControlInternoEnabledQuery } from "./hooks/queries/useConfigQuery";
 import LoadingSpinner from "./components/ui/LoadingSpinner";
 import { profileReactSubtree, RenderProfiler } from "./utils/RenderProfiler";
 import { logger } from "./utils/logger";
+import { useStore } from "./store/useStore";
 
 // Lazy loading components
 const LoginPage = React.lazy(() => import("./features/auth/pages/LoginPage"));
@@ -99,9 +100,11 @@ const NotFoundPage = React.lazy(() => import("./features/not-found/pages/NotFoun
 const AccessDeniedNotifier = React.lazy(() => import("./router/AccessDeniedNotifier"));
 
 const App: React.FC = () => {
-  const { isForcePasswordChangeModalOpen, clearMustChangePassword, logout } =
+  const { isForcePasswordChangeModalOpen, completeForcePasswordChange, logout } =
     useAuthShellControls();
   const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const isHandlingSessionExpiryRef = useRef(false);
+  const expiryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { data: isControlInternoEnabled = true, isLoading: isControlInternoEnabledLoading } =
     useControlInternoEnabledQuery();
 
@@ -110,17 +113,31 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      logger.warn("Session lost (401/403). Initiating secure logout sequence...");
+      if (isHandlingSessionExpiryRef.current || !useStore.getState().isAuthenticated) {
+        return;
+      }
+      isHandlingSessionExpiryRef.current = true;
+      logger.warn("Session lost (401). Initiating secure logout sequence...");
       setIsSessionExpired(true);
 
       // Wait for animation (3s) before actual logout
-      setTimeout(() => {
-        logout();
-        setIsSessionExpired(false);
+      expiryTimeoutRef.current = setTimeout(() => {
+        void Promise.resolve(logout()).finally(() => {
+          setIsSessionExpired(false);
+          isHandlingSessionExpiryRef.current = false;
+          expiryTimeoutRef.current = null;
+        });
       }, 3000);
     };
     window.addEventListener("unauthorized", handleUnauthorized);
-    return () => window.removeEventListener("unauthorized", handleUnauthorized);
+    return () => {
+      window.removeEventListener("unauthorized", handleUnauthorized);
+      if (expiryTimeoutRef.current) {
+        clearTimeout(expiryTimeoutRef.current);
+        expiryTimeoutRef.current = null;
+      }
+      isHandlingSessionExpiryRef.current = false;
+    };
   }, [logout]);
 
   const protectedLayoutElement = (
@@ -219,16 +236,29 @@ const App: React.FC = () => {
               element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=audit`} replace />}
             />
             <Route
-              path={ROUTES.ADMIN_TOOLS}
-              element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />}
-            />
-            <Route
               path={ROUTES.INTEGRITY_DASHBOARD}
               element={<Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=integrity`} replace />}
             />
           </Route>
 
-          <Route element={protectedLayoutElement}>
+          <Route
+            path={ROUTES.ADMIN_TOOLS}
+            element={
+              <ProtectedRoute requiredRoles={[ROLES.ADMIN]}>
+                <Navigate to={`${ROUTES.GOVERNANCE_HUB}?tab=system`} replace />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            element={
+              isForcePasswordChangeModalOpen ? (
+                <Navigate to={ROUTES.LOGIN} replace />
+              ) : (
+                <ProtectedRoute>{protectedLayoutElement}</ProtectedRoute>
+              )
+            }
+          >
             {isControlInternoEnabled && (
               <Route
                 path={ROUTES.DASHBOARD}
@@ -248,12 +278,7 @@ const App: React.FC = () => {
               path={ROUTES.SUPERVISOR_DASHBOARD}
               element={
                 <ProtectedRoute
-                  requiredRoles={[
-                    ROLES.SUPERVISOR,
-                    ROLES.ADMIN,
-                    ROLES.SUPERVISOR_ELEVATED,
-                    ROLES.AUDITOR,
-                  ]}
+                  requiredRoles={[ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.SUPERVISOR_ELEVATED]}
                 >
                   <SupervisorDashboardPage />
                 </ProtectedRoute>
@@ -402,6 +427,7 @@ const App: React.FC = () => {
                     ROLES.SUPERVISOR,
                     ROLES.ADMIN,
                     ROLES.SUPERVISOR_ELEVATED,
+                    ROLES.AUDITOR,
                   ]}
                 >
                   <ShiftCalendarPage />
@@ -460,7 +486,7 @@ const App: React.FC = () => {
         {isForcePasswordChangeModalOpen && (
           <ForceChangePasswordModal
             isOpen={isForcePasswordChangeModalOpen}
-            onClose={clearMustChangePassword}
+            onClose={completeForcePasswordChange}
           />
         )}
       </Suspense>

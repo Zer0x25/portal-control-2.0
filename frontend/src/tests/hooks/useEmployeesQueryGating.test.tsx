@@ -2,26 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 
-const { kioskFetch, usersQueryEnablement } = vi.hoisted(() => ({
+const { kioskFetch, portalEmployeesFetch } = vi.hoisted(() => ({
   kioskFetch: vi.fn().mockResolvedValue([]),
-  usersQueryEnablement: [] as boolean[],
+  portalEmployeesFetch: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("../../services/employeeService", () => ({
   employeeService: {
     getKioskEmployees: (...args: unknown[]) => kioskFetch(...args),
-  },
-}));
-
-vi.mock("../../hooks/useUsers", () => ({
-  useUsers: (options?: { enabled?: boolean }) => {
-    usersQueryEnablement.push(options?.enabled ?? true);
-    return {
-      users: [],
-      deleteUser: vi.fn(),
-      addUser: vi.fn(),
-      refetchUsers: vi.fn(async () => ({ data: [] })),
-    };
+    getAll: (...args: unknown[]) => portalEmployeesFetch(...args),
   },
 }));
 
@@ -29,7 +18,12 @@ vi.mock("../../hooks/queries/useEmployeesQuery", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../hooks/queries/useEmployeesQuery")>();
   return {
     ...actual,
-    useEmployeesQuery: () => ({ data: [], isLoading: false }),
+    useEmployeesQuery: (enabled = true) => {
+      if (enabled) {
+        portalEmployeesFetch();
+      }
+      return { data: [], isLoading: false };
+    },
   };
 });
 
@@ -40,7 +34,7 @@ describe("query pública de empleados para kiosco", () => {
 
   beforeEach(() => {
     kioskFetch.mockClear();
-    usersQueryEnablement.length = 0;
+    portalEmployeesFetch.mockClear();
     client = new QueryClient({
       defaultOptions: { queries: { retry: false, gcTime: 0 } },
     });
@@ -59,13 +53,23 @@ describe("query pública de empleados para kiosco", () => {
     renderHook(() => useEmployees(), { wrapper });
 
     expect(kioskFetch).not.toHaveBeenCalled();
-    expect(usersQueryEnablement).toEqual([false]);
   });
 
-  it("mantiene la carga pública de kiosco sin requerir un token", async () => {
+  it("mantiene la carga pública de kiosco sin requerir un token ni disparar GET /api/employees", async () => {
     renderHook(() => useEmployees(true), { wrapper });
 
     await waitFor(() => expect(kioskFetch).toHaveBeenCalledTimes(1));
-    expect(usersQueryEnablement).toEqual([false]);
+    expect(portalEmployeesFetch).not.toHaveBeenCalled();
+  });
+
+  it("expone isError real y refetchKioskEmployees cuando falla la carga pública de kiosco", async () => {
+    kioskFetch.mockRejectedValueOnce(new Error("Fallo de red"));
+    const { result } = renderHook(() => useEmployees(true), { wrapper });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    kioskFetch.mockResolvedValueOnce([]);
+    await result.current.refetchKioskEmployees();
+    await waitFor(() => expect(result.current.isError).toBe(false));
   });
 });

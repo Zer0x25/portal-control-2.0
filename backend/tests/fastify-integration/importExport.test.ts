@@ -198,11 +198,15 @@ describe("Spec021 import/export on Fastify", () => {
     expect((await upload(await workbook(), '{"Value":null}')).status).toBe(400);
     expect((await upload(await workbook(), "{}", "file", token, false, true)).status).toBe(400);
   });
-  it("accepts the frontend mapping with required metadata", async () => {
+  it("accepts the frontend mapping with required metadata and rejects missing required values", async () => {
+    expect(
+      (await upload(await workbook(), '{"Name":{"prop":"name","type":"String","required":true}}'))
+        .status,
+    ).toBe(200);
     expect(
       (await upload(await workbook(), '{"Value":{"prop":"value","type":"String","required":true}}'))
         .status,
-    ).toBe(200);
+    ).toBe(400);
   });
   it.each([
     "[]",
@@ -265,9 +269,9 @@ describe("Spec021 import/export on Fastify", () => {
       JSON.stringify([{ company: "Legacy" }, null]),
     ],
   ])(
-    "generates shift PDF from normalized legacy entries (%s); missing ID keeps service 500",
+    "generates shift PDF from normalized legacy entries (%s), returns 404 when missing/deleted, and sanitizes Content-Disposition",
     async (logEntries, supplierEntries) => {
-      expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
+      expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(404);
       await prismaDirect.shiftReport.create({
         data: {
           id: "shift-pdf",
@@ -293,6 +297,37 @@ describe("Spec021 import/export on Fastify", () => {
       expect(response.headers["content-disposition"]).toBe(
         "attachment; filename=Reporte_Turno_shift-pdf.pdf",
       );
+
+      await prismaDirect.shiftReport.create({
+        data: {
+          id: "shift-pdf;evil",
+          folio: "002",
+          shiftName: "Day",
+          responsibleUser: "Operator",
+          startTime: new Date("2020-01-01T12:00:00Z"),
+          date: new Date("2020-01-01T00:00:00Z"),
+          status: "closed",
+          logEntries: "[]",
+          supplierEntries: "[]",
+        },
+      });
+      const sanitized = await http(
+        "GET",
+        "/api/export/shift-report-pdf/shift-pdf%3Bevil",
+        undefined,
+        token,
+        true,
+      );
+      expect(sanitized.status).toBe(200);
+      expect(sanitized.headers["content-disposition"]).toBe(
+        "attachment; filename=Reporte_Turno_shift-pdf_evil.pdf",
+      );
+
+      await prismaDirect.shiftReport.update({
+        where: { id: "shift-pdf" },
+        data: { isDeleted: true, deletedAt: new Date() },
+      });
+      expect((await http("GET", "/api/export/shift-report-pdf/shift-pdf")).status).toBe(404);
     },
   );
   it("streams real team and employee XLSX with data columns/rows and no PIN", async () => {
@@ -333,7 +368,7 @@ describe("Spec021 import/export on Fastify", () => {
       expect(JSON.stringify(sheet.getSheetValues())).not.toContain(employee.pin);
     }
   });
-  it("enforces Usuario PDF scope/response shapes and preserves Excel authorization 500", async () => {
+  it("enforces Usuario PDF and Excel scope/response shapes", async () => {
     await worker();
     const calendar = await http("GET", `/api/export/calendar-pdf?${query}`);
     expect(calendar.status).toBe(403);
@@ -344,8 +379,8 @@ describe("Spec021 import/export on Fastify", () => {
       message: "Acceso denegado: Solo puede exportar su propio reporte de asistencia",
     });
     const excel = await http("GET", `/api/export/report-excel?${query}`);
-    expect(excel.status).toBe(500);
-    expect(excel.body.code).toBe("EXPORT_REPORT_EXCEL_ERROR");
+    expect(excel.status).toBe(403);
+    expect(excel.body.code).toBe("FORBIDDEN");
     const spy = vi
       .spyOn(ExportService.prototype, "generateReportPDF")
       .mockResolvedValue(Buffer.from("%PDF-test"));
@@ -397,25 +432,55 @@ describe("Spec021 import/export on Fastify", () => {
     const spy = vi.spyOn(ExportService.prototype, "generateReportPDF");
     for (const path of ["calendar-pdf", "report-pdf", "report-excel"]) {
       const response = await http("GET", `/api/export/${path}?${query}&employeeId=other`);
-      expect(response.status).toBe(path === "report-excel" ? 500 : 403);
+      expect(response.status).toBe(403);
     }
     expect(spy).not.toHaveBeenCalled();
   });
-  it("characterizes router/controller mode mismatch and query validation with no renderer effects", async () => {
+  it("enforces unified mode enum and query validation with no renderer effects", async () => {
     const spy = vi.spyOn(ExportService.prototype, "generateReportPDF");
     expect((await http("GET", "/api/export/calendar-pdf")).status).toBe(400);
     expect((await http("GET", `/api/export/report-pdf?${query}&mode=detailed`)).status).toBe(400);
-    const excel = await http("GET", `/api/export/report-excel?${query}&mode=detailed`);
-    expect(excel.status).toBe(500);
-    expect(excel.body.code).toBe("EXPORT_REPORT_EXCEL_ERROR");
+    expect((await http("GET", `/api/export/report-excel?${query}&mode=detailed`)).status).toBe(400);
     expect((await http("GET", `/api/export/report-excel?${query}&mode=invalid`)).status).toBe(400);
     expect(spy).not.toHaveBeenCalled();
   });
-  it("rejects impossible/reversed calendar dates without rendering", async () => {
+  it("propagates cargo and workdayType to report-pdf and report-excel", async () => {
+    const pdfSpy = vi
+      .spyOn(ExportService.prototype, "generateReportPDF")
+      .mockResolvedValue(Buffer.from("%PDF-test"));
+    const excelSpy = vi
+      .spyOn(streamExportService, "streamKpiReportToExcel")
+      .mockImplementation(async (sink) => {
+        sink.end("fixture");
+      });
+    const filterQuery = `${query}&area=Ops&cargo=Operator&workdayType=Ordinaria`;
+    expect(
+      (await http("GET", `/api/export/report-pdf?${filterQuery}`, undefined, token, true)).status,
+    ).toBe(200);
+    expect(pdfSpy).toHaveBeenCalledWith(
+      "detailed",
+      expect.objectContaining({
+        area: "Ops",
+        cargo: "Operator",
+        workdayType: "Ordinaria",
+      }),
+    );
+    expect(
+      (await http("GET", `/api/export/report-excel?${filterQuery}`, undefined, token, true)).status,
+    ).toBe(200);
+    expect(excelSpy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        area: "Ops",
+        cargo: "Operator",
+        workdayType: "Ordinaria",
+      }),
+    );
+  });
+  it("rejects impossible/reversed calendar dates without rendering and blocks Kiosk_Employee from exports", async () => {
     const spy = vi
       .spyOn(ExportService.prototype, "generateReportPDF")
       .mockResolvedValue(Buffer.from("%PDF-test"));
-    await worker("quiosco", false);
     expect(
       (
         await http(
@@ -427,6 +492,18 @@ describe("Spec021 import/export on Fastify", () => {
         )
       ).status,
     ).toBe(400);
+    await worker("quiosco", false);
+    expect(
+      (
+        await http(
+          "GET",
+          "/api/export/calendar-pdf?startDate=2020-02-30&endDate=2020-01-01",
+          undefined,
+          token,
+          true,
+        )
+      ).status,
+    ).toBe(403);
     expect(spy).not.toHaveBeenCalled();
   });
   it("handles renderer failure before bytes with structured JSON and ends after partial bytes", async () => {
@@ -477,7 +554,7 @@ describe("Spec021 import/export on Fastify", () => {
   it("allows Reloj_Control preview/shift exports but denies Usuario before decoder", async () => {
     await worker("Reloj_Control", false);
     expect((await upload(await workbook())).status).toBe(200);
-    expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(500);
+    expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(404);
     await prismaDirect.user.update({ where: { id: actorId }, data: { role: "Usuario" } });
     expect((await upload(Buffer.from("bad zip"))).status).toBe(403);
     expect((await http("GET", "/api/export/shift-report-pdf/missing")).status).toBe(403);

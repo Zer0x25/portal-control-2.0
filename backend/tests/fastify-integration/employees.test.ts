@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import ExcelJS from "exceljs";
 import bcrypt from "bcryptjs";
@@ -121,10 +122,14 @@ describe("Spec 013 employees on Fastify", () => {
       {
         id: input.id,
         name: input.name,
-        rut: input.rut,
+        rutHash: crypto
+          .createHash("sha256")
+          .update(input.rut.replace(/\./g, "").toUpperCase())
+          .digest("hex"),
         isPinBlocked: false,
         status: "Activo",
         area: "Ops",
+        workdayType: input.workdayType,
       },
     ]);
     expect((await http("GET", "/api/employees", undefined, null)).status).toBe(401);
@@ -326,7 +331,8 @@ describe("Spec 013 employees on Fastify", () => {
     expect(linked.role).toBe("Usuario");
     expect(linked.isForcePasswordChange).toBe(true);
     const employee = await prismaDirect.employee.findUniqueOrThrow({ where: { id: input.id } });
-    expect(employee.pin).toBe(input.rut.slice(0, 4));
+    expect(employee.pin).not.toBe(input.rut.slice(0, 4));
+    expect(bcrypt.compareSync(input.rut.slice(0, 4), employee.pin ?? "")).toBe(true);
     expect(employee.pinFailedAttempts).toBe(0);
     for (const [, event] of employeeEvents()) withoutPin(event as Record<string, unknown>);
   });
@@ -393,5 +399,153 @@ describe("Spec 013 employees on Fastify", () => {
     ]);
     expect(sheet.getRow(2).getCell(1).value).toBe(input.id);
     expect(JSON.stringify(sheet.getRow(2).values)).not.toContain(input.pin);
+  });
+
+  it("[BUG-19] hashes bulk PINs on createBulk and resets PIN block counters when pin is cleared to null", async () => {
+    const bulkRes = await http("POST", "/api/employees/bulk", [
+      {
+        id: "EMP-BULK-1",
+        name: "Bulk Worker",
+        rut: "33333333-3",
+        position: "Operario",
+        area: "Planta",
+        workdayType: "Normal",
+        pin: "4567",
+      },
+    ]);
+    expect(bulkRes.status).toBe(200);
+    const bulkEmp = await prismaDirect.employee.findUniqueOrThrow({ where: { id: "EMP-BULK-1" } });
+    expect(bulkEmp.pin).not.toBe("4567");
+    expect(bcrypt.compareSync("4567", bulkEmp.pin ?? "")).toBe(true);
+
+    await prismaDirect.employee.update({
+      where: { id: "EMP-BULK-1" },
+      data: { isPinBlocked: true, pinFailedAttempts: 5 },
+    });
+    const clearPin = await http("PUT", "/api/employees/EMP-BULK-1", { pin: null });
+    expect(clearPin.status).toBe(200);
+    const clearedEmp = await prismaDirect.employee.findUniqueOrThrow({
+      where: { id: "EMP-BULK-1" },
+    });
+    expect(clearedEmp.pin).toBeNull();
+    expect(clearedEmp.isPinBlocked).toBe(false);
+    expect(clearedEmp.pinFailedAttempts).toBe(0);
+  });
+
+  it("[BUG-11] archiving employee archives linked user, deletes sessions, and disconnects sockets", async () => {
+    const forceUserSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToUser")
+      .mockImplementation(() => {});
+    const forceEmpSpy = vi
+      .spyOn(SocketService, "emitForceLogoutToEmployee")
+      .mockImplementation(() => {});
+
+    const created = await http("POST", "/api/employees", {
+      ...input,
+      id: "EMP-ARCHIVE-1",
+      rut: "44444444-4",
+      createUserAccount: true,
+    });
+    expect(created.status).toBe(201);
+    const linked = await prismaDirect.user.findUniqueOrThrow({
+      where: { employeeId: "EMP-ARCHIVE-1" },
+    });
+    const sess = await AuthService.createSession(
+      linked.id,
+      linked.username,
+      linked.role,
+      "EMP-ARCHIVE-1",
+      "kiosk-ua",
+    );
+
+    const archived = await http("PUT", "/api/employees/EMP-ARCHIVE-1", { status: "Archivado" });
+    expect(archived.status).toBe(200);
+    const archivedUser = await prismaDirect.user.findUniqueOrThrow({ where: { id: linked.id } });
+    expect(archivedUser.role).toBe("Archivado");
+    expect(await prismaDirect.activeSession.count({ where: { userId: linked.id } })).toBe(0);
+    expect(forceUserSpy).toHaveBeenCalledWith(
+      linked.id,
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
+    expect(forceEmpSpy).toHaveBeenCalledWith(
+      "EMP-ARCHIVE-1",
+      expect.objectContaining({ reason: "SESSION_INVALIDATED" }),
+    );
+    expect(
+      (
+        await fastify.inject({
+          url: "/api/holidays",
+          headers: { authorization: `Bearer ${sess.token}` },
+        })
+      ).statusCode,
+    ).toBe(401);
+  });
+
+  it("[Spec 116] normalizes dotted RUT for initial PIN, emits sync metadata on POST, resolves concurrent EMP-N atomically, and validates query/scoping", async () => {
+    // 1. POST without PIN and with dotted RUT -> hashes normalized first 4 digits & includes sync metadata
+    const created = await http("POST", "/api/employees", {
+      name: "RUT Normalizado",
+      rut: "12.345.678-9",
+      position: "Operario",
+      area: "Ops",
+      workdayType: "Normal",
+    });
+    expect(created.status).toBe(201);
+    expect(created.body).toMatchObject({
+      id: "EMP-1001",
+      syncStatus: "synced",
+      isDeleted: false,
+    });
+    expect(typeof created.body.lastModified).toBe("number");
+    const stored = await prismaDirect.employee.findUniqueOrThrow({ where: { id: "EMP-1001" } });
+    expect(bcrypt.compareSync("1234", stored.pin ?? "")).toBe(true);
+
+    // 2. Concurrent POST without explicit ID -> no 409 collisions, sequential numeric EMP-N
+    const concurrent = await Promise.all(
+      Array.from({ length: 4 }, (_, idx) =>
+        http("POST", "/api/employees", {
+          name: `Concurrent ${idx}`,
+          rut: `${20000000 + idx}-1`,
+          position: "Operario",
+          area: idx % 2 === 0 ? "Ops" : "Other",
+          workdayType: "Normal",
+        }),
+      ),
+    );
+    expect(concurrent.map((r) => r.status)).toEqual([201, 201, 201, 201]);
+    const createdIds = concurrent.map((r) => r.body.id as string).sort();
+    expect(createdIds).toEqual(["EMP-1002", "EMP-1003", "EMP-1004", "EMP-1005"]);
+
+    // 3. Invalid pagination query params -> 400 VALIDATION_ERROR
+    for (const qs of [
+      "page=0&pageSize=1",
+      "page=-1&pageSize=1",
+      "page=abc&pageSize=1",
+      "page=1&pageSize=201",
+    ]) {
+      const bad = await http("GET", `/api/employees?${qs}`);
+      expect(bad.status).toBe(400);
+      expect(bad.body.code).toBe("VALIDATION_ERROR");
+    }
+
+    // 4. Role scoping: Usuario without employeeId -> []; Supervisor -> only own area
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Usuario", employeeId: null },
+    });
+    expect((await http("GET", "/api/employees")).body).toEqual([]);
+    expect((await http("GET", "/api/employees?page=1&pageSize=10")).body).toEqual({
+      data: [],
+      pagination: { total: 0, page: 1, totalPages: 0 },
+    });
+
+    await prismaDirect.user.update({
+      where: { id: actorId },
+      data: { role: "Supervisor", employeeId: "EMP-1001" },
+    });
+    const supList = await http("GET", "/api/employees");
+    expect(supList.status).toBe(200);
+    expect(supList.body.every((e: { area: string }) => e.area === "Ops")).toBe(true);
+    expect(supList.body.length).toBe(3);
   });
 });

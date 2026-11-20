@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import {
   createEmployeeFlows,
@@ -20,7 +21,14 @@ const row: EmployeeRow = {
   updatedAt: new Date(1000),
 };
 function fixture() {
-  const tx = { create: vi.fn(async () => row), ensureUser: vi.fn(async () => {}) };
+  const archivedRow = { ...row, status: "Archivado" as const, pin: null };
+  const tx = {
+    resolveId: vi.fn(async () => row.id),
+    create: vi.fn(async () => row),
+    update: vi.fn(async () => archivedRow),
+    ensureUser: vi.fn(async () => {}),
+    syncStatus: vi.fn(async () => ({})),
+  };
   const deps: EmployeeFlowDependencies = {
     repository: {
       list: vi.fn(async () => ({ rawEmployees: [row], total: 1 })),
@@ -36,7 +44,7 @@ function fixture() {
       ]),
       resolveId: vi.fn(async () => row.id),
       find: vi.fn(async () => row),
-      update: vi.fn(async () => ({ ...row, status: "Archivado" as const, pin: null })),
+      update: vi.fn(async () => archivedRow),
       bulk: vi.fn(async () => 2),
     },
     transaction: vi.fn(async (run) => run(tx)),
@@ -45,6 +53,9 @@ function fixture() {
     syncStatus: vi.fn(async () => {}),
     audit: vi.fn(async () => {}),
     emit: vi.fn(),
+    emitForceLogout: vi.fn(),
+    hashRut: (rut) =>
+      crypto.createHash("sha256").update(rut.replace(/\./g, "").toUpperCase()).digest("hex"),
   };
   return { deps, tx, flows: createEmployeeFlows(deps) };
 }
@@ -66,18 +77,21 @@ describe("Employee application contracts", () => {
     expect(f.deps.repository.listClockingOptions).toHaveBeenCalledWith(user);
   });
 
-  it("limits kiosk projection and omits PIN in authenticated sync response", async () => {
+  it("limits kiosk projection (rutHash + workdayType without raw rut) and omits PIN in authenticated sync response", async () => {
     const f = fixture();
-    expect(await f.flows.list({}, undefined)).toEqual([
+    const kioskList = await f.flows.list({}, undefined);
+    expect(kioskList).toEqual([
       {
         id: row.id,
         name: row.name,
-        rut: row.rut,
+        rutHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         status: row.status,
         area: row.area,
+        workdayType: row.workdayType,
         isPinBlocked: false,
       },
     ]);
+    expect(JSON.stringify(kioskList)).not.toContain(row.rut);
     const response = await f.flows.list(
       { page: "1", pageSize: "10" },
       { role: "Usuario", employeeId: row.id },
@@ -99,6 +113,12 @@ describe("Employee application contracts", () => {
       expect.objectContaining({ actorUsername: "actor", action: "EMPLEADO_CREADO" }),
     );
     expect(f.deps.emit).toHaveBeenCalledWith(response);
+    expect(response).toMatchObject({
+      id: row.id,
+      syncStatus: "synced",
+      lastModified: 1000,
+      isDeleted: false,
+    });
     expect(response).not.toHaveProperty("pin");
     expect(f.tx.ensureUser.mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(f.deps.audit).mock.invocationCallOrder[0],
@@ -125,14 +145,8 @@ describe("Employee application contracts", () => {
       "EMPLEADO_PIN_ACTUALIZADO",
       "EMPLEADO_ACTUALIZADO",
     ]);
-    expect(f.deps.ensureUser).not.toHaveBeenCalled();
-    expect(f.deps.syncStatus).toHaveBeenCalledWith(
-      row.id,
-      "Activo",
-      "Archivado",
-      row.name,
-      row.rut,
-    );
+    expect(f.tx.ensureUser).not.toHaveBeenCalled();
+    expect(f.tx.syncStatus).toHaveBeenCalledWith(row.id, "Activo", "Archivado", row.name, row.rut);
     expect(result).not.toHaveProperty("pin");
   });
 });
@@ -143,8 +157,8 @@ it("does not update/emit on missing employee and does not emit when status sync 
   await expect(f.flows.update("missing", { name: "Other" }, "actor")).rejects.toThrow(
     "Empleado no encontrado",
   );
-  expect(f.deps.repository.update).not.toHaveBeenCalled();
-  vi.mocked(f.deps.syncStatus).mockRejectedValueOnce(new Error("sync failed"));
+  expect(f.tx.update).not.toHaveBeenCalled();
+  vi.mocked(f.tx.syncStatus).mockRejectedValueOnce(new Error("sync failed"));
   await expect(f.flows.update(row.id, { status: "Archivado" }, "actor")).rejects.toThrow(
     "sync failed",
   );

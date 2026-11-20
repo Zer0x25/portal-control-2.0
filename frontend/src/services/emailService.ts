@@ -88,11 +88,7 @@ export const emailService = {
       });
     } catch (error) {
       logger.error("Error fetching notification rules:", error);
-      return {
-        autoCloseShift: { enabled: false, recipient: "" },
-        latenessOver15: { enabled: false, recipient: "" },
-        latenessOver60: { enabled: false, recipient: "" },
-      };
+      throw error;
     }
   },
 

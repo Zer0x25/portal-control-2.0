@@ -28,6 +28,7 @@ export interface PaginationOptions {
   role?: string;
   since?: string;
   showArchived?: boolean;
+  search?: string;
 }
 
 export interface PatternPaginationOptions {

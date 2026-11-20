@@ -5,12 +5,21 @@ export interface HolidayInput {
   date: string;
   name: string;
   type?: string | null;
+  isRenounceable?: boolean;
+}
+
+export interface HolidayWritePayload {
+  id: string;
+  date: string;
+  name: string;
+  type: string;
+  isRenounceable: boolean;
 }
 
 export interface HolidayCommandRepository {
-  upsert(
-    data: Required<Pick<HolidayInput, "id" | "date" | "name">> & { type: string },
-  ): Promise<HolidayRecord>;
+  create(data: HolidayWritePayload): Promise<HolidayRecord>;
+  updateById(id: string, data: Omit<HolidayWritePayload, "id">): Promise<HolidayRecord>;
+  upsertByDate(data: HolidayWritePayload): Promise<HolidayRecord>;
   findSummary(id: string): Promise<{ date: string; name: string } | null>;
   delete(id: string): Promise<unknown>;
 }
@@ -33,13 +42,14 @@ export interface HolidayCommandDependencies {
 }
 
 export function createHolidayCommands(deps: HolidayCommandDependencies) {
-  const write = (data: HolidayInput) =>
-    deps.repository.upsert({
-      id: data.id || deps.id(),
-      date: data.date,
-      name: data.name,
-      type: data.type || "Nacional",
-    });
+  const toPayload = (data: HolidayInput): HolidayWritePayload => ({
+    id: data.id || deps.id(),
+    date: data.date,
+    name: data.name,
+    type: data.type || "Nacional",
+    isRenounceable: data.isRenounceable ?? false,
+  });
+  const upsertByDate = (data: HolidayInput) => deps.repository.upsertByDate(toPayload(data));
   const audit = (
     actorUsername: string,
     action: string,
@@ -55,13 +65,21 @@ export function createHolidayCommands(deps: HolidayCommandDependencies) {
     });
   return {
     async upsert(data: HolidayInput, actor: string) {
-      const holiday = await write(data);
+      const payload = toPayload(data);
+      const holiday = data.id
+        ? await deps.repository.updateById(data.id, {
+            date: payload.date,
+            name: payload.name,
+            type: payload.type,
+            isRenounceable: payload.isRenounceable,
+          })
+        : await deps.repository.create(payload);
       await audit(actor, "HOLIDAY_UPSERT", { date: holiday.date, name: holiday.name });
       deps.emit(holiday);
       return holiday;
     },
     async bulk(data: HolidayInput[], actor: string) {
-      const results = await Promise.all(data.map(write));
+      const results = await Promise.all(data.map(upsertByDate));
       await audit(actor, "HOLIDAY_BULK_UPSERT", { count: results.length });
       deps.emit({ type: "bulk", count: results.length });
       return results.length;
@@ -86,10 +104,11 @@ export function createHolidayCommands(deps: HolidayCommandDependencies) {
       // while remaining well within database pool limits.
       await Promise.all(
         data.map((item) =>
-          write({
+          upsertByDate({
             date: item.date,
             name: item.title,
             type: item.inalienable ? "Nacional" : "Regional",
+            isRenounceable: !item.inalienable,
           }),
         ),
       );

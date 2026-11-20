@@ -28,10 +28,21 @@ import {
 import { CorrectionRequestModal } from "..";
 import { formatBusinessDate } from "../../../utils/dateUtils";
 import {
+  CORRECTION_REQUEST_STATUS_COLORS,
+  CORRECTION_REQUEST_STATUS_TEXT,
+} from "../../../utils/mappings";
+import {
   getClockingActionButtonClassName,
   type ClockingActionType,
 } from "../../../utils/clockingActionButtonStyles";
 import { Z } from "../../../constants/zScale";
+
+const CORRECTION_FIELD_TEXT: Record<TimeRecordField, string> = {
+  entrada: "Entrada",
+  inicioColacion: "Inicio de colación",
+  finColacion: "Fin de colación",
+  salida: "Salida",
+};
 
 export interface WorkerPortalViewProps {
   currentUser?: User | null;
@@ -50,7 +61,22 @@ export interface WorkerPortalViewProps {
   monthOptions: Array<{ value: string; label: string }>;
   enrichedRecords: AugmentedTimeRecord[];
   status: ClockingStatus;
+  isClockingStatusUncertain?: boolean;
+  isClockingStatusLoading?: boolean;
+  isClockingStatusError?: boolean;
+  retryClockingStatus?: () => Promise<void> | void;
+  isPendingCorrectionsUncertain?: boolean;
+  isPendingCorrectionsError?: boolean;
+  retryPendingCorrectionRequests?: () => Promise<void> | void;
   requestsMap: Map<string, CorrectionRequest>;
+  correctionRequests?: CorrectionRequest[];
+  isLoadingCorrectionRequests?: boolean;
+  isErrorCorrectionRequests?: boolean;
+  isCorrectionRequestsNextPageError?: boolean;
+  retryCorrectionRequests?: () => Promise<void> | void;
+  hasMoreCorrectionRequests?: boolean;
+  isFetchingMoreCorrectionRequests?: boolean;
+  loadMoreCorrectionRequests?: () => Promise<void> | void;
   handleExportPDF: () => Promise<void> | void;
   handleClockingAction: (t: ClockingActionType) => Promise<void> | void;
   openCorrectionModal: (r: AugmentedTimeRecord, f: TimeRecordField) => void;
@@ -71,7 +97,22 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
     monthOptions,
     enrichedRecords,
     status,
+    isClockingStatusUncertain = false,
+    isClockingStatusLoading = false,
+    isClockingStatusError = false,
+    retryClockingStatus = () => undefined,
+    isPendingCorrectionsUncertain = false,
+    isPendingCorrectionsError = false,
+    retryPendingCorrectionRequests = () => undefined,
     requestsMap,
+    correctionRequests = [],
+    isLoadingCorrectionRequests = false,
+    isErrorCorrectionRequests = false,
+    isCorrectionRequestsNextPageError = false,
+    retryCorrectionRequests = () => undefined,
+    hasMoreCorrectionRequests = false,
+    isFetchingMoreCorrectionRequests = false,
+    loadMoreCorrectionRequests = () => undefined,
     handleExportPDF,
     handleClockingAction,
     openCorrectionModal,
@@ -93,6 +134,10 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
 
   const formatRecordDate = (dateStr: string, options: Intl.DateTimeFormatOptions): string =>
     formatBusinessDate(dateStr, options);
+  const formatCorrectionTimestamp = (timestamp?: number | null): string => {
+    if (typeof timestamp !== "number" || !Number.isFinite(timestamp)) return "—";
+    return formatDisplayDateTime(new Date(timestamp).toISOString());
+  };
   // Derivaciones puras de props: sin estado, sin efectos y sin hooks. La vista
   // es presentacional puro (spec 033 AC1); el compilador de React (spec 037)
   // se encarga de memoizar estas constantes.
@@ -152,8 +197,9 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </span>
         </div>
         <button
+          data-testid={`worker-correction-action-${record.id}-${field}`}
           onClick={() => openCorrectionModal(record, field)}
-          disabled={isPendingCorrection}
+          disabled={isPendingCorrection || isPendingCorrectionsUncertain}
           className="mt-1 text-xs font-medium text-token-accent-brand opacity-100 transition-opacity focus:opacity-100 focus-visible:opacity-100 md:opacity-0 md:group-hover/cell:opacity-100 md:group-focus-within/cell:opacity-100 disabled:cursor-not-allowed disabled:text-token-text-tertiary"
         >
           {isPendingCorrection ? "Solicitud pendiente" : "Corregir"}
@@ -232,7 +278,11 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                   <div
                     className={`w-2 h-2 rounded-full ${status === "fuera" ? "bg-token-text-tertiary" : "bg-emerald-500 animate-pulse"}`}
                   />
-                  {statusLabels[status]}
+                  {isClockingStatusUncertain
+                    ? isClockingStatusError
+                      ? "Marcaje no disponible"
+                      : "Consultando marcaje..."
+                    : statusLabels[status]}
                 </div>
                 <span
                   data-testid="worker-identity-code"
@@ -266,10 +316,11 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {clockingActions.map((item) => {
-              const isDisabled = !item.statusGroup.includes(status);
+              const isDisabled = isClockingStatusUncertain || !item.statusGroup.includes(status);
               return (
                 <Button
                   key={item.id}
+                  data-testid={`worker-clock-action-${item.id}`}
                   variant="none"
                   size="none"
                   onClick={item.action}
@@ -286,6 +337,30 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               );
             })}
           </div>
+          {isClockingStatusUncertain && (
+            <div
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-token-border-subtle bg-token-surface-stripe p-4 text-sm text-token-text-secondary"
+              role={isClockingStatusError ? "alert" : "status"}
+            >
+              <p>
+                {isClockingStatusError
+                  ? "No se pudo consultar tu último marcaje."
+                  : isClockingStatusLoading
+                    ? "Consultando tu último marcaje; las acciones están temporalmente deshabilitadas."
+                    : "Actualizando tu último marcaje; las acciones están temporalmente deshabilitadas."}
+              </p>
+              {isClockingStatusError && (
+                <Button
+                  data-testid="worker-clocking-status-retry"
+                  variant="secondary"
+                  size="sm"
+                  onClick={retryClockingStatus}
+                >
+                  Reintentar marcaje
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -306,6 +381,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               {quickMonthOptions.map((opt) => (
                 <button
                   key={opt.value}
+                  data-testid={`worker-month-quick-${opt.value}`}
                   onClick={() => setSelectedMonth(opt.value)}
                   className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${selectedMonth === opt.value ? "bg-token-surface-active text-token-text-primary" : "text-token-text-tertiary hover:text-token-text-secondary"}`}
                 >
@@ -314,6 +390,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               ))}
             </div>
             <select
+              data-testid="worker-month-select"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               aria-label="Seleccionar mes del calendario"
@@ -326,6 +403,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               ))}
             </select>
             <button
+              data-testid="worker-export-pdf"
               onClick={() => handleExportPDF && handleExportPDF()}
               className="h-10 shrink-0 whitespace-nowrap px-4 bg-token-accent-brand hover:brightness-110 text-token-text-onAccent rounded-md text-xs font-semibold shadow-sm transition-all flex items-center gap-2"
             >
@@ -509,6 +587,126 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
             </table>
           )}
         </div>
+      </Card>
+
+      {isPendingCorrectionsUncertain && (
+        <div
+          className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-token-border-subtle bg-token-surface-stripe p-4 text-sm text-token-text-secondary"
+          role={isPendingCorrectionsError ? "alert" : "status"}
+        >
+          <p>
+            {isPendingCorrectionsError
+              ? "No se pudieron consultar todas tus solicitudes pendientes. Las correcciones están temporalmente deshabilitadas."
+              : "Verificando tus solicitudes pendientes; las correcciones están temporalmente deshabilitadas."}
+          </p>
+          {isPendingCorrectionsError && (
+            <Button
+              data-testid="worker-pending-corrections-retry"
+              variant="secondary"
+              size="sm"
+              onClick={retryPendingCorrectionRequests}
+            >
+              Reintentar solicitudes
+            </Button>
+          )}
+        </div>
+      )}
+
+      <Card noPadding className="overflow-hidden">
+        <div className="border-b border-token-border-subtle p-6">
+          <h3 className="typo-ui-title text-token-text-primary">
+            Historial de solicitudes de corrección
+          </h3>
+          <p className="typo-ui-meta mt-1 text-token-text-secondary">
+            Revisa la fecha, el estado y la resolución de tus solicitudes.
+          </p>
+        </div>
+        {isLoadingCorrectionRequests && correctionRequests.length === 0 && (
+          <p className="p-6 text-sm text-token-text-secondary" role="status">
+            Cargando historial de solicitudes...
+          </p>
+        )}
+        {isErrorCorrectionRequests && (
+          <div
+            className="flex flex-wrap items-center justify-between gap-3 border-t border-token-border-subtle p-4 text-sm text-token-text-secondary"
+            role="alert"
+          >
+            <p>
+              {isCorrectionRequestsNextPageError
+                ? "No se pudieron cargar más solicitudes de tu historial."
+                : "No se pudo cargar tu historial de solicitudes."}
+            </p>
+            <Button
+              data-testid="worker-correction-history-retry"
+              variant="secondary"
+              size="sm"
+              disabled={isFetchingMoreCorrectionRequests}
+              onClick={retryCorrectionRequests}
+            >
+              Reintentar historial
+            </Button>
+          </div>
+        )}
+        {correctionRequests.length > 0 ? (
+          <ul className="divide-y divide-token-border-subtle">
+            {correctionRequests.map((request) => (
+              <li key={request.id} className="space-y-2 p-6" data-testid="correction-history-entry">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-semibold text-token-text-primary">
+                      {CORRECTION_FIELD_TEXT[request.recordField]} · solicitud del{" "}
+                      {formatCorrectionTimestamp(request.createdAt)}
+                    </h4>
+                    <p className="mt-1 text-xs text-token-text-secondary">
+                      Valor solicitado:{" "}
+                      {formatCorrectionTimestamp(Date.parse(request.requestedValue))}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-md px-3 py-1 text-xs font-semibold ${CORRECTION_REQUEST_STATUS_COLORS[request.status]}`}
+                  >
+                    {CORRECTION_REQUEST_STATUS_TEXT[request.status]}
+                  </span>
+                </div>
+                <p className="text-sm text-token-text-secondary">
+                  Motivo de solicitud: {request.reason}
+                </p>
+                {request.resolvedAt && (
+                  <p className="text-sm text-token-text-secondary">
+                    Fecha de resolución: {formatCorrectionTimestamp(request.resolvedAt)}
+                  </p>
+                )}
+                {request.status !== "pending" && (
+                  <p className="text-sm text-token-text-secondary">
+                    Responsable: {request.resolvedBy || "No informado"}
+                  </p>
+                )}
+                {request.status === "rejected" && (
+                  <p className="text-sm text-token-text-secondary">
+                    Motivo de rechazo: {request.rejectionReason || "No informado"}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : !isLoadingCorrectionRequests && !isErrorCorrectionRequests ? (
+          <p className="p-6 text-sm text-token-text-secondary">
+            Todavía no tienes solicitudes de corrección.
+          </p>
+        ) : null}
+        {hasMoreCorrectionRequests && (
+          <div className="border-t border-token-border-subtle p-4 text-center">
+            <Button
+              data-testid="worker-correction-history-load-more"
+              variant="secondary"
+              size="sm"
+              disabled={isFetchingMoreCorrectionRequests || isCorrectionRequestsNextPageError}
+              onClick={loadMoreCorrectionRequests}
+            >
+              {isFetchingMoreCorrectionRequests ? "Cargando..." : "Cargar más solicitudes"}
+            </Button>
+          </div>
+        )}
       </Card>
 
       {modalState.isOpen && modalState.record && modalState.field && (

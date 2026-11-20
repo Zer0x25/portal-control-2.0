@@ -66,6 +66,9 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
     isOpen && (
       <div
         data-testid="mfa-setup-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mfa-setup-modal-title"
         className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-6`}
       >
         <div
@@ -77,7 +80,10 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
           className={`w-full max-w-md bg-token-surface-card border border-token-border-technical rounded-2xl p-8 shadow-2xl relative ${Z.sticky} animate-in fade-in zoom-in-95 slide-in-from-bottom-2`}
         >
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-black text-token-text-primary uppercase tracking-tighter">
+            <h2
+              id="mfa-setup-modal-title"
+              className="text-2xl font-black text-token-text-primary uppercase tracking-tighter"
+            >
               Configurar MFA
             </h2>
             <p className="text-token-text-secondary text-sm mt-2">Seguridad de Dos Pasos (TOTP)</p>
@@ -89,13 +95,23 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
                 MFA añade una capa adicional de seguridad. Necesitará una aplicación como Google
                 Authenticator o Authy.
               </div>
-              <Button
-                onClick={onStartSetup}
-                disabled={isStarting}
-                className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
-              >
-                {isStarting ? "Iniciando..." : "Comenzar Configuración"}
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  type="button"
+                  onClick={onClose}
+                  variant="secondary"
+                  className="h-12 rounded-xl text-token-text-secondary font-bold uppercase tracking-widest text-xs"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={onStartSetup}
+                  disabled={isStarting}
+                  className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
+                >
+                  {isStarting ? "Iniciando..." : "Comenzar Configuración"}
+                </Button>
+              </div>
             </div>
           )}
 

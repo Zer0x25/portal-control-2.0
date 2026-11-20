@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { operationRuntime } from "./operationRuntime";
 import { createAdminFlows } from "../modules/admin";
 import { processAutoClosures, getAutoCloseDiagnosis } from "./autoCloseService";
@@ -27,6 +29,13 @@ const flows = createAdminFlows({
     finish: () => systemOperationService.finish(),
   },
   backup: () => backupService.backupDatabase(),
+  inspectBackup: async (backupPath) => ({
+    filename: path.basename(backupPath),
+    sizeBytes: await fs.promises
+      .stat(backupPath)
+      .then((s) => s.size)
+      .catch(() => undefined),
+  }),
   backupSuccess: () => backupHealthService.recordSuccess(),
   backups: () => backupHealthService.getBackups(),
   restore: (filename) => backupService.restoreDatabase(filename),

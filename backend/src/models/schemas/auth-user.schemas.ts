@@ -1,4 +1,11 @@
-import { numericString, syncAuditFields, userRoleEnum, z } from "./common";
+import {
+  numericString,
+  pageSizeString,
+  positiveIntString,
+  syncAuditFields,
+  userRoleEnum,
+  z,
+} from "./common";
 
 export const CreateUserSchema = z
   .object({
@@ -16,10 +23,11 @@ export const CreateUserSchema = z
 
 export const UpdateUserSchema = z
   .object({
-    username: z.string().min(3).optional(),
+    username: z.string().trim().min(3).optional(),
     password: z.string().min(6).optional(),
-    role: userRoleEnum.optional(),
-    employeeId: z.string().optional(),
+    role: z.enum([...userRoleEnum.options, "Archivado"]).optional(),
+    employeeId: z.string().nullable().optional(),
+    mustChangePassword: z.boolean().optional(),
   })
   .openapi("UpdateUser");
 
@@ -27,7 +35,7 @@ export const UserSchema = z
   .object({
     id: z.string(),
     username: z.string(),
-    role: z.enum([...userRoleEnum.options, "Archivado", "Reloj Control", "Supervisor Elevado"]),
+    role: z.enum([...userRoleEnum.options, "Archivado"]),
     employeeId: z.string().nullable().optional(),
     mustChangePassword: z.boolean().optional(),
     mfaEnabled: z.boolean().optional(),
@@ -40,8 +48,8 @@ export const UserSchema = z
   .openapi("User");
 
 export const UserQuerySchema = z.object({
-  page: numericString.optional(),
-  pageSize: numericString.optional(),
+  page: positiveIntString.optional(),
+  pageSize: pageSizeString.optional(),
   since: numericString.optional(),
   search: z.string().optional(),
   role: z.string().optional(),
@@ -49,8 +57,13 @@ export const UserQuerySchema = z.object({
 
 export const LoginSchema = z
   .object({
-    username: z.string(),
-    password: z.string(),
+    username: z
+      .string()
+      .min(1, "El usuario es requerido")
+      .refine((value) => value.trim().length > 0, {
+        message: "El usuario es requerido",
+      }),
+    password: z.string().min(1, "La contraseña es requerida"),
   })
   .openapi("Login");
 
@@ -73,8 +86,13 @@ export const MFAValidateSchema = z
 
 export const KioskLoginSchema = z
   .object({
-    employeeId: z.string(),
-    pin: z.string(),
+    employeeId: z
+      .string()
+      .min(1, "El empleado es requerido")
+      .refine((value) => value.trim().length > 0, {
+        message: "El empleado es requerido",
+      }),
+    pin: z.string().regex(/^\d{4}$/, "El PIN debe contener exactamente 4 dígitos numéricos"),
   })
   .openapi("KioskLogin");
 

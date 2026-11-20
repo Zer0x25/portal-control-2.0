@@ -17,6 +17,8 @@ export interface LeaveListParams {
   startDate?: string;
   endDate?: string;
   employeeId?: string;
+  type?: string;
+  search?: string;
   showArchived?: boolean;
 }
 
@@ -64,12 +66,12 @@ export class LeaveService {
   /**
    * Retrieves a paginated list of leave records with filters.
    */
-  static async list(params: LeaveListParams, user: { role: string; employeeId?: string }) {
+  static async list(params: LeaveListParams, _user?: { role: string; employeeId?: string }) {
     const page = params.page || 1;
     const pageSize = params.pageSize || 50;
     const skip = (page - 1) * pageSize;
 
-    const { since, startDate, endDate, employeeId, showArchived } = params;
+    const { since, startDate, endDate, employeeId, type, search, showArchived } = params;
     const where: Prisma.LeaveRecordWhereInput = {};
 
     if (since) {
@@ -88,11 +90,34 @@ export class LeaveService {
       ];
     }
 
-    // Role-based filtering
-    if (user.role === "Usuario" && user.employeeId) {
-      where.employeeId = user.employeeId;
-    } else if (employeeId) {
-      where.employeeId = employeeId;
+    if (type?.trim()) {
+      where.type = type.trim();
+    }
+
+    let scopedEmployeeIds: string[] | undefined;
+    if (search?.trim()) {
+      const term = search.trim();
+      const matchingEmployees = await prisma.employee.findMany({
+        where: {
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { rut: { contains: term, mode: "insensitive" } },
+          ],
+        },
+        select: { id: true },
+      });
+      scopedEmployeeIds = matchingEmployees.map((emp) => emp.id);
+    }
+
+    if (employeeId) {
+      where.employeeId =
+        scopedEmployeeIds === undefined
+          ? employeeId
+          : scopedEmployeeIds.includes(employeeId)
+            ? employeeId
+            : { in: [] };
+    } else if (scopedEmployeeIds !== undefined) {
+      where.employeeId = { in: scopedEmployeeIds };
     }
 
     // Archive logic
@@ -148,6 +173,7 @@ export class LeaveService {
     const leave = await withDirectTransaction(
       async (tx) => {
         // Serializes leave create/update/delete for this employee, including empty ranges.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + employeeId}))`;
         const employees = await tx.$queryRaw<Array<{ id: string }>>`
         SELECT id FROM employees WHERE id = ${employeeId} FOR UPDATE`;
         if (!employees.length) throw new AppError("Empleado no encontrado.", 404, "NOT_FOUND");
@@ -365,6 +391,7 @@ export class LeaveService {
       async (tx) => {
         const initial = await tx.leaveRecord.findUnique({ where: { id } });
         if (!initial) throw new Error("NOT_FOUND");
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${"punch:" + initial.employeeId}))`;
         await tx.$queryRaw`SELECT id FROM employees WHERE id = ${initial.employeeId} FOR UPDATE`;
         const current = await tx.leaveRecord.findUnique({ where: { id } });
         if (!current) throw new Error("NOT_FOUND");
@@ -381,7 +408,6 @@ export class LeaveService {
         return tx.leaveRecord.update({
           where: { id },
           data: {
-            endDate: addBusinessDaysChile(todayIso, -1),
             isDeleted: true,
             deletedAt: new Date(),
           },

@@ -214,16 +214,7 @@ código durante la revisión del PR. El reparto, la evidencia medida y las
 consecuencias están en
 [ADR-0013](./docs/adr/0013-ci-pr-full-deploy-main-gates.md).
 
-### 7.2 Diarios de Memoria Institucional (`.jules/`)
-
-Los modelos de lenguaje resetean su contexto entre sesiones. Para garantizar que los aprendizajes arquitectónicos y de seguridad persistan entre tareas autónomas, el repositorio utiliza diarios de memoria versionados:
-
-- **`.jules/bolt.md` (Performance Journal):**
-  Registra patrones de optimización, prevención de consultas N+1 en Prisma ORM y técnicas de batch-fetching requeridas para el motor de turnos y marcajes.
-- **`.jules/sentinel.md` (Security Journal):**
-  Registra restricciones de seguridad críticas: prevención de inyección de comandos en `child_process`, parametrización estricta de PostgreSQL con `set_config`, prohibición de secretos hardcodeados y validación integral de lotes masivos.
-
-### 7.3 Estándar `AGENTS.md`
+### 7.2 Estándar `AGENTS.md`
 
 El archivo [`AGENTS.md`](./AGENTS.md) en la raíz del repositorio define la especificación canónica para agentes de IA:
 
@@ -231,17 +222,7 @@ El archivo [`AGENTS.md`](./AGENTS.md) en la raíz del repositorio define la espe
 - Restricciones de base de datos (PgBouncer en `transaction mode`, transacciones directas vía `withDirectTransaction`).
 - Reglas de calidad y estilo de código.
 
-### 7.4 Tareas Programadas Autónomas (`jules-scheduled.yml`)
-
-El repositorio cuenta con mantenimiento preventivo continuo orquestado mediante GitHub Actions y la API REST de Google Jules:
-
-| Día / Horario           | Agente             | Misión                                                                                |
-| :---------------------- | :----------------- | :------------------------------------------------------------------------------------ |
-| **Lunes 08:00 UTC**     | 🛡️ **Sentinel**    | Auditoría integral de seguridad, validación de endpoints y prevención de inyecciones. |
-| **Miércoles 08:00 UTC** | ⚡ **Bolt**        | Detección y refactorización de consultas N+1 y mutaciones lentas en Prisma.           |
-| **Viernes 18:00 UTC**   | 🧹 **Code Health** | Limpieza de `console.log` de depuración y eliminación de tipos `any`.                 |
-
-### 7.5 Gates de CI (spec 003, ADR-0012)
+### 7.3 Gates de CI (spec 003, ADR-0012)
 
 Además de `verify-backend` / `verify-frontend`, cada PR/push pasa:
 

@@ -196,12 +196,14 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "AuditLog": {
         "properties": {
           "action": {
+            "minLength": 1,
             "type": "string",
           },
           "actorUsername": {
             "type": "string",
           },
           "category": {
+            "minLength": 1,
             "type": "string",
           },
           "details": {
@@ -234,13 +236,8 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         },
         "required": [
-          "id",
-          "timestamp",
-          "actorUsername",
           "action",
           "category",
-          "severity",
-          "outcome",
         ],
         "type": "object",
       },
@@ -411,6 +408,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "items": {
           "$ref": "#/components/schemas/TimeRecordWrite",
         },
+        "maxItems": 500,
         "type": "array",
       },
       "CalendarMatrixRequest": {
@@ -496,18 +494,51 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "CorrectionQuery": {
+        "properties": {
+          "limit": {
+            "pattern": "^[1-9]\\d*$",
+            "type": "string",
+          },
+          "offset": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "since": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+            ],
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
       "CorrectionRequest": {
         "properties": {
           "attachment": {
+            "description": "No admitido: los adjuntos están deshabilitados.",
             "nullable": true,
           },
           "currentValue": {
+            "description": "Alias anterior de originalValue; el servidor captura el valor actual de la jornada.",
+            "nullable": true,
             "type": "string",
           },
           "employeeId": {
             "type": "string",
           },
+          "originalValue": {
+            "nullable": true,
+            "type": "string",
+          },
           "reason": {
+            "minLength": 1,
             "type": "string",
           },
           "recordField": {
@@ -537,25 +568,116 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         "type": "object",
       },
       "CorrectionRequestListResponse": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/ApiResponse",
-          },
-          {
-            "properties": {
-              "data": {
-                "items": {
-                  "$ref": "#/components/schemas/CorrectionRequest",
+        "properties": {
+          "requests": {
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/CorrectionRequestRecord",
                 },
-                "type": "array",
-              },
+                {
+                  "properties": {
+                    "lastModified": {
+                      "type": "number",
+                    },
+                    "syncStatus": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "lastModified",
+                    "syncStatus",
+                  ],
+                  "type": "object",
+                },
+              ],
             },
-            "required": [
-              "data",
-            ],
-            "type": "object",
+            "type": "array",
           },
+          "total": {
+            "type": "integer",
+          },
+        },
+        "required": [
+          "requests",
+          "total",
         ],
+        "type": "object",
+      },
+      "CorrectionRequestRecord": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isDeleted": {
+            "type": "boolean",
+          },
+          "originalValue": {
+            "type": "string",
+          },
+          "reason": {
+            "type": "string",
+          },
+          "recordField": {
+            "type": "string",
+          },
+          "rejectionReason": {
+            "nullable": true,
+            "type": "string",
+          },
+          "requestedValue": {
+            "type": "string",
+          },
+          "resolvedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string",
+          },
+          "resolvedBy": {
+            "nullable": true,
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+          "timeRecordId": {
+            "type": "string",
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "employeeId",
+          "timeRecordId",
+          "recordField",
+          "originalValue",
+          "requestedValue",
+          "reason",
+          "status",
+          "rejectionReason",
+          "resolvedBy",
+          "resolvedAt",
+          "createdAt",
+          "updatedAt",
+          "isDeleted",
+          "deletedAt",
+        ],
+        "type": "object",
       },
       "CreateUser": {
         "properties": {
@@ -872,6 +994,10 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "address": {
             "type": "string",
           },
+          "area": {
+            "minLength": 1,
+            "type": "string",
+          },
           "bankName": {
             "type": "string",
           },
@@ -960,10 +1086,16 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "nullable": true,
             "type": "string",
           },
+          "workdayType": {
+            "minLength": 1,
+            "type": "string",
+          },
         },
         "required": [
           "rut",
           "name",
+          "area",
+          "workdayType",
         ],
         "type": "object",
       },
@@ -1013,9 +1145,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "search": {
@@ -1048,7 +1182,6 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "mode": {
             "enum": [
               "summary",
-              "detailed",
               "compiled_detailed",
             ],
             "type": "string",
@@ -1063,6 +1196,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "week",
               "day",
             ],
+            "type": "string",
+          },
+          "workdayType": {
             "type": "string",
           },
         },
@@ -1101,21 +1237,120 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       },
       "HealthStatus": {
         "properties": {
-          "database": {
-            "type": "string",
-          },
-          "services": {
+          "backup": {
             "additionalProperties": {
-              "type": "string",
+              "nullable": true,
             },
             "type": "object",
           },
+          "database": {
+            "properties": {
+              "latency": {
+                "type": "number",
+              },
+              "size": {
+                "type": "string",
+              },
+              "status": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "status",
+            ],
+            "type": "object",
+          },
+          "instanceId": {
+            "minLength": 1,
+            "type": "string",
+          },
+          "integrity": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "jobs": {
+            "additionalProperties": {
+              "nullable": true,
+            },
+            "type": "object",
+          },
+          "responseTime": {
+            "type": "number",
+          },
           "status": {
             "enum": [
-              "ok",
-              "error",
+              "healthy",
+              "degraded",
             ],
             "type": "string",
+          },
+          "system": {
+            "properties": {
+              "arch": {
+                "type": "string",
+              },
+              "cpus": {
+                "type": "number",
+              },
+              "memory": {
+                "properties": {
+                  "heapTotal": {
+                    "type": "number",
+                  },
+                  "heapUsed": {
+                    "type": "number",
+                  },
+                  "rss": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "rss",
+                  "heapTotal",
+                  "heapUsed",
+                ],
+                "type": "object",
+              },
+              "nodeVersion": {
+                "type": "string",
+              },
+              "os": {
+                "properties": {
+                  "freeMem": {
+                    "type": "number",
+                  },
+                  "loadAvg": {
+                    "items": {
+                      "type": "number",
+                    },
+                    "type": "array",
+                  },
+                  "totalMem": {
+                    "type": "number",
+                  },
+                },
+                "required": [
+                  "freeMem",
+                  "totalMem",
+                  "loadAvg",
+                ],
+                "type": "object",
+              },
+              "platform": {
+                "type": "string",
+              },
+            },
+            "required": [
+              "platform",
+              "arch",
+              "nodeVersion",
+              "cpus",
+              "memory",
+              "os",
+            ],
+            "type": "object",
           },
           "timestamp": {
             "type": "string",
@@ -1126,7 +1361,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "required": [
           "status",
-          "uptime",
+          "instanceId",
           "timestamp",
           "database",
         ],
@@ -1188,6 +1423,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "type": "string",
           },
+          "limit": {
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "type": "integer",
+          },
           "to": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "type": "string",
@@ -1200,12 +1440,59 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         ],
         "type": "object",
       },
+      "KioskEmployee": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "isPinBlocked": {
+            "type": "boolean",
+          },
+          "name": {
+            "type": "string",
+          },
+          "rutHash": {
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "Activo",
+              "Archivado",
+            ],
+            "type": "string",
+          },
+          "workdayType": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "id",
+          "name",
+          "rutHash",
+          "isPinBlocked",
+          "status",
+          "area",
+          "workdayType",
+        ],
+        "type": "object",
+      },
+      "KioskEmployees": {
+        "items": {
+          "$ref": "#/components/schemas/KioskEmployee",
+        },
+        "type": "array",
+      },
       "KioskLogin": {
         "properties": {
           "employeeId": {
+            "minLength": 1,
             "type": "string",
           },
           "pin": {
+            "pattern": "^\\d{4}$",
             "type": "string",
           },
         },
@@ -1218,6 +1505,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "KpiSummaryRequest": {
         "properties": {
           "area": {
+            "type": "string",
+          },
+          "cargo": {
             "type": "string",
           },
           "departmentId": {
@@ -1242,6 +1532,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           "startDate": {
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "workdayType": {
             "type": "string",
           },
         },
@@ -1285,6 +1578,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "pageSize": {
             "type": "string",
           },
+          "search": {
+            "type": "string",
+          },
           "showArchived": {
             "type": "string",
           },
@@ -1292,6 +1588,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "startDate": {
+            "type": "string",
+          },
+          "type": {
             "type": "string",
           },
         },
@@ -1365,9 +1664,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "Login": {
         "properties": {
           "password": {
+            "minLength": 1,
             "type": "string",
           },
           "username": {
+            "minLength": 1,
             "type": "string",
           },
         },
@@ -1780,7 +2081,6 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "number",
           },
           "dayIndex": {
-            "maximum": 6,
             "minimum": 0,
             "type": "integer",
           },
@@ -1823,9 +2123,13 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "latitude": {
+            "maximum": 90,
+            "minimum": -90,
             "type": "number",
           },
           "longitude": {
+            "maximum": 180,
+            "minimum": -180,
             "type": "number",
           },
           "source": {
@@ -1845,8 +2149,18 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "action": {
             "type": "string",
           },
+          "exceptionApplied": {
+            "type": "boolean",
+          },
+          "exceptionType": {
+            "nullable": true,
+            "type": "string",
+          },
           "record": {
             "$ref": "#/components/schemas/AttendanceRecordResponse",
+          },
+          "requiresReview": {
+            "type": "boolean",
           },
           "success": {
             "type": "boolean",
@@ -1961,6 +2275,64 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "object",
           },
         ],
+      },
+      "RecordExportQuery": {
+        "properties": {
+          "area": {
+            "type": "string",
+          },
+          "cargo": {
+            "type": "string",
+          },
+          "employeeId": {
+            "type": "string",
+          },
+          "endDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "format": {
+            "enum": [
+              "json",
+              "csv",
+              "xml",
+              "excel",
+            ],
+            "type": "string",
+          },
+          "matchingView": {
+            "enum": [
+              "true",
+              "false",
+            ],
+            "type": "string",
+          },
+          "name": {
+            "type": "string",
+          },
+          "showAnomalies": {
+            "enum": [
+              "true",
+              "false",
+            ],
+            "type": "string",
+          },
+          "startDate": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "status": {
+            "type": "string",
+          },
+          "workdayType": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "startDate",
+          "endDate",
+        ],
+        "type": "object",
       },
       "ResetPassword": {
         "properties": {
@@ -2696,6 +3068,15 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "pageSize": {
             "type": "string",
           },
+          "search": {
+            "type": "string",
+          },
+          "showArchived": {
+            "type": "string",
+          },
+          "since": {
+            "type": "string",
+          },
           "startDate": {
             "type": "string",
           },
@@ -2730,6 +3111,10 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                   "minLength": 1,
                   "type": "string",
                 },
+                "recordId": {
+                  "minLength": 1,
+                  "type": "string",
+                },
                 "time": {
                   "minLength": 1,
                   "type": "string",
@@ -2746,6 +3131,14 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               ],
               "type": "object",
             },
+            "type": "array",
+          },
+          "removedLogEntryIds": {
+            "items": {
+              "minLength": 1,
+              "type": "string",
+            },
+            "maxItems": 100,
             "type": "array",
           },
           "responsibleUser": {
@@ -2832,7 +3225,6 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "required": [
           "date",
-          "folio",
           "shiftName",
           "responsibleUser",
           "startTime",
@@ -2862,6 +3254,63 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "object",
           },
         ],
+      },
+      "ShiftReportPaginatedResponse": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ShiftReport",
+            },
+            "type": "array",
+          },
+          "page": {
+            "type": "number",
+          },
+          "total": {
+            "type": "number",
+          },
+          "totalPages": {
+            "type": "number",
+          },
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "totalPages",
+        ],
+        "type": "object",
+      },
+      "ShiftReportQuery": {
+        "properties": {
+          "date": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "type": "string",
+          },
+          "page": {
+            "pattern": "^[1-9]\\d*$",
+            "type": "string",
+          },
+          "pageSize": {
+            "pattern": "^[1-9]\\d*$",
+            "type": "string",
+          },
+          "search": {
+            "type": "string",
+          },
+          "since": {
+            "pattern": "^\\d+$",
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "open",
+              "closed",
+            ],
+            "type": "string",
+          },
+        },
+        "type": "object",
       },
       "SuggestedPatternName": {
         "properties": {
@@ -2965,10 +3414,25 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "type": "string",
           },
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
             "type": "string",
+          },
+          "showAnomalies": {
+            "anyOf": [
+              {
+                "type": "boolean",
+              },
+              {
+                "enum": [
+                  "true",
+                  "false",
+                ],
+                "type": "string",
+              },
+            ],
           },
           "since": {
             "type": "string",
@@ -3065,7 +3529,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "UpdateUser": {
         "properties": {
           "employeeId": {
+            "nullable": true,
             "type": "string",
+          },
+          "mustChangePassword": {
+            "type": "boolean",
           },
           "password": {
             "minLength": 6,
@@ -3079,6 +3547,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "Administrador",
               "Supervisor_Elevado",
               "Fiscalizador",
+              "Archivado",
             ],
             "type": "string",
           },
@@ -3127,8 +3596,6 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "Supervisor_Elevado",
               "Fiscalizador",
               "Archivado",
-              "Reloj Control",
-              "Supervisor Elevado",
             ],
             "type": "string",
           },
@@ -3152,9 +3619,11 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "UserQuery": {
         "properties": {
           "page": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "pageSize": {
+            "pattern": "^[1-9]\\d*$",
             "type": "string",
           },
           "role": {
@@ -3696,18 +4165,49 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "application/json": {
                 "schema": {
                   "properties": {
-                    "employee": {
-                      "$ref": "#/components/schemas/Employee",
+                    "employeeName": {
+                      "type": "string",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                    "mustChangePin": {
+                      "type": "boolean",
+                    },
+                    "success": {
+                      "type": "boolean",
                     },
                     "token": {
                       "type": "string",
                     },
                   },
+                  "required": [
+                    "success",
+                    "employeeName",
+                    "token",
+                    "mustChangePin",
+                    "message",
+                  ],
                   "type": "object",
                 },
               },
             },
             "description": "Login de Kiosko exitoso",
+          },
+          "400": {
+            "description": "Error de validación en credenciales",
+          },
+          "401": {
+            "description": "PIN incorrecto",
+          },
+          "403": {
+            "description": "Empleado archivado o PIN bloqueado",
+          },
+          "404": {
+            "description": "Empleado no encontrado",
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos",
           },
         },
         "summary": "Inicia sesión modo Kiosko (Reloj Control)",
@@ -3733,28 +4233,86 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "content": {
               "application/json": {
                 "schema": {
-                  "properties": {
-                    "mustChangePassword": {
-                      "type": "boolean",
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "employeeId": {
+                          "nullable": true,
+                          "type": "string",
+                        },
+                        "message": {
+                          "type": "string",
+                        },
+                        "mfaEnabled": {
+                          "type": "boolean",
+                        },
+                        "mustChangePassword": {
+                          "type": "boolean",
+                        },
+                        "role": {
+                          "type": "string",
+                        },
+                        "token": {
+                          "type": "string",
+                        },
+                        "userId": {
+                          "type": "string",
+                        },
+                        "username": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "userId",
+                        "username",
+                        "role",
+                        "token",
+                        "mustChangePassword",
+                        "mfaEnabled",
+                        "message",
+                      ],
+                      "type": "object",
                     },
-                    "requiresMFA": {
-                      "type": "boolean",
+                    {
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                        },
+                        "mfaRequired": {
+                          "type": "boolean",
+                        },
+                        "mfaToken": {
+                          "type": "string",
+                        },
+                        "userId": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "mfaRequired",
+                        "mfaToken",
+                        "userId",
+                        "message",
+                      ],
+                      "type": "object",
                     },
-                    "success": {
-                      "type": "boolean",
-                    },
-                    "token": {
-                      "type": "string",
-                    },
-                  },
-                  "type": "object",
+                  ],
                 },
               },
             },
             "description": "Login exitoso o requerimiento de MFA",
           },
+          "400": {
+            "description": "Error de validación en credenciales",
+          },
           "401": {
             "description": "Credenciales inválidas",
+          },
+          "403": {
+            "description": "Cuenta de usuario archivada",
+          },
+          "429": {
+            "description": "Demasiados intentos fallidos",
           },
         },
         "summary": "Inicia sesión de usuario (Soporta MFA)",
@@ -3767,9 +4325,29 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
       "post": {
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "message",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
             "description": "Sesión cerrada",
           },
         },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
         "summary": "Cierra sesión del usuario",
         "tags": [
           "Auth",
@@ -3784,6 +4362,9 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "application/json": {
                 "schema": {
                   "properties": {
+                    "message": {
+                      "type": "string",
+                    },
                     "qrCode": {
                       "type": "string",
                     },
@@ -3791,11 +4372,22 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                       "type": "string",
                     },
                   },
+                  "required": [
+                    "qrCode",
+                    "secret",
+                    "message",
+                  ],
                   "type": "object",
                 },
               },
             },
             "description": "Secreto generado",
+          },
+          "403": {
+            "description": "Requiere rol Administrador",
+          },
+          "409": {
+            "description": "MFA ya habilitado",
           },
         },
         "security": [
@@ -3803,7 +4395,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "bearerAuth": [],
           },
         ],
-        "summary": "Genera secreto MFA y QR",
+        "summary": "Genera secreto MFA y QR (Solo Administrador)",
         "tags": [
           "Auth",
         ],
@@ -3811,27 +4403,68 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/auth/mfa/validate": {
       "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MFAValidate",
+              },
+            },
+          },
+          "required": true,
+        },
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
                   "properties": {
+                    "employeeId": {
+                      "nullable": true,
+                      "type": "string",
+                    },
+                    "message": {
+                      "type": "string",
+                    },
+                    "mfaEnabled": {
+                      "type": "boolean",
+                    },
                     "mustChangePassword": {
                       "type": "boolean",
+                    },
+                    "role": {
+                      "type": "string",
                     },
                     "token": {
                       "type": "string",
                     },
+                    "userId": {
+                      "type": "string",
+                    },
+                    "username": {
+                      "type": "string",
+                    },
                   },
+                  "required": [
+                    "userId",
+                    "username",
+                    "role",
+                    "token",
+                    "mustChangePassword",
+                    "mfaEnabled",
+                    "message",
+                  ],
                   "type": "object",
                 },
               },
             },
             "description": "Autenticación de dos pasos exitosa",
           },
+          "400": {
+            "description": "Payload inválido",
+          },
           "401": {
-            "description": "Código o desafío inválido, expirado o MFA deshabilitado",
+            "description": "Código o desafío inválido, ya utilizado, expirado o MFA deshabilitado",
           },
           "403": {
             "description": "Cuenta archivada entre factores",
@@ -3861,12 +4494,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           "content": {
             "application/json": {
               "schema": {
-                "properties": {
-                  "token": {
-                    "type": "string",
-                  },
-                },
-                "type": "object",
+                "$ref": "#/components/schemas/MFAVerify",
               },
             },
           },
@@ -3874,7 +4502,31 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                    },
+                  },
+                  "required": [
+                    "message",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
             "description": "MFA habilitado",
+          },
+          "400": {
+            "description": "MFA no configurado o código inválido",
+          },
+          "403": {
+            "description": "Requiere rol Administrador",
+          },
+          "409": {
+            "description": "MFA ya habilitado",
           },
         },
         "security": [
@@ -3882,7 +4534,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "bearerAuth": [],
           },
         ],
-        "summary": "Habilita MFA tras verificar primer código",
+        "summary": "Habilita MFA tras verificar primer código (Solo Administrador)",
         "tags": [
           "Auth",
         ],
@@ -4273,6 +4925,45 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/corrections": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "pending",
+                "approved",
+                "rejected",
+              ],
+              "type": "string",
+            },
+          },
+        ],
         "responses": {
           "200": {
             "content": {
@@ -4308,7 +4999,23 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "responses": {
           "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionRequestRecord",
+                },
+              },
+            },
             "description": "Solicitud creada",
+          },
+          "400": {
+            "description": "Datos inválidos o adjuntos no admitidos",
+          },
+          "403": {
+            "description": "Jornada ajena o período cerrado",
+          },
+          "409": {
+            "description": "Ya existe una solicitud pendiente para el campo",
           },
         },
         "security": [
@@ -4427,7 +5134,20 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionRequestRecord",
+                },
+              },
+            },
             "description": "Estado actualizado",
+          },
+          "403": {
+            "description": "Período cerrado",
+          },
+          "409": {
+            "description": "El campo cambió desde la solicitud",
           },
         },
         "security": [
@@ -4803,6 +5523,67 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/employees/kiosk": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KioskEmployees",
+                },
+              },
+            },
+            "description": "Lista pública de empleados activos para Kiosko (sin PII)",
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos",
+          },
+        },
         "summary": "Obtiene lista de empleados para modo Kiosko",
         "tags": [
           "Employees",
@@ -4891,8 +5672,26 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           {
             "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "compiled_detailed",
+              ],
               "type": "string",
             },
           },
@@ -4964,6 +5763,20 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           {
             "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
               "type": "string",
@@ -4975,7 +5788,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "schema": {
               "enum": [
                 "summary",
-                "detailed",
+                "compiled_detailed",
               ],
               "type": "string",
             },
@@ -5034,8 +5847,26 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
           {
             "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "employeeId",
             "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "enum": [
+                "summary",
+                "compiled_detailed",
+              ],
               "type": "string",
             },
           },
@@ -6219,6 +7050,7 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
                 "items": {
                   "$ref": "#/components/schemas/TimeRecordWrite",
                 },
+                "maxItems": 500,
                 "type": "array",
               },
             },
@@ -6320,6 +7152,71 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
               "type": "string",
             },
           },
+          {
+            "description": "Exporta los resultados de la consulta de control horario, hasta 10000 filas; supera el límite con error.",
+            "in": "query",
+            "name": "matchingView",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "employeeId",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "area",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "workdayType",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "showAnomalies",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "cargo",
+            "schema": {
+              "type": "string",
+            },
+          },
         ],
         "responses": {
           "200": {
@@ -6332,6 +7229,35 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         ],
         "summary": "Exportación masiva de marcaciones para nómina",
+        "tags": [
+          "Records",
+        ],
+      },
+    },
+    "/api/records/indicators": {
+      "get": {
+        "parameters": [
+          {
+            "description": "Hasta 100 identificadores de jornada separados por comas.",
+            "in": "query",
+            "name": "ids",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos mínimos de indicadores por jornada",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Indicadores de edición y solicitudes pendientes para jornadas visibles",
         "tags": [
           "Records",
         ],
@@ -6361,6 +7287,15 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
             "schema": {
               "format": "date",
               "type": "string",
+            },
+          },
+          {
+            "description": "Máximo de registros a verificar; la respuesta indica si el resultado fue truncado.",
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "minimum": 1,
+              "type": "integer",
             },
           },
         ],
@@ -6653,12 +7588,68 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
     },
     "/api/shift-reports": {
       "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "description": "Timestamp para consulta delta",
+            "in": "query",
+            "name": "since",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "open",
+                "closed",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "description": "Búsqueda por folio, responsable o turno",
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "type": "string",
+            },
+          },
+          {
+            "description": "Fecha de turno (YYYY-MM-DD)",
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "format": "date",
+              "type": "string",
+            },
+          },
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ShiftReportListResponse",
+                  "$ref": "#/components/schemas/ShiftReportPaginatedResponse",
                 },
               },
             },
@@ -6796,6 +7787,60 @@ exports[`Swagger Generated Contract > generated swagger.json should match snapsh
           },
         ],
         "summary": "Actualizar una bitácora de turno existente",
+        "tags": [
+          "ShiftReports",
+        ],
+      },
+    },
+    "/api/shift-reports/{id}/attendance-novelties": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "annotation": {
+                    "type": "string",
+                  },
+                  "recordId": {
+                    "type": "string",
+                  },
+                  "time": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "recordId",
+                  "annotation",
+                  "time",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Novedad persistida",
+          },
+        },
+        "security": [
+          {
+            "bearerAuth": [],
+          },
+        ],
+        "summary": "Agregar novedad de una jornada a la bitácora abierta",
         "tags": [
           "ShiftReports",
         ],

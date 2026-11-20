@@ -27,17 +27,24 @@ const ClockingPanelImpl: React.FC<ClockingPanelProps> = ({
     handleFocus,
     performActionAndReset,
     isLoadingRecords,
+    isRecordStatusUnavailable,
+    isSubmitting,
   } = useClockingPanel();
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const isStatusBlocked = isLoadingRecords || isRecordStatusUnavailable || isSubmitting;
   const jornadaInicioDisabled =
-    !selectedEmployeeId || !["fuera", "terminada"].includes(clockStatus) || isActionDisabled;
+    !selectedEmployeeId ||
+    isStatusBlocked ||
+    !["fuera", "terminada"].includes(clockStatus) ||
+    isActionDisabled;
   const colacionInicioDisabled =
-    !selectedEmployeeId || clockStatus !== "en_jornada" || isActionDisabled;
+    !selectedEmployeeId || isStatusBlocked || clockStatus !== "en_jornada" || isActionDisabled;
   const colacionFinDisabled =
-    !selectedEmployeeId || clockStatus !== "en_colacion" || isActionDisabled;
+    !selectedEmployeeId || isStatusBlocked || clockStatus !== "en_colacion" || isActionDisabled;
   const jornadaFinDisabled =
     !selectedEmployeeId ||
+    isStatusBlocked ||
     !["en_jornada", "en_jornada_post_colacion", "en_colacion"].includes(clockStatus) ||
     isActionDisabled;
 
@@ -111,7 +118,11 @@ const ClockingPanelImpl: React.FC<ClockingPanelProps> = ({
                     {selectedEmployee.name}
                   </p>
                   <p className="text-xl font-black text-token-accent-brand dark:text-blue-400 uppercase tracking-tight">
-                    {isLoadingRecords ? "Cargando..." : statusLabels[clockStatus]}
+                    {isLoadingRecords
+                      ? "Cargando..."
+                      : isRecordStatusUnavailable
+                        ? "Estado no disponible"
+                        : statusLabels[clockStatus]}
                   </p>
                 </div>
               ) : (

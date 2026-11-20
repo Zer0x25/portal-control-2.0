@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { PDFDocument } from "pdf-lib";
+import { decodePDFRawStream, PDFDocument, PDFRawStream } from "pdf-lib";
 import { mkdirSync, writeFileSync } from "node:fs";
 const data = vi.hoisted(() => ({
   employees: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../src/services/db", () => ({
     timeRecord: { findMany: data.records },
     shiftPattern: { findMany: data.patterns },
     assignedShift: { findMany: data.assignments },
-    shiftReport: { findUnique: data.shiftReport },
+    shiftReport: { findUnique: data.shiftReport, findFirst: data.shiftReport },
   },
 }));
 vi.mock("../../src/services/schedulingService", () => ({
@@ -167,4 +167,108 @@ it("keeps shift-report business date while formatting start/end instants in Chil
   const bytes = await new ExportService().generateReportPDF("shift_report", { shiftReportId: "r" });
   expect((await PDFDocument.load(bytes)).getPageCount()).toBeGreaterThan(0);
   if (process.env.PDF_QA_DIR) writeFileSync(`${process.env.PDF_QA_DIR}/shift_report.pdf`, bytes);
+});
+
+it("paginates a long calendar for multiple employees with all days and page footers", async () => {
+  data.employees.mockResolvedValue([
+    { id: "e", name: "Empleado Uno", area: "Operaciones", position: "Guardia" },
+    { id: "f", name: "Empleado Dos", area: "Operaciones", position: "Guardia" },
+  ]);
+  const bytes = await new ExportService().generateReportPDF("calendar", {
+    startDate: "2026-10-01",
+    endDate: "2026-11-30",
+  });
+  const pdf = await PDFDocument.load(bytes);
+  expect(pdf.getPageCount()).toBe(6);
+  const pageTexts = pdf.getPages().map((page) => {
+    const content = page.node.Contents();
+    expect(content).toBeInstanceOf(PDFRawStream);
+    const stream = Buffer.from(decodePDFRawStream(content as PDFRawStream).decode()).toString();
+    return [...stream.matchAll(/\[([^\]]*)\] TJ/g)].map((match) =>
+      [...match[1].matchAll(/<([0-9a-f]+)>/gi)]
+        .map((part) => Buffer.from(part[1], "hex").toString("latin1"))
+        .join(""),
+    );
+  });
+  for (const [index, texts] of pageTexts.entries()) {
+    expect(texts).toContain(index < 3 ? "Empleado Uno" : "Empleado Dos");
+    expect(texts).toContain("Mes");
+    expect(texts).toContain(`Página ${index + 1}`);
+    expect(texts).toContain("Turno");
+  }
+  for (const pages of [pageTexts.slice(0, 3), pageTexts.slice(3)]) {
+    const texts = pages.flat();
+    const dates = texts.flatMap((text, i) =>
+      text === "Octubre" || text === "Noviembre" ? [`${text} ${texts[i + 1]}`] : [],
+    );
+    expect(dates).toEqual([
+      ...Array.from({ length: 31 }, (_, i) => `Octubre ${String(i + 1).padStart(2, "0")}`),
+      ...Array.from({ length: 30 }, (_, i) => `Noviembre ${String(i + 1).padStart(2, "0")}`),
+    ]);
+  }
+  expect(data.schedule).toHaveBeenCalledTimes(122);
+  if (process.env.PDF_QA_DIR) {
+    mkdirSync(process.env.PDF_QA_DIR, { recursive: true });
+    writeFileSync(`${process.env.PDF_QA_DIR}/calendar-long.pdf`, bytes);
+  }
+});
+
+it("renders the requested calendar even when every day is rest", async () => {
+  data.schedule.mockResolvedValue(null);
+  const bytes = await new ExportService().generateReportPDF("calendar", {
+    employeeId: "e",
+    startDate: "2026-11-16",
+    endDate: "2026-11-17",
+  });
+  const pdf = await PDFDocument.load(bytes);
+  expect(pdf.getPageCount()).toBe(1);
+  const content = pdf.getPage(0).node.Contents() as PDFRawStream;
+  const stream = Buffer.from(decodePDFRawStream(content).decode()).toString();
+  const texts = [...stream.matchAll(/\[([^\]]*)\] TJ/g)].map((match) =>
+    [...match[1].matchAll(/<([0-9a-f]+)>/gi)]
+      .map((part) => Buffer.from(part[1], "hex").toString("latin1"))
+      .join(""),
+  );
+  expect(texts).toContain("José Muñoz");
+  expect(texts.filter((text) => text === "Descanso")).toHaveLength(2);
+  expect(texts).toContain("16");
+  expect(texts).toContain("17");
+});
+
+it("keeps long calendar observations visible across rows and pages", async () => {
+  const observation = `Inicio ${"observacion extraordinaria ".repeat(160)}FinalUnico`;
+  data.schedule.mockResolvedValue({ isWorkDay: true, hours: 8, shiftPatternName: observation });
+  const bytes = await new ExportService().generateReportPDF("calendar", {
+    startDate: "2026-11-16",
+    endDate: "2026-11-16",
+  });
+  const pdf = await PDFDocument.load(bytes);
+  expect(pdf.getPageCount()).toBeGreaterThan(1);
+  const pageTexts = pdf.getPages().map((page) => {
+    const stream = Buffer.from(
+      decodePDFRawStream(page.node.Contents() as PDFRawStream).decode(),
+    ).toString();
+    return [...stream.matchAll(/\[([^\]]*)\] TJ/g)].map((match) =>
+      [...match[1].matchAll(/<([0-9a-f]+)>/gi)]
+        .map((part) => Buffer.from(part[1], "hex").toString("latin1"))
+        .join(""),
+    );
+  });
+  const renderedObservation = pageTexts
+    .map((texts, index) => {
+      const start =
+        index === 0
+          ? texts.findIndex((text) => text.startsWith("Inicio"))
+          : texts.indexOf("Observación") + 1;
+      const end = texts.findIndex((text) => text === "TOTAL" || text.startsWith("Generado:"));
+      return texts.slice(start, end).join("");
+    })
+    .join("")
+    .replace(/\s/g, "");
+  expect(renderedObservation).toBe(observation.replace(/\s/g, ""));
+  for (const [index, texts] of pageTexts.entries()) {
+    expect(texts).toContain(`Página ${index + 1}`);
+    expect(texts).toContain("Observación");
+  }
+  expect(pageTexts.flat().filter((text) => text === "Noviembre")).toHaveLength(1);
 });

@@ -5,6 +5,7 @@ import {
   PunchSchema,
   TimeRecordWriteSchema,
   TimeRecordQuerySchema,
+  RecordExportQuerySchema,
   DailyAttendanceQuerySchema,
   BulkTimeRecordSchema,
   IntegrityVerifyQuerySchema,
@@ -24,6 +25,9 @@ import type {
   ExportFilters,
 } from "../application/contracts";
 export interface RecordsHttpService extends RecordFlows {
+  indicators(ids: string[]): Promise<unknown>;
+  exportView(filters: ExportFilters): Promise<Record<string, unknown>[]>;
+  exportViewFile(format: "csv" | "excel", rows: Record<string, unknown>[]): Promise<Buffer>;
   exportStream(
     format: "csv" | "xml" | "excel",
     stream: ExcelHttpStream,
@@ -43,18 +47,81 @@ export const recordsPlugin: FastifyPluginAsync<{
     )
       throw new ForbiddenError("Acceso denegado: Se requieren permisos de Supervisor o superior");
   };
+  const punchAllowed: onRequestHookHandler = async (request) => {
+    if (request.user?.role === "Fiscalizador" || request.user?.role === "Supervisor") {
+      throw new ForbiddenError("Acceso denegado: Este rol es de solo lectura para marcajes");
+    }
+  };
+  const writer: onRequestHookHandler = async (request) => {
+    if (
+      !request.user?.role ||
+      !["Administrador", "Supervisor_Elevado", "Reloj_Control"].includes(request.user.role)
+    ) {
+      throw new ForbiddenError("Acceso denegado: Este rol es de solo lectura para jornadas");
+    }
+  };
   const read = { config: { requiresAuth: true }, onRequest: options.authenticate };
-  const write = { config: { requiresAuth: true }, onRequest: [options.authenticate, supervisor] };
+  const punchGuard = {
+    config: { requiresAuth: true },
+    onRequest: [options.authenticate, punchAllowed],
+  };
+  const write = { config: { requiresAuth: true }, onRequest: [options.authenticate, writer] };
+  const integrityRead = {
+    config: { requiresAuth: true },
+    onRequest: [options.authenticate, supervisor],
+  };
   const params = z.object({ id: z.string() });
   app.post<{ Body: PunchInput }>(
     "/api/records/punch",
-    { ...read, preHandler: validateRequest("body", PunchSchema) },
+    { ...punchGuard, preHandler: validateRequest("body", PunchSchema) },
     (req) => options.service.punch(req.body, req.user),
   );
   app.get<{ Querystring: RecordQuery }>(
     "/api/records",
     { ...read, preHandler: validateRequest("query", TimeRecordQuerySchema) },
     (req) => options.service.list(req.query, req.user),
+  );
+  app.get<{ Querystring: { ids: string } }>(
+    "/api/records/indicators",
+    {
+      ...read,
+      onRequest: [
+        options.authenticate,
+        async (request) => {
+          if (
+            !request.user?.role ||
+            ![
+              "Administrador",
+              "Supervisor_Elevado",
+              "Supervisor",
+              "Reloj_Control",
+              "Fiscalizador",
+            ].includes(request.user.role)
+          ) {
+            throw new ForbiddenError("Acceso denegado");
+          }
+        },
+      ],
+      preHandler: validateRequest(
+        "query",
+        z.object({
+          ids: z
+            .string()
+            .min(1)
+            .max(20000)
+            .refine((value) => {
+              try {
+                const ids = value.split(",").map(decodeURIComponent);
+                return ids.length <= 100 && ids.every((id) => id.length > 0 && id.length <= 200);
+              } catch {
+                return false;
+              }
+            }),
+        }),
+      ),
+    },
+    (req) =>
+      options.service.indicators([...new Set(req.query.ids.split(",").map(decodeURIComponent))]),
   );
   app.get<{ Querystring: DailyAttendanceQuery }>(
     "/api/records/daily-attendance",
@@ -82,7 +149,7 @@ export const recordsPlugin: FastifyPluginAsync<{
   );
   app.get<{ Querystring: { employeeId?: string; from?: string; to?: string; limit?: string } }>(
     "/api/records/integrity/verify",
-    { ...write, preHandler: validateRequest("query", IntegrityVerifyQuerySchema) },
+    { ...integrityRead, preHandler: validateRequest("query", IntegrityVerifyQuerySchema) },
     (req) =>
       options.service.verify({
         ...req.query,
@@ -111,9 +178,26 @@ export const recordsPlugin: FastifyPluginAsync<{
   );
   app.get<{ Querystring: Record<string, unknown> }>(
     "/api/records/export",
-    { ...read, preHandler: validateRequest("query", TimeRecordQuerySchema) },
+    { ...read, preHandler: validateRequest("query", RecordExportQuerySchema) },
     async (req, reply) => {
       const { format, filters } = await options.service.prepareExport(req.query, req.user);
+      if (filters.matchingView) {
+        if (format !== "json" && format !== "csv" && format !== "excel")
+          throw new Error("Formato de exportación no compatible");
+        const rows = await options.service.exportView(filters);
+        if (format === "json") return rows;
+        const extension = format === "excel" ? "xlsx" : "csv";
+        const file = await options.service.exportViewFile(format, rows);
+        return reply
+          .headers({
+            "Content-Type":
+              format === "excel"
+                ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                : "text/csv; charset=utf-8",
+            "Content-Disposition": `attachment; filename=registros_horario_${filters.startDate}_${filters.endDate}.${extension}`,
+          })
+          .send(file);
+      }
       if (format !== "csv" && format !== "xml" && format !== "excel")
         return options.service.exportJson(filters);
       const contentType =

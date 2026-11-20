@@ -1,6 +1,7 @@
 import { useTimeControl } from "./useTimeControl";
 import { useTimeRecordActions } from "../../../hooks/useTimeRecordActions";
 import { useAccountingLockDateQuery } from "../../../hooks/queries/useConfigQuery";
+import { addBusinessDaysChile, toBusinessDateChile } from "../../../utils/dateUtils";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 
 interface UseTimeControlDataConfig {
@@ -69,8 +70,9 @@ export const useTimeControlData = ({
   const { data: accountingLockDate } = useAccountingLockDateQuery();
 
   const effectiveLockDate = (() => {
-    const currentYear = businessNow.getFullYear();
-    const currentMonth = businessNow.getMonth();
+    const [year, month] = toBusinessDateChile(businessNow).split("-").map(Number);
+    const currentYear = year;
+    const currentMonth = month - 1;
 
     let cutoffYear = currentYear;
     let cutoffMonth = currentMonth - 1;
@@ -82,9 +84,11 @@ export const useTimeControlData = ({
 
     const autoLockDate = `${cutoffYear}-${String(cutoffMonth + 1).padStart(2, "0")}-01`;
 
-    if (!accountingLockDate) return autoLockDate;
+    // La frontera automática es exclusiva; las filas reciben un límite inclusivo.
+    const lastAutoLockedDate = addBusinessDaysChile(autoLockDate, -1);
+    if (!accountingLockDate) return lastAutoLockedDate;
 
-    return accountingLockDate > autoLockDate ? accountingLockDate : autoLockDate;
+    return accountingLockDate > lastAutoLockedDate ? accountingLockDate : lastAutoLockedDate;
   })();
 
   // Keep the route shell visible while record data loads; the table receives isLoading itself.

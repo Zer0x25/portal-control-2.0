@@ -112,6 +112,7 @@ describe("TimeRecordFilters Component", () => {
 
     expect(useTimeRecordsQuery).toHaveBeenCalledWith({
       pageSize: 50,
+      allowCache: false,
       filters: {},
       enabled: true,
     });
@@ -121,6 +122,34 @@ describe("TimeRecordFilters Component", () => {
     expect(screen.getByText(/Rango Rápido/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Desde/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Hasta/i)).toBeInTheDocument();
+  });
+
+  it("loads later pages and includes historical categories beyond the first 50 records", () => {
+    const fetchNextPage = vi.fn();
+    vi.mocked(useTimeRecordsQuery).mockReturnValue({
+      data: {
+        pages: [
+          {
+            data: Array.from({ length: 50 }, () => ({
+              employeeArea: "Área inicial",
+              employeeWorkdayType: "Inicial",
+            })),
+          },
+          { data: [{ employeeArea: "Área histórica", employeeWorkdayType: "Histórica" }] },
+        ],
+      },
+      hasNextPage: true,
+      isFetchingNextPage: false,
+      fetchNextPage,
+    } as unknown as ReturnType<typeof useTimeRecordsQuery>);
+    render(<TimeRecordFilters {...defaultProps} />);
+    expect(fetchNextPage).toHaveBeenCalledOnce();
+    expect(screen.getByRole("option", { name: "Área histórica" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Histórica" })).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("combobox", { name: /Área Operativa/i }), {
+      target: { value: "Área histórica" },
+    });
+    expect(mockOnClientFilterChange).toHaveBeenCalledWith({ area: "Área histórica" });
   });
 
   it("should call onClientFilterChange when changing workday type", () => {
@@ -161,6 +190,7 @@ describe("TimeRecordFilters Component", () => {
 
     expect(useTimeRecordsQuery).toHaveBeenLastCalledWith({
       pageSize: 50,
+      allowCache: false,
       filters: {},
       enabled: false,
     });
@@ -170,6 +200,7 @@ describe("TimeRecordFilters Component", () => {
     expect(screen.getByText(/Ocultar Filtros/i)).toBeInTheDocument();
     expect(useTimeRecordsQuery).toHaveBeenLastCalledWith({
       pageSize: 50,
+      allowCache: false,
       filters: {},
       enabled: true,
     });

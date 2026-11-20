@@ -35,7 +35,7 @@ export interface TimeRecordTableProps {
   // Search Props
   searchName: string;
   onSearchChange: (name: string) => void;
-  onExportStreaming: (format: "csv" | "excel") => void;
+  onExportStreaming: (format: "csv" | "excel" | "pdf") => void;
   onViewHistory: (record: DailyTimeRecord) => void;
   filtersKey?: string;
 }
@@ -67,6 +67,8 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
       handleExport,
       isExportMenuOpen,
       pendingRequestsMap,
+      indicatorsError,
+      retryIndicators,
       setIsExportMenuOpen,
     } = useTimeRecordTableController({
       records,
@@ -146,6 +148,19 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
             </div>
           </div>
 
+          {indicatorsError && (
+            <div role="alert" className="mb-4 text-sm text-token-text-secondary">
+              No se pudieron cargar los indicadores de edición y solicitudes pendientes.{" "}
+              <button
+                type="button"
+                onClick={() => void retryIndicators()}
+                className="underline"
+                data-testid="retry-record-indicators"
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
           <div className="mb-8 relative min-h-[400px]">
             <ResponsiveView
               mobile={
@@ -163,6 +178,7 @@ const TimeRecordTable: React.FC<TimeRecordTableProps> = React.memo(
                     accountingLockDate={accountingLockDate}
                     isControlInternoEnabled={isControlInternoEnabled}
                     pendingRequestsMap={pendingRequestsMap}
+                    editsMapAll={editsMapAll}
                   />
                 </Suspense>
               }

@@ -9,6 +9,8 @@ import { logger } from "../utils/logger";
 import { MultiSmtpConfigSchema } from "../models/schemas/smtpProfile.schemas";
 import { EmailRulesSchema } from "../models/schemas/email.schemas";
 import { ValidationError } from "../utils/AppError";
+import { escapeHtml } from "../utils/htmlEscape";
+import { assertSafeSmtpHost } from "../utils/smtpHostGuard";
 
 import type { SmtpConfig, MultiSmtpConfig, EmailNotificationRules } from "../modules/emailReports";
 export type {
@@ -169,6 +171,7 @@ export class EmailService {
   }
 
   async verifyConnection(config: SmtpConfig): Promise<{ success: boolean; message: string }> {
+    assertSafeSmtpHost(config.host);
     try {
       let passToUse = config.pass;
 
@@ -219,12 +222,12 @@ export class EmailService {
     subject: string,
     message: string,
   ): Promise<{ success: boolean; message: string }> {
-    const config = await this.getSmtpConfig();
-    if (!config) {
-      return { success: false, message: "Servidor SMTP no configurado." };
-    }
-
     try {
+      const config = await this.getSmtpConfig();
+      if (!config) {
+        return { success: false, message: "Servidor SMTP no configurado." };
+      }
+
       const transporter = nodemailer.createTransport({
         host: config.host,
         port: config.port,
@@ -243,7 +246,7 @@ export class EmailService {
         to,
         subject,
         text: message,
-        html: message.replace(/\n/g, "<br>"),
+        html: escapeHtml(message).replace(/\n/g, "<br>"),
       });
 
       return { success: true, message: "Correo enviado correctamente." };
@@ -260,12 +263,12 @@ export class EmailService {
     attachmentBuffer: Buffer,
     attachmentFilename: string,
   ): Promise<{ success: boolean; message: string }> {
-    const config = await this.getSmtpConfig();
-    if (!config) {
-      return { success: false, message: "Servidor SMTP no configurado." };
-    }
-
     try {
+      const config = await this.getSmtpConfig();
+      if (!config) {
+        return { success: false, message: "Servidor SMTP no configurado." };
+      }
+
       const transporter = nodemailer.createTransport({
         host: config.host,
         port: config.port,

@@ -1,7 +1,7 @@
 import type { DailyMetric } from "./types";
 
-// Version 2 also binds the complete month to the generation read before its inputs.
-const CACHE_VERSION = 2;
+// Version 3 invalidates clocks previously formatted in the server timezone.
+const CACHE_VERSION = 3;
 export const serializeMonthlyBreakdown = (days: DailyMetric[], sourceRevision: string): string =>
   JSON.stringify({ version: CACHE_VERSION, sourceRevision, days });
 

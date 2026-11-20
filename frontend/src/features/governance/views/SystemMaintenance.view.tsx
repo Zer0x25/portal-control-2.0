@@ -21,7 +21,9 @@ import {
   ActivityIcon,
 } from "../../../components/ui/icons/index";
 import { MetricCard, MetricStat } from "../../../components/ui/MetricCard";
+import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import BackupListModal from "../containers/BackupListModal.container";
+import type { PendingMaintenanceConfirmation } from "../hooks/useSystemMaintenanceController";
 import { Z } from "../../../constants/zScale";
 
 interface MaintenanceStats {
@@ -66,6 +68,8 @@ export interface SystemMaintenanceViewProps {
   /** Mensaje de error del campo (o `undefined`). */
   newPasswordError?: string;
   isBackupListOpen: boolean;
+  confirmDialog?: PendingMaintenanceConfirmation | null;
+  closeConfirmDialog?: () => void;
   setPurgeUsername: (value: string) => void;
   setResetUsername: (value: string) => void;
   setNewPassword: (value: string) => void;
@@ -120,6 +124,8 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
   handleMasterReset,
   handleTriggerAccountingAutoClose,
   handleRestartBackend,
+  confirmDialog = null,
+  closeConfirmDialog = () => {},
 }) => {
   return (
     <Container
@@ -460,6 +466,15 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
         </div>
       </div>
       <BackupListModal isOpen={isBackupListOpen} onClose={() => setIsBackupListOpen(false)} />
+      <ConfirmationModal
+        isOpen={Boolean(confirmDialog)}
+        onClose={closeConfirmDialog}
+        onConfirm={confirmDialog?.onConfirm ?? (async () => {})}
+        title={confirmDialog?.title ?? ""}
+        message={confirmDialog?.message ?? ""}
+        confirmText={confirmDialog?.confirmText}
+        confirmVariant={confirmDialog?.confirmVariant}
+      />
     </Container>
   );
 };

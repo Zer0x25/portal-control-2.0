@@ -15,9 +15,11 @@ export const leaveService = {
         startDate: options.startDate,
         endDate: options.endDate,
         employeeId: options.employeeId,
+        type: options.type,
+        search: options.search,
         since: options.since,
         showArchived: options.showArchived,
-      },
+      } as unknown as never,
     });
     return response as unknown as PaginatedResponse<LeaveRecord>;
   },

@@ -2,13 +2,19 @@ import { Holiday } from "../types/index";
 import { request as apiRequest } from "./apiClient";
 import { BulkCreateHolidayPayload, PaginatedResponse } from "../types/scheduling";
 
-export type CreateHolidayPayload = Pick<Holiday, "name" | "date" | "type"> & { id?: string };
+export type CreateHolidayPayload = Pick<Holiday, "name" | "date" | "type" | "isRenounceable"> & {
+  id?: string;
+};
+
+export type UpdateHolidayPayload = Partial<
+  Pick<Holiday, "name" | "date" | "type" | "isRenounceable">
+>;
 
 /** Resultado de la sincronizacion de feriados externos. */
-interface HolidaySyncResult {
+export interface HolidaySyncResult {
+  success: boolean;
   total: number;
-  added: number;
-  skipped: number;
+  year: number;
 }
 
 export const holidayService = {
@@ -54,10 +60,7 @@ export const holidayService = {
     });
   },
 
-  async update(
-    id: string,
-    holiday: Partial<Pick<Holiday, "name" | "date" | "type">>,
-  ): Promise<Holiday> {
+  async update(id: string, holiday: UpdateHolidayPayload): Promise<Holiday> {
     // El backend actualiza por `id` en el cuerpo (no por ruta).
     return apiRequest<Holiday>({
       method: "POST",

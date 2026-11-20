@@ -5,6 +5,7 @@ import {
   createAuthenticate,
   type AuthenticationDependencies,
 } from "../../src/modules/auth/application/authenticate";
+import { resolveAccessToken } from "../../src/modules/auth/infrastructure/jwt";
 
 const secret = "test-only-authentication-secret";
 const now = new Date("2026-10-06T12:00:00Z");
@@ -25,6 +26,7 @@ function fixture() {
       touch: vi.fn(async () => {}),
     },
     users: { find: vi.fn(async () => user) },
+    employees: { findStatus: vi.fn(async () => ({ status: "Activo" })) },
   };
   return {
     deps,
@@ -96,43 +98,96 @@ describe("Shared authentication with real JWT verification", () => {
     vi.mocked(f.deps.sessions.touch).mockRejectedValue(new Error("touch failed"));
     expect(await f.authenticate(f.token)).toEqual(f.user);
   });
-  describe("Anti-regression: Kiosk path lockdown & force password change", () => {
+  describe("Anti-regression: Kiosk path lockdown, archived rejection & force password change", () => {
+    it("resolves access token exclusively from Authorization Bearer header", () => {
+      expect(resolveAccessToken("Bearer my-jwt-token")).toBe("my-jwt-token");
+      expect(resolveAccessToken("bearer my-jwt-token")).toBe("my-jwt-token");
+      expect(resolveAccessToken("Token my-jwt-token")).toBeUndefined();
+      expect(resolveAccessToken("Bearer   ")).toBeUndefined();
+      expect(resolveAccessToken(undefined)).toBeUndefined();
+    });
+
     it.each([
-      "/api/records/punch",
-      "/api/records",
-      "/api/records?since=1000",
-      "/api/employees/EMP-100",
-      "/api/auth/logout",
-      "/api/corrections",
-      "/api/shifts",
-      "/api/holidays",
-      "/api/export/calendar-pdf",
-    ])("allows kiosk token on permitted path %s and sets employeeId", async (path) => {
+      ["POST", "/api/records/punch"],
+      ["GET", "/api/records"],
+      ["GET", "/api/records?since=1000"],
+      ["GET", "/api/records?employeeId=k-1&pageSize=1"],
+      ["PUT", "/api/employees/k-1"],
+      ["POST", "/api/auth/logout"],
+    ] as const)("allows active kiosk token on %s %s and sets employeeId", async (method, path) => {
       const f = fixture();
       const token = jwt.sign(
         { id: "k-1", username: "kiosk", role: "Kiosk_Employee", employeeId: "k-1" },
         secret,
         { expiresIn: "2m" },
       );
-      const user = await f.authenticate(token, path);
+      const user = await f.authenticate(token, path, method);
       expect(user).toMatchObject({ role: "Kiosk_Employee", employeeId: "k-1" });
     });
 
-    it.each(["/api/users", "/api/admin/status", "/api/configs", "/api/export/report-pdf"])(
-      "rejects kiosk token on unpermitted path %s",
-      async (path) => {
-        const f = fixture();
-        const token = jwt.sign({ id: "k-1", username: "kiosk", role: "Kiosk_Employee" }, secret, {
-          expiresIn: "2m",
-        });
-        await expect(f.authenticate(token, path)).rejects.toMatchObject({
-          statusCode: 403,
-          message: "Token de kiosco no autorizado para este recurso",
-        });
-      },
-    );
+    it.each([
+      ["GET", "/api/records/daily-attendance"],
+      ["GET", "/api/records/export"],
+      ["POST", "/api/records"],
+      ["GET", "/api/records?employeeId=EMP-OTHER"],
+      ["GET", "/api/employees/k-1"],
+      ["PUT", "/api/employees/EMP-OTHER"],
+      ["GET", "/api/corrections"],
+      ["POST", "/api/corrections"],
+      ["GET", "/api/shifts"],
+      ["GET", "/api/holidays"],
+      ["GET", "/api/export/calendar-pdf"],
+      ["GET", "/api/users"],
+      ["GET", "/api/admin/status"],
+      ["GET", "/api/configs"],
+      ["GET", "/api/export/report-pdf"],
+    ] as const)("rejects kiosk token on unpermitted %s %s with 403", async (method, path) => {
+      const f = fixture();
+      const token = jwt.sign(
+        { id: "k-1", username: "kiosk", role: "Kiosk_Employee", employeeId: "k-1" },
+        secret,
+        { expiresIn: "2m" },
+      );
+      await expect(f.authenticate(token, path, method)).rejects.toMatchObject({
+        statusCode: 403,
+        message: "Token de kiosco no autorizado para este recurso",
+      });
+    });
 
-    it("restricts user with isForcePasswordChange to auth routes and self user route", async () => {
+    it("rejects kiosk token when linked employee is archived or missing", async () => {
+      const f = fixture();
+      vi.mocked(f.deps.employees!.findStatus).mockResolvedValueOnce({ status: "Archivado" });
+      const token = jwt.sign(
+        { id: "k-1", username: "kiosk", role: "Kiosk_Employee", employeeId: "k-1" },
+        secret,
+        { expiresIn: "2m" },
+      );
+      await expect(f.authenticate(token, "/api/records/punch", "POST")).rejects.toMatchObject({
+        statusCode: 403,
+      });
+
+      vi.mocked(f.deps.employees!.findStatus).mockResolvedValueOnce(null);
+      await expect(f.authenticate(token, "/api/records/punch", "POST")).rejects.toMatchObject({
+        statusCode: 403,
+      });
+    });
+
+    it("rejects existing session when persisted user role is Archivado", async () => {
+      const f = fixture();
+      vi.mocked(f.deps.users.find).mockResolvedValue({
+        id: "u1",
+        username: "persisted",
+        role: "Archivado",
+        employeeId: null,
+        isForcePasswordChange: false,
+      });
+
+      await expect(f.authenticate(f.token, "/api/records", "GET")).rejects.toMatchObject({
+        statusCode: 403,
+      });
+    });
+
+    it("restricts user with isForcePasswordChange to PUT self user route, logout, and health routes", async () => {
       const f = fixture();
       vi.mocked(f.deps.users.find).mockResolvedValue({
         id: "u1",
@@ -141,19 +196,37 @@ describe("Shared authentication with real JWT verification", () => {
         isForcePasswordChange: true,
       });
 
-      await expect(f.authenticate(f.token, "/api/auth/change-password")).resolves.toMatchObject({
+      await expect(f.authenticate(f.token, "/api/users/u1", "PUT")).resolves.toMatchObject({
         id: "u1",
       });
-      await expect(f.authenticate(f.token, "/api/users/u1")).resolves.toMatchObject({ id: "u1" });
-      await expect(f.authenticate(f.token, "/api/users/u1?refresh=true")).resolves.toMatchObject({
+      await expect(
+        f.authenticate(f.token, "/api/users/u1?refresh=true", "PUT"),
+      ).resolves.toMatchObject({
+        id: "u1",
+      });
+      await expect(f.authenticate(f.token, "/api/auth/logout", "POST")).resolves.toMatchObject({
+        id: "u1",
+      });
+      await expect(f.authenticate(f.token, "/api/health/ready", "GET")).resolves.toMatchObject({
         id: "u1",
       });
 
-      await expect(f.authenticate(f.token, "/api/records")).rejects.toMatchObject({
-        statusCode: 403,
-        message: "Debe actualizar su contraseña temporal antes de continuar",
-      });
-      await expect(f.authenticate(f.token, "/api/users/other-user")).rejects.toMatchObject({
+      for (const [method, path] of [
+        ["POST", "/api/auth/change-password"],
+        ["POST", "/api/auth/mfa/setup"],
+        ["POST", "/api/auth/mfa/verify"],
+        ["GET", "/api/auth/session"],
+        ["DELETE", "/api/users/u1"],
+        ["GET", "/api/records"],
+        ["PUT", "/api/users/other-user"],
+      ] as const) {
+        await expect(f.authenticate(f.token, path, method)).rejects.toMatchObject({
+          statusCode: 403,
+          message: "Debe actualizar su contraseña temporal antes de continuar",
+        });
+      }
+
+      await expect(f.authenticate(f.token)).rejects.toMatchObject({
         statusCode: 403,
         message: "Debe actualizar su contraseña temporal antes de continuar",
       });

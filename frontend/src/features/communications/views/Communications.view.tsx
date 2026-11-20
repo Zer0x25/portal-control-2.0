@@ -14,22 +14,26 @@ export interface CommunicationsViewProps {
   /** HTML ya saneado por el controller (la vista no sanitiza). */
   safeContent: string;
   isLoading: boolean;
+  isSaving?: boolean;
   isEditing: boolean;
   isAdmin: boolean;
   setContent: React.Dispatch<React.SetStateAction<string>>;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   handleSave: () => Promise<void>;
+  handleDiscard?: () => void;
 }
 
 export const CommunicationsView: React.FC<CommunicationsViewProps> = ({
   content,
   safeContent,
   isLoading,
+  isSaving = false,
   isEditing,
   isAdmin,
   setContent,
   setIsEditing,
   handleSave,
+  handleDiscard,
 }) => {
   if (isLoading) {
     return (
@@ -89,13 +93,15 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = ({
             <div className="flex gap-3 pt-4 border-t border-token-border-technical">
               <Button
                 onClick={handleSave}
+                disabled={isSaving}
                 className="h-11 px-8 bg-(--sidebar-text-active) text-white font-bold rounded-sm border-none"
               >
                 <CheckIcon className="w-4 h-4 mr-2" />
                 Publicar Cambios
               </Button>
               <Button
-                onClick={() => setIsEditing(false)}
+                onClick={handleDiscard ?? (() => setIsEditing(false))}
+                disabled={isSaving}
                 variant="secondary"
                 className="h-11 px-8 bg-token-surface-card border-token-border-technical rounded-sm"
               >

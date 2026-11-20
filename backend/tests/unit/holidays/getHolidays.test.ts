@@ -18,8 +18,21 @@ vi.mock("ulid", () => ({ ulid: () => "holiday-fixture-id" }));
 
 const fixedInstant = new Date("2026-01-01T02:00:00Z");
 
-function holiday(date: string, name = "Feriado", type = "Nacional"): Holiday {
-  return { id: date, date, name, type, createdAt: fixedInstant, updatedAt: fixedInstant };
+function holiday(
+  date: string,
+  name = "Feriado",
+  type = "Nacional",
+  isRenounceable = false,
+): Holiday {
+  return {
+    id: date,
+    date,
+    name,
+    type,
+    isRenounceable,
+    createdAt: fixedInstant,
+    updatedAt: fixedInstant,
+  };
 }
 
 function enriched(row: Holiday) {

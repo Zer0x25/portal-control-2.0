@@ -27,6 +27,8 @@ export const employeeFormSchema = z.object({
   rut: requiredTextMin("El RUT", 8).refine(isValidChileanRut, ERROR_MESSAGES.invalidRut()),
   name: requiredTextMin("El nombre", 2),
   position: optionalText(),
+  area: requiredTextMin("El área", 1),
+  workdayType: requiredTextMin("El tipo de jornada", 1),
   department: optionalText(),
   email: optionalEmailField(),
   phone: optionalText(),
@@ -77,10 +79,6 @@ export type EmployeeFormPayload = z.output<typeof employeeFormSchema>;
 export const employeeFormFieldsSchema = employeeFormSchema.extend({
   /** El cargo es obligatorio en la pantalla (el backend lo admite opcional). */
   position: requiredText("El cargo"),
-  /** Area o departamento (la pantalla lo escribe; el backend no lo declara). */
-  area: requiredText("El área"),
-  /** Tipo de jornada (la pantalla lo escribe; el backend no lo declara). */
-  workdayType: requiredText("El tipo de jornada"),
 });
 
 /** Tipo de la entrada del formulario de alta/edicion de empleado. */

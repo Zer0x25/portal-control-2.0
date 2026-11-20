@@ -1,5 +1,6 @@
 import speakeasy from "speakeasy";
 import qrcode from "qrcode";
+import { logger } from "../utils/logger";
 
 export const mfaService = {
   /**
@@ -23,7 +24,7 @@ export const mfaService = {
     try {
       return await qrcode.toDataURL(otpauthUrl);
     } catch (err) {
-      console.error("Error generating QR Code:", err);
+      logger.error("Error generating QR Code", err);
       throw new Error("No se pudo generar el código QR");
     }
   },

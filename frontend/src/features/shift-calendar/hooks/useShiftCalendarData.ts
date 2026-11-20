@@ -2,12 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useToasts } from "../../../hooks/useToasts";
 import { useStore } from "../../../store/useStore";
-import {
-  formatDateUTCISO,
-  getDateRange,
-  getWeekStartDate,
-  generateCalendarGrid,
-} from "../../../utils/dateUtils";
+import { formatDateUTCISO, getDateRange } from "../../../utils/dateUtils";
 import { exportShiftScheduleToICS, exportCalendarToPDF } from "../../../utils/export/index";
 import type { IcsShiftEvent } from "../../../utils/export/exportToIcs";
 import { useAuth } from "../../../hooks/useAuth";
@@ -15,8 +10,18 @@ import { useCalendarData } from "../../../hooks/useCalendarData";
 import { exportService } from "../../../services/exportService";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { openBlobInNewTab, triggerBrowserDownload } from "../../../utils/triggerBrowserDownload";
+import { calendarAnchor, calendarGrid } from "../../../utils/calendarGrid";
 import { logger } from "../../../utils/logger";
 
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+const safeColor = (color?: string): string =>
+  color && /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#4b5563";
 export type CalendarViewMode = "month" | "week" | "day";
 type CalendarEntryType = "employee" | "group" | "holiday";
 
@@ -50,7 +55,7 @@ export const useShiftCalendarData = () => {
   const decrementProcessing = useStore((state) => state.decrementProcessing);
   const { currentUser } = useAuth();
   const isWorker = currentUser?.role === "Usuario";
-  const { activeEmployees, isLoadingEmployees } = useEmployees();
+  const { activeEmployees, isLoadingEmployees, isError: isEmployeesError } = useEmployees();
 
   const [displayDate, setDisplayDate] = useState(() => new Date(businessNow));
   const [viewMode, setViewMode] = useState<CalendarViewMode>("month");
@@ -72,13 +77,18 @@ export const useShiftCalendarData = () => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [activeEmployees, selectedArea, selectedCargo]);
 
-  const { isAssignedShiftsLoading, isShiftPatternsLoading, scheduleMap, isLoadingCalendar } =
-    useCalendarData({
-      displayDate,
-      viewMode,
-      selectedEmployeeId,
-      filteredEmployees: filteredEmployeesForCalendar,
-    });
+  const {
+    isAssignedShiftsLoading,
+    isShiftPatternsLoading,
+    scheduleMap,
+    isLoadingCalendar,
+    isCalendarError,
+  } = useCalendarData({
+    displayDate,
+    viewMode,
+    selectedEmployeeId,
+    filteredEmployees: filteredEmployeesForCalendar,
+  });
 
   const uniqueAreas = useMemo(() => {
     const areas = activeEmployees.map((e) => e.area).filter(Boolean);
@@ -132,7 +142,20 @@ export const useShiftCalendarData = () => {
     }
   };
 
+  const canExportCalendar = (): boolean => {
+    if (isCalendarError || isEmployeesError) {
+      addToast("No se pudo cargar el calendario. Reintente antes de exportar.", "error");
+      return false;
+    }
+    if (isLoadingCalendar || isLoadingEmployees) {
+      addToast("Espere a que termine la carga del calendario.", "warning");
+      return false;
+    }
+    return true;
+  };
+
   const handleExportToPDF = async () => {
+    if (!canExportCalendar()) return;
     if (viewMode === "day") {
       addToast("La impresión de grilla no está disponible en vista diaria.", "warning");
       return;
@@ -141,10 +164,8 @@ export const useShiftCalendarData = () => {
     incrementProcessing();
     setIsPrinting(true);
     try {
-      const periodDisplay =
-        viewMode === "month"
-          ? new Intl.DateTimeFormat("es-CL", { month: "long", year: "numeric" }).format(displayDate)
-          : `Semana del ${getWeekStartDate(new Date(displayDate)).toLocaleDateString("es-CL")}`;
+      const { startDate, endDate } = getDateRange(viewMode, calendarAnchor(displayDate));
+      const periodDisplay = `${formatDateUTCISO(startDate)} al ${formatDateUTCISO(endDate)}`;
 
       const filtersString = [
         selectedArea ? `Área: ${selectedArea}` : null,
@@ -165,7 +186,7 @@ export const useShiftCalendarData = () => {
         "Sábado",
         "Domingo",
       ];
-      const gridCells = generateCalendarGrid(viewMode as "month" | "week", displayDate);
+      const gridCells = calendarGrid(viewMode, displayDate);
 
       const getCellContent = (date: Date) => {
         const dateStr = formatDateUTCISO(date);
@@ -177,13 +198,13 @@ export const useShiftCalendarData = () => {
         if (dayData.type === "employee") {
           const d = dayData.data as CalendarEmployeeInfo;
           if (d.justificationType) {
-            return `<div class="schedule-item"><p class="font-semibold" style="color:#7c3aed">${d.scheduleText}</p></div>`;
+            return `<div class="schedule-item"><p class="font-semibold" style="color:#7c3aed">${escapeHtml(d.scheduleText || "")}</p></div>`;
           }
           if (d.isWorkDay) {
             return `
               <div class="schedule-item">
-                <p class="font-semibold" style="color:${d.patternColor || "#4b5563"}">${d.shiftPatternName || "Turno"}</p>
-                <p>${d.startTime} - ${d.endTime}</p>
+                <p class="font-semibold" style="color:${safeColor(d.patternColor)}">${escapeHtml(d.shiftPatternName || "Turno")}</p>
+                <p>${escapeHtml(d.startTime || "")} - ${escapeHtml(d.endTime || "")}</p>
               </div>
             `;
           }
@@ -192,16 +213,15 @@ export const useShiftCalendarData = () => {
 
         if (dayData.type === "holiday") {
           const holidayData = dayData.data as CalendarHolidayInfo;
-          return `<div class="schedule-item"><p class="font-semibold" style="color:#f97316; font-size:8px">FERIADO</p><p style="font-size:9px">${holidayData.name || ""}</p></div>`;
+          return `<div class="schedule-item"><p class="font-semibold" style="color:#f97316; font-size:8px">FERIADO</p><p style="font-size:9px">${escapeHtml(holidayData.name || "")}</p></div>`;
         }
 
         if (dayData.type === "group") {
           const emps = Array.isArray(dayData.data) ? (dayData.data as CalendarGroupItem[]) : [];
           return emps
-            .slice(0, 12)
             .map(
               (e) =>
-                `<span class="employee-tag" style="background-color:${e.patternColor || "#4b5563"}">${(e.employeeName || "").split(" ").pop() || ""}</span>`,
+                `<span class="employee-tag" style="background-color:${safeColor(e.patternColor)}">${escapeHtml(e.employeeName || "")} ${escapeHtml(e.shiftPatternName || "Turno")} ${escapeHtml(e.startTime || "")} - ${escapeHtml(e.endTime || "")}</span>`,
             )
             .join("");
         }
@@ -209,7 +229,7 @@ export const useShiftCalendarData = () => {
         return "";
       };
 
-      exportCalendarToPDF(
+      const opened = exportCalendarToPDF(
         isWorker ? "Mi Calendario de Turnos" : "Calendario Operativo de Turnos",
         periodDisplay.toUpperCase(),
         filtersString,
@@ -218,7 +238,12 @@ export const useShiftCalendarData = () => {
         getCellContent,
       );
 
-      addToast("Vista de impresión generada con éxito.", "success");
+      if (opened) addToast("Vista de impresión generada con éxito.", "success");
+      else
+        addToast(
+          "El navegador bloqueó la ventana de impresión. Habilite las ventanas emergentes.",
+          "warning",
+        );
     } catch (error: unknown) {
       logger.error("Print Error:", error);
       addToast("Error al generar la vista de impresión.", "error");
@@ -229,10 +254,11 @@ export const useShiftCalendarData = () => {
   };
 
   const handleDownloadBackendPDF = async () => {
+    if (!canExportCalendar()) return;
     incrementProcessing();
     setIsDownloading(true);
     try {
-      const { startDate, endDate } = getDateRange(viewMode, displayDate);
+      const { startDate, endDate } = getDateRange(viewMode, calendarAnchor(displayDate));
       const { blob, filename, action } = await exportService.downloadCalendarPDF(
         {
           startDate: formatDateUTCISO(startDate),
@@ -262,36 +288,63 @@ export const useShiftCalendarData = () => {
 
   const handleExportToICS = () => {
     if (!selectedEmployeeId) return;
+    if (!canExportCalendar()) return;
     const employee = activeEmployees.find((e) => e.id === selectedEmployeeId);
 
+    const { startDate, endDate } = getDateRange(viewMode, calendarAnchor(displayDate));
+    const start = formatDateUTCISO(startDate);
+    const end = formatDateUTCISO(endDate);
+    const parseTimesFallback = (
+      startTime?: string,
+      endTime?: string,
+      scheduleText?: string,
+    ): { startTime?: string; endTime?: string } => {
+      if (startTime && endTime) return { startTime, endTime };
+      const match = scheduleText?.match(/(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})/);
+      if (match) return { startTime: match[1], endTime: match[2] };
+      return { startTime, endTime };
+    };
+
     const events: IcsShiftEvent[] = [];
-    scheduleMap.forEach((val, key) => {
-      const dayData = val as { type?: CalendarEntryType; data?: unknown };
-      if (dayData.type === "employee" || dayData.type === "group") {
-        const details = Array.isArray(dayData.data)
-          ? (dayData.data as CalendarGroupItem[])
-          : dayData.data
-            ? ([dayData.data] as CalendarGroupItem[])
-            : [];
-        details.forEach((d) => {
-          if (d.employeeId === selectedEmployeeId || !selectedEmployeeId) {
-            events.push({
-              date: key,
-              startTime: d.startTime,
-              endTime: d.endTime,
-              patternName: d.shiftPatternName || "Turno",
-            });
-          }
+    scheduleMap.forEach((dayData, date) => {
+      if (date < start || date > end) return;
+      if (dayData.type === "employee" && dayData.data.isWorkDay) {
+        const times = parseTimesFallback(
+          dayData.data.startTime,
+          dayData.data.endTime,
+          dayData.data.scheduleText,
+        );
+        events.push({
+          date,
+          startTime: times.startTime,
+          endTime: times.endTime,
+          patternName: dayData.data.shiftPatternName || "Turno",
         });
+      } else if (dayData.type === "group") {
+        dayData.data
+          .filter((item) => item.employeeId === selectedEmployeeId)
+          .forEach((item) => {
+            events.push({
+              date,
+              startTime: item.startTime,
+              endTime: item.endTime,
+              patternName: item.shiftPatternName || "Turno",
+            });
+          });
       }
     });
-
-    exportShiftScheduleToICS(events, {
-      calendarName: "Portal Control - Turnos",
-      filename: `Turnos_${employee?.name || "Empleado"}`,
-      employeeName: employee?.name || "Empleado",
-    });
-    addToast("Eventos de turno exportados a formato ICS.", "success");
+    try {
+      const exported = exportShiftScheduleToICS(events, {
+        calendarName: "Portal Control - Turnos",
+        filename: `Turnos_${employee?.name || "Empleado"}`,
+        employeeName: employee?.name || "Empleado",
+      });
+      if (exported) addToast("Eventos de turno exportados a formato ICS.", "success");
+      else addToast("No hay turnos exportables en el período visible.", "warning");
+    } catch (error: unknown) {
+      logger.error("ICS export error:", error);
+      addToast("Error al exportar los turnos.", "error");
+    }
   };
 
   return {

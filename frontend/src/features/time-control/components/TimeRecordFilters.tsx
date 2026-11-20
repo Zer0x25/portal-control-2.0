@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmployeesQuery";
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import Button from "../../../components/ui/Button";
@@ -54,32 +54,56 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
   const { data: activeEmployees = [] } = useClockingEmployeeOptionsQuery();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isExpanded, setIsExpanded] = useState(!isMobile);
-  const { data: recordsQuery, isLoading: isLoadingRecords } = useTimeRecordsQuery({
+  const {
+    data: recordsQuery,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    isError,
+  } = useTimeRecordsQuery({
     pageSize: 50,
     filters: {},
+    allowCache: false,
     enabled: !isMobile || isExpanded,
   });
-  const allRecordsInDateRange = recordsQuery?.pages.flatMap((page) => page.data) ?? [];
 
-  const employeesInDateRange = (() => {
-    if (isLoadingRecords) return activeEmployees;
-    const employeeIdsWithRecordsInPeriod = new Set(
-      allRecordsInDateRange?.map((r: { employeeId: string }) => r.employeeId) || [],
-    );
-    return activeEmployees.filter((e) => employeeIdsWithRecordsInPeriod.has(e.id));
-  })();
+  useEffect(() => {
+    if ((!isMobile || isExpanded) && hasNextPage && !isFetchingNextPage && !isFetchNextPageError) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, isFetchNextPageError, isMobile, isExpanded]);
 
+  // Incluir valores históricos de registros, además de empleados activos.
+  const options = [
+    ...activeEmployees.map((employee) => ({
+      area: employee.area,
+      workdayType: employee.workdayType,
+    })),
+    ...(recordsQuery?.pages.flatMap((page) =>
+      page.data.map((record) => ({
+        area: record.employeeArea,
+        workdayType: record.employeeWorkdayType,
+      })),
+    ) ?? []),
+  ];
   const availableWorkdayTypes = Array.from(
-    new Set(employeesInDateRange.map((e) => e.workdayType)),
+    new Set(
+      options
+        .map((option) => option.workdayType)
+        .filter((value): value is string => Boolean(value)),
+    ),
   ).sort();
-
-  const employeesAfterWorkdayTypeFilter = (() => {
-    if (!clientFilters.workdayType) return employeesInDateRange;
-    return employeesInDateRange.filter((e) => e.workdayType === clientFilters.workdayType);
-  })();
-
   const availableAreas = Array.from(
-    new Set(employeesAfterWorkdayTypeFilter.map((e) => e.area)),
+    new Set(
+      options
+        .filter(
+          (option) =>
+            !clientFilters.workdayType || option.workdayType === clientFilters.workdayType,
+        )
+        .map((option) => option.area)
+        .filter((value): value is string => Boolean(value)),
+    ),
   ).sort();
 
   const availableStatuses = [...CANONICAL_TIME_RECORD_STATUSES];
@@ -124,6 +148,16 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
         >
           <div className="overflow-hidden">
             <div className="space-y-6">
+              {(isError || isFetchNextPageError) && (
+                <p role="status" className="text-xs text-token-status-error">
+                  No se pudieron cargar todas las opciones históricas de filtros.
+                </p>
+              )}
+              {hasNextPage && !isError && !isFetchNextPageError && (
+                <p role="status" className="text-xs text-token-text-secondary">
+                  Cargando opciones históricas de filtros...
+                </p>
+              )}
               {/* MAIN CONTROLS ROW */}
               <div className="flex flex-col xl:flex-row pb-4 gap-4 items-end flex-wrap">
                 {/* 1. Tipo Jornada */}

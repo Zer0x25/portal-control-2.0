@@ -8,6 +8,9 @@ import {
 import { schedulingService } from "./schedulingService";
 import { differenceInCalendarDays } from "date-fns";
 import { NotFoundError, ValidationError } from "../utils/AppError";
+import { auditService } from "./auditService";
+import { SocketService } from "./socketService";
+import { requestContext } from "../utils/context";
 
 const DEFAULT_BATCH_SIZE = 500;
 const YIELD_EVERY_BATCHES = 4;
@@ -37,6 +40,8 @@ export interface DailyScheduleInput {
   startTime?: string | null;
   endTime?: string | null;
   hours?: number;
+  hasColacion?: boolean;
+  colacionMinutes?: number;
 }
 
 export interface MonthlyPlanCreateData {
@@ -45,6 +50,10 @@ export interface MonthlyPlanCreateData {
   year: number;
   dailySchedules: DailyScheduleInput[];
   patternName?: string;
+  worksOnHolidays?: boolean;
+  hasColacion?: boolean;
+  colacionMinutes?: number;
+  actorUsername?: string;
 }
 
 export class MonthlyShiftService {
@@ -82,13 +91,23 @@ export class MonthlyShiftService {
     }
 
     const batchSize = Number(process.env.MONTHLY_PLAN_BATCH_SIZE || DEFAULT_BATCH_SIZE);
-    return await withDirectTransaction(async (tx) => {
-      // 1. Handle conflicting assignments
+    const result = await withDirectTransaction(async (tx) => {
+      // 0. Acquire row-level lock on employee to serialize concurrent monthly plan mutations
+      const lockedEmployees = await tx.$queryRaw<Array<{ id: string; name: string }>>`
+        SELECT id, name FROM employees WHERE id = ${employeeId} FOR UPDATE
+      `;
+      if (lockedEmployees.length === 0) {
+        throw new NotFoundError("Employee not found");
+      }
+      const employeeName = lockedEmployees[0].name;
+
+      // 1. Handle conflicting assignments (excluding already soft-deleted rows)
       const cutoffDateIso = addBusinessDaysChile(assignmentStartDateIso, -1);
 
       const conflictingAssignments = await tx.assignedShift.findMany({
         where: {
           employeeId,
+          isDeleted: false,
           startDate: { lte: monthEndIso },
           OR: [{ endDate: null }, { endDate: { gte: assignmentStartDateIso } }],
         },
@@ -96,13 +115,13 @@ export class MonthlyShiftService {
       });
 
       const toCut: string[] = [];
-      const toDelete: string[] = [];
+      const toSoftDelete: string[] = [];
       for (let i = 0; i < conflictingAssignments.length; i++) {
         const assignment = conflictingAssignments[i];
         if (assignment.startDate < assignmentStartDateIso) {
           toCut.push(assignment.id);
         } else {
-          toDelete.push(assignment.id);
+          toSoftDelete.push(assignment.id);
         }
         if (i > 0 && i % (batchSize * YIELD_EVERY_BATCHES) === 0) {
           await yieldToEventLoop();
@@ -117,9 +136,13 @@ export class MonthlyShiftService {
           });
         });
       }
-      if (toDelete.length > 0) {
-        await processInBatches(toDelete, batchSize, async (deleteIds) => {
-          await tx.assignedShift.deleteMany({ where: { id: { in: deleteIds } } });
+      if (toSoftDelete.length > 0) {
+        const deletedAt = new Date();
+        await processInBatches(toSoftDelete, batchSize, async (deleteIds) => {
+          await tx.assignedShift.updateMany({
+            where: { id: { in: deleteIds } },
+            data: { isDeleted: true, deletedAt },
+          });
         });
       }
 
@@ -138,14 +161,18 @@ export class MonthlyShiftService {
         const scheduleForDay = dailyScheduleByDay.get(currentDayVal);
 
         if (scheduleForDay && scheduleForDay.type === "work") {
+          const hasColacion = scheduleForDay.hasColacion ?? data.hasColacion ?? true;
+          const colacionMinutes = hasColacion
+            ? (scheduleForDay.colacionMinutes ?? data.colacionMinutes ?? 60)
+            : 0;
           patternSchedules.push({
             dayIndex: i,
             startTime: scheduleForDay.startTime,
             endTime: scheduleForDay.endTime,
             hours: scheduleForDay.hours || 8,
             isOffDay: false,
-            hasColacion: true,
-            colacionMinutes: 60,
+            hasColacion,
+            colacionMinutes,
           });
         } else {
           patternSchedules.push({
@@ -184,23 +211,48 @@ export class MonthlyShiftService {
           name: finalPatternName,
           cycleLengthDays: daysDuration,
           dailySchedules: JSON.stringify(patternSchedules),
-          worksOnHolidays: true,
+          worksOnHolidays: data.worksOnHolidays ?? true,
           maxHoursPattern: 0,
         },
       });
 
       // 3. Create the new assignment
-      await tx.assignedShift.create({
+      const createdAssignment = await tx.assignedShift.create({
         data: {
           employeeId,
+          employeeName,
           shiftPatternId: newPattern.id,
+          shiftPatternName: newPattern.name,
           startDate: assignmentStartDateIso,
           endDate: monthEndIso,
         },
       });
 
-      return { success: true };
+      return {
+        employeeName,
+        pattern: newPattern,
+        assignment: createdAssignment,
+        cutCount: toCut.length,
+        softDeletedCount: toSoftDelete.length,
+      };
     });
+
+    const actorUsername = data.actorUsername || requestContext.getStore()?.username || "SYSTEM";
+    await auditService.logShiftChange(actorUsername, "CREATE", {
+      employeeId,
+      employeeName: result.employeeName,
+      newPatternId: result.pattern.id,
+      newPatternName: result.pattern.name,
+      newStartDate: assignmentStartDateIso,
+      newEndDate: monthEndIso,
+      cutCount: result.cutCount,
+      softDeletedCount: result.softDeletedCount,
+    });
+
+    SocketService.emit("shiftPattern:updated", result.pattern);
+    SocketService.emit("assignedShift:updated", result.assignment);
+
+    return { success: true };
   }
 
   /**

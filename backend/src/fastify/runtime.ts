@@ -135,6 +135,15 @@ export function createFastifyRuntime(config?: FastifyConfig) {
       corrections: correctionFlows,
       records: {
         ...recordFlows,
+        indicators: async (ids) => {
+          const { getRecordIndicators } = await import("../services/recordIndicatorsService");
+          return getRecordIndicators(ids);
+        },
+        exportView: (filters) => TimeRecordService.listRecordsForViewExport(filters),
+        exportViewFile: async (format, rows) => {
+          const { exportRecordsView } = await import("../services/export/exportRecordsView");
+          return exportRecordsView(format, rows);
+        },
         exportStream: async (format, stream, filters) => {
           const { streamExportService } = await loadExports();
           if (format === "csv") return streamExportService.streamToCSV(stream, filters);
@@ -182,3 +191,4 @@ export function createFastifyRuntime(config?: FastifyConfig) {
   });
   return app;
 }
+import { TimeRecordService } from "../services/TimeRecordService";

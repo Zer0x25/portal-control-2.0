@@ -13,15 +13,14 @@ import {
 /**
  * Dia del ciclo de un patron (`PatternSchedule` del backend).
  *
- * `dayIndex` va de 0 a 6, `isOffDay` es obligatorio y el resto admite `null`
+ * `dayIndex` es un entero >= 0, `isOffDay` es obligatorio y el resto admite `null`
  * (un dia de descanso no tiene hora de entrada).
  */
 export const patternScheduleSchema = z.object({
   dayIndex: z
     .number({ error: ERROR_MESSAGES.required("El dia del ciclo") })
     .int(ERROR_MESSAGES.invalidNumber())
-    .min(0, ERROR_MESSAGES.minLength("El dia del ciclo", 0))
-    .max(6, ERROR_MESSAGES.maxLength("El dia del ciclo", 6)),
+    .min(0, ERROR_MESSAGES.minLength("El dia del ciclo", 0)),
   startTime: optionalNullableText(),
   endTime: optionalNullableText(),
   isOffDay: z.boolean(),

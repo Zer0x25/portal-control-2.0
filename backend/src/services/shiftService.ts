@@ -1,8 +1,8 @@
-import { Prisma } from "../generated/prisma/client";
-import prisma from "./db";
+import { AssignedShift, Prisma } from "../generated/prisma/client";
+import prisma, { withDirectTransaction } from "./db";
 import { SocketService } from "./socketService";
 import { auditService } from "./auditService";
-import { ShiftPatternWithSchedules } from "./schedulingService";
+import { SchedulingContext, ShiftPatternWithSchedules } from "./schedulingService";
 import { ShiftValidator } from "./shift/ShiftValidator";
 import {
   PatternCreateInput,
@@ -11,7 +11,6 @@ import {
   PaginatedResponse,
   PatternPaginationOptions,
 } from "./shift/types";
-import { AssignedShift } from "../generated/prisma/client";
 import { addBusinessDaysChile, toBusinessDateChile } from "../utils/timeUtils";
 
 export class ShiftService {
@@ -91,7 +90,10 @@ export class ShiftService {
   }
 
   async createPattern(data: PatternCreateInput): Promise<ShiftPatternWithSchedules> {
-    const validation = await this.validator.validatePatternSchedules(data.dailySchedules);
+    const validation = await this.validator.validatePatternSchedules(
+      data.dailySchedules,
+      data.cycleLengthDays,
+    );
     if (!validation.isValid) throw new Error(validation.error);
 
     const pattern = await prisma.shiftPattern.create({
@@ -124,7 +126,18 @@ export class ShiftService {
     data: Partial<PatternCreateInput>,
   ): Promise<ShiftPatternWithSchedules> {
     if (data.dailySchedules) {
-      const validation = await this.validator.validatePatternSchedules(data.dailySchedules);
+      let cycleLengthDays = data.cycleLengthDays;
+      if (cycleLengthDays === undefined) {
+        const existing = await prisma.shiftPattern.findUnique({
+          where: { id },
+          select: { cycleLengthDays: true },
+        });
+        cycleLengthDays = existing?.cycleLengthDays;
+      }
+      const validation = await this.validator.validatePatternSchedules(
+        data.dailySchedules,
+        cycleLengthDays,
+      );
       if (!validation.isValid) throw new Error(validation.error);
     }
 
@@ -200,8 +213,10 @@ export class ShiftService {
    * Assignments Logic
    */
   async getAssignments(options: PaginationOptions): Promise<PaginatedResponse<AssignedShift>> {
-    const { page, pageSize, since, role, employeeId, startDate, endDate, showArchived } = options;
+    const { page, pageSize, since, role, employeeId, startDate, endDate, showArchived, search } =
+      options;
     const where: Prisma.AssignedShiftWhereInput = {};
+    const andConditions: Prisma.AssignedShiftWhereInput[] = [];
 
     // 1. Base Filter (Deleted / Since / Archived)
     if (since) {
@@ -215,7 +230,9 @@ export class ShiftService {
       if (!showArchived) {
         const today = toBusinessDateChile();
         // Active = endDate is NULL (indefinite) OR endDate >= today
-        where.OR = [{ endDate: null }, { endDate: { gte: today } }];
+        andConditions.push({
+          OR: [{ endDate: null }, { endDate: { gte: today } }],
+        });
       }
     }
 
@@ -227,29 +244,32 @@ export class ShiftService {
       where.employeeId = employeeId;
     }
 
-    // 3. Date Range Filter
+    // 3. Date Range Filter (includes indefinite active shifts where endDate is null)
     if (startDate || endDate) {
-      where.OR = [
-        {
-          // Shift starts within range
-          startDate: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        {
-          // Shift ends within range
-          endDate: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        {
-          // Shift encompasses range
-          startDate: { lte: startDate },
-          endDate: { gte: endDate },
-        },
-      ];
+      if (endDate) {
+        andConditions.push({ startDate: { lte: endDate } });
+      }
+      if (startDate) {
+        andConditions.push({
+          OR: [{ endDate: null }, { endDate: { gte: startDate } }],
+        });
+      }
+    }
+
+    // 4. Search Filter
+    if (search?.trim()) {
+      const term = search.trim();
+      andConditions.push({
+        OR: [
+          { employeeName: { contains: term, mode: "insensitive" } },
+          { shiftPatternName: { contains: term, mode: "insensitive" } },
+          { employeeId: { contains: term, mode: "insensitive" } },
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     // 4. Count Total
@@ -287,85 +307,151 @@ export class ShiftService {
     };
   }
 
+  private async buildValidationContext(
+    tx: Prisma.TransactionClient,
+    employeeIds: string[],
+    startIso: string,
+    endIso: string,
+    assignedShifts: AssignedShift[],
+  ): Promise<SchedulingContext> {
+    const [leaves, holidays, patterns] = await Promise.all([
+      tx.leaveRecord.findMany({
+        where: {
+          employeeId: { in: employeeIds },
+          isDeleted: false,
+          startDate: { lte: endIso },
+          endDate: { gte: startIso },
+        },
+      }),
+      tx.holiday.findMany({
+        where: { date: { gte: startIso, lte: endIso } },
+      }),
+      tx.shiftPattern.findMany({ where: { isDeleted: false } }),
+    ]);
+
+    const shiftPatterns = patterns.map((p) => ({
+      ...p,
+      dailySchedules:
+        typeof p.dailySchedules === "string" ? JSON.parse(p.dailySchedules) : p.dailySchedules,
+    })) as ShiftPatternWithSchedules[];
+
+    return {
+      assignedShifts,
+      shiftPatterns,
+      leaves,
+      holidays,
+    };
+  }
+
   async assignShift(data: AssignmentCreateInput, actorUsername: string) {
     // 0. Boundary Validation (7-day past rule)
     const boundary = this.validator.validateTemporalBoundary(data.startDate);
     if (!boundary.isValid) throw new Error(boundary.error);
 
-    // 1. Validations
-    const conflicts = await this.validator.validateConflicts(
-      data.employeeId,
-      data.startDate,
-      data.endDate,
-    );
-    if (conflicts.length > 0) {
-      const ass = conflicts[0];
-      throw new Error(
-        `Conflicto de asignación: Superposición detectada con el periodo ${ass.startDate} a ${ass.endDate || "siempre"}.`,
-      );
-    }
+    const { assignment, employeeName, patternName } = await withDirectTransaction(async (tx) => {
+      // Serialize concurrent assignments for the same employee
+      await tx.$queryRaw`SELECT id FROM employees WHERE id = ${data.employeeId} FOR UPDATE`;
 
-    // New 8h Rest Rule
-    // We need to fetch the pattern first to know the start time of the first day
-    const patternToCheck = await prisma.shiftPattern.findUnique({
-      where: { id: data.shiftPatternId },
-    });
-    if (patternToCheck) {
-      const restValidation = await this.validator.validateRestPeriod(
-        data.employeeId,
-        data.startDate,
-        patternToCheck,
-      );
-      if (!restValidation.isValid) {
-        throw new Error(restValidation.error);
-      }
-      // New 6-Day Rule
-      const sixDayValidation = await this.validator.validateConsecutiveWorkdays(
+      const [existingShifts, employee, patternToCheck] = await Promise.all([
+        tx.assignedShift.findMany({
+          where: { employeeId: data.employeeId, isDeleted: false },
+          orderBy: { startDate: "asc" },
+        }),
+        tx.employee.findUnique({ where: { id: data.employeeId }, select: { name: true } }),
+        tx.shiftPattern.findUnique({ where: { id: data.shiftPatternId } }),
+      ]);
+
+      // 1. Validations
+      const conflicts = await this.validator.validateConflicts(
         data.employeeId,
         data.startDate,
         data.endDate,
-        data.shiftPatternId,
+        undefined,
+        existingShifts,
       );
-      if (!sixDayValidation.isValid) {
-        throw new Error(sixDayValidation.error);
+      if (conflicts.length > 0) {
+        const ass = conflicts[0];
+        throw new Error(
+          `Conflicto de asignación: Superposición detectada con el periodo ${ass.startDate} a ${ass.endDate || "siempre"}.`,
+        );
       }
-    }
 
-    const workload = await this.validator.validateWorkload(data.employeeId, data);
-    if (!workload.isValid) {
-      throw new Error(
-        `Carga horaria excesiva: El promedio semanal (${workload.weeklyHours!.toFixed(1)}h) excede el máximo permitido de ${workload.maxHours}h.`,
+      if (patternToCheck) {
+        const contextStart = addBusinessDaysChile(data.startDate, -7);
+        const contextEnd = data.endDate
+          ? addBusinessDaysChile(data.endDate, 7)
+          : addBusinessDaysChile(data.startDate, 45);
+        const context = await this.buildValidationContext(
+          tx,
+          [data.employeeId],
+          contextStart,
+          contextEnd,
+          existingShifts,
+        );
+
+        const restValidation = await this.validator.validateRestPeriod(
+          data.employeeId,
+          data.startDate,
+          patternToCheck,
+          context,
+        );
+        if (!restValidation.isValid) {
+          throw new Error(restValidation.error);
+        }
+
+        const sixDayValidation = await this.validator.validateConsecutiveWorkdays(
+          data.employeeId,
+          data.startDate,
+          data.endDate,
+          data.shiftPatternId,
+          undefined,
+          context,
+          tx,
+        );
+        if (!sixDayValidation.isValid) {
+          throw new Error(sixDayValidation.error);
+        }
+      }
+
+      const workload = await this.validator.validateWorkload(
+        data.employeeId,
+        data,
+        undefined,
+        existingShifts,
+        tx,
       );
-    }
+      if (!workload.isValid) {
+        throw new Error(
+          `Carga horaria excesiva: El promedio semanal (${workload.weeklyHours!.toFixed(1)}h) excede el máximo permitido de ${workload.maxHours}h.`,
+        );
+      }
 
-    // 2. Audit Data
-    const [employee, pattern] = await Promise.all([
-      prisma.employee.findUnique({ where: { id: data.employeeId }, select: { name: true } }),
-      prisma.shiftPattern.findUnique({
-        where: { id: data.shiftPatternId },
-        select: { name: true },
-      }),
-    ]);
+      // 2. Execution
+      const created = await tx.assignedShift.create({
+        data: {
+          id: data.id,
+          employeeId: data.employeeId,
+          employeeName: employee?.name,
+          shiftPatternId: data.shiftPatternId,
+          shiftPatternName: patternToCheck?.name,
+          startDate: data.startDate,
+          endDate: data.endDate,
+        },
+      });
 
-    // 3. Execution
-    const assignment = await prisma.assignedShift.create({
-      data: {
-        id: data.id,
-        employeeId: data.employeeId,
+      return {
+        assignment: created,
         employeeName: employee?.name,
-        shiftPatternId: data.shiftPatternId,
-        shiftPatternName: pattern?.name,
-        startDate: data.startDate,
-        endDate: data.endDate,
-      },
+        patternName: patternToCheck?.name,
+      };
     });
 
-    // 4. Audit & Socket
+    // 3. Audit & Socket (after commit)
     await auditService.logShiftChange(actorUsername, "CREATE", {
       employeeId: data.employeeId,
-      employeeName: employee?.name,
+      employeeName,
       newPatternId: data.shiftPatternId,
-      newPatternName: pattern?.name,
+      newPatternName: patternName,
       newStartDate: data.startDate,
       newEndDate: data.endDate,
     });
@@ -375,113 +461,146 @@ export class ShiftService {
   }
 
   async updateAssignment(id: string, data: Partial<AssignmentCreateInput>, actorUsername: string) {
-    const previousAssignment = await prisma.assignedShift.findUnique({ where: { id } });
-    if (!previousAssignment) throw new Error("Asignación no encontrada");
+    const { assignment, previousAssignment, employeeName, previousPatternName, newPatternName } =
+      await withDirectTransaction(async (tx) => {
+        const previous = await tx.assignedShift.findUnique({ where: { id } });
+        if (!previous || previous.isDeleted) throw new Error("Asignación no encontrada");
 
-    // 0. Boundary Validation (7-day past rule)
-    const boundary = this.validator.validateTemporalBoundary(
-      data.startDate ?? previousAssignment.startDate,
-    );
-    if (!boundary.isValid) throw new Error(boundary.error);
-
-    // 1. Validations
-    const mergedData: AssignmentCreateInput = {
-      employeeId: data.employeeId ?? previousAssignment.employeeId,
-      startDate: data.startDate ?? previousAssignment.startDate,
-      endDate: data.endDate !== undefined ? data.endDate : previousAssignment.endDate,
-      shiftPatternId: data.shiftPatternId ?? previousAssignment.shiftPatternId,
-    };
-
-    const conflicts = await this.validator.validateConflicts(
-      mergedData.employeeId,
-      mergedData.startDate,
-      mergedData.endDate,
-      id,
-    );
-    if (conflicts.length > 0) {
-      const ass = conflicts[0];
-      throw new Error(
-        `Conflicto de actualización: Superposición detectada con el periodo ${ass.startDate} a ${ass.endDate || "siempre"}.`,
-      );
-    }
-
-    // New 8h Rest Rule (Update)
-    if (mergedData.shiftPatternId) {
-      const patternToCheck = await prisma.shiftPattern.findUnique({
-        where: { id: mergedData.shiftPatternId },
-      });
-      if (patternToCheck) {
-        // Check start boundary
-        const restValidation = await this.validator.validateRestPeriod(
-          mergedData.employeeId,
-          mergedData.startDate,
-          patternToCheck,
+        // 0. Boundary Validation (7-day past rule)
+        const boundary = this.validator.validateTemporalBoundary(
+          data.startDate ?? previous.startDate,
         );
-        if (!restValidation.isValid) {
-          throw new Error(restValidation.error);
-        }
-        // New 6-Day Rule (Update)
-        const sixDayValidation = await this.validator.validateConsecutiveWorkdays(
+        if (!boundary.isValid) throw new Error(boundary.error);
+
+        const mergedData: AssignmentCreateInput = {
+          employeeId: data.employeeId ?? previous.employeeId,
+          startDate: data.startDate ?? previous.startDate,
+          endDate: data.endDate !== undefined ? data.endDate : previous.endDate,
+          shiftPatternId: data.shiftPatternId ?? previous.shiftPatternId,
+        };
+
+        // Lock employee row(s) in deterministic order
+        const lockIds = [...new Set([previous.employeeId, mergedData.employeeId])].sort();
+        await tx.$queryRaw`SELECT id FROM employees WHERE id IN (${Prisma.join(lockIds)}) ORDER BY id FOR UPDATE`;
+
+        const [existingShifts, employee, previousPattern, targetPattern] = await Promise.all([
+          tx.assignedShift.findMany({
+            where: {
+              employeeId: mergedData.employeeId,
+              isDeleted: false,
+              NOT: { id },
+            },
+            orderBy: { startDate: "asc" },
+          }),
+          tx.employee.findUnique({
+            where: { id: previous.employeeId },
+            select: { name: true },
+          }),
+          tx.shiftPattern.findUnique({
+            where: { id: previous.shiftPatternId },
+            select: { name: true },
+          }),
+          tx.shiftPattern.findUnique({
+            where: { id: mergedData.shiftPatternId },
+          }),
+        ]);
+
+        // 1. Validations
+        const conflicts = await this.validator.validateConflicts(
           mergedData.employeeId,
           mergedData.startDate,
           mergedData.endDate,
-          mergedData.shiftPatternId,
-          id, // exclude current assignment
+          id,
+          existingShifts,
         );
-        if (!sixDayValidation.isValid) {
-          throw new Error(sixDayValidation.error);
+        if (conflicts.length > 0) {
+          const ass = conflicts[0];
+          throw new Error(
+            `Conflicto de actualización: Superposición detectada con el periodo ${ass.startDate} a ${ass.endDate || "siempre"}.`,
+          );
         }
-      }
-    }
 
-    const workload = await this.validator.validateWorkload(mergedData.employeeId, mergedData, id);
-    if (!workload.isValid) {
-      throw new Error(
-        `Carga horaria excesiva: El promedio semanal (${workload.weeklyHours!.toFixed(1)}h) excede el máximo permitido de ${workload.maxHours}h.`,
-      );
-    }
+        if (targetPattern) {
+          const contextStart = addBusinessDaysChile(mergedData.startDate, -7);
+          const contextEnd = mergedData.endDate
+            ? addBusinessDaysChile(mergedData.endDate, 7)
+            : addBusinessDaysChile(mergedData.startDate, 45);
+          const context = await this.buildValidationContext(
+            tx,
+            [mergedData.employeeId],
+            contextStart,
+            contextEnd,
+            existingShifts,
+          );
 
-    // 2. Audit Data
-    const [employee, previousPattern] = await Promise.all([
-      prisma.employee.findUnique({
-        where: { id: previousAssignment.employeeId },
-        select: { name: true },
-      }),
-      prisma.shiftPattern.findUnique({
-        where: { id: previousAssignment.shiftPatternId },
-        select: { name: true },
-      }),
-    ]);
+          const restValidation = await this.validator.validateRestPeriod(
+            mergedData.employeeId,
+            mergedData.startDate,
+            targetPattern,
+            context,
+          );
+          if (!restValidation.isValid) {
+            throw new Error(restValidation.error);
+          }
 
-    let newPatternName = previousPattern?.name || "Desconocido";
-    if (data.shiftPatternId && data.shiftPatternId !== previousAssignment.shiftPatternId) {
-      const newPattern = await prisma.shiftPattern.findUnique({
-        where: { id: data.shiftPatternId },
-        select: { name: true },
+          const sixDayValidation = await this.validator.validateConsecutiveWorkdays(
+            mergedData.employeeId,
+            mergedData.startDate,
+            mergedData.endDate,
+            mergedData.shiftPatternId,
+            id,
+            context,
+            tx,
+          );
+          if (!sixDayValidation.isValid) {
+            throw new Error(sixDayValidation.error);
+          }
+        }
+
+        const workload = await this.validator.validateWorkload(
+          mergedData.employeeId,
+          mergedData,
+          id,
+          existingShifts,
+          tx,
+        );
+        if (!workload.isValid) {
+          throw new Error(
+            `Carga horaria excesiva: El promedio semanal (${workload.weeklyHours!.toFixed(1)}h) excede el máximo permitido de ${workload.maxHours}h.`,
+          );
+        }
+
+        const resolvedNewPatternName = targetPattern?.name || "Desconocido";
+
+        // 2. Execution
+        const updated = await tx.assignedShift.update({
+          where: { id },
+          data: {
+            startDate: data.startDate,
+            endDate: data.endDate,
+            shiftPatternId: data.shiftPatternId,
+            shiftPatternName: data.shiftPatternId ? resolvedNewPatternName : undefined,
+            employeeName: data.employeeId ? employee?.name : undefined,
+          },
+        });
+
+        return {
+          assignment: updated,
+          previousAssignment: previous,
+          employeeName: employee?.name,
+          previousPatternName: previousPattern?.name,
+          newPatternName: resolvedNewPatternName,
+        };
       });
-      newPatternName = newPattern?.name || "Desconocido";
-    }
 
-    // 3. Execution
-    const assignment = await prisma.assignedShift.update({
-      where: { id },
-      data: {
-        startDate: data.startDate,
-        endDate: data.endDate,
-        shiftPatternId: data.shiftPatternId,
-        shiftPatternName: data.shiftPatternId ? newPatternName : undefined,
-        employeeName: data.employeeId ? employee?.name : undefined,
-      },
-    });
-
-    // 4. Audit & Socket
+    // 3. Audit & Socket (after commit)
     await auditService.logShiftChange(actorUsername, "UPDATE", {
       employeeId: previousAssignment.employeeId,
-      employeeName: employee?.name,
+      employeeName,
       previousPatternId: previousAssignment.shiftPatternId,
-      previousPatternName: previousPattern?.name,
+      previousPatternName,
       newPatternId: data.shiftPatternId || previousAssignment.shiftPatternId,
-      newPatternName: newPatternName,
+      newPatternName,
       previousStartDate: previousAssignment.startDate,
       previousEndDate: previousAssignment.endDate,
       newStartDate: data.startDate,
@@ -529,20 +648,32 @@ export class ShiftService {
   }
 
   async bulkCreatePatterns(patterns: PatternCreateInput[]) {
-    const created = await Promise.all(
-      patterns.map((p) =>
-        prisma.shiftPattern.create({
-          data: {
-            id: p.id,
-            name: p.name,
-            cycleLengthDays: p.cycleLengthDays,
-            startDayOfWeek: p.startDayOfWeek,
-            dailySchedules: JSON.stringify(p.dailySchedules),
-            color: p.color,
-            maxHoursPattern: p.maxHoursPattern,
-            worksOnHolidays: p.worksOnHolidays ?? false,
-          },
-        }),
+    for (const p of patterns) {
+      const validation = await this.validator.validatePatternSchedules(
+        p.dailySchedules,
+        p.cycleLengthDays,
+      );
+      if (!validation.isValid) {
+        throw new Error(validation.error);
+      }
+    }
+
+    const created = await withDirectTransaction((tx) =>
+      Promise.all(
+        patterns.map((p) =>
+          tx.shiftPattern.create({
+            data: {
+              id: p.id,
+              name: p.name,
+              cycleLengthDays: p.cycleLengthDays,
+              startDayOfWeek: p.startDayOfWeek,
+              dailySchedules: JSON.stringify(p.dailySchedules),
+              color: p.color,
+              maxHoursPattern: p.maxHoursPattern,
+              worksOnHolidays: p.worksOnHolidays ?? false,
+            },
+          }),
+        ),
       ),
     );
 
@@ -550,102 +681,187 @@ export class ShiftService {
     return created.length;
   }
 
-  async bulkAssignShifts(assignments: AssignmentCreateInput[]) {
+  async bulkAssignShifts(assignments: AssignmentCreateInput[], actorUsername = "System") {
+    if (assignments.length === 0) return 0;
+
     const CHUNK_SIZE = 50;
-    let createdCount = 0;
+    const employeeIds = [...new Set(assignments.map((a) => a.employeeId))].sort();
+    const patternIds = [...new Set(assignments.map((a) => a.shiftPatternId))];
 
-    const employeeIds = [...new Set(assignments.map((a) => a.employeeId))] as string[];
+    const { createdCount, auditPayloads } = await withDirectTransaction(async (tx) => {
+      // Lock employee rows in deterministic order to prevent concurrent conflicts & deadlocks
+      await tx.$queryRaw`SELECT id FROM employees WHERE id IN (${Prisma.join(employeeIds)}) ORDER BY id FOR UPDATE`;
 
-    const existingShifts = await prisma.assignedShift.findMany({
-      where: {
-        employeeId: { in: employeeIds },
-        isDeleted: false,
-      },
-      orderBy: { startDate: "asc" },
-    });
+      const [existingShifts, allPatterns, allEmployees] = await Promise.all([
+        tx.assignedShift.findMany({
+          where: {
+            employeeId: { in: employeeIds },
+            isDeleted: false,
+          },
+          orderBy: { startDate: "asc" },
+        }),
+        tx.shiftPattern.findMany({
+          where: { id: { in: patternIds } },
+        }),
+        tx.employee.findMany({
+          where: { id: { in: employeeIds } },
+        }),
+      ]);
 
-    const existingShiftsByEmployee = existingShifts.reduce(
-      (acc, shift) => {
-        if (!acc[shift.employeeId]) acc[shift.employeeId] = [];
-        acc[shift.employeeId].push(shift);
-        return acc;
-      },
-      {} as Record<string, AssignedShift[]>,
-    );
+      const patternMap = new Map(allPatterns.map((p) => [p.id, p]));
+      const employeeMap = new Map(allEmployees.map((e) => [e.id, e]));
 
-    for (const empId of employeeIds) {
-      const empAssignments = assignments.filter((a) => a.employeeId === empId);
-      const employeeExistingShifts = existingShiftsByEmployee[empId] || [];
+      // Compute full date span for context prefetch
+      const startDates = assignments.map((a) => a.startDate).sort();
+      const minStart = addBusinessDaysChile(startDates[0], -7);
+      const maxEndCandidate = assignments.reduce(
+        (acc, a) => {
+          const candidate = a.endDate
+            ? addBusinessDaysChile(a.endDate, 7)
+            : addBusinessDaysChile(a.startDate, 45);
+          return candidate > acc ? candidate : acc;
+        },
+        addBusinessDaysChile(startDates[startDates.length - 1], 45),
+      );
 
-      for (const newAss of empAssignments) {
-        const conflicts = await this.validator.validateConflicts(
-          newAss.employeeId,
-          newAss.startDate,
-          newAss.endDate,
-          undefined,
-          employeeExistingShifts,
-        );
-        if (conflicts.length > 0) {
-          throw new Error(
-            `Error en carga masiva: El empleado ${empId} tiene un conflicto en el periodo ${newAss.startDate}.`,
+      const baseContext = await this.buildValidationContext(
+        tx,
+        employeeIds,
+        minStart,
+        maxEndCandidate,
+        [],
+      );
+
+      const existingShiftsByEmployee = existingShifts.reduce(
+        (acc, shift) => {
+          if (!acc[shift.employeeId]) acc[shift.employeeId] = [];
+          acc[shift.employeeId].push(shift);
+          return acc;
+        },
+        {} as Record<string, AssignedShift[]>,
+      );
+
+      for (const empId of employeeIds) {
+        const empAssignments = assignments.filter((a) => a.employeeId === empId);
+        const employeeExistingShifts = existingShiftsByEmployee[empId] || [];
+
+        for (const newAss of empAssignments) {
+          // 1. 7-day temporal boundary
+          const boundary = this.validator.validateTemporalBoundary(newAss.startDate);
+          if (!boundary.isValid) {
+            throw new Error(boundary.error);
+          }
+
+          // 2. Overlap conflicts
+          const conflicts = await this.validator.validateConflicts(
+            newAss.employeeId,
+            newAss.startDate,
+            newAss.endDate,
+            undefined,
+            employeeExistingShifts,
           );
-        }
+          if (conflicts.length > 0) {
+            throw new Error(
+              `Error en carga masiva: El empleado ${empId} tiene un conflicto en el periodo ${newAss.startDate}.`,
+            );
+          }
 
-        const workload = await this.validator.validateWorkload(
-          empId,
-          newAss,
-          undefined,
-          employeeExistingShifts,
-        );
-        if (!workload.isValid) {
-          throw new Error(
-            `Error en carga masiva: El empleado ${empId} excedería la carga horaria semanal (${workload.weeklyHours!.toFixed(1)}h).`,
+          // 3. 8h Rest & 6x1 Rules
+          const patternToCheck = patternMap.get(newAss.shiftPatternId);
+          if (patternToCheck) {
+            const empContext: SchedulingContext = {
+              ...baseContext,
+              assignedShifts: employeeExistingShifts,
+              indexedShifts: undefined,
+            };
+
+            const restValidation = await this.validator.validateRestPeriod(
+              newAss.employeeId,
+              newAss.startDate,
+              patternToCheck,
+              empContext,
+            );
+            if (!restValidation.isValid) {
+              throw new Error(restValidation.error);
+            }
+
+            const sixDayValidation = await this.validator.validateConsecutiveWorkdays(
+              newAss.employeeId,
+              newAss.startDate,
+              newAss.endDate,
+              newAss.shiftPatternId,
+              undefined,
+              empContext,
+              tx,
+            );
+            if (!sixDayValidation.isValid) {
+              throw new Error(sixDayValidation.error);
+            }
+          }
+
+          // 4. Workload
+          const workload = await this.validator.validateWorkload(
+            empId,
+            newAss,
+            undefined,
+            employeeExistingShifts,
+            tx,
           );
-        }
+          if (!workload.isValid) {
+            throw new Error(
+              `Error en carga masiva: El empleado ${empId} excedería la carga horaria semanal (${workload.weeklyHours!.toFixed(1)}h).`,
+            );
+          }
 
-        // Add valid shift to existing context to validate subsequent shifts correctly
-        employeeExistingShifts.push({
-          id: newAss.id || "synthetic-bulk-id",
-          employeeId: newAss.employeeId,
-          employeeName: null,
-          shiftPatternId: newAss.shiftPatternId,
-          shiftPatternName: null,
-          startDate: newAss.startDate,
-          endDate: newAss.endDate ?? null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          isDeleted: false,
-          deletedAt: null,
-        } as AssignedShift);
+          // Add valid shift to existing context to validate subsequent shifts in same batch
+          employeeExistingShifts.push({
+            id: newAss.id || "synthetic-bulk-id",
+            employeeId: newAss.employeeId,
+            employeeName: employeeMap.get(newAss.employeeId)?.name ?? null,
+            shiftPatternId: newAss.shiftPatternId,
+            shiftPatternName: patternMap.get(newAss.shiftPatternId)?.name ?? null,
+            startDate: newAss.startDate,
+            endDate: newAss.endDate ?? null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isDeleted: false,
+            deletedAt: null,
+          } as AssignedShift);
+        }
       }
-    }
 
-    const allPatterns = await prisma.shiftPattern.findMany({
-      where: { id: { in: [...new Set(assignments.map((a) => a.shiftPatternId))] } },
-    });
-    const allEmployees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
-    });
-
-    for (let i = 0; i < assignments.length; i += CHUNK_SIZE) {
-      const chunk = assignments.slice(i, i + CHUNK_SIZE);
-      await prisma.assignedShift.createMany({
-        data: chunk.map((a) => {
-          const emp = allEmployees.find((e) => e.id === a.employeeId);
-          const patt = allPatterns.find((p) => p.id === a.shiftPatternId);
-          return {
+      let persisted = 0;
+      for (let i = 0; i < assignments.length; i += CHUNK_SIZE) {
+        const chunk = assignments.slice(i, i + CHUNK_SIZE);
+        await tx.assignedShift.createMany({
+          data: chunk.map((a) => ({
             id: a.id,
             employeeId: a.employeeId,
-            employeeName: emp?.name,
+            employeeName: employeeMap.get(a.employeeId)?.name,
             shiftPatternId: a.shiftPatternId,
-            shiftPatternName: patt?.name,
+            shiftPatternName: patternMap.get(a.shiftPatternId)?.name,
             startDate: a.startDate,
             endDate: a.endDate,
-          };
-        }),
-      });
-      createdCount += chunk.length;
-    }
+          })),
+        });
+        persisted += chunk.length;
+      }
+
+      const audits = assignments.map((a) => ({
+        employeeId: a.employeeId,
+        employeeName: employeeMap.get(a.employeeId)?.name,
+        newPatternId: a.shiftPatternId,
+        newPatternName: patternMap.get(a.shiftPatternId)?.name,
+        newStartDate: a.startDate,
+        newEndDate: a.endDate,
+      }));
+
+      return { createdCount: persisted, auditPayloads: audits };
+    });
+
+    await Promise.all(
+      auditPayloads.map((details) => auditService.logShiftChange(actorUsername, "CREATE", details)),
+    );
 
     SocketService.emit("assignedShift:updated", { count: createdCount });
     return createdCount;

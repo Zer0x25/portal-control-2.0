@@ -11,8 +11,11 @@ import { integrityMaintenanceService } from "./integrityMaintenanceService";
 import { maintenanceService } from "./maintenanceService";
 import { seedingJobService } from "./seedingJobService";
 import { toBusinessDateChile } from "../utils/timeUtils";
+import { addBusinessDaysCL, formatBusinessDateCL, parseBusinessDateCL } from "../utils/timePolicy";
 import { nextReportRun, REPORT_TIMEZONE } from "../utils/reportCron";
 import { AppError } from "../utils/AppError";
+import { escapeHtml } from "../utils/htmlEscape";
+import { LockService } from "./lockService";
 
 const emailService = new EmailService();
 const exportService = new ExportService();
@@ -37,14 +40,15 @@ let initialized = false;
 let stopped = false;
 let revision = 0;
 function startMaintenanceJobs() {
-  void lifecycle.run(runMaintenance);
+  const runLockedMaintenance = () =>
+    LockService.withLock("scheduler:daily-maintenance", runMaintenance).then(() => undefined);
+  void lifecycle.run(runLockedMaintenance);
   const scheduleNext = () => {
     const now = new Date();
-    const next = new Date(now);
-    next.setDate(now.getDate() + 1);
-    next.setHours(0, 0, 0, 0);
+    const tomorrow = addBusinessDaysCL(formatBusinessDateCL(now), 1);
+    const next = parseBusinessDateCL(tomorrow);
     lifecycle.after(next.getTime() - now.getTime(), async () => {
-      await runMaintenance();
+      await runLockedMaintenance();
       scheduleNext();
     });
   };
@@ -56,11 +60,11 @@ export async function runMaintenance() {
     if (systemOperationService.isMaintenanceModeActive()) return;
     const phase2Running = await seedingJobService.isPhase2Running();
     if (phase2Running) {
-      console.warn("Seeder Fase 2 activo: mantenimiento nocturno diferido para evitar contencion.");
+      logger.warn("Seeder Fase 2 activo: mantenimiento nocturno diferido para evitar contencion.");
       return;
     }
 
-    console.warn("🛠️ Ejecutando tareas de mantenimiento del sistema...");
+    logger.info("Ejecutando tareas de mantenimiento del sistema...");
     await maintenanceService.ensureInstanceId();
     await maintenanceService.rotateAuditLogs();
     await maintenanceService.refreshMaterializedViews();
@@ -70,7 +74,7 @@ export async function runMaintenance() {
 
     // 3. Proactive closure audit
     if (disableIntegrityAudit) {
-      console.warn("Integrity audit task is paused (DISABLE_INTEGRITY_AUDIT=true).");
+      logger.warn("Integrity audit task is paused (DISABLE_INTEGRITY_AUDIT=true).");
     } else {
       await closureValidationService.auditClosureHealth();
     }
@@ -78,14 +82,14 @@ export async function runMaintenance() {
     // 4. Proactive Holiday Sync (Checks if current year is populated)
     const disableHolidayAutosync = process.env.DISABLE_HOLIDAY_AUTOSYNC === "true";
     if (disableHolidayAutosync) {
-      console.warn("Holiday autosync task is paused (DISABLE_HOLIDAY_AUTOSYNC=true).");
+      logger.warn("Holiday autosync task is paused (DISABLE_HOLIDAY_AUTOSYNC=true).");
     } else {
       await holidayService.getHolidays();
     }
 
-    console.warn("Daily maintenance tasks completed.");
+    logger.info("Daily maintenance tasks completed.");
   } catch (error) {
-    console.error("Critical error during maintenance task:", error);
+    logger.error("Critical error during maintenance task:", error);
   }
 }
 
@@ -100,7 +104,7 @@ const activeJobs: Map<string, ScheduledReportJob> = new Map();
  * Initialize the scheduler - call this on server startup
  */
 export async function initializeScheduler(): Promise<void> {
-  console.warn("📅 Inicializando scheduler de reportes...");
+  logger.info("Inicializando scheduler de reportes...");
   if (initialized) return;
   initialized = true;
   stopped = false;
@@ -115,9 +119,9 @@ export async function initializeScheduler(): Promise<void> {
       scheduleReport(report.id, report.cronExpression, report.nextRunAt);
     }
 
-    console.warn(`ðŸ“… ${reports.length} reportes programados iniciados`);
+    logger.info(`${reports.length} reportes programados iniciados`);
   } catch (error) {
-    console.error("Error initializing scheduler:", error);
+    logger.error("Error initializing scheduler:", error);
   }
 }
 
@@ -184,7 +188,7 @@ export function cancelReport(reportId: string): boolean {
   if (job) {
     clearTimeout(job.intervalId);
     activeJobs.delete(reportId);
-    console.warn(`ðŸ“… Report ${reportId} cancelled`);
+    logger.info(`Report ${reportId} cancelled`);
     return true;
   }
   return false;
@@ -249,23 +253,50 @@ async function executeReportWork(reportId: string, onlyDue: boolean): Promise<vo
         .filter(Boolean);
       const reportBuffer = await exportService.generateReportPDF(report.reportType, filters);
       const subject = `Reporte Programado: ${report.name}`;
-      const body = `<h2>Reporte Automático: ${report.name}</h2>
+      const safeName = escapeHtml(report.name);
+      const safeDescription = report.description ? escapeHtml(report.description) : "";
+      const body = `<h2>Reporte Automático: ${safeName}</h2>
+        ${safeDescription ? `<p>${safeDescription}</p>` : ""}
         <p>Se adjunta el reporte generado automáticamente.</p>
-        <p><strong>Tipo:</strong> ${getReportTypeName(report.reportType)}</p>
-        <p><strong>Frecuencia:</strong> ${getFrequencyName(report.frequency)}</p>
+        <p><strong>Tipo:</strong> ${escapeHtml(getReportTypeName(report.reportType))}</p>
+        <p><strong>Frecuencia:</strong> ${escapeHtml(getFrequencyName(report.frequency))}</p>
         <p><strong>Generado:</strong> ${new Date().toLocaleString("es-CL", { timeZone: REPORT_TIMEZONE })}</p>`;
       const extension = reportBuffer.subarray(0, 5).toString("ascii") === "%PDF-" ? "pdf" : "txt";
       const filename = `${report.name.replace(/\s+/g, "_")}_${toBusinessDateChile()}.${extension}`;
       if (recipients.length === 0) throw new Error("Reporte sin destinatarios");
-      for (const recipient of recipients) {
-        const result = await emailService.sendEmailWithAttachment(
-          recipient,
-          subject,
-          body,
-          reportBuffer,
-          filename,
-        );
-        if (!result.success) throw new Error("No se pudo entregar el reporte");
+      const deliveryOutcomes = await Promise.allSettled(
+        recipients.map(async (recipient) => {
+          const result = await emailService.sendEmailWithAttachment(
+            recipient,
+            subject,
+            body,
+            reportBuffer,
+            filename,
+          );
+          if (!result.success) {
+            throw new Error(result.message || "No se pudo entregar el reporte");
+          }
+        }),
+      );
+      let deliveredCount = 0;
+      deliveryOutcomes.forEach((outcome, index) => {
+        if (outcome.status === "fulfilled") {
+          deliveredCount++;
+        } else {
+          logger.warn("Fallo al enviar reporte programado a destinatario", {
+            reportId,
+            recipient: recipients[index],
+            error:
+              outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason),
+          });
+        }
+      });
+      if (deliveredCount === 0) {
+        logger.error("No se pudo entregar el reporte programado a ningún destinatario", {
+          reportId,
+          totalRecipients: recipients.length,
+        });
+        throw new Error("No se pudo entregar el reporte");
       }
       delivered = true;
     } finally {
@@ -294,6 +325,9 @@ function getReportTypeName(type: string): string {
     overtime: "Horas Extras",
     anomalies: "Anomalías Detectadas",
     shift_coverage: "Cobertura de Turnos",
+    calendar: "Calendario de Turnos",
+    detailed: "Reporte Detallado de Asistencia",
+    shift_report: "Reporte de Turno",
   };
   return types[type] || type;
 }

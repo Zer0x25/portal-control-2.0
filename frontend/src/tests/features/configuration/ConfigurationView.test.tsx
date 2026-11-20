@@ -10,6 +10,10 @@ vi.mock("../../../features/configuration/containers/EmailCenter.container", () =
   default: () => <div>EMAIL-CONTENT</div>,
 }));
 
+vi.mock("../../../features/configuration/containers/ScheduledReports.container", () => ({
+  default: () => <div>SCHEDULED-REPORTS-CONTENT</div>,
+}));
+
 vi.mock("../../../features/configuration/containers/MasterDataExport.container", () => ({
   default: () => <div>MASTER-DATA-CONTENT</div>,
 }));
@@ -24,6 +28,7 @@ describe("ConfigurationView", () => {
     expect(screen.getByText("Control de Sistema")).toBeInTheDocument();
     expect(screen.getByText("Variables Globales")).toBeInTheDocument();
     expect(screen.getByText("Centro de Correos")).toBeInTheDocument();
+    expect(screen.getByText("Reportes Programados")).toBeInTheDocument();
     expect(screen.getByText("Exportación de Datos")).toBeInTheDocument();
     expect(await screen.findByText("GLOBAL-VARS-CONTENT")).toBeInTheDocument();
 
@@ -36,6 +41,9 @@ describe("ConfigurationView", () => {
 
     const { rerender } = render(<ConfigurationView activeTab="email" handleTabChange={noop} />);
     expect(await screen.findByText("EMAIL-CONTENT")).toBeInTheDocument();
+
+    rerender(<ConfigurationView activeTab="scheduled-reports" handleTabChange={noop} />);
+    expect(await screen.findByText("SCHEDULED-REPORTS-CONTENT")).toBeInTheDocument();
 
     rerender(<ConfigurationView activeTab="master-data" handleTabChange={noop} />);
     expect(await screen.findByText("MASTER-DATA-CONTENT")).toBeInTheDocument();

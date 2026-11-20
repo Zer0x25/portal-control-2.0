@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { Server as SocketIOServer, type Socket } from "socket.io";
 import { Server as HTTPServer } from "http";
 import { projectRealtimeEvent } from "../modules/realtime";
@@ -155,6 +156,82 @@ export class SocketService {
 
   public static emitToUser(userId: string, event: string, data: unknown): void {
     this.deliver(event, data, userId);
+  }
+
+  private static hashToken(token: string): string {
+    return crypto.createHash("sha256").update(token).digest("hex");
+  }
+
+  private static emitForceLogoutMatching(
+    predicate: (identity: { token: string; user: AuthUser }) => boolean,
+    options?: { reason?: string; restartRecommended?: boolean },
+  ): number {
+    const io = this.io;
+    const data = {
+      reason: options?.reason ?? "SESSION_INVALIDATED",
+      restartRecommended: options?.restartRecommended === true,
+      forcedAt: new Date().toISOString(),
+    };
+    let count = 0;
+    for (const [id, identity] of [...this.identities.entries()]) {
+      if (!predicate(identity)) continue;
+      this.identities.delete(id);
+      const socket = io?.sockets.sockets.get(id);
+      if (!socket) continue;
+      count++;
+      const delivery = projectRealtimeEvent("auth:force_logout", data, identity.user);
+      if (delivery) socket.emit("auth:force_logout", delivery.payload);
+      const timer = setTimeout(() => {
+        socket.disconnect(true);
+      }, 50);
+      timer.unref();
+    }
+    return count;
+  }
+
+  public static emitForceLogoutToUser(
+    userId: string,
+    options?: { exceptTokenHash?: string; reason?: string },
+  ): number {
+    return this.emitForceLogoutMatching(
+      (identity) =>
+        identity.user.id === userId &&
+        (!options?.exceptTokenHash || this.hashToken(identity.token) !== options.exceptTokenHash),
+      options,
+    );
+  }
+
+  public static emitForceLogoutToSession(
+    tokenOrHash: string,
+    options?: { isHash?: boolean; reason?: string },
+  ): number {
+    const targetHash = options?.isHash ? tokenOrHash : this.hashToken(tokenOrHash);
+    return this.emitForceLogoutMatching(
+      (identity) => this.hashToken(identity.token) === targetHash,
+      options,
+    );
+  }
+
+  public static emitForceLogoutToEmployee(
+    employeeId: string,
+    options?: { reason?: string },
+  ): number {
+    return this.emitForceLogoutMatching(
+      (identity) =>
+        identity.user.employeeId === employeeId ||
+        (identity.user.role === "Kiosk_Employee" && identity.user.id === `kiosk-${employeeId}`),
+      options,
+    );
+  }
+
+  public static emitForceLogoutAllExcept(
+    exceptUserId?: string,
+    options?: { reason?: string },
+  ): number {
+    return this.emitForceLogoutMatching(
+      (identity) => !exceptUserId || identity.user.id !== exceptUserId,
+      options,
+    );
   }
 
   public static disconnectAllClients(reason = "server namespace disconnect"): void {

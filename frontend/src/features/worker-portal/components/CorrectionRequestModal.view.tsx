@@ -3,12 +3,7 @@ import { createPortal } from "react-dom";
 import { DailyTimeRecord, TimeRecordField } from "../../../types";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
-import {
-  CloseIcon,
-  DocumentArrowUpIcon,
-  EditIcon,
-  CheckCircleIcon,
-} from "../../../components/ui/icons/index";
+import { CloseIcon, EditIcon } from "../../../components/ui/icons/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import { Z } from "../../../constants/zScale";
 
@@ -30,13 +25,10 @@ interface CorrectionRequestModalViewProps {
   reason: string;
   /** Mensaje de error del campo (o `undefined`). */
   reasonError?: string;
-  attachment: File | null;
-  attachmentLabel: string;
   isSubmitting: boolean;
   originalValue: string;
   onRequestedValueChange: (value: string) => void;
   onReasonChange: (value: string) => void;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
   formProps: {
     id: string;
@@ -62,13 +54,10 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
   maxRequestedValue,
   reason,
   reasonError,
-  attachment,
-  attachmentLabel,
   isSubmitting,
   originalValue,
   onRequestedValueChange,
   onReasonChange,
-  onFileChange,
   formProps,
 }) => {
   if (!isOpen) {
@@ -76,7 +65,10 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
   }
 
   return createPortal(
-    <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}>
+    <div
+      data-testid="worker-correction-modal"
+      className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}
+    >
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
         onClick={onClose}
@@ -101,6 +93,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
             </div>
           </div>
           <Button
+            data-testid="worker-correction-modal-close"
             variant="ghost"
             size="sm"
             onClick={onClose}
@@ -111,7 +104,11 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
           </Button>
         </div>
 
-        <form {...formProps} className="p-8 pt-4 space-y-6">
+        <form
+          {...formProps}
+          data-testid="worker-correction-modal-form"
+          className="p-8 pt-4 space-y-6"
+        >
           <div className="p-5 rounded-md bg-token-accent-brand/5 border border-token-accent-brand/10">
             <div className="flex justify-between items-center mb-2">
               <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
@@ -133,6 +130,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
 
           <div className="space-y-4">
             <Input
+              data-testid="worker-correction-requested-value"
               label="Nuevo Valor Solicitado"
               type="datetime-local"
               value={requestedValue}
@@ -150,6 +148,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
                 Motivo de la Solicitud
               </label>
               <textarea
+                data-testid="worker-correction-reason"
                 id="correction-reason"
                 value={reason}
                 onChange={(e) => onReasonChange(e.target.value)}
@@ -170,33 +169,11 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
                 </p>
               )}
             </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest pl-1">
-                Justificativo Adjunto
-              </label>
-              <label className="relative flex flex-col items-center justify-center h-32 w-full p-4 border-2 border-dashed border-token-border-technical rounded-md hover:bg-token-accent-brand/5 hover:border-token-accent-brand/30 transition-all cursor-pointer group">
-                <input
-                  type="file"
-                  className="sr-only"
-                  onChange={onFileChange}
-                  accept="image/*,.pdf"
-                />
-                <DocumentArrowUpIcon className="w-8 h-8 text-token-text-tertiary group-hover:text-token-accent-brand transition-colors mb-2" />
-                <span className="text-xs font-black text-token-text-secondary group-hover:text-token-text-primary uppercase tracking-tighter">
-                  {attachmentLabel}
-                </span>
-                {attachment && (
-                  <div className="absolute top-2 right-2">
-                    <CheckCircleIcon className="w-4 h-4 text-green-500" />
-                  </div>
-                )}
-              </label>
-            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
             <Button
+              data-testid="worker-correction-modal-cancel"
               type="button"
               variant="secondary"
               onClick={onClose}
@@ -206,6 +183,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
               Cancelar
             </Button>
             <Button
+              data-testid="worker-correction-modal-submit"
               type="submit"
               variant="primary"
               disabled={isSubmitting}

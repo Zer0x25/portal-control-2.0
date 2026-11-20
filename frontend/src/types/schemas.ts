@@ -121,6 +121,7 @@ const LogbookEntryItemSchema = z.object({
   time: z.string(),
   annotation: z.string(),
   timestamp: z.number(),
+  recordId: z.string().optional(),
 });
 
 const SupplierEntrySchema = z.object({

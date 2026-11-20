@@ -108,17 +108,21 @@ describe("Record application TDD", () => {
     );
     expect(f.emit).not.toHaveBeenCalled();
   });
-  it("maps known punch failure and preserves forced-punch cooldown before service", async () => {
+  it("maps known punch failure, cooldown (429) and inactive employee (403) from service", async () => {
     const f = fixture();
     f.service.punch.mockRejectedValueOnce(new Error("EMPLOYEE_NOT_FOUND"));
     await expect(
       f.flows.punch({ employeeId: "e" }, { ...user, role: "Supervisor" }),
     ).rejects.toThrow("Empleado no encontrado");
-    f.service.lastPunch.mockResolvedValueOnce({ updatedAt: new Date("2026-10-06T11:59:59Z") });
+    f.service.punch.mockRejectedValueOnce(new Error("PUNCH_COOLDOWN"));
     await expect(
       f.flows.punch({ employeeId: "e", forcedType: "salida" }, { ...user, role: "Supervisor" }),
     ).rejects.toThrow("Espere unos segundos");
-    expect(f.service.punch).toHaveBeenCalledTimes(1);
+    f.service.punch.mockRejectedValueOnce(new Error("EMPLOYEE_INACTIVE"));
+    await expect(
+      f.flows.punch({ employeeId: "e" }, { ...user, role: "Administrador" }),
+    ).rejects.toThrow("archivado o inactivo");
+    expect(f.service.punch).toHaveBeenCalledTimes(3);
   });
   it("scopes export before audit and preserves JSON fallback for unknown format", async () => {
     const f = fixture();

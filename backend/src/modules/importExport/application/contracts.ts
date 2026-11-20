@@ -1,6 +1,7 @@
 export interface ImportMapping {
   prop: string;
   type?: string;
+  required?: boolean;
 }
 export interface ImportSheet {
   headers: (string | undefined)[];
@@ -15,6 +16,7 @@ export interface ExportFilters {
   endDate: string;
   area?: string;
   cargo?: string;
+  workdayType?: string;
   employeeId?: string;
   viewMode?: "month" | "week" | "day";
   mode?: "summary" | "compiled_detailed";

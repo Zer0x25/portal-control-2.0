@@ -4,6 +4,9 @@ import { SystemStatusIndicator } from "../ui/IndustrialIndicator";
 const ChangePasswordModal = React.lazy(() =>
   import("../../features/auth").then((m) => ({ default: m.ChangePasswordModal })),
 );
+const MFASetupModal = React.lazy(
+  () => import("../../features/auth/components/MFASetupModal.container"),
+);
 const UserManualModal = React.lazy(() => import("../ui/UserManualModal"));
 import NotificationCenter from "./NotificationCenter";
 import { SpeakerWaveIcon, SpeakerXMarkIcon, UserCircleIcon } from "../ui/icons/index";
@@ -17,13 +20,18 @@ interface HeaderViewProps {
   soundEnabled: boolean;
   isDropdownOpen: boolean;
   isChangePasswordModalOpen: boolean;
+  canConfigureMfa: boolean;
+  isMfaSetupModalOpen: boolean;
   isManualModalOpen: boolean;
   dropdownRef: React.RefObject<HTMLDivElement | null>;
   onToggleSound: () => void;
   onToggleDropdown: () => void;
   onOpenChangePassword: () => void;
+  onOpenMfaSetup: () => void;
   onOpenManual: () => void;
   onCloseChangePassword: () => void;
+  onCloseMfaSetup: () => void;
+  onMfaSetupSuccess: () => void;
   onCloseManual: () => void;
   onLogout: () => void;
 }
@@ -36,13 +44,18 @@ const HeaderView: React.FC<HeaderViewProps> = ({
   soundEnabled,
   isDropdownOpen,
   isChangePasswordModalOpen,
+  canConfigureMfa,
+  isMfaSetupModalOpen,
   isManualModalOpen,
   dropdownRef,
   onToggleSound,
   onToggleDropdown,
   onOpenChangePassword,
+  onOpenMfaSetup,
   onOpenManual,
   onCloseChangePassword,
+  onCloseMfaSetup,
+  onMfaSetupSuccess,
   onCloseManual,
   onLogout,
 }) => {
@@ -150,6 +163,16 @@ const HeaderView: React.FC<HeaderViewProps> = ({
                       >
                         Seguridad
                       </button>
+                      {canConfigureMfa && (
+                        <button
+                          data-testid="mfa-setup-button"
+                          aria-label="Configurar MFA"
+                          onClick={onOpenMfaSetup}
+                          className="flex items-center w-full px-3 py-2 text-xs font-bold text-token-text-secondary uppercase tracking-widest hover:bg-token-surface-active rounded-sm transition-colors"
+                        >
+                          Configurar MFA
+                        </button>
+                      )}
                       <button
                         data-testid="help-modal-button"
                         onClick={onOpenManual}
@@ -191,6 +214,15 @@ const HeaderView: React.FC<HeaderViewProps> = ({
       {isChangePasswordModalOpen && (
         <React.Suspense fallback={null}>
           <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={onCloseChangePassword} />
+        </React.Suspense>
+      )}
+      {isMfaSetupModalOpen && (
+        <React.Suspense fallback={null}>
+          <MFASetupModal
+            isOpen={isMfaSetupModalOpen}
+            onClose={onCloseMfaSetup}
+            onSuccess={onMfaSetupSuccess}
+          />
         </React.Suspense>
       )}
       {isManualModalOpen && (

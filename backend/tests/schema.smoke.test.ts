@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   AssignedShiftSchema,
   CreateUserSchema,
+  EmployeeQuerySchema,
   EmployeeSchema,
   ExportQuerySchema,
   ShiftPatternSchema,
   TimeRecordWriteSchema,
+  UpdateUserSchema,
+  UserQuerySchema,
 } from "../src/models/schemas";
 
 describe("Schema Smoke", () => {
@@ -13,6 +16,8 @@ describe("Schema Smoke", () => {
     const result = EmployeeSchema.safeParse({
       rut: "12345678",
       name: "Juan Perez",
+      area: "Ops",
+      workdayType: "Normal",
       status: "Activo",
       hireDate: "2025-01-15",
       birthDate: "1990-06-20",
@@ -21,13 +26,36 @@ describe("Schema Smoke", () => {
     expect(result.success).toBe(true);
   });
 
-  it("validates EmployeeSchema without optional fields", () => {
-    const result = EmployeeSchema.safeParse({
+  it("validates EmployeeSchema without optional fields and requires area and workdayType", () => {
+    const valid = EmployeeSchema.safeParse({
+      rut: "12345678",
+      name: "Juan Perez",
+      area: "Ops",
+      workdayType: "Normal",
+    });
+    expect(valid.success).toBe(true);
+
+    const missingRequired = EmployeeSchema.safeParse({
       rut: "12345678",
       name: "Juan Perez",
     });
+    expect(missingRequired.success).toBe(false);
+  });
 
-    expect(result.success).toBe(true);
+  it("enforces positive integer pagination and max pageSize in EmployeeQuerySchema and UserQuerySchema", () => {
+    for (const schema of [EmployeeQuerySchema, UserQuerySchema]) {
+      expect(schema.safeParse({ page: "1", pageSize: "200" }).success).toBe(true);
+      expect(schema.safeParse({ page: "0", pageSize: "10" }).success).toBe(false);
+      expect(schema.safeParse({ page: "-1", pageSize: "10" }).success).toBe(false);
+      expect(schema.safeParse({ page: "abc", pageSize: "10" }).success).toBe(false);
+      expect(schema.safeParse({ page: "1", pageSize: "0" }).success).toBe(false);
+      expect(schema.safeParse({ page: "1", pageSize: "201" }).success).toBe(false);
+    }
+  });
+
+  it("allows nullable employeeId, Archivado role, and rejects blank username in UpdateUserSchema", () => {
+    expect(UpdateUserSchema.safeParse({ employeeId: null, role: "Archivado" }).success).toBe(true);
+    expect(UpdateUserSchema.safeParse({ username: "   " }).success).toBe(false);
   });
 
   it("rejects invalid date formats in TimeRecordWriteSchema", () => {

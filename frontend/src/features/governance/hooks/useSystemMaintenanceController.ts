@@ -16,6 +16,14 @@ import {
   type PurgeSessionsFormValues,
 } from "../../../schemas/forms/auth";
 
+export interface PendingMaintenanceConfirmation {
+  title: string;
+  message: string;
+  confirmText?: string;
+  confirmVariant?: "primary" | "secondary" | "danger";
+  onConfirm: () => Promise<void>;
+}
+
 export const useSystemMaintenanceController = () => {
   const queryClient = useQueryClient();
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -27,6 +35,11 @@ export const useSystemMaintenanceController = () => {
   const [isResettingDatabase, setIsResettingDatabase] = useState(false);
   const [isTriggeringAccountingAutoClose, setIsTriggeringAccountingAutoClose] = useState(false);
   const [isBackupListOpen, setIsBackupListOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<PendingMaintenanceConfirmation | null>(null);
+
+  const closeConfirmDialog = useCallback(() => {
+    setConfirmDialog(null);
+  }, []);
 
   const { addToast } = useStore(
     useShallow((s) => ({
@@ -61,19 +74,26 @@ export const useSystemMaintenanceController = () => {
   };
 
   const handleTriggerAutoClose = async () => {
-    if (!window.confirm("¿Estás seguro de gatillar el cierre automático masivo?")) return;
-    setLoading(true);
-    addToast("Ejecutando proceso de cierre masivo...", "info");
-    try {
-      const result = await healthService.triggerAutoClose();
-      addToast(`${result.data?.closedCount ?? 0} registros cerrados`, "success");
-      await handleDiagnose();
-      await fetchStats();
-    } catch (error: unknown) {
-      addToast(error instanceof Error ? error.message : "Error al ejecutar cierre", "error");
-    } finally {
-      setLoading(false);
-    }
+    setConfirmDialog({
+      title: "Confirmar Cierre Automático",
+      message: "¿Estás seguro de gatillar el cierre automático masivo?",
+      confirmText: "Ejecutar Cierre",
+      confirmVariant: "danger",
+      onConfirm: async () => {
+        setLoading(true);
+        addToast("Ejecutando proceso de cierre masivo...", "info");
+        try {
+          const result = await healthService.triggerAutoClose();
+          addToast(`${result.data?.closedCount ?? 0} registros cerrados`, "success");
+          await handleDiagnose();
+          await fetchStats();
+        } catch (error: unknown) {
+          addToast(error instanceof Error ? error.message : "Error al ejecutar cierre", "error");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const handleTriggerBackup = async () => {
@@ -109,17 +129,24 @@ export const useSystemMaintenanceController = () => {
     schema: purgeSessionsFormSchema,
     defaultValues: { username: "" },
     onSubmit: async (values) => {
-      if (!window.confirm("Se purgaran sesiones activas. Deseas continuar?")) return;
-      setIsPurgingSessions(true);
-      try {
-        const result = await healthService.purgeSessions(values.username);
-        addToast(result.data?.message || "Sesiones purgadas", "success");
-        await fetchStats();
-      } catch (error: unknown) {
-        addToast(error instanceof Error ? error.message : "Error purgando sesiones", "error");
-      } finally {
-        setIsPurgingSessions(false);
-      }
+      setConfirmDialog({
+        title: "Confirmar Purga de Sesiones",
+        message: "Se purgarán sesiones activas. ¿Deseas continuar?",
+        confirmText: "Purgar Sesiones",
+        confirmVariant: "danger",
+        onConfirm: async () => {
+          setIsPurgingSessions(true);
+          try {
+            const result = await healthService.purgeSessions(values.username);
+            addToast(result.data?.message || "Sesiones purgadas", "success");
+            await fetchStats();
+          } catch (error: unknown) {
+            addToast(error instanceof Error ? error.message : "Error purgando sesiones", "error");
+          } finally {
+            setIsPurgingSessions(false);
+          }
+        },
+      });
     },
   });
 
@@ -160,49 +187,66 @@ export const useSystemMaintenanceController = () => {
   });
 
   const handleMasterReset = async () => {
-    if (!window.confirm("Esta accion elimina datos del servidor. Continuar?")) return;
-    setIsResettingDatabase(true);
-    try {
-      await healthService.clearDatabase();
-      addToast("Reset de base de datos completado.", "success");
-      await fetchStats();
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Error en reseteo de base de datos.";
-      addToast(message, "error");
-    } finally {
-      setIsResettingDatabase(false);
-    }
+    setConfirmDialog({
+      title: "Confirmar Reseteo Maestro",
+      message: "Esta acción elimina datos del servidor. ¿Continuar?",
+      confirmText: "Ejecutar Reseteo",
+      confirmVariant: "danger",
+      onConfirm: async () => {
+        setIsResettingDatabase(true);
+        try {
+          await healthService.clearDatabase();
+          addToast("Reset de base de datos completado.", "success");
+          await fetchStats();
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : "Error en reseteo de base de datos.";
+          addToast(message, "error");
+        } finally {
+          setIsResettingDatabase(false);
+        }
+      },
+    });
   };
 
   const handleTriggerAccountingAutoClose = async () => {
-    if (!window.confirm("¿Disparar cierre contable automático ahora?")) return;
-    setIsTriggeringAccountingAutoClose(true);
-    addToast("Ejecutando cierre contable automático...", "info");
-    try {
-      const result = await healthService.triggerAccountingAutoClose();
-      addToast(result.data?.message || "Cierre contable ejecutado.", "success");
-    } catch (error: unknown) {
-      addToast(error instanceof Error ? error.message : "Error en cierre contable.", "error");
-    } finally {
-      setIsTriggeringAccountingAutoClose(false);
-    }
+    setConfirmDialog({
+      title: "Confirmar Cierre Contable",
+      message: "¿Disparar cierre contable automático ahora?",
+      confirmText: "Disparar Cierre",
+      confirmVariant: "primary",
+      onConfirm: async () => {
+        setIsTriggeringAccountingAutoClose(true);
+        addToast("Ejecutando cierre contable automático...", "info");
+        try {
+          const result = await healthService.triggerAccountingAutoClose();
+          addToast(result.data?.message || "Cierre contable ejecutado.", "success");
+        } catch (error: unknown) {
+          addToast(error instanceof Error ? error.message : "Error en cierre contable.", "error");
+        } finally {
+          setIsTriggeringAccountingAutoClose(false);
+        }
+      },
+    });
   };
 
   const handleRestartBackend = async () => {
-    if (
-      !window.confirm("¿Reiniciar el servidor backend? Esto interrumpirá brevemente el servicio.")
-    ) {
-      return;
-    }
-
-    try {
-      addToast("Enviando señal de reinicio...", "info");
-      await healthService.restartBackend();
-      addToast("Reiniciando... Espera unos segundos.", "success");
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error desconocido";
-      addToast(`Error al reiniciar: ${message}`, "error");
-    }
+    setConfirmDialog({
+      title: "Confirmar Reinicio de Servidor",
+      message: "¿Reiniciar el servidor backend? Esto interrumpirá brevemente el servicio.",
+      confirmText: "Reiniciar Backend",
+      confirmVariant: "danger",
+      onConfirm: async () => {
+        try {
+          addToast("Enviando señal de reinicio...", "info");
+          await healthService.restartBackend();
+          addToast("Reiniciando... Espera unos segundos.", "success");
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : "Error desconocido";
+          addToast(`Error al reiniciar: ${message}`, "error");
+        }
+      },
+    });
   };
 
   return {
@@ -214,6 +258,8 @@ export const useSystemMaintenanceController = () => {
     isResettingPassword,
     isResettingDatabase,
     isTriggeringAccountingAutoClose,
+    confirmDialog,
+    closeConfirmDialog,
     purgeUsername: purgeForm.values.username ?? "",
     resetUsername: resetForm.values.username,
     newPassword: resetForm.values.newPassword,

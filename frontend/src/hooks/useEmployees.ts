@@ -1,18 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useUsers } from "./useUsers";
 import { useToasts } from "./useToasts";
 import { useEmployeesQuery, useKioskEmployeesQuery } from "./queries/useEmployeesQuery";
 import { useStore } from "../store/useStore";
-import { shiftService } from "../services/shiftService";
 import { timeRecordService } from "../services/timeRecordService";
 import { employeeService } from "../services/employeeService";
 import { Employee, EmployeeStatus } from "../types";
 import { useEffect } from "react";
-import { UserRole } from "../types/user";
 import { queryKeys } from "../lib/queryKeys";
 
 const EMPTY_EMPLOYEES: Employee[] = [];
-const loadDateUtilsForArchive = () => import("../utils/dateUtils");
 
 /**
  * Empleados: única fuente = `useEmployeesQuery` (spec 032 T5).
@@ -20,17 +16,12 @@ const loadDateUtilsForArchive = () => import("../utils/dateUtils");
  * acción invalida `employees` para que react-query refresque.
  */
 export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boolean } = {}) => {
-  const {
-    deleteUser: hardDeleteUser,
-    addUser: recreateUser,
-    refetchUsers,
-  } = useUsers({ enabled: false });
   const currentUser = useStore((state) => state.currentUser);
 
   const queryClient = useQueryClient();
   const { addToast } = useToasts();
 
-  const employeesQuery = useEmployeesQuery(options.enabled);
+  const employeesQuery = useEmployeesQuery(!_isKiosk && (options.enabled ?? true));
   const kioskQuery = useKioskEmployeesQuery(_isKiosk);
 
   const invalidateEmployees = () =>
@@ -112,12 +103,6 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
     return `EMP-${maxId + 1}`;
   };
 
-  const generateTemporaryPassword = (): string => {
-    const bytes = new Uint8Array(12);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, (b) => (b % 36).toString(36)).join("");
-  };
-
   return {
     // Data from Query
     employees: data?.active || [],
@@ -126,7 +111,8 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
     allEmployees: data?.all || [],
     archivedCount: data?.archivedCount || 0,
     isLoadingEmployees: _isKiosk ? isLoadingKioskEmployees : isLoading,
-    isError: false,
+    isError: _isKiosk ? kioskQuery.isError : employeesQuery.isError,
+    refetchKioskEmployees: kioskQuery.refetch,
 
     // Actions via Service
     addEmployee: async (emp: Partial<Employee>): Promise<Employee | null> => {
@@ -149,6 +135,17 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al actualizar empleado";
+        addToast(message, "error");
+        return false;
+      }
+    },
+    updateKioskPin: async (id: string, pin: string): Promise<boolean> => {
+      try {
+        await employeeService.updateKioskPin(id, pin);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.employeesKiosk() });
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Error al actualizar el PIN";
         addToast(message, "error");
         return false;
       }
@@ -194,53 +191,20 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
       }
     },
 
-    // Enterprise Archiving Logic
-    archiveEmployee: async (employee: Employee) => {
+    // Enterprise Archiving Logic (delegated atomically to backend PUT /api/employees/:id)
+    archiveEmployee: async (employee: Employee): Promise<boolean> => {
       try {
-        // 1. Perform Archive (Status Update)
         await employeeService.update(employee.id, {
           status: "Archivado",
           lastModified: Date.now(),
         });
 
-        // 2. Delete associated user (Hard Delete)
-        const { data: usersData = [] } = await refetchUsers();
-        const linkedUser = usersData.find((u) => u.employeeId === employee.id);
-        if (linkedUser) {
-          await hardDeleteUser(linkedUser.id);
-          addToast(`Usuario '${linkedUser.username}' eliminado permanentemente.`, "info");
-        }
-
-        // 3. Archive Assignments (Terminate future shifts)
-        const assignmentsResponse = await shiftService.getAssignments();
-        const allAssignments = assignmentsResponse.data;
-        const employeeAssignments = allAssignments.filter((a) => a.employeeId === employee.id);
-        const { toBusinessDateChile } = await loadDateUtilsForArchive();
-        const todayStr = toBusinessDateChile();
-
-        const terminationPromises = employeeAssignments.map(async (assignment) => {
-          if (assignment.startDate > todayStr) {
-            // Future assignment: Hard delete
-            return shiftService.deleteAssignment(assignment.id);
-          } else if (!assignment.endDate || assignment.endDate > todayStr) {
-            // Active assignment: Terminate today
-            return shiftService.updateAssignment(assignment.id, {
-              ...assignment,
-              endDate: todayStr,
-            });
-          }
-        });
-
-        if (terminationPromises.length > 0) {
-          await Promise.all(terminationPromises);
-          addToast(
-            `${terminationPromises.length} asignaciones de turno cerradas/eliminadas.`,
-            "info",
-          );
-        }
-
-        await invalidateEmployees();
-        await queryClient.invalidateQueries({ queryKey: queryKeys.users() });
+        await Promise.all([
+          invalidateEmployees(),
+          queryClient.invalidateQueries({ queryKey: queryKeys.users() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.assignedShifts() }),
+        ]);
+        addToast("Empleado archivado correctamente.", "success");
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al archivar empleado";
@@ -249,38 +213,19 @@ export const useEmployees = (_isKiosk: boolean = false, options: { enabled?: boo
       }
     },
 
-    // Enterprise Reactivation Logic
-    reactivateEmployee: async (employee: Employee) => {
+    // Enterprise Reactivation Logic (delegated atomically to backend PUT /api/employees/:id)
+    reactivateEmployee: async (employee: Employee): Promise<boolean> => {
       try {
-        // 1. Change Status to Active
-        await employeeService.update(employee.id, { status: "Activo", lastModified: Date.now() });
-
-        // 2. Automatically recreate User Account
-        const username = employee.name
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/\s+/g, ".");
-        const temporaryPassword = generateTemporaryPassword();
-
-        await recreateUser({
-          username,
-          password: temporaryPassword,
-          role: "Usuario" as UserRole,
-          employeeId: employee.id,
-          mustChangePassword: true,
+        await employeeService.update(employee.id, {
+          status: "Activo",
           lastModified: Date.now(),
-          syncStatus: "pending",
-          isDeleted: false,
         });
 
-        addToast(
-          `Empleado reactivado. Usuario '${username}' creado con clave temporal (cambio obligatorio en primer ingreso).`,
-          "success",
-        );
-
-        await invalidateEmployees();
-        await queryClient.invalidateQueries({ queryKey: queryKeys.users() });
+        await Promise.all([
+          invalidateEmployees(),
+          queryClient.invalidateQueries({ queryKey: queryKeys.users() }),
+        ]);
+        addToast("Empleado reactivado correctamente.", "success");
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Error al reactivar empleado";

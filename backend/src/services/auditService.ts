@@ -4,6 +4,7 @@ import { Prisma } from "../generated/prisma/client";
 import { SocketService } from "./socketService";
 import { AppError } from "../utils/AppError";
 import { toCaughtError } from "../utils/caughtError";
+import { endOfBusinessDayCL, isBusinessDateCL, parseBusinessDateCL } from "../utils/timePolicy";
 
 interface AuditLogEntry {
   actorUsername: string;
@@ -244,11 +245,13 @@ export const auditService = {
 
     if (startDate || endDate) {
       where.timestamp = {};
-      if (startDate) where.timestamp.gte = new Date(startDate);
+      if (startDate) {
+        where.timestamp.gte = isBusinessDateCL(startDate)
+          ? parseBusinessDateCL(startDate)
+          : new Date(startDate);
+      }
       if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        where.timestamp.lte = end;
+        where.timestamp.lte = endOfBusinessDayCL(endDate);
       }
     }
 
@@ -340,11 +343,13 @@ export const auditService = {
 
     if (startDate || endDate) {
       where.timestamp = {};
-      if (startDate) where.timestamp.gte = new Date(startDate);
+      if (startDate) {
+        where.timestamp.gte = isBusinessDateCL(startDate)
+          ? parseBusinessDateCL(startDate)
+          : new Date(startDate);
+      }
       if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        where.timestamp.lte = end;
+        where.timestamp.lte = endOfBusinessDayCL(endDate);
       }
     }
 

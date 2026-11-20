@@ -17,6 +17,7 @@ import { addBusinessDaysChile, toBusinessDateChile } from "../src/utils/timeUtil
 
 vi.mock("../src/services/db", () => {
   const db = {
+    $executeRaw: vi.fn().mockResolvedValue(0),
     $queryRaw: vi.fn().mockResolvedValue([{ id: "emp1" }]),
     employee: { findUnique: vi.fn() },
     leaveRecord: {

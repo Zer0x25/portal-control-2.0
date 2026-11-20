@@ -1,4 +1,4 @@
-import { Employee, TimeRecord, MonthlyEmployeeStats } from "../../generated/prisma/client";
+import { Employee, Prisma, TimeRecord, MonthlyEmployeeStats } from "../../generated/prisma/client";
 import prisma from "../db";
 import { schedulingService, SchedulingContext } from "../schedulingService";
 import { KpiCache } from "./KpiCache";
@@ -103,7 +103,7 @@ export class KpiReportService {
   async getKpiSummary(filters: KpiFilters) {
     const { startDate, endDate } = this.resolveInclusiveRange(filters);
     const sourceRevision = await kpiCache.getSourceRevision();
-    const employees = await this.getEmployees(filters);
+    const employees = await this.getEmployees(filters, startDate, endDate);
 
     if (employees.length === 0) {
       return { kpis: {}, kpiDetails: {} };
@@ -140,7 +140,7 @@ export class KpiReportService {
   async getDetailedReport(filters: KpiFilters) {
     const { startDate, endDate } = this.resolveInclusiveRange(filters);
     const sourceRevision = await kpiCache.getSourceRevision();
-    const employees = await this.getEmployees(filters);
+    const employees = await this.getEmployees(filters, startDate, endDate);
 
     if (employees.length === 0) return { summary: [], details: {} };
 
@@ -360,12 +360,57 @@ export class KpiReportService {
     return stats;
   }
 
-  private async getEmployees(filters: KpiFilters) {
-    const { employeeIds, area } = filters;
-    const where: { id?: { in: string[] }; area?: string } = {};
+  private async getEmployees(filters: KpiFilters, startDate: string, endDate: string) {
+    const { employeeIds, area, cargo, workdayType } = filters;
+    const where: Prisma.EmployeeWhereInput = {};
     if (employeeIds?.length) where.id = { in: employeeIds };
     if (area) where.area = area;
-    return prisma.employee.findMany({ where });
+    if (cargo) where.position = cargo;
+    if (workdayType) where.workdayType = workdayType;
+
+    const candidates = await prisma.employee.findMany({ where });
+    const inactiveIds = candidates.filter((e) => e.status !== "Activo").map((e) => e.id);
+    if (inactiveIds.length === 0) return candidates;
+
+    const [records, leaves, shifts] = await Promise.all([
+      prisma.timeRecord.findMany({
+        where: {
+          employeeId: { in: inactiveIds },
+          isDeleted: false,
+          date: { gte: startDate, lte: endDate },
+        },
+        select: { employeeId: true },
+        distinct: ["employeeId"],
+      }),
+      prisma.leaveRecord.findMany({
+        where: {
+          employeeId: { in: inactiveIds },
+          isDeleted: false,
+          startDate: { lte: endDate },
+          endDate: { gte: startDate },
+        },
+        select: { employeeId: true },
+        distinct: ["employeeId"],
+      }),
+      prisma.assignedShift.findMany({
+        where: {
+          employeeId: { in: inactiveIds },
+          isDeleted: false,
+          startDate: { lte: endDate },
+          OR: [{ endDate: null }, { endDate: { gte: startDate } }],
+        },
+        select: { employeeId: true },
+        distinct: ["employeeId"],
+      }),
+    ]);
+
+    const activeInRange = new Set<string>([
+      ...records.map((r) => r.employeeId),
+      ...leaves.map((l) => l.employeeId),
+      ...shifts.map((s) => s.employeeId),
+    ]);
+
+    return candidates.filter((e) => e.status === "Activo" || activeInRange.has(e.id));
   }
 
   private resolveInclusiveRange(filters: KpiFilters): { startDate: string; endDate: string } {

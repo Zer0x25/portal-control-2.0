@@ -28,6 +28,22 @@ export const authenticateAccessToken = createAuthenticate({
         },
       }),
   },
+  employees: {
+    findStatus: (id) =>
+      prisma.employee.findUnique({
+        where: { id },
+        select: { status: true, isPinBlocked: true },
+      }),
+  },
+  kioskSessions: {
+    isActive: async (jti) => {
+      const session = await prisma.verification.findUnique({
+        where: { id: `kiosk-jti:${jti}` },
+        select: { expiresAt: true },
+      });
+      return Boolean(session && session.expiresAt > new Date());
+    },
+  },
   betterAuth: {
     enabled: process.env.BETTER_AUTH_ENABLED === "true",
     findSession: async (token) => {
