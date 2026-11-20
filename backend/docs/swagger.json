@@ -1533,7 +1533,12 @@
               "properties": {
                 "id": { "type": "string", "minLength": 1 },
                 "time": { "type": "string", "minLength": 1 },
-                "licensePlate": { "type": "string", "minLength": 1 },
+                "entryType": { "type": "string", "enum": ["visit", "provider"] },
+                "arrivalMode": { "type": "string", "enum": ["pedestrian", "vehicle"] },
+                "licensePlate": {
+                  "type": "string",
+                  "description": "Requerida para vehículos y entradas sin arrivalMode; puede ser vacía cuando arrivalMode es pedestrian."
+                },
                 "driverName": { "type": "string", "minLength": 1 },
                 "paxCount": { "type": "number" },
                 "company": { "type": "string", "minLength": 1 },

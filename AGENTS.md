@@ -1,6 +1,6 @@
 # Developer & AI Agent Guidelines (AGENTS.md)
 
-This document provides conventions, operational commands, and architectural constraints for AI agents (including Google Jules) and contributors working on `portal-control`.
+This document provides conventions, operational commands, and architectural constraints for AI agents and contributors working on `portal-control`.
 
 Express está retirado por decisión del usuario. No mantener ni recrear su runtime, controllers, routers, middleware, dependencias o pruebas de paridad. Toda corrección y validación HTTP se implementa exclusivamente en Fastify como único servidor HTTP.
 
@@ -113,8 +113,6 @@ Para mantener este archivo conciso y de alta atención, las guías de implementa
 2. **Prohibido agregar bitácoras o playbooks en AGENTS.md**: Campañas temporales, tablas de "antes vs después" y deudas específicas de módulos pertenecen a `specs/` o `docs/`.
 3. **Reglas modulares bajo demanda**: Nuevas guías de dominio deben crearse en `.agents/rules/<dominio>.md` con frontmatter `trigger: model_decision`.
 
-Memorias institucionales:
+Referencias institucionales:
 
-- [.jules/bolt.md](file:///.jules/bolt.md): Bitácora de optimizaciones de performance y latencia.
-- [.jules/sentinel.md](file:///.jules/sentinel.md): Bitácora de vulnerabilidades y blindaje de seguridad.
 - [specs/roadmap-fastify.md](file:///specs/roadmap-fastify.md) y [specs/025-fastify-cutover/backlog.md](file:///specs/025-fastify-cutover/backlog.md): Estado de especificaciones, contratos de módulos y mejoras post-cutover.

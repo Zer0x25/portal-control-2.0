@@ -17,7 +17,6 @@ const meta = {
     openTimePicker: () => undefined,
     closeTimePicker: () => undefined,
     isSubmitting: false,
-    submit: () => undefined,
     formProps: {
       id: "novelty-story",
       noValidate: true,

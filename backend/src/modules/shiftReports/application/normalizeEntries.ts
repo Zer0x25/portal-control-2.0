@@ -58,11 +58,17 @@ function normalizeSupplierEntry(
       typeof e.id === "string" && e.id.trim().length > 0
         ? e.id
         : `legacy-supplier-${timestamp}-${idx}`,
+    ...(e.entryType === "visit" || e.entryType === "provider" ? { entryType: e.entryType } : {}),
+    ...(e.arrivalMode === "pedestrian" || e.arrivalMode === "vehicle"
+      ? { arrivalMode: e.arrivalMode }
+      : {}),
     time: toTimeString(e.time, timestamp, formatTime),
     licensePlate:
       typeof e.licensePlate === "string" && e.licensePlate.trim().length > 0
         ? e.licensePlate.trim()
-        : "N/A",
+        : e.arrivalMode === "pedestrian"
+          ? ""
+          : "N/A",
     driverName:
       typeof e.driverName === "string" && e.driverName.trim().length > 0
         ? e.driverName.trim()

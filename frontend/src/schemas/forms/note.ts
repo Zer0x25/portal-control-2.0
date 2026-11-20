@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 import { ERROR_MESSAGES } from "../../utils/errorMessages";
-import { clockTime, optionalText, requiredText, requiredTextMin } from "./common";
+import {
+  CLOCK_TIME_PATTERN,
+  clockTime,
+  optionalText,
+  requiredText,
+  requiredTextMin,
+} from "./common";
 
 /**
  * Spec 036 T5 (AC2): nota rapida (`QuickNotes.tsx`).
@@ -35,24 +41,55 @@ export const LICENSE_PLATE_PATTERN = /^[A-Z0-9]{1,2}(?:-[A-Z0-9]{1,2}){0,2}$/;
  * sincroniza). No hay schema OpenAPI que verificar, asi que este schema solo
  * fija las reglas de UI.
  *
- * Spec 036 T10: los campos son los que el modal muestra de verdad (patente,
- * conductor, pasajeros, empresa, motivo y hora); antes el schema describia
- * otro formulario (nombre, RUT, telefono...), que no existe en la pantalla.
+ * Spec 036 T10: conserva los campos del formulario de ingreso, junto con el
+ * tipo de entrada y el modo de llegada; la patente se exige solo al ingresar
+ * en vehículo.
  */
-export const localSupplierFormSchema = z.object({
-  licensePlate: requiredText("La patente").regex(
-    LICENSE_PLATE_PATTERN,
-    ERROR_MESSAGES.invalidLicensePlate(),
-  ),
-  driverName: requiredText("El conductor"),
-  paxCount: z
-    .number({ error: ERROR_MESSAGES.required("El número de pasajeros") })
-    .int(ERROR_MESSAGES.invalidPaxCount())
-    .min(0, ERROR_MESSAGES.invalidPaxCount()),
-  company: requiredText("La empresa"),
-  reason: requiredText("El motivo del ingreso"),
-  time: clockTime("La hora del ingreso"),
-});
+export const localSupplierFormSchema = z
+  .object({
+    entryType: z.enum(["visit", "provider"]),
+    arrivalMode: z.enum(["pedestrian", "vehicle"]),
+    licensePlate: z.string().trim(),
+    driverName: z
+      .string({ error: ERROR_MESSAGES.required("El conductor") })
+      .trim()
+      .min(1, ERROR_MESSAGES.required("El conductor")),
+    paxCount: z
+      .number({ error: ERROR_MESSAGES.required("El número de pasajeros") })
+      .int(ERROR_MESSAGES.invalidPaxCount())
+      .min(0, ERROR_MESSAGES.invalidPaxCount()),
+    company: z
+      .string({ error: ERROR_MESSAGES.required("La empresa") })
+      .trim()
+      .min(1, ERROR_MESSAGES.required("La empresa")),
+    reason: z
+      .string({ error: ERROR_MESSAGES.required("El motivo del ingreso") })
+      .trim()
+      .min(1, ERROR_MESSAGES.required("El motivo del ingreso")),
+    time: z
+      .string({ error: ERROR_MESSAGES.required("La hora del ingreso") })
+      .trim()
+      .min(1, ERROR_MESSAGES.required("La hora del ingreso"))
+      .regex(CLOCK_TIME_PATTERN, ERROR_MESSAGES.invalidTime()),
+  })
+  .superRefine((values, context) => {
+    if (values.arrivalMode !== "vehicle") return;
+    if (!values.licensePlate) {
+      context.addIssue({
+        code: "custom",
+        path: ["licensePlate"],
+        message: ERROR_MESSAGES.required("La patente"),
+      });
+      return;
+    }
+    if (!LICENSE_PLATE_PATTERN.test(values.licensePlate)) {
+      context.addIssue({
+        code: "custom",
+        path: ["licensePlate"],
+        message: ERROR_MESSAGES.invalidLicensePlate(),
+      });
+    }
+  });
 
 /**
  * Novedad de la libreta de turnos (`AddNoveltyModal.tsx`).

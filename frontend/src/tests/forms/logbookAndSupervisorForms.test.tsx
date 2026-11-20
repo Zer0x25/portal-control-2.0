@@ -116,7 +116,7 @@ describe("useNoveltyFormController (spec 036 T10)", () => {
 });
 
 describe("useSupplierFormController (spec 036 T10)", () => {
-  it("entrega los seis campos con la forma exacta", async () => {
+  it("entrega la clasificación y los seis campos operativos con la forma exacta", async () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const { result } = renderHook(() =>
       useSupplierFormController({
@@ -127,6 +127,8 @@ describe("useSupplierFormController (spec 036 T10)", () => {
     );
 
     await act(async () => {
+      result.current.handleEntryTypeChange("provider");
+      result.current.handleArrivalModeChange("vehicle");
       result.current.handleLicensePlateChange("ab12cd");
       result.current.handleDriverNameChange(" Juan Pérez ");
       result.current.handleCompanyChange("Transportes SPA");
@@ -139,8 +141,19 @@ describe("useSupplierFormController (spec 036 T10)", () => {
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
     const payload = asJson(onSave.mock.calls[0][0] as Record<string, unknown>);
     expect(Object.keys(payload).sort()).toEqual(
-      ["company", "driverName", "licensePlate", "paxCount", "reason", "time"].sort(),
+      [
+        "arrivalMode",
+        "company",
+        "driverName",
+        "entryType",
+        "licensePlate",
+        "paxCount",
+        "reason",
+        "time",
+      ].sort(),
     );
+    expect(payload.entryType).toBe("provider");
+    expect(payload.arrivalMode).toBe("vehicle");
     expect(payload.licensePlate).toBe("AB-12-CD");
     expect(payload.driverName).toBe("Juan Pérez");
     expect(payload.paxCount).toBe(3);
@@ -161,10 +174,26 @@ describe("useSupplierFormController (spec 036 T10)", () => {
       result.current.submit();
     });
 
-    await waitFor(() => expect(result.current.getError("licensePlate")).toBeDefined());
-    expect(result.current.getError("driverName")).toBeDefined();
+    await waitFor(() => expect(result.current.getError("driverName")).toBeDefined());
     expect(result.current.getError("company")).toBeDefined();
     expect(result.current.getError("reason")).toBeDefined();
+    expect(result.current.getError("licensePlate")).toBeUndefined();
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("exige patente solo cuando la forma de ingreso es vehículo", async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const { result } = renderHook(() =>
+      useSupplierFormController({ isOpen: true, initialData: null, onSave }),
+    );
+
+    act(() => result.current.handleArrivalModeChange("vehicle"));
+    expect(result.current.values.arrivalMode).toBe("vehicle");
+    await act(async () => {
+      result.current.submit();
+    });
+
+    await waitFor(() => expect(result.current.getError("licensePlate")).toBeDefined());
     expect(onSave).not.toHaveBeenCalled();
   });
 

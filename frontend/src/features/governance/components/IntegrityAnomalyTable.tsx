@@ -19,13 +19,15 @@ interface IntegrityAnomalyTableProps {
 const IntegrityAnomalyTable: React.FC<IntegrityAnomalyTableProps> = ({ logs, isLoading }) => {
   if (!isLoading && logs.length === 0) {
     return (
-      <Card className="flex flex-col items-center justify-center p-12 border-dashed">
-        <EmptyState
-          title="Sin anomalías de integridad"
-          description="No se han detectado violaciones de seguridad o corrupción de datos en el periodo analizado."
-          icon={<FingerPrintIcon className="w-12 h-12 text-token-status-success/50" />}
-        />
-      </Card>
+      <div data-testid="governance-integrity-table">
+        <Card className="flex flex-col items-center justify-center p-12 border-dashed">
+          <EmptyState
+            title="Sin anomalías de integridad"
+            description="No se han detectado violaciones de seguridad o corrupción de datos en el periodo analizado."
+            icon={<FingerPrintIcon className="w-12 h-12 text-token-status-success/50" />}
+          />
+        </Card>
+      </div>
     );
   }
 

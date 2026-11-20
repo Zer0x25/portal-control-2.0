@@ -3163,6 +3163,13 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
           "supplierEntries": {
             "items": {
               "properties": {
+                "arrivalMode": {
+                  "enum": [
+                    "pedestrian",
+                    "vehicle",
+                  ],
+                  "type": "string",
+                },
                 "company": {
                   "minLength": 1,
                   "type": "string",
@@ -3171,12 +3178,19 @@ exports[`API Contract > Swagger specification should match the saved snapshot 1`
                   "minLength": 1,
                   "type": "string",
                 },
+                "entryType": {
+                  "enum": [
+                    "visit",
+                    "provider",
+                  ],
+                  "type": "string",
+                },
                 "id": {
                   "minLength": 1,
                   "type": "string",
                 },
                 "licensePlate": {
-                  "minLength": 1,
+                  "description": "Requerida para vehículos y entradas sin arrivalMode; puede ser vacía cuando arrivalMode es pedestrian.",
                   "type": "string",
                 },
                 "paxCount": {

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "comments": [
+    {
+      "id": "7jyt2qy3",
+      "file": "02-compacto.html",
+      "selector": "#nombre",
+      "excerpt": "",
+      "comment": "que el enter en este cuadro salte al siguiene cuadro",
+      "createdAt": "2026-11-20T17:38:18.547Z",
+      "status": "resolved",
+      "sentAt": "2026-11-20T17:38:18.563Z",
+      "resolvedAt": "2026-11-20T17:38:35.463Z",
+      "resolution": "Enter en Nombre / responsable pasa el foco a Empresa / entidad."
+    },
+    {
+      "id": "los56jer",
+      "file": "02-compacto.html",
+      "selector": "#empresa",
+      "excerpt": "",
+      "comment": "que el enter en este cuadro salte al siguiene cuadro",
+      "createdAt": "2026-11-20T17:38:23.084Z",
+      "status": "resolved",
+      "sentAt": "2026-11-20T17:38:23.087Z",
+      "resolvedAt": "2026-11-20T17:38:48.773Z",
+      "resolution": "Enter en Empresa / entidad pasa el foco a Motivo del ingreso."
+    },
+    {
+      "id": "a3yd0293",
+      "file": "02-compacto.html",
+      "selector": "#placa",
+      "excerpt": "",
+      "comment": "que el enter en este cuadro salte al siguiene cuadro",
+      "createdAt": "2026-11-20T17:38:36.785Z",
+      "status": "resolved",
+      "sentAt": "2026-11-20T17:38:36.788Z",
+      "resolvedAt": "2026-11-20T17:39:03.748Z",
+      "resolution": "Enter en Patente pasa el foco a Nombre / responsable."
+    },
+    {
+      "id": "3968b9um",
+      "file": "02-compacto.html",
+      "selector": "body > main > div > section:nth-of-type(2) > div:nth-of-type(2) > fieldset:nth-of-type(2) > div > label:nth-of-type(2)",
+      "excerpt": "En vehículo",
+      "comment": "que el enter en este cuadro salte al siguiene cuadro",
+      "createdAt": "2026-11-20T17:38:44.560Z",
+      "status": "resolved",
+      "sentAt": "2026-11-20T17:38:44.573Z",
+      "resolvedAt": "2026-11-20T17:39:19.310Z",
+      "resolution": "Enter selecciona En vehículo y pasa el foco a Hora de ingreso."
+    }
+  ]
+}

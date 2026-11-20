@@ -11,8 +11,26 @@ import { idFactory } from "../../../utils/idFactory";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import AddSupplierModal from "./AddSupplierModal.container";
 
-const getSupplierActionLabel = (action: "Editar" | "Eliminar", entry: SupplierEntry) =>
-  `${action} proveedor: ${entry.company} (patente ${entry.licensePlate}, ${entry.time})`;
+const getArrivalBadgeText = (entry: SupplierEntry) => {
+  if (entry.licensePlate?.trim()) return entry.licensePlate;
+  return entry.arrivalMode === "pedestrian" ? "A pie" : "Sin patente";
+};
+
+const getEntryTypeLabel = (entry: SupplierEntry) => {
+  if (entry.entryType === "visit") return "Visita";
+  if (entry.entryType === "provider") return "Proveedor";
+  return null;
+};
+
+const getSupplierActionLabel = (action: "Editar" | "Eliminar", entry: SupplierEntry) => {
+  const arrivalDetail = entry.licensePlate?.trim()
+    ? `patente ${entry.licensePlate}`
+    : entry.arrivalMode === "pedestrian"
+      ? "a pie"
+      : "sin patente";
+  const subject = entry.entryType === "visit" ? "visita" : "proveedor";
+  return `${action} ${subject}: ${entry.company} (${arrivalDetail}, ${entry.time})`;
+};
 
 type ItemToDelete = { id: string; type: "log" | "supplier"; name: string };
 
@@ -38,7 +56,9 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
   const saveSupplierEntry = async (data: Omit<SupplierEntry, "id" | "timestamp">) => {
     const missingFields = [];
     if (!data.time?.trim()) missingFields.push("Hora");
-    if (!data.licensePlate?.trim()) missingFields.push("Patente");
+    if (data.arrivalMode === "vehicle" && !data.licensePlate?.trim()) {
+      missingFields.push("Patente");
+    }
     if (!data.driverName?.trim()) missingFields.push("Conductor");
     if (!data.company?.trim()) missingFields.push("Empresa");
     if (!data.reason?.trim()) missingFields.push("Motivo");
@@ -54,6 +74,8 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
 
     const newEntry: SupplierEntry = {
       id: editingSupplierEntry ? editingSupplierEntry.id : idFactory.ulid(),
+      entryType: data.entryType ?? "visit",
+      arrivalMode: data.arrivalMode ?? "pedestrian",
       time: data.time,
       timestamp: editingSupplierEntry ? editingSupplierEntry.timestamp : Date.now(),
       licensePlate: data.licensePlate,
@@ -132,13 +154,22 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                     {se.company}
                   </h4>
                   <div className="flex items-center gap-2 mt-1.5">
+                    {getEntryTypeLabel(se) && (
+                      <Badge
+                        variant="neutral"
+                        size="sm"
+                        className="bg-token-surface-stripe text-token-text-secondary border-token-border-subtle"
+                      >
+                        {getEntryTypeLabel(se)}
+                      </Badge>
+                    )}
                     <Badge
                       variant="success"
                       size="sm"
                       fontMono
                       className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20"
                     >
-                      {se.licensePlate}
+                      {getArrivalBadgeText(se)}
                     </Badge>
                     <span className="typo-list-value text-token-text-tertiary">{se.time}</span>
                   </div>
@@ -249,14 +280,25 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                     <span className="typo-list-primary text-token-text-primary uppercase">
                       {se.company}
                     </span>
-                    <Badge
-                      variant="success"
-                      size="sm"
-                      fontMono
-                      className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 w-fit"
-                    >
-                      {se.licensePlate}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      {getEntryTypeLabel(se) && (
+                        <Badge
+                          variant="neutral"
+                          size="sm"
+                          className="bg-token-surface-stripe text-token-text-secondary border-token-border-subtle w-fit"
+                        >
+                          {getEntryTypeLabel(se)}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="success"
+                        size="sm"
+                        fontMono
+                        className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 w-fit"
+                      >
+                        {getArrivalBadgeText(se)}
+                      </Badge>
+                    </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

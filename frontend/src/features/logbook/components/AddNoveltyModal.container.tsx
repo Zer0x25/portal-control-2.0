@@ -53,7 +53,6 @@ const AddNoveltyModalContainer: React.FC<AddNoveltyModalContainerProps> = ({
       openTimePicker={controller.openTimePicker}
       closeTimePicker={controller.closeTimePicker}
       isSubmitting={controller.isSubmitting}
-      submit={controller.submit}
       formProps={controller.formProps}
     />
   );

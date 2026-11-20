@@ -1,0 +1,27 @@
+{
+  "title": "Modales de ingresos",
+  "brief": "Novedades y registro de visitas o proveedores, a pie o en vehículo. Enter agrega líneas en detalles.",
+  "artboards": [
+    {
+      "file": "01-claro.html",
+      "title": "Registro claro",
+      "tradeoff": "Ambos formularios usan grupos simples y visibles",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "02-compacto.html",
+      "title": "Registro compacto",
+      "tradeoff": "Más información en menos espacio; menos aire entre campos",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "03-enfocado.html",
+      "title": "Registro enfocado",
+      "tradeoff": "Mayor énfasis en las decisiones iniciales; ocupa más espacio",
+      "width": 1440,
+      "height": 1100
+    }
+  ]
+}
