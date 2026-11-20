@@ -56,7 +56,7 @@ services:
       - default
 
   backend:
-    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend@sha256:e89297af262e56c6ec0457dda0d8923d4b5efa9364aade84a1224d6e316b71fa}
+    image: ${BACKEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-backend@sha256:96c6d37cbc471838a0a4ce8243fc2ef075a743f8626c54c9f128bc575446f060}
     restart: always
     expose:
       - "4000"
@@ -108,7 +108,7 @@ services:
       - proxy_net
 
   frontend:
-    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-frontend@sha256:3c4cfdfd3f766843b41056d0a70b2d3ef8426a6cedd56743c73d9b73eda5e347}
+    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-frontend@sha256:32a4953bdd46109f831b2af4057a254bf5639c0951494732e69c92c15f7c9007}
     restart: always
     # ports:
     #   - "80:80"
@@ -131,7 +131,7 @@ services:
       - proxy_net
 
   gateway:
-    image: ${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-gateway@sha256:bb8a43af8311140e56bf5d00927226fd22e22256964b795df7f78313a999af07}
+    image: ${GATEWAY_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-gateway@sha256:337fe81ab8aeef994609d2cc65849ba91ffe143ff05dba753faba8cf4a1ac94c}
     restart: always
     depends_on:
       - frontend
