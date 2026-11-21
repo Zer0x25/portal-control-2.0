@@ -186,7 +186,7 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
             type="submit"
             variant="primary"
             disabled={isSubmitting}
-            className="flex-2 rounded-md h-12 uppercase font-black text-[10px] tracking-widest shadow-xl shadow-blue-500/20"
+            className="flex-2 rounded-md h-12 uppercase font-black text-[10px] tracking-widest shadow-xl shadow-token-accent-brand/20"
           >
             {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
           </Button>

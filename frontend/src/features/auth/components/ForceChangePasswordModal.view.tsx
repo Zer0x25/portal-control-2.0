@@ -52,8 +52,8 @@ const ForceChangePasswordModalView: React.FC<ForceChangePasswordModalViewProps> 
     maxWidth="max-w-md"
   >
     <div className="flex flex-col items-center text-center">
-      <div className="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/50">
-        <KeyIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+      <div className="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-token-status-info/15">
+        <KeyIcon className="h-6 w-6 text-token-status-info-text" aria-hidden="true" />
       </div>
       <p className="mt-2 text-sm text-token-text-secondary">
         Por su seguridad, debe establecer una nueva contraseña personal para continuar.

@@ -288,7 +288,7 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
                   Añadir Nuevo Medidor
                 </Button>
                 {isLimitReached && (
-                  <p className="text-center text-[10px] font-black text-red-500 uppercase tracking-widest mb-4">
+                  <p className="text-center text-[10px] font-black text-token-status-error-text uppercase tracking-widest mb-4">
                     Límite de {MAX_METERS} medidores activos alcanzado.
                   </p>
                 )}

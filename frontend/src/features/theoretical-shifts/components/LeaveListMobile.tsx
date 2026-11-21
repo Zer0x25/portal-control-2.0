@@ -131,7 +131,7 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                       isArchived ? "opacity-60 grayscale-[0.3]" : ""
                     }`}
                   >
-                    <div className="absolute top-0 left-0 w-1 h-full bg-purple-500/80"></div>
+                    <div className="absolute top-0 left-0 w-1 h-full bg-token-status-permiso-especial"></div>
 
                     <div className="flex justify-between items-start p-4 pb-2">
                       <div className="flex flex-col">
@@ -142,7 +142,7 @@ const LeaveListMobile: React.FC<LeaveListMobileProps> = ({
                           </h4>
                         </div>
                         <div className="mt-1">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-token-status-permiso-especial-surface text-token-status-permiso-especial-text">
                             {leave.type}
                           </span>
                         </div>

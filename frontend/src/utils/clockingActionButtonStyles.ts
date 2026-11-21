@@ -8,24 +8,28 @@ type ClockingActionButtonStyles = {
 
 const CLOCKING_ACTION_BUTTON_STYLES: Record<ClockingActionType, ClockingActionButtonStyles> = {
   jornada_inicio: {
-    enabled: "bg-green-700 text-white border border-green-800 shadow-md hover:bg-green-800",
+    enabled:
+      "bg-token-status-success text-token-text-onAccent border border-token-status-success shadow-md hover:opacity-90",
     disabled:
-      "bg-green-500/10 text-green-800/60 dark:text-green-200/70 border border-green-500/20 shadow-none",
+      "bg-token-status-success/10 text-token-status-success-text/60 border border-token-status-success/20 shadow-none",
   },
   colacion_inicio: {
-    enabled: "bg-amber-600 text-white border border-amber-500 shadow-md hover:bg-amber-700",
+    enabled:
+      "bg-token-status-warning text-token-text-onAccent border border-token-status-warning shadow-md hover:opacity-90",
     disabled:
-      "bg-amber-500/10 text-amber-800/60 dark:text-amber-200/70 border border-amber-500/20 shadow-none",
+      "bg-token-status-warning/10 text-token-status-warning-text/60 border border-token-status-warning/20 shadow-none",
   },
   colacion_fin: {
-    enabled: "bg-sky-600 text-white border border-sky-500 shadow-md hover:bg-sky-700",
+    enabled:
+      "bg-token-status-info text-token-text-onAccent border border-token-status-info shadow-md hover:opacity-90",
     disabled:
-      "bg-sky-500/10 text-sky-800/60 dark:text-sky-200/70 border border-sky-500/20 shadow-none",
+      "bg-token-status-info/10 text-token-status-info-text/60 border border-token-status-info/20 shadow-none",
   },
   jornada_fin: {
-    enabled: "bg-rose-600 text-white border border-rose-500 shadow-md hover:bg-rose-700",
+    enabled:
+      "bg-token-status-error text-token-text-onAccent border border-token-status-error shadow-md hover:opacity-90",
     disabled:
-      "bg-rose-500/10 text-rose-800/60 dark:text-rose-200/70 border border-rose-500/20 shadow-none",
+      "bg-token-status-error/10 text-token-status-error-text/60 border border-token-status-error/20 shadow-none",
   },
 };
 

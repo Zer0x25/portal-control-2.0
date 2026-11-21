@@ -67,7 +67,8 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
               const meterName = config?.name ?? "Medidor eliminado";
               const unit = config?.unit ?? "";
               const displayUnit = config?.type === "PERCENT" ? "%" : unit;
-              const deltaColor = r.delta < 0 ? "text-red-500" : "text-green-500";
+              const deltaColor =
+                r.delta < 0 ? "text-token-status-error-text" : "text-token-status-success-text";
 
               return (
                 <tr key={r.id} className="hover:bg-token-surface-active transition-colors">
@@ -122,7 +123,8 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
           const meterName = config?.name ?? "Medidor eliminado";
           const unit = config?.unit ?? "";
           const displayUnit = config?.type === "PERCENT" ? "%" : unit;
-          const deltaColor = r.delta < 0 ? "text-red-500" : "text-green-500";
+          const deltaColor =
+            r.delta < 0 ? "text-token-status-error-text" : "text-token-status-success-text";
 
           return (
             <div
@@ -138,7 +140,7 @@ const MeterHistoryView: FC<MeterHistoryController> = (controller) => {
                     {new Date(r.timestamp).toLocaleString("es-CL")}
                   </p>
                 </div>
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-token-status-info/15 text-token-status-info-text border border-token-status-info/25">
                   {EVENT_TYPE_LABELS[r.eventType] || "N/A"}
                 </span>
               </div>

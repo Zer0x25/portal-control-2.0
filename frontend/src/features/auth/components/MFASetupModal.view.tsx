@@ -85,7 +85,7 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
 
       {step === "initial" && (
         <div className="space-y-6 text-center">
-          <div className="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10 text-token-text-secondary text-sm leading-relaxed">
+          <div className="p-4 bg-token-accent-brand/5 rounded-2xl border border-token-accent-brand/15 text-token-text-secondary text-sm leading-relaxed">
             MFA añade una capa adicional de seguridad. Necesitará una aplicación como Google
             Authenticator o Authy.
           </div>
@@ -101,7 +101,7 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
             <Button
               onClick={onStartSetup}
               disabled={isStarting}
-              className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
+              className="h-12 rounded-xl bg-token-accent-brand hover:opacity-90 text-token-text-onAccent font-black uppercase tracking-widest text-xs"
             >
               {isStarting ? "Iniciando..." : "Comenzar Configuración"}
             </Button>
@@ -118,13 +118,13 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
             <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest">
               O use el código manual:
             </p>
-            <code className="block p-3 bg-white/5 rounded-xl text-indigo-400 font-mono text-lg tracking-widest">
+            <code className="block p-3 bg-token-surface-stripe border border-token-border-subtle rounded-xl text-token-accent-brand font-mono text-lg tracking-widest">
               {mfaData.secret}
             </code>
           </div>
           <Button
             onClick={onGoToVerifying}
-            className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-xs"
+            className="w-full h-12 rounded-xl bg-token-accent-brand hover:opacity-90 text-token-text-onAccent font-black uppercase tracking-widest text-xs"
           >
             Ya escaneé el código
           </Button>
@@ -143,7 +143,7 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
               onChange={(e) => onTokenChange(e.target.value)}
               error={error}
               placeholder="000000"
-              className="bg-black/40 border-white/10 text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-indigo-500"
+              className="bg-token-surface-stripe border-token-border-technical text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-token-accent-brand"
               autoFocus
             />
           </div>
@@ -159,7 +159,7 @@ const MfaSetupModalView: React.FC<MfaSetupModalViewProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-widest text-[10px]"
+              className="h-12 rounded-xl bg-token-accent-brand hover:opacity-90 text-token-text-onAccent font-black uppercase tracking-widest text-[10px]"
             >
               {isSubmitting ? "Verificando..." : "Habilitar MFA"}
             </Button>

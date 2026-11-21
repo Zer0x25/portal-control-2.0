@@ -57,14 +57,14 @@ const MfaLoginModalView: React.FC<MfaLoginModalViewProps> = ({
       bodyClassName="p-8"
     >
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-indigo-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/20">
+        <div className="w-16 h-16 bg-token-accent-brand/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-token-accent-brand/20">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="w-8 h-8 text-indigo-500"
+            className="w-8 h-8 text-token-accent-brand"
           >
             <path
               strokeLinecap="round"
@@ -92,7 +92,7 @@ const MfaLoginModalView: React.FC<MfaLoginModalViewProps> = ({
             onChange={(e) => onCodeChange(e.target.value)}
             error={error}
             placeholder="000000"
-            className="bg-black/40 border-white/10 text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-indigo-500 focus:ring-indigo-500/20"
+            className="bg-token-surface-stripe border-token-border-technical text-center text-3xl font-mono tracking-[0.5em] h-16 rounded-2xl focus:border-token-accent-brand focus:ring-token-accent-brand/20"
             autoFocus
           />
         </div>
@@ -109,7 +109,7 @@ const MfaLoginModalView: React.FC<MfaLoginModalViewProps> = ({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-12 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black uppercase tracking-[0.2em] text-[10px]"
+            className="h-12 rounded-xl bg-token-accent-brand hover:opacity-90 text-token-text-onAccent font-black uppercase tracking-[0.2em] text-[10px]"
           >
             {isSubmitting ? "Verificando..." : "Confirmar"}
           </Button>
