@@ -1,10 +1,10 @@
 {
   "version": 3,
   "totalIssuesBudget": 0,
-  "paletteIssuesBudget": 879,
-  "certifiedPaletteBudget": 173,
+  "paletteIssuesBudget": 769,
+  "certifiedPaletteBudget": 76,
   "sapTokenBudget": 0,
-  "orphanTokenBudget": 5,
+  "orphanTokenBudget": 3,
   "certifiedFilesCount": 68,
-  "updatedAt": "2026-10-22T21:34:45.571Z"
+  "updatedAt": "2026-11-21T13:24:16.481Z"
 }

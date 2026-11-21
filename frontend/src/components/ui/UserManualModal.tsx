@@ -42,7 +42,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
           {/* Header Cinematic */}
           <div className="p-8 pb-6 border-b border-token-border-subtle flex items-center justify-between shrink-0">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20">
+              <div className="w-12 h-12 rounded-2xl bg-token-status-info-surface flex items-center justify-center text-token-status-info-text border border-token-status-info/20">
                 <BookOpenIcon className="w-6 h-6" />
               </div>
               <div>
@@ -60,7 +60,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
               variant="none"
               onClick={onClose}
               aria-label="Cerrar modal"
-              className="p-2 hover:bg-red-50 dark:hover:bg-red-950/30 text-token-text-tertiary hover:text-red-500 rounded-xl transition-all shadow-none"
+              className="p-2 hover:bg-token-status-error-surface text-token-text-tertiary hover:text-token-status-error-text rounded-xl transition-all shadow-none"
             >
               <CloseIcon className="w-6 h-6" />
             </Button>
@@ -77,7 +77,7 @@ const UserManualModal: React.FC<UserManualModalProps> = ({ isOpen, onClose }) =>
             ) : (
               <div className="animate-in fade-in slide-in-from-top-2">
                 {hasLoadError ? (
-                  <p className="text-red-500">{manualContent}</p>
+                  <p className="text-token-status-error-text">{manualContent}</p>
                 ) : (
                   <div
                     className="prose dark:prose-invert max-w-none manual-content-premium"

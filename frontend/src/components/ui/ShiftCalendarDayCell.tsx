@@ -30,7 +30,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
     if (scheduleInfo?.justificationType) {
       cellContent = (
         <div
-          className="flex flex-col items-center justify-center h-full p-1 rounded-md border border-purple-500/20 bg-purple-500/10 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
+          className="flex flex-col items-center justify-center h-full p-1 rounded-md border border-token-status-licencia-medica/20 bg-token-status-licencia-medica-surface text-token-status-licencia-medica-text"
           title={scheduleInfo.scheduleText}
         >
           <span className="text-xxs font-black uppercase tracking-tight text-center leading-none">
@@ -46,7 +46,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
         >
           {scheduleInfo.isHoliday && (
             <div className="absolute top-1 right-1">
-              <span className="flex h-2 w-2 rounded-full bg-amber-500" />
+              <span className="flex h-2 w-2 rounded-full bg-token-status-warning" />
             </div>
           )}
           <div className="flex flex-col items-center text-center">
@@ -83,7 +83,7 @@ const ShiftCalendarDayCell: React.FC<ShiftCalendarDayCellProps> = ({
     const holiday = dayData.data;
     cellContent = (
       <div
-        className="flex flex-col items-center justify-center h-full p-1.5 rounded-md border border-orange-500/30 bg-orange-500/10 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
+        className="flex flex-col items-center justify-center h-full p-1.5 rounded-md border border-token-status-feriado/30 bg-token-status-feriado-surface text-token-status-feriado-text"
         title={holiday.name}
       >
         <span className="text-xxs font-black uppercase tracking-widest mb-1">Feriado</span>

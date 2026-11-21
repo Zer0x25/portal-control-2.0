@@ -32,9 +32,9 @@ const TimePickerDialog: React.FC<TimePickerDialogProps> = ({
   };
 
   const colorClass =
-    accentColor === "token-accent-brand" ? "text-token-accent-brand" : "text-emerald-500";
+    accentColor === "token-accent-brand" ? "text-token-accent-brand" : "text-token-status-success";
   const bgAccentClass =
-    accentColor === "token-accent-brand" ? "bg-token-accent-brand" : "bg-emerald-600";
+    accentColor === "token-accent-brand" ? "bg-token-accent-brand" : "bg-token-status-success";
 
   return (
     isOpen && (

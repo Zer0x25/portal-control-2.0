@@ -18,3 +18,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const ErrorToast: Story = {
+  args: {
+    toast: {
+      id: "storybook-toast-error",
+      message: "No se pudo guardar el registro",
+      type: "error",
+    },
+  },
+};
+export const WarningToast: Story = {
+  args: {
+    toast: { id: "storybook-toast-warning", message: "Sesión próxima a expirar", type: "warning" },
+  },
+};
+export const InfoToast: Story = {
+  args: {
+    toast: { id: "storybook-toast-info", message: "Sincronización en curso", type: "info" },
+  },
+};

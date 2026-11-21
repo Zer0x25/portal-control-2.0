@@ -57,7 +57,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
           variant="none"
           data-testid="kiosk-key-confirm"
           onClick={() => handlePress(onConfirm, 100)}
-          className="col-span-3 h-16 mt-2 flex items-center justify-center text-sm font-black uppercase tracking-[0.3em] rounded-2xl bg-token-accent-brand text-token-text-onAccent shadow-2xl shadow-blue-500/40 hover:brightness-110 hover:-translate-y-1 transition-all active:scale-[0.96] active:brightness-90"
+          className="col-span-3 h-16 mt-2 flex items-center justify-center text-sm font-black uppercase tracking-[0.3em] rounded-2xl bg-token-accent-brand text-token-text-onAccent shadow-2xl hover:brightness-110 hover:-translate-y-1 transition-all active:scale-[0.96] active:brightness-90"
         >
           Confirmar Identidad
         </Button>

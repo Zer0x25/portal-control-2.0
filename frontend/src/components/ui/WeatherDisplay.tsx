@@ -8,11 +8,11 @@ interface WeatherDisplayProps {
 }
 
 const getUvInfo = (uvIndex: number): { text: string; colorClass: string } => {
-  if (uvIndex <= 2) return { text: "Bajo", colorClass: "bg-green-500" };
-  if (uvIndex <= 5) return { text: "Moderado", colorClass: "bg-yellow-500" };
-  if (uvIndex <= 7) return { text: "Alto", colorClass: "bg-orange-500" };
-  if (uvIndex <= 10) return { text: "Muy Alto", colorClass: "bg-red-500" };
-  return { text: "Extremo", colorClass: "bg-purple-500" };
+  if (uvIndex <= 2) return { text: "Bajo", colorClass: "bg-token-status-success" };
+  if (uvIndex <= 5) return { text: "Moderado", colorClass: "bg-token-status-warning" };
+  if (uvIndex <= 7) return { text: "Alto", colorClass: "bg-token-status-sin-marcaje" };
+  if (uvIndex <= 10) return { text: "Muy Alto", colorClass: "bg-token-status-error" };
+  return { text: "Extremo", colorClass: "bg-token-status-licencia-medica" };
 };
 
 const WeatherIcon: React.FC<{ condition: WeatherData["condition"]; className?: string }> = ({
@@ -62,7 +62,7 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weather, isLoading }) =
       <div className="shrink-0">
         <WeatherIcon
           condition={weather.condition}
-          className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-300 dark:text-yellow-200"
+          className="w-8 h-8 sm:w-10 sm:h-10 text-token-status-warning"
         />
       </div>
       <div className="text-token-text-primary text-left">

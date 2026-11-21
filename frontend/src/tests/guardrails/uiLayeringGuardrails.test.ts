@@ -26,7 +26,6 @@ const ALLOWED_UI_MODALS = [
   "CinematicModal.tsx",
   "ConfirmationModal.tsx",
   "DatePickerDialog.tsx",
-  "DesignSystemShowcaseModal.tsx",
   "AboutModal.tsx",
   "UserManualModal.tsx",
 ];

@@ -15,3 +15,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const Premium: Story = {
+  args: {
+    variant: "premium",
+    title: "Panel Operativo",
+    children: "Contenido con padding amplio para secciones destacadas.",
+  },
+};
+export const Flat: Story = {
+  args: {
+    variant: "flat",
+    title: undefined,
+    children: "Contenedor plano sin borde ni sombra.",
+  },
+};

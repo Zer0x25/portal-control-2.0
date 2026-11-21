@@ -15,3 +15,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const WithAction: Story = {
+  args: {
+    title: "No hay registros",
+    description: "Aún no existen marcajes para el rango seleccionado.",
+    actionLabel: "Limpiar filtros",
+    onAction: () => undefined,
+  },
+};

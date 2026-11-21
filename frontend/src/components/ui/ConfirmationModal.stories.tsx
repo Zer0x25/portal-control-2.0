@@ -25,3 +25,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const PrimaryAction: Story = {
+  args: {
+    confirmVariant: "primary",
+    title: "Publicar cambios",
+    message: "¿Deseas aplicar la nueva configuración?",
+    confirmText: "Publicar",
+  },
+};
+export const SecondaryAction: Story = {
+  args: {
+    confirmVariant: "secondary",
+    title: "Guardar borrador",
+    message: "Se guardará el estado actual sin enviarlo.",
+    confirmText: "Guardar",
+  },
+};
