@@ -133,6 +133,8 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           {(["month", "quarter", "semester", "year", "custom"] as const).map((mode) => (
             <button
               key={mode}
+              type="button"
+              aria-pressed={periodMode === mode}
               onClick={() => setPeriodMode(mode)}
               className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm ${
                 periodMode === mode
@@ -151,7 +153,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
       </div>
 
       <div className="flex flex-col xl:flex-row xl:items-end gap-10">
-        <div className="shrink-0">
+        <div className="min-w-0 shrink-0">
           {periodMode === "month" ? (
             <CalendarMonthSelector
               currentDate={periodNavigator.currentDate}
@@ -162,23 +164,31 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
               onNext={handleNextMonth}
             />
           ) : periodMode === "custom" ? (
-            <div className="flex items-end gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
+              <div className="min-w-0 space-y-1.5">
+                <label
+                  htmlFor="kpi-custom-start"
+                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                >
                   Inicio
                 </label>
                 <input
+                  id="kpi-custom-start"
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
                   className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
+              <div className="min-w-0 space-y-1.5">
+                <label
+                  htmlFor="kpi-custom-end"
+                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                >
                   Término
                 </label>
                 <input
+                  id="kpi-custom-end"
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}

@@ -26,3 +26,5 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 - [x] T22: Comunicar fechas fuera de rango como deshabilitadas y conservar la entrada por teclado a la cuadrícula al cambiar de mes.
 - [x] T23: Cubrir con datos simulados la validación real del motivo de rechazo y los formatos del visor de adjuntos.
 - [x] T24: Conservar el diálogo y permitir reintentar cuando falla un rechazo; verificar fallo y éxito simulados.
+- [x] T25: Corregir los nombres, el estado de selección y la disposición de los filtros personalizados de Indicadores y Reportes; verificar sus controles con teclado en tres anchos y dos roles de supervisión.
+- [x] T26: Ejecutar la batería conjunta de regresión del piloto y documentar su cobertura y límites (AC1, AC2, AC3, AC4, AC5, AC6).

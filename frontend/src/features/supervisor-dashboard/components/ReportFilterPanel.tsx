@@ -135,6 +135,8 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           {(["month", "quarter", "semester", "year", "custom"] as const).map((mode) => (
             <button
               key={mode}
+              type="button"
+              aria-pressed={periodMode === mode}
               onClick={() => setPeriodMode(mode)}
               className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm ${
                 periodMode === mode
@@ -153,27 +155,35 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
       </div>
 
       <div className="flex flex-col xl:flex-row xl:items-end gap-10">
-        <div className="shrink-0">
+        <div className="min-w-0 shrink-0">
           {periodMode === "month" ? (
             <AuditMonthSelector currentDate={activeDate} onChange={setActiveDate} />
           ) : periodMode === "custom" ? (
-            <div className="flex items-end gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
+              <div className="min-w-0 space-y-1.5">
+                <label
+                  htmlFor="report-custom-start"
+                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                >
                   Inicio
                 </label>
                 <input
+                  id="report-custom-start"
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
                   className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
+              <div className="min-w-0 space-y-1.5">
+                <label
+                  htmlFor="report-custom-end"
+                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                >
                   Término
                 </label>
                 <input
+                  id="report-custom-end"
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
@@ -197,13 +207,17 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
 
         <div className="grow grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-6">
           <div className="relative group">
-            <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
+            <label
+              htmlFor="report-workday-type"
+              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
+            >
               Tipo de Jornada
             </label>
             <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <FunnelIcon className="w-4 h-4" />
             </div>
             <select
+              id="report-workday-type"
               value={selectedWorkdayType}
               onChange={(e) => setSelectedWorkdayType(e.target.value)}
               className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
@@ -218,13 +232,17 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           </div>
 
           <div className="relative group">
-            <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
+            <label
+              htmlFor="report-area"
+              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
+            >
               Ubicación / Área
             </label>
             <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <MapPinIcon className="w-4 h-4" />
             </div>
             <select
+              id="report-area"
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
               className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
@@ -239,13 +257,17 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           </div>
 
           <div className="relative group">
-            <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
+            <label
+              htmlFor="report-employee"
+              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
+            >
               Colaborador Específico
             </label>
             <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <UsersIcon className="w-4 h-4" />
             </div>
             <select
+              id="report-employee"
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
               className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"

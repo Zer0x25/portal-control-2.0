@@ -85,6 +85,106 @@ for (const entry of [
           ).toBe(true);
         }
       }
+      if (entry.allowed.includes("logbook")) {
+        await page.route(/\/api\/shift-reports\?.*$/, (route) => {
+          const url = new URL(route.request().url());
+          return url.searchParams.get("status") === "closed"
+            ? route.fulfill({ json: { data: [], total: 0, page: 1, totalPages: 0 } })
+            : route.continue();
+        });
+        for (const width of [355, 853, 1138]) {
+          await page.setViewportSize({ width, height: 850 });
+          await page.goto("/#/dashboard");
+          const logbookAction = page.getByRole("button", { name: "Novedades", exact: true });
+          await expect(logbookAction).toBeVisible({ timeout: 30000 });
+          await logbookAction.focus();
+          await page.keyboard.press("Enter");
+          await expect(page).toHaveURL(/#\/logbook/);
+          const open = page.getByRole("button", { name: "Historial de Turnos" });
+          await expect(open).toBeVisible({ timeout: 30000 });
+          await open.focus();
+          await page.keyboard.press("Enter");
+          const dialog = page.getByRole("dialog", { name: /Historial de Reportes/ });
+          await expect(dialog).toBeVisible();
+          await expect(dialog).toBeFocused();
+          await page.keyboard.press("Tab");
+          expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+          await page.keyboard.press("Escape");
+          await expect(dialog).toBeHidden();
+          await expect(open).toBeFocused();
+        }
+      }
+      if (entry.allowed.includes("dashboard-supervisor")) {
+        const tabs = [
+          ["Resumen Hoy", "dashboard"],
+          ["Indicadores", "kpis"],
+          ["Analytics", "analytics"],
+          ["Empleados", "employees"],
+          ["Reportes", "reports"],
+          ["Turnos", "shifts"],
+        ];
+        for (const width of [355, 853, 1138]) {
+          await page.setViewportSize({ width, height: 850 });
+          await page.goto("/#/dashboard-supervisor");
+          const nav = page.getByRole("navigation", { name: "Secciones de supervisión" });
+          await expect(nav).toBeVisible({ timeout: 30000 });
+          await nav.getByRole("button", { name: tabs[0][0] }).focus();
+          for (const [index, [label, id]] of tabs.entries()) {
+            const button = nav.getByRole("button", { name: new RegExp(label) });
+            if (index > 0) await page.keyboard.press("Tab");
+            await expect(button).toBeFocused();
+            await page.keyboard.press("Enter");
+            await expect(button).toHaveAttribute("aria-pressed", "true");
+            await expect(page).toHaveURL(new RegExp(`tab=${id}(?:&|$)`));
+            const visible = await button.evaluate((element) => {
+              const parent = element.closest("nav")!.getBoundingClientRect();
+              const rect = element.getBoundingClientRect();
+              return rect.left >= parent.left - 1 && rect.right <= parent.right + 1;
+            });
+            expect(visible).toBe(true);
+          }
+          for (const panel of ["Indicadores", "Reportes"]) {
+            await nav.getByRole("button", { name: panel }).click();
+            const custom = page.getByRole("button", { name: "Personalizado", exact: true });
+            await expect(custom).toBeVisible({ timeout: 30000 });
+            await custom.focus();
+            await page.keyboard.press("Enter");
+            await expect(custom).toHaveAttribute("aria-pressed", "true");
+            for (const label of ["Inicio", "Término"]) {
+              const field = page.getByLabel(label, { exact: true });
+              await expect(field).toBeVisible();
+              for (
+                let i = 0;
+                i < 8 && !(await field.evaluate((el) => el === document.activeElement));
+                i++
+              ) {
+                await page.keyboard.press("Tab");
+              }
+              await expect(field).toBeFocused();
+              const fits = await field.evaluate((el) => {
+                const box = el.getBoundingClientRect();
+                return box.left >= 0 && box.right <= window.innerWidth;
+              });
+              expect(fits).toBe(true);
+            }
+            const filters =
+              panel === "Indicadores"
+                ? ["Tipo de Jornada", "Filtrar por Área", "Especificar Colaborador"]
+                : ["Tipo de Jornada", "Ubicación / Área", "Colaborador Específico"];
+            for (const label of filters) {
+              const field = page.getByRole("combobox", { name: label, exact: true });
+              for (
+                let i = 0;
+                i < 8 && !(await field.evaluate((el) => el === document.activeElement));
+                i++
+              ) {
+                await page.keyboard.press("Tab");
+              }
+              await expect(field).toBeFocused();
+            }
+          }
+        }
+      }
     } finally {
       if (userToken)
         await request
