@@ -44,12 +44,49 @@ function DataTableStory() {
   );
 }
 
+function DataTablePaginatedStory() {
+  const table = useTable({ features, data: rows, columns });
+  return (
+    <DataTable
+      table={table}
+      ariaLabel="Personal paginado"
+      rowCount={12}
+      pagination={{
+        currentPage: 1,
+        totalPages: 4,
+        setCurrentPage: () => undefined,
+        position: "bottom",
+      }}
+    >
+      <DataTableHeader table={table} />
+      <tbody>
+        {table.getRowModel().rows.map((row, index) => (
+          <DataTableRow key={row.id} rowIndex={index}>
+            {row.getAllCells().map((cell) => (
+              <td key={cell.id} className="px-4 py-3 text-token-text-primary">
+                {String(cell.getValue() ?? "")}
+              </td>
+            ))}
+          </DataTableRow>
+        ))}
+      </tbody>
+    </DataTable>
+  );
+}
+
 const meta = {
   id: "certified-components-ui-data-table",
   title: "Design System/components/ui/Data/Table",
   component: DataTableStory,
   tags: ["autodocs"],
+  parameters: {
+    docs: { description: { component: "Archivo certificado: src/components/ui/DataTable.tsx" } },
+  },
 } satisfies Meta<typeof DataTableStory>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const WithPagination: Story = {
+  render: () => <DataTablePaginatedStory />,
+};

@@ -41,3 +41,18 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+export const WithStatusCards: Story = {
+  args: {
+    mobile: (
+      <div className="rounded-lg border border-token-status-info/30 bg-token-status-info-surface p-3 text-token-status-info-text text-xs font-bold uppercase tracking-wide">
+        Modo tarjeta móvil activo
+      </div>
+    ),
+    desktop: (
+      <div className="rounded-lg border border-token-status-success/30 bg-token-status-success-surface p-4 text-token-status-success-text text-sm font-semibold">
+        Modo tabla de escritorio activo (viewport &gt; 768px)
+      </div>
+    ),
+  },
+};

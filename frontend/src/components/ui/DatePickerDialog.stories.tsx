@@ -11,6 +11,12 @@ const meta = {
     onSelect: () => undefined,
     initialDate: "2026-10-23",
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    initialDate: { control: "text" },
+    minDate: { control: "text" },
+    maxDate: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -22,3 +28,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const ConstrainedRange: Story = {
+  args: {
+    minDate: "2026-10-10",
+    maxDate: "2026-10-28",
+  },
+};
+
+export const Closed: Story = {
+  args: {
+    isOpen: false,
+  },
+};

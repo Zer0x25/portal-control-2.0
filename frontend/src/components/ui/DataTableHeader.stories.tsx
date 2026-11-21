@@ -44,12 +44,46 @@ function DataTableHeaderStory() {
   );
 }
 
+function DataTableHeaderSortedStory() {
+  const table = useTable({
+    features,
+    data: rows,
+    columns,
+    initialState: { sorting: [{ id: "name", desc: false }] },
+  });
+  return (
+    <table className="w-full">
+      <DataTableHeader table={table} />
+      <tbody>
+        {table.getRowModel().rows.map((row, index) => (
+          <DataTableRow key={row.id} rowIndex={index}>
+            {row.getAllCells().map((cell) => (
+              <td key={cell.id} className="px-4 py-3 text-token-text-primary">
+                {String(cell.getValue() ?? "")}
+              </td>
+            ))}
+          </DataTableRow>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 const meta = {
   id: "certified-components-ui-data-table-header",
   title: "Design System/components/ui/Data/Table/Header",
   component: DataTableHeaderStory,
   tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: { component: "Archivo certificado: src/components/ui/DataTableHeader.tsx" },
+    },
+  },
 } satisfies Meta<typeof DataTableHeaderStory>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const SortedAscending: Story = {
+  render: () => <DataTableHeaderSortedStory />,
+};

@@ -11,6 +11,14 @@ const meta = {
     onSave: () => undefined,
     initialTime: "08:30",
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    initialTime: { control: "text" },
+    accentColor: {
+      control: "inline-radio",
+      options: ["token-accent-brand", "emerald"],
+    },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -22,3 +30,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const EmeraldAccent: Story = {
+  args: {
+    initialTime: "14:45",
+    accentColor: "emerald",
+  },
+};
+
+export const Closed: Story = {
+  args: {
+    isOpen: false,
+  },
+};
