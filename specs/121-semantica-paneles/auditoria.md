@@ -10,8 +10,15 @@ Inspección autenticada en escritorio el 2026-11-21, con datos y rol de administ
 - El ADR enlazado en la spec establece un criterio transversal; no cambia automáticamente las demás vistas.
 
 - Los diálogos `CinematicModal` y de expediente comparten aislamiento del fondo, gestión del foco y Escape; ambos se verificaron en navegador con restauración del foco.
+- El visor de adjuntos y el diálogo de rechazo usan el comportamiento compartido mediante portales; sus pruebas cubren aislamiento, foco, Escape y restauración. El rechazo permanece abierto durante el envío.
+
+## Ampliación de la revisión
+
+- Con la sesión de administrador se recorrieron las seis secciones de supervisión y se comprobó que la navegación anuncia la sección activa. En Empleados se observó el estado vacío de solicitudes.
+- Se solicitó un viewport de 390 × 844, pero el navegador informó un ancho efectivo de 433 píxeles: se comprobó ausencia de desbordamiento del documento a ese ancho en las seis secciones y en dashboard. Esto no equivale a una validación responsive completa.
+- La sesión no tenía solicitudes pendientes, por lo que los diálogos de adjunto y rechazo se probaron mediante componentes, no mediante un flujo real en navegador.
 
 ## Hallazgos pendientes
 
-- El expediente de empleado ahora se anuncia como diálogo nombrado; en navegador se verificaron foco inicial, ciclo de Tab, Escape y retorno a la fila de origen.
-- No se ejecutó una auditoría completa de lector de pantalla, responsive, todos los roles ni todas las pestañas y estados de las páginas.
+- En Indicadores existen encabezados que saltan de `h2` a `h4` y filtros sin nombre accesible; en Turnos aparece un segundo `h1` y saltos en la jerarquía. Requieren una corrección y pruebas específicas.
+- No se ejecutó una auditoría con lector de pantalla, responsive completa, otros roles ni todos los estados de carga, error y datos de las páginas.
