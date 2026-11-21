@@ -42,7 +42,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
         className="w-full px-8 py-6 flex items-center justify-between hover:bg-token-surface-hover transition-colors group"
       >
         <div className="flex items-center gap-6">
-          <div className="w-1 h-6 bg-indigo-700" />
+          <div className="w-1 h-6 bg-token-accent-brand" />
           <div>
             <h2 className="text-sm font-black uppercase tracking-widest text-token-text-primary">
               SISTEMA DE FILTRADO AVANZADO
@@ -54,17 +54,17 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
         </div>
         <div className="flex items-center gap-6">
           {!isOpen && totalActive > 0 && (
-            <span className="text-xxs font-black text-white bg-indigo-700 px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-2">
-              <span className="bg-white text-indigo-700 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold">
+            <span className="text-xxs font-black text-token-text-onAccent bg-token-accent-brand px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm flex items-center gap-2">
+              <span className="bg-token-surface-card text-token-accent-brand w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold">
                 {totalActive}
               </span>
               FILTROS ACTIVOS
             </span>
           )}
 
-          <div className="w-8 h-8 rounded-md bg-token-surface-card border border-token-border-technical flex items-center justify-center group-hover:border-indigo-700 transition-colors">
+          <div className="w-8 h-8 rounded-md bg-token-surface-card border border-token-border-technical flex items-center justify-center group-hover:border-token-accent-brand transition-colors">
             <div className={`transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>
-              <ChevronDownIcon className="w-5 h-5 text-token-text-secondary group-hover:text-indigo-700 transition-colors" />
+              <ChevronDownIcon className="w-5 h-5 text-token-text-secondary group-hover:text-token-accent-brand transition-colors" />
             </div>
           </div>
         </div>
@@ -106,7 +106,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                         }
                       }
                     }}
-                    className="w-full h-12 pl-4 pr-10 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-semibold text-token-text-primary appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 group-hover/select:border-indigo-700 transition-all"
+                    className="w-full h-12 pl-4 pr-10 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-semibold text-token-text-primary appearance-none cursor-pointer focus:ring-2 focus:ring-token-border-focus/20 focus:border-token-border-focus group-hover/select:border-token-border-focus transition-all"
                   >
                     <option value="ALL">Todos</option>
                     {CATEGORY_GROUPS.map((group) => (
@@ -148,7 +148,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                             }));
                           }
                         }}
-                        className="w-4 h-4 rounded border-token-border-technical text-indigo-700 focus:ring-indigo-700/20 cursor-pointer"
+                        className="w-4 h-4 rounded border-token-border-technical text-token-accent-brand focus:ring-token-border-focus/20 cursor-pointer"
                       />
                       <div className={`w-2 h-2 rounded-full ${sev.color}`} />
                       <span className="text-sm font-medium text-token-text-secondary">
@@ -186,7 +186,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                             }));
                           }
                         }}
-                        className="w-4 h-4 rounded border-token-border-technical text-indigo-700 focus:ring-indigo-700/20 cursor-pointer"
+                        className="w-4 h-4 rounded border-token-border-technical text-token-accent-brand focus:ring-token-border-focus/20 cursor-pointer"
                       />
                       <span className="text-sm font-medium text-token-text-secondary">
                         {outcome}
@@ -210,7 +210,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                     }
                     placeholder="Buscar por usuario..."
                     aria-label="Buscar por usuario"
-                    className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                    className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-token-border-focus/20 focus:border-token-border-focus transition-all"
                   />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-token-text-tertiary pointer-events-none">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,7 +258,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                     onChange={(e) => setFilters((prev) => ({ ...prev, action: e.target.value }))}
                     placeholder="Filtrar por acción..."
                     aria-label="Filtrar por acción"
-                    className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                    className="w-full h-12 pl-10 pr-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary placeholder:text-token-text-tertiary focus:ring-2 focus:ring-token-border-focus/20 focus:border-token-border-focus transition-all"
                   />
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-token-text-tertiary pointer-events-none">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,7 +306,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   value={filters.startDate}
                   onChange={(e) => setFilters((prev) => ({ ...prev, startDate: e.target.value }))}
                   aria-label="Fecha inicio de auditoría"
-                  className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                  className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-token-border-focus/20 focus:border-token-border-focus transition-all"
                 />
               </div>
               <div>
@@ -318,7 +318,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                   value={filters.endDate}
                   onChange={(e) => setFilters((prev) => ({ ...prev, endDate: e.target.value }))}
                   aria-label="Fecha fin de auditoría"
-                  className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-indigo-700/20 focus:border-indigo-700 transition-all"
+                  className="w-full h-12 px-4 rounded-md bg-token-surface-card border border-token-border-technical text-sm font-medium text-token-text-primary focus:ring-2 focus:ring-token-border-focus/20 focus:border-token-border-focus transition-all"
                 />
               </div>
             </div>
@@ -342,7 +342,7 @@ export const AuditLogFilterPanel: React.FC<AuditLogFilterPanelProps> = ({
                         endDate: "",
                       })
                     }
-                    className="text-xxs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors"
+                    className="text-xxs font-bold uppercase tracking-wider text-token-accent-brand hover:opacity-80 transition-colors"
                   >
                     Limpiar Todo
                   </button>
@@ -434,14 +434,14 @@ interface FilterPillProps {
 const FilterPill: React.FC<FilterPillProps> = ({ label, onRemove, color }) => {
   const colorClasses = {
     indigo:
-      "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-100 border-indigo-300 dark:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-300",
+      "bg-token-status-completado-surface text-token-status-completado-text border-token-status-completado/30 hover:opacity-80",
     amber:
-      "bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-800 hover:text-amber-600 dark:hover:text-amber-300",
+      "bg-token-status-warning-surface text-token-status-warning-text border-token-status-warning/30 hover:opacity-80",
     emerald:
-      "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-100 border-emerald-300 dark:border-emerald-800 hover:text-emerald-600 dark:hover:text-emerald-300",
-    sky: "bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-100 border-sky-300 dark:border-sky-800 hover:text-sky-600 dark:hover:text-sky-300",
+      "bg-token-status-success-surface text-token-status-success-text border-token-status-success/30 hover:opacity-80",
+    sky: "bg-token-status-info-surface text-token-status-info-text border-token-status-info/30 hover:opacity-80",
     violet:
-      "bg-violet-100 dark:bg-violet-900/40 text-violet-900 dark:text-violet-100 border-violet-300 dark:border-violet-800 hover:text-violet-600 dark:hover:text-violet-300",
+      "bg-token-status-licencia-medica-surface text-token-status-licencia-medica-text border-token-status-licencia-medica/30 hover:opacity-80",
   };
 
   return (

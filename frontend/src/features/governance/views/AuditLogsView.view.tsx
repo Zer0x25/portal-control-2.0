@@ -31,7 +31,7 @@ const getCategoryStyles = (category: string) => {
     case "AUTH":
       return "bg-(--sidebar-text-active)/10 text-(--sidebar-text-active) border-(--sidebar-text-active)/20";
     case "SYSTEM":
-      return "bg-purple-500/10 text-purple-600 border-purple-500/20";
+      return "bg-token-status-licencia-medica/10 text-token-status-licencia-medica-text border-token-status-licencia-medica/20";
     case "DATA":
     case "DATABASE":
       return "bg-(--status-success)/10 text-(--status-success) border-(--status-success)/20";

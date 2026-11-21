@@ -60,8 +60,8 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
             <p className="text-[13px] font-bold text-token-text-primary uppercase tracking-tight">
               {item.name}
             </p>
-            <p className="text-[10px] font-semibold text-rose-600 uppercase tracking-widest mt-1.5 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+            <p className="text-[10px] font-semibold text-token-status-error-text uppercase tracking-widest mt-1.5 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-token-status-error" />
               Ausencia registrada:{" "}
               {parseDateOnlyUTC(item.absenceDate).toLocaleDateString("es-CL", {
                 day: "2-digit",
@@ -81,8 +81,8 @@ const KpiDetailsModal: React.FC<KpiDetailsModalProps> = ({
             <p className="text-[13px] font-bold text-token-text-primary uppercase tracking-tight">
               {item.employeeName}
             </p>
-            <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-widest mt-1.5 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+            <p className="text-[10px] font-semibold text-token-status-warning-text uppercase tracking-widest mt-1.5 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-token-status-warning" />
               Evento justificado:{" "}
               {parseDateOnlyUTC(item.date).toLocaleDateString("es-CL", {
                 day: "2-digit",

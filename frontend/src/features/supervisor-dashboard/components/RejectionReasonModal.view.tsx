@@ -60,7 +60,7 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
       {/* Header: Industrial Style */}
       <div className="flex justify-between items-center px-6 py-5 border-b border-token-border-technical bg-token-surface-stripe">
         <div className="flex flex-col">
-          <span className="text-[11px] font-bold text-rose-600 uppercase tracking-wider">
+          <span className="text-[11px] font-bold text-token-status-error-text uppercase tracking-wider">
             Acción Requerida
           </span>
           <h3
@@ -124,7 +124,7 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
             type="submit"
             variant="danger"
             loading={isSubmitting}
-            className="px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest shadow-md shadow-rose-500/10"
+            className="px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest shadow-md shadow-token-status-error/10"
           >
             Confirmar Rechazo
           </Button>

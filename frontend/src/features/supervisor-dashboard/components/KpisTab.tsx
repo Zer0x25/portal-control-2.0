@@ -39,15 +39,15 @@ const KpisTab: React.FC = () => {
       {isDateRangeInvalid ? (
         <div
           key="error"
-          className="flex flex-col items-center justify-center p-16 bg-rose-500/3 border border-rose-500/20 rounded-sm animate-in fade-in zoom-in-95"
+          className="flex flex-col items-center justify-center p-16 bg-token-status-error/5 border border-token-status-error/20 rounded-sm animate-in fade-in zoom-in-95"
         >
-          <div className="w-14 h-14 rounded-full bg-rose-500/10 flex items-center justify-center mb-5">
-            <ExclamationTriangleIcon className="w-7 h-7 text-rose-500" />
+          <div className="w-14 h-14 rounded-full bg-token-status-error/10 flex items-center justify-center mb-5">
+            <ExclamationTriangleIcon className="w-7 h-7 text-token-status-error" />
           </div>
-          <h3 className="text-[13px] font-bold text-rose-600 uppercase tracking-widest">
+          <h3 className="text-[13px] font-bold text-token-status-error-text uppercase tracking-widest">
             Parámetros de Tiempo Inválidos
           </h3>
-          <p className="text-[11px] font-semibold text-rose-400 mt-2 uppercase tracking-wide">
+          <p className="text-[11px] font-semibold text-token-status-error-text opacity-85 mt-2 uppercase tracking-wide">
             El segmento cronológico de inicio es superior al de término
           </p>
         </div>
@@ -55,15 +55,15 @@ const KpisTab: React.FC = () => {
         <div
           key="kpi-api-error"
           role="alert"
-          className="flex flex-col items-center justify-center p-16 bg-rose-500/3 border border-rose-500/20 rounded-sm animate-in fade-in zoom-in-95"
+          className="flex flex-col items-center justify-center p-16 bg-token-status-error/5 border border-token-status-error/20 rounded-sm animate-in fade-in zoom-in-95"
         >
-          <div className="w-14 h-14 rounded-full bg-rose-500/10 flex items-center justify-center mb-5">
-            <ExclamationTriangleIcon className="w-7 h-7 text-rose-500" />
+          <div className="w-14 h-14 rounded-full bg-token-status-error/10 flex items-center justify-center mb-5">
+            <ExclamationTriangleIcon className="w-7 h-7 text-token-status-error" />
           </div>
-          <h3 className="text-[13px] font-bold text-rose-600 uppercase tracking-widest">
+          <h3 className="text-[13px] font-bold text-token-status-error-text uppercase tracking-widest">
             Error al Calcular Métricas de KPI
           </h3>
-          <p className="text-[11px] font-semibold text-rose-400 mt-2 uppercase tracking-wide text-center">
+          <p className="text-[11px] font-semibold text-token-status-error-text opacity-85 mt-2 uppercase tracking-wide text-center">
             No se pudieron obtener los indicadores del servidor. Intente nuevamente.
           </p>
         </div>
@@ -74,9 +74,9 @@ const KpisTab: React.FC = () => {
           )}
 
           {isNoDataPeriod && (
-            <div className="mb-8 rounded-sm border border-amber-200 bg-amber-500/10 px-6 py-4 flex items-center gap-4">
-              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <p className="text-[11px] font-semibold text-amber-800 uppercase tracking-wide">
+            <div className="mb-8 rounded-sm border border-token-status-warning/30 bg-token-status-warning-surface/60 px-6 py-4 flex items-center gap-4">
+              <div className="w-2 h-2 rounded-full bg-token-status-warning animate-pulse" />
+              <p className="text-[11px] font-semibold text-token-status-warning-text uppercase tracking-wide">
                 Periodo sin registros: No hay data operativa disponible en la ventana seleccionada.
               </p>
             </div>

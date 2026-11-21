@@ -232,7 +232,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-6 border-b border-token-border-technical pb-4">
-                <ShieldIcon className="w-5 h-5 text-indigo-500" />
+                <ShieldIcon className="w-5 h-5 text-token-accent-brand" />
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-token-text-primary">
                   Gestión de Identidad
                 </h3>

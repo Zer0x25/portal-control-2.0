@@ -71,7 +71,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
         <button
           onClick={onClose}
           aria-label="Cerrar calendario"
-          className="p-3 text-token-text-tertiary hover:text-white hover:bg-rose-600 rounded-sm transition-all"
+          className="p-3 text-token-text-tertiary hover:text-token-text-onAccent hover:bg-token-status-error rounded-sm transition-all"
         >
           <CloseIcon className="w-6 h-6" />
         </button>

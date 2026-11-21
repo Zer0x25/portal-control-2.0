@@ -57,7 +57,7 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
                   {key}
                 </span>
                 {isDiff && (
-                  <span className="text-xxs font-bold bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded-xs border border-blue-500/20">
+                  <span className="text-xxs font-bold bg-token-status-info/10 text-token-status-info-text px-1.5 py-0.5 rounded-xs border border-token-status-info/20">
                     MODIFICADO
                   </span>
                 )}
@@ -66,16 +66,18 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
               {isDiff ? (
                 <div className="space-y-2">
                   <div className="flex items-start gap-3 opacity-60">
-                    <div className="w-4 h-4 rounded-xs bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-[10px] text-red-600 font-bold">-</span>
+                    <div className="w-4 h-4 rounded-xs bg-token-status-error/10 border border-token-status-error/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-[10px] text-token-status-error-text font-bold">-</span>
                     </div>
                     <pre className="text-[11px] font-mono text-token-text-tertiary whitespace-pre-wrap break-all">
                       {JSON.stringify(value.oldValue, null, 2)}
                     </pre>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-xs bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-[10px] text-green-600 font-bold">+</span>
+                    <div className="w-4 h-4 rounded-xs bg-token-status-success/10 border border-token-status-success/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-[10px] text-token-status-success-text font-bold">
+                        +
+                      </span>
                     </div>
                     <pre className="text-[11px] font-mono text-token-text-primary whitespace-pre-wrap break-all font-bold">
                       {JSON.stringify(value.newValue, null, 2)}

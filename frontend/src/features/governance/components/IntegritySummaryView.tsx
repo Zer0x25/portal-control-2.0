@@ -193,7 +193,7 @@ const IntegritySummaryView: React.FC = () => {
                 Regla de Encadenamiento
               </p>
               <div className="flex items-center gap-2 p-3 bg-token-surface-stripe border border-token-border-subtle rounded-sm">
-                <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_indigo]" />
+                <div className="w-2 h-2 rounded-full bg-token-accent-brand shadow-[0_0_8px_var(--accent-professional)]" />
                 <span className="text-[11px] font-mono text-token-text-primary">
                   SHA-256 HMAC (Chain Mode)
                 </span>
