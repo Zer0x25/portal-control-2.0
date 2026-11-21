@@ -48,6 +48,7 @@
     "src/components/ui/SessionExpiredOverlay.tsx",
     "src/components/ui/ShiftCalendarDayCell.tsx",
     "src/components/ui/ShiftCalendarView.tsx",
+    "src/components/ui/SideDrawer.tsx",
     "src/components/ui/SimpleConnectionIndicator.tsx",
     "src/components/ui/Skeleton.tsx",
     "src/components/ui/SortableHeader.tsx",
