@@ -171,8 +171,8 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
                       onClick={() => applyPreset("google")}
                       className="flex items-center gap-3 p-3 rounded-md bg-token-surface-card border border-token-border-subtle hover:border-token-border-focus/40 transition-all group shadow-none"
                     >
-                      <div className="w-8 h-8 rounded-md bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-red-500 font-bold text-xs">G</span>
+                      <div className="w-8 h-8 rounded-md bg-token-status-error-surface flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span className="text-token-status-error-text font-bold text-xs">G</span>
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary">
                         Google Workspace
@@ -184,8 +184,8 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
                       onClick={() => applyPreset("outlook")}
                       className="flex items-center gap-3 p-3 rounded-md bg-token-surface-card border border-token-border-subtle hover:border-token-border-focus/40 transition-all group shadow-none"
                     >
-                      <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-blue-500 font-bold text-xs">O</span>
+                      <div className="w-8 h-8 rounded-md bg-token-status-info-surface flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <span className="text-token-status-info-text font-bold text-xs">O</span>
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-token-text-secondary">
                         Outlook / O365

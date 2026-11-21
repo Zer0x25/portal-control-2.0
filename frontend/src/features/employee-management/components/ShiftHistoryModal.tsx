@@ -43,11 +43,11 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
   const getActionColor = (action: string) => {
     switch (action) {
       case "SHIFT_ASSIGNMENT_CREATE":
-        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+        return "bg-token-status-success-surface text-token-status-success-text border-token-status-success/20";
       case "SHIFT_ASSIGNMENT_UPDATE":
-        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+        return "bg-token-status-warning-surface text-token-status-warning-text border-token-status-warning/20";
       case "SHIFT_ASSIGNMENT_DELETE":
-        return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
+        return "bg-token-status-error-surface text-token-status-error-text border-token-status-error/20";
       default:
         return "bg-token-surface-stripe text-token-text-secondary border-token-border-subtle";
     }
@@ -102,7 +102,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
             icon={<ExclamationTriangleIcon />}
             title="Error de Conexión"
             description={error}
-            className="py-12 border-rose-500/20"
+            className="py-12 border-token-status-error/20"
             actionLabel="Reintentar"
             onAction={fetchHistory}
           />
@@ -154,7 +154,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                   {entry.action === "SHIFT_ASSIGNMENT_UPDATE" && entry.details && (
                     <div className="flex items-center gap-3 bg-token-surface-stripe p-3 rounded-2xl border border-token-border-subtle">
                       <div className="flex-1 text-center">
-                        <p className="text-xxs font-black text-rose-500/60 uppercase mb-1 tracking-widest">
+                        <p className="text-xxs font-black text-token-status-error-text uppercase mb-1 tracking-widest">
                           Anterior
                         </p>
                         <p className="text-xs font-black text-token-text-primary truncate">
@@ -167,7 +167,7 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                       </div>
                       <ChevronRightIcon className="w-5 h-5 text-token-text-tertiary shrink-0" />
                       <div className="flex-1 text-center">
-                        <p className="text-xxs font-black text-emerald-500/60 uppercase mb-1 tracking-widest">
+                        <p className="text-xxs font-black text-token-status-success-text uppercase mb-1 tracking-widest">
                           Nuevo
                         </p>
                         <p className="text-xs font-black text-token-accent-brand truncate uppercase italic">
@@ -185,10 +185,10 @@ const ShiftHistoryModal: React.FC<ShiftHistoryModalProps> = ({
                     entry.action === "SHIFT_ASSIGNMENT_DELETE") &&
                     entry.details && (
                       <div
-                        className={`p-4 rounded-2xl border ${entry.action === "SHIFT_ASSIGNMENT_CREATE" ? "bg-emerald-500/5 border-emerald-500/10" : "bg-rose-500/5 border-rose-500/10"}`}
+                        className={`p-4 rounded-2xl border ${entry.action === "SHIFT_ASSIGNMENT_CREATE" ? "bg-token-status-success-surface border-token-status-success/20" : "bg-token-status-error-surface border-token-status-error/20"}`}
                       >
                         <p
-                          className={`text-sm font-black uppercase italic ${entry.action === "SHIFT_ASSIGNMENT_CREATE" ? "text-emerald-600" : "text-rose-600"}`}
+                          className={`text-sm font-black uppercase italic ${entry.action === "SHIFT_ASSIGNMENT_CREATE" ? "text-token-status-success-text" : "text-token-status-error-text"}`}
                         >
                           {entry.action === "SHIFT_ASSIGNMENT_CREATE"
                             ? entry.details.newPatternName

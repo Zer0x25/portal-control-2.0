@@ -71,7 +71,7 @@ const SeedingOptionsModalView: React.FC<SeedingOptionsModalViewProps> = ({
       >
         <div className="p-4 border-b border-token-border-subtle flex justify-between items-center">
           <h3 id="seeding-options-title" className="font-semibold text-lg flex items-center">
-            <SparklesIcon className="w-5 h-5 mr-2 text-yellow-400" />
+            <SparklesIcon className="w-5 h-5 mr-2 text-token-status-warning" />
             Panel de Simulacion de Datos
           </h3>
           <Button

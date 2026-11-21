@@ -159,16 +159,16 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
           <div className="space-y-4">
             <p>¿Estás seguro de que deseas eliminar permanentemente este patrón?</p>
             {affectedEmployeesCount > 0 && (
-              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl">
-                <p className="text-amber-800 dark:text-amber-300 font-bold mb-1">
+              <div className="p-4 bg-token-status-warning-surface border border-token-status-warning/30 rounded-2xl">
+                <p className="text-token-status-warning-text font-bold mb-1">
                   ⚠️ Atención: Patrón en uso
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-400">
+                <p className="text-xs text-token-status-warning-text">
                   Este patrón está asignado actualmente a{" "}
                   <strong>{affectedEmployeesCount} empleado(s)</strong>. Se recomienda verificar las
                   asignaciones antes de proceder.
                 </p>
-                <p className="mt-2 text-[11px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-tighter">
+                <p className="mt-2 text-[11px] font-bold text-token-status-warning-text uppercase tracking-tighter">
                   La eliminación desasignará automáticamente a todos los empleados asociados.
                 </p>
               </div>

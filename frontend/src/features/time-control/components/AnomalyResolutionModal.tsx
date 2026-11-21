@@ -62,7 +62,7 @@ const AnomalyResolutionModal: React.FC<AnomalyResolutionModalProps> = ({
               Fecha: {record.date} | Estado: {record.status}
             </span>
             {record.justification?.comment && (
-              <div className="mt-3 p-2 bg-amber-500/10 border-l-2 border-amber-500 text-amber-600 dark:text-amber-400 text-xs font-medium italic">
+              <div className="mt-3 p-2 bg-token-status-warning-surface border-l-2 border-token-status-warning text-token-status-warning-text text-xs font-medium italic">
                 "{record.justification.comment}"
               </div>
             )}

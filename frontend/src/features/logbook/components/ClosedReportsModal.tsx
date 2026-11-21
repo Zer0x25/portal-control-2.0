@@ -77,8 +77,8 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-4">
-          <div className="bg-indigo-700/10 dark:bg-indigo-700/20 p-2.5 rounded-md border border-indigo-700/20">
-            <DocumentChartBarIcon className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
+          <div className="bg-token-accent-brand/10 p-2.5 rounded-md border border-token-accent-brand/20">
+            <DocumentChartBarIcon className="w-5 h-5 text-token-accent-brand" />
           </div>
           <div>
             <h3 className="text-lg font-black text-token-text-primary tracking-tight uppercase leading-none">

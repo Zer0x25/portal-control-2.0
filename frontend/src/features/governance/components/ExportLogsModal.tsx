@@ -117,7 +117,7 @@ const ExportLogsModal: React.FC<ExportLogsModalProps> = ({ isOpen, onClose }) =>
 
           {/* Content */}
           <div className="space-y-8">
-            <div className="rounded-2xl bg-blue-500/5 p-6 border border-blue-500/10">
+            <div className="rounded-2xl bg-token-status-info-surface p-6 border border-token-status-info/20">
               <p className="text-sm font-medium leading-relaxed text-token-text-secondary">
                 Defina el periodo temporal para la extracción de registros. El archivo generado
                 incluirá todos los metadatos técnicos y de seguridad.
