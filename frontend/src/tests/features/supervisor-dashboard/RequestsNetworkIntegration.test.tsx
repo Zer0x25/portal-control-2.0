@@ -25,7 +25,10 @@ vi.mock("../../../hooks/useScheduling", async () => {
       const mutation = useCorrectionRequestMutations();
       return {
         requests: query.data?.pages.flatMap((page) => page.requests) ?? [],
-        isLoadingSchedulingData: query.isLoading,
+        isLoadingCorrectionRequests: query.isLoading,
+        isErrorCorrectionRequests: query.isError,
+        refetchCorrectionRequests: query.refetch,
+        isFetchNextPageCorrectionRequestsError: query.isFetchNextPageError,
         updateRequestStatus: mutation.updateRequestStatus,
         isUpdatingRequestStatus: mutation.isPending,
         fetchNextPage: query.fetchNextPage,
@@ -37,6 +40,34 @@ vi.mock("../../../hooks/useScheduling", async () => {
 });
 
 describe("rechazo integrado con HTTP simulado", () => {
+  it("informa un error al consultar solicitudes y recupera el estado vacío al reintentar", async () => {
+    let calls = 0;
+    server.use(
+      http.get("http://localhost:4000/api/corrections/stats", () =>
+        HttpResponse.json({ pending: 0, approved: 0, rejected: 0 }),
+      ),
+      http.get("http://localhost:4000/api/corrections", () => {
+        calls += 1;
+        return calls === 1
+          ? HttpResponse.json({ message: "Error de prueba" }, { status: 400 })
+          : HttpResponse.json({ requests: [], total: 0 });
+      }),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <RequestsTab />
+      </QueryClientProvider>,
+    );
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudieron cargar las solicitudes",
+    );
+    expect(screen.queryByText("AUDITADO. SIN PENDIENTES.")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "Reintentar carga" }));
+    expect(await screen.findByText("AUDITADO. SIN PENDIENTES.")).toBeInTheDocument();
+    expect(calls).toBe(2);
+  });
+
   it.each(["error HTTP", "fallo de conexión"])(
     "muestra %s, conserva el motivo y confirma el reintento",
     async (failure) => {

@@ -34,6 +34,27 @@ describe("Accesibilidad de solicitudes", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Auditando bandeja de entrada");
   });
 
+  it("anuncia un error de carga y permite reintentar sin mostrar un vacío falso", () => {
+    const refetchRequests = vi.fn();
+    render(<RequestsTabView {...props({ isErrorRequests: true, refetchRequests })} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("No se pudieron cargar las solicitudes");
+    expect(screen.queryByText("AUDITADO. SIN PENDIENTES.")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar carga" }));
+    expect(refetchRequests).toHaveBeenCalledOnce();
+  });
+
+  it("conserva las solicitudes visibles y permite reintentar la carga adicional", () => {
+    const fetchNextPage = vi.fn();
+    render(
+      <RequestsTabView
+        {...props({ isErrorRequests: true, isFetchNextPageError: true, fetchNextPage })}
+      />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("No se pudieron cargar más solicitudes");
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar carga adicional" }));
+    expect(fetchNextPage).toHaveBeenCalledOnce();
+  });
+
   it("expone el filtro seleccionado y el estado vacío", () => {
     const setStatusFilter = vi.fn();
     render(<RequestsTabView {...props({ setStatusFilter })} />);

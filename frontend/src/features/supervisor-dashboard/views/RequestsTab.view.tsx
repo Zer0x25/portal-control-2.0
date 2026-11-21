@@ -29,6 +29,9 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
     loadMoreRef,
     stats,
     isLoadingRequests,
+    isErrorRequests,
+    refetchRequests,
+    isFetchNextPageError,
     isUpdatingRequestStatus,
     fetchNextPage,
     hasNextPage,
@@ -52,6 +55,17 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
         <p className="text-[11px] font-bold text-token-accent-brand uppercase tracking-widest animate-pulse">
           Auditando bandeja de entrada...
         </p>
+      </div>
+    );
+  }
+
+  if (isErrorRequests && filteredRequests.length === 0 && !isFetchNextPageError) {
+    return (
+      <div role="alert" className="flex flex-col items-start gap-4 py-8">
+        <p>No se pudieron cargar las solicitudes. Comprueba la conexión y vuelve a intentar.</p>
+        <button type="button" className="underline" onClick={() => void refetchRequests()}>
+          Reintentar carga
+        </button>
       </div>
     );
   }
@@ -176,6 +190,15 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
           )}
         </div>
       </div>
+
+      {isFetchNextPageError && (
+        <div role="alert" className="flex flex-col items-start gap-2">
+          <p>No se pudieron cargar más solicitudes.</p>
+          <button type="button" className="underline" onClick={() => void fetchNextPage()}>
+            Reintentar carga adicional
+          </button>
+        </div>
+      )}
 
       {requestToReject && (
         <RejectionReasonModal
