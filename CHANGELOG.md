@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.43.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.42.0...v8.43.0) (2026-11-21)
+
+
+### Features
+
+* **design-system:** certify remaining shared ui primitives in storybook ([9dbc05f](https://github.com/Zer0x25/portal-control-2.0/commit/9dbc05f443e0b71787e79a33f2ccf5b8f25fd152))
+* **design-system:** converge modals, migrate semantic tokens and certify storybook catalog ([9234bc9](https://github.com/Zer0x25/portal-control-2.0/commit/9234bc93cda9b2287382572b8716f9c0dbd62f99))
+
 ## [8.42.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.41.0...v8.42.0) (2026-11-20)
 
 
