@@ -47,6 +47,22 @@ describe("DatePickerCalendar (spec 031 AC7)", () => {
     expect(firstCell?.getAttribute("data-date")).toBe("2026-09-28");
   });
 
+  it.each([
+    [2026, 10, 42, "2026-10-26", "2026-12-06"],
+    [2021, 1, 28, "2021-02-01", "2021-02-28"],
+    [2026, 8, 35, "2026-08-31", "2026-10-04"],
+  ])("muestra semanas completas para %i-%i", (year, month, count, first, last) => {
+    const date = new Date(year, month, 15, 12);
+    renderCalendar({ selectedDate: date, initialMonth: date });
+    const cells = screen.getAllByRole("gridcell");
+    expect(cells).toHaveLength(count);
+    expect(cells[0].querySelector("[data-date]")).toHaveAttribute("data-date", first);
+    expect(cells.at(-1)?.querySelector("[data-date]")).toHaveAttribute("data-date", last);
+    for (const row of screen.getAllByRole("row").slice(1)) {
+      expect(row.querySelectorAll('[role="gridcell"]')).toHaveLength(7);
+    }
+  });
+
   it("navega con flechas y mueve el foco al dia siguiente", async () => {
     renderCalendar();
     const current = document.querySelector<HTMLElement>('[data-date="2026-10-20"]');
@@ -112,6 +128,33 @@ describe("DatePickerCalendar (spec 031 AC7)", () => {
     expect(emitted.getFullYear()).toBe(2026);
     expect(emitted.getMonth()).toBe(9);
     expect(emitted.getDate()).toBe(15);
+  });
+
+  it("deshabilita fechas fuera de rango e incluye ambos días límite", () => {
+    const { onSelect } = renderCalendar({
+      minDate: new Date(2026, 9, 15, 12),
+      maxDate: new Date(2026, 9, 22, 12),
+    });
+    const day = (date: string) => document.querySelector<HTMLElement>(`[data-date="${date}"]`)!;
+    expect(day("2026-10-14")).toBeDisabled();
+    expect(day("2026-10-15")).toBeEnabled();
+    expect(day("2026-10-22")).toBeEnabled();
+    expect(day("2026-10-23")).toBeDisabled();
+    fireEvent.click(day("2026-10-14"));
+    expect(onSelect).not.toHaveBeenCalled();
+    fireEvent.click(day("2026-10-15"));
+    fireEvent.click(day("2026-10-22"));
+    expect(onSelect).toHaveBeenCalledTimes(2);
+  });
+
+  it("mantiene un día accesible por Tab tras cambiar el mes", async () => {
+    renderCalendar();
+    fireEvent.click(screen.getByRole("button", { name: "Mes siguiente" }));
+    const entry = screen.getByRole("grid").querySelector<HTMLElement>('[data-date][tabindex="0"]');
+    expect(entry).toHaveAttribute("data-date", "2026-11-01");
+    entry?.focus();
+    fireEvent.keyDown(entry!, { key: "ArrowRight" });
+    await waitFor(() => expect(document.activeElement).toHaveAttribute("data-date", "2026-11-02"));
   });
 });
 

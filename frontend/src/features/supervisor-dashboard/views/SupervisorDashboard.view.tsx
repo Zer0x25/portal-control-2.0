@@ -53,6 +53,9 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => handleTabClick(tab.id)}
+                  onFocus={(event) => {
+                    event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+                  }}
                   className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
                     isActive
                       ? "text-(--sidebar-text-active)"

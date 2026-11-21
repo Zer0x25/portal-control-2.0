@@ -154,7 +154,7 @@ const DatePickerDialogContent: React.FC<Omit<DatePickerDialogProps, "isOpen">> =
           variant="primary"
           onClick={handleConfirm}
           disabled={!selectedDate || !isAllowed(selectedDate)}
-          className="col-span-2 rounded-md h-10 font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2"
+          className="col-span-2 rounded-md h-10 font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2 text-token-text-onAccent!"
         >
           <CheckCircleIcon className="w-3.5 h-3.5" />
           Aplicar

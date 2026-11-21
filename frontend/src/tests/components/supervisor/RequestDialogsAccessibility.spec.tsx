@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import AttachmentViewerModal from "../../../features/supervisor-dashboard/components/AttachmentViewerModal";
 import RejectionReasonModalView from "../../../features/supervisor-dashboard/components/RejectionReasonModal.view";
+import RejectionReasonModalContainer from "../../../features/supervisor-dashboard/components/RejectionReasonModal.container";
 
 function Fixture({ submitting = false }: { submitting?: boolean }) {
   const [open, setOpen] = useState<"attachment" | "reject" | null>(null);
@@ -39,6 +40,51 @@ function Fixture({ submitting = false }: { submitting?: boolean }) {
 }
 
 describe("Diálogos de solicitudes de supervisión", () => {
+  it("valida el motivo, asocia el error al campo y confirma un valor válido", async () => {
+    const user = userEvent.setup();
+    const onConfirm = vi.fn();
+    render(<RejectionReasonModalContainer isOpen onClose={vi.fn()} onConfirm={onConfirm} />);
+    const dialog = screen.getByRole("dialog", { name: "Motivo de Rechazo" });
+    const field = within(dialog).getByRole("textbox", { name: /Justificación Técnica/ });
+    const confirm = within(dialog).getByRole("button", { name: "Confirmar Rechazo" });
+
+    await user.click(confirm);
+    await waitFor(() => expect(field).toHaveAttribute("aria-invalid", "true"));
+    const errorId = field.getAttribute("aria-describedby");
+    expect(errorId).toBeTruthy();
+    expect(document.getElementById(errorId!)).toHaveTextContent(/motivo del rechazo/i);
+    expect(onConfirm).not.toHaveBeenCalled();
+
+    await user.type(field, "Datos incompletos");
+    await user.click(confirm);
+    await waitFor(() => expect(onConfirm).toHaveBeenCalledWith("Datos incompletos"));
+  });
+
+  it.each([
+    ["image/png", "img"],
+    ["application/pdf", "iframe"],
+    ["application/octet-stream", "unsupported"],
+  ])("presenta y permite descargar adjuntos de tipo %s", (mimeType, expected) => {
+    render(
+      <AttachmentViewerModal
+        isOpen
+        onClose={vi.fn()}
+        attachment={{ filename: "archivo.prueba", mimeType, data: "data:,prueba" }}
+      />,
+    );
+    const dialog = screen.getByRole("dialog", { name: "Vista: archivo.prueba" });
+    expect(within(dialog).getByRole("link", { name: /Descargar/ })).toHaveAttribute(
+      "download",
+      "archivo.prueba",
+    );
+    if (expected === "img")
+      expect(within(dialog).getByRole("img")).toHaveAccessibleName("archivo.prueba");
+    if (expected === "iframe")
+      expect(within(dialog).getByTitle("archivo.prueba")).toBeInTheDocument();
+    if (expected === "unsupported")
+      expect(within(dialog).getByText(/no compatible/)).toBeInTheDocument();
+  });
+
   it.each([
     ["Abrir adjunto", "Vista: comprobante.png"],
     ["Rechazar solicitud", "Motivo de Rechazo"],

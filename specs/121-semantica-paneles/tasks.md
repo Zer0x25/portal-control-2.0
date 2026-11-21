@@ -18,3 +18,11 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 - [x] T14: Revisar tres diálogos de Bitácora y corregir contraste y desplazamiento del historial vacío en móvil.
 - [x] T15: Integrar el calendario del historial al comportamiento de diálogos apilados y corregir su cuadrícula y contraste.
 - [x] T16: Impedir la aplicación de fechas fuera de límites y descartar selecciones canceladas al reabrir el calendario.
+- [x] T17: Comprobar teclado y contraste del calendario con selección en ambos temas y corregir los hallazgos.
+- [x] T18: Corregir el salto al contenido compartido para conservar la ruta y verificar el foco mediante teclado en las vistas piloto.
+- [x] T19: Mantener visible el botón enfocado en la navegación horizontal de Supervisión y comprobar las seis secciones en móvil.
+- [x] T20: Habilitar por teclado la región desplazable del historial de cierres y verificar el diálogo vacío y un estado con datos simulados.
+- [x] T21: Corregir semanas incompletas adicionales en el calendario compartido y comprobar meses de distinta duración y el diálogo de cierre.
+- [x] T22: Comunicar fechas fuera de rango como deshabilitadas y conservar la entrada por teclado a la cuadrícula al cambiar de mes.
+- [x] T23: Cubrir con datos simulados la validación real del motivo de rechazo y los formatos del visor de adjuntos.
+- [x] T24: Conservar el diálogo y permitir reintentar cuando falla un rechazo; verificar fallo y éxito simulados.

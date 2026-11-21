@@ -354,7 +354,14 @@ const AccountingClosureTab: React.FC = () => {
         <p className="px-5 pt-4 text-xs text-token-text-tertiary">
           Incluye cierres manuales y automáticos.
         </p>
-        <div className="max-h-[60vh] overflow-auto p-5">
+        <div
+          className="max-h-[60vh] overflow-auto p-5"
+          role="region"
+          aria-label="Contenido del historial de cierres"
+          // La región desplazable necesita foco para manejarse con teclado.
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+        >
           {isHistoryLoading && (
             <p className="text-sm text-token-text-tertiary">Cargando historial...</p>
           )}

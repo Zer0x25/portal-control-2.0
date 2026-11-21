@@ -79,14 +79,11 @@ export const useRequestsTabController = () => {
 
     const requestId = requestToReject.id;
     if (processingIdsRef.current.has(requestId)) {
-      setRequestToReject(null);
       return;
     }
 
     processingIdsRef.current.add(requestId);
     setProcessingIds((prev) => new Set(prev).add(requestId));
-    setRequestToReject(null);
-
     try {
       await updateRequestStatus({
         id: requestId,
@@ -94,6 +91,7 @@ export const useRequestsTabController = () => {
         resolvedBy: currentUser.username,
         rejectionReason: reason,
       });
+      setRequestToReject(null);
     } catch {
       // Handled by mutation onError toast
     } finally {

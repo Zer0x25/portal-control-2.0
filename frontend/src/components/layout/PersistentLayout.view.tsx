@@ -49,6 +49,10 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
     <>
       <a
         href="#main-content"
+        onClick={(event) => {
+          event.preventDefault();
+          event.currentTarget.ownerDocument.getElementById("main-content")?.focus();
+        }}
         data-testid="skip-to-content"
         className={`sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:${Z.modal} focus:px-4 focus:py-2 focus:bg-token-accent-brand focus:text-token-text-onAccent focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-token-border-focus transition-all`}
       >
