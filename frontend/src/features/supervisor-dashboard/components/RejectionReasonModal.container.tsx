@@ -31,6 +31,7 @@ const RejectionReasonModalContainer: React.FC<RejectionReasonModalContainerProps
     isOpen,
     onConfirm,
   });
+  const busy = isSubmitting || controller.isSubmitting;
 
   return (
     <RejectionReasonModalView
@@ -39,7 +40,7 @@ const RejectionReasonModalContainer: React.FC<RejectionReasonModalContainerProps
       values={controller.values}
       getError={controller.getError}
       handleReasonChange={controller.handleReasonChange}
-      isSubmitting={isSubmitting || controller.isSubmitting}
+      isSubmitting={busy}
       formProps={controller.formProps}
     />
   );

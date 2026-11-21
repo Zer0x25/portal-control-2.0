@@ -75,7 +75,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       <Container noPadding data-ui-protected className="dashboard-ui-protected space-y-6">
         <WelcomePanel />
 
-        <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
+        <div role="status" className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
           <div className="relative mb-8">
             <LoadingSpinner size="md" variant="default" />
           </div>
@@ -91,7 +91,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     <Container noPadding data-ui-protected className="dashboard-ui-protected space-y-6">
       <WelcomePanel />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ul
+        aria-label="Widgets del dashboard"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
         {visibleWidgets.length > 0 ? (
           visibleWidgets.map((widget) => {
             const WidgetComponent = widget.component as React.ComponentType<
@@ -100,22 +103,24 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             const props = widgetProps[widget.id] || {};
 
             return (
-              <div
+              <li
                 key={widget.id}
                 className="animate-in fade-in zoom-in-95 [animation-duration:200ms]"
               >
                 <WidgetComponent {...props} />
-              </div>
+              </li>
             );
           })
         ) : (
-          <EmptyState
-            icon={<ExclamationTriangleIcon />}
-            title="No hay widgets disponibles"
-            description="No tienes permisos para ver widgets en el dashboard o no hay widgets configurados."
-          />
+          <li>
+            <EmptyState
+              icon={<ExclamationTriangleIcon />}
+              title="No hay widgets disponibles"
+              description="No tienes permisos para ver widgets en el dashboard o no hay widgets configurados."
+            />
+          </li>
         )}
-      </div>
+      </ul>
 
       {/* Modals */}
       <QuickNotesModal isOpen={isQuickNotesModalOpen} onClose={handleCloseQuickNotes} />

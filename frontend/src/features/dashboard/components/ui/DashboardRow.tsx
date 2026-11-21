@@ -32,14 +32,19 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
   showAnimation = true,
   animationDelay = 0,
 }) => {
+  const Root = onClick || onDoubleClick ? "button" : "div";
   const bgClass = variant === "stripe" ? "bg-token-surface-stripe" : "bg-token-surface-card";
 
   const content = (
-    <div
+    <Root
+      {...(Root === "button" ? { type: "button" as const } : {})}
       onDoubleClick={onDoubleClick}
-      onClick={onClick}
+      onClick={(event) => {
+        if (onClick) onClick();
+        else if (event.detail === 0) onDoubleClick?.();
+      }}
       className={`
-        flex items-center justify-between p-3.5 rounded-sm border border-token-border-technical
+        flex w-full text-left items-center justify-between p-3.5 rounded-sm border border-token-border-technical
         cursor-pointer transition-all group hover:border-token-accent-brand/40 ${bgClass} ${className}
       `}
     >
@@ -68,7 +73,7 @@ const DashboardRow: React.FC<DashboardRowProps> = ({
         {extra && <div className="text-right">{extra}</div>}
         {indicator && <div className="flex items-center">{indicator}</div>}
       </div>
-    </div>
+    </Root>
   );
 
   if (!showAnimation) {

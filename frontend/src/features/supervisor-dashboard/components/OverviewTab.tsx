@@ -120,6 +120,7 @@ const OverviewTab: React.FC = () => {
         <div className="lg:col-span-4">
           <MetricCard
             kind="panel"
+            headingAs="h2"
             title="Planificación del Día"
             icon={<CalendarDaysIcon />}
             className="h-full"

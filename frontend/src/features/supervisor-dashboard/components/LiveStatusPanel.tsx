@@ -61,9 +61,9 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
       kind="panel"
       title={
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-token-text-primary">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-token-text-primary">
             Presencia en Tiempo Real
-          </span>
+          </h2>
           <div className="flex items-center gap-2 bg-token-status-success/10 border border-token-status-success/20 px-2 py-0.5 rounded-sm">
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-token-status-success opacity-75"></span>
@@ -118,7 +118,9 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                 const { employee, status } = filteredEmployees[virtualItem.index];
                 const config = CLOCKING_STATUS_CONFIG[status];
                 return (
-                  <div
+                  <button
+                    type="button"
+                    disabled={!onEmployeeClick}
                     key={virtualItem.key}
                     style={{
                       position: "absolute",
@@ -129,7 +131,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                     onClick={() => onEmployeeClick?.(employee)}
-                    className="group flex items-center justify-between py-4 hover:bg-token-surface-active cursor-pointer transition-all active:scale-[0.99] border-l-2 border-transparent hover:border-token-accent-brand px-2"
+                    className="group flex items-center justify-between text-left py-4 hover:bg-token-surface-active cursor-pointer transition-all active:scale-[0.99] border-l-2 border-transparent hover:border-token-accent-brand px-2"
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div className="relative">
@@ -156,7 +158,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                     >
                       {config.label}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>

@@ -54,6 +54,7 @@ export const MetricGrid: React.FC<MetricGridProps> = ({
     <MetricCard
       key={`${metric.title}-${index}`}
       title={metric.title}
+      semanticValue
       value={metric.value}
       tone={metric.tone}
       className={metric.className}

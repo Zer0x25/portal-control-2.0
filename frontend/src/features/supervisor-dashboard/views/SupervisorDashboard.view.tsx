@@ -39,7 +39,10 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
         />
 
         {/* Tab Switcher - Replicando GovernanceHub Design */}
-        <div className="flex border-b border-token-border-technical gap-8 overflow-x-auto scrollbar-hide">
+        <nav
+          aria-label="Secciones de supervisión"
+          className="flex border-b border-token-border-technical gap-8 overflow-x-auto scrollbar-hide"
+        >
           <div className="flex min-w-max gap-8">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -47,6 +50,8 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
               return (
                 <button
                   key={tab.id}
+                  type="button"
+                  aria-pressed={isActive}
                   onClick={() => handleTabClick(tab.id)}
                   className={`pb-4 px-1 flex items-center gap-2.5 transition-colors relative ${
                     isActive
@@ -70,7 +75,7 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
               );
             })}
           </div>
-        </div>
+        </nav>
       </div>
 
       {/* Main Content Area - Industrial Style */}

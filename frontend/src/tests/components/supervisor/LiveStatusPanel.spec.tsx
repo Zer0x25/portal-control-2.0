@@ -101,6 +101,16 @@ describe("LiveStatusPanel Component", () => {
     expect(defaultProps.onEmployeeClick).toHaveBeenCalledWith(mockEmployees[0].employee);
   });
 
+  it("exposes employee rows as buttons and the panel title as a heading", () => {
+    render(<LiveStatusPanel {...defaultProps} />);
+    expect(
+      screen.getByRole("heading", { name: "Presencia en Tiempo Real", level: 2 }),
+    ).toBeInTheDocument();
+    const row = screen.getByRole("button", { name: /JUAN PEREZ/ });
+    fireEvent.click(row);
+    expect(defaultProps.onEmployeeClick).toHaveBeenCalledWith(mockEmployees[0].employee);
+  });
+
   it("should show empty state message when no employees match filters", () => {
     render(<LiveStatusPanel {...defaultProps} />);
     const searchInput = screen.getByPlaceholderText(/Filtrar por nombre.../i);

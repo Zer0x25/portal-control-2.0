@@ -16,7 +16,7 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
 }) => {
   if (error) {
     return (
-      <Card title={title} className={className}>
+      <Card headingAs="h2" title={title} className={className}>
         <div className="flex items-center justify-center p-8 text-center">
           <div className="space-y-2">
             <div className="text-token-status-error-text text-sm font-medium">Error al cargar</div>
@@ -29,7 +29,7 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
 
   if (isLoading) {
     return (
-      <Card title={title} className={className}>
+      <Card headingAs="h2" title={title} className={className}>
         <div className="flex items-center justify-center p-8">
           <LoadingSpinner size="md" variant="default" />
         </div>
@@ -39,7 +39,9 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
 
   return (
     <div className={`animate-in fade-in duration-200 ${className}`}>
-      <Card title={title}>{children}</Card>
+      <Card headingAs="h2" title={title}>
+        {children}
+      </Card>
     </div>
   );
 };

@@ -43,6 +43,9 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
   isSubmitting,
   formProps,
 }) => {
+  const closeIfIdle = () => {
+    if (!isSubmitting) onClose();
+  };
   const reasonError = getError("rejectionReason");
   const reasonErrorId = `${formProps.id}-rejectionReason-error`;
   const reasonId = `${formProps.id}-rejectionReason`;
@@ -50,7 +53,9 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
   return (
     <CinematicModal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
+      closeOnBackdrop={!isSubmitting}
+      closeOnEscape={!isSubmitting}
       maxWidth="max-w-lg"
       showHeader={false}
       ariaLabelledBy="rejection-modal-title"

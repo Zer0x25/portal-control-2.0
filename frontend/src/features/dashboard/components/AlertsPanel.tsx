@@ -40,7 +40,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
   }, [upcomingEmployees.length, missingClockOuts.length]);
 
   return (
-    <Card title="Gestión de Alertas">
+    <Card headingAs="h2" title="Gestión de Alertas">
       <div className="flex bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical mb-4">
         <button
           onClick={() => setActiveAlertTab("upcoming")}
