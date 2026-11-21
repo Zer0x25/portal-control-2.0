@@ -21,6 +21,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
     statusFilter,
     setStatusFilter,
     requestToReject,
+    rejectionError,
     setRequestToReject,
     attachmentToView,
     setAttachmentToView,
@@ -182,6 +183,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
           onClose={() => setRequestToReject(null)}
           onConfirm={handleConfirmReject}
           isSubmitting={isUpdatingRequestStatus}
+          submissionError={rejectionError}
         />
       )}
       {attachmentToView && (

@@ -19,6 +19,7 @@ export interface RejectionReasonModalContainerProps {
   onConfirm: (reason: string) => void;
   /** Hay un envio en vuelo. */
   isSubmitting?: boolean;
+  submissionError?: string | null;
 }
 
 const RejectionReasonModalContainer: React.FC<RejectionReasonModalContainerProps> = ({
@@ -26,6 +27,7 @@ const RejectionReasonModalContainer: React.FC<RejectionReasonModalContainerProps
   onClose,
   onConfirm,
   isSubmitting = false,
+  submissionError,
 }) => {
   const controller = useRejectionReasonController({
     isOpen,
@@ -41,6 +43,7 @@ const RejectionReasonModalContainer: React.FC<RejectionReasonModalContainerProps
       getError={controller.getError}
       handleReasonChange={controller.handleReasonChange}
       isSubmitting={busy}
+      submissionError={submissionError}
       formProps={controller.formProps}
     />
   );
