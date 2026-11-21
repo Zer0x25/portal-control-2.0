@@ -21,7 +21,7 @@ describe("MonthlyPlanningView", () => {
     expect(screen.getByText("WIZARD-CONTAINER-MOCK")).toBeInTheDocument();
   });
 
-  it("renders within canonical wide Container for scheduling matrix", () => {
+  it("renders within canonical fluid Container for scheduling matrix", () => {
     render(
       <MonthlyPlanningView
         title="Planificación Mensual"
@@ -31,7 +31,7 @@ describe("MonthlyPlanningView", () => {
 
     const container = screen.getByTestId("page-container");
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveClass("max-w-none");
     expect(container).toHaveAttribute("data-ui-protected");
   });
 });

@@ -75,7 +75,7 @@ export const ScheduledReportsView: React.FC<ScheduledReportsController> = ({
   handleConfirmDelete,
 }) => {
   return (
-    <Container variant="standard" noPadding className="space-y-6">
+    <Container noPadding className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-[11px] font-bold text-token-text-primary uppercase tracking-[0.2em] flex items-center gap-2">

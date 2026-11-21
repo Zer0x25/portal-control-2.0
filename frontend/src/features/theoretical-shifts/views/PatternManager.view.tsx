@@ -62,7 +62,6 @@ export const PatternManagerView: React.FC<PatternManagerViewProps> = ({
   return (
     <Container
       id="pattern-manager-section"
-      variant="wide"
       noPadding
       data-ui-protected
       className="space-y-6 h-full flex flex-col"

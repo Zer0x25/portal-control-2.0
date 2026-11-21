@@ -163,7 +163,7 @@ export const EmailCenterView: React.FC<EmailCenterViewProps> = ({
   const messageError = getManualEmailError("message");
 
   return (
-    <Container variant="standard" noPadding data-ui-protected className="space-y-6">
+    <Container noPadding data-ui-protected className="space-y-6">
       <div className="flex justify-end gap-2 mb-4">
         <Button
           variant="secondary"

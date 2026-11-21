@@ -123,13 +123,7 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
   handleConfirmDeleteLeave,
 }) => {
   return (
-    <Container
-      id="leave-manager-section"
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="space-y-6"
-    >
+    <Container id="leave-manager-section" noPadding data-ui-protected className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Gestión de Ausencias</h2>

@@ -49,7 +49,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
 
   if (error && !stats) {
     return (
-      <Container variant="standard" noPadding data-ui-protected>
+      <Container noPadding data-ui-protected>
         <Card className="p-8 text-center space-y-4 border-token-status-error/30 bg-token-status-error/5">
           <div className="mx-auto w-12 h-12 rounded-full bg-token-status-error/10 flex items-center justify-center">
             <ExclamationTriangleIcon className="w-6 h-6 text-token-status-error" />
@@ -80,7 +80,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
 
   if (!stats) {
     return (
-      <Container variant="standard" noPadding data-ui-protected>
+      <Container noPadding data-ui-protected>
         <Card className="p-8 text-center text-xs text-token-text-tertiary">
           Sin datos de inteligencia de seguridad disponibles.
         </Card>
@@ -89,7 +89,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
   }
 
   return (
-    <Container variant="standard" noPadding data-ui-protected className="space-y-6">
+    <Container noPadding data-ui-protected className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h3 className="text-sm font-bold text-token-text-primary uppercase tracking-tight">

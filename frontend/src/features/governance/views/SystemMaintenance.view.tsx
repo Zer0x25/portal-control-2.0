@@ -128,12 +128,7 @@ export const SystemMaintenanceView: React.FC<SystemMaintenanceViewProps> = ({
   closeConfirmDialog = () => {},
 }) => {
   return (
-    <Container
-      variant="standard"
-      noPadding
-      data-ui-protected
-      className="space-y-8 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-8 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard kind="panel" title="Usuarios" icon={<UsersIcon />}>
           <MetricStat label="Total Activos" value={stats?.usersCount || 0} />

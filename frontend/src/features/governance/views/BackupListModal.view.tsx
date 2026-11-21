@@ -58,7 +58,7 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
       }
       maxWidth="max-w-2xl"
     >
-      <Container variant="standard" noPadding data-ui-protected className="space-y-6">
+      <Container noPadding data-ui-protected className="space-y-6">
         {loading ? (
           <div className="text-center py-8">
             <LoadingSpinner size="md" variant="default" />
