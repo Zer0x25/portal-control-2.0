@@ -6,6 +6,10 @@ const meta = {
   title: "Design System/components/ui/Premium/Search/Input",
   component: StoryComponent,
   args: { value: "Ana", onChange: () => undefined, placeholder: "Buscar personal…" },
+  argTypes: {
+    disabled: { control: "boolean" },
+    shortcut: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -17,3 +21,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const EmptyWithShortcut: Story = {
+  args: { value: "", placeholder: "Buscar por RUT o nombre…", shortcut: "⌘K" },
+};
+export const Disabled: Story = {
+  args: { value: "Sincronizando…", disabled: true },
+};

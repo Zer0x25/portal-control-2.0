@@ -93,7 +93,7 @@ const MonthPicker: React.FC<{
 
   return (
     <div className="flex flex-col gap-3 pt-4 border-t border-token-border-subtle">
-      <p className="text-xxs font-bold uppercase tracking-widest text-emerald-600 pl-1">
+      <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
         Seleccionar Mes
       </p>
       <div className="grid grid-cols-4 gap-1.5">
@@ -106,7 +106,7 @@ const MonthPicker: React.FC<{
               onClick={() => onChange(idx)}
               className={`px-2 py-2 rounded-sm text-xxs font-bold capitalize tracking-wider transition-all border ${
                 isSelected
-                  ? "bg-indigo-700 text-white border-indigo-700 shadow-sm"
+                  ? "bg-token-accent-brand text-token-text-onAccent border-token-accent-brand shadow-sm"
                   : "bg-token-surface-card text-token-text-secondary border-token-border-subtle hover:border-token-accent-brand"
               }`}
             >
@@ -189,7 +189,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[280px] bg-token-surface-card border border-token-border-technical dark:border-indigo-500/30 shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
+          className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[280px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
         >
           <div className="space-y-6">
             <YearPicker
