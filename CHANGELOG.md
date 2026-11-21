@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.43.1](https://github.com/Zer0x25/portal-control-2.0/compare/v8.43.0...v8.43.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* **design-system:** restore modal heading semantics and clocking button AA contrast ([29726c3](https://github.com/Zer0x25/portal-control-2.0/commit/29726c3b572da21d6fb3674a34fc79b37e0dab69))
+* **design-system:** restore modal heading semantics and clocking button AA contrast ([826d22a](https://github.com/Zer0x25/portal-control-2.0/commit/826d22a1ebe935d0d6d833d80658273e34bcc7ba))
+
 ## [8.43.0](https://github.com/Zer0x25/portal-control-2.0/compare/v8.42.0...v8.43.0) (2026-11-21)
 
 
