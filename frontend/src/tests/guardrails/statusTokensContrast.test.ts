@@ -184,6 +184,18 @@ describe("Contraste de tokens de dominio (spec 031 AC4)", () => {
       expect(contrastRatio(darkText, darkSurface), `status-${key} oscuro`).toBeGreaterThanOrEqual(
         AA_TEXT,
       );
+
+      // Botones de marcaje activos usan `--status-<key>-text` en light y `--status-<key>` en dark con `--text-on-accent`.
+      const lightOnAccent = requireVar(lightVars, "text-on-accent", "light");
+      expect(contrastRatio(lightOnAccent, lightText), `boton ${key} claro`).toBeGreaterThanOrEqual(
+        AA_TEXT,
+      );
+      const darkOnAccent = requireVar(darkVars, "text-on-accent", "dark");
+      const darkSolid =
+        darkVars.get(`status-${key}`) ?? requireVar(lightVars, `status-${key}`, "light");
+      expect(contrastRatio(darkOnAccent, darkSolid), `boton ${key} oscuro`).toBeGreaterThanOrEqual(
+        AA_TEXT,
+      );
     }
   });
 

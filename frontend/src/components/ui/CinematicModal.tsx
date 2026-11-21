@@ -76,6 +76,9 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
     ? ""
     : "border-token-border-technical";
   const defaultOverflow = panelClassName?.includes("overflow-") ? "" : "overflow-hidden";
+  const headerTitleClassName =
+    "text-lg font-black text-token-text-primary flex items-center gap-3 uppercase tracking-tight";
+  const isTextTitle = typeof title === "string" || typeof title === "number";
   return createPortal(
     <div
       className={`fixed inset-0 ${zClass} flex items-center justify-center ${overlayClassName} ${closing ? "animate-out fade-out" : "animate-in fade-in"}`}
@@ -94,12 +97,15 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
       >
         {showHeader && (
           <div className="flex justify-between items-center px-6 py-4 border-b border-token-border-subtle bg-token-surface-header">
-            <div
-              id={titleId}
-              className="text-lg font-black text-token-text-primary flex items-center gap-3 uppercase tracking-tight"
-            >
-              {title}
-            </div>
+            {isTextTitle ? (
+              <h2 id={titleId} className={headerTitleClassName}>
+                {title}
+              </h2>
+            ) : (
+              <div id={titleId} className={headerTitleClassName}>
+                {title}
+              </div>
+            )}
             {showCloseButton && (
               <button
                 onClick={onClose}

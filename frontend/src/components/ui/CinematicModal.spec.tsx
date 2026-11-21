@@ -24,6 +24,7 @@ describe("CinematicModal (CSS-first)", () => {
     const labelledBy = dialog.getAttribute("aria-labelledby");
     expect(labelledBy).toBeTruthy();
     expect(document.getElementById(labelledBy ?? "")).toHaveTextContent("Mi título");
+    expect(screen.getByRole("heading", { name: "Mi título" })).toBeInTheDocument();
 
     fireEvent.keyDown(window, { key: "Escape" });
     expect(onClose).toHaveBeenCalledTimes(1);
