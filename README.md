@@ -98,8 +98,8 @@ En el flujo diario, Docker ejecuta solo PostgreSQL. El backend Express y el fron
 
 1. Crea `backend/.env` a partir de `backend/.env.example`; las URLs locales apuntan a `localhost:5433/pweb3_dev`. `JWT_SECRET` es obligatorio: sin él el backend aborta al arrancar con `CRITICAL: JWT_SECRET environment variable is not set` (ver §5.2).
 2. La primera vez, inicia PostgreSQL con `npm run dev:up` desde la raíz. Luego, desde `backend/`, ejecuta `npx prisma generate`, `npm run db:migrate:deploy` y `npx prisma db seed`.
-3. Para trabajar, ejecuta `npm run dev` desde la raíz. El comando inicia PostgreSQL y luego arranca backend y frontend en paralelo; `Ctrl+C` detiene ambos procesos de desarrollo.
-4. Abre `http://localhost:5173`; Vite redirige `/api` y `/socket.io` a `http://localhost:4000`.
+3. Para trabajar, ejecuta `npm run dev` desde la raíz. El comando inicia PostgreSQL y luego arranca backend, frontend y Storybook en paralelo; `Ctrl+C` detiene los procesos de desarrollo.
+4. Abre `http://localhost:5173` (Vite redirige `/api` y `/socket.io` a `http://localhost:4000`) y `http://127.0.0.1:6006` para el catálogo Storybook.
 
 ### 5.1 Base de datos local
 
@@ -161,7 +161,7 @@ Notas:
 - Usa siempre `--env-file .env.staging` (los scripts `npm run staging:*` ya lo hacen) para no mezclar el `.env` de dev.
 - Dev y staging pueden correr a la vez: no comparten puertos ni volúmenes.
 - Si `ALLOWED_ORIGINS`/`STAGING_PORT` cambian, mantenlos coherentes (el origen debe coincidir con la URL del gateway).
-- Atajos de dev: `npm run dev` inicia la base y ambas aplicaciones; `npm run dev:up` / `npm run dev:down` controlan solo la base.
+- Atajos de dev: `npm run dev` inicia la base, backend, frontend y Storybook; `npm run dev:up` / `npm run dev:down` controlan solo la base.
 
 ## 6. Preparación en WSL
 

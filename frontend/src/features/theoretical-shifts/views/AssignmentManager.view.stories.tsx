@@ -69,6 +69,13 @@ const meta = {
     addBusinessDaysChile: (date: string) => date,
     formatBusinessDate: (date: string) => date,
   },
+  argTypes: {
+    showArchived: { control: "boolean" },
+    isLoading: { control: "boolean" },
+    isError: { control: "boolean" },
+    isFormVisible: { control: "boolean" },
+    isMobile: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -83,3 +90,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Loading: Story = {
+  args: {
+    isLoading: true,
+  },
+};
+
+export const ErrorState: Story = {
+  args: {
+    isError: true,
+    error: new Error("Error cargando asignaciones."),
+  },
+};
+
+export const MobileLayout: Story = {
+  args: {
+    isMobile: true,
+  },
+};

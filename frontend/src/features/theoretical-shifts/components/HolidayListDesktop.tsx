@@ -150,7 +150,7 @@ const HolidayListDesktop: React.FC<HolidayListDesktopProps> = ({
                       size="xs"
                       variant="danger"
                       onClick={() => onDelete(h)}
-                      className="p-1.5 rounded-lg hover:bg-red-500/10 text-token-text-secondary hover:text-token-status-error transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-token-status-error/10 text-token-text-secondary hover:text-token-status-error-text transition-colors"
                       disabled={isArchived && !showArchived}
                       title="Eliminar"
                     >

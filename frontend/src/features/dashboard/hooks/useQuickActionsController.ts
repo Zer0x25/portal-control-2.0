@@ -43,10 +43,10 @@ export const useQuickActionsController = () => {
   ];
 
   const colorClasses: Record<string, string> = {
-    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
-    indigo: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
+    emerald: "text-token-status-success-text bg-token-status-success/10",
+    indigo: "text-token-accent-brand bg-token-accent-brand/10",
     slate: "text-token-text-secondary bg-token-surface-hover",
-    orange: "text-orange-600 dark:text-orange-400 bg-orange-500/10",
+    orange: "text-token-status-sin-marcaje-text bg-token-status-sin-marcaje/10",
   };
 
   const handleNavigate: NavigationHandler = (route: string) => {

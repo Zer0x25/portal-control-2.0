@@ -15,3 +15,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const Warning: Story = {
+  args: {
+    label: "Reconectando",
+    status: "warning",
+  },
+};
+export const Offline: Story = {
+  args: {
+    label: "Sin conexión",
+    status: "offline",
+  },
+};

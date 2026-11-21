@@ -21,6 +21,14 @@ vi.mock("../../hooks/useToasts", () => ({
   useToasts: () => ({ addToast: vi.fn() }),
 }));
 
+vi.mock("../../hooks/useUserManual", () => ({
+  useUserManual: () => ({
+    manualContent: "<p>Contenido de manual</p>",
+    isLoading: false,
+    hasLoadError: false,
+  }),
+}));
+
 function assertDialogAccessible(name: string) {
   const dialog = screen.getByRole("dialog");
   expect(dialog).toHaveAttribute("aria-modal", "true");
@@ -170,5 +178,58 @@ describe("Cobertura del estándar de modal (spec 031 AC2)", () => {
     cancel.focus();
     fireEvent.keyDown(document, { key: "Tab" });
     expect(document.activeElement?.getAttribute("aria-label")).toBe("Cerrar");
+  });
+
+  it("DatePickerDialog, TimePickerDialog y UserManualModal usan CinematicModal (a11y + Escape + focus trap)", async () => {
+    const DatePickerDialog = (await import("../../components/ui/DatePickerDialog")).default;
+    const TimePickerDialog = (await import("../../components/ui/TimePickerDialog")).default;
+    const UserManualModal = (await import("../../components/ui/UserManualModal")).default;
+
+    const onCloseDate = vi.fn();
+    const { unmount: unmountDate } = render(
+      <DatePickerDialog isOpen onClose={onCloseDate} onSelect={vi.fn()} initialDate="2026-10-20" />,
+    );
+    assertDialogAccessible("Seleccionar Fecha");
+    dialogHasFocus();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onCloseDate).toHaveBeenCalledTimes(1);
+    unmountDate();
+
+    const onCloseTime = vi.fn();
+    const { unmount: unmountTime } = render(
+      <TimePickerDialog isOpen onClose={onCloseTime} onSave={vi.fn()} initialTime="08:30" />,
+    );
+    assertDialogAccessible("Seleccionar Hora");
+    dialogHasFocus();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onCloseTime).toHaveBeenCalledTimes(1);
+    unmountTime();
+
+    const onCloseManual = vi.fn();
+    render(<UserManualModal isOpen onClose={onCloseManual} />);
+    assertDialogAccessible("Manual de Usuario");
+    dialogHasFocus();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onCloseManual).toHaveBeenCalledTimes(1);
+  });
+
+  it("SideDrawer provee dialog accesible, Escape y trampa de foco para paneles laterales", async () => {
+    const SideDrawer = (await import("../../components/ui/SideDrawer")).default;
+    const onClose = vi.fn();
+    render(
+      <SideDrawer isOpen onClose={onClose} ariaLabel="Panel Lateral de Prueba">
+        <button>primero</button>
+        <button>segundo</button>
+      </SideDrawer>,
+    );
+    assertDialogAccessible("Panel Lateral de Prueba");
+    dialogHasFocus();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    const second = screen.getByText("segundo");
+    second.focus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(document.activeElement).toHaveTextContent("primero");
   });
 });

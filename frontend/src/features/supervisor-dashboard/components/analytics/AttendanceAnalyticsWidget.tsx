@@ -52,13 +52,13 @@ export const AttendanceAnalyticsWidget: React.FC<AttendanceAnalyticsWidgetProps>
     trends?.trend === "up" ? "emerald" : trends?.trend === "down" ? "red" : "slate";
 
   const trendIconColorClass: Record<string, string> = {
-    emerald: "text-emerald-500",
-    red: "text-red-500",
+    emerald: "text-token-status-success",
+    red: "text-token-status-error",
     slate: "text-token-text-tertiary",
   };
   const trendTextColorClass: Record<string, string> = {
-    emerald: "text-emerald-600",
-    red: "text-red-600",
+    emerald: "text-token-status-success-text",
+    red: "text-token-status-error-text",
     slate: "text-token-text-secondary",
   };
 

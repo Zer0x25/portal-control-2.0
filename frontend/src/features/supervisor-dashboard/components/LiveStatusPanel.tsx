@@ -64,12 +64,12 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
           <span className="text-[11px] font-bold uppercase tracking-wider text-token-text-primary">
             Presencia en Tiempo Real
           </span>
-          <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-sm">
+          <div className="flex items-center gap-2 bg-token-status-success/10 border border-token-status-success/20 px-2 py-0.5 rounded-sm">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-token-status-success opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-token-status-success"></span>
             </span>
-            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-token-status-success-text uppercase tracking-widest">
               Live
             </span>
           </div>
@@ -95,7 +95,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
               </span>
               <button
                 onClick={() => onStatusesChange(["all"])}
-                className="text-[10px] font-bold text-token-accent-brand hover:text-indigo-700 uppercase tracking-wider border-b border-token-accent-brand/30 transition-all active:scale-95"
+                className="text-[10px] font-bold text-token-accent-brand hover:opacity-80 uppercase tracking-wider border-b border-token-accent-brand/30 transition-all active:scale-95"
               >
                 Limpiar Parámetros
               </button>

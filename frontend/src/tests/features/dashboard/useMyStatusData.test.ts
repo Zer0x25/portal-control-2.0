@@ -93,8 +93,8 @@ describe("useMyStatusData", () => {
       text: "En Turno",
       icon: expect.any(Object), // React element
       variant: "success",
-      textColor: "text-emerald-700 dark:text-emerald-400",
-      borderColor: "border-emerald-500/20",
+      textColor: "text-token-status-success-text",
+      borderColor: "border-token-status-success/20",
     });
     expect(result.current.timeText).toBe("Desde las 08:30");
     expect(result.current.showActiveShift).toBe(true);

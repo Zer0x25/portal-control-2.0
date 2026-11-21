@@ -21,6 +21,12 @@ const meta = {
     onGoHome: () => undefined,
     onCloseHandoverModal: () => undefined,
   },
+  argTypes: {
+    currentPath: { control: "text" },
+    isSidebarOpen: { control: "boolean" },
+    isInitialSync: { control: "boolean" },
+    showHomeFab: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -34,3 +40,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const SidebarOpenWithoutFab: Story = {
+  args: {
+    currentPath: "/supervisor-dashboard",
+    isSidebarOpen: true,
+    showHomeFab: false,
+  },
+};

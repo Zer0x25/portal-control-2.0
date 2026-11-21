@@ -65,6 +65,11 @@ const meta = {
     handleEditPattern: () => undefined,
     handleCopyPattern: () => undefined,
   },
+  argTypes: {
+    isLoading: { control: "boolean" },
+    isFormVisible: { control: "boolean" },
+    searchTerm: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -79,3 +84,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const FormOpen: Story = {
+  args: {
+    isFormVisible: true,
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    isLoading: true,
+  },
+};

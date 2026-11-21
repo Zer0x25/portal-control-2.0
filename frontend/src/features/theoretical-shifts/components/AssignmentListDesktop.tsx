@@ -201,7 +201,7 @@ const AssignmentListDesktop: React.FC<AssignmentListDesktopProps> = ({
                           size="xs"
                           variant="danger"
                           onClick={() => onDelete(assignment.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-token-text-secondary hover:text-token-status-error transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-token-status-error/10 text-token-text-secondary hover:text-token-status-error-text transition-colors"
                           title="Eliminar"
                         >
                           <DeleteIcon className="w-4 h-4" />

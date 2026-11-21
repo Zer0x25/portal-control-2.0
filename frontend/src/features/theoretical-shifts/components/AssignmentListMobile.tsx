@@ -117,12 +117,12 @@ const AssignmentListMobile: React.FC<AssignmentListMobileProps> = ({
                   className="p-2"
                 >
                   <div
-                    className={`p-4 rounded-xl border ${hasConflict ? "border-amber-500 bg-amber-500/10" : "border-token-border-subtle bg-token-surface-card"} shadow-sm ${isArchived ? "opacity-60" : ""}`}
+                    className={`p-4 rounded-xl border ${hasConflict ? "border-token-status-warning bg-token-status-warning/10" : "border-token-border-subtle bg-token-surface-card"} shadow-sm ${isArchived ? "opacity-60" : ""}`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
                         {hasConflict && (
-                          <ExclamationTriangleIcon className="w-5 h-5 text-amber-500" />
+                          <ExclamationTriangleIcon className="w-5 h-5 text-token-status-warning-text" />
                         )}
                         <h4 className="font-bold text-token-text-primary truncate max-w-[180px]">
                           {assignment.employeeName}

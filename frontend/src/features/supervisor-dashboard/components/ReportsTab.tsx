@@ -20,13 +20,15 @@ import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import { Z } from "../../../constants/zScale";
 
 const justificationStyles: Record<string, string> = {
-  Vacaciones: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  "Licencia Médica": "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300",
-  "Permiso Especial": "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
-  Feriado: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  "Feriado Trabajado": "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-  "Ausencia no justificada": "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
-  Anomalía: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+  Vacaciones: "bg-token-status-vacaciones-surface text-token-status-vacaciones-text",
+  "Licencia Médica":
+    "bg-token-status-licencia-medica-surface text-token-status-licencia-medica-text",
+  "Permiso Especial":
+    "bg-token-status-permiso-especial-surface text-token-status-permiso-especial-text",
+  Feriado: "bg-token-status-feriado-surface text-token-status-feriado-text",
+  "Feriado Trabajado": "bg-token-status-success-surface text-token-status-success-text",
+  "Ausencia no justificada": "bg-token-status-anomalia-surface text-token-status-anomalia-text",
+  Anomalía: "bg-token-status-warning-surface text-token-status-warning-text",
 };
 
 const ReportsTab: FC = () => {
@@ -92,7 +94,7 @@ const ReportsTab: FC = () => {
                 </p>
                 <div className="flex items-center gap-4">
                   <p className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-token-status-success" />
                     {sortedReportData.length} Registros Validados
                   </p>
                   <div className="h-4 w-px bg-token-border-subtle" />
@@ -107,7 +109,7 @@ const ReportsTab: FC = () => {
               <div className="flex bg-token-surface-stripe p-1.5 rounded-sm border border-token-border-subtle shadow-sm items-center gap-1">
                 <button
                   onClick={() => handleExport("xml")}
-                  className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:text-orange-500 transition-colors flex items-center gap-2"
+                  className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:text-token-status-sin-marcaje transition-colors flex items-center gap-2"
                 >
                   <DocumentTextIcon className="h-4 w-4" /> XML
                 </button>
@@ -139,9 +141,10 @@ const ReportsTab: FC = () => {
                       </button>
                       <button
                         onClick={() => handleExport("excel")}
-                        className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-sm transition-colors"
+                        className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-status-success/10 rounded-sm transition-colors"
                       >
-                        <TableCellsIcon className="w-4 h-4 mr-3 text-emerald-500" /> EXCEL BI
+                        <TableCellsIcon className="w-4 h-4 mr-3 text-token-status-success" /> EXCEL
+                        BI
                       </button>
                     </div>
                   )}
@@ -150,7 +153,7 @@ const ReportsTab: FC = () => {
 
               <button
                 onClick={() => handleExport("server-pdf")}
-                className="py-4 px-8 rounded-sm bg-rose-600 text-white font-black text-[11px] uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-3"
+                className="py-4 px-8 rounded-sm bg-token-status-error text-token-text-onAccent font-black text-[11px] uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-3"
               >
                 <DocumentArrowDownIcon className="h-5 w-5" /> DESCARGAR PDF
               </button>

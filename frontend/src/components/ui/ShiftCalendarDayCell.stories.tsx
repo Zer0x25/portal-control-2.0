@@ -23,3 +23,64 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const WorkDayShift: Story = {
+  args: {
+    isToday: false,
+    cellHeightClass: "h-24",
+    dayData: {
+      type: "employee",
+      data: {
+        scheduleText: "Mañana 08:00 - 17:00",
+        isWorkDay: true,
+        shiftPatternName: "Mañana",
+        startTime: "08:00",
+        endTime: "17:00",
+        hours: 8,
+      },
+    },
+  },
+};
+
+export const HolidayCell: Story = {
+  args: {
+    isToday: false,
+    cellHeightClass: "h-24",
+    dayData: {
+      type: "holiday",
+      data: {
+        date: "2026-10-23",
+        name: "Feriado Regional",
+        type: "Regional",
+      },
+    },
+  },
+};
+
+export const GroupSchedule: Story = {
+  args: {
+    isToday: false,
+    cellHeightClass: "h-24",
+    dayData: {
+      type: "group",
+      data: [
+        {
+          employeeId: "emp-1",
+          employeeName: "Ana Pérez",
+          shiftPatternName: "Mañana",
+          startTime: "08:00",
+          endTime: "17:00",
+          patternColor: "#005792",
+        },
+        {
+          employeeId: "emp-2",
+          employeeName: "Luis Soto",
+          shiftPatternName: "Tarde",
+          startTime: "14:00",
+          endTime: "22:00",
+          patternColor: "#0f766e",
+        },
+      ],
+    },
+  },
+};

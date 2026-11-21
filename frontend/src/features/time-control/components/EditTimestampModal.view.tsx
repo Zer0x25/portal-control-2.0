@@ -108,7 +108,7 @@ const EditTimestampModalView: React.FC<EditTimestampModalViewProps> = ({
             type="submit"
             disabled={isLoading}
             variant="success"
-            className="w-full sm:w-auto h-11 px-8 rounded-md font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-500/10"
+            className="w-full sm:w-auto h-11 px-8 rounded-md font-black uppercase tracking-widest text-[10px] shadow-lg shadow-token-status-success/10"
           >
             {isLoading ? "Actualizando..." : "confirmar ajuste"}
           </Button>

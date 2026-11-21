@@ -160,8 +160,8 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
           </div>
 
           <div className="bg-token-surface-card border border-token-border-subtle p-4 rounded-md relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500 opacity-30" />
-            <h4 className="text-xxs font-bold text-emerald-600 uppercase tracking-[0.2em] mb-3">
+            <div className="absolute top-0 left-0 w-1 h-full bg-token-status-success opacity-30" />
+            <h4 className="text-xxs font-bold text-token-status-success-text uppercase tracking-[0.2em] mb-3">
               Tiempos de Turno
             </h4>
             <div className="grid grid-cols-2 gap-4">
@@ -235,7 +235,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
         {/* Proveedores Section */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 ml-1">
-            <div className="w-1 h-3 bg-emerald-600 opacity-50 rounded-full" />
+            <div className="w-1 h-3 bg-token-status-success opacity-50 rounded-full" />
             <h4 className="text-xxs font-bold text-token-text-tertiary uppercase tracking-[0.3em]">
               Ingresos de Proveedores ({report.supplierEntries.length})
             </h4>
@@ -245,11 +245,11 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({
               report.supplierEntries.map((se) => (
                 <div
                   key={se.id}
-                  className="bg-token-surface-card border border-token-border-subtle p-3.5 rounded-md hover:border-emerald-600/20 transition-all"
+                  className="bg-token-surface-card border border-token-border-subtle p-3.5 rounded-md hover:border-token-status-success/20 transition-all"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div className="flex flex-col">
-                      <span className="text-xxs font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                      <span className="text-xxs font-bold text-token-status-success-text uppercase tracking-widest mb-1">
                         Hora
                       </span>
                       <span className="text-[10px] font-mono font-bold text-token-text-primary">

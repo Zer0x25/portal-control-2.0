@@ -23,3 +23,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const WideWithoutCloseButton: Story = {
+  args: {
+    maxWidth: "max-w-3xl",
+    showCloseButton: false,
+    title: "Confirmación crítica",
+    children: "Diálogo ancho sin botón de cierre superior.",
+  },
+};

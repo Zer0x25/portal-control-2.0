@@ -16,8 +16,8 @@ const SessionExpiredOverlay: React.FC = () => {
         <div className="ambient-glow ambient-glow-danger absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 animate-pulse" />
 
         <div className={`relative ${Z.sticky} flex flex-col items-center`}>
-          <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6 animate-in fade-in zoom-in-95 [animation-delay:100ms]">
-            <ShieldIcon className="w-10 h-10 text-red-600 dark:text-red-400" />
+          <div className="w-20 h-20 bg-token-status-error-surface rounded-full flex items-center justify-center mb-6 animate-in fade-in zoom-in-95 [animation-delay:100ms]">
+            <ShieldIcon className="w-10 h-10 text-token-status-error-text" />
           </div>
 
           <h2
@@ -32,14 +32,14 @@ const SessionExpiredOverlay: React.FC = () => {
             credenciales.
           </p>
 
-          <div className="flex items-center gap-3 text-red-600 dark:text-red-400 text-xs font-bold uppercase tracking-widest">
-            <span className="w-2 h-2 bg-red-600 rounded-full animate-ping" />
+          <div className="flex items-center gap-3 text-token-status-error-text text-xs font-bold uppercase tracking-widest">
+            <span className="w-2 h-2 bg-token-status-error rounded-full animate-ping" />
             Cerrando sesión de forma segura...
           </div>
         </div>
 
         {/* Loading Bar at bottom */}
-        <div className="absolute bottom-0 left-0 h-1.5 w-full bg-linear-to-r from-red-500 to-orange-500" />
+        <div className="absolute bottom-0 left-0 h-1.5 w-full bg-linear-to-r from-token-status-error to-token-status-warning" />
       </div>
     </div>
   );

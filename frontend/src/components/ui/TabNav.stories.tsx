@@ -23,3 +23,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const Minimal: Story = {
+  args: {
+    variant: "minimal",
+  },
+};
+export const UnderlineWithBadges: Story = {
+  args: {
+    variant: "underline",
+    tabs: [
+      { id: "overview", label: "Resumen", badge: 4 },
+      { id: "activity", label: "Actividad", badge: "Nuevo" },
+    ],
+  },
+};

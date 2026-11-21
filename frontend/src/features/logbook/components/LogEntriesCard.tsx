@@ -132,7 +132,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                         name: le.annotation.substring(0, 30),
                       })
                     }
-                    className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                    className="p-2 rounded-sm text-token-text-tertiary hover:text-token-status-error-text hover:bg-token-status-error/10 transition-colors"
                     aria-label={getLogEntryActionLabel("Eliminar", le)}
                     title={getLogEntryActionLabel("Eliminar", le)}
                   >
@@ -208,7 +208,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
                           name: le.annotation.substring(0, 30),
                         })
                       }
-                      className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                      className="p-2 rounded-sm text-token-text-tertiary hover:text-token-status-error-text hover:bg-token-status-error/10 transition-colors"
                       aria-label={getLogEntryActionLabel("Eliminar", le)}
                       title={getLogEntryActionLabel("Eliminar", le)}
                     >

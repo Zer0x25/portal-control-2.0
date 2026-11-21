@@ -167,7 +167,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                       variant="success"
                       size="sm"
                       fontMono
-                      className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20"
+                      className="bg-token-status-success/10 text-token-status-success-text border-token-status-success/20"
                     >
                       {getArrivalBadgeText(se)}
                     </Badge>
@@ -177,7 +177,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => openEditSupplierEntryModal(se)}
-                    className="p-2 rounded-sm text-token-text-tertiary hover:text-emerald-600 hover:bg-emerald-600/10 transition-colors"
+                    className="p-2 rounded-sm text-token-text-tertiary hover:text-token-status-success-text hover:bg-token-status-success/10 transition-colors"
                     aria-label={getSupplierActionLabel("Editar", se)}
                     title={getSupplierActionLabel("Editar", se)}
                   >
@@ -191,7 +191,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                         name: se.company,
                       })
                     }
-                    className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                    className="p-2 rounded-sm text-token-text-tertiary hover:text-token-status-error-text hover:bg-token-status-error/10 transition-colors"
                     aria-label={getSupplierActionLabel("Eliminar", se)}
                     title={getSupplierActionLabel("Eliminar", se)}
                   >
@@ -271,7 +271,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
           </thead>
           <tbody className="divide-y divide-token-border-subtle">
             {activeShift.supplierEntries.map((se) => (
-              <tr key={se.id} className="group hover:bg-emerald-600/2 transition-colors">
+              <tr key={se.id} className="group hover:bg-token-status-success/5 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap typo-list-value text-token-text-tertiary w-20">
                   {se.time}
                 </td>
@@ -294,7 +294,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                         variant="success"
                         size="sm"
                         fontMono
-                        className="bg-emerald-600/10 text-emerald-600 border-emerald-600/20 w-fit"
+                        className="bg-token-status-success/10 text-token-status-success-text border-token-status-success/20 w-fit"
                       >
                         {getArrivalBadgeText(se)}
                       </Badge>
@@ -307,7 +307,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                       {se.driverName}
                     </span>
                     {se.paxCount > 0 && (
-                      <span className="typo-list-secondary text-emerald-600 uppercase">
+                      <span className="typo-list-secondary text-token-status-success-text uppercase">
                         +{se.paxCount} Acompañantes
                       </span>
                     )}
@@ -322,7 +322,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                   <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all">
                     <button
                       onClick={() => openEditSupplierEntryModal(se)}
-                      className="p-2 rounded-sm text-token-text-tertiary hover:text-emerald-600 hover:bg-emerald-600/10 transition-colors"
+                      className="p-2 rounded-sm text-token-text-tertiary hover:text-token-status-success-text hover:bg-token-status-success/10 transition-colors"
                       aria-label={getSupplierActionLabel("Editar", se)}
                       title={getSupplierActionLabel("Editar", se)}
                     >
@@ -336,7 +336,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                           name: se.company,
                         })
                       }
-                      className="p-2 rounded-sm text-token-text-tertiary hover:text-rose-600 hover:bg-rose-500/10 transition-colors"
+                      className="p-2 rounded-sm text-token-text-tertiary hover:text-token-status-error-text hover:bg-token-status-error/10 transition-colors"
                       aria-label={getSupplierActionLabel("Eliminar", se)}
                       title={getSupplierActionLabel("Eliminar", se)}
                     >
@@ -361,7 +361,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
       <Card className="p-0! flex flex-col overflow-hidden bg-token-surface-card border border-token-border-technical rounded-sm shadow-sm relative">
         <div className="p-6 pb-0 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-1 h-8 bg-emerald-600 rounded-full" />
+            <div className="w-1 h-8 bg-token-status-success rounded-full" />
             <div>
               <h3 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
                 Control de Proveedores
@@ -377,7 +377,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
               onClick={() => setShowSupplierEntryModal(true)}
               variant="primary"
               size="sm"
-              className="px-6 py-2.5 bg-emerald-600 text-white font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-emerald-600/10"
+              className="px-6 py-2.5 bg-token-status-success text-token-text-onAccent font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-token-status-success/10"
             >
               <PlusCircleIcon className="w-4 h-4" />
               Ingresar Proveedor

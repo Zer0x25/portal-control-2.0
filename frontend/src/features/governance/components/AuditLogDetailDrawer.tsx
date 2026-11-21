@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
   CloseIcon,
   ClockIcon,
@@ -10,7 +10,7 @@ import {
 import { AuditLog } from "../../../types/index";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import IconBox from "../../../components/ui/IconBox";
-import { Z } from "../../../constants/zScale";
+import SideDrawer from "../../../components/ui/SideDrawer";
 
 interface AuditLogDetailDrawerProps {
   log: AuditLog | null;
@@ -57,7 +57,7 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
                   {key}
                 </span>
                 {isDiff && (
-                  <span className="text-xxs font-bold bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded-xs border border-blue-500/20">
+                  <span className="text-xxs font-bold bg-token-status-info/10 text-token-status-info-text px-1.5 py-0.5 rounded-xs border border-token-status-info/20">
                     MODIFICADO
                   </span>
                 )}
@@ -66,16 +66,18 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
               {isDiff ? (
                 <div className="space-y-2">
                   <div className="flex items-start gap-3 opacity-60">
-                    <div className="w-4 h-4 rounded-xs bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-[10px] text-red-600 font-bold">-</span>
+                    <div className="w-4 h-4 rounded-xs bg-token-status-error/10 border border-token-status-error/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-[10px] text-token-status-error-text font-bold">-</span>
                     </div>
                     <pre className="text-[11px] font-mono text-token-text-tertiary whitespace-pre-wrap break-all">
                       {JSON.stringify(value.oldValue, null, 2)}
                     </pre>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-xs bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-[10px] text-green-600 font-bold">+</span>
+                    <div className="w-4 h-4 rounded-xs bg-token-status-success/10 border border-token-status-success/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-[10px] text-token-status-success-text font-bold">
+                        +
+                      </span>
                     </div>
                     <pre className="text-[11px] font-mono text-token-text-primary whitespace-pre-wrap break-all font-bold">
                       {JSON.stringify(value.newValue, null, 2)}
@@ -96,71 +98,15 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
 };
 
 const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClose }) => {
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // Escape: el drawer es descartable por teclado (estándar de modal, AC2).
-  useEffect(() => {
-    if (!log) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [log, onClose]);
-
-  // Focus inicial + focus trap + retorno (misma garantía que CinematicModal).
-  useEffect(() => {
-    if (!log) return;
-    const panel = panelRef.current;
-    const previous = document.activeElement as HTMLElement | null;
-    panel?.focus({ preventScroll: true });
-
-    const handleTab = (event: KeyboardEvent) => {
-      if (event.key !== "Tab" || !panel) return;
-      const items = [
-        ...panel.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ];
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleTab);
-    return () => {
-      document.removeEventListener("keydown", handleTab);
-      previous?.focus?.();
-    };
-  }, [log]);
-
   return (
-    log && (
-      <>
-        {/* Overlay */}
-        <div
-          onClick={onClose}
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${Z.overlay} animate-in fade-in`}
-        />
-
-        {/* Drawer */}
-        <div
-          ref={panelRef}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Detalle de evento de auditoría"
-          className={`fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl ${Z.modal} border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms] focus:outline-none`}
-        >
+    <SideDrawer
+      isOpen={Boolean(log)}
+      onClose={onClose}
+      ariaLabel="Detalle de evento de auditoría"
+      maxWidth="max-w-lg"
+    >
+      {log && (
+        <>
           {/* Header */}
           <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">
             <div className="flex items-center gap-4">
@@ -263,9 +209,9 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
               Seguridad Enterprise &bull; Trazabilidad v3.5
             </span>
           </div>
-        </div>
-      </>
-    )
+        </>
+      )}
+    </SideDrawer>
   );
 };
 

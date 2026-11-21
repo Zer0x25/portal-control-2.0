@@ -39,6 +39,12 @@ const meta = {
       "data-app-form": "storybook",
     },
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    isEditing: { control: "boolean" },
+    isTimePickerOpen: { control: "boolean" },
+    isSubmitting: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -52,3 +58,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const PedestrianVisitor: Story = {
+  args: {
+    isEditing: true,
+    values: {
+      entryType: "visit",
+      arrivalMode: "pedestrian",
+      licensePlate: "",
+      driverName: "María González",
+      paxCount: 0,
+      company: "Inspección Externa",
+      reason: "Auditoría de seguridad",
+      time: "10:15",
+    },
+  },
+};
+
+export const Submitting: Story = {
+  args: {
+    isSubmitting: true,
+  },
+};

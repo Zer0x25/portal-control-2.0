@@ -15,3 +15,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const Unchecked: Story = {
+  args: {
+    checked: false,
+  },
+};
+export const WithError: Story = {
+  args: {
+    checked: false,
+    error: "Debes aceptar este requisito",
+  },
+};
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+  },
+};

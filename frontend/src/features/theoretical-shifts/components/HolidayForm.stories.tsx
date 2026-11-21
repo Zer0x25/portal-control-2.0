@@ -21,6 +21,10 @@ const meta = {
     onCloseDatePicker: () => undefined,
     onCancel: () => undefined,
   },
+  argTypes: {
+    isSubmitting: { control: "boolean" },
+    isDatePickerOpen: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -35,3 +39,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const IrrenunciableSubmitting: Story = {
+  args: {
+    isSubmitting: true,
+    values: {
+      date: "2026-09-18",
+      name: "Fiestas Patrias",
+      type: "Nacional",
+      isRenounceable: true,
+    },
+  },
+};

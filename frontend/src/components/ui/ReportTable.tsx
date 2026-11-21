@@ -350,7 +350,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                 return (
                   <div
                     key={`total-mob-${item.weekId}`}
-                    className="p-8 rounded-[2.5rem] bg-linear-to-br from-token-accent-brand to-indigo-800 text-token-text-onAccent shadow-2xl relative overflow-hidden group"
+                    className="p-8 rounded-[2.5rem] bg-linear-to-br from-token-accent-brand to-token-accent-brand/85 text-token-text-onAccent shadow-2xl relative overflow-hidden group"
                   >
                     <div className="ambient-glow ambient-glow-light absolute top-0 right-0 w-32 h-32 -translate-y-1/2 translate-x-1/2 transition-transform duration-1000 group-hover:scale-125"></div>
                     <span className="typo-list-header opacity-80 block text-center mb-6">
@@ -365,9 +365,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
                       </div>
                       <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex justify-between items-center px-8">
                         <div className="typo-list-secondary opacity-80 uppercase">Dif. Total</div>
-                        <div
-                          className={`text-2xl font-black font-mono tabular-nums ${item.totals.differenceHours >= 0 ? "text-green-300" : "text-rose-300"}`}
-                        >
+                        <div className="text-2xl font-black font-mono tabular-nums text-token-text-onAccent">
                           {fmt(item.totals.differenceHours)}
                         </div>
                       </div>

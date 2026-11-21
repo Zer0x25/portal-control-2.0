@@ -78,10 +78,10 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                   <div
                     className={`absolute inset-0 shadow-md rounded-sm -${Z.sticky} animate-in fade-in ${
                       status === "pending"
-                        ? "bg-amber-500 shadow-amber-500/20"
+                        ? "bg-token-status-warning shadow-token-status-warning/20"
                         : status === "approved"
-                          ? "bg-emerald-500 shadow-emerald-500/20"
-                          : "bg-rose-600 shadow-rose-600/20"
+                          ? "bg-token-status-success shadow-token-status-success/20"
+                          : "bg-token-status-error shadow-token-status-error/20"
                     }`}
                   />
                 )}

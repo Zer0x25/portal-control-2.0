@@ -34,11 +34,11 @@ const PasswordStrengthIndicator: React.FC<{ strength: PasswordStrength }> = ({ s
   const config = (() => {
     switch (strength) {
       case "weak":
-        return { text: "Débil", color: "text-red-500" };
+        return { text: "Débil", color: "text-token-status-error-text" };
       case "medium":
-        return { text: "Media", color: "text-yellow-500" };
+        return { text: "Media", color: "text-token-status-warning-text" };
       case "strong":
-        return { text: "Fuerte", color: "text-green-500" };
+        return { text: "Fuerte", color: "text-token-status-success-text" };
       default:
         return { text: "", color: "" };
     }

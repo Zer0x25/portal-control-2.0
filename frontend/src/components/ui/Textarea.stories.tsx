@@ -15,3 +15,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const WithError: Story = {
+  args: {
+    value: "",
+    placeholder: "Describe el motivo...",
+    error: "La observación es obligatoria",
+  },
+};
+export const Disabled: Story = {
+  args: {
+    disabled: true,
+    value: "Registro cerrado",
+  },
+};

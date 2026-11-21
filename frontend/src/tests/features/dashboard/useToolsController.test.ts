@@ -105,10 +105,10 @@ describe("useToolsController", () => {
     const { result } = renderToolsLogic();
 
     expect(result.current.colorClasses).toEqual({
-      orange: "bg-orange-600/10 text-orange-600",
-      emerald: "bg-emerald-600/10 text-emerald-600",
-      indigo: "bg-indigo-600/10 text-indigo-600",
-      violet: "bg-violet-600/10 text-violet-600",
+      orange: "bg-token-status-sin-marcaje/10 text-token-status-sin-marcaje-text",
+      emerald: "bg-token-status-success/10 text-token-status-success-text",
+      indigo: "bg-token-accent-brand/10 text-token-accent-brand",
+      violet: "bg-token-status-licencia-medica/10 text-token-status-licencia-medica-text",
     });
   });
 

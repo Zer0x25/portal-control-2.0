@@ -63,7 +63,9 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
                   {step}
                 </div>
               ))}
-              {resetError && <div className="text-red-400 font-bold">ERROR: {resetError}</div>}
+              {resetError && (
+                <div className="text-token-status-error-text font-bold">ERROR: {resetError}</div>
+              )}
             </div>
             {resetError && (
               <Button onClick={() => setIsResetting(false)} variant="secondary" className="w-full">
@@ -85,7 +87,8 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
           <div className="absolute bottom-full right-0 mb-4 w-80 bg-token-surface-card/90 backdrop-blur-2xl text-token-text-primary rounded-2xl shadow-2xl border border-token-border-technical overflow-hidden">
             <div className="px-6 py-5 border-b border-white/5 bg-white/5">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center">
-                <CodeBracketSquareIcon className="w-4 h-4 mr-2 text-purple-400" /> Dev Panel
+                <CodeBracketSquareIcon className="w-4 h-4 mr-2 text-token-status-licencia-medica" />{" "}
+                Dev Panel
               </h3>
             </div>
             <div className="p-4 space-y-2">
@@ -96,7 +99,7 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
                     setIsDevPanelOpen(false);
                   }}
                   size="sm"
-                  className="w-full h-11 rounded-2xl bg-blue-600 hover:bg-blue-700 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20"
+                  className="w-full h-11 rounded-2xl bg-token-status-info hover:opacity-90 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-token-status-info/20 text-token-text-onAccent"
                 >
                   <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" /> Ver Progreso Activo
                 </Button>
@@ -107,14 +110,14 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
                   handleOpenDesignSystem();
                 }}
                 size="sm"
-                className="w-full h-11 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20 text-white"
+                className="w-full h-11 rounded-2xl bg-linear-to-r from-token-accent-brand to-token-status-info border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-token-accent-brand/20 text-token-text-onAccent"
               >
                 <SparklesIcon className="w-4 h-4 mr-2" /> Abrir catalogo
               </Button>
               <Button
                 onClick={() => setIsSeedingOptionsOpen(true)}
                 size="sm"
-                className="w-full h-11 rounded-2xl bg-linear-to-r from-purple-500 to-indigo-600 border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-purple-500/20"
+                className="w-full h-11 rounded-2xl bg-linear-to-r from-token-status-licencia-medica to-token-status-colacion border-none font-black text-[10px] uppercase tracking-widest shadow-lg shadow-token-status-licencia-medica/20 text-token-text-onAccent"
               >
                 <SparklesIcon className="w-4 h-4 mr-2" /> Seeder por Fases
               </Button>
@@ -124,13 +127,14 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
                 size="sm"
                 className="w-full h-11 rounded-2xl bg-white/5 border-white/10 hover:bg-white/10 font-black text-[10px] uppercase tracking-widest"
               >
-                <ExclamationTriangleIcon className="w-4 h-4 mr-2 text-yellow-500" /> Limpiar Caché
+                <ExclamationTriangleIcon className="w-4 h-4 mr-2 text-token-status-warning" />{" "}
+                Limpiar Caché
               </Button>
               <Button
                 onClick={() => setIsClearServerConfirmOpen(true)}
                 variant="danger"
                 size="sm"
-                className="w-full h-11 rounded-2xl bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white font-black text-[10px] uppercase tracking-widest"
+                className="w-full h-11 rounded-2xl bg-token-status-error/10 border-token-status-error/20 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent font-black text-[10px] uppercase tracking-widest"
               >
                 <ArrowPathIcon className="w-4 h-4 mr-2" /> Reset Servidor
               </Button>
@@ -140,7 +144,7 @@ const DeveloperPanelView: FC<DeveloperPanelController> = (controller) => {
         <Button
           variant="none"
           onClick={() => setIsDevPanelOpen((prev) => !prev)}
-          className="bg-token-surface-card/90 backdrop-blur-xl text-purple-400 p-4 rounded-full shadow-2xl border border-token-border-technical transition-all hover:bg-token-surface-hover"
+          className="bg-token-surface-card/90 backdrop-blur-xl text-token-status-licencia-medica p-4 rounded-full shadow-2xl border border-token-border-technical transition-all hover:bg-token-surface-hover"
           title="Panel de Desarrollador"
         >
           <CodeBracketSquareIcon className="w-7 h-7" />

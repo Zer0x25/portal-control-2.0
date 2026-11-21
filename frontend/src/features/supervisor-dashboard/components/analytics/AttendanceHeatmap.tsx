@@ -82,14 +82,14 @@ export const AttendanceHeatmap: React.FC<AttendanceHeatmapProps> = ({
   const getColorClass = (value: number | null) => {
     if (value === null) return "bg-token-surface-stripe";
 
-    if (value >= 0.95) return "bg-emerald-500";
-    if (value >= 0.9) return "bg-emerald-400";
-    if (value >= 0.85) return "bg-emerald-300";
-    if (value >= 0.8) return "bg-yellow-400";
-    if (value >= 0.75) return "bg-yellow-300";
-    if (value >= 0.7) return "bg-orange-400";
-    if (value >= 0.65) return "bg-orange-300";
-    return "bg-red-400";
+    if (value >= 0.95) return "bg-token-status-success";
+    if (value >= 0.9) return "bg-token-status-success/80";
+    if (value >= 0.85) return "bg-token-status-success/55";
+    if (value >= 0.8) return "bg-token-status-warning";
+    if (value >= 0.75) return "bg-token-status-warning/70";
+    if (value >= 0.7) return "bg-token-status-sin-marcaje";
+    if (value >= 0.65) return "bg-token-status-sin-marcaje/70";
+    return "bg-token-status-error/85";
   };
 
   // Días de la semana

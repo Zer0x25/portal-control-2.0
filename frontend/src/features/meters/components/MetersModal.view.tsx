@@ -135,8 +135,8 @@ const MetersModalView: React.FC<MetersModalViewProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="p-6 rounded-md bg-amber-500/5 border border-amber-500/10 text-center">
-                <p className="text-[10px] font-black text-token-status-warning uppercase tracking-widest leading-relaxed">
+              <div className="p-6 rounded-md bg-token-status-warning/5 border border-token-status-warning/15 text-center">
+                <p className="text-[10px] font-black text-token-status-warning-text uppercase tracking-widest leading-relaxed">
                   No hay medidores configurados. Un administrador debe gestionarlos.
                 </p>
               </div>

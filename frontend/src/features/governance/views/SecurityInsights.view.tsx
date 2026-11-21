@@ -117,8 +117,8 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
           title="Haz clic para actualizar insights"
         >
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-indigo-500/10 rounded-sm border border-indigo-500/20">
-              <ShieldIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <div className="p-3 bg-token-accent-brand/10 rounded-sm border border-token-accent-brand/20">
+              <ShieldIcon className="w-6 h-6 text-token-accent-brand" />
             </div>
             <div>
               <p className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest leading-none mb-1">
@@ -152,7 +152,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
           title="Haz clic para actualizar insights"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-500/10 rounded-sm border border-red-500/20">
+            <div className="p-3 bg-token-status-error/10 rounded-sm border border-token-status-error/20">
               <ExclamationTriangleIcon className="w-6 h-6 text-token-status-error" />
             </div>
             <div>
@@ -175,7 +175,7 @@ export const SecurityInsightsView: React.FC<SecurityInsightsViewProps> = ({
           title="Haz clic para actualizar insights"
         >
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/10 rounded-sm border border-emerald-500/20">
+            <div className="p-3 bg-token-status-success/10 rounded-sm border border-token-status-success/20">
               <CheckCircleIcon className="w-6 h-6 text-token-status-success" />
             </div>
             <div>

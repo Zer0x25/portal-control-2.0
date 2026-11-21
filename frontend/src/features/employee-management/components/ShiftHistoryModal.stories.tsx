@@ -11,6 +11,11 @@ const meta = {
     employeeId: "employee-01",
     employeeName: "Ana Pérez",
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    employeeId: { control: "text" },
+    employeeName: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -25,3 +30,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const AlternateEmployee: Story = {
+  args: {
+    employeeId: "employee-02",
+    employeeName: "Carlos Muñoz",
+  },
+};

@@ -1,6 +1,6 @@
 import React from "react";
-import { createPortal } from "react-dom";
 import { ShiftHandoverData } from "../../../types/index";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import {
   CloseIcon,
@@ -18,20 +18,17 @@ interface ShiftHandoverModalProps {
 }
 
 const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose, data }) => {
-  return createPortal(
-    isOpen && data && (
-      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
-        {/* Backdrop */}
-        <div
-          onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
-        />
-
-        {/* Modal Content */}
-        <div
-          className="relative w-full max-w-3xl max-h-[92vh] bg-token-surface-card rounded-lg shadow-2xl border border-token-border-technical overflow-hidden flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
-          onClick={(e) => e.stopPropagation()}
-        >
+  return (
+    <CinematicModal
+      isOpen={Boolean(isOpen && data)}
+      onClose={onClose}
+      maxWidth="max-w-3xl"
+      showHeader={false}
+      panelClassName="max-h-[92vh] flex flex-col relative"
+      bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
+    >
+      {data && (
+        <>
           {/* Header Cinematic */}
           <div className="p-8 pb-6 border-b border-token-border-subtle flex items-center justify-between shrink-0">
             <div className="flex items-center gap-4">
@@ -157,10 +154,9 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
 
           {/* Decorative ambient glow */}
           <div className="ambient-glow ambient-glow-subtle absolute -bottom-24 -right-24 w-64 h-64 pointer-events-none" />
-        </div>
-      </div>
-    ),
-    document.body,
+        </>
+      )}
+    </CinematicModal>
   );
 };
 

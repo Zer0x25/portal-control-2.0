@@ -3,7 +3,15 @@ const path = require("node:path");
 
 const rootDir = path.resolve(__dirname, "..");
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const packages = ["backend", "frontend"];
+const processes = [
+  { name: "backend", cwd: path.join(rootDir, "backend"), args: ["run", "dev"] },
+  { name: "frontend", cwd: path.join(rootDir, "frontend"), args: ["run", "dev"] },
+  {
+    name: "storybook",
+    cwd: path.join(rootDir, "frontend"),
+    args: ["run", "storybook", "--", "--no-open"],
+  },
+];
 const children = new Set();
 let stopping = false;
 
@@ -18,9 +26,9 @@ function stopAll(exitCode, signal = "SIGTERM") {
   }
 }
 
-for (const packageName of packages) {
-  const child = spawn(npmCommand, ["run", "dev"], {
-    cwd: path.join(rootDir, packageName),
+for (const proc of processes) {
+  const child = spawn(npmCommand, proc.args, {
+    cwd: proc.cwd,
     shell: process.platform === "win32",
     stdio: "inherit",
   });
@@ -28,7 +36,7 @@ for (const packageName of packages) {
   children.add(child);
 
   child.on("error", (error) => {
-    process.stderr.write(`No se pudo iniciar ${packageName}: ${error.message}\n`);
+    process.stderr.write(`No se pudo iniciar ${proc.name}: ${error.message}\n`);
     stopAll(1);
   });
 
@@ -38,7 +46,7 @@ for (const packageName of packages) {
     if (!stopping) {
       const exitCode = code ?? (signal ? 1 : 0);
       if (exitCode !== 0) {
-        process.stderr.write(`${packageName} terminó con código ${exitCode}.\n`);
+        process.stderr.write(`${proc.name} terminó con código ${exitCode}.\n`);
       }
       stopAll(exitCode);
     }

@@ -29,6 +29,13 @@ const meta = {
     onCloseManual: () => undefined,
     onLogout: () => undefined,
   },
+  argTypes: {
+    welcomeName: { control: "text" },
+    systemStatus: { control: "text" },
+    soundEnabled: { control: "boolean" },
+    isDropdownOpen: { control: "boolean" },
+    canConfigureMfa: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -40,3 +47,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const UserMenuOpenMuted: Story = {
+  args: {
+    welcomeName: "Carlos Muñoz",
+    systemStatus: "Sincronizando",
+    soundEnabled: false,
+    isDropdownOpen: true,
+    canConfigureMfa: true,
+    currentUser: { role: "Supervisor" },
+  },
+};

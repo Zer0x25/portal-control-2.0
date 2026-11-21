@@ -58,7 +58,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
           >
             <div
               className={`absolute top-0 left-0 w-1 h-full ${
-                emp.status === "Activo" ? "bg-emerald-500" : "bg-token-text-tertiary"
+                emp.status === "Activo" ? "bg-token-status-success" : "bg-token-text-tertiary"
               }`}
             />
 
@@ -136,7 +136,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                     size="sm"
                     variant="primary"
                     onClick={() => onReactivate(emp.id)}
-                    className="w-full justify-center bg-emerald-600 hover:bg-emerald-700 text-white border-none"
+                    className="w-full justify-center bg-token-status-success hover:bg-token-status-success/90 text-token-text-onAccent border-none"
                   >
                     <ArrowUturnLeftIcon className="w-4 h-4 mr-2" />
                     Reactivar
@@ -260,7 +260,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                             size="sm"
                             variant="danger"
                             onClick={() => onArchive(emp)}
-                            className="p-2! shadow-sm rounded-md border-red-200 dark:border-red-900/30 text-red-500 hover:bg-red-500 hover:text-white"
+                            className="p-2! shadow-sm rounded-md border-token-status-error/30 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent"
                             title="Archivar"
                           >
                             <ArchiveBoxIcon className="w-4 h-4" />
@@ -273,7 +273,7 @@ const EmployeeListCard: React.FC<EmployeeListCardProps> = ({
                           size="sm"
                           variant="primary"
                           onClick={() => onReactivate(emp.id)}
-                          className="px-4! bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-md font-bold uppercase text-[10px] tracking-widest"
+                          className="px-4! bg-token-status-success hover:bg-token-status-success/90 text-token-text-onAccent border-none rounded-md font-bold uppercase text-[10px] tracking-widest"
                         >
                           <ArrowUturnLeftIcon className="w-4 h-4 mr-2" />
                           Reactivar

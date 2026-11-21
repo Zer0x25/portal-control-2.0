@@ -128,24 +128,24 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
   const archiveModalContent = employeeToArchive && (
     <div className="space-y-4">
       {hasOpenRecord && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-sm animate-pulse">
-          <p className="text-sm text-red-800 dark:text-red-200 font-bold flex items-center gap-2 uppercase tracking-tight">
+        <div className="p-4 bg-token-status-error/10 border border-token-status-error/30 rounded-sm animate-pulse">
+          <p className="text-sm text-token-status-error-text font-bold flex items-center gap-2 uppercase tracking-tight">
             <ArrowPathIcon className="w-5 h-5 animate-spin-slow" />
             ¡Atención: Turno Abierto Detectado!
           </p>
-          <p className="text-[11px] text-red-700 dark:text-red-300 mt-2 font-semibold">
+          <p className="text-[11px] text-token-status-error-text/90 mt-2 font-semibold">
             Este empleado tiene una marca de entrada sin salida. El archivado procederá, pero el
             registro quedará inconsistente si no se cierra manualmente.
           </p>
         </div>
       )}
 
-      <div className="p-4 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-sm">
-        <p className="text-[11px] text-orange-800 dark:text-orange-200 font-bold flex items-center gap-2 uppercase tracking-widest">
+      <div className="p-4 bg-token-status-warning/10 border border-token-status-warning/30 rounded-sm">
+        <p className="text-[11px] text-token-status-warning-text font-bold flex items-center gap-2 uppercase tracking-widest">
           <ArchiveBoxIcon className="w-5 h-5" />
           Protocolo de Desvinculación
         </p>
-        <ul className="text-[11px] text-orange-700 dark:text-orange-300 mt-2 space-y-1 font-semibold uppercase tracking-tight list-disc ml-4">
+        <ul className="text-[11px] text-token-status-warning-text/90 mt-2 space-y-1 font-semibold uppercase tracking-tight list-disc ml-4">
           <li>Archivado del usuario de acceso y revocación de sesiones.</li>
           <li>Cierre de turnos activos al día de hoy.</li>
           <li>Eliminación de todas las planificaciones futuras.</li>

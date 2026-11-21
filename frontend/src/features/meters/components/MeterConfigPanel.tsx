@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { useMeterReadings } from "../../../hooks/useMeterReadings";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToasts } from "../../../hooks/useToasts";
@@ -14,6 +14,7 @@ import Input from "../../../components/ui/Input";
 import { CloseIcon, PlusCircleIcon, EditIcon, DeleteIcon } from "../../../components/ui/icons";
 import { idFactory } from "../../../utils/idFactory";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
+import SideDrawer from "../../../components/ui/SideDrawer";
 import { Z } from "../../../constants/zScale";
 
 interface MeterConfigPanelProps {
@@ -22,6 +23,7 @@ interface MeterConfigPanelProps {
 }
 
 const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) => {
+  const titleId = useId();
   const { meterConfigs, updateMeterConfigs } = useMeterReadings();
   const { currentUser } = useAuth();
   const { addToast } = useToasts();
@@ -134,230 +136,230 @@ const MeterConfigPanel: React.FC<MeterConfigPanelProps> = ({ isOpen, onClose }) 
   const activeMetersCount = meterConfigs.length;
   const isLimitReached = activeMetersCount >= MAX_METERS;
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className={`fixed inset-0 ${Z.dropdown} transition-opacity duration-300 ${isOpen ? "bg-black/50" : "bg-transparent pointer-events-none"}`}
-      onClick={onClose}
+    <SideDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy={titleId}
+      maxWidth="max-w-md"
+      zClass={Z.dropdown}
+      backdropZClass={Z.dropdown}
+      backdropClassName="bg-black/50"
+      panelClassName="bg-token-surface-card shadow-xl animate-in fade-in slide-in-from-right duration-300"
     >
-      <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-token-surface-card shadow-xl transform transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex justify-between items-center p-4 border-b border-token-border-subtle shrink-0">
-            <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight italic">
-              Configurar Medidores
-            </h2>
-            <Button
-              id="close-meter-config-panel"
-              aria-label="Cerrar panel de configuración de medidores"
-              onClick={onClose}
-              variant="secondary"
-              size="sm"
-              className="p-1 bg-transparent! hover:bg-token-surface-active!"
-            >
-              <CloseIcon className="w-5 h-5 text-token-text-secondary" />
-            </Button>
-          </div>
+      <div className="flex flex-col h-full">
+        <div className="flex justify-between items-center p-4 border-b border-token-border-subtle shrink-0">
+          <h2
+            id={titleId}
+            className="text-xl font-black text-token-text-primary uppercase tracking-tight italic"
+          >
+            Configurar Medidores
+          </h2>
+          <Button
+            id="close-meter-config-panel"
+            aria-label="Cerrar panel de configuración de medidores"
+            onClick={onClose}
+            variant="secondary"
+            size="sm"
+            className="p-1 bg-transparent! hover:bg-token-surface-active!"
+          >
+            <CloseIcon className="w-5 h-5 text-token-text-secondary" />
+          </Button>
+        </div>
 
-          <div className="p-4 overflow-y-auto grow">
-            {editingConfig ? (
-              <div className="p-6 border rounded-md border-token-border-subtle bg-token-surface-stripe space-y-4">
-                <Input
-                  label="Nombre del Medidor"
-                  value={editingConfig.name || ""}
-                  onChange={(e) => handleFieldChange("name", e.target.value)}
-                />
+        <div className="p-4 overflow-y-auto grow">
+          {editingConfig ? (
+            <div className="p-6 border rounded-md border-token-border-subtle bg-token-surface-stripe space-y-4">
+              <Input
+                label="Nombre del Medidor"
+                value={editingConfig.name || ""}
+                onChange={(e) => handleFieldChange("name", e.target.value)}
+              />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="meter-category-select"
-                      className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
-                    >
-                      Categoría
-                    </label>
-                    <select
-                      id="meter-category-select"
-                      aria-label="Categoría"
-                      value={editingConfig.category}
-                      onChange={(e) =>
-                        handleFieldChange("category", e.target.value as MeterCategory)
-                      }
-                      className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
-                    >
-                      {Object.entries(METER_CATEGORIES).map(([key, label]) => (
-                        <option key={key} value={key}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="meter-unit-select"
-                      className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
-                    >
-                      Unidad
-                    </label>
-                    <select
-                      id="meter-unit-select"
-                      aria-label="Unidad"
-                      value={editingConfig.unit}
-                      onChange={(e) => handleFieldChange("unit", e.target.value)}
-                      className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
-                    >
-                      {availableUnits.map((unit) => (
-                        <option key={unit} value={unit}>
-                          {unit}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor="meter-type-select"
+                    htmlFor="meter-category-select"
                     className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
                   >
-                    Tipo de Medición
+                    Categoría
                   </label>
                   <select
-                    id="meter-type-select"
-                    aria-label="Tipo de Medición"
-                    value={editingConfig.type}
-                    onChange={(e) => handleFieldChange("type", e.target.value as MeterType)}
+                    id="meter-category-select"
+                    aria-label="Categoría"
+                    value={editingConfig.category}
+                    onChange={(e) => handleFieldChange("category", e.target.value as MeterCategory)}
                     className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
                   >
-                    <option value="CONSUMPTION">Consumo (Acumulativo)</option>
-                    <option value="LEVEL">Nivel (Estanque)</option>
-                    <option value="PERCENT">Porcentaje (0-100%)</option>
-                    <option value="INSTANT">Instantáneo (Temperatura, etc.)</option>
+                    {Object.entries(METER_CATEGORIES).map(([key, label]) => (
+                      <option key={key} value={key}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                 </div>
-
-                {(editingConfig.type === "LEVEL" || editingConfig.type === "PERCENT") && (
-                  <Input
-                    label={`Capacidad Máxima (${editingConfig.unit})`}
-                    type="number"
-                    min="0"
-                    value={editingConfig.maxCapacity || ""}
-                    onChange={(e) => handleFieldChange("maxCapacity", parseFloat(e.target.value))}
-                  />
-                )}
-
-                <div className="flex gap-2">
-                  <Button
-                    id="save-meter-config-btn"
-                    aria-label="Guardar medidor"
-                    onClick={handleSave}
-                    variant="primary"
-                    size="sm"
+                <div>
+                  <label
+                    htmlFor="meter-unit-select"
+                    className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
                   >
-                    Guardar
-                  </Button>
-                  <Button
-                    id="cancel-meter-config-btn"
-                    aria-label="Cancelar edición de medidor"
-                    onClick={handleCancelEdit}
-                    variant="secondary"
-                    size="sm"
+                    Unidad
+                  </label>
+                  <select
+                    id="meter-unit-select"
+                    aria-label="Unidad"
+                    value={editingConfig.unit}
+                    onChange={(e) => handleFieldChange("unit", e.target.value)}
+                    className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
                   >
-                    Cancelar
-                  </Button>
+                    {availableUnits.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            ) : (
-              <>
-                <Button
-                  id="add-meter-config-btn"
-                  aria-label="Añadir Nuevo Medidor"
-                  onClick={handleStartAdd}
-                  className="w-full flex items-center justify-center gap-2 mb-2 bg-token-accent-brand"
-                  disabled={isLimitReached}
-                  title={
-                    isLimitReached
-                      ? `Límite de ${MAX_METERS} medidores activos alcanzado.`
-                      : "Añadir un nuevo medidor"
-                  }
-                >
-                  <PlusCircleIcon className="w-5 h-5" />
-                  Añadir Nuevo Medidor
-                </Button>
-                {isLimitReached && (
-                  <p className="text-center text-[10px] font-black text-red-500 uppercase tracking-widest mb-4">
-                    Límite de {MAX_METERS} medidores activos alcanzado.
-                  </p>
-                )}
-              </>
-            )}
 
-            <h3 className="text-xs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-8 mb-4">
-              Medidores Existentes ({activeMetersCount}/{MAX_METERS})
-            </h3>
-            {meterConfigs.length > 0 ? (
-              <div className="space-y-2">
-                {meterConfigs.map((config) => (
-                  <div
-                    key={config.id}
-                    className="p-4 border rounded-md border-token-border-subtle bg-token-surface-stripe flex justify-between items-center group hover:border-token-border-technical transition-colors"
-                  >
-                    <div>
-                      <p className="font-black text-token-text-primary uppercase tracking-tight italic">
-                        {config.name}
-                      </p>
-                      <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mt-1">
-                        {METER_CATEGORIES[config.category]} / {config.unit}
-                      </p>
-                    </div>
-                    <div className="space-x-1">
-                      <Button
-                        id={`edit-meter-${config.id}`}
-                        aria-label={`Editar medidor ${config.name}`}
-                        onClick={() => handleStartEdit(config)}
-                        size="sm"
-                        variant="secondary"
-                        className="p-1"
-                        title="Editar medidor"
-                      >
-                        <EditIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        id={`delete-meter-${config.id}`}
-                        aria-label={`Eliminar medidor ${config.name}`}
-                        onClick={() => setConfigToDelete(config)}
-                        size="sm"
-                        variant="danger"
-                        className="p-1"
-                        title="Eliminar medidor"
-                      >
-                        <DeleteIcon className="w-4 h-4" />
-                      </Button>
-                    </div>
+              <div>
+                <label
+                  htmlFor="meter-type-select"
+                  className="block text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mb-1.5"
+                >
+                  Tipo de Medición
+                </label>
+                <select
+                  id="meter-type-select"
+                  aria-label="Tipo de Medición"
+                  value={editingConfig.type}
+                  onChange={(e) => handleFieldChange("type", e.target.value as MeterType)}
+                  className="w-full p-2 border rounded border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm font-bold"
+                >
+                  <option value="CONSUMPTION">Consumo (Acumulativo)</option>
+                  <option value="LEVEL">Nivel (Estanque)</option>
+                  <option value="PERCENT">Porcentaje (0-100%)</option>
+                  <option value="INSTANT">Instantáneo (Temperatura, etc.)</option>
+                </select>
+              </div>
+
+              {(editingConfig.type === "LEVEL" || editingConfig.type === "PERCENT") && (
+                <Input
+                  label={`Capacidad Máxima (${editingConfig.unit})`}
+                  type="number"
+                  min="0"
+                  value={editingConfig.maxCapacity || ""}
+                  onChange={(e) => handleFieldChange("maxCapacity", parseFloat(e.target.value))}
+                />
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  id="save-meter-config-btn"
+                  aria-label="Guardar medidor"
+                  onClick={handleSave}
+                  variant="primary"
+                  size="sm"
+                >
+                  Guardar
+                </Button>
+                <Button
+                  id="cancel-meter-config-btn"
+                  aria-label="Cancelar edición de medidor"
+                  onClick={handleCancelEdit}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Button
+                id="add-meter-config-btn"
+                aria-label="Añadir Nuevo Medidor"
+                onClick={handleStartAdd}
+                className="w-full flex items-center justify-center gap-2 mb-2 bg-token-accent-brand"
+                disabled={isLimitReached}
+                title={
+                  isLimitReached
+                    ? `Límite de ${MAX_METERS} medidores activos alcanzado.`
+                    : "Añadir un nuevo medidor"
+                }
+              >
+                <PlusCircleIcon className="w-5 h-5" />
+                Añadir Nuevo Medidor
+              </Button>
+              {isLimitReached && (
+                <p className="text-center text-[10px] font-black text-token-status-error-text uppercase tracking-widest mb-4">
+                  Límite de {MAX_METERS} medidores activos alcanzado.
+                </p>
+              )}
+            </>
+          )}
+
+          <h3 className="text-xs font-black text-token-text-tertiary uppercase tracking-[0.2em] mt-8 mb-4">
+            Medidores Existentes ({activeMetersCount}/{MAX_METERS})
+          </h3>
+          {meterConfigs.length > 0 ? (
+            <div className="space-y-2">
+              {meterConfigs.map((config) => (
+                <div
+                  key={config.id}
+                  className="p-4 border rounded-md border-token-border-subtle bg-token-surface-stripe flex justify-between items-center group hover:border-token-border-technical transition-colors"
+                >
+                  <div>
+                    <p className="font-black text-token-text-primary uppercase tracking-tight italic">
+                      {config.name}
+                    </p>
+                    <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest mt-1">
+                      {METER_CATEGORIES[config.category]} / {config.unit}
+                    </p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-token-text-tertiary font-bold text-sm bg-token-surface-stripe rounded-md border border-token-border-subtle uppercase tracking-tight">
-                No hay medidores configurados.
-              </div>
-            )}
-          </div>
+                  <div className="space-x-1">
+                    <Button
+                      id={`edit-meter-${config.id}`}
+                      aria-label={`Editar medidor ${config.name}`}
+                      onClick={() => handleStartEdit(config)}
+                      size="sm"
+                      variant="secondary"
+                      className="p-1"
+                      title="Editar medidor"
+                    >
+                      <EditIcon className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      id={`delete-meter-${config.id}`}
+                      aria-label={`Eliminar medidor ${config.name}`}
+                      onClick={() => setConfigToDelete(config)}
+                      size="sm"
+                      variant="danger"
+                      className="p-1"
+                      title="Eliminar medidor"
+                    >
+                      <DeleteIcon className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-token-text-tertiary font-bold text-sm bg-token-surface-stripe rounded-md border border-token-border-subtle uppercase tracking-tight">
+              No hay medidores configurados.
+            </div>
+          )}
         </div>
-        {configToDelete && (
-          <ConfirmationModal
-            isOpen={true}
-            onClose={() => setConfigToDelete(null)}
-            onConfirm={handleDelete}
-            title="Confirmar Eliminación"
-            message={`¿Eliminar el medidor "${configToDelete.name}"? Esta acción no se puede deshacer.`}
-          />
-        )}
       </div>
-    </div>
+      {configToDelete && (
+        <ConfirmationModal
+          isOpen={true}
+          onClose={() => setConfigToDelete(null)}
+          onConfirm={handleDelete}
+          title="Confirmar Eliminación"
+          message={`¿Eliminar el medidor "${configToDelete.name}"? Esta acción no se puede deshacer.`}
+        />
+      )}
+    </SideDrawer>
   );
 };
 

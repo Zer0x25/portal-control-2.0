@@ -14,6 +14,12 @@ const meta = {
     isExpanded: true,
     onClick: () => undefined,
   },
+  argTypes: {
+    label: { control: "text" },
+    badge: { control: "text" },
+    isExpanded: { control: "boolean" },
+    end: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -25,3 +31,18 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const WithBadge: Story = {
+  args: {
+    to: "/notifications",
+    label: "Alertas",
+    badge: "3",
+    isExpanded: true,
+  },
+};
+
+export const Collapsed: Story = {
+  args: {
+    isExpanded: false,
+  },
+};

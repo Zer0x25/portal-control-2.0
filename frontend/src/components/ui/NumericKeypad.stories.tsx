@@ -10,6 +10,9 @@ const meta = {
     onDelete: () => undefined,
     onConfirm: () => undefined,
   },
+  argTypes: {
+    showConfirm: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -21,3 +24,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const WithoutConfirmButton: Story = {
+  args: {
+    showConfirm: false,
+  },
+};

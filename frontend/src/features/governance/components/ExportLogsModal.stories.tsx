@@ -6,6 +6,9 @@ const meta = {
   title: "Design System/features/governance/components/Export/Logs/Modal",
   component: StoryComponent,
   args: { isOpen: false, onClose: () => undefined },
+  argTypes: {
+    isOpen: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -19,3 +22,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const OpenDialog: Story = {
+  args: {
+    isOpen: true,
+  },
+};

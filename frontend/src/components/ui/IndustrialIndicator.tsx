@@ -1,7 +1,7 @@
 import React from "react";
 
 interface IndustrialIndicatorProps {
-  color?: string; // e.g., "bg-token-accent-brand", "bg-emerald-500"
+  color?: string; // e.g., "bg-token-accent-brand", "bg-token-status-success"
   height?: string; // e.g., "h-10", "h-full"
   className?: string;
 }
@@ -18,7 +18,7 @@ export const IndustrialIndicator: React.FC<IndustrialIndicatorProps> = ({
 };
 
 interface LiveStatusProps {
-  color?: string; // e.g., "bg-emerald-500", "bg-red-500"
+  color?: string; // e.g., "bg-token-status-success", "bg-token-status-error"
   size?: string; // e.g., "w-2 h-2"
   className?: string;
 }
@@ -27,7 +27,7 @@ interface LiveStatusProps {
  * Pulsing dot indicating an active session, process, or real-time connection.
  */
 export const LiveStatus: React.FC<LiveStatusProps> = ({
-  color = "bg-emerald-500",
+  color = "bg-token-status-success",
   size = "w-2 h-2",
   className = "",
 }) => {
@@ -53,7 +53,7 @@ export const SystemStatusIndicator: React.FC<SystemStatusIndicatorProps> = ({
   status = "online",
   className = "",
 }) => {
-  const color = status === "online" ? "bg-emerald-500" : "bg-red-500";
+  const color = status === "online" ? "bg-token-status-success" : "bg-token-status-error";
 
   return (
     <div

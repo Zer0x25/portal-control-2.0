@@ -13,6 +13,11 @@ const meta = {
     error: null,
     seedingOptions: null,
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    isFinished: { control: "boolean" },
+    error: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -27,3 +32,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const InProgress: Story = {
+  args: {
+    isFinished: false,
+    progressSteps: ["Creando estructura base...", "Generando patrones de turno..."],
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    isFinished: true,
+    error: "No fue posible completar el sembrado de registros.",
+  },
+};

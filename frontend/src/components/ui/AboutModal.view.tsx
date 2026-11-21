@@ -51,9 +51,11 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
           <div className="text-center space-y-4 relative">
             <div
               onClick={onLogoClick}
-              className="w-20 h-20 bg-linear-to-br from-token-accent-brand to-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-22xl shadow-blue-500/20 group hover:scale-110 transition-transform duration-500 cursor-pointer"
+              className="w-20 h-20 bg-token-accent-brand rounded-2xl mx-auto flex items-center justify-center shadow-22xl group hover:scale-110 transition-transform duration-500 cursor-pointer"
             >
-              <span className="text-white font-black text-4xl italic tracking-tighter">P</span>
+              <span className="text-token-text-onAccent font-black text-4xl italic tracking-tighter">
+                P
+              </span>
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-black text-token-text-primary tracking-tighter italic">
@@ -80,7 +82,7 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
                   Estado Kernel
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-token-status-success animate-pulse" />
                   <span className="text-sm font-black text-token-status-success italic">
                     OPTIMIZADO
                   </span>

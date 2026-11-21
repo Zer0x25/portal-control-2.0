@@ -4,6 +4,7 @@
 
 import React from "react";
 import PageHeader from "../../../components/ui/PageHeader";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
@@ -226,24 +227,30 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
         onPreview={handleOpenReportDetails}
       />
 
-      {showLogoutCountdownModal && (
-        <div
-          className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-token-text-primary/40 backdrop-blur-[2px] p-4`}
-          aria-modal="true"
+      <CinematicModal
+        isOpen={showLogoutCountdownModal}
+        onClose={() => undefined}
+        closeOnBackdrop={false}
+        closeOnEscape={false}
+        showHeader={false}
+        maxWidth="max-w-sm"
+        ariaLabelledBy="logbook-logout-countdown-title"
+        panelClassName="rounded-sm"
+        bodyClassName="p-10 text-center"
+      >
+        <h3
+          id="logbook-logout-countdown-title"
+          className="text-lg font-bold uppercase tracking-tight text-token-text-primary"
         >
-          <div className="p-10 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical text-center max-w-sm w-full">
-            <h3 className="text-lg font-bold uppercase tracking-tight text-token-text-primary">
-              Operación Finalizada
-            </h3>
-            <p className="my-4 text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary">
-              Cierre de sesión automático en...
-            </p>
-            <div className="text-6xl font-black font-mono tracking-tighter text-(--sidebar-text-active) tabular-nums">
-              {countdown}
-            </div>
-          </div>
+          Operación Finalizada
+        </h3>
+        <p className="my-4 text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary">
+          Cierre de sesión automático en...
+        </p>
+        <div className="text-6xl font-black font-mono tracking-tighter text-(--sidebar-text-active) tabular-nums">
+          {countdown}
         </div>
-      )}
+      </CinematicModal>
       {showCloseShiftConfirmation && (
         <ConfirmationModal
           isOpen={true}

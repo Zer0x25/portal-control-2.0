@@ -43,3 +43,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const RowStatesComparison: Story = {
+  render: () => (
+    <div className="space-y-2 p-2">
+      <div
+        className={`${ROW_BASE_CLASS} ${ROW_HOVER_CLASS} p-3 rounded border border-token-border-subtle`}
+      >
+        <span className={TEXT_PRIMARY}>Fila activa con hover tokenizado</span>
+        <span className={`ml-3 ${TEXT_SECONDARY}`}>Estado normal</span>
+      </div>
+      <div
+        className={`${ROW_BASE_CLASS} ${ROW_ARCHIVED_CLASS} p-3 rounded border border-token-border-subtle`}
+      >
+        <span className={TEXT_PRIMARY}>Fila archivada</span>
+        <span className={`ml-3 ${TEXT_SECONDARY}`}>Estado atenuado</span>
+      </div>
+    </div>
+  ),
+};

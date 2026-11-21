@@ -11,6 +11,7 @@ import {
 } from "../../../components/ui/icons/index";
 import Button from "../../../components/ui/Button";
 import Container from "../../../components/ui/Container";
+import SideDrawer from "../../../components/ui/SideDrawer";
 import MeterConfigPanel from "../components/MeterConfigPanel";
 import MeterForm from "../components/MeterForm.container";
 import MeterHistory from "../containers/MeterHistory.container";
@@ -68,35 +69,36 @@ export const MeterReadingsView: React.FC<MeterReadingsViewProps> = ({
         </div>
       )}
 
-      <div
-        className={`fixed inset-0 ${Z.dropdown} transition-opacity duration-300 ${isFormOpen ? "bg-black/50" : "bg-transparent pointer-events-none"}`}
-        onClick={() => setIsFormOpen(false)}
+      <SideDrawer
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        ariaLabel="Ingresar Nuevas Lecturas"
+        maxWidth="max-w-lg"
+        zClass={Z.dropdown}
+        backdropZClass={Z.dropdown}
+        backdropClassName="bg-black/50"
+        panelClassName="bg-token-surface-card shadow-xl animate-in fade-in slide-in-from-right duration-300"
       >
-        <div
-          className={`fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-xl transform transition-transform duration-300 ${isFormOpen ? "translate-x-0" : "translate-x-full"}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex flex-col h-full">
-            <div className="flex justify-between items-center p-4 border-b border-token-border-subtle shrink-0">
-              <h2 className="text-xl font-semibold text-token-text-primary">
-                Ingresar Nuevas Lecturas
-              </h2>
-              <Button
-                onClick={() => setIsFormOpen(false)}
-                variant="secondary"
-                size="sm"
-                aria-label="Cerrar formulario de lecturas"
-                className="p-1 bg-transparent! hover:bg-token-surface-active!"
-              >
-                <CloseIcon className="w-5 h-5 text-token-text-secondary" />
-              </Button>
-            </div>
-            <div className="overflow-y-auto grow">
-              <MeterForm onSaveSuccess={() => setIsFormOpen(false)} />
-            </div>
+        <div className="flex flex-col h-full">
+          <div className="flex justify-between items-center p-4 border-b border-token-border-subtle shrink-0">
+            <h2 className="text-xl font-semibold text-token-text-primary">
+              Ingresar Nuevas Lecturas
+            </h2>
+            <Button
+              onClick={() => setIsFormOpen(false)}
+              variant="secondary"
+              size="sm"
+              aria-label="Cerrar formulario de lecturas"
+              className="p-1 bg-transparent! hover:bg-token-surface-active!"
+            >
+              <CloseIcon className="w-5 h-5 text-token-text-secondary" />
+            </Button>
+          </div>
+          <div className="overflow-y-auto grow">
+            <MeterForm onSaveSuccess={() => setIsFormOpen(false)} />
           </div>
         </div>
-      </div>
+      </SideDrawer>
 
       <MeterConfigPanel isOpen={isConfigPanelOpen} onClose={() => setIsConfigPanelOpen(false)} />
     </Container>

@@ -78,13 +78,13 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
             >
               <div
                 className={`relative bg-token-surface-card rounded-xl shadow-sm border-l-4 p-4 mb-3 transition-all active:scale-[0.98] 
-                  ${isArchived ? "opacity-60 grayscale border-l-token-border-subtle" : "border-l-orange-500"}`}
+                  ${isArchived ? "opacity-60 grayscale border-l-token-border-subtle" : "border-l-token-status-feriado"}`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1 min-w-0 pr-2">
                     <h3 className="text-sm font-bold text-token-text-primary truncate">{h.name}</h3>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-token-status-feriado-surface text-token-status-feriado-text border border-token-status-feriado/25">
                         {h.type}
                       </span>
                       {h.isRenounceable && (
@@ -109,7 +109,7 @@ const HolidayListMobile: React.FC<HolidayListMobileProps> = ({
                       size="xs"
                       variant="ghost"
                       onClick={() => onDelete(h)}
-                      className="p-1.5 text-token-text-secondary hover:text-token-status-error hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-token-text-secondary hover:text-token-status-error-text hover:bg-token-status-error/10 rounded-lg transition-colors"
                       disabled={isArchived && !showArchived}
                     >
                       <DeleteIcon className="w-5 h-5" />

@@ -12,9 +12,9 @@ const LiveStatus: React.FC<LiveStatusProps> = ({
   className = "",
 }) => {
   const statusColors = {
-    online: "bg-emerald-500",
-    offline: "bg-red-500",
-    warning: "bg-amber-500",
+    online: "bg-token-status-success",
+    offline: "bg-token-status-error",
+    warning: "bg-token-status-warning",
   };
 
   const color = statusColors[status];

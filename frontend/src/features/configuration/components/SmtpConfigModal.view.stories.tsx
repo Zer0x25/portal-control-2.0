@@ -35,6 +35,14 @@ const meta = {
       "data-app-form": "storybook",
     },
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    isLoading: { control: "boolean" },
+    isVerifying: { control: "boolean" },
+    isSubmitting: { control: "boolean" },
+    currentSlot: { control: { type: "number", min: 0, max: 4 } },
+    activeProfileIndex: { control: { type: "number", min: 0, max: 4 } },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -49,3 +57,16 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const VerifyingConnection: Story = {
+  args: {
+    isVerifying: true,
+    currentSlot: 1,
+  },
+};
+
+export const LoadingProfile: Story = {
+  args: {
+    isLoading: true,
+  },
+};

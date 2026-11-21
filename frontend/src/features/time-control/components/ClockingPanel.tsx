@@ -117,7 +117,7 @@ const ClockingPanelImpl: React.FC<ClockingPanelProps> = ({
                   <p className="text-sm font-bold text-token-text-primary">
                     {selectedEmployee.name}
                   </p>
-                  <p className="text-xl font-black text-token-accent-brand dark:text-blue-400 uppercase tracking-tight">
+                  <p className="text-xl font-black text-token-accent-brand uppercase tracking-tight">
                     {isLoadingRecords
                       ? "Cargando..."
                       : isRecordStatusUnavailable
@@ -126,7 +126,7 @@ const ClockingPanelImpl: React.FC<ClockingPanelProps> = ({
                   </p>
                 </div>
               ) : (
-                <p className="text-xl font-black text-token-accent-brand dark:text-blue-400 uppercase tracking-tight">
+                <p className="text-xl font-black text-token-accent-brand uppercase tracking-tight">
                   Seleccione un empleado
                 </p>
               )}

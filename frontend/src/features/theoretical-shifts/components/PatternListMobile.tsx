@@ -82,7 +82,7 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-token-accent-brand/10 text-token-accent-brand border border-token-border-subtle">
                         {p.cycleLengthDays} días
                       </span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-token-status-permiso-especial-surface text-token-status-permiso-especial-text border border-token-status-permiso-especial/25">
                         Top {p.maxHoursPattern?.toFixed(1) || globalMaxWeeklyHours}h
                       </span>
                     </div>
@@ -100,7 +100,7 @@ const PatternListMobile: React.FC<PatternListMobileProps> = ({
                     <Button
                       size="xs"
                       variant="ghost"
-                      className="p-1.5 text-token-text-secondary hover:text-token-status-error hover:bg-red-500/10 rounded-lg transition-colors"
+                      className="p-1.5 text-token-text-secondary hover:text-token-status-error-text hover:bg-token-status-error/10 rounded-lg transition-colors"
                       onClick={() => onDelete(p.id)}
                     >
                       <DeleteIcon className="w-5 h-5" />

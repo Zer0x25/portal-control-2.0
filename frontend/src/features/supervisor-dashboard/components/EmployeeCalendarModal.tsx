@@ -1,12 +1,11 @@
 import React from "react";
-import { createPortal } from "react-dom";
 import { Employee } from "../../../types/index";
 import { useCalendarData } from "../../../hooks/useCalendarData";
 import ShiftCalendarView from "../../../components/ui/ShiftCalendarView";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import { CloseIcon, UserIcon, ShieldCheckIcon } from "../../../components/ui/icons/index";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
-import { Z } from "../../../constants/zScale";
 
 interface EmployeeCalendarModalProps {
   employee: Employee;
@@ -35,113 +34,110 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
 
   const headerDisplay = displayDate.toLocaleDateString("es-CL", { month: "long", year: "numeric" });
 
-  return createPortal(
-    isOpen && (
-      <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 md:p-8`}>
-        <div
+  return (
+    <CinematicModal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-[1300px]"
+      showHeader={false}
+      panelClassName="w-[98vw] h-[90vh] rounded-sm flex flex-col relative"
+      bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
+    >
+      {/* Technical Accent Area */}
+      <div className="absolute top-0 left-0 w-2 h-full bg-token-accent-brand opacity-40 shrink-0" />
+
+      {/* Cinematic Header */}
+      <div className="p-10 pb-6 flex items-center justify-between border-b border-token-border-subtle bg-token-surface-stripe ml-2">
+        <div className="flex items-center gap-8">
+          <div className="w-16 h-16 rounded-sm bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20 flex items-center justify-center text-white shrink-0">
+            <UserIcon className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-black text-token-text-primary uppercase tracking-tight leading-none">
+              EXPEDIENTE: {employee.name}
+            </h2>
+            <div className="flex items-center gap-4">
+              <span className="px-3 py-1 text-xxs font-black bg-token-surface-active text-token-text-primary border border-token-border-subtle rounded-sm uppercase tracking-widest">
+                {employee.position}
+              </span>
+              <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand animate-pulse" />
+              <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em]">
+                PLANIFICACIÓN MAESTRA MTRX
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
           onClick={onClose}
-          className="absolute inset-0 bg-token-text-primary/60 backdrop-blur-[3px] animate-in fade-in"
-        />
+          aria-label="Cerrar calendario"
+          className="p-3 text-token-text-tertiary hover:text-token-text-onAccent hover:bg-token-status-error rounded-sm transition-all"
+        >
+          <CloseIcon className="w-6 h-6" />
+        </button>
+      </div>
 
-        <div className="relative w-[98vw] max-w-[1300px] h-[90vh] bg-token-surface-card rounded-sm shadow-2xl border border-token-border-technical overflow-hidden flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
-          {/* Technical Accent Area */}
-          <div className="absolute top-0 left-0 w-2 h-full bg-token-accent-brand opacity-40 shrink-0" />
-
-          {/* Cinematic Header */}
-          <div className="p-10 pb-6 flex items-center justify-between border-b border-token-border-subtle bg-token-surface-stripe ml-2">
-            <div className="flex items-center gap-8">
-              <div className="w-16 h-16 rounded-sm bg-token-accent-brand border border-token-accent-brand shadow-lg shadow-token-accent-brand/20 flex items-center justify-center text-white shrink-0">
-                <UserIcon className="w-8 h-8" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black text-token-text-primary uppercase tracking-tight leading-none">
-                  EXPEDIENTE: {employee.name}
-                </h2>
-                <div className="flex items-center gap-4">
-                  <span className="px-3 py-1 text-xxs font-black bg-token-surface-active text-token-text-primary border border-token-border-subtle rounded-sm uppercase tracking-widest">
-                    {employee.position}
-                  </span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand animate-pulse" />
-                  <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em]">
-                    PLANIFICACIÓN MAESTRA MTRX
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={onClose}
-              aria-label="Cerrar calendario"
-              className="p-3 text-token-text-tertiary hover:text-white hover:bg-rose-600 rounded-sm transition-all"
-            >
-              <CloseIcon className="w-6 h-6" />
-            </button>
+      {/* Technical Sub-Header */}
+      <div className="px-12 py-5 flex items-center justify-between bg-token-surface-card border-b border-token-border-subtle ml-2">
+        <div className="flex items-center gap-6">
+          <div>
+            <span className="text-xxs font-black text-token-accent-brand uppercase tracking-[0.2em] block mb-1">
+              PERIODO TÉCNICO ANALIZADO
+            </span>
+            <h3 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
+              {headerDisplay}
+            </h3>
           </div>
-
-          {/* Technical Sub-Header */}
-          <div className="px-12 py-5 flex items-center justify-between bg-token-surface-card border-b border-token-border-subtle ml-2">
-            <div className="flex items-center gap-6">
-              <div>
-                <span className="text-xxs font-black text-token-accent-brand uppercase tracking-[0.2em] block mb-1">
-                  PERIODO TÉCNICO ANALIZADO
-                </span>
-                <h3 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
-                  {headerDisplay}
-                </h3>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <div className="px-6 py-2.5 rounded-sm border border-token-accent-brand/20 bg-token-accent-brand/3 text-xxs font-black text-token-accent-brand uppercase tracking-[0.3em] flex items-center gap-3">
-                <ShieldCheckIcon className="w-4 h-4" />
-                SISTEMA SINCRONIZADO
-              </div>
-            </div>
-          </div>
-
-          {/* Premium Calendar Container */}
-          <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-token-surface-stripe ml-2">
-            {isLoadingCalendar ? (
-              <div className="h-full flex flex-col items-center justify-center gap-8">
-                <div className="relative">
-                  <LoadingSpinner size="xl" variant="default" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-token-accent-brand rounded-full animate-ping" />
-                  </div>
-                </div>
-                <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.6em] animate-pulse">
-                  COMPILANDO MATRIZ DE TURNOS...
-                </p>
-              </div>
-            ) : (
-              <div className="min-w-[800px] h-full">
-                <ShiftCalendarView
-                  viewMode="month"
-                  currentDisplayDate={displayDate}
-                  selectedEmployeeId={employee.id}
-                  scheduleMap={scheduleMap}
-                  onDayClick={() => {}}
-                  cellHeight="h-32 sm:h-36"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Footer Action */}
-          <div className="p-8 px-12 bg-token-surface-stripe border-t border-token-border-subtle flex justify-between items-center ml-2">
-            <div className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em] opacity-40">
-              PORTAL OPS V3.0 // CIERRE DE AUDITORÍA INDIVIDUAL
-            </div>
-            <Button
-              onClick={onClose}
-              className="px-12 py-4 bg-token-accent-brand text-white text-[11px] font-black uppercase tracking-[0.4em] rounded-sm hover:brightness-110 shadow-xl shadow-token-accent-brand/20 transition-all active:scale-95 border-none"
-            >
-              FINALIZAR REVISIÓN
-            </Button>
+        </div>
+        <div className="flex gap-4">
+          <div className="px-6 py-2.5 rounded-sm border border-token-accent-brand/20 bg-token-accent-brand/3 text-xxs font-black text-token-accent-brand uppercase tracking-[0.3em] flex items-center gap-3">
+            <ShieldCheckIcon className="w-4 h-4" />
+            SISTEMA SINCRONIZADO
           </div>
         </div>
       </div>
-    ),
-    document.body,
+
+      {/* Premium Calendar Container */}
+      <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-token-surface-stripe ml-2">
+        {isLoadingCalendar ? (
+          <div className="h-full flex flex-col items-center justify-center gap-8">
+            <div className="relative">
+              <LoadingSpinner size="xl" variant="default" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-token-accent-brand rounded-full animate-ping" />
+              </div>
+            </div>
+            <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.6em] animate-pulse">
+              COMPILANDO MATRIZ DE TURNOS...
+            </p>
+          </div>
+        ) : (
+          <div className="min-w-[800px] h-full">
+            <ShiftCalendarView
+              viewMode="month"
+              currentDisplayDate={displayDate}
+              selectedEmployeeId={employee.id}
+              scheduleMap={scheduleMap}
+              onDayClick={() => {}}
+              cellHeight="h-32 sm:h-36"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Footer Action */}
+      <div className="p-8 px-12 bg-token-surface-stripe border-t border-token-border-subtle flex justify-between items-center ml-2">
+        <div className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.4em] opacity-40">
+          PORTAL OPS V3.0 // CIERRE DE AUDITORÍA INDIVIDUAL
+        </div>
+        <Button
+          onClick={onClose}
+          className="px-12 py-4 bg-token-accent-brand text-white text-[11px] font-black uppercase tracking-[0.4em] rounded-sm hover:brightness-110 shadow-xl shadow-token-accent-brand/20 transition-all active:scale-95 border-none"
+        >
+          FINALIZAR REVISIÓN
+        </Button>
+      </div>
+    </CinematicModal>
   );
 };
 

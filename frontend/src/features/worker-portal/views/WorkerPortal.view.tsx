@@ -218,7 +218,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
 
   if (!employee) {
     return (
-      <div className="p-6 text-center text-red-500">
+      <div className="p-6 text-center text-token-status-error-text">
         <h1 className="text-2xl font-bold">Error de Configuración de Cuenta</h1>
         <p className="mt-2">
           Su cuenta de usuario no está vinculada a un registro de empleado. Por favor, contacte a un
@@ -276,7 +276,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
               <div className="flex items-center gap-3 mt-3">
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-token-surface-stripe border border-token-border-subtle text-xxs font-black text-token-text-tertiary uppercase tracking-widest">
                   <div
-                    className={`w-2 h-2 rounded-full ${status === "fuera" ? "bg-token-text-tertiary" : "bg-emerald-500 animate-pulse"}`}
+                    className={`w-2 h-2 rounded-full ${status === "fuera" ? "bg-token-text-tertiary" : "bg-token-status-success animate-pulse"}`}
                   />
                   {isClockingStatusUncertain
                     ? isClockingStatusError
@@ -568,7 +568,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
                       <td className="px-3 py-4 align-top text-right">
                         <div
                           data-list-role="value"
-                          className={`typo-list-value ${(record.overtimeHours ?? 0) >= 0 ? "text-emerald-600" : "text-token-status-error"}`}
+                          className={`typo-list-value ${(record.overtimeHours ?? 0) >= 0 ? "text-token-status-success-text" : "text-token-status-error-text"}`}
                         >
                           {formatDecimalHoursToHHMM &&
                             formatDecimalHoursToHHMM(record.overtimeHours)}

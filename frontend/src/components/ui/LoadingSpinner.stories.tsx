@@ -17,3 +17,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const SmallSubtle: Story = {
+  args: {
+    size: "sm",
+    variant: "subtle",
+    label: undefined,
+  },
+};
+export const Large: Story = {
+  args: {
+    size: "lg",
+    variant: "default",
+    label: "Sincronizando datos",
+  },
+};

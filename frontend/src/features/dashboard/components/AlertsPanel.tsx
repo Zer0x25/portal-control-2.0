@@ -62,7 +62,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
         >
           Salidas ({missingClockOuts.length})
           {missingClockOuts.some((m) => m.status === "late") && (
-            <span className="absolute top-1.5 right-2 w-1.5 h-1.5 bg-rose-600 rounded-full border border-token-surface-card"></span>
+            <span className="absolute top-1.5 right-2 w-1.5 h-1.5 bg-token-status-error rounded-full border border-token-surface-card"></span>
           )}
         </button>
       </div>
@@ -88,10 +88,10 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                   <div
                     className={`px-2.5 py-1 rounded-sm text-[11px] font-semibold uppercase tracking-wider border shadow-sm ${
                       status.status === "ontime"
-                        ? "text-emerald-600 border-emerald-600/20 bg-emerald-600/5"
+                        ? "text-token-status-success-text border-token-status-success/20 bg-token-status-success/5"
                         : status.status === "late_warn"
-                          ? "text-amber-600 border-amber-600/20 bg-amber-600/5"
-                          : "text-rose-600 border-rose-600/20 bg-rose-600/5"
+                          ? "text-token-status-warning-text border-token-status-warning/20 bg-token-status-warning/5"
+                          : "text-token-status-error-text border-token-status-error/20 bg-token-status-error/5"
                     }`}
                   >
                     {status.statusText}
@@ -118,8 +118,8 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
                 <div
                   className={`px-2.5 py-1 rounded-sm text-[11px] font-semibold uppercase tracking-wider border shadow-sm ${
                     item.status === "upcoming"
-                      ? "text-amber-600 border-amber-600/20 bg-amber-600/5"
-                      : "text-rose-600 border-rose-600/20 bg-rose-600/5"
+                      ? "text-token-status-warning-text border-token-status-warning/20 bg-token-status-warning/5"
+                      : "text-token-status-error-text border-token-status-error/20 bg-token-status-error/5"
                   }`}
                 >
                   {item.status === "upcoming"

@@ -12,6 +12,11 @@ const meta = {
     employeeName: "Ana Pérez",
     date: "23-10-2026",
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    employeeName: { control: "text" },
+    date: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -26,3 +31,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Closed: Story = {
+  args: {
+    isOpen: false,
+  },
+};

@@ -122,7 +122,7 @@ const HealthStatusView: React.FC = () => {
           <MetricCard
             kind="panel"
             title="Integridad & Seguridad"
-            icon={<ShieldCheckIcon className="text-indigo-500" />}
+            icon={<ShieldCheckIcon className="text-token-accent-brand" />}
           >
             <MetricStat
               label="Health Score"
@@ -276,8 +276,8 @@ const HealthStatusView: React.FC = () => {
                   </p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 bg-token-surface-stripe rounded-sm border border-token-border-technical">
-                      <div className="p-1.5 bg-indigo-500/10 rounded-full">
-                        <ShieldCheckIcon className="w-4 h-4 text-indigo-500" />
+                      <div className="p-1.5 bg-token-accent-brand/10 rounded-full">
+                        <ShieldCheckIcon className="w-4 h-4 text-token-accent-brand" />
                       </div>
                       <div>
                         <p className="text-[11px] font-bold text-token-text-primary uppercase">

@@ -116,9 +116,9 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = ({
             <TrendIcon
               className={`w-5 h-5 ${
                 analysis.trendDirection === "up"
-                  ? "text-emerald-500"
+                  ? "text-token-status-success"
                   : analysis.trendDirection === "down"
-                    ? "text-red-500"
+                    ? "text-token-status-error"
                     : "text-token-text-tertiary"
               }`}
             />
@@ -126,9 +126,9 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = ({
           <span
             className={`font-bold text-lg ${
               analysis.trendDirection === "up"
-                ? "text-emerald-600"
+                ? "text-token-status-success-text"
                 : analysis.trendDirection === "down"
-                  ? "text-red-600"
+                  ? "text-token-status-error-text"
                   : "text-token-text-secondary"
             }`}
           >
@@ -151,7 +151,7 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = ({
 
         <div className="bg-token-surface-card p-4 rounded-lg border border-token-border-subtle">
           <p className="text-sm text-token-text-secondary mb-1">Predicción Próxima</p>
-          <p className="text-2xl font-bold text-blue-600">
+          <p className="text-2xl font-bold text-token-status-info-text">
             {analysis.nextWeekPrediction.toFixed(1)}
           </p>
         </div>
@@ -161,10 +161,10 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = ({
           <p
             className={`text-2xl font-bold ${
               analysis.confidence > 80
-                ? "text-emerald-600"
+                ? "text-token-status-success-text"
                 : analysis.confidence > 60
-                  ? "text-yellow-600"
-                  : "text-red-600"
+                  ? "text-token-status-warning-text"
+                  : "text-token-status-error-text"
             }`}
           >
             {analysis.confidence.toFixed(0)}%
@@ -175,13 +175,16 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = ({
       {/* Insights automáticos */}
       {analysis.insights.length > 0 && (
         <div
-          className={`bg-blue-50 border border-blue-200 rounded-lg p-4 ${showAnimation ? "animate-in fade-in zoom-in-95 [animation-delay:300ms]" : ""}`}
+          className={`bg-token-status-info-surface border border-token-status-info/30 rounded-lg p-4 ${showAnimation ? "animate-in fade-in zoom-in-95 [animation-delay:300ms]" : ""}`}
         >
-          <h4 className="font-medium text-blue-900 mb-2">💡 Insights Automáticos</h4>
+          <h4 className="font-medium text-token-status-info-text mb-2">💡 Insights Automáticos</h4>
           <ul className="space-y-1">
             {analysis.insights.map((insight, index) => (
-              <li key={index} className="text-sm text-blue-800 flex items-start gap-2">
-                <span className="text-blue-600 mt-1">•</span>
+              <li
+                key={index}
+                className="text-sm text-token-status-info-text flex items-start gap-2"
+              >
+                <span className="text-token-status-info mt-1">•</span>
                 {insight}
               </li>
             ))}
@@ -210,10 +213,10 @@ export const TrendAnalysis: React.FC<TrendAnalysisProps> = ({
                 <span
                   className={`text-xs px-2 py-1 rounded-full ${
                     (prediction.confidence || 0) > 80
-                      ? "bg-emerald-100 text-emerald-700"
+                      ? "bg-token-status-success-surface text-token-status-success-text"
                       : (prediction.confidence || 0) > 60
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
+                        ? "bg-token-status-warning-surface text-token-status-warning-text"
+                        : "bg-token-status-error-surface text-token-status-error-text"
                   }`}
                 >
                   {(prediction.confidence || 0).toFixed(0)}%

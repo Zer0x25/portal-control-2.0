@@ -43,8 +43,8 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-500/10 rounded-xl">
-            <CircleStackIcon className="w-5 h-5 text-indigo-500" />
+          <div className="p-2 bg-token-accent-brand/10 rounded-xl">
+            <CircleStackIcon className="w-5 h-5 text-token-accent-brand" />
           </div>
           <div>
             <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tight italic leading-none">
@@ -65,8 +65,8 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
             <p className="mt-2 text-sm text-token-text-secondary">Cargando respaldos...</p>
           </div>
         ) : error ? (
-          <div className="bg-rose-50 dark:bg-rose-900/10 p-4 rounded-xl border border-rose-100 dark:border-rose-900/20 text-center">
-            <p className="text-rose-600 dark:text-rose-400 font-medium text-sm">{error}</p>
+          <div className="bg-token-status-error-surface/60 p-4 rounded-xl border border-token-status-error/20 text-center">
+            <p className="text-token-status-error-text font-medium text-sm">{error}</p>
           </div>
         ) : backups.length === 0 ? (
           <div className="text-center py-8 text-token-text-tertiary">
@@ -77,10 +77,10 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
             {backups.map((backup) => (
               <div
                 key={backup.name}
-                className="group flex items-center justify-between p-4 bg-token-surface-stripe border border-token-border-technical rounded-md hover:border-indigo-500/30 transition-all"
+                className="group flex items-center justify-between p-4 bg-token-surface-stripe border border-token-border-technical rounded-md hover:border-token-accent-brand/30 transition-all"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-token-surface-card flex items-center justify-center shadow-sm text-token-text-tertiary group-hover:text-indigo-500 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-token-surface-card flex items-center justify-center shadow-sm text-token-text-tertiary group-hover:text-token-accent-brand transition-colors">
                     <ClockIcon className="w-5 h-5" />
                   </div>
                   <div>
@@ -107,8 +107,8 @@ export const BackupListModalView: React.FC<BackupListModalViewProps> = ({
                   disabled={restoring !== null}
                   className={`opacity-100 sm:opacity-0 sm:group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-all px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide flex items-center gap-2 cursor-pointer ${
                     restoring === backup.name
-                      ? "bg-amber-500 text-white cursor-wait opacity-100"
-                      : "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+                      ? "bg-token-status-warning text-token-text-onAccent cursor-wait opacity-100"
+                      : "bg-token-accent-brand/10 text-token-accent-brand hover:bg-token-accent-brand/20"
                   }`}
                 >
                   {restoring === backup.name ? (

@@ -106,7 +106,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
         isLocked
           ? "bg-token-surface-stripe cursor-not-allowed opacity-60"
           : isJustified
-            ? "bg-purple-50/50 dark:bg-purple-900/10 hover:bg-token-surface-hover cursor-help"
+            ? "bg-token-status-licencia-medica-surface/30 hover:bg-token-surface-hover cursor-help"
             : "hover:bg-token-surface-hover cursor-pointer"
       }
     `;
@@ -260,7 +260,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 title={`${progressPercent}% de jornada completada`}
               >
                 <div
-                  className="h-full bg-linear-to-r from-token-accent-brand to-blue-400 shadow-[0_0_8px_rgba(0,102,204,0.4)] transition-all duration-500"
+                  className="h-full bg-linear-to-r from-token-accent-brand to-token-status-info shadow-[0_0_8px_rgba(0,102,204,0.4)] transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -327,7 +327,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 }}
                 disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
                 title="Agregar novedad"
-                className="p-2! shadow-md rounded-md border-token-accent-brand/30 bg-blue-50 dark:bg-token-accent-brand/20 text-token-accent-brand hover:bg-token-accent-brand hover:text-white transition-all"
+                className="p-2! shadow-md rounded-md border-token-accent-brand/30 bg-token-accent-brand/10 dark:bg-token-accent-brand/20 text-token-accent-brand hover:bg-token-accent-brand hover:text-token-text-onAccent transition-all"
               >
                 <ChatBubbleLeftRightIcon className="w-4 h-4 stroke-[2.5px]" />
               </Button>
@@ -340,7 +340,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
                 onViewHistory(record);
               }}
               title="Ver historial de cambios"
-              className="p-2! shadow-md rounded-md border-indigo-200 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+              className="p-2! shadow-md rounded-md border-token-status-colacion/30 bg-token-status-colacion/10 text-token-status-colacion-text hover:bg-token-status-colacion hover:text-token-text-onAccent transition-all"
             >
               <ArrowPathIcon className="w-4 h-4 stroke-[2.5px]" />
             </Button>
@@ -353,7 +353,7 @@ const TimeRecordRow: React.FC<TimeRecordRowProps> = React.memo(
               }}
               disabled={!!(isActionDisabledForRole || isJustified || isLocked)}
               title="Eliminar registro"
-              className="p-2! shadow-md rounded-md border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-600 hover:text-white transition-all"
+              className="p-2! shadow-md rounded-md border-token-status-error/30 bg-token-status-error/10 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent transition-all"
             >
               <DeleteIcon className="w-4 h-4 stroke-[2.5px]" />
             </Button>

@@ -220,7 +220,7 @@ export const ScheduledReportsView: React.FC<ScheduledReportsController> = ({
                           type="button"
                           aria-label={`Eliminar ${report.name}`}
                           onClick={() => setReportToDelete(report)}
-                          className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-colors border border-rose-500/20"
+                          className="p-2 rounded-md bg-token-status-error/10 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent transition-colors border border-token-status-error/20"
                         >
                           <DeleteIcon className="w-4 h-4" />
                         </button>
@@ -244,7 +244,7 @@ export const ScheduledReportsView: React.FC<ScheduledReportsController> = ({
           {formError && (
             <div
               role="alert"
-              className="p-3 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold"
+              className="p-3 rounded-md bg-token-status-error/10 border border-token-status-error/30 text-token-status-error-text text-xs font-bold"
             >
               {formError}
             </div>

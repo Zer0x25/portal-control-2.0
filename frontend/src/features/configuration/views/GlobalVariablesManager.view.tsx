@@ -134,7 +134,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {/* Áreas */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-emerald-500 rounded-sm"></div>
+              <div className="w-1 h-6 bg-token-status-success rounded-sm"></div>
               <div>
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Departamentos
@@ -173,7 +173,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                         className="flex justify-between items-center px-6 py-4 text-sm group/item hover:bg-token-surface-active transition-all"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 group-hover/item:bg-emerald-500 transition-colors" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-token-status-success/40 group-hover/item:bg-token-status-success transition-colors" />
                           <span className="text-[11px] font-black uppercase text-token-text-secondary tracking-tight">
                             {area}
                           </span>
@@ -181,7 +181,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                         {area !== "Otros" && (
                           <button
                             aria-label={`Eliminar área ${area}`}
-                            className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-rose-500/20"
+                            className="p-2 rounded-md bg-token-status-error/10 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-token-status-error/20"
                             onClick={() => handleDeleteArea(area)}
                           >
                             <DeleteIcon className="w-4 h-4" />
@@ -205,7 +205,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {/* Tipos de Jornada */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-indigo-500 rounded-sm"></div>
+              <div className="w-1 h-6 bg-token-status-colacion rounded-sm"></div>
               <div>
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Protocolos de Jornada
@@ -230,7 +230,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                 <Button
                   onClick={handleAddWorkdayType}
                   aria-label="Agregar nuevo protocolo o tipo de jornada"
-                  className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 p-0 shrink-0"
+                  className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-token-status-colacion text-token-text-onAccent shadow-lg shadow-token-status-colacion/20 p-0 shrink-0"
                 >
                   <PlusCircleIcon className="w-6 h-6" />
                 </Button>
@@ -244,7 +244,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                         className="flex justify-between items-center px-6 py-4 text-sm group/item hover:bg-token-surface-active transition-all"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/40 group-hover/item:bg-indigo-500 transition-colors" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-token-status-colacion/40 group-hover/item:bg-token-status-colacion transition-colors" />
                           <span className="text-[11px] font-black uppercase text-token-text-secondary tracking-tight">
                             {type}
                           </span>
@@ -252,7 +252,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                         {!["Artículo 22", "Full-Time", "Part-Time"].includes(type) && (
                           <button
                             aria-label={`Eliminar protocolo ${type}`}
-                            className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-rose-500/20"
+                            className="p-2 rounded-md bg-token-status-error/10 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-token-status-error/20"
                             onClick={() => handleDeleteWorkdayType(type)}
                           >
                             <DeleteIcon className="w-4 h-4" />
@@ -276,7 +276,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {/* Correos */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-rose-500 rounded-sm"></div>
+              <div className="w-1 h-6 bg-token-status-error rounded-sm"></div>
               <div>
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Central de Alertas Email
@@ -302,7 +302,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                 <Button
                   onClick={handleAddEmailRecipient}
                   aria-label="Registrar nuevo receptor de correo"
-                  className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-rose-500 text-white shadow-lg shadow-rose-500/20 p-0 shrink-0"
+                  className="w-full sm:w-14 h-11 rounded-md flex items-center justify-center bg-token-status-error text-token-text-onAccent shadow-lg shadow-token-status-error/20 p-0 shrink-0"
                 >
                   <EnvelopeIcon className="w-5 h-5" />
                 </Button>
@@ -316,8 +316,8 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                         className="flex justify-between items-center px-6 py-4 text-sm group/item hover:bg-token-surface-active transition-all"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-md bg-rose-500/10 flex items-center justify-center border border-rose-500/20 transition-transform group-hover/item:scale-110">
-                            <EnvelopeIcon className="w-4 h-4 text-rose-600" />
+                          <div className="w-8 h-8 rounded-md bg-token-status-error/10 flex items-center justify-center border border-token-status-error/20 transition-transform group-hover/item:scale-110">
+                            <EnvelopeIcon className="w-4 h-4 text-token-status-error-text" />
                           </div>
                           <span className="text-[11px] font-black lowercase text-token-text-secondary tracking-tight">
                             {email}
@@ -325,7 +325,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
                         </div>
                         <button
                           aria-label={`Eliminar receptor ${email}`}
-                          className="p-2 rounded-md bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-rose-500/20"
+                          className="p-2 rounded-md bg-token-status-error/10 text-token-status-error-text hover:bg-token-status-error hover:text-token-text-onAccent transition-all opacity-0 group-hover/item:opacity-100 group-focus-within/item:opacity-100 focus-visible:opacity-100 border border-token-status-error/20"
                           onClick={() => handleDeleteEmailRecipient(email)}
                         >
                           <DeleteIcon className="w-4 h-4" />
@@ -348,7 +348,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {/* Modularidad (Control Interno) */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-amber-500 rounded-sm"></div>
+              <div className="w-1 h-6 bg-token-status-warning rounded-sm"></div>
               <div>
                 <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                   Modularidad
@@ -385,8 +385,8 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
               </div>
 
               {isControlInternoEnabled && (
-                <div className="p-3 bg-amber-500/10 rounded-md border border-amber-500/20 animate-in fade-in slide-in-from-top-1 duration-300">
-                  <p className="text-xxs font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest text-center">
+                <div className="p-3 bg-token-status-warning/10 rounded-md border border-token-status-warning/20 animate-in fade-in slide-in-from-top-1 duration-300">
+                  <p className="text-xxs font-black text-token-status-warning-text uppercase tracking-widest text-center">
                     FUNCIONES ACTIVAS: LIBRO, MEDIDORES, NOTAS
                   </p>
                 </div>
@@ -397,7 +397,7 @@ const GlobalVariablesManagerView: FC<GlobalVariablesManagerController> = (contro
           {currentUser?.role === "Administrador" && (
             <section className="space-y-6 lg:col-span-2">
               <div className="flex items-center gap-3">
-                <div className="w-1 h-6 bg-sky-500 rounded-sm"></div>
+                <div className="w-1 h-6 bg-token-status-info rounded-sm"></div>
                 <div>
                   <h4 className="text-[11px] font-black text-token-text-primary uppercase tracking-[0.2em]">
                     Reglamento Empresarial
