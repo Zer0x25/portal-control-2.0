@@ -191,18 +191,6 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
 
       {/* Calendar grid */}
       <div className="p-3">
-        <div className="grid grid-cols-7 mb-1" role="row">
-          {DAY_KEYS.map((label) => (
-            <span
-              key={label}
-              role="columnheader"
-              aria-label={label}
-              className="text-center text-xxs font-black text-token-text-tertiary py-1"
-            >
-              {label}
-            </span>
-          ))}
-        </div>
         <div
           ref={gridRef}
           role="grid"
@@ -214,6 +202,18 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
           tabIndex={-1}
           className="grid grid-cols-7 gap-1"
         >
+          <div className="contents" role="row">
+            {DAY_KEYS.map((label) => (
+              <span
+                key={label}
+                role="columnheader"
+                aria-label={label}
+                className="text-center text-xxs font-black text-token-text-tertiary py-1"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
           {Array.from({ length: Math.ceil(days.length / 7) }, (_, rowIndex) => (
             <div key={`row-${rowIndex}`} role="row" className="contents">
               {days.slice(rowIndex * 7, rowIndex * 7 + 7).map((day) => {
@@ -240,7 +240,7 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
                       }}
                       className={`
                           relative h-9 w-full flex items-center justify-center rounded-md text-[10px] font-black transition-all shadow-none
-                          ${!isCurrentMonth ? "text-token-text-tertiary/40 opacity-30" : "text-token-text-primary"}
+                          ${!isCurrentMonth ? "text-token-text-secondary" : "text-token-text-primary"}
                           ${isToday(day) && !isSelected ? "text-token-accent-brand ring-1 ring-token-accent-brand/20 bg-token-accent-brand/5" : ""}
                           ${isDisabled ? "opacity-20 cursor-not-allowed grayscale" : ""}
                           ${

@@ -129,7 +129,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           Análisis Operativo Estratégico
         </h2>
 
-        <div className="flex bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical">
+        <div className="flex flex-wrap bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical">
           {(["month", "quarter", "semester", "year", "custom"] as const).map((mode) => (
             <button
               key={mode}

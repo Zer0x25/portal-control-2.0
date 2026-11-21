@@ -20,8 +20,7 @@ interface DatePickerDialogProps {
  * la grilla accesible vive en un solo lugar y este componente aporta el
  * overlay, las acciones (Hoy / Limpiar / Aplicar) y el swipe horizontal.
  */
-const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
-  isOpen,
+const DatePickerDialogContent: React.FC<Omit<DatePickerDialogProps, "isOpen">> = ({
   onClose,
   onSelect,
   initialDate,
@@ -40,6 +39,11 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
   const minDateObj = minDate ? startOfDay(new Date(minDate + "T12:00:00")) : null;
   const maxDateObj = maxDate ? startOfDay(new Date(maxDate + "T12:00:00")) : null;
 
+  const isAllowed = (date: Date) => {
+    const day = startOfDay(date);
+    return (!minDateObj || day >= minDateObj) && (!maxDateObj || day <= maxDateObj);
+  };
+
   const handleSelectDay = (day: Date) => {
     if (selectedDate && day.toDateString() === selectedDate.toDateString()) {
       // Segundo click sobre el mismo dia: aplicar.
@@ -51,7 +55,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
   };
 
   const handleConfirm = () => {
-    if (selectedDate) {
+    if (selectedDate && isAllowed(selectedDate)) {
       onSelect(format(selectedDate, "yyyy-MM-dd"));
     }
     onClose();
@@ -71,7 +75,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
 
   return (
     <CinematicModal
-      isOpen={isOpen}
+      isOpen={true}
       onClose={onClose}
       zClass={Z.modal}
       maxWidth="max-w-[320px]"
@@ -134,6 +138,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
         <Button
           variant="secondary"
           onClick={handleToday}
+          disabled={!isAllowed(new Date())}
           className="rounded-md h-9 text-xxs font-black uppercase tracking-widest"
         >
           Hoy
@@ -148,7 +153,7 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
         <Button
           variant="primary"
           onClick={handleConfirm}
-          disabled={!selectedDate}
+          disabled={!selectedDate || !isAllowed(selectedDate)}
           className="col-span-2 rounded-md h-10 font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-2"
         >
           <CheckCircleIcon className="w-3.5 h-3.5" />
@@ -158,5 +163,8 @@ const DatePickerDialog: React.FC<DatePickerDialogProps> = ({
     </CinematicModal>
   );
 };
+
+const DatePickerDialog: React.FC<DatePickerDialogProps> = ({ isOpen, ...props }) =>
+  isOpen ? <DatePickerDialogContent {...props} /> : null;
 
 export default DatePickerDialog;

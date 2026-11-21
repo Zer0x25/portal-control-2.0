@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { DatePickerCalendar, default as DatePicker } from "../../components/ui/DatePicker";
 import DatePickerDialog from "../../components/ui/DatePickerDialog";
+import CinematicModal from "../../components/ui/CinematicModal";
+import { useState } from "react";
 
 /**
  * Spec 031 T11 (AC7): unico date picker componible y accesible por teclado.
@@ -146,6 +148,67 @@ describe("DatePicker componible (spec 031 AC7)", () => {
 });
 
 describe("DatePickerDialog (spec 031 AC7)", () => {
+  it("impide aplicar una fecha inicial o el día de hoy fuera de los límites", () => {
+    const onSelect = vi.fn();
+    render(
+      <DatePickerDialog
+        isOpen
+        onClose={vi.fn()}
+        onSelect={onSelect}
+        initialDate="2000-01-01"
+        minDate="2999-01-01"
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Hoy" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Aplicar" })).toBeDisabled();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("descarta una selección sin aplicar al volver a abrir", () => {
+    const onSelect = vi.fn();
+    const { rerender } = render(
+      <DatePickerDialog isOpen onClose={vi.fn()} onSelect={onSelect} initialDate="2026-10-20" />,
+    );
+    fireEvent.click(document.querySelector<HTMLElement>('[data-date="2026-10-15"]')!);
+    rerender(
+      <DatePickerDialog
+        isOpen={false}
+        onClose={vi.fn()}
+        onSelect={onSelect}
+        initialDate="2026-10-20"
+      />,
+    );
+    rerender(
+      <DatePickerDialog isOpen onClose={vi.fn()} onSelect={onSelect} initialDate="2026-10-20" />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /aplicar/i }));
+    expect(onSelect).toHaveBeenCalledWith("2026-10-20");
+  });
+
+  it("aísla el diálogo padre y devuelve el foco al cerrar el calendario", () => {
+    function NestedDialogs() {
+      const [open, setOpen] = useState(false);
+      return (
+        <CinematicModal isOpen onClose={vi.fn()} title="Historial">
+          <button onClick={() => setOpen(true)}>Filtrar fecha</button>
+          <DatePickerDialog isOpen={open} onClose={() => setOpen(false)} onSelect={vi.fn()} />
+        </CinematicModal>
+      );
+    }
+
+    render(<NestedDialogs />);
+    const trigger = screen.getByRole("button", { name: "Filtrar fecha" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    const calendar = screen.getByRole("dialog", { name: /seleccionar fecha/i });
+    expect(calendar).toHaveFocus();
+    expect(trigger.closest("[inert]")).not.toBeNull();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: /seleccionar fecha/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Historial" })).toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
   it("reutiliza la grilla accesible y confirma la fecha", () => {
     const onSelect = vi.fn();
     render(

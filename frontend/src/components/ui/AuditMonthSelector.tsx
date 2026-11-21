@@ -3,7 +3,7 @@
  * ⚠️ ATENCIÓN: No modificar este archivo a menos que sea pedido explícitamente por el USUARIO.
  * Este componente ha sido refinado, factorizado y pulido bajo estándares industriales específicos.
  */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import {
   format,
   subMonths,
@@ -139,6 +139,12 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
   const today = useBusinessNow({ tickMs: null });
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+  const closeAndRestoreFocus = () => {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  };
 
   // Safety Guards
   const isCurrentMonth = format(currentDate, "MM yyyy") === format(today, "MM yyyy");
@@ -158,7 +164,16 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
   }, []);
 
   return (
-    <div className="relative w-fit" ref={containerRef}>
+    <div
+      className="relative w-fit"
+      ref={containerRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && isOpen) {
+          event.stopPropagation();
+          closeAndRestoreFocus();
+        }
+      }}
+    >
       {/* 🧩 Header Control Bar */}
       <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
         <button
@@ -169,8 +184,12 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
           <ChevronLeftIcon className="w-3.5 h-3.5" />
         </button>
 
-        <div
+        <button
+          type="button"
+          ref={triggerRef}
           onClick={() => setIsOpen(!isOpen)}
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? panelId : undefined}
           className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center cursor-pointer hover:bg-token-surface-active transition-colors group/text py-1 rounded-sm"
         >
           <p className="text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-token-accent-brand">
@@ -182,7 +201,7 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
               className={`w-3 h-3 text-token-text-tertiary transition-transform duration-150 ${isOpen ? "rotate-90" : "-rotate-90"}`}
             />
           </p>
-        </div>
+        </button>
 
         <button
           onClick={() => handleMonthShift(1)}
@@ -197,6 +216,7 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
       {/* Floating Panel */}
       {isOpen && (
         <div
+          id={panelId}
           className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
         >
           <div className="space-y-6">
@@ -206,7 +226,7 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
               onChange={onChange}
               onGoToToday={() => {
                 onChange(today);
-                setIsOpen(false);
+                closeAndRestoreFocus();
               }}
             />
             <MonthPicker
@@ -214,7 +234,7 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
               today={today}
               onChange={(idx) => {
                 onChange(setMonth(currentDate, idx));
-                setIsOpen(false);
+                closeAndRestoreFocus();
               }}
             />
           </div>

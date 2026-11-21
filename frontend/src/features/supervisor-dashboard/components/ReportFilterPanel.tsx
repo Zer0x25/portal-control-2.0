@@ -131,7 +131,7 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           </p>
         </div>
 
-        <div className="flex bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical">
+        <div className="flex flex-wrap bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical">
           {(["month", "quarter", "semester", "year", "custom"] as const).map((mode) => (
             <button
               key={mode}
