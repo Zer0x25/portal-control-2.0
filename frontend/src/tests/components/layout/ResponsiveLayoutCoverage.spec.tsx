@@ -76,7 +76,7 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
       expect(el).toHaveClass("px-4");
       expect(el).toHaveClass("sm:px-6");
       expect(el).toHaveClass("lg:px-8");
-      expect(el).toHaveClass("max-w-7xl");
+      expect(el).toHaveClass("max-w-none");
     });
 
     it("applies wide container max-width (1440px) for dense operational matrices", () => {
@@ -162,7 +162,7 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
 
       // Centered content wrapper
       const content = screen.getByTestId("page-content").parentElement;
-      expect(content).toHaveClass("max-w-[1440px]");
+      expect(content).not.toHaveClass("max-w-[1440px]");
       expect(content).toHaveClass("mx-auto");
     });
 

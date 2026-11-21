@@ -238,12 +238,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = (props) => 
   );
 
   return (
-    <Container
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="space-y-6 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-6 animate-in fade-in duration-500">
       {!isEmbedded && (
         <PageHeader
           eyebrow="Seguridad"

@@ -27,12 +27,7 @@ export const SupervisorDashboardView: React.FC<SupervisorDashboardViewProps> = (
   renderContent,
 }) => {
   return (
-    <Container
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="supervisor-dashboard-ui-protected space-y-6"
-    >
+    <Container noPadding data-ui-protected className="supervisor-dashboard-ui-protected space-y-6">
       <div className="space-y-6 animate-in fade-in slide-in-from-top-2 [animation-duration:300ms]">
         {/* Header Premium - Estilo Auditoría */}
         <PageHeader

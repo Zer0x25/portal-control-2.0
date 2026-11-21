@@ -9,15 +9,20 @@ describe("Container Component", () => {
     expect(screen.getByText("Test Content")).toBeInTheDocument();
   });
 
-  it("applies default standard variant, centering, and responsive padding classes", () => {
+  it("applies default fluid variant, centering, and responsive padding classes", () => {
     render(<Container>Default Layout</Container>);
     const element = screen.getByTestId("page-container");
     expect(element).toHaveClass("w-full");
     expect(element).toHaveClass("mx-auto");
-    expect(element).toHaveClass("max-w-7xl");
+    expect(element).toHaveClass("max-w-none");
     expect(element).toHaveClass("px-4");
     expect(element).toHaveClass("sm:px-6");
     expect(element).toHaveClass("lg:px-8");
+  });
+
+  it("applies standard variant correctly (7xl max width)", () => {
+    render(<Container variant="standard">Standard Layout</Container>);
+    expect(screen.getByTestId("page-container")).toHaveClass("max-w-7xl");
   });
 
   it("applies wide variant correctly (1440px max width)", () => {

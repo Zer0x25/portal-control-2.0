@@ -72,12 +72,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 }) => {
   if ((isLoadingReports && shiftReports.length === 0) || isLoadingOverview) {
     return (
-      <Container
-        variant="standard"
-        noPadding
-        data-ui-protected
-        className="dashboard-ui-protected space-y-6"
-      >
+      <Container noPadding data-ui-protected className="dashboard-ui-protected space-y-6">
         <WelcomePanel />
 
         <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
@@ -93,12 +88,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   return (
-    <Container
-      variant="standard"
-      noPadding
-      data-ui-protected
-      className="dashboard-ui-protected space-y-6"
-    >
+    <Container noPadding data-ui-protected className="dashboard-ui-protected space-y-6">
       <WelcomePanel />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

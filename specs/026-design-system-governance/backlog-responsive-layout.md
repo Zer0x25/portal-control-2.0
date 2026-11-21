@@ -4,6 +4,12 @@ Spec: [spec.md](spec.md) | Tasks: [tasks.md](tasks.md) | Regla: [.agents/rules/d
 
 Este documento centraliza el inventario, estado de avance y plan de tandas para la adopción integral del componente canónico `<Container>`, tokens de layout responsivo (PWA / Safe Areas) y contratos de navegación determinista para agentes headless en `portal-control`.
 
+El ancho predeterminado de `Container` es `fluid`, sin límite máximo. Usar
+`standard` (1280 px), `wide` (1440 px) o `narrow` (896 px) explícitamente cuando
+el contenido requiera un ancho acotado. Todas las variantes ocupan el ancho
+disponible y se centran; `noPadding` elimina el padding horizontal responsivo.
+Las vistas de la aplicación utilizan el valor predeterminado fluido.
+
 ---
 
 ## 1. Estado de la Integración (Fase 1: Cerrada)

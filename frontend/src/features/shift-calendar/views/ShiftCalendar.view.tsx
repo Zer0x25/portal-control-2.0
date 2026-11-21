@@ -233,12 +233,7 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
   }
 
   return (
-    <Container
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="space-y-6 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
         eyebrow="Planificación"
         eyebrowIcon={<CalendarDaysIcon className="w-3.5 h-3.5" />}

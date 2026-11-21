@@ -91,7 +91,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
   }
 
   return (
-    <Container variant="wide" noPadding data-ui-protected className="space-y-6 pb-20 sm:pb-6">
+    <Container noPadding data-ui-protected className="space-y-6 pb-20 sm:pb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-in fade-in">
         <PageHeader
           eyebrow="Operaciones"

@@ -89,7 +89,7 @@ const PersistentLayoutView: React.FC<PersistentLayoutViewProps> = ({
             >
               <div
                 key={currentPath}
-                className="min-h-full flex flex-col w-full max-w-[1440px] mx-auto animate-in fade-in duration-150"
+                className="min-h-full flex flex-col w-full mx-auto animate-in fade-in duration-150"
               >
                 {children}
               </div>
