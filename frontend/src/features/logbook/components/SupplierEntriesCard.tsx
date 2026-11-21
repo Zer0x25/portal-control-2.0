@@ -140,9 +140,9 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
   const renderMobileView = () => (
     <div data-list-group="activity-feed" className="space-y-4 pt-2">
       {activeShift.supplierEntries.length > 0 ? (
-        <div className="flex flex-col gap-3">
+        <ul aria-label="Ingresos de proveedores" className="flex flex-col gap-3">
           {activeShift.supplierEntries.map((se, index) => (
-            <div
+            <li
               key={se.id}
               style={{ animationDelay: `${Math.min(index, 10) * 50}ms` }}
               data-list-group="activity-feed"
@@ -150,9 +150,9 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex flex-col">
-                  <h4 className="text-[15px] font-bold text-token-text-primary tracking-tight uppercase">
+                  <h3 className="text-[15px] font-bold text-token-text-primary tracking-tight uppercase">
                     {se.company}
-                  </h4>
+                  </h3>
                   <div className="flex items-center gap-2 mt-1.5">
                     {getEntryTypeLabel(se) && (
                       <Badge
@@ -226,9 +226,9 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
                   <p className="typo-list-note text-token-text-secondary">{se.reason}</p>
                 </div>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <div className="py-12 text-center bg-token-surface-stripe rounded-sm border border-token-border-technical p-4">
           <p className="typo-list-secondary text-token-text-tertiary uppercase">
@@ -363,9 +363,9 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
           <div className="flex items-center gap-4">
             <div className="w-1 h-8 bg-token-status-success rounded-full" />
             <div>
-              <h3 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
+              <h2 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
                 Control de Proveedores
-              </h3>
+              </h2>
               <p className="typo-list-secondary text-token-text-tertiary uppercase mt-1.5">
                 Acceso vehicular y personal externo
               </p>
@@ -377,7 +377,7 @@ const SupplierEntriesCard: React.FC<SupplierEntriesCardProps> = ({
               onClick={() => setShowSupplierEntryModal(true)}
               variant="primary"
               size="sm"
-              className="px-6 py-2.5 bg-token-status-success text-token-text-onAccent font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-token-status-success/10"
+              className="px-6 py-2.5 bg-token-status-success-text dark:bg-token-status-success text-token-text-onAccent! font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-token-status-success/10"
             >
               <PlusCircleIcon className="w-4 h-4" />
               Ingresar Proveedor

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import LogEntriesCard from "../../../features/logbook/components/LogEntriesCard";
 import SupplierEntriesCard from "../../../features/logbook/components/SupplierEntriesCard";
@@ -96,6 +96,11 @@ describe.each(layouts)("Logbook action names in $name", ({ isMobile }) => {
         name: "Eliminar novedad: Revisar filtro de aceite (09:30)",
       }),
     ).toBeInTheDocument();
+    if (isMobile) {
+      expect(
+        within(screen.getByRole("list", { name: "Novedades del turno" })).getAllByRole("listitem"),
+      ).toHaveLength(1);
+    }
   });
 
   it("names each supplier action with company, plate, and time", () => {
@@ -119,5 +124,12 @@ describe.each(layouts)("Logbook action names in $name", ({ isMobile }) => {
         name: "Eliminar proveedor: Acme (patente AB1234, 10:15)",
       }),
     ).toBeInTheDocument();
+    if (isMobile) {
+      expect(
+        within(screen.getByRole("list", { name: "Ingresos de proveedores" })).getAllByRole(
+          "listitem",
+        ),
+      ).toHaveLength(1);
+    }
   });
 });

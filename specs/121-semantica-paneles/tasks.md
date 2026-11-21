@@ -9,4 +9,7 @@ Spec: [spec.md](spec.md). Plan: [plan.md](plan.md).
 - [x] T5: Corregir y verificar accesibilidad del expediente de supervisión (AC5).
 - [x] T6: Consolidar y verificar el comportamiento compartido de los diálogos piloto (AC6).
 - [x] T7: Integrar los diálogos de adjunto y rechazo al comportamiento compartido y probar sus estados.
-- [ ] T8: Corregir la jerarquía de títulos y los nombres accesibles detectados en Indicadores y Turnos; ampliar la revisión con lector de pantalla y otros estados.
+- [x] T8: Corregir la jerarquía de títulos y los nombres accesibles detectados en Indicadores y Turnos; adaptar el historial de cierres.
+- [x] T9: Aplicar el patrón semántico a las listas móviles y al aviso de cierre de sesión de Bitácora.
+- [x] T10: Cubrir estados de carga, error y vacío seleccionados; revisar automáticamente contraste y reglas WCAG en los estados disponibles.
+- [ ] T11: Ampliar la revisión con lector de pantalla, otros roles y los estados de datos aún no disponibles.

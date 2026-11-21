@@ -144,7 +144,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                         <p className="text-[13px] font-bold text-token-text-primary uppercase tracking-tight truncate leading-none">
                           {employee.name}
                         </p>
-                        <p className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5 opacity-70">
+                        <p className="text-[10px] font-semibold text-token-text-tertiary uppercase tracking-wider mt-1.5">
                           {employee.position}
                         </p>
                       </div>

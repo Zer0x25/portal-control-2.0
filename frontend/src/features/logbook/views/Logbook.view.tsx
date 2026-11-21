@@ -4,7 +4,6 @@
 
 import React from "react";
 import PageHeader from "../../../components/ui/PageHeader";
-import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
@@ -17,6 +16,7 @@ import {
 import { formatDisplayDateTime } from "../../../utils/formatters";
 import ShiftReportModal from "../components/ShiftReportModal";
 import ClosedReportsModal from "../components/ClosedReportsModal";
+import LogoutCountdownDialog from "../components/LogoutCountdownDialog";
 import LogEntriesCard from "../components/LogEntriesCard";
 import SupplierEntriesCard from "../components/SupplierEntriesCard";
 import Container from "../../../components/ui/Container";
@@ -84,7 +84,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
 }) => {
   if (isLoadingReports) {
     return (
-      <div className="py-20 text-center text-token-text-primary">
+      <div role="status" className="py-20 text-center text-token-text-primary">
         Cargando Libro de Novedades...
       </div>
     );
@@ -165,7 +165,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                     variant="danger"
                     size="sm"
                     disabled={!canCurrentUserCloseActiveShift}
-                    className="w-full sm:w-auto px-10 h-11 bg-(--status-error) hover:bg-(--status-error)/90 text-white font-bold text-[11px] uppercase tracking-widest rounded-sm flex items-center justify-center gap-2.5 shadow-md shadow-(--status-error)/10"
+                    className="w-full sm:w-auto px-10 h-11 bg-token-status-error-text! dark:bg-token-status-error! text-token-text-onAccent! font-bold text-[11px] uppercase tracking-widest rounded-sm flex items-center justify-center gap-2.5 shadow-md shadow-(--status-error)/10"
                   >
                     <CloseIcon className="w-4 h-4" />
                     Cerrar Guardia
@@ -199,9 +199,9 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
           <div className="w-16 h-16 bg-token-surface-stripe rounded-full flex items-center justify-center mx-auto mb-6 border border-token-border-technical">
             <BookOpenIcon className="w-7 h-7 text-token-text-tertiary" />
           </div>
-          <h3 className="text-lg font-bold text-token-text-primary mb-2 tracking-tight uppercase">
+          <h2 className="text-lg font-bold text-token-text-primary mb-2 tracking-tight uppercase">
             Sin Operación Activa
-          </h3>
+          </h2>
           <p className="text-[12px] text-token-text-tertiary mb-8 max-w-xs mx-auto leading-relaxed">
             No se ha identificado un turno habilitado. Por favor, inicie la guardia para registrar
             eventos operativos.
@@ -227,30 +227,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
         onPreview={handleOpenReportDetails}
       />
 
-      <CinematicModal
-        isOpen={showLogoutCountdownModal}
-        onClose={() => undefined}
-        closeOnBackdrop={false}
-        closeOnEscape={false}
-        showHeader={false}
-        maxWidth="max-w-sm"
-        ariaLabelledBy="logbook-logout-countdown-title"
-        panelClassName="rounded-sm"
-        bodyClassName="p-10 text-center"
-      >
-        <h3
-          id="logbook-logout-countdown-title"
-          className="text-lg font-bold uppercase tracking-tight text-token-text-primary"
-        >
-          Operación Finalizada
-        </h3>
-        <p className="my-4 text-[11px] font-semibold uppercase tracking-wider text-token-text-tertiary">
-          Cierre de sesión automático en...
-        </p>
-        <div className="text-6xl font-black font-mono tracking-tighter text-(--sidebar-text-active) tabular-nums">
-          {countdown}
-        </div>
-      </CinematicModal>
+      {showLogoutCountdownModal && <LogoutCountdownDialog countdown={countdown} />}
       {showCloseShiftConfirmation && (
         <ConfirmationModal
           isOpen={true}

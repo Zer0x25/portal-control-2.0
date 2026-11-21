@@ -97,9 +97,9 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
   const renderMobileView = () => (
     <div data-list-group="activity-feed" className="space-y-4 pt-2">
       {activeShift.logEntries.length > 0 ? (
-        <div className="flex flex-col gap-3">
+        <ul aria-label="Novedades del turno" className="flex flex-col gap-3">
           {activeShift.logEntries.map((le, index) => (
-            <div
+            <li
               key={le.id}
               style={{ animationDelay: `${Math.min(index, 10) * 50}ms` }}
               className="relative p-5 rounded-sm bg-token-surface-card border border-token-border-technical group shadow-sm animate-in fade-in slide-in-from-bottom-2"
@@ -144,9 +144,9 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
               <p className="typo-list-note text-token-text-primary whitespace-pre-wrap">
                 {le.annotation}
               </p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <div className="py-12 text-center bg-token-surface-stripe rounded-sm border border-token-border-technical p-4">
           <p className="typo-list-secondary text-token-text-tertiary uppercase">
@@ -235,9 +235,9 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
           <div className="flex items-center gap-4">
             <div className="w-1 h-8 bg-token-accent-brand rounded-full" />
             <div>
-              <h3 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
+              <h2 className="text-lg font-bold text-token-text-primary tracking-tight uppercase leading-none">
                 Bitácora de Novedades
-              </h3>
+              </h2>
               <p className="typo-list-secondary text-token-text-tertiary uppercase mt-1.5">
                 Registro de eventos críticos del turno
               </p>
@@ -249,7 +249,7 @@ const LogEntriesCard: React.FC<LogEntriesCardProps> = ({
               onClick={() => setShowLogEntryModal(true)}
               variant="primary"
               size="sm"
-              className="px-6 py-2.5 bg-token-accent-brand text-white font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-token-accent-brand/10"
+              className="px-6 py-2.5 bg-token-accent-brand text-token-text-onAccent! font-bold uppercase text-[11px] tracking-widest rounded-sm shadow-md shadow-token-accent-brand/10"
             >
               <PlusCircleIcon className="w-4 h-4" />
               Ingresar Novedad

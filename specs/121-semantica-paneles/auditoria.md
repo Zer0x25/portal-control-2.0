@@ -11,6 +11,10 @@ Inspección autenticada en escritorio el 2026-11-21, con datos y rol de administ
 
 - Los diálogos `CinematicModal` y de expediente comparten aislamiento del fondo, gestión del foco y Escape; ambos se verificaron en navegador con restauración del foco.
 - El visor de adjuntos y el diálogo de rechazo usan el comportamiento compartido mediante portales; sus pruebas cubren aislamiento, foco, Escape y restauración. El rechazo permanece abierto durante el envío.
+- Indicadores: los tres filtros tienen etiquetas asociadas y los títulos de métricas usan `h2`. Turnos: se corrigió el segundo `h1` y el historial de cierres usa el diálogo compartido; en navegador se verificaron foco, aislamiento, Escape y retorno al botón.
+- Bitácora: en móvil las novedades y los ingresos de proveedores son listas nombradas; sus títulos siguen la jerarquía de la página. El aviso de cierre de sesión se anuncia como diálogo de alerta, aísla el fondo y mantiene su comportamiento no cancelable. Este aviso se verificó con pruebas de componentes sin cerrar una guardia real.
+- Las cargas de Bitácora y solicitudes se anuncian como estado; en solicitudes los filtros indican cuál está seleccionado. Indicadores anuncia errores de fechas y ausencia de datos. Estas situaciones se cubrieron con pruebas de componentes.
+- Con la sesión de administrador y los datos disponibles se ejecutó axe-core sobre el `main` de dashboard, Bitácora y las secciones Resumen, Indicadores, Empleados y Turnos de supervisión, con las reglas etiquetadas WCAG 2 A/AA en temas claro y oscuro. Se corrigieron contrastes detectados y la revisión final no reportó infracciones en esos estados; no es una certificación WCAG ni cubre la aplicación completa.
 
 ## Ampliación de la revisión
 
@@ -20,5 +24,4 @@ Inspección autenticada en escritorio el 2026-11-21, con datos y rol de administ
 
 ## Hallazgos pendientes
 
-- En Indicadores existen encabezados que saltan de `h2` a `h4` y filtros sin nombre accesible; en Turnos aparece un segundo `h1` y saltos en la jerarquía. Requieren una corrección y pruebas específicas.
 - No se ejecutó una auditoría con lector de pantalla, responsive completa, otros roles ni todos los estados de carga, error y datos de las páginas.

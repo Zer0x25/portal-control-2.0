@@ -39,6 +39,7 @@ const KpisTab: React.FC = () => {
       {isDateRangeInvalid ? (
         <div
           key="error"
+          role="alert"
           className="flex flex-col items-center justify-center p-16 bg-token-status-error/5 border border-token-status-error/20 rounded-sm animate-in fade-in zoom-in-95"
         >
           <div className="w-14 h-14 rounded-full bg-token-status-error/10 flex items-center justify-center mb-5">
@@ -74,7 +75,10 @@ const KpisTab: React.FC = () => {
           )}
 
           {isNoDataPeriod && (
-            <div className="mb-8 rounded-sm border border-token-status-warning/30 bg-token-status-warning-surface/60 px-6 py-4 flex items-center gap-4">
+            <div
+              role="status"
+              className="mb-8 rounded-sm border border-token-status-warning/30 bg-token-status-warning-surface/60 px-6 py-4 flex items-center gap-4"
+            >
               <div className="w-2 h-2 rounded-full bg-token-status-warning animate-pulse" />
               <p className="text-[11px] font-semibold text-token-status-warning-text uppercase tracking-wide">
                 Periodo sin registros: No hay data operativa disponible en la ventana seleccionada.
@@ -86,6 +90,7 @@ const KpisTab: React.FC = () => {
             <div className="lg:col-span-8">
               <MetricCard
                 kind="panel"
+                headingAs="h2"
                 title="Asistencia y Puntualidad"
                 icon={<ClockIcon />}
                 className="h-full"
@@ -147,6 +152,7 @@ const KpisTab: React.FC = () => {
             <div className="lg:col-span-4">
               <MetricCard
                 kind="panel"
+                headingAs="h2"
                 title="Eficiencia Horaria"
                 icon={<DocumentChartBarIcon />}
                 className="h-full"

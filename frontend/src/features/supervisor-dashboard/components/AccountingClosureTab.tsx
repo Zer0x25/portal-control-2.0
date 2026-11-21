@@ -60,14 +60,14 @@ const AccountingClosureTab: React.FC = () => {
                 <KeyIcon className="w-7 h-7" />
               </div>
               <div className="grow text-center md:text-left">
-                <h3 className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider mb-2">
+                <p className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider mb-2">
                   Protocolo de Seguridad Operativa
-                </h3>
-                <h1 className="text-2xl font-bold text-token-text-primary uppercase tracking-tight">
+                </p>
+                <h2 className="text-2xl font-bold text-token-text-primary uppercase tracking-tight">
                   {accountingLockDate
                     ? `Período Blindado: ${formatBusinessDate(accountingLockDate, { day: "2-digit", month: "long", year: "numeric" })}`
                     : "Sistema de Control sin Inicializar"}
-                </h1>
+                </h2>
                 <div className="flex items-center gap-3 bg-token-surface-stripe px-3.5 py-2 rounded-sm border border-token-border-technical w-fit group-hover:border-token-accent-brand/30 transition-colors mx-auto md:mx-0 mt-3 shadow-sm">
                   <ShieldCheckIcon className="w-4 h-4 text-token-status-success" />
                   <p className="text-[11px] font-bold text-token-text-secondary uppercase tracking-wider">
@@ -93,10 +93,10 @@ const AccountingClosureTab: React.FC = () => {
         {/* Configuración del Nuevo Cierre */}
         <div className="lg:col-span-12">
           <Card className="p-6 bg-token-surface-card border-token-border-technical rounded-sm shadow-sm space-y-8">
-            <h4 className="text-[11px] font-bold text-token-text-primary uppercase tracking-wider flex items-center gap-2.5">
-              <div className="w-1.5 h-1.5 bg-token-accent-brand rounded-full shadow-sm" />
+            <h2 className="text-[11px] font-bold text-token-text-primary uppercase tracking-wider flex items-center gap-2.5">
+              <span className="w-1.5 h-1.5 bg-token-accent-brand rounded-full shadow-sm" />
               Configuración de Punto de Sellado
-            </h4>
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2.5">
@@ -302,9 +302,9 @@ const AccountingClosureTab: React.FC = () => {
                 <ExclamationTriangleIcon className="w-16 h-16" />
               </div>
               <div className="space-y-2.5">
-                <h5 className="text-4xl font-bold text-token-text-primary uppercase tracking-tighter">
+                <p className="text-4xl font-bold text-token-text-primary uppercase tracking-tighter">
                   ¿SELLAR REGISTRO?
-                </h5>
+                </p>
                 <p className="text-[11px] font-bold text-token-status-error-text uppercase tracking-[0.4em]">
                   OPERACIÓN NO REVERSIBLE • LEDGER_UPDATE_LOCK
                 </p>
@@ -346,64 +346,62 @@ const AccountingClosureTab: React.FC = () => {
       <CinematicModal
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
+        title="Historial de Cierres Contables"
         maxWidth="max-w-4xl"
-        title={
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-token-text-primary">
-              Historial de Cierres Contables
-            </h3>
-            <p className="text-xs font-normal normal-case tracking-normal text-token-text-tertiary">
-              Incluye cierres manuales y automáticos.
-            </p>
-          </div>
-        }
         panelClassName="rounded-sm"
-        bodyClassName="max-h-[60vh] overflow-auto p-5"
+        bodyClassName="p-0"
       >
-        {isHistoryLoading && (
-          <p className="text-sm text-token-text-tertiary">Cargando historial...</p>
-        )}
-        {!isHistoryLoading && historyError && (
-          <p className="text-sm text-token-status-error-text">{historyError}</p>
-        )}
-        {!isHistoryLoading && !historyError && closureHistory.length === 0 && (
-          <p className="text-sm text-token-text-tertiary">No hay eventos de cierre registrados.</p>
-        )}
-        {!isHistoryLoading && !historyError && closureHistory.length > 0 && (
-          <div className="space-y-2">
-            {closureHistory.map((log) => {
-              const details = parseDetailsObject(log.details);
-              const isManual = log.action === "CONFIG_SET";
-              const previousValue = details.previousValue;
-              const newValue = details.newValue;
-              return (
-                <div
-                  key={log.id}
-                  className="rounded-sm border border-token-border-technical bg-token-surface-stripe p-3"
-                >
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="font-bold uppercase tracking-wide text-token-text-primary">
-                      {isManual ? "Manual" : "Automático"}
-                    </span>
-                    <span className="text-token-text-tertiary">•</span>
-                    <span className="font-mono text-token-text-secondary">
-                      {new Date(log.timestamp).toLocaleString("es-CL")}
-                    </span>
-                    <span className="text-token-text-tertiary">•</span>
-                    <span className="text-token-text-secondary">
-                      Actor: {log.actorUsername || "SYSTEM"}
-                    </span>
+        <p className="px-5 pt-4 text-xs text-token-text-tertiary">
+          Incluye cierres manuales y automáticos.
+        </p>
+        <div className="max-h-[60vh] overflow-auto p-5">
+          {isHistoryLoading && (
+            <p className="text-sm text-token-text-tertiary">Cargando historial...</p>
+          )}
+          {!isHistoryLoading && historyError && (
+            <p className="text-sm text-token-status-error-text">{historyError}</p>
+          )}
+          {!isHistoryLoading && !historyError && closureHistory.length === 0 && (
+            <p className="text-sm text-token-text-tertiary">
+              No hay eventos de cierre registrados.
+            </p>
+          )}
+          {!isHistoryLoading && !historyError && closureHistory.length > 0 && (
+            <div className="space-y-2">
+              {closureHistory.map((log) => {
+                const details = parseDetailsObject(log.details);
+                const isManual = log.action === "CONFIG_SET";
+                const previousValue = details.previousValue;
+                const newValue = details.newValue;
+                return (
+                  <div
+                    key={log.id}
+                    className="rounded-sm border border-token-border-technical bg-token-surface-stripe p-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-bold uppercase tracking-wide text-token-text-primary">
+                        {isManual ? "Manual" : "Automático"}
+                      </span>
+                      <span className="text-token-text-tertiary">•</span>
+                      <span className="font-mono text-token-text-secondary">
+                        {new Date(log.timestamp).toLocaleString("es-CL")}
+                      </span>
+                      <span className="text-token-text-tertiary">•</span>
+                      <span className="text-token-text-secondary">
+                        Actor: {log.actorUsername || "SYSTEM"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-token-text-primary">
+                      {isManual
+                        ? `Cambio de cierre contable: ${String(previousValue ?? "null")} -> ${String(newValue ?? "null")}`
+                        : (details.message as string) || "Cierre contable automático aplicado."}
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-token-text-primary">
-                    {isManual
-                      ? `Cambio de cierre contable: ${String(previousValue ?? "null")} -> ${String(newValue ?? "null")}`
-                      : (details.message as string) || "Cierre contable automático aplicado."}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </CinematicModal>
     </div>
   );
