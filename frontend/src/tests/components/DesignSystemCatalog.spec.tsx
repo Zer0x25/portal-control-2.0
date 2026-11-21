@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { CERTIFIED_DESIGN_SYSTEM_STORIES } from "../../features/design-system/certifiedStoryManifest";
 import DesignSystemCatalogView from "../../features/design-system/containers/DesignSystemCatalog.container";
 
 /** Spec 038: la ruta expone tokens y el catálogo certificado de Storybook. */
@@ -27,7 +28,11 @@ describe("Catálogo del design system (spec 038)", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Catálogo Storybook/i }));
 
     expect(
-      screen.getByText(/68 entradas enlazadas a sus historias de Storybook/),
+      screen.getByText(
+        new RegExp(
+          `${CERTIFIED_DESIGN_SYSTEM_STORIES.length} entradas enlazadas a sus historias de Storybook`,
+        ),
+      ),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Abrir Storybook" })).toBeInTheDocument();
     expect(screen.getByText("Button")).toBeInTheDocument();
