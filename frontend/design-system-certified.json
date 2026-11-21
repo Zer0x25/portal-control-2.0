@@ -8,6 +8,8 @@
     "src/components/layout/PersistentLayout.view.tsx",
     "src/components/layout/Sidebar.view.tsx",
     "src/components/layout/SidebarNavItem.tsx",
+    "src/components/layout/ToastContainer.view.tsx",
+    "src/components/layout/TopLoadingBar.view.tsx",
     "src/components/ui/AboutModal.view.tsx",
     "src/components/ui/AuditMonthSelector.tsx",
     "src/components/ui/Badge.tsx",
