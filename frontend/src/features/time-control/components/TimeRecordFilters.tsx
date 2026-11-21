@@ -22,7 +22,7 @@ const CANONICAL_TIME_RECORD_STATUSES = [
 ] as const;
 
 const FILTER_SELECT_CLASS =
-  "block w-full h-11 min-h-[44px] px-3 md:px-4 text-[11px] md:text-[12px] font-black uppercase tracking-tight text-token-text-primary bg-token-surface-card border border-token-border-technical rounded-md shadow-sm transition-all duration-300 cursor-pointer appearance-none focus:ring-2 focus:ring-token-border-focus focus:border-token-accent-brand outline-none disabled:opacity-50 disabled:cursor-not-allowed";
+  "block w-full h-11 min-h-11 px-3 md:px-4 text-[11px] md:text-[12px] font-black uppercase tracking-tight text-token-text-primary bg-token-surface-card border border-token-border-technical rounded-md shadow-sm transition-all duration-300 cursor-pointer appearance-none focus:ring-2 focus:ring-token-border-focus focus:border-token-accent-brand outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
 interface TimeRecordFiltersProps {
   clientFilters: { name: string; area: string; workdayType: string; status: string };
@@ -140,7 +140,7 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
               variant="secondary"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-11 min-h-[44px] px-3 shrink-0 rounded-md font-black uppercase tracking-widest text-xxs bg-token-surface-card border border-token-border-technical"
+              className="h-11 min-h-11 px-3 shrink-0 rounded-md font-black uppercase tracking-widest text-xxs bg-token-surface-card border border-token-border-technical"
               aria-expanded={isExpanded}
               aria-controls="time-record-filters-panel"
             >
@@ -175,8 +175,8 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                   Cargando opciones históricas de filtros...
                 </p>
               )}
-              {/* MAIN CONTROLS ROW */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 pb-4">
+              {/* CONTROLES DE FILTRO: grilla unica para evitar recortes entre breakpoints */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 pb-4">
                 {/* 1. Tipo Jornada */}
                 <div className="w-full">
                   <label
@@ -258,12 +258,12 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                   </div>
                 </div>
 
-                {/* 4. Quick Filters (24h, 7d, 31d) */}
-                <div className="w-full lg:w-auto">
+                {/* 4. Rango rapido (24h / 7d / 31d) */}
+                <div className="w-full">
                   <span className="text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2 block">
                     Rango Rápido
                   </span>
-                  <div className="flex p-1 bg-token-surface-stripe border border-token-border-technical rounded-md w-full lg:w-auto h-11 min-h-[44px] items-center">
+                  <div className="flex p-1 bg-token-surface-stripe border border-token-border-technical rounded-md w-full h-11 min-h-11 items-center">
                     {(["24h", "week", "month"] as QuickFilterMode[]).map((p) => (
                       <button
                         key={p}
@@ -277,7 +277,7 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                               : "Filtrar los últimos 31 días"
                         }
                         aria-pressed={activeQuickFilter === p}
-                        className={`flex-1 min-w-15 h-full min-h-[40px] px-4 rounded-sm text-xxs font-black uppercase tracking-widest transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-token-border-focus focus-visible:ring-offset-1 focus-visible:ring-offset-token-surface-card
+                        className={`flex-1 min-w-15 h-full min-h-10 px-4 rounded-sm text-xxs font-black uppercase tracking-widest transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-token-border-focus focus-visible:ring-offset-1 focus-visible:ring-offset-token-surface-card
                               ${
                                 activeQuickFilter === p
                                   ? "bg-token-accent-brand text-token-text-onAccent shadow-sm"
@@ -291,50 +291,56 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div className="hidden lg:block w-px h-10 bg-token-border-technical mx-2" />
+                {/* 5. Fecha desde */}
+                <div className="w-full">
+                  <Input
+                    type="date"
+                    label="Desde"
+                    aria-label="Desde"
+                    value={dateFilters.desde}
+                    onChange={(e) => onDateFilterChange({ desde: e.target.value })}
+                    className="h-11 min-h-11 py-2 text-[11px] md:text-[12px] uppercase"
+                    max={maxBusinessDate}
+                  />
+                </div>
 
-                {/* 5. Custom Range Picker */}
-                <div className="grid grid-cols-2 lg:flex lg:items-end gap-2 md:gap-3 w-full lg:w-auto">
-                  <div className="col-span-1 w-full lg:w-36">
-                    <Input
-                      type="date"
-                      label="Desde"
-                      aria-label="Desde"
-                      value={dateFilters.desde}
-                      onChange={(e) => onDateFilterChange({ desde: e.target.value })}
-                      className="h-11 min-h-[44px] py-2 text-[11px] md:text-[12px] uppercase"
-                      max={maxBusinessDate}
-                    />
+                {/* 6. Fecha hasta */}
+                <div className="w-full">
+                  <Input
+                    type="date"
+                    label="Hasta"
+                    aria-label="Hasta"
+                    value={dateFilters.hasta}
+                    onChange={(e) => onDateFilterChange({ hasta: e.target.value })}
+                    className="h-11 min-h-11 py-2 text-[11px] md:text-[12px] uppercase"
+                    max={maxBusinessDate}
+                  />
+                </div>
+
+                {/* 7. Acciones: Aplicar y Limpiar */}
+                <div className="w-full">
+                  <span className="hidden xl:block text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2">
+                    Acciones
+                  </span>
+                  <div className="flex items-center gap-2 md:gap-3 w-full">
+                    <Button
+                      onClick={onApplyCustomFilters}
+                      disabled={!isApplyButtonEnabled}
+                      variant="primary"
+                      className="flex-1 h-11 min-h-11 px-4 xl:px-5 rounded-md font-black uppercase tracking-widest text-xxs"
+                    >
+                      Aplicar
+                    </Button>
+                    <Button
+                      onClick={onClearFilters}
+                      variant="secondary"
+                      className="flex-1 h-11 min-h-11 px-4 xl:px-5 rounded-md font-black uppercase tracking-widest text-xxs bg-token-surface-card border border-token-border-technical hover:bg-token-surface-active shadow-sm"
+                      title="Limpiar Filtros"
+                      aria-label="Limpiar Filtros"
+                    >
+                      Limpiar
+                    </Button>
                   </div>
-                  <div className="col-span-1 w-full lg:w-36">
-                    <Input
-                      type="date"
-                      label="Hasta"
-                      aria-label="Hasta"
-                      value={dateFilters.hasta}
-                      onChange={(e) => onDateFilterChange({ hasta: e.target.value })}
-                      className="h-11 min-h-[44px] py-2 text-[11px] md:text-[12px] uppercase"
-                      max={maxBusinessDate}
-                    />
-                  </div>
-                  <Button
-                    onClick={onApplyCustomFilters}
-                    disabled={!isApplyButtonEnabled}
-                    variant="primary"
-                    className="col-span-1 w-full lg:w-auto h-11 min-h-[44px] px-4 lg:px-6 rounded-md font-black uppercase tracking-widest text-xxs"
-                  >
-                    Aplicar
-                  </Button>
-                  <Button
-                    onClick={onClearFilters}
-                    variant="secondary"
-                    className="col-span-1 w-full lg:w-auto h-11 min-h-[44px] px-4 rounded-md font-black uppercase tracking-widest text-xxs bg-token-surface-card border border-token-border-technical hover:bg-token-surface-active shadow-sm"
-                    title="Limpiar Filtros"
-                    aria-label="Limpiar Filtros"
-                  >
-                    Limpiar
-                  </Button>
                 </div>
               </div>
             </div>
