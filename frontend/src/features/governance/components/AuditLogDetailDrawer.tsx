@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import {
   CloseIcon,
   ClockIcon,
@@ -10,7 +10,7 @@ import {
 import { AuditLog } from "../../../types/index";
 import { formatLogTimestamp } from "../../../utils/formatters";
 import IconBox from "../../../components/ui/IconBox";
-import { Z } from "../../../constants/zScale";
+import SideDrawer from "../../../components/ui/SideDrawer";
 
 interface AuditLogDetailDrawerProps {
   log: AuditLog | null;
@@ -98,71 +98,15 @@ const DiffViewer: React.FC<{ details: Record<string, unknown> }> = ({ details })
 };
 
 const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClose }) => {
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // Escape: el drawer es descartable por teclado (estándar de modal, AC2).
-  useEffect(() => {
-    if (!log) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [log, onClose]);
-
-  // Focus inicial + focus trap + retorno (misma garantía que CinematicModal).
-  useEffect(() => {
-    if (!log) return;
-    const panel = panelRef.current;
-    const previous = document.activeElement as HTMLElement | null;
-    panel?.focus({ preventScroll: true });
-
-    const handleTab = (event: KeyboardEvent) => {
-      if (event.key !== "Tab" || !panel) return;
-      const items = [
-        ...panel.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ];
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleTab);
-    return () => {
-      document.removeEventListener("keydown", handleTab);
-      previous?.focus?.();
-    };
-  }, [log]);
-
   return (
-    log && (
-      <>
-        {/* Overlay */}
-        <div
-          onClick={onClose}
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm ${Z.overlay} animate-in fade-in`}
-        />
-
-        {/* Drawer */}
-        <div
-          ref={panelRef}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Detalle de evento de auditoría"
-          className={`fixed top-0 right-0 h-full w-full max-w-lg bg-token-surface-card shadow-2xl ${Z.modal} border-l border-token-border-technical flex flex-col animate-in fade-in slide-in-from-right [animation-duration:200ms] focus:outline-none`}
-        >
+    <SideDrawer
+      isOpen={Boolean(log)}
+      onClose={onClose}
+      ariaLabel="Detalle de evento de auditoría"
+      maxWidth="max-w-lg"
+    >
+      {log && (
+        <>
           {/* Header */}
           <div className="p-6 border-b border-token-border-technical flex items-center justify-between bg-token-surface-header">
             <div className="flex items-center gap-4">
@@ -265,9 +209,9 @@ const AuditLogDetailDrawer: React.FC<AuditLogDetailDrawerProps> = ({ log, onClos
               Seguridad Enterprise &bull; Trazabilidad v3.5
             </span>
           </div>
-        </div>
-      </>
-    )
+        </>
+      )}
+    </SideDrawer>
   );
 };
 

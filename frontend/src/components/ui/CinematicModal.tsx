@@ -2,9 +2,7 @@ import React, { ReactNode, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./icons";
 import { Z } from "../../constants/zScale";
-
-const FOCUSABLE_SELECTOR =
-  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+import { useDialogA11y } from "../../hooks/useDialogA11y";
 
 interface CinematicModalProps {
   isOpen: boolean;
@@ -16,8 +14,10 @@ interface CinematicModalProps {
   closeOnBackdrop?: boolean;
   closeOnEscape?: boolean;
   showHeader?: boolean;
+  ariaLabel?: string;
   ariaLabelledBy?: string;
   testId?: string;
+  overlayClassName?: string;
   panelClassName?: string;
   bodyClassName?: string;
   zClass?: string;
@@ -36,8 +36,10 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
   closeOnBackdrop = true,
   closeOnEscape = true,
   showHeader = true,
+  ariaLabel,
   ariaLabelledBy,
   testId = "modal-dialog",
+  overlayClassName = "bg-black/60 backdrop-blur-sm p-4",
   panelClassName,
   bodyClassName = "p-6 overflow-y-auto custom-scrollbar max-h-[85vh]",
   zClass = Z.max,
@@ -62,56 +64,31 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
     return () => clearTimeout(timer);
   }, [isOpen, rendered]);
 
-  useEffect(() => {
-    if (!isOpen || !closeOnEscape) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, closeOnEscape, onClose]);
+  useDialogA11y({ isOpen, isActive: rendered && !closing, onClose, closeOnEscape, panelRef });
 
-  useEffect(() => {
-    if (!rendered || closing) return;
-    const previous = document.activeElement as HTMLElement | null;
-    const panel = panelRef.current;
-    panel?.focus({ preventScroll: true });
-    const handleTab = (event: KeyboardEvent) => {
-      if (event.key !== "Tab" || !panel) return;
-      const items = [...panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)];
-      if (items.length === 0) return event.preventDefault();
-      const [first, last] = [items[0], items[items.length - 1]];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener("keydown", handleTab);
-    return () => {
-      document.removeEventListener("keydown", handleTab);
-      previous?.focus?.();
-    };
-  }, [rendered, closing]);
   if (typeof document === "undefined" || !rendered) return null;
 
   const panelAnim = closing
     ? "animate-out fade-out zoom-out-95"
     : "animate-in fade-in zoom-in-95 slide-in-from-bottom-2";
+  const defaultRounded = panelClassName?.includes("rounded-") ? "" : "rounded-lg";
+  const defaultBorder = panelClassName?.includes("border-token-")
+    ? ""
+    : "border-token-border-technical";
+  const defaultOverflow = panelClassName?.includes("overflow-") ? "" : "overflow-hidden";
   return createPortal(
     <div
-      className={`fixed inset-0 ${zClass} flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 ${closing ? "animate-out fade-out" : "animate-in fade-in"}`}
+      className={`fixed inset-0 ${zClass} flex items-center justify-center ${overlayClassName} ${closing ? "animate-out fade-out" : "animate-in fade-in"}`}
       onClick={closeOnBackdrop ? onClose : undefined}
     >
       <div
         ref={panelRef}
         tabIndex={-1}
         data-testid={testId}
-        className={`bg-token-surface-card rounded-lg border border-token-border-technical shadow-2xl w-full ${maxWidth} ${panelClassName?.includes("overflow-") ? "" : "overflow-hidden"} ${panelAnim}${panelClassName ? ` ${panelClassName}` : ""}`}
+        className={`bg-token-surface-card ${defaultRounded} border ${defaultBorder} shadow-2xl w-full ${maxWidth} ${defaultOverflow} ${panelAnim}${panelClassName ? ` ${panelClassName}` : ""}`}
         role="dialog"
         aria-modal="true"
+        aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy ?? (showHeader ? titleId : undefined)}
         onClick={(e) => e.stopPropagation()}
       >

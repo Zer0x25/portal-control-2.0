@@ -28,27 +28,23 @@ const SANCTIONED_PRIMITIVE = "components/ui/CinematicModal.tsx";
  * Rutas relativas a `src/`.
  */
 const MODAL_OVERLAY_WHITELIST: readonly string[] = [
-  // Drawers y paneles deslizantes laterales (3)
-  "features/governance/components/AuditLogDetailDrawer.tsx",
-  "features/meters/components/MeterConfigPanel.tsx",
-  "features/meters/views/MeterReadings.view.tsx",
-  // Overlays de carga, estado global o utilidades no-dialog (9)
+  // Primitiva canónica de panel deslizante lateral (1)
+  "components/ui/SideDrawer.tsx",
+  // Overlays de carga, estado global o utilidades no-dialog (6)
   "features/configuration/views/DeveloperPanel.view.tsx",
   "features/supervisor-dashboard/components/ReportsTab.tsx",
-  "components/ui/DatePickerDialog.tsx",
   "components/ui/InitialSyncOverlay.tsx",
   "components/ui/LoadingOverlay.tsx",
   "components/ui/LoadingSpinner.tsx",
   "components/ui/SessionExpiredOverlay.tsx",
-  "components/ui/TimePickerDialog.tsx",
-  "components/ui/UserManualModal.tsx",
 ];
 
 /**
- * Budget monotónico decreciente: reducido tras converger los 16 modales de feature
- * a CinematicModal (3 drawers + 9 utilidades/overlays restantes = 12).
+ * Budget monotónico decreciente: bajó de 29 -> 12 en Fase A (modales de feature
+ * en CinematicModal) y de 12 -> 7 en Fase B (diálogos UI en CinematicModal +
+ * drawers consolidados en SideDrawer).
  */
-const MODAL_OVERLAY_HANDROLLED_BUDGET = 12;
+const MODAL_OVERLAY_HANDROLLED_BUDGET = 7;
 
 const OVERLAY_RE = /\bfixed\s+inset-0\b/;
 const CINEMATIC_IMPORT_RE = /import\s+CinematicModal\s+from\s+["'][^"']+["']/;
