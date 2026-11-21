@@ -90,8 +90,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
           title={finalTooltip}
           className={`flex items-center justify-center gap-3 h-14 shadow-md transition-all group hover:scale-[1.02] active:scale-[0.98] ${
             finalDisabledState
-              ? "bg-sky-500/10 text-sky-700/40 dark:text-sky-400/30 border border-sky-500/20 shadow-none"
-              : "bg-sky-600 text-white border border-sky-500 shadow-md hover:bg-sky-700"
+              ? "bg-token-status-info/10 text-token-status-info-text/40 border border-token-status-info/20 shadow-none"
+              : "bg-token-status-info text-token-text-onAccent border border-token-status-info shadow-md hover:opacity-90"
           }`}
         >
           <ClockIcon className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -105,8 +105,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
           title={finalTooltip}
           className={`flex items-center justify-center gap-3 h-14 shadow-md transition-all group hover:scale-[1.02] active:scale-[0.98] ${
             finalDisabledState
-              ? "bg-amber-500/10 text-amber-700/40 dark:text-amber-400/30 border border-amber-500/20 shadow-none"
-              : "bg-amber-600 text-white border border-amber-500 shadow-md hover:bg-amber-700"
+              ? "bg-token-status-warning/10 text-token-status-warning-text/40 border border-token-status-warning/20 shadow-none"
+              : "bg-token-status-warning text-token-text-onAccent border border-token-status-warning shadow-md hover:opacity-90"
           }`}
         >
           <EditIcon className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -122,8 +122,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
           title={finalTooltip}
           className={`flex items-center justify-center gap-3 h-14 shadow-md transition-all group hover:scale-[1.02] active:scale-[0.98] ${
             finalDisabledState
-              ? "bg-indigo-500/10 text-indigo-700/40 dark:text-indigo-400/30 border border-indigo-500/20 shadow-none"
-              : "bg-indigo-600 text-white border border-indigo-500 shadow-md hover:bg-indigo-700"
+              ? "bg-token-status-colacion/10 text-token-status-colacion-text/40 border border-token-status-colacion/20 shadow-none"
+              : "bg-token-status-colacion text-token-text-onAccent border border-token-status-colacion shadow-md hover:opacity-90"
           }`}
         >
           <EditIcon className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -139,8 +139,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
           title={finalTooltip}
           className={`flex items-center justify-center gap-3 h-14 shadow-md transition-all group hover:scale-[1.02] active:scale-[0.98] ${
             finalDisabledState
-              ? "bg-rose-500/10 text-rose-700/40 dark:text-rose-400/30 border border-rose-500/20 shadow-none"
-              : "bg-rose-600 text-white border border-rose-500 shadow-md hover:bg-rose-700"
+              ? "bg-token-status-error/10 text-token-status-error-text/40 border border-token-status-error/20 shadow-none"
+              : "bg-token-status-error text-token-text-onAccent border border-token-status-error shadow-md hover:opacity-90"
           }`}
         >
           <ArrowPathIcon className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -160,8 +160,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
               title={isLocked ? "Bloqueado por cierre" : ""}
               className={`w-full flex items-center justify-center gap-3 h-14 shadow-md transition-all group hover:scale-[1.02] active:scale-[0.98] ${
                 !isArmed || isLocked
-                  ? "bg-amber-500/10 text-amber-700/40 dark:text-amber-400/30 border border-amber-500/20 shadow-none"
-                  : "bg-token-accent-brand text-white border border-token-accent-brand shadow-md hover:bg-token-accent-brand"
+                  ? "bg-token-status-warning/10 text-token-status-warning-text/40 border border-token-status-warning/20 shadow-none"
+                  : "bg-token-accent-brand text-token-text-onAccent border border-token-accent-brand shadow-md hover:bg-token-accent-brand"
               }`}
             >
               <WrenchScrewdriverIcon className="w-5 h-5 opacity-70 group-hover:opacity-100 transition-opacity" />
@@ -183,8 +183,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
         title={!canStartBreak ? "No disponible" : finalTooltip}
         className={`text-[10px] font-black uppercase tracking-widest h-14 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] ${
           finalDisabledState || !canStartBreak
-            ? "bg-amber-500/10 text-amber-700/40 dark:text-amber-400/30 border border-amber-500/20 shadow-none"
-            : "bg-amber-600 text-white border border-amber-500 shadow-md hover:bg-amber-700"
+            ? "bg-token-status-warning/10 text-token-status-warning-text/40 border border-token-status-warning/20 shadow-none"
+            : "bg-token-status-warning text-token-text-onAccent border border-token-status-warning shadow-md hover:opacity-90"
         }`}
       >
         Inicio Colación
@@ -196,8 +196,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
         title={!canEndBreak ? "No disponible" : finalTooltip}
         className={`text-[10px] font-black uppercase tracking-widest h-14 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] ${
           finalDisabledState || !canEndBreak
-            ? "bg-sky-500/10 text-sky-700/40 dark:text-sky-400/30 border border-sky-500/20 shadow-none"
-            : "bg-sky-600 text-white border border-sky-500 shadow-md hover:bg-sky-700"
+            ? "bg-token-status-info/10 text-token-status-info-text/40 border border-token-status-info/20 shadow-none"
+            : "bg-token-status-info text-token-text-onAccent border border-token-status-info shadow-md hover:opacity-90"
         }`}
       >
         Fin Colación
@@ -209,8 +209,8 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
         title={!canClockOut ? "No disponible" : finalTooltip}
         className={`col-span-2 text-[10px] font-black uppercase tracking-widest h-14 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98] ${
           finalDisabledState || !canClockOut
-            ? "bg-rose-500/10 text-rose-700/40 dark:text-rose-400/30 border border-rose-500/20 shadow-none"
-            : "bg-rose-600 text-white border border-rose-500 shadow-md hover:bg-rose-700"
+            ? "bg-token-status-error/10 text-token-status-error-text/40 border border-token-status-error/20 shadow-none"
+            : "bg-token-status-error text-token-text-onAccent border border-token-status-error shadow-md hover:opacity-90"
         }`}
       >
         Finalizar Jornada Laboral
@@ -255,18 +255,18 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
         </div>
 
         {isLocked && (
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex gap-3">
-            <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 shrink-0" />
-            <p className="text-xs font-bold text-amber-700 dark:text-amber-400 italic">
+          <div className="p-4 rounded-2xl bg-token-status-warning/10 border border-token-status-warning/20 flex gap-3">
+            <ExclamationTriangleIcon className="w-5 h-5 text-token-status-warning shrink-0" />
+            <p className="text-xs font-bold text-token-status-warning-text italic">
               Registro bloqueado por cierre contable. No se permiten modificaciones.
             </p>
           </div>
         )}
 
         {isJustified && (
-          <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex gap-3">
-            <InformationCircleIcon className="w-5 h-5 text-indigo-500 shrink-0" />
-            <p className="text-xs font-bold text-indigo-700 dark:text-indigo-400 italic">
+          <div className="p-4 rounded-2xl bg-token-status-colacion/10 border border-token-status-colacion/20 flex gap-3">
+            <InformationCircleIcon className="w-5 h-5 text-token-status-colacion shrink-0" />
+            <p className="text-xs font-bold text-token-status-colacion-text italic">
               Este registro ya fue justificado y se encuentra protegido.
             </p>
           </div>
@@ -326,7 +326,7 @@ const QuickActionModalView: React.FC<QuickActionModalViewProps> = ({
 
         <div className="flex items-center justify-center gap-2 pt-4 opacity-30">
           <div
-            className={`w-1.5 h-1.5 rounded-full ${isArmed ? "bg-emerald-500" : "bg-token-text-tertiary animate-pulse"}`}
+            className={`w-1.5 h-1.5 rounded-full ${isArmed ? "bg-token-status-success" : "bg-token-text-tertiary animate-pulse"}`}
           />
           <span className="text-xxs font-black text-token-text-secondary uppercase tracking-[0.2em] italic">
             {!isArmed ? "Inicializando Vínculo..." : "Conexión Segura"}

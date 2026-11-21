@@ -20,8 +20,8 @@ export const CATEGORY_GROUPS = [
 ];
 
 export const SEVERITIES = [
-  { id: "CRITICAL", label: "Crítico", color: "bg-red-600" },
-  { id: "HIGH", label: "Alto", color: "bg-orange-600" },
-  { id: "WARNING", label: "Advertencia", color: "bg-amber-500" },
-  { id: "INFO", label: "Información", color: "bg-indigo-600" },
+  { id: "CRITICAL", label: "Crítico", color: "bg-token-status-error" },
+  { id: "HIGH", label: "Alto", color: "bg-token-status-sin-marcaje" },
+  { id: "WARNING", label: "Advertencia", color: "bg-token-status-warning" },
+  { id: "INFO", label: "Información", color: "bg-token-status-colacion" },
 ];

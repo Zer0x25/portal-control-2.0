@@ -19,7 +19,7 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
       <Card title={title} className={className}>
         <div className="flex items-center justify-center p-8 text-center">
           <div className="space-y-2">
-            <div className="text-red-500 text-sm font-medium">Error al cargar</div>
+            <div className="text-token-status-error-text text-sm font-medium">Error al cargar</div>
             <div className="text-token-text-tertiary text-xs">{error}</div>
           </div>
         </div>

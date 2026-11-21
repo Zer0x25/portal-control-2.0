@@ -33,11 +33,11 @@ export const ActionButton: React.FC<ActionButtonProps> = (props) => {
 
   // Memoizar clases de color para evitar recálculos
   const colorClasses = {
-    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
-    indigo: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
+    emerald: "text-token-status-success-text bg-token-status-success/10",
+    indigo: "text-token-accent-brand bg-token-accent-brand/10",
     slate: "text-token-text-secondary bg-token-surface-hover",
-    orange: "text-orange-600 dark:text-orange-400 bg-orange-500/10",
-    violet: "text-violet-600 dark:text-violet-400 bg-violet-500/10",
+    orange: "text-token-status-sin-marcaje-text bg-token-status-sin-marcaje/10",
+    violet: "text-token-status-licencia-medica-text bg-token-status-licencia-medica/10",
   };
 
   // Memoizar clases base para evitar concatenaciones en cada render
@@ -60,7 +60,7 @@ export const ActionButton: React.FC<ActionButtonProps> = (props) => {
     <>
       {hasNotification && (
         <span className="absolute top-3 right-3 flex h-1.5 w-1.5">
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-600"></span>
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-token-status-error"></span>
         </span>
       )}
       <div

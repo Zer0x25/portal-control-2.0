@@ -56,7 +56,7 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
           isLocked
             ? "bg-token-surface-stripe cursor-not-allowed mx-2 opacity-80"
             : isJustified
-              ? "bg-purple-50/20 dark:bg-purple-900/10 cursor-help mx-2"
+              ? "bg-token-status-licencia-medica-surface/20 cursor-help mx-2"
               : "bg-token-surface-card cursor-pointer hover:border-token-accent-brand transition-colors mx-2"
         }`}
         onDoubleClick={() => !isLocked && !isJustified && onRowDoubleClick(record)}
@@ -137,7 +137,7 @@ const TimeRecordMobileCard: React.FC<TimeRecordMobileCardProps> = React.memo(
             }}
             disabled={finalDisabledState}
             title="Eliminar Registro"
-            className="h-10 px-4 bg-rose-600 text-white rounded-md border-none shadow-sm font-black uppercase tracking-widest text-[10px]"
+            className="h-10 px-4 bg-token-status-error text-token-text-onAccent rounded-md border-none shadow-sm font-black uppercase tracking-widest text-[10px]"
           >
             ELIMINAR
           </Button>

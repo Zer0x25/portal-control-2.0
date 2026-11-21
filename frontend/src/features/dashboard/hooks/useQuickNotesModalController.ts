@@ -6,19 +6,19 @@ import { quickNoteFormSchema, type QuickNoteFormValues } from "../../../schemas/
 const DEFAULT_NOTE_COLOR = "amber";
 
 export const COLOR_MAP: Record<string, string> = {
-  amber: "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800",
-  blue: "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800",
-  emerald: "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800",
-  rose: "bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800",
-  indigo: "bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800",
+  amber: "bg-token-status-warning-surface border-token-status-warning/30",
+  blue: "bg-token-status-info-surface border-token-status-info/30",
+  emerald: "bg-token-status-success-surface border-token-status-success/30",
+  rose: "bg-token-status-error-surface border-token-status-error/30",
+  indigo: "bg-token-status-colacion-surface border-token-status-colacion/30",
 };
 
 export const INDICATOR_COLOR_MAP: Record<string, string> = {
-  amber: "bg-amber-400 dark:bg-amber-600",
-  blue: "bg-blue-400 dark:bg-blue-600",
-  emerald: "bg-emerald-400 dark:bg-emerald-600",
-  rose: "bg-rose-400 dark:bg-rose-600",
-  indigo: "bg-indigo-400 dark:bg-indigo-600",
+  amber: "bg-token-status-warning",
+  blue: "bg-token-status-info",
+  emerald: "bg-token-status-success",
+  rose: "bg-token-status-error",
+  indigo: "bg-token-status-colacion",
 };
 
 /**

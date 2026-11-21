@@ -30,11 +30,11 @@ describe("ActionButton", () => {
       <ActionButton color="emerald" icon={MockIcon} label="Test" onClick={() => {}} />,
     );
 
-    expect(screen.getByRole("button")).toHaveClass("text-emerald-600");
+    expect(screen.getByRole("button")).toHaveClass("text-token-status-success-text");
 
     rerender(<ActionButton color="orange" icon={MockIcon} label="Test" onClick={() => {}} />);
 
-    expect(screen.getByRole("button")).toHaveClass("text-orange-600");
+    expect(screen.getByRole("button")).toHaveClass("text-token-status-sin-marcaje-text");
   });
 
   it("should show notification indicator when hasNotification is true", () => {
@@ -49,7 +49,7 @@ describe("ActionButton", () => {
     );
 
     // The notification indicator is a span with specific classes
-    const notification = document.querySelector(".bg-rose-600");
+    const notification = document.querySelector(".bg-token-status-error");
     expect(notification).toBeInTheDocument();
   });
 
@@ -64,7 +64,7 @@ describe("ActionButton", () => {
       />,
     );
 
-    const notification = document.querySelector(".bg-rose-600");
+    const notification = document.querySelector(".bg-token-status-error");
     expect(notification).not.toBeInTheDocument();
   });
 

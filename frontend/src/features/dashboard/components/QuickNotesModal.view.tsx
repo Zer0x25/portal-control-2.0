@@ -98,7 +98,7 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
                 onClick={() => onColorChange(color)}
                 className={`w-5 h-5 rounded-full border-2 transition-all cursor-pointer ${
                   selectedColor === color
-                    ? "scale-110 border-indigo-500 shadow-sm"
+                    ? "scale-110 border-token-accent-brand shadow-sm"
                     : "border-transparent opacity-60 hover:opacity-100"
                 } ${INDICATOR_COLOR_MAP[color]}`}
                 aria-label={`Seleccionar color ${color}`}
@@ -162,7 +162,7 @@ const QuickNotesModalView: React.FC<QuickNotesModalViewProps> = ({
                         })}
                       </span>
                       {note.reminderEnabled && (
-                        <ChatBubbleLeftRightIcon className="w-3 h-3 text-indigo-500" />
+                        <ChatBubbleLeftRightIcon className="w-3 h-3 text-token-accent-brand" />
                       )}
                     </div>
                   </div>
