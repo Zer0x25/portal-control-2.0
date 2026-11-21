@@ -26,7 +26,6 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
     attachmentToView,
     setAttachmentToView,
     processingIds,
-    loadMoreRef,
     stats,
     isLoadingRequests,
     isErrorRequests,
@@ -149,7 +148,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                   </div>
                 )}
               </div>
-              <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+              <div className="h-10 flex items-center justify-center">
                 {isFetchingNextPage && (
                   <div
                     role="status"
@@ -172,10 +171,11 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                 isProcessing={isUpdatingRequestStatus}
                 hasNextPage={hasNextPage}
                 isFetchingNextPage={isFetchingNextPage}
+                isFetchNextPageError={isFetchNextPageError}
                 fetchNextPage={fetchNextPage}
                 getEmployeeName={getEmployeeName}
               />
-              <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-6">
+              <div className="h-10 flex items-center justify-center mt-6">
                 {isFetchingNextPage && (
                   <div
                     role="status"
@@ -198,6 +198,17 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
             Reintentar carga adicional
           </button>
         </div>
+      )}
+
+      {hasNextPage && !isFetchNextPageError && (
+        <button
+          type="button"
+          className="underline"
+          disabled={isFetchingNextPage}
+          onClick={() => void fetchNextPage()}
+        >
+          {isFetchingNextPage ? "Cargando más solicitudes..." : "Cargar más solicitudes"}
+        </button>
       )}
 
       {requestToReject && (

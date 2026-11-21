@@ -40,6 +40,56 @@ vi.mock("../../../hooks/useScheduling", async () => {
 });
 
 describe("rechazo integrado con HTTP simulado", () => {
+  it("carga más pendientes y permite reintentar si falla la página siguiente", async () => {
+    let nextPageCalls = 0;
+    const fixture = (index: number) => ({
+      id: `solicitud-${index}`,
+      employeeId: "empleado-prueba",
+      timeRecordId: `registro-${index}`,
+      recordField: "entrada",
+      originalValue: "2026-11-20T08:00:00Z",
+      requestedValue: "2026-11-20T09:00:00Z",
+      reason: `Solicitud número ${index}`,
+      status: "pending",
+      createdAt: "2026-11-20T12:00:00Z",
+    });
+    server.use(
+      http.get("http://localhost:4000/api/corrections/stats", () =>
+        HttpResponse.json({ pending: 31, approved: 0, rejected: 0 }),
+      ),
+      http.get("http://localhost:4000/api/corrections", ({ request }) => {
+        const offset = Number(new URL(request.url).searchParams.get("offset") || 0);
+        if (offset === 0)
+          return HttpResponse.json({
+            requests: Array.from({ length: 30 }, (_, i) => fixture(i)),
+            total: 31,
+          });
+        nextPageCalls += 1;
+        return nextPageCalls === 1
+          ? HttpResponse.json({ message: "Error de prueba" }, { status: 400 })
+          : HttpResponse.json({ requests: [fixture(30)], total: 31 });
+      }),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <RequestsTab />
+      </QueryClientProvider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Cargar más solicitudes" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "No se pudieron cargar más solicitudes",
+    );
+    expect(screen.getByText('"Solicitud número 0"')).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Reintentar carga adicional" }));
+    expect(await screen.findByText('"Solicitud número 30"')).toBeInTheDocument();
+    expect(nextPageCalls).toBe(2);
+    expect(
+      screen.queryByRole("button", { name: "Cargar más solicitudes" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("informa un error al consultar solicitudes y recupera el estado vacío al reintentar", async () => {
     let calls = 0;
     server.use(

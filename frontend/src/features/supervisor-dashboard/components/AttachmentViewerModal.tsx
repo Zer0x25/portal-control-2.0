@@ -36,16 +36,16 @@ const AttachmentViewerModal: React.FC<AttachmentViewerModalProps> = ({
       {attachment && (
         <>
           <div className="flex justify-between items-center p-5 border-b border-token-border-technical bg-token-surface-stripe shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-5 bg-token-accent-brand rounded-full" />
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="w-1 h-5 shrink-0 bg-token-accent-brand rounded-full" />
               <h3
                 id="attachment-modal-title"
-                className="text-[13px] font-bold text-token-text-primary uppercase tracking-widest truncate max-w-md"
+                className="min-w-0 text-[13px] font-bold text-token-text-primary uppercase tracking-widest truncate max-w-md"
               >
                 Vista: {attachment.filename}
               </h3>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <a
                 href={attachment.data}
                 download={attachment.filename}

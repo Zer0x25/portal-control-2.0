@@ -7,6 +7,7 @@ export interface UseRequestsTabVirtualizerOptions {
   itemHeight: number;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  isFetchNextPageError: boolean;
   fetchNextPage: () => void;
 }
 
@@ -16,6 +17,7 @@ export const useRequestsTabVirtualizer = ({
   itemHeight,
   hasNextPage,
   isFetchingNextPage,
+  isFetchNextPageError,
   fetchNextPage,
 }: UseRequestsTabVirtualizerOptions) => {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -35,10 +37,22 @@ export const useRequestsTabVirtualizer = ({
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem.index >= requests.length - 5 && hasNextPage && !isFetchingNextPage) {
+    if (
+      lastItem.index >= requests.length - 5 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetchNextPageError
+    ) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, requests.length, fetchNextPage, virtualItems]);
+  }, [
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    requests.length,
+    fetchNextPage,
+    virtualItems,
+  ]);
 
   return { parentRef, virtualItems, totalSize };
 };

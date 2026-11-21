@@ -21,8 +21,6 @@ export const useRequestsTabController = () => {
 
   const processingIdsRef = useRef<Set<string>>(new Set());
 
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
   const { data: stats } = useCorrectionRequestsStatsQuery();
 
   const since = useMemo(() => {
@@ -131,7 +129,6 @@ export const useRequestsTabController = () => {
     processingIds,
     setProcessingIds,
     processingIdsRef,
-    loadMoreRef,
     stats,
     since,
     requests,
