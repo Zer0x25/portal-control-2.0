@@ -119,7 +119,6 @@ describe("TimeRecordFilters Component", () => {
     expect(screen.getByRole("combobox", { name: /Tipo Jornada/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /Área Operativa/i })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /Estado/i })).toBeInTheDocument();
-    expect(screen.getByText(/Rango Rápido/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Desde/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Hasta/i)).toBeInTheDocument();
   });

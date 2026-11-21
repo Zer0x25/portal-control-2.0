@@ -175,8 +175,11 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                   Cargando opciones históricas de filtros...
                 </p>
               )}
-              {/* CONTROLES DE FILTRO: grilla unica para evitar recortes entre breakpoints */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 pb-4">
+              {/* CONTROLES DE FILTRO: grilla unica para evitar recortes entre breakpoints.
+                    items-end alinea los controles por su base: la casilla de fechas no lleva
+                    encabezado (sus labels "Desde"/"Hasta" ya son autoexplicativos), asi que
+                    sin esto quedaria 23px arriba respecto a "Rango Rapido" y "Acciones". */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 pb-4 items-end">
                 {/* 1. Tipo Jornada */}
                 <div className="w-full">
                   <label
@@ -291,38 +294,50 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                   </div>
                 </div>
 
-                {/* 5. Fecha desde */}
+                {/* 5. Rango de fechas: Desde y Hasta en su propia casilla.
+                      Cada Input trae su propio <label>, que aqui se oculta con sr-only: el
+                      titulo "Fechas" ya cubre la casilla y el label visible apilaba una
+                      segunda linea de etiquetas que bajaba los controles 23px. */}
                 <div className="w-full">
-                  <Input
-                    type="date"
-                    label="Desde"
-                    aria-label="Desde"
-                    value={dateFilters.desde}
-                    onChange={(e) => onDateFilterChange({ desde: e.target.value })}
-                    className="h-11 min-h-11 py-2 text-[11px] md:text-[12px] uppercase"
-                    max={maxBusinessDate}
-                  />
+                  <span className="text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2 block">
+                    Fechas
+                  </span>
+                  <div className="flex items-end gap-2 md:gap-3 w-full">
+                    <div className="min-w-0 flex-1 basis-0">
+                      <div className="[&>label]:sr-only">
+                        <Input
+                          type="date"
+                          label="Desde"
+                          aria-label="Desde"
+                          value={dateFilters.desde}
+                          onChange={(e) => onDateFilterChange({ desde: e.target.value })}
+                          className="h-11 min-h-11 py-2 text-[11px] md:text-[12px] uppercase"
+                          max={maxBusinessDate}
+                        />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1 basis-0">
+                      <div className="[&>label]:sr-only">
+                        <Input
+                          type="date"
+                          label="Hasta"
+                          aria-label="Hasta"
+                          value={dateFilters.hasta}
+                          onChange={(e) => onDateFilterChange({ hasta: e.target.value })}
+                          className="h-11 min-h-11 py-2 text-[11px] md:text-[12px] uppercase"
+                          max={maxBusinessDate}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 6. Fecha hasta */}
+                {/* 6. Acciones: Aplicar y Limpiar en su propia casilla */}
                 <div className="w-full">
-                  <Input
-                    type="date"
-                    label="Hasta"
-                    aria-label="Hasta"
-                    value={dateFilters.hasta}
-                    onChange={(e) => onDateFilterChange({ hasta: e.target.value })}
-                    className="h-11 min-h-11 py-2 text-[11px] md:text-[12px] uppercase"
-                    max={maxBusinessDate}
-                  />
-                </div>
-
-                {/* 7. Acciones: Aplicar y Limpiar */}
-                <div className="w-full">
-                  <span className="hidden xl:block text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2">
+                  <span className="text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2 block">
                     Acciones
                   </span>
-                  <div className="flex items-center gap-2 md:gap-3 w-full">
+                  <div className="flex items-end gap-2 md:gap-3 w-full">
                     <Button
                       onClick={onApplyCustomFilters}
                       disabled={!isApplyButtonEnabled}
