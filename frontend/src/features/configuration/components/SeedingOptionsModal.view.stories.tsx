@@ -31,6 +31,11 @@ const meta = {
       "data-app-form": "storybook",
     },
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    isSubmitting: { control: "boolean" },
+    incrementalLevel: { control: { type: "number", min: 0, max: 4 } },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -45,3 +50,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Submitting: Story = {
+  args: {
+    isSubmitting: true,
+    incrementalLevel: 4,
+  },
+};
+
+export const ValidationError: Story = {
+  args: {
+    getError: (field?: string) =>
+      field === "employees" ? "Ingrese al menos 1 empleado." : undefined,
+  },
+};

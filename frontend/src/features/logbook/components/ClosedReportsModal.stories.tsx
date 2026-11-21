@@ -12,6 +12,9 @@ const meta = {
     onExportExcel: () => undefined,
     onPreview: () => undefined,
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -25,3 +28,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Closed: Story = {
+  args: {
+    isOpen: false,
+  },
+};

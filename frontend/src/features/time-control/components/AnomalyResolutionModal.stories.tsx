@@ -26,6 +26,10 @@ const meta = {
     onResolve: async () => undefined,
     isProcessing: false,
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    isProcessing: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -40,3 +44,9 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const Processing: Story = {
+  args: {
+    isProcessing: true,
+  },
+};

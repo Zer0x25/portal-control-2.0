@@ -18,3 +18,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const CompactViewportFrame: Story = {
+  decorators: [
+    (Story) => (
+      <div className="max-w-sm mx-auto p-4">
+        <Story />
+      </div>
+    ),
+  ],
+};

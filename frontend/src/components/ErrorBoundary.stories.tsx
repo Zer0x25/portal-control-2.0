@@ -6,6 +6,9 @@ const meta = {
   title: "Design System/components/Error/Boundary",
   component: StoryComponent,
   args: { children: "The child stays inside the error boundary." },
+  argTypes: {
+    children: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ErrorBoundary.tsx" } },
@@ -15,3 +18,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const WithStructuredContent: Story = {
+  args: {
+    children: (
+      <div className="p-4 rounded-md border border-token-border-subtle bg-token-surface-card text-token-text-primary text-sm">
+        Contenido protegido dentro del límite de errores.
+      </div>
+    ),
+  },
+};

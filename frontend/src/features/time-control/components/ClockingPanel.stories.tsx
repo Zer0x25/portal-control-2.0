@@ -6,6 +6,10 @@ const meta = {
   title: "Design System/features/time-control/components/Clocking/Panel",
   component: StoryComponent,
   args: { isActionDisabled: false, roleBasedTooltip: "Registrar marcaje" },
+  argTypes: {
+    isActionDisabled: { control: "boolean" },
+    roleBasedTooltip: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -19,3 +23,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const DisabledForRole: Story = {
+  args: {
+    isActionDisabled: true,
+    roleBasedTooltip: "Acción restringida para este perfil",
+  },
+};

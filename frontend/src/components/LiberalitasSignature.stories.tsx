@@ -6,6 +6,10 @@ const meta = {
   title: "Design System/components/Liberalitas/Signature",
   component: StoryComponent,
   args: { author: "Portal Control", className: "text-xs" },
+  argTypes: {
+    author: { control: "text" },
+    className: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -17,3 +21,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const CustomAuthor: Story = {
+  args: {
+    author: "Jaime O. Mella V.",
+    className: "text-sm font-semibold text-token-text-primary",
+  },
+};

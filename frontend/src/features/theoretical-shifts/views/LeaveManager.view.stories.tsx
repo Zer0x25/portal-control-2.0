@@ -58,6 +58,13 @@ const meta = {
     handleClearFilter: () => undefined,
     handleConfirmDeleteLeave: async () => undefined,
   },
+  argTypes: {
+    showArchived: { control: "boolean" },
+    isLoading: { control: "boolean" },
+    isError: { control: "boolean" },
+    isFormVisible: { control: "boolean" },
+    isSubmitting: { control: "boolean" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -72,3 +79,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const FormVisible: Story = {
+  args: {
+    isFormVisible: true,
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    isLoading: true,
+  },
+};
+
+export const ErrorState: Story = {
+  args: {
+    isError: true,
+    error: new Error("No fue posible cargar los permisos."),
+  },
+};

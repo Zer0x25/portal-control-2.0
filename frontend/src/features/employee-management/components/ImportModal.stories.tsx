@@ -12,6 +12,10 @@ const meta = {
     title: "Importar personal",
     schema: { name: { prop: "name", type: String, required: true } },
   },
+  argTypes: {
+    isOpen: { control: "boolean" },
+    title: { control: "text" },
+  },
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -26,3 +30,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+
+export const ShiftImport: Story = {
+  args: {
+    title: "Importar planificación mensual",
+  },
+};
+
+export const Closed: Story = {
+  args: {
+    isOpen: false,
+  },
+};
