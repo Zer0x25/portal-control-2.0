@@ -108,7 +108,7 @@ services:
       - proxy_net
 
   frontend:
-    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-frontend@sha256:32a4953bdd46109f831b2af4057a254bf5639c0951494732e69c92c15f7c9007}
+    image: ${FRONTEND_IMAGE:-ghcr.io/zer0x25/portal-control-2-0-frontend@sha256:d0110aee345a6fd42765362dbdc19cedda8fa527704d6ac1ef38eaa361a8a378}
     restart: always
     # ports:
     #   - "80:80"
