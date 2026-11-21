@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import {
@@ -8,7 +9,6 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
 } from "../../../components/ui/icons/index";
-import { Z } from "../../../constants/zScale";
 import { logger } from "../../../utils/logger";
 import { useImportPreview } from "../hooks/useImportPreview";
 
@@ -115,170 +115,171 @@ const ImportModal = <T extends ImportPreviewRow>({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4 sm:p-6`}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
-
-      <div className="relative w-full max-w-2xl bg-token-surface-card rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-token-border-technical animate-in fade-in zoom-in-95 slide-in-from-bottom-2">
-        {/* Header */}
-        <div className="p-6 border-b border-token-border-subtle flex justify-between items-center bg-token-surface-stripe">
-          <div>
-            <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
-              {title}
-            </h2>
-            <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest mt-1">
-              Asistente de Importación
-            </p>
-          </div>
-          <Button
-            variant="none"
-            onClick={handleClose}
-            className="p-2 hover:bg-token-surface-hover rounded-full transition-colors shadow-none"
-          >
-            <CloseIcon className="w-6 h-6 text-token-text-tertiary" />
-          </Button>
+    <CinematicModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      maxWidth="max-w-2xl"
+      showHeader={false}
+      panelClassName="flex flex-col max-h-[90vh]"
+      bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
+    >
+      {/* Header */}
+      <div className="p-6 border-b border-token-border-subtle flex justify-between items-center bg-token-surface-stripe">
+        <div>
+          <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
+            {title}
+          </h2>
+          <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest mt-1">
+            Asistente de Importación
+          </p>
         </div>
+        <Button
+          variant="none"
+          onClick={handleClose}
+          className="p-2 hover:bg-token-surface-hover rounded-full transition-colors shadow-none"
+        >
+          <CloseIcon className="w-6 h-6 text-token-text-tertiary" />
+        </Button>
+      </div>
 
-        {/* Content */}
-        <div className="p-8 overflow-y-auto flex-1">
-          {step === "upload" && (
-            <div className="flex flex-col items-center justify-center space-y-6 py-8">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full max-w-md bg-token-accent-brand/5 border-2 border-dashed border-token-accent-brand/30 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-token-accent-brand/10 transition-all group"
+      {/* Content */}
+      <div className="p-8 overflow-y-auto flex-1">
+        {step === "upload" && (
+          <div className="flex flex-col items-center justify-center space-y-6 py-8">
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full max-w-md bg-token-accent-brand/5 border-2 border-dashed border-token-accent-brand/30 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-token-accent-brand/10 transition-all group"
+            >
+              <DocumentArrowUpIcon className="w-16 h-16 text-token-accent-brand mb-4 group-hover:scale-110 transition-transform" />
+              <p className="text-sm font-black text-token-accent-brand uppercase tracking-widest text-center">
+                Click para seleccionar archivo
+              </p>
+              <p className="text-xs text-token-text-tertiary mt-2 text-center">Soporta .xlsx</p>
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".xlsx, .xls"
+              className="hidden"
+            />
+
+            {templateUrl && (
+              <a
+                href={templateUrl}
+                className="flex items-center gap-2 text-xs font-bold text-token-text-secondary hover:text-token-accent-brand underline uppercase tracking-widest"
               >
-                <DocumentArrowUpIcon className="w-16 h-16 text-token-accent-brand mb-4 group-hover:scale-110 transition-transform" />
-                <p className="text-sm font-black text-token-accent-brand uppercase tracking-widest text-center">
-                  Click para seleccionar archivo
-                </p>
-                <p className="text-xs text-token-text-tertiary mt-2 text-center">Soporta .xlsx</p>
+                <DocumentArrowDownIcon className="w-4 h-4" /> Bajar Plantilla de Ejemplo
+              </a>
+            )}
+
+            {errors.length > 0 && (
+              <div className="w-full bg-token-status-error/10 border border-token-status-error/20 rounded-lg p-4">
+                <h4 className="text-xs font-black text-token-status-error uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <ExclamationTriangleIcon className="w-4 h-4" /> Errores detectados
+                </h4>
+                <ul className="list-disc list-inside text-xs text-token-status-error space-y-1">
+                  {errors.slice(0, 5).map((err, i) => (
+                    <li key={i}>{err}</li>
+                  ))}
+                  {errors.length > 5 && <li>... y {errors.length - 5} más.</li>}
+                </ul>
               </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept=".xlsx, .xls"
-                className="hidden"
-              />
+            )}
+          </div>
+        )}
 
-              {templateUrl && (
-                <a
-                  href={templateUrl}
-                  className="flex items-center gap-2 text-xs font-bold text-token-text-secondary hover:text-token-accent-brand underline uppercase tracking-widest"
-                >
-                  <DocumentArrowDownIcon className="w-4 h-4" /> Bajar Plantilla de Ejemplo
-                </a>
-              )}
+        {step === "preview" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-token-text-primary uppercase tracking-widest">
+                Vista Previa ({previewData.length} registros)
+              </h3>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  // setFile(null);
+                  setStep("upload");
+                }}
+              >
+                Cambiar Archivo
+              </Button>
+            </div>
 
-              {errors.length > 0 && (
-                <div className="w-full bg-token-status-error/10 border border-token-status-error/20 rounded-lg p-4">
-                  <h4 className="text-xs font-black text-token-status-error uppercase tracking-widest mb-2 flex items-center gap-2">
-                    <ExclamationTriangleIcon className="w-4 h-4" /> Errores detectados
-                  </h4>
-                  <ul className="list-disc list-inside text-xs text-token-status-error space-y-1">
-                    {errors.slice(0, 5).map((err, i) => (
-                      <li key={i}>{err}</li>
-                    ))}
-                    {errors.length > 5 && <li>... y {errors.length - 5} más.</li>}
-                  </ul>
+            <div className="bg-token-surface-card rounded-lg border border-token-border-subtle overflow-hidden max-h-60 overflow-y-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-token-surface-stripe text-token-text-secondary font-bold uppercase tracking-wider">
+                  <tr>
+                    {previewData.length > 0 &&
+                      Object.keys(previewData[0]).map((key) => (
+                        <th key={key} className="px-4 py-3">
+                          {key}
+                        </th>
+                      ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-token-border-subtle">
+                  {previewData.slice(0, 10).map((row, i) => (
+                    <tr key={i}>
+                      {Object.values(row).map((val, j) => (
+                        <td key={j} className="px-4 py-2 text-token-text-secondary font-mono">
+                          {String(val)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {previewData.length > 10 && (
+                <div className="p-2 text-center text-xs text-token-text-tertiary italic">
+                  ... {previewData.length - 10} registros más
                 </div>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-          {step === "preview" && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-black text-token-text-primary uppercase tracking-widest">
-                  Vista Previa ({previewData.length} registros)
-                </h3>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    // setFile(null);
-                    setStep("upload");
-                  }}
-                >
-                  Cambiar Archivo
-                </Button>
-              </div>
+        {step === "importing" && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <LoadingSpinner className="w-12 h-12 text-token-accent-brand mb-4" />
+            <p className="text-sm font-black text-token-text-secondary uppercase tracking-widest animate-pulse">
+              Procesando Importación...
+            </p>
+          </div>
+        )}
 
-              <div className="bg-token-surface-card rounded-lg border border-token-border-subtle overflow-hidden max-h-60 overflow-y-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-token-surface-stripe text-token-text-secondary font-bold uppercase tracking-wider">
-                    <tr>
-                      {previewData.length > 0 &&
-                        Object.keys(previewData[0]).map((key) => (
-                          <th key={key} className="px-4 py-3">
-                            {key}
-                          </th>
-                        ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-token-border-subtle">
-                    {previewData.slice(0, 10).map((row, i) => (
-                      <tr key={i}>
-                        {Object.values(row).map((val, j) => (
-                          <td key={j} className="px-4 py-2 text-token-text-secondary font-mono">
-                            {String(val)}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {previewData.length > 10 && (
-                  <div className="p-2 text-center text-xs text-token-text-tertiary italic">
-                    ... {previewData.length - 10} registros más
-                  </div>
-                )}
-              </div>
+        {step === "success" && (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <div className="w-20 h-20 bg-token-status-success/10 rounded-full flex items-center justify-center mb-6">
+              <CheckCircleIcon className="w-10 h-10 text-token-status-success" />
             </div>
-          )}
-
-          {step === "importing" && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <LoadingSpinner className="w-12 h-12 text-token-accent-brand mb-4" />
-              <p className="text-sm font-black text-token-text-secondary uppercase tracking-widest animate-pulse">
-                Procesando Importación...
-              </p>
-            </div>
-          )}
-
-          {step === "success" && (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="w-20 h-20 bg-token-status-success/10 rounded-full flex items-center justify-center mb-6">
-                <CheckCircleIcon className="w-10 h-10 text-token-status-success" />
-              </div>
-              <h3 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
-                ¡Importación Exitosa!
-              </h3>
-              <p className="text-sm text-token-text-secondary mb-8">
-                Se han procesado correctamente los registros.
-              </p>
-              <Button variant="success" onClick={handleClose}>
-                Finalizar
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Footer Actions */}
-        {step === "preview" && (
-          <div className="p-6 border-t border-token-border-subtle bg-token-surface-stripe flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button variant="primary" onClick={handleImport} disabled={isLoading}>
-              Confirmar Importación
+            <h3 className="text-2xl font-black text-token-text-primary uppercase italic tracking-tight mb-2">
+              ¡Importación Exitosa!
+            </h3>
+            <p className="text-sm text-token-text-secondary mb-8">
+              Se han procesado correctamente los registros.
+            </p>
+            <Button variant="success" onClick={handleClose}>
+              Finalizar
             </Button>
           </div>
         )}
       </div>
-    </div>
+
+      {/* Footer Actions */}
+      {step === "preview" && (
+        <div className="p-6 border-t border-token-border-subtle bg-token-surface-stripe flex justify-end gap-3">
+          <Button variant="secondary" onClick={handleClose}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleImport} disabled={isLoading}>
+            Confirmar Importación
+          </Button>
+        </div>
+      )}
+    </CinematicModal>
   );
 };
 

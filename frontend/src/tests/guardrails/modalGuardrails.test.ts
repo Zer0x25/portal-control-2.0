@@ -28,43 +28,27 @@ const SANCTIONED_PRIMITIVE = "components/ui/CinematicModal.tsx";
  * Rutas relativas a `src/`.
  */
 const MODAL_OVERLAY_WHITELIST: readonly string[] = [
-  // features (11)
-  "features/auth/components/ChangePasswordModal.view.tsx",
-  "features/auth/components/MFALoginModal.view.tsx",
-  "features/auth/components/MFASetupModal.view.tsx",
+  // Drawers y paneles deslizantes laterales (3)
   "features/governance/components/AuditLogDetailDrawer.tsx",
-  "features/logbook/views/Logbook.view.tsx",
   "features/meters/components/MeterConfigPanel.tsx",
   "features/meters/views/MeterReadings.view.tsx",
-  "features/supervisor-dashboard/components/AccountingClosureTab.tsx",
-  "features/supervisor-dashboard/components/EmployeeCalendarModal.tsx",
-  "features/supervisor-dashboard/components/ReportsTab.tsx",
-  "features/worker-portal/components/CorrectionRequestModal.view.tsx",
-  // components/ui (18): modales de dominio reubicables en T15 (AC8)
-  "features/supervisor-dashboard/components/AttachmentViewerModal.tsx",
-  "components/ui/DatePickerDialog.tsx",
+  // Overlays de carga, estado global o utilidades no-dialog (9)
   "features/configuration/views/DeveloperPanel.view.tsx",
-  "features/governance/components/ExportLogsModal.tsx",
-  "features/employee-management/components/ImportModal.tsx",
+  "features/supervisor-dashboard/components/ReportsTab.tsx",
+  "components/ui/DatePickerDialog.tsx",
   "components/ui/InitialSyncOverlay.tsx",
   "components/ui/LoadingOverlay.tsx",
   "components/ui/LoadingSpinner.tsx",
-  "features/time-control/components/RecordHistoryModal.tsx",
-  "features/supervisor-dashboard/components/RejectionReasonModal.view.tsx",
-  "features/configuration/components/SeedingOptionsModal.view.tsx",
-  "features/configuration/components/SeedingProgressModal.tsx",
   "components/ui/SessionExpiredOverlay.tsx",
-  "features/time-control/components/ShiftHandoverModal.tsx",
-  "features/configuration/components/SmtpConfigModal.view.tsx",
   "components/ui/TimePickerDialog.tsx",
   "components/ui/UserManualModal.tsx",
 ];
 
 /**
- * Budget monotónico decreciente: conteo real medido al crear el guardrail
- * (11 en features + 18 en components/ui = 29).
+ * Budget monotónico decreciente: reducido tras converger los 16 modales de feature
+ * a CinematicModal (3 drawers + 9 utilidades/overlays restantes = 12).
  */
-const MODAL_OVERLAY_HANDROLLED_BUDGET = 29;
+const MODAL_OVERLAY_HANDROLLED_BUDGET = 12;
 
 const OVERLAY_RE = /\bfixed\s+inset-0\b/;
 const CINEMATIC_IMPORT_RE = /import\s+CinematicModal\s+from\s+["'][^"']+["']/;

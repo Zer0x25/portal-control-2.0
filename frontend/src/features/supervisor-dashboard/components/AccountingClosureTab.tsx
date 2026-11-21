@@ -1,5 +1,6 @@
 import React from "react";
 import Card from "../../../components/ui/Card";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import {
@@ -342,76 +343,68 @@ const AccountingClosureTab: React.FC = () => {
         }
       />
 
-      {isHistoryModalOpen && (
-        <div
-          className={`fixed inset-0 ${Z.modal} flex items-center justify-center bg-black/70 p-4`}
-        >
-          <div className="w-full max-w-4xl rounded-sm border border-token-border-technical bg-token-surface-card shadow-2xl">
-            <div className="flex items-center justify-between border-b border-token-border-technical px-5 py-4">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-token-text-primary">
-                  Historial de Cierres Contables
-                </h3>
-                <p className="text-xs text-token-text-tertiary">
-                  Incluye cierres manuales y automáticos.
-                </p>
-              </div>
-              <Button variant="secondary" onClick={() => setIsHistoryModalOpen(false)}>
-                Cerrar
-              </Button>
-            </div>
-
-            <div className="max-h-[60vh] overflow-auto p-5">
-              {isHistoryLoading && (
-                <p className="text-sm text-token-text-tertiary">Cargando historial...</p>
-              )}
-              {!isHistoryLoading && historyError && (
-                <p className="text-sm text-rose-600">{historyError}</p>
-              )}
-              {!isHistoryLoading && !historyError && closureHistory.length === 0 && (
-                <p className="text-sm text-token-text-tertiary">
-                  No hay eventos de cierre registrados.
-                </p>
-              )}
-              {!isHistoryLoading && !historyError && closureHistory.length > 0 && (
-                <div className="space-y-2">
-                  {closureHistory.map((log) => {
-                    const details = parseDetailsObject(log.details);
-                    const isManual = log.action === "CONFIG_SET";
-                    const previousValue = details.previousValue;
-                    const newValue = details.newValue;
-                    return (
-                      <div
-                        key={log.id}
-                        className="rounded-sm border border-token-border-technical bg-token-surface-stripe p-3"
-                      >
-                        <div className="flex flex-wrap items-center gap-2 text-xs">
-                          <span className="font-bold uppercase tracking-wide text-token-text-primary">
-                            {isManual ? "Manual" : "Automático"}
-                          </span>
-                          <span className="text-token-text-tertiary">•</span>
-                          <span className="font-mono text-token-text-secondary">
-                            {new Date(log.timestamp).toLocaleString("es-CL")}
-                          </span>
-                          <span className="text-token-text-tertiary">•</span>
-                          <span className="text-token-text-secondary">
-                            Actor: {log.actorUsername || "SYSTEM"}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-sm text-token-text-primary">
-                          {isManual
-                            ? `Cambio de cierre contable: ${String(previousValue ?? "null")} -> ${String(newValue ?? "null")}`
-                            : (details.message as string) || "Cierre contable automático aplicado."}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+      <CinematicModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        maxWidth="max-w-4xl"
+        title={
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-token-text-primary">
+              Historial de Cierres Contables
+            </h3>
+            <p className="text-xs font-normal normal-case tracking-normal text-token-text-tertiary">
+              Incluye cierres manuales y automáticos.
+            </p>
           </div>
-        </div>
-      )}
+        }
+        panelClassName="rounded-sm"
+        bodyClassName="max-h-[60vh] overflow-auto p-5"
+      >
+        {isHistoryLoading && (
+          <p className="text-sm text-token-text-tertiary">Cargando historial...</p>
+        )}
+        {!isHistoryLoading && historyError && (
+          <p className="text-sm text-rose-600">{historyError}</p>
+        )}
+        {!isHistoryLoading && !historyError && closureHistory.length === 0 && (
+          <p className="text-sm text-token-text-tertiary">No hay eventos de cierre registrados.</p>
+        )}
+        {!isHistoryLoading && !historyError && closureHistory.length > 0 && (
+          <div className="space-y-2">
+            {closureHistory.map((log) => {
+              const details = parseDetailsObject(log.details);
+              const isManual = log.action === "CONFIG_SET";
+              const previousValue = details.previousValue;
+              const newValue = details.newValue;
+              return (
+                <div
+                  key={log.id}
+                  className="rounded-sm border border-token-border-technical bg-token-surface-stripe p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-bold uppercase tracking-wide text-token-text-primary">
+                      {isManual ? "Manual" : "Automático"}
+                    </span>
+                    <span className="text-token-text-tertiary">•</span>
+                    <span className="font-mono text-token-text-secondary">
+                      {new Date(log.timestamp).toLocaleString("es-CL")}
+                    </span>
+                    <span className="text-token-text-tertiary">•</span>
+                    <span className="text-token-text-secondary">
+                      Actor: {log.actorUsername || "SYSTEM"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-token-text-primary">
+                    {isManual
+                      ? `Cambio de cierre contable: ${String(previousValue ?? "null")} -> ${String(newValue ?? "null")}`
+                      : (details.message as string) || "Cierre contable automático aplicado."}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CinematicModal>
     </div>
   );
 };

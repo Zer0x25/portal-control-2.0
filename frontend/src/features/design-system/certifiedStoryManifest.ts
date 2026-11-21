@@ -379,7 +379,22 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
       "token-text-tertiary",
     ],
     variants: [],
-    props: ["isOpen", "onClose", "title", "children", "maxWidth?", "showCloseButton?"],
+    props: [
+      "isOpen",
+      "onClose",
+      "title?",
+      "children",
+      "maxWidth?",
+      "showCloseButton?",
+      "closeOnBackdrop?",
+      "closeOnEscape?",
+      "showHeader?",
+      "ariaLabelledBy?",
+      "testId?",
+      "panelClassName?",
+      "bodyClassName?",
+      "zClass?",
+    ],
   },
   {
     path: "src/components/ui/ConfirmationModal.tsx",
@@ -1164,11 +1179,9 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     tokens: [
       "token-border-subtle",
       "token-status-warning",
-      "token-surface-card",
       "token-surface-stripe",
       "token-text-primary",
       "token-text-secondary",
-      "token-text-tertiary",
     ],
     variants: [],
     props: [
@@ -1193,11 +1206,9 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     tokens: [
       "token-accent-brand",
       "token-border-subtle",
-      "token-border-technical",
       "token-status-error",
       "token-status-success",
       "token-status-warning",
-      "token-surface-card",
       "token-surface-stripe",
       "token-surface-technical",
       "token-text-primary",
@@ -1273,7 +1284,6 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     tokens: [
       "token-accent-brand",
       "token-border-subtle",
-      "token-border-technical",
       "token-status-error",
       "token-status-success",
       "token-surface-card",
@@ -1319,10 +1329,8 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     category: "domain-component",
     tokens: [
       "token-accent-brand",
-      "token-border-technical",
       "token-status-info",
       "token-status-info-surface",
-      "token-surface-card",
       "token-surface-hover",
       "token-surface-stripe",
       "token-text-primary",
@@ -1761,7 +1769,6 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     tokens: [
       "token-accent-brand",
       "token-border-subtle",
-      "token-border-technical",
       "token-status-error",
       "token-status-error-surface",
       "token-status-error-text",
@@ -1791,7 +1798,6 @@ export const CERTIFIED_DESIGN_SYSTEM_STORIES = [
     tokens: [
       "token-accent-brand",
       "token-border-subtle",
-      "token-border-technical",
       "token-status-error",
       "token-surface-card",
       "token-surface-hover",

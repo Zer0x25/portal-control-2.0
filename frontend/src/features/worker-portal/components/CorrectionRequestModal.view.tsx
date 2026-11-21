@@ -1,11 +1,10 @@
 import React from "react";
-import { createPortal } from "react-dom";
 import { DailyTimeRecord, TimeRecordField } from "../../../types";
+import CinematicModal from "../../../components/ui/CinematicModal";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { CloseIcon, EditIcon } from "../../../components/ui/icons/index";
 import { formatDisplayDateTime } from "../../../utils/formatters";
-import { Z } from "../../../constants/zScale";
 
 /**
  * Spec 036 T11: `CorrectionRequestModal` es **presentacion pura**.
@@ -64,138 +63,136 @@ const CorrectionRequestModalView: React.FC<CorrectionRequestModalViewProps> = ({
     return null;
   }
 
-  return createPortal(
-    <div
-      data-testid="worker-correction-modal"
-      className={`fixed inset-0 ${Z.modal} flex items-center justify-center p-4`}
+  return (
+    <CinematicModal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-lg"
+      showHeader={false}
+      testId="worker-correction-modal"
+      ariaLabelledBy="worker-correction-modal-title"
+      panelClassName="rounded-md"
+      bodyClassName="p-0 overflow-y-auto custom-scrollbar max-h-[85vh]"
     >
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
-        onClick={onClose}
-      />
-
-      <div
-        className="relative w-full max-w-lg bg-token-surface-card rounded-md border border-token-border-technical shadow-xl overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-8 pb-4 flex justify-between items-start">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-md bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand">
-              <EditIcon className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-token-text-primary uppercase tracking-tight">
-                Solicitud de Corrección
-              </h3>
-              <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.3em] mt-1">
-                Rectificación de Marcaje
-              </p>
-            </div>
+      <div className="p-8 pb-4 flex justify-between items-start">
+        <div className="flex gap-4">
+          <div className="w-12 h-12 rounded-md bg-token-accent-brand/10 flex items-center justify-center text-token-accent-brand">
+            <EditIcon className="w-6 h-6" />
           </div>
-          <Button
-            data-testid="worker-correction-modal-close"
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="p-2 text-token-text-secondary hover:text-token-text-primary"
-            aria-label="Cerrar modal"
-          >
-            <CloseIcon className="w-5 h-5" />
-          </Button>
+          <div>
+            <h3
+              id="worker-correction-modal-title"
+              className="text-xl font-semibold text-token-text-primary uppercase tracking-tight"
+            >
+              Solicitud de Corrección
+            </h3>
+            <p className="text-[10px] font-black text-token-accent-brand uppercase tracking-[0.3em] mt-1">
+              Rectificación de Marcaje
+            </p>
+          </div>
+        </div>
+        <Button
+          data-testid="worker-correction-modal-close"
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="p-2 text-token-text-secondary hover:text-token-text-primary"
+          aria-label="Cerrar modal"
+        >
+          <CloseIcon className="w-5 h-5" />
+        </Button>
+      </div>
+
+      <form
+        {...formProps}
+        data-testid="worker-correction-modal-form"
+        className="p-8 pt-4 space-y-6"
+      >
+        <div className="p-5 rounded-md bg-token-accent-brand/5 border border-token-accent-brand/10">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
+              Campo a corregir
+            </span>
+            <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
+              Valor actual
+            </span>
+          </div>
+          <div className="flex justify-between items-end">
+            <p className="text-sm font-black text-token-text-primary uppercase">
+              {FIELD_LABELS[field]}
+            </p>
+            <p className="text-xs font-black font-mono text-token-text-secondary">
+              {formatDisplayDateTime(originalValue).split(" ")[1] || "--:--"}
+            </p>
+          </div>
         </div>
 
-        <form
-          {...formProps}
-          data-testid="worker-correction-modal-form"
-          className="p-8 pt-4 space-y-6"
-        >
-          <div className="p-5 rounded-md bg-token-accent-brand/5 border border-token-accent-brand/10">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest">
-                Campo a corregir
-              </span>
-              <span className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest">
-                Valor actual
-              </span>
-            </div>
-            <div className="flex justify-between items-end">
-              <p className="text-sm font-black text-token-text-primary uppercase">
-                {FIELD_LABELS[field]}
-              </p>
-              <p className="text-xs font-black font-mono text-token-text-secondary">
-                {formatDisplayDateTime(originalValue).split(" ")[1] || "--:--"}
-              </p>
-            </div>
-          </div>
+        <div className="space-y-4">
+          <Input
+            data-testid="worker-correction-requested-value"
+            label="Nuevo Valor Solicitado"
+            type="datetime-local"
+            value={requestedValue}
+            max={maxRequestedValue}
+            onChange={(e) => onRequestedValueChange(e.target.value)}
+            error={requestedValueError}
+            className="rounded-md border-token-border-technical focus:ring-token-accent-brand"
+          />
 
-          <div className="space-y-4">
-            <Input
-              data-testid="worker-correction-requested-value"
-              label="Nuevo Valor Solicitado"
-              type="datetime-local"
-              value={requestedValue}
-              max={maxRequestedValue}
-              onChange={(e) => onRequestedValueChange(e.target.value)}
-              error={requestedValueError}
-              className="rounded-md border-token-border-technical focus:ring-token-accent-brand"
+          <div className="space-y-2">
+            <label
+              htmlFor="correction-reason"
+              className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest pl-1"
+            >
+              Motivo de la Solicitud
+            </label>
+            <textarea
+              data-testid="worker-correction-reason"
+              id="correction-reason"
+              value={reason}
+              onChange={(e) => onReasonChange(e.target.value)}
+              rows={3}
+              aria-invalid={reasonError ? "true" : undefined}
+              aria-describedby={reasonError ? "correction-reason-error" : undefined}
+              className={`w-full p-4 rounded-md bg-token-surface-stripe text-sm font-medium focus:ring-2 focus:ring-token-accent-brand outline-none transition-all text-token-text-primary border ${
+                reasonError ? "border-token-status-error" : "border-token-border-technical"
+              }`}
+              placeholder="Explique brevemente por qué requiere este cambio..."
             />
-
-            <div className="space-y-2">
-              <label
-                htmlFor="correction-reason"
-                className="text-[10px] font-black text-token-text-secondary uppercase tracking-widest pl-1"
+            {reasonError && (
+              <p
+                id="correction-reason-error"
+                className="ml-1 text-[10px] font-black uppercase tracking-widest text-token-status-error"
               >
-                Motivo de la Solicitud
-              </label>
-              <textarea
-                data-testid="worker-correction-reason"
-                id="correction-reason"
-                value={reason}
-                onChange={(e) => onReasonChange(e.target.value)}
-                rows={3}
-                aria-invalid={reasonError ? "true" : undefined}
-                aria-describedby={reasonError ? "correction-reason-error" : undefined}
-                className={`w-full p-4 rounded-md bg-token-surface-stripe text-sm font-medium focus:ring-2 focus:ring-token-accent-brand outline-none transition-all text-token-text-primary border ${
-                  reasonError ? "border-token-status-error" : "border-token-border-technical"
-                }`}
-                placeholder="Explique brevemente por qué requiere este cambio..."
-              />
-              {reasonError && (
-                <p
-                  id="correction-reason-error"
-                  className="ml-1 text-[10px] font-black uppercase tracking-widest text-token-status-error"
-                >
-                  {reasonError}
-                </p>
-              )}
-            </div>
+                {reasonError}
+              </p>
+            )}
           </div>
+        </div>
 
-          <div className="flex gap-4 pt-4">
-            <Button
-              data-testid="worker-correction-modal-cancel"
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="flex-1 rounded-md h-12 uppercase font-black text-[10px] tracking-widest"
-            >
-              Cancelar
-            </Button>
-            <Button
-              data-testid="worker-correction-modal-submit"
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-              className="flex-2 rounded-md h-12 uppercase font-black text-[10px] tracking-widest shadow-xl shadow-blue-500/20"
-            >
-              {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body,
+        <div className="flex gap-4 pt-4">
+          <Button
+            data-testid="worker-correction-modal-cancel"
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1 rounded-md h-12 uppercase font-black text-[10px] tracking-widest"
+          >
+            Cancelar
+          </Button>
+          <Button
+            data-testid="worker-correction-modal-submit"
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+            className="flex-2 rounded-md h-12 uppercase font-black text-[10px] tracking-widest shadow-xl shadow-blue-500/20"
+          >
+            {isSubmitting ? "Enviando..." : "Enviar Solicitud"}
+          </Button>
+        </div>
+      </form>
+    </CinematicModal>
   );
 };
 
