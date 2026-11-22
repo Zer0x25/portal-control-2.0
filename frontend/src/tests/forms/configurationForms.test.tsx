@@ -346,4 +346,37 @@ describe("useSmtpConfigController (spec 036 T10c)", () => {
 
     await waitFor(() => expect(emailService.saveConfig).toHaveBeenCalledTimes(1));
   });
+
+  it("sincroniza puerto y TLS automaticamente entre 587 y 465 sin pisar puertos personalizados", async () => {
+    const { result } = renderHook(() =>
+      useSmtpConfigController({ isOpen: true, onClose: vi.fn() }),
+    );
+
+    await act(async () => {
+      result.current.handleFieldChange("secure", true);
+    });
+    expect(result.current.values.port).toBe(465);
+
+    await act(async () => {
+      result.current.handleFieldChange("secure", false);
+    });
+    expect(result.current.values.port).toBe(587);
+
+    await act(async () => {
+      result.current.handleFieldChange("port", 465);
+    });
+    expect(result.current.values.secure).toBe(true);
+
+    await act(async () => {
+      result.current.handleFieldChange("port", 587);
+    });
+    expect(result.current.values.secure).toBe(false);
+
+    await act(async () => {
+      result.current.handleFieldChange("port", 2525);
+      result.current.handleFieldChange("secure", true);
+    });
+    expect(result.current.values.port).toBe(2525);
+    expect(result.current.values.secure).toBe(true);
+  });
 });

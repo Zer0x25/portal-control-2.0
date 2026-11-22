@@ -248,12 +248,26 @@ export const useSmtpConfigController = ({ isOpen, onClose }: UseSmtpConfigContro
     setCurrentSlot(index);
   };
 
-  /** Escribe un campo del perfil que se esta editando. */
+  /** Escribe un campo del perfil que se esta editando y sincroniza puerto/TLS estándar. */
   const handleFieldChange = <K extends keyof SmtpProfileFormValues>(
     field: K,
     value: SmtpProfileFormValues[K],
   ) => {
     setValue(field, value);
+    if (field === "secure") {
+      const currentPort = liveValues().port;
+      if (value === true && (currentPort === 587 || currentPort === 0)) {
+        setValue("port", 465);
+      } else if (value === false && (currentPort === 465 || currentPort === 0)) {
+        setValue("port", 587);
+      }
+    } else if (field === "port") {
+      if (value === 465) {
+        setValue("secure", true);
+      } else if (value === 587) {
+        setValue("secure", false);
+      }
+    }
   };
 
   /** Aplica un preset de servidor al perfil que se esta editando. */

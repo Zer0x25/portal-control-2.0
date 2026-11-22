@@ -217,13 +217,17 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
             </div>
 
             {/* Encryption Toggle */}
-            <div className="p-4 rounded-md bg-token-surface-stripe border border-token-border-subtle flex items-center justify-between">
+            <div className="p-4 rounded-md bg-token-surface-stripe border border-token-border-subtle flex items-center justify-between gap-4">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-token-accent-brand/60 mb-0.5">
                   Seguridad
                 </p>
                 <p className="text-xs font-bold text-token-text-primary">
-                  Usar Protocolo SSL/TLS Seguro
+                  Usar SSL/TLS implícito (Puerto 465)
+                </p>
+                <p className="text-[11px] text-token-text-tertiary mt-0.5">
+                  Desactívalo para STARTTLS en puerto 587 (Gmail/Outlook). El puerto se ajusta
+                  automáticamente.
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">

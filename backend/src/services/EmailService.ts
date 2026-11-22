@@ -211,8 +211,38 @@ export class EmailService {
 
       await transporter.verify();
       return { success: true, message: "Conexión SMTP exitosa." };
-    } catch {
-      logger.warn("SMTP connection verification failed");
+    } catch (error) {
+      const smtpErr = error as { code?: string; responseCode?: number; message?: string };
+      logger.warn("SMTP connection verification failed", {
+        code: smtpErr?.code,
+        responseCode: smtpErr?.responseCode,
+      });
+
+      const msg = smtpErr?.message ?? "";
+      if (msg.includes("wrong version number") || msg.includes("SSL routines")) {
+        return {
+          success: false,
+          message:
+            "Error TLS en el puerto configurado. Usa puerto 465 con SSL/TLS activado, o puerto 587 con SSL/TLS desactivado (STARTTLS).",
+        };
+      }
+      if (smtpErr?.code === "EAUTH" || smtpErr?.responseCode === 535) {
+        return {
+          success: false,
+          message:
+            "Autenticación SMTP rechazada. Verifica el usuario y usa una Contraseña de aplicación (App Password) si usas Gmail.",
+        };
+      }
+      if (
+        smtpErr?.code === "ETIMEDOUT" ||
+        smtpErr?.code === "ECONNREFUSED" ||
+        smtpErr?.code === "ENOTFOUND"
+      ) {
+        return {
+          success: false,
+          message: "No se pudo conectar al servidor SMTP (host o puerto inaccesible).",
+        };
+      }
       return { success: false, message: "No se pudo verificar la conexión SMTP" };
     }
   }
