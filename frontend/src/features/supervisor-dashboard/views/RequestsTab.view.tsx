@@ -9,6 +9,7 @@ import {
   InboxArrowDownIcon,
 } from "../../../components/ui/icons/index";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import Button from "../../../components/ui/Button";
 import { Z } from "../../../constants/zScale";
 import { PendingRequestCard } from "../components/RequestsTabCards";
 import { VirtualizedRequestList } from "../components/RequestsTabVirtualizedList";
@@ -62,9 +63,15 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
     return (
       <div role="alert" className="flex flex-col items-start gap-4 py-8">
         <p>No se pudieron cargar las solicitudes. Comprueba la conexión y vuelve a intentar.</p>
-        <button type="button" className="underline" onClick={() => void refetchRequests()}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="underline"
+          onClick={() => void refetchRequests()}
+        >
           Reintentar carga
-        </button>
+        </Button>
       </div>
     );
   }
@@ -197,21 +204,29 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
       {isFetchNextPageError && (
         <div role="alert" className="flex flex-col items-start gap-2">
           <p>No se pudieron cargar más solicitudes.</p>
-          <button type="button" className="underline" onClick={() => void fetchNextPage()}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="underline"
+            onClick={() => void fetchNextPage()}
+          >
             Reintentar carga adicional
-          </button>
+          </Button>
         </div>
       )}
 
       {hasNextPage && !isFetchNextPageError && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           className="underline"
           disabled={isFetchingNextPage}
           onClick={() => void fetchNextPage()}
         >
           {isFetchingNextPage ? "Cargando más solicitudes..." : "Cargar más solicitudes"}
-        </button>
+        </Button>
       )}
 
       {requestToReject && (

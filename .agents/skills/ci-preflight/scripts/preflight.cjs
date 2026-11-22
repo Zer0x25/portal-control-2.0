@@ -45,6 +45,10 @@ try {
 
   if (isPrMode) {
     console.log('\n🛡️  [Pre-PR Gate] Ejecutando suite completa de pruebas antes de PR / Push...');
+    run('npm run format:check', 'Pre-PR Frontend Format Check', path.join(rootDir, 'frontend'));
+    run('npm run catalog:manifest:check', 'Pre-PR Design System Manifest Check', path.join(rootDir, 'frontend'));
+    run('npm run tokens:check', 'Pre-PR Design Tokens Check', path.join(rootDir, 'frontend'));
+    run('npm run audit:design-system', 'Pre-PR Design System Audit', path.join(rootDir, 'frontend'));
     run('npm run test:run:ci', 'Pre-PR Frontend Full Tests', path.join(rootDir, 'frontend'));
     run('npm run check:sdk', 'Pre-PR Backend SDK Sync Check', path.join(rootDir, 'backend'));
     run('npm run test:schemas-refactor', 'Pre-PR Backend Schema Tests', path.join(rootDir, 'backend'));

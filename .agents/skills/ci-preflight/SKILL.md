@@ -29,7 +29,7 @@ node .agents/skills/ci-preflight/scripts/preflight.cjs
 ### Mode 2: Mandatory Pre-PR Gate (Before Opening or Pushing a PR, ~1 min)
 
 **Mandatory before `gh pr create` or pushing changes to a PR branch**:
-Executes typechecks, linters, guardrails, and the **full unit test suites (`test:run:ci`)** of modified workspaces:
+Executes typechecks, linters, formatting (`format:check`), design-system gates (`catalog:manifest:check`, `tokens:check`, `audit:design-system`), and the **full unit test suites (`test:run:ci`)** of modified workspaces (if `catalog:manifest:check` fails, run `cd frontend && npm run catalog:manifest`):
 
 ```bash
 node .agents/skills/ci-preflight/scripts/preflight.cjs --pr
