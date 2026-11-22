@@ -61,7 +61,14 @@ export const AttendanceHeatmap: React.FC<AttendanceHeatmapProps> = ({
       </div>
 
       {/* Heatmap */}
-      <div className="overflow-x-auto">
+      <div
+        // Región scrollable accesible por teclado (WCAG 2.1): patrón sancionado.
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={0}
+        role="region"
+        aria-label="Mapa de calor de asistencia"
+        className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-token-accent-brand"
+      >
         <div className="inline-flex gap-1">
           {/* Días de la semana (vertical) */}
           <div className="flex flex-col gap-1 pr-2">

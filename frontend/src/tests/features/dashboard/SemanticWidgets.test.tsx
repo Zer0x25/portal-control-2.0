@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import Card from "../../../components/ui/Card";
 import MetricCard from "../../../components/ui/MetricCard";
+import { AlertsPanel } from "../../../features/dashboard/components/AlertsPanel";
 import DashboardRow from "../../../features/dashboard/components/DashboardRow";
 import AnimatedDashboardRow from "../../../features/dashboard/components/ui/DashboardRow";
 
@@ -38,4 +39,26 @@ describe("dashboard semantic controls", () => {
       expect(open).toHaveBeenCalledTimes(3);
     },
   );
+
+  it("exposes pressed state on AlertsPanel filter buttons and switches via keyboard", async () => {
+    const user = userEvent.setup();
+    render(
+      <AlertsPanel
+        upcomingEmployees={[]}
+        missingClockOuts={[]}
+        openClockInConfirmation={vi.fn()}
+        onMissingClockOutDoubleClick={vi.fn()}
+      />,
+    );
+
+    const upcoming = screen.getByRole("button", { name: /Ingresos \(0\)/ });
+    const missing = screen.getByRole("button", { name: /Salidas \(0\)/ });
+    expect(upcoming).toHaveAttribute("aria-pressed", "true");
+    expect(missing).toHaveAttribute("aria-pressed", "false");
+
+    missing.focus();
+    await user.keyboard("{Enter}");
+    expect(upcoming).toHaveAttribute("aria-pressed", "false");
+    expect(missing).toHaveAttribute("aria-pressed", "true");
+  });
 });

@@ -241,7 +241,16 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
       )}
       {/* Floating Action Button for Mobile */}
       {isMobile && activeShift && (
-        <div className={`fixed bottom-6 right-6 ${Z.overlay} flex flex-col items-end gap-3`}>
+        <div
+          className={`fixed bottom-6 right-6 ${Z.overlay} flex flex-col items-end gap-3`}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && showFabMenu) {
+              event.stopPropagation();
+              setShowFabMenu(false);
+              document.getElementById("logbook-fab-toggle")?.focus();
+            }
+          }}
+        >
           {showFabMenu && (
             <div className="flex flex-col items-end gap-3 mb-2">
               {/* Option: Add Supplier */}
@@ -250,6 +259,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                   Proveedor
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowSupplierEntryModal(true);
                     setShowFabMenu(false);
@@ -268,6 +278,7 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
                   Novedad
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowLogEntryModal(true);
                     setShowFabMenu(false);
@@ -284,6 +295,8 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
 
           {/* Main FAB Toggle */}
           <button
+            id="logbook-fab-toggle"
+            type="button"
             onClick={() => setShowFabMenu(!showFabMenu)}
             aria-expanded={showFabMenu}
             aria-label={showFabMenu ? "Cerrar acciones" : "Abrir acciones"}

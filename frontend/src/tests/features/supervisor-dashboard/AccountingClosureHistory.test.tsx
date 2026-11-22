@@ -33,4 +33,14 @@ describe("Accounting closure history", () => {
     await user.tab();
     expect(history).toHaveFocus();
   });
+
+  it("exposes accessible cut-off date button label", () => {
+    render(<AccountingClosureTab />);
+
+    const cutoffButton = screen.getByRole("button", {
+      name: /Nuevo Límite de Cierre \(CUT-OFF\)/i,
+    });
+    expect(cutoffButton).toBeInTheDocument();
+    expect(cutoffButton).toHaveAttribute("type", "button");
+  });
 });

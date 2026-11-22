@@ -81,6 +81,9 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                 type="button"
                 aria-pressed={statusFilter === status}
                 onClick={() => setStatusFilter(status)}
+                onFocus={(event) => {
+                  event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+                }}
                 className={`
                   relative px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 rounded-sm flex items-center gap-3 whitespace-nowrap shrink-0
                   ${

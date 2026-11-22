@@ -83,6 +83,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
         <div className="w-full">
           <Input
             type="search"
+            aria-label="Filtrar colaboradores por nombre"
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             placeholder="Filtrar por nombre..."
@@ -94,6 +95,7 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
                 Filtros Activos:
               </span>
               <button
+                type="button"
                 onClick={() => onStatusesChange(["all"])}
                 className="text-[10px] font-bold text-token-accent-brand hover:opacity-80 uppercase tracking-wider border-b border-token-accent-brand/30 transition-all active:scale-95"
               >
@@ -104,7 +106,15 @@ const LiveStatusPanel: React.FC<LiveStatusPanelProps> = ({
         </div>
 
         {/* 📋 Lista de Colaboradores Virtualizada */}
-        <div ref={parentRef} className="max-h-[500px] overflow-y-auto custom-scrollbar pr-2 -mr-2">
+        <div
+          ref={parentRef}
+          // Región scrollable accesible por teclado (WCAG 2.1): patrón sancionado.
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          tabIndex={0}
+          role="region"
+          aria-label="Lista de presencia en tiempo real"
+          className="max-h-[500px] overflow-y-auto custom-scrollbar pr-2 -mr-2 focus-visible:outline-2 focus-visible:outline-token-accent-brand"
+        >
           {filteredEmployees.length > 0 ? (
             <div
               style={{

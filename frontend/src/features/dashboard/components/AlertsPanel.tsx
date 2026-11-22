@@ -43,6 +43,8 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
     <Card headingAs="h2" title="Gestión de Alertas">
       <div className="flex bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical mb-4">
         <button
+          type="button"
+          aria-pressed={activeAlertTab === "upcoming"}
           onClick={() => setActiveAlertTab("upcoming")}
           className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider rounded-sm transition-all ${
             activeAlertTab === "upcoming"
@@ -53,6 +55,8 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
           Ingresos ({upcomingEmployees.length})
         </button>
         <button
+          type="button"
+          aria-pressed={activeAlertTab === "missing"}
           onClick={() => setActiveAlertTab("missing")}
           className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wider rounded-sm transition-all relative ${
             activeAlertTab === "missing"

@@ -100,10 +100,15 @@ const AccountingClosureTab: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2.5">
-                <label className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider ml-1 block">
+                <label
+                  htmlFor="accounting-lock-start-date"
+                  className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider ml-1 block"
+                >
                   Línea Base Actual (LOCKED)
                 </label>
                 <button
+                  id="accounting-lock-start-date"
+                  type="button"
                   disabled
                   className="w-full px-5 py-4 bg-token-surface-stripe border border-token-border-technical rounded-sm text-left flex justify-between items-center opacity-60 cursor-not-allowed shadow-inner"
                 >
@@ -120,10 +125,15 @@ const AccountingClosureTab: React.FC = () => {
               </div>
 
               <div className="space-y-2.5">
-                <label className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider ml-1 block">
+                <label
+                  htmlFor="accounting-lock-end-date"
+                  className="text-[11px] font-semibold text-token-accent-brand uppercase tracking-wider ml-1 block"
+                >
                   Nuevo Límite de Cierre (CUT-OFF)
                 </label>
                 <button
+                  id="accounting-lock-end-date"
+                  type="button"
                   onClick={() => setIsEndDatePickerOpen(true)}
                   disabled={!startDate}
                   className="w-full px-5 py-4 bg-token-surface-card border border-token-border-technical rounded-sm hover:border-token-accent-brand focus:ring-1 focus:ring-token-accent-brand transition-all group flex justify-between items-center shadow-sm active:scale-[0.99] disabled:opacity-30 disabled:cursor-not-allowed"

@@ -3,7 +3,7 @@
  * Refactored to use the unified Industrial-Elegant AuditMonthSelector.
  * Simplifies period selection to a monthly focus as requested.
  */
-import React, { FC } from "react";
+import React, { FC, useRef } from "react";
 import {
   ExportIcon,
   DocumentTextIcon,
@@ -53,6 +53,7 @@ const ReportsTab: FC = () => {
     sortConfig,
     sortedReportData,
   } = useReportsTabController();
+  const exportButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <div className="space-y-10 pt-4">
@@ -108,6 +109,7 @@ const ReportsTab: FC = () => {
             <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
               <div className="flex bg-token-surface-stripe p-1.5 rounded-sm border border-token-border-subtle shadow-sm items-center gap-1">
                 <button
+                  type="button"
                   onClick={() => handleExport("xml")}
                   className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:text-token-status-sin-marcaje transition-colors flex items-center gap-2"
                 >
@@ -115,14 +117,29 @@ const ReportsTab: FC = () => {
                 </button>
                 <div className="w-px h-6 bg-token-border-subtle mx-1" />
                 <button
+                  type="button"
                   onClick={() => handleExport("pdf")}
                   className="px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-token-text-secondary hover:text-token-accent-brand transition-colors flex items-center gap-2"
                 >
                   <PrinterIcon className="h-4 w-4" /> IMPRIMIR
                 </button>
                 <div className="w-px h-6 bg-token-border-subtle mx-1" />
-                <div className="relative" ref={exportMenuRef}>
+                <div
+                  className="relative"
+                  ref={exportMenuRef}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape" && isExportMenuOpen) {
+                      event.stopPropagation();
+                      setIsExportMenuOpen(false);
+                      exportButtonRef.current?.focus();
+                    }
+                  }}
+                >
                   <button
+                    ref={exportButtonRef}
+                    type="button"
+                    aria-expanded={isExportMenuOpen}
+                    aria-haspopup="menu"
                     onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
                     className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm flex items-center gap-2 ${isExportMenuOpen ? "bg-token-accent-brand text-white" : "text-token-text-secondary hover:text-token-accent-brand"}`}
                   >
@@ -130,9 +147,12 @@ const ReportsTab: FC = () => {
                   </button>
                   {isExportMenuOpen && (
                     <div
+                      role="menu"
                       className={`absolute right-0 mt-2 w-56 rounded-sm shadow-2xl bg-token-surface-card border border-token-border-technical ${Z.modal} p-2 animate-in fade-in slide-in-from-top-2`}
                     >
                       <button
+                        type="button"
+                        role="menuitem"
                         onClick={() => handleExport("csv")}
                         className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-surface-active rounded-sm transition-colors"
                       >
@@ -140,6 +160,8 @@ const ReportsTab: FC = () => {
                         CSV
                       </button>
                       <button
+                        type="button"
+                        role="menuitem"
                         onClick={() => handleExport("excel")}
                         className="flex items-center w-full p-4 text-[10px] font-black uppercase tracking-widest text-token-text-primary hover:bg-token-status-success/10 rounded-sm transition-colors"
                       >
@@ -152,6 +174,7 @@ const ReportsTab: FC = () => {
               </div>
 
               <button
+                type="button"
                 onClick={() => handleExport("server-pdf")}
                 className="py-4 px-8 rounded-sm bg-token-status-error text-token-text-onAccent font-black text-[11px] uppercase tracking-widest shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-3"
               >

@@ -119,4 +119,19 @@ describe("LiveStatusPanel Component", () => {
 
     expect(screen.getByText(/Sin coincidencias operativas/i)).toBeInTheDocument();
   });
+
+  it("exposes accessible search field, scrollable list region, and clear button", () => {
+    const props = { ...defaultProps, selectedStatuses: ["en_jornada"] };
+    render(<LiveStatusPanel {...props} />);
+
+    expect(
+      screen.getByRole("searchbox", { name: "Filtrar colaboradores por nombre" }),
+    ).toBeInTheDocument();
+    const region = screen.getByRole("region", { name: "Lista de presencia en tiempo real" });
+    expect(region).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("button", { name: "Limpiar Parámetros" })).toHaveAttribute(
+      "type",
+      "button",
+    );
+  });
 });
