@@ -1,14 +1,10 @@
 import React from "react";
-import { format, eachDayOfInterval, subDays, getDay } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useBusinessNow } from "../../../../hooks/useBusinessNow";
 import { parseBusinessDateCL } from "../../../../utils/dateUtils";
 
-interface HeatmapData {
-  date: string;
-  value: number; // 0-1, donde 1 es asistencia perfecta
-  count?: number; // número total de empleados
-}
+import { buildAttendanceHeatmap, type HeatmapData } from "./attendanceHeatmapData";
 
 interface AttendanceHeatmapProps {
   data: HeatmapData[];
@@ -29,54 +25,7 @@ export const AttendanceHeatmap: React.FC<AttendanceHeatmapProps> = ({
 }) => {
   const businessNow = useBusinessNow({ tickMs: null });
 
-  // Generar datos del heatmap
-  const heatmapData = (() => {
-    const endDate = businessNow;
-    const startDate = subDays(businessNow, weeks * 7 - 1);
-    const dateRange = eachDayOfInterval({ start: startDate, end: endDate });
-
-    // Crear mapa de datos existentes
-    const dataMap = new Map(data.map((item) => [item.date, item]));
-
-    // Organizar por semanas y días
-    const weeksData: (HeatmapData | null)[][] = [];
-    let currentWeek: (HeatmapData | null)[] = [];
-
-    dateRange.forEach((date) => {
-      const dateKey = format(date, "yyyy-MM-dd");
-      const dayOfWeek = getDay(date); // 0 = Domingo, 1 = Lunes, etc.
-
-      // Si es lunes (1) y ya tenemos una semana, empezar nueva semana
-      if (dayOfWeek === 1 && currentWeek.length > 0) {
-        // Rellenar días faltantes de la semana anterior
-        while (currentWeek.length < 7) {
-          currentWeek.unshift(null);
-        }
-        weeksData.push(currentWeek);
-        currentWeek = [];
-      }
-
-      // Agregar día a la semana actual
-      const existingData = dataMap.get(dateKey);
-      currentWeek.push(
-        existingData || {
-          date: dateKey,
-          value: Math.random() * 0.3 + 0.7, // Mock data: 70-100%
-          count: 25 + Math.floor(Math.random() * 10),
-        },
-      );
-    });
-
-    // Agregar última semana si tiene datos
-    if (currentWeek.length > 0) {
-      while (currentWeek.length < 7) {
-        currentWeek.push(null);
-      }
-      weeksData.push(currentWeek);
-    }
-
-    return weeksData;
-  })();
+  const heatmapData = buildAttendanceHeatmap(data, weeks, businessNow);
 
   // Función para obtener color basado en el valor
   const getColorClass = (value: number | null) => {
@@ -112,7 +61,14 @@ export const AttendanceHeatmap: React.FC<AttendanceHeatmapProps> = ({
       </div>
 
       {/* Heatmap */}
-      <div className="overflow-x-auto">
+      <div
+        // Región scrollable accesible por teclado (WCAG 2.1): patrón sancionado.
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+        tabIndex={0}
+        role="region"
+        aria-label="Mapa de calor de asistencia"
+        className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-token-accent-brand"
+      >
         <div className="inline-flex gap-1">
           {/* Días de la semana (vertical) */}
           <div className="flex flex-col gap-1 pr-2">

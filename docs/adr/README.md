@@ -70,3 +70,4 @@ Reglas:
   | [0029](0029-release-build-once-manual-performance.md) | Aceptado | Release Build Once Manual Performance |
   | [0030](0030-node-runtime-2613.md) | Propuesto | Runtime de aplicación Node 26.13.0 |
   | [0030](0030-node-runtime-2613.md) | Propuesto | Node Runtime 2613 |
+  | [0032](0032-semantica-paneles.md) | Propuesto | Semantica Paneles |

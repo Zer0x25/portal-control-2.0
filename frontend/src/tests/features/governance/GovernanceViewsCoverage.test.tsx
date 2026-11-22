@@ -19,7 +19,7 @@ vi.mock("../../../components/ui/CinematicModal", () => ({
 }));
 
 describe("Governance Sub-Views Canonical Container Coverage", () => {
-  it("renders SecurityInsightsView inside canonical standard Container with data-ui-protected", () => {
+  it("renders SecurityInsightsView inside canonical fluid Container with data-ui-protected", () => {
     render(
       <SecurityInsightsView
         loading={false}
@@ -36,11 +36,11 @@ describe("Governance Sub-Views Canonical Container Coverage", () => {
 
     const container = screen.getByTestId("page-container");
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass("max-w-7xl");
+    expect(container).toHaveClass("max-w-none");
     expect(container).toHaveAttribute("data-ui-protected");
   });
 
-  it("renders SystemMaintenanceView inside canonical standard Container with data-ui-protected", () => {
+  it("renders SystemMaintenanceView inside canonical fluid Container with data-ui-protected", () => {
     render(
       <SystemMaintenanceView
         stats={{
@@ -91,11 +91,11 @@ describe("Governance Sub-Views Canonical Container Coverage", () => {
 
     const container = screen.getByTestId("page-container");
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass("max-w-7xl");
+    expect(container).toHaveClass("max-w-none");
     expect(container).toHaveAttribute("data-ui-protected");
   });
 
-  it("renders BackupListModalView inside canonical standard Container with data-ui-protected", () => {
+  it("renders BackupListModalView inside canonical fluid Container with data-ui-protected", () => {
     render(
       <BackupListModalView
         isOpen={true}
@@ -110,7 +110,7 @@ describe("Governance Sub-Views Canonical Container Coverage", () => {
 
     const container = screen.getByTestId("page-container");
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass("max-w-7xl");
+    expect(container).toHaveClass("max-w-none");
     expect(container).toHaveAttribute("data-ui-protected");
   });
 });

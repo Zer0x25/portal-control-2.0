@@ -71,7 +71,7 @@ describe("DashboardView startup readiness", () => {
     render(<DashboardView {...makeProps(props)} />);
 
     expect(screen.getByTestId("welcome-panel")).toBeInTheDocument();
-    expect(screen.getByText("Sincronizando Dashboard")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Sincronizando Dashboard");
     expect(screen.queryByTestId("dashboard-widget")).not.toBeInTheDocument();
   });
 
@@ -80,6 +80,9 @@ describe("DashboardView startup readiness", () => {
 
     expect(screen.getByTestId("welcome-panel")).toBeInTheDocument();
     expect(screen.getByTestId("dashboard-widget")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Widgets del dashboard" })).toContainElement(
+      screen.getByRole("listitem"),
+    );
     expect(screen.queryByText("Sincronizando Dashboard")).not.toBeInTheDocument();
   });
 });

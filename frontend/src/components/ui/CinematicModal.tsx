@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "./icons";
+import { useModalAccessibility } from "./useModalAccessibility";
 import { Z } from "../../constants/zScale";
-import { useDialogA11y } from "../../hooks/useDialogA11y";
 
 interface CinematicModalProps {
   isOpen: boolean;
@@ -14,8 +14,10 @@ interface CinematicModalProps {
   closeOnBackdrop?: boolean;
   closeOnEscape?: boolean;
   showHeader?: boolean;
+  role?: "dialog" | "alertdialog";
   ariaLabel?: string;
   ariaLabelledBy?: string;
+  ariaDescribedBy?: string;
   testId?: string;
   overlayClassName?: string;
   panelClassName?: string;
@@ -36,8 +38,10 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
   closeOnBackdrop = true,
   closeOnEscape = true,
   showHeader = true,
+  role = "dialog",
   ariaLabel,
   ariaLabelledBy,
+  ariaDescribedBy,
   testId = "modal-dialog",
   overlayClassName = "bg-black/60 backdrop-blur-sm p-4",
   panelClassName,
@@ -46,6 +50,7 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
 }) => {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const [rendered, setRendered] = useState(isOpen);
   const [closing, setClosing] = useState(false);
 
@@ -64,7 +69,7 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
     return () => clearTimeout(timer);
   }, [isOpen, rendered]);
 
-  useDialogA11y({ isOpen, isActive: rendered && !closing, onClose, closeOnEscape, panelRef });
+  useModalAccessibility(rendered && !closing, portalRef, panelRef, onClose, closeOnEscape);
 
   if (typeof document === "undefined" || !rendered) return null;
 
@@ -81,6 +86,8 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
   const isTextTitle = typeof title === "string" || typeof title === "number";
   return createPortal(
     <div
+      ref={portalRef}
+      aria-hidden={closing || undefined}
       className={`fixed inset-0 ${zClass} flex items-center justify-center ${overlayClassName} ${closing ? "animate-out fade-out" : "animate-in fade-in"}`}
       onClick={closeOnBackdrop ? onClose : undefined}
     >
@@ -89,10 +96,11 @@ const CinematicModal: React.FC<CinematicModalProps> = ({
         tabIndex={-1}
         data-testid={testId}
         className={`bg-token-surface-card ${defaultRounded} border ${defaultBorder} shadow-2xl w-full ${maxWidth} ${defaultOverflow} ${panelAnim}${panelClassName ? ` ${panelClassName}` : ""}`}
-        role="dialog"
+        role={role}
         aria-modal="true"
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy ?? (showHeader ? titleId : undefined)}
+        aria-describedby={ariaDescribedBy}
         onClick={(e) => e.stopPropagation()}
       >
         {showHeader && (

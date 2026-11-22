@@ -15,7 +15,7 @@ export const LatestReportsPanel: React.FC<LatestReportsPanelProps> = ({
   openReportDetailsModal,
 }) => {
   return (
-    <Card title="Historial de Turnos">
+    <Card headingAs="h2" title="Historial de Turnos">
       <div
         // Región scrollable accesible por teclado (WCAG 2.1): patrón
         // sancionado, no es un elemento interactivo.

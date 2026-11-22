@@ -52,12 +52,7 @@ export const GovernanceHubView: React.FC<GovernanceHubViewProps> = ({
     : (visibleTabs[0]?.id ?? "integrity");
 
   return (
-    <Container
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="space-y-6 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
         title="Centro de Gobernanza & Seguridad"
         subtitle="Consola centralizada de integridad criptográfica, auditoría y control maestro"

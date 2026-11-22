@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   addDays,
   addMonths,
+  differenceInCalendarDays,
   endOfMonth,
   endOfWeek,
   format,
   isSameDay,
   isSameMonth,
   isToday,
+  startOfDay,
   startOfMonth,
   startOfWeek,
   subDays,
@@ -78,8 +80,9 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
   }, [selectedDate]);
 
   const isDayDisabled = (day: Date) => {
-    if (minDate && day < minDate) return true;
-    if (maxDate && day > maxDate) return true;
+    const date = startOfDay(day);
+    if (minDate && date < startOfDay(minDate)) return true;
+    if (maxDate && date > startOfDay(maxDate)) return true;
     return false;
   };
 
@@ -95,9 +98,13 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: WEEK_START });
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: WEEK_START });
-    const total = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+    const total = differenceInCalendarDays(end, start) + 1;
     return Array.from({ length: total }, (_, index) => addDays(start, index));
   }, [currentMonth]);
+  const rovingDate =
+    days.find((day) => isSameDay(day, focusedDate) && !isDayDisabled(day)) ??
+    days.find((day) => isSameMonth(day, currentMonth) && !isDayDisabled(day)) ??
+    days.find((day) => !isDayDisabled(day));
 
   const focusDay = (date: Date) => {
     const key = format(date, "yyyy-MM-dd");
@@ -115,7 +122,8 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
   };
 
   const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    const day = focusedDate;
+    const day = rovingDate;
+    if (!day) return;
     let next: Date | undefined;
 
     switch (event.key) {
@@ -191,18 +199,6 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
 
       {/* Calendar grid */}
       <div className="p-3">
-        <div className="grid grid-cols-7 mb-1" role="row">
-          {DAY_KEYS.map((label) => (
-            <span
-              key={label}
-              role="columnheader"
-              aria-label={label}
-              className="text-center text-xxs font-black text-token-text-tertiary py-1"
-            >
-              {label}
-            </span>
-          ))}
-        </div>
         <div
           ref={gridRef}
           role="grid"
@@ -214,12 +210,24 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
           tabIndex={-1}
           className="grid grid-cols-7 gap-1"
         >
+          <div className="contents" role="row">
+            {DAY_KEYS.map((label) => (
+              <span
+                key={label}
+                role="columnheader"
+                aria-label={label}
+                className="text-center text-xxs font-black text-token-text-tertiary py-1"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
           {Array.from({ length: Math.ceil(days.length / 7) }, (_, rowIndex) => (
             <div key={`row-${rowIndex}`} role="row" className="contents">
               {days.slice(rowIndex * 7, rowIndex * 7 + 7).map((day) => {
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isSelected = selectedDate !== null && isSameDay(day, selectedDate);
-                const isFocused = isSameDay(day, focusedDate);
+                const isFocused = rovingDate !== undefined && isSameDay(day, rovingDate);
                 const isDisabled = isDayDisabled(day);
 
                 return (
@@ -232,7 +240,9 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
                         locale: es,
                       })}
                       aria-current={isToday(day) ? "date" : undefined}
+                      disabled={isDisabled}
                       tabIndex={isFocused ? 0 : -1}
+                      onFocus={() => setFocusedDate(day)}
                       onClick={() => {
                         if (isDisabled) return;
                         setFocusedDate(day);
@@ -240,12 +250,12 @@ export const DatePickerCalendar: React.FC<DatePickerCalendarProps> = ({
                       }}
                       className={`
                           relative h-9 w-full flex items-center justify-center rounded-md text-[10px] font-black transition-all shadow-none
-                          ${!isCurrentMonth ? "text-token-text-tertiary/40 opacity-30" : "text-token-text-primary"}
+                          ${!isCurrentMonth ? "text-token-text-secondary" : "text-token-text-primary"}
                           ${isToday(day) && !isSelected ? "text-token-accent-brand ring-1 ring-token-accent-brand/20 bg-token-accent-brand/5" : ""}
                           ${isDisabled ? "opacity-20 cursor-not-allowed grayscale" : ""}
                           ${
                             isSelected
-                              ? "bg-token-accent-brand text-token-text-onAccent shadow-md scale-105 ${Z.sticky}"
+                              ? `bg-token-accent-brand text-token-text-onAccent! shadow-md scale-105 ${Z.sticky}`
                               : isDisabled
                                 ? ""
                                 : "hover:bg-token-surface-hover hover:text-token-text-primary"

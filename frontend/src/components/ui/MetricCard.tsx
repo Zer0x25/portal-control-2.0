@@ -62,6 +62,7 @@ export interface MetricTileProps extends MetricCardBase {
   };
   tone?: MetricTone;
   onClick?: () => void;
+  semanticValue?: boolean;
 }
 
 export interface MetricPanelProps extends MetricCardBase {
@@ -69,6 +70,7 @@ export interface MetricPanelProps extends MetricCardBase {
   title: string | ReactNode;
   icon: ReactNode;
   children: ReactNode;
+  headingAs?: "h2" | "h3" | "h4";
 }
 
 export type MetricCardProps = MetricTileProps | MetricPanelProps;
@@ -82,11 +84,15 @@ const MetricTile: React.FC<MetricTileProps> = ({
   tone = "accent",
   className = "",
   onClick,
+  semanticValue = false,
 }) => {
   const theme = TONE_STYLES[tone];
+  const Root = semanticValue && onClick ? "button" : "div";
+  const Value = semanticValue ? "span" : "h2";
 
   return (
-    <div
+    <Root
+      {...(Root === "button" ? { type: "button" as const } : {})}
       onClick={onClick}
       className={`
         @container animate-in fade-in duration-150 relative flex flex-col p-3 rounded-md border border-token-border-subtle shadow-none transition-all duration-150
@@ -113,9 +119,9 @@ const MetricTile: React.FC<MetricTileProps> = ({
               : icon}
           </div>
         )}
-        <h2 className="text-2xl @sm:text-3xl font-bold text-token-text-primary tracking-tighter leading-none truncate text-center">
+        <Value className="text-2xl @sm:text-3xl font-bold text-token-text-primary tracking-tighter leading-none truncate text-center">
           {value}
-        </h2>
+        </Value>
       </div>
 
       {(label || trend) && (
@@ -134,11 +140,17 @@ const MetricTile: React.FC<MetricTileProps> = ({
           )}
         </div>
       )}
-    </div>
+    </Root>
   );
 };
 
-const MetricPanel: React.FC<MetricPanelProps> = ({ title, icon, children, className = "" }) => (
+const MetricPanel: React.FC<MetricPanelProps> = ({
+  title,
+  icon,
+  children,
+  className = "",
+  headingAs: Heading = "h4",
+}) => (
   <div
     className={`@container animate-in fade-in duration-150 relative overflow-hidden rounded-sm bg-token-surface-card border border-token-border-technical shadow-sm p-3 @sm:p-4 @lg:p-5 ${className}`}
   >
@@ -150,7 +162,9 @@ const MetricPanel: React.FC<MetricPanelProps> = ({ title, icon, children, classN
       </div>
       <div className="flex-1">
         {typeof title === "string" ? (
-          <h4 className="text-[13px] font-bold text-token-text-primary leading-tight">{title}</h4>
+          <Heading className="text-[13px] font-bold text-token-text-primary leading-tight">
+            {title}
+          </Heading>
         ) : (
           title
         )}
@@ -204,6 +218,7 @@ export const MetricStat: React.FC<MetricStatProps> = ({ value, label, onClick, i
       <button
         type="button"
         onClick={onClick}
+        aria-pressed={isActive}
         className={`group relative flex items-center w-full py-2.5 px-3.5 rounded-sm transition-all duration-150 border active:scale-[0.98] ${
           isActive
             ? "bg-token-accent-brand border-token-accent-brand shadow-md text-white"

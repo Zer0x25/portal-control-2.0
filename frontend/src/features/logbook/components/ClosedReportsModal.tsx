@@ -153,7 +153,14 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
 
         {/* Table Content */}
         <div className="relative overflow-hidden rounded-md bg-token-surface-card border border-token-border-technical shadow-sm">
-          <div className="overflow-x-auto custom-scrollbar max-h-[55vh]">
+          <div
+            className="overflow-x-auto custom-scrollbar max-h-[55vh]"
+            role="region"
+            aria-label="Tabla del historial de reportes"
+            // La región desplazable necesita foco para manejarse con teclado.
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+            tabIndex={0}
+          >
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.2em] bg-token-surface-stripe border-b border-token-border-subtle">
@@ -188,7 +195,7 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
                 ) : filteredReports.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-20">
-                      <div className="flex flex-col items-center justify-center gap-4 opacity-40">
+                      <div className="flex flex-col items-center justify-center gap-4">
                         <div className="p-5 bg-token-surface-stripe rounded-md">
                           <DocumentArrowDownIcon className="w-10 h-10 text-token-text-tertiary" />
                         </div>
@@ -286,13 +293,13 @@ const ClosedReportsModal: React.FC<ClosedReportsModalProps> = ({
         </div>
 
         {/* Footer Summary */}
-        <div className="flex items-center justify-between px-2 text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em]">
+        <div className="flex flex-wrap gap-2 items-center justify-between px-2 text-xxs font-black text-token-text-tertiary uppercase tracking-[0.2em]">
           <div className="flex items-center gap-4">
             <span>Resultados: {filteredReports.length}</span>
             <div className="w-1 h-1 rounded-full bg-token-border-technical" />
             <span>Total Cargados: {reports.length}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-token-accent-brand/60">
+          <div className="flex items-center gap-1.5 text-token-text-secondary">
             <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand" />
             <span>Sincronizado</span>
           </div>

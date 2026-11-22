@@ -122,11 +122,11 @@ describe("EmployeeManagementView", () => {
     expect(screen.getByText("Cargando base de datos de personal...")).toBeInTheDocument();
   });
 
-  it("renders within canonical wide Container with data-ui-protected", () => {
+  it("renders within canonical fluid Container with data-ui-protected", () => {
     render(<EmployeeManagementView {...baseProps} />);
     const container = screen.getByTestId("page-container");
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass("max-w-[1440px]");
+    expect(container).toHaveClass("max-w-none");
     expect(container).toHaveAttribute("data-ui-protected");
   });
 

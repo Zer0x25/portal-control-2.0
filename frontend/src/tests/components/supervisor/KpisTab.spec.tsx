@@ -132,7 +132,7 @@ describe("KpisTab Component", () => {
     render(<KpisTab />);
 
     fireEvent.click(screen.getByText("Emit Invalid Filters"));
-    expect(screen.getByText(/Parámetros de Tiempo Inválidos/i)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/Parámetros de Tiempo Inválidos/i);
   });
 
   it("should show no-data-period banner when filters are set and KPI data is empty", () => {
@@ -158,7 +158,7 @@ describe("KpisTab Component", () => {
     render(<KpisTab />);
     fireEvent.click(screen.getByText("Emit Valid Filters"));
 
-    expect(screen.getByText(/Periodo sin registros/i)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(/Periodo sin registros/i);
   });
 
   it("should not open details modal when clicked KPI has empty details", () => {

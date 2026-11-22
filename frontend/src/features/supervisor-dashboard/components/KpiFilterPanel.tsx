@@ -129,14 +129,16 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           Análisis Operativo Estratégico
         </h2>
 
-        <div className="flex bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical">
+        <div className="flex flex-wrap bg-token-surface-stripe p-1 rounded-sm border border-token-border-technical">
           {(["month", "quarter", "semester", "year", "custom"] as const).map((mode) => (
             <button
               key={mode}
+              type="button"
+              aria-pressed={periodMode === mode}
               onClick={() => setPeriodMode(mode)}
               className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all rounded-sm ${
                 periodMode === mode
-                  ? "bg-token-accent-brand text-white shadow-sm"
+                  ? "bg-token-accent-brand text-token-text-onAccent shadow-sm"
                   : "text-token-text-tertiary hover:text-token-text-primary hover:bg-token-surface-active"
               }`}
             >
@@ -151,7 +153,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
       </div>
 
       <div className="flex flex-col xl:flex-row xl:items-end gap-10">
-        <div className="shrink-0">
+        <div className="min-w-0 shrink-0">
           {periodMode === "month" ? (
             <CalendarMonthSelector
               currentDate={periodNavigator.currentDate}
@@ -162,23 +164,31 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
               onNext={handleNextMonth}
             />
           ) : periodMode === "custom" ? (
-            <div className="flex items-end gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-token-surface-card p-5 rounded-sm border border-token-accent-brand/20 shadow-sm animate-in fade-in slide-in-from-left-4 duration-300">
+              <div className="min-w-0 space-y-1.5">
+                <label
+                  htmlFor="kpi-custom-start"
+                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                >
                   Inicio
                 </label>
                 <input
+                  id="kpi-custom-start"
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
                   className="w-full bg-token-surface-stripe border border-token-border-technical rounded-sm px-4 py-2 text-[11px] font-bold text-token-text-primary focus:ring-1 focus:ring-token-accent-brand outline-none transition-all uppercase"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1">
+              <div className="min-w-0 space-y-1.5">
+                <label
+                  htmlFor="kpi-custom-end"
+                  className="text-[10px] font-black text-token-text-tertiary uppercase tracking-widest ml-1"
+                >
                   Término
                 </label>
                 <input
+                  id="kpi-custom-end"
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
@@ -202,13 +212,17 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
 
         <div className="grow grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
           <div className="relative group">
-            <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
+            <label
+              htmlFor="kpi-workday-type"
+              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
+            >
               Tipo de Jornada
             </label>
             <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <FunnelIcon className="w-4 h-4" />
             </div>
             <select
+              id="kpi-workday-type"
               value={selectedWorkdayType}
               onChange={(e) => setSelectedWorkdayType(e.target.value)}
               className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
@@ -223,13 +237,17 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           </div>
 
           <div className="relative group">
-            <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
+            <label
+              htmlFor="kpi-area"
+              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
+            >
               Filtrar por Área
             </label>
             <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <MapPinIcon className="w-4 h-4" />
             </div>
             <select
+              id="kpi-area"
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
               className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
@@ -244,13 +262,17 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           </div>
 
           <div className="relative group md:col-span-1 xl:col-span-2">
-            <label className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block">
+            <label
+              htmlFor="kpi-employee"
+              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
+            >
               Especificar Colaborador
             </label>
             <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
               <UsersIcon className="w-4 h-4" />
             </div>
             <select
+              id="kpi-employee"
               value={selectedEmployeeId}
               onChange={(e) => setSelectedEmployeeId(e.target.value)}
               className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
@@ -272,8 +294,8 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
           disabled={isLoading}
           className={`group relative flex items-center gap-3 px-8 py-3.5 rounded-sm font-black text-[12px] uppercase tracking-[0.15em] shadow-lg transition duration-300 ${
             isLoading
-              ? "bg-token-accent-brand text-white cursor-not-allowed shadow-none opacity-60"
-              : "bg-token-accent-brand text-white shadow-token-accent-brand/20 hover:bg-token-accent-brand/90 hover:-translate-y-0.5 active:translate-y-0"
+              ? "bg-token-accent-brand text-token-text-onAccent cursor-not-allowed shadow-none opacity-60"
+              : "bg-token-accent-brand text-token-text-onAccent shadow-token-accent-brand/20 hover:bg-token-accent-brand/90 hover:-translate-y-0.5 active:translate-y-0"
           }`}
         >
           <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm" />

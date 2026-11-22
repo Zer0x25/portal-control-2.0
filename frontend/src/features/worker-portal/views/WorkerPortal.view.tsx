@@ -229,7 +229,7 @@ const WorkerPortalView: React.FC<React.PropsWithChildren<WorkerPortalViewProps>>
   }
 
   return (
-    <Container variant="standard" noPadding data-ui-protected className="space-y-8 pb-10">
+    <Container noPadding data-ui-protected className="space-y-8 pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-in fade-in">
         <PageHeader
           eyebrow="Portal"

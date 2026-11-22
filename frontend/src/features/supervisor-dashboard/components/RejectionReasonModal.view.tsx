@@ -25,6 +25,7 @@ export interface RejectionReasonModalViewProps {
   handleReasonChange: (value: string) => void;
   /** Hay un envio en vuelo. */
   isSubmitting: boolean;
+  submissionError?: string | null;
   /** Props del `<form>` (id, `noValidate` y `onSubmit` de la capa). */
   formProps: {
     id: string;
@@ -41,8 +42,12 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
   getError,
   handleReasonChange,
   isSubmitting,
+  submissionError,
   formProps,
 }) => {
+  const closeIfIdle = () => {
+    if (!isSubmitting) onClose();
+  };
   const reasonError = getError("rejectionReason");
   const reasonErrorId = `${formProps.id}-rejectionReason-error`;
   const reasonId = `${formProps.id}-rejectionReason`;
@@ -50,7 +55,9 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
   return (
     <CinematicModal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={closeIfIdle}
+      closeOnBackdrop={!isSubmitting}
+      closeOnEscape={!isSubmitting}
       maxWidth="max-w-lg"
       showHeader={false}
       ariaLabelledBy="rejection-modal-title"
@@ -82,6 +89,11 @@ const RejectionReasonModalView: React.FC<RejectionReasonModalViewProps> = ({
 
       <form {...formProps}>
         <div className="p-6 space-y-4">
+          {submissionError && (
+            <p role="alert" className="text-sm text-token-status-error">
+              No se pudo rechazar la solicitud: {submissionError}
+            </p>
+          )}
           <label
             htmlFor={reasonId}
             className="text-[11px] font-semibold text-token-text-tertiary uppercase tracking-wider block"

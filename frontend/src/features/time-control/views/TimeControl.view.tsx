@@ -117,7 +117,7 @@ const TimeControlView: React.FC<React.PropsWithChildren<TimeControlViewProps>> =
   }
 
   return (
-    <Container variant="wide" noPadding data-ui-protected className="space-y-6">
+    <Container noPadding data-ui-protected className="space-y-6">
       <div className="w-full">
         <PageHeader
           className="w-full"

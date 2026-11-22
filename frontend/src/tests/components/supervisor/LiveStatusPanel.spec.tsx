@@ -101,6 +101,16 @@ describe("LiveStatusPanel Component", () => {
     expect(defaultProps.onEmployeeClick).toHaveBeenCalledWith(mockEmployees[0].employee);
   });
 
+  it("exposes employee rows as buttons and the panel title as a heading", () => {
+    render(<LiveStatusPanel {...defaultProps} />);
+    expect(
+      screen.getByRole("heading", { name: "Presencia en Tiempo Real", level: 2 }),
+    ).toBeInTheDocument();
+    const row = screen.getByRole("button", { name: /JUAN PEREZ/ });
+    fireEvent.click(row);
+    expect(defaultProps.onEmployeeClick).toHaveBeenCalledWith(mockEmployees[0].employee);
+  });
+
   it("should show empty state message when no employees match filters", () => {
     render(<LiveStatusPanel {...defaultProps} />);
     const searchInput = screen.getByPlaceholderText(/Filtrar por nombre.../i);
@@ -108,5 +118,20 @@ describe("LiveStatusPanel Component", () => {
     fireEvent.change(searchInput, { target: { value: "Inexistente" } });
 
     expect(screen.getByText(/Sin coincidencias operativas/i)).toBeInTheDocument();
+  });
+
+  it("exposes accessible search field, scrollable list region, and clear button", () => {
+    const props = { ...defaultProps, selectedStatuses: ["en_jornada"] };
+    render(<LiveStatusPanel {...props} />);
+
+    expect(
+      screen.getByRole("searchbox", { name: "Filtrar colaboradores por nombre" }),
+    ).toBeInTheDocument();
+    const region = screen.getByRole("region", { name: "Lista de presencia en tiempo real" });
+    expect(region).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("button", { name: "Limpiar Parámetros" })).toHaveAttribute(
+      "type",
+      "button",
+    );
   });
 });

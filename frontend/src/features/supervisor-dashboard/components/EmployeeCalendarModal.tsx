@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 import { Employee } from "../../../types/index";
 import { useCalendarData } from "../../../hooks/useCalendarData";
 import ShiftCalendarView from "../../../components/ui/ShiftCalendarView";
@@ -22,6 +22,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const titleId = useId();
   const displayDate = new Date();
   const filteredEmployees = [employee];
 
@@ -40,6 +41,7 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
       onClose={onClose}
       maxWidth="max-w-[1300px]"
       showHeader={false}
+      ariaLabelledBy={titleId}
       panelClassName="w-[98vw] h-[90vh] rounded-sm flex flex-col relative"
       bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
     >
@@ -53,7 +55,10 @@ const EmployeeCalendarModal: React.FC<EmployeeCalendarModalProps> = ({
             <UserIcon className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-token-text-primary uppercase tracking-tight leading-none">
+            <h2
+              id={titleId}
+              className="text-3xl font-black text-token-text-primary uppercase tracking-tight leading-none"
+            >
               EXPEDIENTE: {employee.name}
             </h2>
             <div className="flex items-center gap-4">

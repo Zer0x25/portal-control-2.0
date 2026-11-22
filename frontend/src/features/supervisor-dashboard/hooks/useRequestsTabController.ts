@@ -13,14 +13,13 @@ export const useRequestsTabController = () => {
   const [statusFilter, setStatusFilter] = useState<RequestStatusFilter>("pending");
 
   const [requestToReject, setRequestToReject] = useState<CorrectionRequest | null>(null);
+  const [rejectionError, setRejectionError] = useState<string | null>(null);
 
   const [attachmentToView, setAttachmentToView] = useState<CorrectionRequest["attachment"]>();
 
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   const processingIdsRef = useRef<Set<string>>(new Set());
-
-  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const { data: stats } = useCorrectionRequestsStatsQuery();
 
@@ -34,6 +33,9 @@ export const useRequestsTabController = () => {
   const {
     requests,
     isLoadingRequests,
+    isErrorRequests,
+    refetchRequests,
+    isFetchNextPageError,
     updateRequestStatus,
     isUpdatingRequestStatus,
     fetchNextPage,
@@ -71,6 +73,7 @@ export const useRequestsTabController = () => {
   };
 
   const handleReject = (request: CorrectionRequest) => {
+    setRejectionError(null);
     setRequestToReject(request);
   };
 
@@ -79,14 +82,12 @@ export const useRequestsTabController = () => {
 
     const requestId = requestToReject.id;
     if (processingIdsRef.current.has(requestId)) {
-      setRequestToReject(null);
       return;
     }
 
     processingIdsRef.current.add(requestId);
     setProcessingIds((prev) => new Set(prev).add(requestId));
-    setRequestToReject(null);
-
+    setRejectionError(null);
     try {
       await updateRequestStatus({
         id: requestId,
@@ -94,8 +95,15 @@ export const useRequestsTabController = () => {
         resolvedBy: currentUser.username,
         rejectionReason: reason,
       });
-    } catch {
-      // Handled by mutation onError toast
+      setRequestToReject(null);
+    } catch (error) {
+      setRejectionError(
+        error instanceof TypeError
+          ? "No se pudo conectar con el servidor. Inténtalo nuevamente."
+          : error instanceof Error
+            ? error.message
+            : "Inténtalo nuevamente.",
+      );
     } finally {
       processingIdsRef.current.delete(requestId);
       setProcessingIds((prev) => {
@@ -114,17 +122,20 @@ export const useRequestsTabController = () => {
     statusFilter,
     setStatusFilter,
     requestToReject,
+    rejectionError,
     setRequestToReject,
     attachmentToView,
     setAttachmentToView,
     processingIds,
     setProcessingIds,
     processingIdsRef,
-    loadMoreRef,
     stats,
     since,
     requests,
     isLoadingRequests,
+    isErrorRequests,
+    refetchRequests,
+    isFetchNextPageError,
     updateRequestStatus,
     isUpdatingRequestStatus,
     fetchNextPage,

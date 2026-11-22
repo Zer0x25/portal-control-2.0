@@ -46,7 +46,7 @@ export const MasterDataExportView: React.FC<MasterDataExportViewProps> = ({
   handleExport,
 }) => {
   return (
-    <Container variant="standard" noPadding data-ui-protected className="space-y-6">
+    <Container noPadding data-ui-protected className="space-y-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[11px] font-bold text-token-text-primary uppercase tracking-[0.2em] flex items-center gap-2">
           <DocumentArrowDownIcon className="w-4 h-4 text-(--sidebar-text-active)" />

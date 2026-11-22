@@ -15,12 +15,16 @@ export const useCorrectionRequests = (
     hasNextPage,
     isFetchingNextPage,
     isFetchNextPageCorrectionRequestsError,
-    isLoadingSchedulingData: isLoadingRequests,
+    isLoadingCorrectionRequests: isLoadingRequests,
+    isErrorCorrectionRequests: isErrorRequests,
+    refetchCorrectionRequests: refetchRequests,
   } = useScheduling(status, since, { queryMode });
 
   return {
     requests,
     isLoadingRequests,
+    isErrorRequests,
+    refetchRequests,
     addCorrectionRequest,
     updateRequestStatus,
     getRequestsForEmployee,

@@ -15,6 +15,7 @@ export const VirtualizedRequestList: FC<{
   isProcessing?: boolean;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
+  isFetchNextPageError: boolean;
   fetchNextPage: () => void;
   getEmployeeName: (employeeId: string) => string | undefined;
 }> = ({
@@ -26,6 +27,7 @@ export const VirtualizedRequestList: FC<{
   isProcessing,
   hasNextPage,
   isFetchingNextPage,
+  isFetchNextPageError,
   fetchNextPage,
   getEmployeeName,
 }) => {
@@ -34,6 +36,7 @@ export const VirtualizedRequestList: FC<{
     itemHeight,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     fetchNextPage,
   });
 
@@ -44,7 +47,7 @@ export const VirtualizedRequestList: FC<{
       role="region"
       aria-label="Solicitudes de corrección"
       tabIndex={0}
-      className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-6 -mr-6 min-h-[450px] focus:outline-hidden"
+      className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-6 -mr-6 min-h-[450px] focus-visible:outline-2 focus-visible:outline-token-accent-brand"
       style={{ contain: "strict" }}
     >
       <div

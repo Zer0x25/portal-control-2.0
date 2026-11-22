@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router";
 import ResponsiveView from "../../../components/ui/ResponsiveView";
@@ -76,7 +77,7 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
       expect(el).toHaveClass("px-4");
       expect(el).toHaveClass("sm:px-6");
       expect(el).toHaveClass("lg:px-8");
-      expect(el).toHaveClass("max-w-7xl");
+      expect(el).toHaveClass("max-w-none");
     });
 
     it("applies wide container max-width (1440px) for dense operational matrices", () => {
@@ -132,7 +133,10 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
       expect(shell).toHaveAttribute("data-current-path", "/time-control");
     });
 
-    it("exposes accessible skip-to-content link for keyboard users and headless agents", () => {
+    it("moves keyboard focus to main without changing the current hash route", async () => {
+      const user = userEvent.setup();
+      const originalHash = window.location.hash;
+      window.history.replaceState(null, "", "#/dashboard-supervisor?tab=kpis");
       render(
         <PersistentLayoutView {...defaultLayoutProps}>
           <div>Child Page</div>
@@ -142,6 +146,13 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
       const skipLink = screen.getByTestId("skip-to-content");
       expect(skipLink).toBeInTheDocument();
       expect(skipLink).toHaveAttribute("href", "#main-content");
+      await user.tab();
+      expect(skipLink).toHaveFocus();
+      await user.keyboard("{Enter}");
+      expect(screen.getByTestId("main-content")).toHaveFocus();
+      expect(window.location.hash).toBe("#/dashboard-supervisor?tab=kpis");
+      expect(screen.getByText("Child Page")).toBeInTheDocument();
+      window.history.replaceState(null, "", originalHash || window.location.pathname);
     });
 
     it("renders main element with id, role, responsive padding, and centered max-width constraint", () => {
@@ -162,7 +173,7 @@ describe("Responsive Layout & Viewport Coverage Suite", () => {
 
       // Centered content wrapper
       const content = screen.getByTestId("page-content").parentElement;
-      expect(content).toHaveClass("max-w-[1440px]");
+      expect(content).not.toHaveClass("max-w-[1440px]");
       expect(content).toHaveClass("mx-auto");
     });
 

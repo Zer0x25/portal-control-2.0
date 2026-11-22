@@ -171,12 +171,7 @@ export const EmployeeManagementView: React.FC<EmployeeManagementViewProps> = (pr
   }
 
   return (
-    <Container
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="space-y-6 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-6 animate-in fade-in duration-500">
       {!isEmbedded && (
         <PageHeader
           eyebrow="Personal"

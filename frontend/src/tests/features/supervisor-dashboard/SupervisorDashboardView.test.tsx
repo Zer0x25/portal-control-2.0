@@ -23,6 +23,14 @@ describe("SupervisorDashboardView", () => {
 
     expect(screen.getByText("Control y Supervisión")).toBeInTheDocument();
     expect(screen.getByText("SUPERVISOR-CONTENT")).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Secciones de supervisión" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Resumen/i })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: /KPIs/i })).toHaveAttribute("aria-pressed", "false");
 
     fireEvent.click(screen.getByRole("button", { name: /KPIs/i }));
     expect(handleTabClick).toHaveBeenCalledWith("kpis");

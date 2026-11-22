@@ -81,6 +81,12 @@ describe("LogbookView", () => {
     expect(baseProps.setShowCloseShiftConfirmation).toHaveBeenCalledWith(true);
   });
 
+  it("announces loading before showing shift data", () => {
+    render(<LogbookView {...baseProps} isLoadingReports />);
+    expect(screen.getByRole("status")).toHaveTextContent("Cargando Libro de Novedades");
+    expect(screen.queryByText("Turno Mañana")).not.toBeInTheDocument();
+  });
+
   it("renders empty state and start action when there is no active shift", () => {
     const propsWithoutShift: React.ComponentProps<typeof LogbookView> = {
       ...baseProps,

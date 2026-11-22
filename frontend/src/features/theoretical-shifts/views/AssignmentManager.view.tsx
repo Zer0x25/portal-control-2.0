@@ -142,13 +142,7 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
   formatBusinessDate,
 }) => {
   return (
-    <Container
-      id="assignment-manager-section"
-      variant="wide"
-      noPadding
-      data-ui-protected
-      className="space-y-6"
-    >
+    <Container id="assignment-manager-section" noPadding data-ui-protected className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="typo-ui-title text-token-text-primary">Asignaciones de Turnos</h2>

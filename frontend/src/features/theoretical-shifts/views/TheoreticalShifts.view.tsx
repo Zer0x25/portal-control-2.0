@@ -41,7 +41,7 @@ export const TheoreticalShiftsView: React.FC<TheoreticalShiftsViewProps> = ({
   ];
 
   return (
-    <Container variant="wide" noPadding data-ui-protected className="space-y-6">
+    <Container noPadding data-ui-protected className="space-y-6">
       <div className="space-y-6 animate-in fade-in duration-500">
         <PageHeader
           eyebrow="Configuración"

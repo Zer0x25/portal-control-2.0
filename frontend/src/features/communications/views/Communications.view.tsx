@@ -44,12 +44,7 @@ export const CommunicationsView: React.FC<CommunicationsViewProps> = ({
   }
 
   return (
-    <Container
-      variant="standard"
-      noPadding
-      data-ui-protected
-      className="space-y-6 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
         eyebrow="Institucional"
         eyebrowIcon={<MegaphoneIcon className="w-3.5 h-3.5" />}

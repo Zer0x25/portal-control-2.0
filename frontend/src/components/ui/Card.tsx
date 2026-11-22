@@ -7,10 +7,23 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   badge?: React.ReactNode;
   noPadding?: boolean;
   variant?: "default" | "premium" | "flat";
+  headingAs?: "h2" | "h3" | "h4";
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ children, className = "", title, badge, noPadding, variant = "default", ...rest }, ref) => {
+  (
+    {
+      children,
+      className = "",
+      title,
+      badge,
+      noPadding,
+      variant = "default",
+      headingAs: Heading = "h3",
+      ...rest
+    },
+    ref,
+  ) => {
     // Variants logic
     const isPremium = variant === "premium";
     const isFlat = variant === "flat";
@@ -32,9 +45,9 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           <div className="px-4 py-3 @sm:px-5 border-b border-token-border-technical bg-token-surface-header flex flex-col @sm:flex-row items-start @sm:items-center justify-between gap-2 @sm:gap-0">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-3 bg-token-accent-brand rounded-sm" />
-              <h3 className="text-[11px] font-black uppercase tracking-widest text-token-text-primary leading-none">
+              <Heading className="text-[11px] font-black uppercase tracking-widest text-token-text-primary leading-none">
                 {title}
-              </h3>
+              </Heading>
             </div>
             {badge && <div className="shrink-0">{badge}</div>}
           </div>

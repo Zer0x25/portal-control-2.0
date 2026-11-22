@@ -43,12 +43,7 @@ export const ConfigurationView: React.FC<ConfigurationViewProps> = ({
   handleTabChange,
 }) => {
   return (
-    <Container
-      variant="standard"
-      noPadding
-      data-ui-protected
-      className="space-y-6 animate-in fade-in duration-500"
-    >
+    <Container noPadding data-ui-protected className="space-y-6 animate-in fade-in duration-500">
       <PageHeader
         eyebrow="Sistema de Operaciones"
         eyebrowIcon={<ActivityIcon className="w-3.5 h-3.5" />}

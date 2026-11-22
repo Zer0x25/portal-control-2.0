@@ -4,6 +4,7 @@ export type ContainerVariant = "standard" | "wide" | "narrow" | "fluid";
 
 export interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
+  /** Defaults to fluid; choose a bounded width when the content needs one. */
   variant?: ContainerVariant;
   noPadding?: boolean;
   withSafeArea?: boolean;
@@ -23,7 +24,7 @@ export const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
   (
     {
       children,
-      variant = "standard",
+      variant = "fluid",
       noPadding = false,
       withSafeArea = false,
       as: Component = "div",

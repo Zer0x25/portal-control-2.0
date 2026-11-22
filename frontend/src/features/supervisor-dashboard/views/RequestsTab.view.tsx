@@ -9,6 +9,7 @@ import {
   InboxArrowDownIcon,
 } from "../../../components/ui/icons/index";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
+import Button from "../../../components/ui/Button";
 import { Z } from "../../../constants/zScale";
 import { PendingRequestCard } from "../components/RequestsTabCards";
 import { VirtualizedRequestList } from "../components/RequestsTabVirtualizedList";
@@ -21,13 +22,16 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
     statusFilter,
     setStatusFilter,
     requestToReject,
+    rejectionError,
     setRequestToReject,
     attachmentToView,
     setAttachmentToView,
     processingIds,
-    loadMoreRef,
     stats,
     isLoadingRequests,
+    isErrorRequests,
+    refetchRequests,
+    isFetchNextPageError,
     isUpdatingRequestStatus,
     fetchNextPage,
     hasNextPage,
@@ -41,8 +45,8 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
 
   if (isLoadingRequests) {
     return (
-      <div className="min-h-[500px] flex flex-col items-center justify-center gap-5">
-        <div className="relative">
+      <div role="status" className="min-h-[500px] flex flex-col items-center justify-center gap-5">
+        <div className="relative" aria-hidden="true">
           <LoadingSpinner size="lg" variant="default" />
           <div className="absolute inset-0 flex items-center justify-center">
             <InboxArrowDownIcon className="w-5 h-5 text-token-accent-brand animate-pulse" />
@@ -51,6 +55,23 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
         <p className="text-[11px] font-bold text-token-accent-brand uppercase tracking-widest animate-pulse">
           Auditando bandeja de entrada...
         </p>
+      </div>
+    );
+  }
+
+  if (isErrorRequests && filteredRequests.length === 0 && !isFetchNextPageError) {
+    return (
+      <div role="alert" className="flex flex-col items-start gap-4 py-8">
+        <p>No se pudieron cargar las solicitudes. Comprueba la conexión y vuelve a intentar.</p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="underline"
+          onClick={() => void refetchRequests()}
+        >
+          Reintentar carga
+        </Button>
       </div>
     );
   }
@@ -64,7 +85,12 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
             {(["pending", "approved", "rejected"] as RequestStatusFilter[]).map((status) => (
               <button
                 key={status}
+                type="button"
+                aria-pressed={statusFilter === status}
                 onClick={() => setStatusFilter(status)}
+                onFocus={(event) => {
+                  event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
+                }}
                 className={`
                   relative px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 rounded-sm flex items-center gap-3 whitespace-nowrap shrink-0
                   ${
@@ -78,10 +104,10 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                   <div
                     className={`absolute inset-0 shadow-md rounded-sm -${Z.sticky} animate-in fade-in ${
                       status === "pending"
-                        ? "bg-token-status-warning shadow-token-status-warning/20"
+                        ? "bg-token-status-warning-text dark:bg-token-status-warning shadow-token-status-warning/20"
                         : status === "approved"
-                          ? "bg-token-status-success shadow-token-status-success/20"
-                          : "bg-token-status-error shadow-token-status-error/20"
+                          ? "bg-token-status-success-text dark:bg-token-status-success shadow-token-status-success/20"
+                          : "bg-token-status-error-text dark:bg-token-status-error shadow-token-status-error/20"
                     }`}
                   />
                 )}
@@ -122,7 +148,7 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                     />
                   ))
                 ) : (
-                  <div className="sm:col-span-2 flex flex-col items-center justify-center py-40 opacity-30">
+                  <div className="sm:col-span-2 flex flex-col items-center justify-center py-40">
                     <div className="w-24 h-24 rounded-sm bg-token-surface-stripe flex items-center justify-center mb-8 border border-token-border-technical shadow-inner">
                       <CheckCircleIcon className="w-12 h-12 text-token-accent-brand" />
                     </div>
@@ -132,9 +158,12 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                   </div>
                 )}
               </div>
-              <div ref={loadMoreRef} className="h-10 flex items-center justify-center">
+              <div className="h-10 flex items-center justify-center">
                 {isFetchingNextPage && (
-                  <div className="flex items-center gap-3 text-[10px] font-black text-token-accent-brand uppercase tracking-widest animate-pulse">
+                  <div
+                    role="status"
+                    className="flex items-center gap-3 text-[10px] font-black text-token-accent-brand uppercase tracking-widest animate-pulse"
+                  >
                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
                     SINCRONIZANDO MÁS ENTREGAS...
                   </div>
@@ -152,12 +181,16 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
                 isProcessing={isUpdatingRequestStatus}
                 hasNextPage={hasNextPage}
                 isFetchingNextPage={isFetchingNextPage}
+                isFetchNextPageError={isFetchNextPageError}
                 fetchNextPage={fetchNextPage}
                 getEmployeeName={getEmployeeName}
               />
-              <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-6">
+              <div className="h-10 flex items-center justify-center mt-6">
                 {isFetchingNextPage && (
-                  <div className="flex items-center gap-3 text-[10px] font-black text-token-accent-brand uppercase tracking-widest animate-pulse">
+                  <div
+                    role="status"
+                    className="flex items-center gap-3 text-[10px] font-black text-token-accent-brand uppercase tracking-widest animate-pulse"
+                  >
                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
                     RECUPERANDO HISTORIAL...
                   </div>
@@ -168,12 +201,41 @@ const RequestsTabView: FC<RequestsTabController> = (controller) => {
         </div>
       </div>
 
+      {isFetchNextPageError && (
+        <div role="alert" className="flex flex-col items-start gap-2">
+          <p>No se pudieron cargar más solicitudes.</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="underline"
+            onClick={() => void fetchNextPage()}
+          >
+            Reintentar carga adicional
+          </Button>
+        </div>
+      )}
+
+      {hasNextPage && !isFetchNextPageError && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="underline"
+          disabled={isFetchingNextPage}
+          onClick={() => void fetchNextPage()}
+        >
+          {isFetchingNextPage ? "Cargando más solicitudes..." : "Cargar más solicitudes"}
+        </Button>
+      )}
+
       {requestToReject && (
         <RejectionReasonModal
           isOpen={!!requestToReject}
           onClose={() => setRequestToReject(null)}
           onConfirm={handleConfirmReject}
           isSubmitting={isUpdatingRequestStatus}
+          submissionError={rejectionError}
         />
       )}
       {attachmentToView && (
