@@ -3,6 +3,7 @@
 */
 
 import React from "react";
+import { createPortal } from "react-dom";
 import PageHeader from "../../../components/ui/PageHeader";
 import Button from "../../../components/ui/Button";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
@@ -239,76 +240,81 @@ export const LogbookView: React.FC<LogbookViewProps> = ({
           confirmVariant="danger"
         />
       )}
-      {/* Floating Action Button for Mobile */}
-      {isMobile && activeShift && (
-        <div
-          className={`fixed bottom-6 right-6 ${Z.overlay} flex flex-col items-end gap-3`}
-          onKeyDown={(event) => {
-            if (event.key === "Escape" && showFabMenu) {
-              event.stopPropagation();
-              setShowFabMenu(false);
-              document.getElementById("logbook-fab-toggle")?.focus();
-            }
-          }}
-        >
-          {showFabMenu && (
-            <div className="flex flex-col items-end gap-3 mb-2">
-              {/* Option: Add Supplier */}
-              <div className="flex items-center gap-3 drop-shadow-xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 [animation-delay:50ms]">
-                <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
-                  Proveedor
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowSupplierEntryModal(true);
-                    setShowFabMenu(false);
-                  }}
-                  className="w-12 h-12 rounded-sm bg-(--status-success) text-white flex items-center justify-center shadow-lg shadow-(--status-success)/20 border border-(--status-success)/20 transition-transform active:scale-90"
-                  aria-label="Agregar Proveedor"
-                  title="Agregar Proveedor"
-                >
-                  <PlusCircleIcon className="w-6 h-6" />
-                </button>
-              </div>
 
-              {/* Option: Add Novelty */}
-              <div className="flex items-center gap-3 drop-shadow-xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 [animation-delay:100ms]">
-                <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
-                  Novedad
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowLogEntryModal(true);
-                    setShowFabMenu(false);
-                  }}
-                  className="w-12 h-12 rounded-sm bg-(--sidebar-text-active) text-white flex items-center justify-center shadow-lg shadow-(--sidebar-text-active)/20 border border-(--sidebar-text-active)/20 transition-transform active:scale-90"
-                  aria-label="Agregar Novedad"
-                  title="Agregar Novedad"
-                >
-                  <PlusCircleIcon className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-          )}
+      {/* Floating Action Button for Mobile — portal a <main> para que fixed se ancle al
+          viewport y no al wrapper con animación de entrada (transform residual). */}
+      {isMobile &&
+        activeShift &&
+        createPortal(
+          <div
+            className={`fixed bottom-6 right-6 ${Z.overlay} flex flex-col items-end gap-3`}
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && showFabMenu) {
+                event.stopPropagation();
+                setShowFabMenu(false);
+                document.getElementById("logbook-fab-toggle")?.focus();
+              }
+            }}
+          >
+            {showFabMenu && (
+              <div className="flex flex-col items-end gap-3 mb-2">
+                {/* Option: Add Supplier */}
+                <div className="flex items-center gap-3 drop-shadow-xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 [animation-delay:50ms]">
+                  <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
+                    Proveedor
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSupplierEntryModal(true);
+                      setShowFabMenu(false);
+                    }}
+                    className="w-12 h-12 rounded-sm bg-(--status-success) text-white flex items-center justify-center shadow-lg shadow-(--status-success)/20 border border-(--status-success)/20 transition-transform active:scale-90"
+                    aria-label="Agregar Proveedor"
+                    title="Agregar Proveedor"
+                  >
+                    <PlusCircleIcon className="w-6 h-6" />
+                  </button>
+                </div>
 
-          {/* Main FAB Toggle */}
-          <button
-            id="logbook-fab-toggle"
-            type="button"
-            onClick={() => setShowFabMenu(!showFabMenu)}
-            aria-expanded={showFabMenu}
-            aria-label={showFabMenu ? "Cerrar acciones" : "Abrir acciones"}
-            className={`
+                {/* Option: Add Novelty */}
+                <div className="flex items-center gap-3 drop-shadow-xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 [animation-delay:100ms]">
+                  <span className="bg-token-surface-card px-3 py-1.5 rounded-sm text-[11px] font-bold text-token-text-secondary border border-token-border-technical uppercase tracking-wider">
+                    Novedad
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLogEntryModal(true);
+                      setShowFabMenu(false);
+                    }}
+                    className="w-12 h-12 rounded-sm bg-(--sidebar-text-active) text-white flex items-center justify-center shadow-lg shadow-(--sidebar-text-active)/20 border border-(--sidebar-text-active)/20 transition-transform active:scale-90"
+                    aria-label="Agregar Novedad"
+                    title="Agregar Novedad"
+                  >
+                    <PlusCircleIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Main FAB Toggle */}
+            <button
+              id="logbook-fab-toggle"
+              type="button"
+              onClick={() => setShowFabMenu(!showFabMenu)}
+              aria-expanded={showFabMenu}
+              aria-label={showFabMenu ? "Cerrar acciones" : "Abrir acciones"}
+              className={`
               w-14 h-14 rounded-sm flex items-center justify-center shadow-2xl transition duration-300 border active:scale-90
               ${showFabMenu ? "bg-token-text-primary border-token-border-technical text-white rotate-45" : "bg-(--sidebar-text-active) border-(--sidebar-text-active)/20 text-white"}
             `}
-          >
-            <PlusCircleIcon className="w-7 h-7" />
-          </button>
-        </div>
-      )}
+            >
+              <PlusCircleIcon className="w-7 h-7" />
+            </button>
+          </div>,
+          document.getElementById("main-content") ?? document.body,
+        )}
 
       <ShiftReportModal
         isOpen={selectedReport !== null}
