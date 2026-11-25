@@ -5,6 +5,7 @@ import Card from "../../../components/ui/Card";
 import CinematicModal from "../../../components/ui/CinematicModal";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import Container from "../../../components/ui/Container";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import Input from "../../../components/ui/Input";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 import Switch from "../../../components/ui/Switch";
@@ -269,51 +270,30 @@ export const ScheduledReportsView: React.FC<ScheduledReportsController> = ({
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="scheduled-report-type"
-                className="block text-[10px] font-bold uppercase tracking-widest text-token-text-tertiary mb-1.5"
-              >
-                Tipo de Reporte
-              </label>
-              <select
-                id="scheduled-report-type"
-                value={formValues.reportType}
-                onChange={(e) =>
-                  handleFieldChange("reportType", e.target.value as ScheduledReportType)
-                }
-                className="w-full h-11 px-3 rounded-md bg-token-surface-card border border-token-border-technical text-xs font-bold text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none"
-              >
-                {(Object.keys(REPORT_TYPE_LABELS) as ScheduledReportType[]).map((type) => (
-                  <option key={type} value={type}>
-                    {REPORT_TYPE_LABELS[type]}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FilterSelect
+              id="scheduled-report-type"
+              label="Tipo de Reporte"
+              value={formValues.reportType}
+              onChange={(e) =>
+                handleFieldChange("reportType", e.target.value as ScheduledReportType)
+              }
+              options={(Object.keys(REPORT_TYPE_LABELS) as ScheduledReportType[]).map((type) => ({
+                value: type,
+                label: REPORT_TYPE_LABELS[type],
+              }))}
+            />
 
-            <div>
-              <label
-                htmlFor="scheduled-report-frequency"
-                className="block text-[10px] font-bold uppercase tracking-widest text-token-text-tertiary mb-1.5"
-              >
-                Frecuencia
-              </label>
-              <select
-                id="scheduled-report-frequency"
-                value={formValues.frequency}
-                onChange={(e) =>
-                  handleFieldChange("frequency", e.target.value as ScheduledReportFrequency)
-                }
-                className="w-full h-11 px-3 rounded-md bg-token-surface-card border border-token-border-technical text-xs font-bold text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none"
-              >
-                {(Object.keys(FREQUENCY_LABELS) as ScheduledReportFrequency[]).map((freq) => (
-                  <option key={freq} value={freq}>
-                    {FREQUENCY_LABELS[freq]}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FilterSelect
+              id="scheduled-report-frequency"
+              label="Frecuencia"
+              value={formValues.frequency}
+              onChange={(e) =>
+                handleFieldChange("frequency", e.target.value as ScheduledReportFrequency)
+              }
+              options={(Object.keys(FREQUENCY_LABELS) as ScheduledReportFrequency[]).map(
+                (freq) => ({ value: freq, label: FREQUENCY_LABELS[freq] }),
+              )}
+            />
           </div>
 
           <Input

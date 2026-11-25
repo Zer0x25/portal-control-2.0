@@ -10,6 +10,7 @@ import Container from "../../../components/ui/Container";
 import { PlusCircleIcon, EyeIcon, CalendarDaysIcon, UserIcon } from "../../../components/ui/icons";
 import DatePickerDialog from "../../../components/ui/DatePickerDialog";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import AssignmentListDesktop from "../components/AssignmentListDesktop";
 import AssignmentListMobile from "../components/AssignmentListMobile";
 import type { Employee, TheoreticalShiftPattern } from "../../../types";
@@ -243,39 +244,17 @@ export const AssignmentManagerView: React.FC<AssignmentManagerViewProps> = ({
                   )}
                 </div>
                 <div>
-                  <label
-                    htmlFor="assignment-pattern"
-                    className="block text-xs font-bold uppercase tracking-widest text-token-text-secondary mb-2"
-                  >
-                    Patrón
-                  </label>
-                  <select
+                  <FilterSelect
                     id="assignment-pattern"
+                    label="Patrón"
                     value={assignmentForm.values.shiftPatternId}
                     onChange={(e) => assignmentForm.setValue("shiftPatternId", e.target.value)}
-                    aria-invalid={assignmentForm.getError("shiftPatternId") ? "true" : undefined}
-                    aria-describedby={
-                      assignmentForm.getError("shiftPatternId")
-                        ? "assignment-pattern-error"
-                        : undefined
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-token-surface-card border border-token-border-technical text-token-text-primary focus:ring-2 focus:ring-token-border-focus outline-none"
-                  >
-                    <option value="">-- Seleccionar --</option>
-                    {shiftPatterns.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                  {assignmentForm.getError("shiftPatternId") && (
-                    <p
-                      id="assignment-pattern-error"
-                      className="mt-2 text-xs font-semibold text-token-status-error"
-                    >
-                      {assignmentForm.getError("shiftPatternId")}
-                    </p>
-                  )}
+                    error={assignmentForm.getError("shiftPatternId")}
+                    options={[
+                      { value: "", label: "-- Seleccionar --" },
+                      ...shiftPatterns.map((p) => ({ value: p.id, label: p.name })),
+                    ]}
+                  />
                 </div>
               </div>
 

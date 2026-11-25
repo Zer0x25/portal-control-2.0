@@ -14,6 +14,7 @@ import CalendarMonthSelector from "../../../components/ui/CalendarMonthSelector"
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Container from "../../../components/ui/Container";
+import FilterSelect from "../../../components/ui/FilterSelect";
 
 type ShiftCalendarEmployeeOption = {
   id: string;
@@ -274,62 +275,44 @@ export const ShiftCalendarFeatureView: React.FC<ShiftCalendarViewProps> = (props
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end bg-token-surface-stripe/40 p-3 rounded-lg">
             {!isWorker && (
               <>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest pl-1">
-                    Área Operativa
-                  </label>
-                  <select
-                    aria-label="Filtrar por area"
-                    value={selectedArea}
-                    onChange={handleAreaChange}
-                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
-                  >
-                    <option value="">TODAS LAS ÁREAS</option>
-                    {uniqueAreas.map((area) => (
-                      <option key={area} value={area}>
-                        {area}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest pl-1">
-                    Cargo Técnico
-                  </label>
-                  <select
-                    aria-label="Filtrar por cargo"
-                    value={selectedCargo}
-                    onChange={handleCargoChange}
-                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
-                  >
-                    <option value="">TODOS LOS CARGOS</option>
-                    {uniqueCargosInArea.map((cargo) => (
-                      <option key={cargo} value={cargo}>
-                        {cargo}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest pl-1">
-                    Colaborador
-                  </label>
-                  <select
-                    aria-label="Filtrar por empleado"
-                    value={selectedEmployeeId || "ALL"}
-                    onChange={(e) =>
-                      setSelectedEmployeeId(e.target.value === "ALL" ? null : e.target.value)
-                    }
-                    className="w-full h-11 px-4 bg-token-surface-card border border-token-border-technical rounded-sm text-[12px] font-bold uppercase tracking-tight focus:ring-2 focus:ring-(--sidebar-text-active)/20 text-token-text-primary outline-none"
-                  >
-                    <option value="ALL">DOTACIÓN COMPLETA</option>
-                    {filteredEmployeesForCalendar.map((emp) => (
-                      <option key={emp.id} value={emp.id}>
-                        {emp.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FilterSelect
+                  id="calendar-area-filter"
+                  label="Área Operativa"
+                  aria-label="Filtrar por area"
+                  value={selectedArea}
+                  onChange={handleAreaChange}
+                  options={[
+                    { value: "", label: "Todas las Áreas" },
+                    ...uniqueAreas.map((area) => ({ value: area, label: area })),
+                  ]}
+                />
+                <FilterSelect
+                  id="calendar-cargo-filter"
+                  label="Cargo Técnico"
+                  aria-label="Filtrar por cargo"
+                  value={selectedCargo}
+                  onChange={handleCargoChange}
+                  options={[
+                    { value: "", label: "Todos los Cargos" },
+                    ...uniqueCargosInArea.map((cargo) => ({ value: cargo, label: cargo })),
+                  ]}
+                />
+                <FilterSelect
+                  id="calendar-employee-filter"
+                  label="Colaborador"
+                  aria-label="Filtrar por empleado"
+                  value={selectedEmployeeId || "ALL"}
+                  onChange={(e) =>
+                    setSelectedEmployeeId(e.target.value === "ALL" ? null : e.target.value)
+                  }
+                  options={[
+                    { value: "ALL", label: "Dotación Completa" },
+                    ...filteredEmployeesForCalendar.map((emp) => ({
+                      value: emp.id,
+                      label: emp.name,
+                    })),
+                  ]}
+                />
               </>
             )}
 

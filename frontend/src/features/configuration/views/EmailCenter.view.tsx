@@ -17,6 +17,7 @@ import {
 } from "../../../components/ui/icons/index";
 import SmtpConfigModal from "../components/SmtpConfigModal.container";
 import Button from "../../../components/ui/Button";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import type { EmailNotificationRules } from "../../../types";
 import type { SendTestEmailFormValues } from "../../../schemas/forms/smtp";
 
@@ -74,29 +75,17 @@ const RuleEditor: React.FC<RuleEditorProps> = ({
       >
         <div className="overflow-hidden">
           <div className="mt-6 pt-6 border-t border-token-border-technical">
-            <label className="block text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary mb-2">
-              Destinatario del Reporte
-            </label>
-            <div className="relative group/select">
-              <select
-                value={rule.recipient}
-                onChange={(e) => onFieldChange("recipient", e.target.value)}
-                aria-label={`Destinatario del reporte: ${title}`}
-                className="w-full h-11 pl-4 pr-10 rounded-sm bg-token-surface-card border border-token-border-technical text-[12px] font-bold uppercase tracking-tight text-token-text-primary focus:ring-1 focus:ring-(--sidebar-text-active) outline-none appearance-none transition-colors"
-              >
-                <option value="" className="bg-token-surface-card">
-                  SELECCIONAR CORREO...
-                </option>
-                {emailRecipientsList.map((email) => (
-                  <option key={email} value={email} className="bg-token-surface-card">
-                    {email}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-token-text-tertiary">
-                <EnvelopeIcon className="w-4 h-4" />
-              </div>
-            </div>
+            <FilterSelect
+              id={`${id}-recipient`}
+              label="Destinatario del Reporte"
+              icon={<EnvelopeIcon className="w-4 h-4" />}
+              value={rule.recipient}
+              onChange={(e) => onFieldChange("recipient", e.target.value)}
+              options={[
+                { value: "", label: "Seleccionar Correo..." },
+                ...emailRecipientsList.map((email) => ({ value: email, label: email })),
+              ]}
+            />
           </div>
         </div>
       </div>

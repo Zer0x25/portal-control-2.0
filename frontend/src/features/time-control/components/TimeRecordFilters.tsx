@@ -3,6 +3,7 @@ import { useClockingEmployeeOptionsQuery } from "../../../hooks/queries/useEmplo
 import { useTimeRecordsQuery } from "../../../hooks/queries/useTimeRecordsQuery";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { QuickFilterMode } from "../hooks/useTimeRecordFilters";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
@@ -20,9 +21,6 @@ const CANONICAL_TIME_RECORD_STATUSES = [
   "DiaLibre",
   "SinMarcajeTurnoAsignado",
 ] as const;
-
-const FILTER_SELECT_CLASS =
-  "block w-full h-11 min-h-11 px-3 md:px-4 text-[11px] md:text-[12px] font-black uppercase tracking-tight text-token-text-primary bg-token-surface-card border border-token-border-technical rounded-md shadow-sm transition-all duration-300 cursor-pointer appearance-none focus:ring-2 focus:ring-token-border-focus focus:border-token-accent-brand outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
 interface TimeRecordFiltersProps {
   clientFilters: { name: string; area: string; workdayType: string; status: string };
@@ -111,17 +109,6 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
 
   const availableStatuses = [...CANONICAL_TIME_RECORD_STATUSES];
 
-  const ChevronDown = (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-token-text-tertiary"
-    >
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-  );
-
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col">
@@ -181,85 +168,40 @@ const TimeRecordFiltersImpl: React.FC<TimeRecordFiltersProps> = ({
                     sin esto quedaria 23px arriba respecto a "Rango Rapido" y "Acciones". */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 pb-4 items-end">
                 {/* 1. Tipo Jornada */}
-                <div className="w-full">
-                  <label
-                    htmlFor="filtroWorkdayType"
-                    className="text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2 block"
-                  >
-                    Tipo Jornada
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="filtroWorkdayType"
-                      name="workdayType"
-                      value={clientFilters.workdayType}
-                      onChange={(e) => onClientFilterChange({ workdayType: e.target.value })}
-                      className={FILTER_SELECT_CLASS}
-                    >
-                      <option value="">TODOS LOS TIPOS</option>
-                      {availableWorkdayTypes.map((type: string) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                    {ChevronDown}
-                  </div>
-                </div>
+                <FilterSelect
+                  id="filtroWorkdayType"
+                  label="Tipo Jornada"
+                  value={clientFilters.workdayType}
+                  onChange={(e) => onClientFilterChange({ workdayType: e.target.value })}
+                  options={[
+                    { value: "", label: "Todos los Tipos" },
+                    ...availableWorkdayTypes.map((type) => ({ value: type, label: type })),
+                  ]}
+                />
 
                 {/* 2. Área Operativa */}
-                <div className="w-full">
-                  <label
-                    htmlFor="filtroAreaTC"
-                    className="text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2 block"
-                  >
-                    Área Operativa
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="filtroAreaTC"
-                      name="area"
-                      value={clientFilters.area}
-                      onChange={(e) => onClientFilterChange({ area: e.target.value })}
-                      className={FILTER_SELECT_CLASS}
-                    >
-                      <option value="">TODAS LAS ÁREAS</option>
-                      {availableAreas.map((area: string) => (
-                        <option key={area} value={area}>
-                          {area}
-                        </option>
-                      ))}
-                    </select>
-                    {ChevronDown}
-                  </div>
-                </div>
+                <FilterSelect
+                  id="filtroAreaTC"
+                  label="Área Operativa"
+                  value={clientFilters.area}
+                  onChange={(e) => onClientFilterChange({ area: e.target.value })}
+                  options={[
+                    { value: "", label: "Todas las Áreas" },
+                    ...availableAreas.map((area) => ({ value: area, label: area })),
+                  ]}
+                />
 
                 {/* 3. Estado */}
-                <div className="w-full">
-                  <label
-                    htmlFor="filtroEstadoTC"
-                    className="text-xxs font-black uppercase tracking-widest text-token-text-secondary mb-2 block"
-                  >
-                    Estado
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="filtroEstadoTC"
-                      name="status"
-                      value={clientFilters.status}
-                      onChange={(e) => onClientFilterChange({ status: e.target.value })}
-                      className={FILTER_SELECT_CLASS}
-                    >
-                      <option value="">TODOS LOS ESTADOS</option>
-                      {availableStatuses.map((status: string) => (
-                        <option key={status} value={status}>
-                          {status}
-                        </option>
-                      ))}
-                    </select>
-                    {ChevronDown}
-                  </div>
-                </div>
+                <FilterSelect
+                  id="filtroEstadoTC"
+                  label="Estado"
+                  value={clientFilters.status}
+                  onChange={(e) => onClientFilterChange({ status: e.target.value })}
+                  options={[
+                    { value: "", label: "Todos los Estados" },
+                    ...availableStatuses.map((status) => ({ value: status, label: status })),
+                  ]}
+                />
 
                 {/* 4. Rango rapido (24h / 7d / 31d) */}
                 <div className="w-full">

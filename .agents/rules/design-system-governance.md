@@ -27,6 +27,7 @@ Directrices obligatorias para agentes de IA y desarrolladores al construir o mod
 - **Prohibido HTML crudo en formularios y acciones de vistas**:
   - No usar `<button>` nativo con clases CSS largas en `*.view.tsx`: importar y usar `Button` de `src/components/ui/Button.tsx`.
   - No usar `<input>` nativo con clases ad-hoc: usar `Input` de `src/components/ui/Input.tsx`.
+  - No usar `<select>` nativo: usar `FilterSelect` de `src/components/ui/FilterSelect.tsx` (chevron propio, 44 px táctiles, `label` + `htmlFor`, `error` con `aria-invalid`/`aria-describedby`). Los desplegables de formulario con validación de dominio usan `Select`.
   - No usar contenedores con bordes manuales para paneles principales: usar `Card` de `src/components/ui/Card.tsx`.
   - No armar píldoras de estado desde cero: usar `Badge` de `src/components/ui/Badge.tsx`.
   - Para envolver vistas y secciones principales: usar `Container` de `src/components/ui/Container.tsx` (`standard`: máx 1280px / 7xl, `wide`: máx 1440px, `narrow`: máx 896px / 4xl, `fluid`: ancho completo), garantizando centrado automático (`mx-auto`) y paddings elásticos.

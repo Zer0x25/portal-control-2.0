@@ -11,6 +11,7 @@ import {
 } from "../../../components/ui/icons/index";
 import { Employee } from "../../../types/index";
 import CalendarMonthSelector from "../../../components/ui/CalendarMonthSelector";
+import FilterSelect from "../../../components/ui/FilterSelect";
 import LoadingSpinner from "../../../components/ui/LoadingSpinner";
 
 interface KpiFilterPanelProps {
@@ -211,80 +212,42 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
         </div>
 
         <div className="grow grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-          <div className="relative group">
-            <label
-              htmlFor="kpi-workday-type"
-              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
-            >
-              Tipo de Jornada
-            </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
-              <FunnelIcon className="w-4 h-4" />
-            </div>
-            <select
-              id="kpi-workday-type"
-              value={selectedWorkdayType}
-              onChange={(e) => setSelectedWorkdayType(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
-            >
-              <option value="">Todas las Jornadas</option>
-              {availableWorkdayTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="kpi-workday-type"
+            label="Tipo de Jornada"
+            icon={<FunnelIcon className="w-4 h-4" />}
+            value={selectedWorkdayType}
+            onChange={(e) => setSelectedWorkdayType(e.target.value)}
+            options={[
+              { value: "", label: "Todas las Jornadas" },
+              ...availableWorkdayTypes.map((t) => ({ value: t, label: t })),
+            ]}
+          />
 
-          <div className="relative group">
-            <label
-              htmlFor="kpi-area"
-              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
-            >
-              Filtrar por Área
-            </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
-              <MapPinIcon className="w-4 h-4" />
-            </div>
-            <select
-              id="kpi-area"
-              value={selectedArea}
-              onChange={(e) => setSelectedArea(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
-            >
-              <option value="">Todas las Áreas</option>
-              {availableAreas.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="kpi-area"
+            label="Filtrar por Área"
+            icon={<MapPinIcon className="w-4 h-4" />}
+            value={selectedArea}
+            onChange={(e) => setSelectedArea(e.target.value)}
+            options={[
+              { value: "", label: "Todas las Áreas" },
+              ...availableAreas.map((a) => ({ value: a, label: a })),
+            ]}
+          />
 
-          <div className="relative group md:col-span-1 xl:col-span-2">
-            <label
-              htmlFor="kpi-employee"
-              className="text-[11px] font-semibold text-token-text-tertiary mb-1.5 ml-1 block"
-            >
-              Especificar Colaborador
-            </label>
-            <div className="absolute left-4 top-[38px] -translate-y-1/2 text-token-accent-brand opacity-40 pointer-events-none group-focus-within:opacity-100 transition-opacity">
-              <UsersIcon className="w-4 h-4" />
-            </div>
-            <select
-              id="kpi-employee"
-              value={selectedEmployeeId}
-              onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="w-full pl-12 pr-6 py-3.5 bg-token-surface-stripe border border-token-border-technical rounded-sm appearance-none focus:ring-1 focus:ring-token-accent-brand outline-none transition-all text-[11px] font-bold text-token-text-primary uppercase tracking-tight shadow-sm hover:bg-token-surface-active cursor-pointer"
-            >
-              <option value="">TODOS LOS EMPLEADOS</option>
-              {employeesForEmployeeDropdown.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="kpi-employee"
+            label="Especificar Colaborador"
+            icon={<UsersIcon className="w-4 h-4" />}
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            containerClassName="md:col-span-1 xl:col-span-2"
+            options={[
+              { value: "", label: "Todos los Empleados" },
+              ...employeesForEmployeeDropdown.map((e) => ({ value: e.id, label: e.name })),
+            ]}
+          />
         </div>
       </div>
 
