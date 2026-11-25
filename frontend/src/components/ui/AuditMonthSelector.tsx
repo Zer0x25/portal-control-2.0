@@ -30,31 +30,22 @@ const VIEWPORT_MARGIN = 8;
 
 /**
  * 🗓️ Year Navigator Segment
- * Factored out for clean state management
+ * Al elegir un año el panel permanece abierto: así se encadena la selección
+ * del mes sin volver a abrir el desplegable.
  */
 const YearPicker: React.FC<{
   currentDate: Date;
   today: Date;
   onChange: (date: Date) => void;
-  onGoToToday: () => void;
-}> = ({ currentDate, today, onChange, onGoToToday }) => {
+}> = ({ currentDate, today, onChange }) => {
   const currentYear = currentDate.getFullYear();
   const slidingYears = [currentYear - 1, currentYear, currentYear + 1];
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-between items-center pr-1">
-        <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
-          Años
-        </p>
-        <button
-          onClick={onGoToToday}
-          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
-        >
-          <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
-          Actual
-        </button>
-      </div>
+      <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
+        Años
+      </p>
       <div className="flex items-center justify-center gap-1.5 py-1">
         {slidingYears.map((year) => {
           const isSelected = year === currentYear;
@@ -92,7 +83,8 @@ const MonthPicker: React.FC<{
   currentDate: Date;
   today: Date;
   onChange: (monthIdx: number) => void;
-}> = ({ currentDate, today, onChange }) => {
+  onGoToToday: () => void;
+}> = ({ currentDate, today, onChange, onGoToToday }) => {
   const months = eachMonthOfInterval({
     start: startOfYear(currentDate),
     end: endOfYear(currentDate),
@@ -105,9 +97,18 @@ const MonthPicker: React.FC<{
 
   return (
     <div className="flex flex-col gap-3 pt-4 border-t border-token-border-subtle">
-      <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
-        Seleccionar Mes
-      </p>
+      <div className="flex justify-between items-center pr-1">
+        <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
+          Seleccionar Mes
+        </p>
+        <button
+          onClick={onGoToToday}
+          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
+        >
+          <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
+          Actual
+        </button>
+      </div>
       <div className="grid grid-cols-4 gap-1.5">
         {months.map((m, idx) => {
           const isDisabled = isFuture(idx);
@@ -255,22 +256,12 @@ const AuditMonthSelector: React.FC<AuditMonthSelectorProps> = ({ currentDate, on
             className={`fixed ${Z.modal} w-[300px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-sm p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
           >
             <div className="space-y-6">
-              <YearPicker
-                currentDate={currentDate}
-                today={today}
-                onChange={onChange}
-                onGoToToday={() => {
-                  onChange(today);
-                  closeAndRestoreFocus();
-                }}
-              />
+              <YearPicker currentDate={currentDate} today={today} onChange={onChange} />
               <MonthPicker
                 currentDate={currentDate}
                 today={today}
-                onChange={(idx) => {
-                  onChange(setMonth(currentDate, idx));
-                  closeAndRestoreFocus();
-                }}
+                onChange={(idx) => onChange(setMonth(currentDate, idx))}
+                onGoToToday={() => onChange(today)}
               />
             </div>
           </div>,

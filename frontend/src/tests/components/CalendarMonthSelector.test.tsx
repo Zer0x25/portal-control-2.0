@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -25,6 +26,9 @@ describe("CalendarMonthSelector", () => {
     await user.keyboard("{Enter}");
     await user.click(screen.getByRole("button", { name: /ene/i }));
     expect(onChange).toHaveBeenCalledOnce();
+    // El panel permanece abierto para encadenar mes/año sin reabrirlo.
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{Escape}");
     expect(trigger).toHaveFocus();
   });
 
@@ -43,6 +47,53 @@ describe("CalendarMonthSelector", () => {
     expect(container.contains(panel)).toBe(false);
     expect(panel?.parentElement).toBe(document.body);
   });
+
+  it("navega entre meses sin cerrar el panel y respeta los límites del intervalo", async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    const Harness = () => {
+      const [date, setDate] = React.useState(new Date(2026, 10, 1));
+      return (
+        <CalendarMonthSelector
+          currentDate={date}
+          onChange={(next) => {
+            onChange(next);
+            setDate(next);
+          }}
+        />
+      );
+    };
+    render(<Harness />);
+    const trigger = screen.getByRole("button", { name: /periodo de consulta.*noviembre 2026/i });
+    await user.click(trigger);
+
+    await user.click(screen.getByRole("button", { name: "oct" }));
+    expect(onChange).toHaveBeenLastCalledWith(new Date(2026, 9, 1));
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    // Diciembre del año en curso está bloqueado por ser futuro.
+    expect(screen.getByRole("button", { name: "dic" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "dic" }));
+    expect(onChange).toHaveBeenCalledTimes(1);
+
+    // Tras cambiar el año el panel sigue abierto y la rejilla refleja el año nuevo.
+    await user.click(screen.getByRole("button", { name: "2027" }));
+    expect(onChange).toHaveBeenLastCalledWith(new Date(2027, 9, 1));
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    await user.click(screen.getByRole("button", { name: "dic" }));
+    expect(onChange).toHaveBeenLastCalledWith(new Date(2027, 11, 1));
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(onChange).toHaveBeenCalledTimes(3);
+
+    await user.click(screen.getByRole("button", { name: />Actual/ }));
+    expect(onChange).toHaveBeenLastCalledWith(new Date(2026, 10, 15));
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
 });
 
 describe("AuditMonthSelector", () => {
@@ -60,6 +111,9 @@ describe("AuditMonthSelector", () => {
     await user.keyboard("{Enter}");
     await user.click(screen.getByRole("button", { name: /ene/i }));
     expect(onChange).toHaveBeenCalledOnce();
+    // El panel permanece abierto para encadenar mes/año sin reabrirlo.
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{Escape}");
     expect(trigger).toHaveFocus();
   });
 });

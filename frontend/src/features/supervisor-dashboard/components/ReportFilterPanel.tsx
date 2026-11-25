@@ -1,4 +1,5 @@
 import React, { useState, useEffect, FC } from "react";
+import { addMonths } from "date-fns";
 import { useEmployees } from "../../../hooks/useEmployees";
 import { useBusinessNow } from "../../../hooks/useBusinessNow";
 import { getBusinessDateRangePreset, getChileDateISO } from "../../../utils/dateUtils";
@@ -7,6 +8,8 @@ import {
   UsersIcon,
   MapPinIcon,
   DocumentTextIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "../../../components/ui/icons/index";
 import AuditMonthSelector from "../../../components/ui/AuditMonthSelector";
 import FilterSelect from "../../../components/ui/FilterSelect";
@@ -41,6 +44,9 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
   const [customStartDate, setCustomStartDate] = useState<string>(getChileDateISO());
   const [customEndDate, setCustomEndDate] = useState<string>(getChileDateISO());
+  // Ancla editable de los presets (trimestre/semestre/año): permite navegar
+  // entre periodos sin quedar anclado al actual.
+  const [presetAnchor, setPresetAnchor] = useState<Date>(() => new Date(businessNow));
 
   const { startDateISO, endDateISO } = (() => {
     if (periodMode === "custom") {
@@ -53,17 +59,17 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
     switch (periodMode) {
       case "quarter":
         return (() => {
-          const { startDate, endDate } = getBusinessDateRangePreset("quarter", businessNow);
+          const { startDate, endDate } = getBusinessDateRangePreset("quarter", presetAnchor);
           return { startDateISO: startDate, endDateISO: endDate };
         })();
       case "semester":
         return (() => {
-          const { startDate, endDate } = getBusinessDateRangePreset("semester", businessNow);
+          const { startDate, endDate } = getBusinessDateRangePreset("semester", presetAnchor);
           return { startDateISO: startDate, endDateISO: endDate };
         })();
       case "year":
         return (() => {
-          const { startDate, endDate } = getBusinessDateRangePreset("year", businessNow);
+          const { startDate, endDate } = getBusinessDateRangePreset("year", presetAnchor);
           return { startDateISO: startDate, endDateISO: endDate };
         })();
       default:
@@ -72,6 +78,27 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
           return { startDateISO: startDate, endDateISO: endDate };
         })();
     }
+  })();
+
+  const presetStepMonths = periodMode === "year" ? 12 : periodMode === "semester" ? 6 : 3;
+
+  const shiftPresetAnchor = (delta: number) => {
+    const shifted = addMonths(presetAnchor, delta * presetStepMonths);
+    // El ancla arranca en el periodo en curso y solo puede retroceder.
+    if (shifted > businessNow) return;
+    setPresetAnchor(shifted);
+  };
+
+  // El botón "Siguiente" se desactiva al llegar al periodo en curso.
+  const presetShiftDisabled =
+    periodMode !== "month" && addMonths(presetAnchor, presetStepMonths) > businessNow;
+
+  const presetLabel = (() => {
+    if (periodMode === "year") return `Año ${presetAnchor.getFullYear()}`;
+    if (periodMode === "semester") {
+      return `Semestre ${presetAnchor.getMonth() < 6 ? "1" : "2"} ${presetAnchor.getFullYear()}`;
+    }
+    return `Trimestre ${Math.floor(presetAnchor.getMonth() / 3) + 1} ${presetAnchor.getFullYear()}`;
   })();
 
   useEffect(() => {
@@ -193,15 +220,35 @@ const ReportFilterPanel: FC<ReportFilterPanelProps> = ({
               </div>
             </div>
           ) : (
-            <div className="bg-token-accent-brand/3 border border-token-accent-brand/10 p-5 rounded-sm flex flex-col justify-center min-w-[200px] h-[78px] animate-in fade-in duration-500">
-              <span className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest opacity-60">
-                Segmento Automático
-              </span>
-              <span className="text-[13px] font-bold text-token-text-primary uppercase mt-1">
-                {periodMode === "quarter" && "Trimestre Actual"}
-                {periodMode === "semester" && "Semestre Actual"}
-                {periodMode === "year" && `Ciclo Anual ${businessNow.getFullYear()}`}
-              </span>
+            <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
+              <button
+                type="button"
+                onClick={() => shiftPresetAnchor(-1)}
+                title="Anterior"
+                className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
+              >
+                <ChevronLeftIcon className="w-3.5 h-3.5" />
+              </button>
+              <div
+                aria-live="polite"
+                className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center py-1 rounded-sm"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5">
+                  Periodo de Consulta
+                </p>
+                <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap">
+                  {presetLabel}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => shiftPresetAnchor(1)}
+                disabled={presetShiftDisabled}
+                title="Siguiente"
+                className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
+              >
+                <ChevronRightIcon className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
         </div>

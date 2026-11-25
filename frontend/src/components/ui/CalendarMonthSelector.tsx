@@ -16,6 +16,7 @@ import {
   endOfYear,
 } from "date-fns";
 import { es } from "date-fns/locale";
+import { useBusinessNow } from "../../hooks/useBusinessNow";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons/index";
 import { Z } from "../../constants/zScale";
 
@@ -34,29 +35,21 @@ const VIEWPORT_MARGIN = 8;
 
 /**
  * 🗓️ Year Navigator Segment
+ * Segmento de años deslizantes. Al elegir un año el panel permanece abierto
+ * para poder encadenar la selección del mes sin volver a abrir el desplegable.
  */
 const YearPicker: React.FC<{
   currentDate: Date;
   onChange: (date: Date) => void;
-  onGoToToday: () => void;
-}> = ({ currentDate, onChange, onGoToToday }) => {
+}> = ({ currentDate, onChange }) => {
   const currentYear = currentDate.getFullYear();
   const slidingYears = [currentYear - 1, currentYear, currentYear + 1];
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex justify-between items-center pr-1">
-        <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
-          Años
-        </p>
-        <button
-          onClick={onGoToToday}
-          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
-        >
-          <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
-          Actual
-        </button>
-      </div>
+      <p className="text-xxs font-bold uppercase tracking-widest text-token-accent-brand pl-1">
+        Años
+      </p>
       <div className="flex items-center justify-center gap-1.5 py-1">
         {slidingYears.map((year) => {
           const isSelected = year === currentYear;
@@ -85,33 +78,55 @@ const YearPicker: React.FC<{
 
 /**
  * 📅 Month Grid Segment
+ * Al elegir un mes el panel permanece abierto: así se puede navegar mes a mes
+ * (o cambiar el año) sin volver a abrir el desplegable.
  */
 const MonthPicker: React.FC<{
   currentDate: Date;
+  today: Date;
   onChange: (monthIdx: number) => void;
-}> = ({ currentDate, onChange }) => {
+  onGoToToday: () => void;
+}> = ({ currentDate, today, onChange, onGoToToday }) => {
   const months = eachMonthOfInterval({
     start: startOfYear(currentDate),
     end: endOfYear(currentDate),
   });
 
+  // Solo el año en curso tiene meses futuros bloqueados; los años pasados
+  // deben permitir navegar todos sus meses.
+  const isFuture = (idx: number) =>
+    currentDate.getFullYear() === today.getFullYear() && setMonth(new Date(today), idx) > today;
+
   return (
     <div className="flex flex-col gap-3 pt-4 border-t border-token-border-subtle">
-      <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
-        Seleccionar Mes
-      </p>
+      <div className="flex justify-between items-center pr-1">
+        <p className="text-xxs font-bold uppercase tracking-widest text-token-status-success-text pl-1">
+          Seleccionar Mes
+        </p>
+        <button
+          onClick={onGoToToday}
+          className="text-xxs font-bold uppercase tracking-widest text-token-text-tertiary hover:text-token-accent-brand transition-colors flex items-center gap-1 group/today"
+        >
+          <span className="opacity-0 group-hover/today:opacity-100 transition-opacity">&gt;</span>
+          Actual
+        </button>
+      </div>
       <div className="grid grid-cols-4 gap-1.5">
         {months.map((m, idx) => {
+          const isDisabled = isFuture(idx);
           const isSelected = currentDate.getMonth() === idx;
 
           return (
             <button
               key={idx}
+              disabled={isDisabled}
               onClick={() => onChange(idx)}
               className={`px-2 py-2 rounded-sm text-xxs font-bold capitalize tracking-wider transition-all border ${
                 isSelected
                   ? "bg-token-accent-brand text-token-text-onAccent border-token-accent-brand shadow-sm"
-                  : "bg-token-surface-card text-token-text-secondary border-token-border-subtle hover:border-token-accent-brand"
+                  : isDisabled
+                    ? "opacity-20 cursor-not-allowed bg-transparent border-transparent"
+                    : "bg-token-surface-card text-token-text-secondary border-token-border-subtle hover:border-token-accent-brand"
               }`}
             >
               {format(m, "MMM", { locale: es })}
@@ -140,7 +155,7 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
-  const today = new Date();
+  const today = useBusinessNow({ tickMs: null });
 
   const closeAndRestoreFocus = () => {
     setIsOpen(false);
@@ -248,20 +263,12 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
             className={`fixed ${Z.modal} w-[280px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
           >
             <div className="space-y-6">
-              <YearPicker
-                currentDate={currentDate}
-                onChange={onChange}
-                onGoToToday={() => {
-                  onChange(today);
-                  closeAndRestoreFocus();
-                }}
-              />
+              <YearPicker currentDate={currentDate} onChange={onChange} />
               <MonthPicker
                 currentDate={currentDate}
-                onChange={(idx) => {
-                  onChange(setMonth(currentDate, idx));
-                  closeAndRestoreFocus();
-                }}
+                today={today}
+                onChange={(idx) => onChange(setMonth(currentDate, idx))}
+                onGoToToday={() => onChange(today)}
               />
             </div>
           </div>,
