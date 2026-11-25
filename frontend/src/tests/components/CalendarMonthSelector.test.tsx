@@ -27,6 +27,22 @@ describe("CalendarMonthSelector", () => {
     expect(onChange).toHaveBeenCalledOnce();
     expect(trigger).toHaveFocus();
   });
+
+  it("renderiza el panel en un portal fuera del contenedor de la tarjeta", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <div data-testid="card">
+        <CalendarMonthSelector currentDate={new Date(2026, 10, 1)} onChange={vi.fn()} />
+      </div>,
+    );
+    const trigger = screen.getByRole("button", { name: /periodo de consulta.*noviembre 2026/i });
+    await user.click(trigger);
+
+    const panel = screen.getByRole("button", { name: /ene/i }).closest("div.fixed");
+    expect(panel).not.toBeNull();
+    expect(container.contains(panel)).toBe(false);
+    expect(panel?.parentElement).toBe(document.body);
+  });
 });
 
 describe("AuditMonthSelector", () => {

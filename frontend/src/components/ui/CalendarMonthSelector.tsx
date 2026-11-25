@@ -4,6 +4,7 @@
  * Mantiene la estética Industrial-Elegante y añade soporte para navegación por días/semanas.
  */
 import React, { useState, useRef, useEffect, useId } from "react";
+import { createPortal } from "react-dom";
 import {
   format,
   subMonths,
@@ -27,6 +28,9 @@ interface CalendarMonthSelectorProps {
   onPrev?: () => void;
   onNext?: () => void;
 }
+
+const PANEL_WIDTH = 280;
+const VIEWPORT_MARGIN = 8;
 
 /**
  * 🗓️ Year Navigator Segment
@@ -131,8 +135,10 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
   onNext,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({ left: 0, top: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const today = new Date();
 
@@ -145,15 +151,41 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
   const handlePrev = () => (onPrev ? onPrev() : onChange(subMonths(currentDate, 1)));
   const handleNext = () => (onNext ? onNext() : onChange(addMonths(currentDate, 1)));
 
-  // Click Outside Logic
+  // Click Outside Logic (el panel vive en un portal, fuera del contenedor)
   useEffect(() => {
+    if (!isOpen) return;
     const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node))
-        setIsOpen(false);
+      const target = e.target as Node;
+      if (containerRef.current?.contains(target) || panelRef.current?.contains(target)) return;
+      setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  }, [isOpen]);
+
+  // El panel se ancla al disparador en coordenadas de viewport: asi escapa de
+  // contenedores con `overflow-hidden` o `transform` que lo recortaban.
+  useEffect(() => {
+    if (!isOpen) return;
+    const updatePosition = () => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      const center = rect.left + rect.width / 2;
+      const maxLeft = window.innerWidth - PANEL_WIDTH - VIEWPORT_MARGIN;
+      setPanelPosition({
+        left: Math.min(Math.max(center - PANEL_WIDTH / 2, VIEWPORT_MARGIN), maxLeft),
+        top: rect.bottom + 6,
+      });
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen]);
 
   return (
     <div
@@ -206,31 +238,35 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
         </button>
       </div>
 
-      {/* Dropdown Panel */}
-      {isOpen && (
-        <div
-          id={panelId}
-          className={`absolute left-1/2 top-full -translate-x-1/2 ${Z.modal} w-[280px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
-        >
-          <div className="space-y-6">
-            <YearPicker
-              currentDate={currentDate}
-              onChange={onChange}
-              onGoToToday={() => {
-                onChange(today);
-                closeAndRestoreFocus();
-              }}
-            />
-            <MonthPicker
-              currentDate={currentDate}
-              onChange={(idx) => {
-                onChange(setMonth(currentDate, idx));
-                closeAndRestoreFocus();
-              }}
-            />
-          </div>
-        </div>
-      )}
+      {/* Dropdown Panel: portal al body para no ser recortado por tarjetas */}
+      {isOpen &&
+        createPortal(
+          <div
+            id={panelId}
+            ref={panelRef}
+            style={{ left: panelPosition.left, top: panelPosition.top }}
+            className={`fixed ${Z.modal} w-[280px] bg-token-surface-card border border-token-border-technical shadow-2xl rounded-md p-6 overflow-hidden animate-in fade-in slide-in-from-top-2`}
+          >
+            <div className="space-y-6">
+              <YearPicker
+                currentDate={currentDate}
+                onChange={onChange}
+                onGoToToday={() => {
+                  onChange(today);
+                  closeAndRestoreFocus();
+                }}
+              />
+              <MonthPicker
+                currentDate={currentDate}
+                onChange={(idx) => {
+                  onChange(setMonth(currentDate, idx));
+                  closeAndRestoreFocus();
+                }}
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 };

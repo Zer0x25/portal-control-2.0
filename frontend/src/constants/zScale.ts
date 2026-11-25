@@ -8,9 +8,10 @@
  * |------------|--------|--------------------------------------------|
  * | `base`     | `z-0`  | contenido de pagina                        |
  * | `sticky`   | `z-10` | cabeceras y tablas sticky, celdas          |
- * | `dropdown` | `z-20` | menus, popovers, paneles desplegables      |
+ * | `dropdown` | `z-20` | menus y popovers (posicion `fixed`)        |
  * | `overlay`  | `z-30` | drawers, backdrops y superficies flotantes |
- * | `modal`    | `z-40` | modales de dominio y dialogos              |
+ * | `modal`    | `z-40` | modales de dominio, dialogos y paneles de |
+ * |            |        | selector anclados con `fixed`              |
  * | `max`      | `z-50` | modales de app (CinematicModal, About)     |
  * | `toast`    | `z-60` | toasts, loading bar y overlays de pantalla |
  *
