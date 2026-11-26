@@ -1,6 +1,6 @@
 # Spec 122: Integración agéntica de Storybook
 
-- Estado: Borrador
+- Estado: Implementado
 - Autor: zer0x
 - Fecha: 2026-11-26
 - ADR relacionado: `docs/adr/0033-storybook-agentic-integration.md`
@@ -58,32 +58,32 @@ Fuera (explícito):
 
 ## Criterios de aceptación
 
-- [ ] AC1: `@storybook/addon-mcp@10.6.9` está registrado en
+- [x] AC1: `@storybook/addon-mcp@10.6.9` está registrado en
       `frontend/.storybook/main.ts`; con `npm run storybook` activo,
       `http://127.0.0.1:6006/mcp` responde con el inventario de herramientas;
       `.vscode/mcp.json` registra el servidor para VS Code Copilot.
-- [ ] AC2: `@storybook/addon-vitest@10.6.9` está registrado; `npm run
-      test:storybook` ejecuta un smoke test de render por historia certificada
-      en browser mode y termina en verde, con las violaciones a11y preexistentes
+- [x] AC2: `@storybook/addon-vitest@10.6.9` está registrado; `npm run
+    test:storybook` ejecuta un smoke test de render por historia certificada
+      en browser mode y termina en verde (228/228), con las violaciones a11y preexistentes
       corregidas o exceptuadas con ratchet documentado (nunca silenciadas sin
       registro).
-- [ ] AC3: `storybook`, `@storybook/react-vite`, `@storybook/addon-a11y`,
+- [x] AC3: `storybook`, `@storybook/react-vite`, `@storybook/addon-a11y`,
       `@storybook/addon-docs`, `@storybook/addon-mcp` y
       `@storybook/addon-vitest` están en `10.6.9`; `npx storybook doctor` pasa,
       `npm run storybook:build` compila y `npm run storybook:visual` sigue
       verde (los baselines de primitivas no cambian).
-- [ ] AC4: La skill `.agents/skills/storybook-workflow/SKILL.md` y la regla
+- [x] AC4: La skill `.agents/skills/storybook-workflow/SKILL.md` y la regla
       `.agents/rules/storybook-agentic.md` existen con frontmatter válido,
       documentan el ciclo agéntico completo (consultar docs → escribir historias
       CSF3 → detectar impacto → ejecutar story tests → revisión) y
       `npm run spec:check` + `npm run docs:check` + `npm run lint:budget`
       quedan verdes; `AGENTS.md` se mantiene ≤ 120 líneas.
-- [ ] AC5: El preflight pre-PR ejecuta `npm run test:storybook` en modo `--pr`
+- [x] AC5: El preflight pre-PR ejecuta `npm run test:storybook` en modo `--pr`
       cuando hay cambios de UI/historias en `frontend/src`; `node
-      .agents/skills/ci-preflight/scripts/preflight.cjs --pr` termina verde.
-- [ ] AC6: El bundle de producción sigue sin runtime de Storybook:
+    .agents/skills/ci-preflight/scripts/preflight.cjs --pr` termina verde.
+- [x] AC6: El bundle de producción sigue sin runtime de Storybook:
       `npm run build && npm run check:storybook-runtime` verde.
-- [ ] AC7: ADR-0033 promovido a Aceptado e indexado en `docs/adr/README.md`;
+- [x] AC7: ADR-0033 promovido a Aceptado e indexado en `docs/adr/README.md`;
       spec 122 con tareas completadas y evidencia de la suite final.
 
 ## Restricciones
@@ -107,7 +107,7 @@ Fuera (explícito):
   suite visual Playwright `npm run storybook:visual`
   (`frontend/e2e/design-system-visual.spec.ts`), `npm run guardrails`
   (`designSystemGuardrails.test.ts` verifica cero runtime), `npm run
-  check:storybook-runtime` tras build.
+check:storybook-runtime` tras build.
 - Docs a actualizar: `docs/adr/0033-storybook-agentic-integration.md`,
   `docs/adr/README.md`, `frontend/README.md`,
   `.agents/rules/design-system-governance.md` (§7/§8 enlaces),

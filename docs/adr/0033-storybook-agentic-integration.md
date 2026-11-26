@@ -1,6 +1,6 @@
 # ADR-0033: Integración agéntica de Storybook (CLI tools, MCP y story tests)
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-11-26
 - Autores: zer0x
 
@@ -138,10 +138,37 @@ Negativas / costos aceptados:
 ## Referencias
 
 - `frontend/.storybook/main.ts` — registro de addons.
-- `frontend/vite.config.ts` — proyecto Vitest `storybook`.
+- `frontend/vite.config.ts` — proyecto Vitest `storybook` (activado con
+  `STORYBOOK_TESTS=1`).
 - `frontend/package.json` — script `test:storybook`, versiones 10.6.9.
 - `.vscode/mcp.json` — registro del servidor MCP para VS Code.
 - `.agents/skills/storybook-workflow/SKILL.md` — runbook del ciclo agéntico.
 - `.agents/rules/storybook-agentic.md` — regla modular on-demand.
+- `.agents/skills/ci-preflight/scripts/preflight.cjs` — story tests en el
+  gate pre-PR cuando `frontend/src` cambió.
 - `specs/122-storybook-agentic-integration/` — spec, plan y tareas.
+- `docs/tech-debt-register.md` TD-005 — ratchet de contraste.
 - ADR-0027 (frontera tooling/runtime que esta decisión respeta).
+
+## Líneas de implementación verificadas (2026-11-26)
+
+- Primer run de calibración: **54 fallas / 228 tests**. Triage: **12
+  violaciones a11y reales corregidas** (aria-dialog-name en
+  RecordHistory/Import/ShiftHandover vía `ariaLabelledBy`; button-name en
+  botones de cierre con solo ícono; label del checkbox seguro de
+  SmtpConfig; select-name del filtro de LeaveManager; heading-order en
+  AboutModal y ShiftHandoverModal; contrato de historias aisladas del
+  Header `aria-controls` y del `<li>` de SidebarNavItem) y **57
+  `color-contrast` degradadas a ratchet TD-005** (pares texto/estado sobre
+  fondos tenues, ratios 1.75–3.77 vs 4.5). Run final: **228/228 verde**.
+- Servidor MCP verificado con `npm run storybook` activo:
+  `POST /mcp` initialize + `tools/list` expone 8 herramientas
+  (`docs-list/show/show-story`, `get-storybook-story-instructions`,
+  `stories-changed/find-by-component/preview`, `test-run`).
+- `docs list` mostraba `StoryComponent`: las 83 historias importaban el
+  componente bajo un alias genérico. Renombradas al nombre real — el
+  manifiesto de agentes y los ejemplos JSX generados ahora dicen `Button`,
+  `Header`, etc.
+- Suites sin regresión: jsdom 1218/1218, browser 8/8, guardrails 96/96,
+  coverage thresholds intactos (L 62.18 vs 34 exigido). `storybook doctor`
+  y `storybook:build` verdes en 10.6.9.

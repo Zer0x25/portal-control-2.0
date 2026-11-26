@@ -50,6 +50,19 @@ try {
     run('npm run tokens:check', 'Pre-PR Design Tokens Check', path.join(rootDir, 'frontend'));
     run('npm run audit:design-system', 'Pre-PR Design System Audit', path.join(rootDir, 'frontend'));
     run('npm run test:run:ci', 'Pre-PR Frontend Full Tests', path.join(rootDir, 'frontend'));
+    // Spec 122: story tests (smoke render + axe a11y de las historias
+    // certificadas, browser mode) cuando el diff toca `frontend/src`.
+    const feSrcChanged = (function () {
+      try {
+        const st = execSync('git status --porcelain -- frontend/src', { cwd: rootDir, encoding: 'utf8' });
+        return st.split('\n').some(Boolean);
+      } catch {
+        return false;
+      }
+    })();
+    if (feSrcChanged) {
+      run('npm run test:storybook', 'Pre-PR Storybook Story Tests', path.join(rootDir, 'frontend'));
+    }
     run('npm run check:sdk', 'Pre-PR Backend SDK Sync Check', path.join(rootDir, 'backend'));
     run('npm run test:schemas-refactor', 'Pre-PR Backend Schema Tests', path.join(rootDir, 'backend'));
   }

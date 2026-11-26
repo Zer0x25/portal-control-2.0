@@ -42,23 +42,23 @@ runbook/reglas/preflight, que documentan lo ya verificado.
 
 ## Archivos a modificar
 
-| Archivo | Acción | Contrato afectado |
-| --- | --- | --- |
-| `frontend/package.json` | Bump + addons + script `test:storybook` | Ninguno (devDeps) |
-| `frontend/package-lock.json` | Regenerar | — |
-| `frontend/.storybook/main.ts` | Registrar addon-mcp + addon-vitest | Ninguno (dev config) |
-| `frontend/.storybook/preview.ts` | Solo si el triage a11y lo exige | Ninguno |
-| `frontend/vite.config.ts` | Proyecto Vitest `storybook` | Tests (nuevo proyecto) |
-| `.vscode/mcp.json` | Crear | Ninguno |
-| `.agents/skills/storybook-workflow/SKILL.md` | Crear | Ninguno |
-| `.agents/rules/storybook-agentic.md` | Crear | Ninguno |
-| `.agents/rules/design-system-governance.md` | Enlaces §7/§8 | Ninguno |
-| `.agents/skills/ci-preflight/scripts/preflight.cjs` | Gate `--pr` | tooling local |
-| `frontend/README.md` | Sección comandos agénticos | Ninguno |
-| `docs/adr/0033-storybook-agentic-integration.md` | Redactar + promover | Ninguno |
-| `docs/adr/README.md` | (Ya indexado por scaffold) Verificar | — |
-| `docs/tech-debt-register.md` | Solo si hay exceptions a11y | Ninguno |
-| `specs/122-storybook-agentic-integration/*` | Esta spec | — |
+| Archivo                                             | Acción                                  | Contrato afectado      |
+| --------------------------------------------------- | --------------------------------------- | ---------------------- |
+| `frontend/package.json`                             | Bump + addons + script `test:storybook` | Ninguno (devDeps)      |
+| `frontend/package-lock.json`                        | Regenerar                               | —                      |
+| `frontend/.storybook/main.ts`                       | Registrar addon-mcp + addon-vitest      | Ninguno (dev config)   |
+| `frontend/.storybook/preview.ts`                    | Solo si el triage a11y lo exige         | Ninguno                |
+| `frontend/vite.config.ts`                           | Proyecto Vitest `storybook`             | Tests (nuevo proyecto) |
+| `.vscode/mcp.json`                                  | Crear                                   | Ninguno                |
+| `.agents/skills/storybook-workflow/SKILL.md`        | Crear                                   | Ninguno                |
+| `.agents/rules/storybook-agentic.md`                | Crear                                   | Ninguno                |
+| `.agents/rules/design-system-governance.md`         | Enlaces §7/§8                           | Ninguno                |
+| `.agents/skills/ci-preflight/scripts/preflight.cjs` | Gate `--pr`                             | tooling local          |
+| `frontend/README.md`                                | Sección comandos agénticos              | Ninguno                |
+| `docs/adr/0033-storybook-agentic-integration.md`    | Redactar + promover                     | Ninguno                |
+| `docs/adr/README.md`                                | (Ya indexado por scaffold) Verificar    | —                      |
+| `docs/tech-debt-register.md`                        | Solo si hay exceptions a11y             | Ninguno                |
+| `specs/122-storybook-agentic-integration/*`         | Esta spec                               | —                      |
 
 ## Riesgos y mitigación
 
