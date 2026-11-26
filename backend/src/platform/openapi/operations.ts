@@ -1744,6 +1744,23 @@
 
 /**
  * @openapi
+ * /api/kpis/anomalies:
+ *   get:
+ *     summary: Obtener el detalle de anomalías del equipo
+ *     tags: [KPIs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Detalle de anomalías bajo demanda (el overview solo envía el conteo)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamAnomalies'
+ */
+
+/**
+ * @openapi
  * /api/kpis/daily-planning:
  *   get:
  *     summary: Obtener resumen de planificación diaria

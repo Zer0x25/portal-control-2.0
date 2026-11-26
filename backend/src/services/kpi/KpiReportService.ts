@@ -157,8 +157,57 @@ export class KpiReportService {
   }
 
   async getDashboardOverview(): Promise<DashboardOverview> {
-    const activeEmployees = await prisma.employee.findMany({ where: { status: "Activo" } });
+    const { activeEmployees, employeeStatuses, anomalies } = await this.buildTeamSnapshot();
 
+    const presentRecords = employeeStatuses.filter((s) =>
+      ["en_jornada", "en_colacion", "en_jornada_post_colacion"].includes(s.status),
+    );
+
+    return {
+      teamStatus: {
+        present: presentRecords.length,
+        total: activeEmployees.length,
+        // Solo el conteo: el detalle se consulta bajo demanda en
+        // GET /api/kpis/anomalies (lo abre el modal del dashboard).
+        anomaliesCount: anomalies.length,
+      },
+      // Proyección mínima: las vistas solo leen id/name/position y nadie lee
+      // lastRecord (el tipo frontend ni lo declara). Ahorra ~80KB (~48%).
+      employeeStatuses: employeeStatuses.map((entry) => ({
+        status: entry.status,
+        employee: {
+          id: entry.employee.id,
+          name: entry.employee.name,
+          position: entry.employee.position,
+        },
+      })),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Detalle de anomalías del equipo para el modal del dashboard. Misma lógica
+   * que alimenta `teamStatus.anomaliesCount` del overview; se sirve bajo
+   * demanda para no re-engordar el payload del overview (commit de slim).
+   */
+  async getAnomalyRecords() {
+    const { anomalies } = await this.buildTeamSnapshot();
+    return {
+      count: anomalies.length,
+      anomalies,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Snapshot operativo del equipo: empleados activos, estado de jornada por
+   * empleado y detección de anomalías (cierres anómalos, turnos abiertos
+   * >14h sin justificación, faltas de marcaje del turno de ayer como registro
+   * virtual `MISSING-<employeeId>-<date>`). Compartido por el overview y el
+   * detalle de anomalías para que el conteo y la lista nunca diverjan.
+   */
+  private async buildTeamSnapshot() {
+    const activeEmployees = await prisma.employee.findMany({ where: { status: "Activo" } });
     const today = new Date();
     const todayStr = toBusinessDateChile(today);
     const yesterdayStr = addBusinessDaysChile(todayStr, -1);
@@ -217,12 +266,6 @@ export class KpiReportService {
       };
     });
 
-    const presentRecords = employeeStatuses
-      .filter((s) => ["en_jornada", "en_colacion", "en_jornada_post_colacion"].includes(s.status))
-      .map((s) => s.lastRecord!)
-      .filter((r) => r !== null);
-
-    // Build anomalies list
     const anomalies: AnomalyRecord[] = [];
 
     const missingYesterdayCandidates = employeeStatuses.filter(
@@ -285,26 +328,7 @@ export class KpiReportService {
       }
     }
 
-    return {
-      teamStatus: {
-        present: presentRecords.length,
-        total: activeEmployees.length,
-        // Solo el conteo: ningún consumidor lee los 195 registros (los modales
-        // son placeholders). Ahorra ~61KB por respuesta (~37% del payload).
-        anomaliesCount: anomalies.length,
-      },
-      // Proyección mínima: las vistas solo leen id/name/position y nadie lee
-      // lastRecord (el tipo frontend ni lo declara). Ahorra ~80KB (~48%).
-      employeeStatuses: employeeStatuses.map((entry) => ({
-        status: entry.status,
-        employee: {
-          id: entry.employee.id,
-          name: entry.employee.name,
-          position: entry.employee.position,
-        },
-      })),
-      timestamp: new Date().toISOString(),
-    };
+    return { activeEmployees, employeeStatuses, anomalies };
   }
 
   async getDailyPlanningSummary() {

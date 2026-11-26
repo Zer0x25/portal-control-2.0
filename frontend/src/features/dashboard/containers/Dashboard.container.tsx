@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useStore } from "../../../store/useStore";
 import { useShallow } from "zustand/react/shallow";
-import { AttendanceRecord, DailyTimeRecord, MissingClockOutStatus } from "../../../types/index";
+import {
+  AttendanceRecord,
+  DailyTimeRecord,
+  MissingClockOutStatus,
+  TeamAnomalyRecord,
+} from "../../../types/index";
 import { getContractClockingStatus } from "../../../utils/mappings";
 import { useTimeRecordActions } from "../../../hooks/useTimeRecordActions";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
@@ -12,6 +17,7 @@ import { timeRecordService } from "../../../services/timeRecordService";
 
 import { useDashboardModalController } from "../hooks/useDashboardModalController";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { useTeamAnomaliesQuery } from "../../../hooks/queries/useDashboardQueries";
 
 import DashboardView from "../views/Dashboard.view";
 import { WIDGET_REGISTRY } from "../components/widgetRegistry";
@@ -65,9 +71,13 @@ const DashboardContainer: React.FC = () => {
     }
   };
 
-  const handleAnomalyRecordDoubleClick = (record: DailyTimeRecord) => {
+  // Fetch bajo demanda: el detalle de anomalías solo se carga cuando el
+  // modal está abierto (el overview mantiene el conteo always-on).
+  const teamAnomaliesQuery = useTeamAnomaliesQuery(modals.isAnomaliesModalOpen);
+
+  const handleAnomalyRecordDoubleClick = (record: TeamAnomalyRecord) => {
     if (record) {
-      actions.openQuickActionModal(record);
+      actions.openQuickActionModal(record as DailyTimeRecord);
     }
   };
 
@@ -209,6 +219,13 @@ const DashboardContainer: React.FC = () => {
       unscheduledPresent={unscheduledPresent}
       employeeStatuses={employeeStatuses}
       isResolvingPresentRecord={isResolvingPresentRecord}
+      teamAnomalies={{
+        anomalies: teamAnomaliesQuery.data?.anomalies ?? [],
+        count: teamAnomaliesQuery.data?.count ?? teamStatus.anomaliesCount,
+        isLoading: teamAnomaliesQuery.isLoading,
+        isError: teamAnomaliesQuery.isError,
+        refetch: teamAnomaliesQuery.refetch,
+      }}
       visibleWidgets={visibleWidgets}
       widgetProps={widgetProps}
       quickActionModal={quickActionModal}

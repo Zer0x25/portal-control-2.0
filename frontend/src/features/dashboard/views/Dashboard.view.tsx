@@ -11,8 +11,8 @@ import {
 } from "../components/DashboardDeferredModals";
 import ConfirmationModal from "../../../components/ui/ConfirmationModal";
 import EmptyState from "../../../components/ui/EmptyState";
-import CinematicModal from "../../../components/ui/CinematicModal";
 import PresentEmployeesModal from "../components/PresentEmployeesModal";
+import AnomaliesModal from "../components/AnomaliesModal";
 import WelcomePanel from "../components/WelcomePanel";
 import Container from "../../../components/ui/Container";
 import AmbientReminderManager from "../../../notifications/components/AmbientReminderManager";
@@ -22,6 +22,7 @@ import {
   DashboardWidget,
   EmployeeWithClockingStatus,
   ShiftReport,
+  TeamAnomalyRecord,
 } from "../../../types/index";
 
 interface DashboardModalsState {
@@ -57,12 +58,19 @@ interface DashboardViewProps {
   unscheduledPresent: unknown[];
   employeeStatuses: EmployeeWithClockingStatus[];
   isResolvingPresentRecord: boolean;
+  teamAnomalies: {
+    anomalies: TeamAnomalyRecord[];
+    count: number;
+    isLoading: boolean;
+    isError: boolean;
+    refetch: () => void;
+  };
   visibleWidgets: DashboardWidget[];
   widgetProps: Record<string, Record<string, unknown>>;
   quickActionModal: React.ReactNode;
   editTimestampModal: React.ReactNode;
   handlePresentEmployeeDoubleClick: (employeeId: string, employeeName: string) => void;
-  handleAnomalyRecordDoubleClick: (r: DailyTimeRecord) => void;
+  handleAnomalyRecordDoubleClick: (r: TeamAnomalyRecord) => void;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({
@@ -75,11 +83,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   isLoadingOverview,
   employeeStatuses,
   isResolvingPresentRecord,
+  teamAnomalies,
   visibleWidgets,
   widgetProps,
   quickActionModal,
   editTimestampModal,
   handlePresentEmployeeDoubleClick,
+  handleAnomalyRecordDoubleClick,
 }) => {
   if ((isLoadingReports && shiftReports.length === 0) || isLoadingOverview) {
     return (
@@ -157,14 +167,18 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       {quickActionModal}
       {editTimestampModal}
 
-      <CinematicModal
+      <AnomaliesModal
         isOpen={modals.isAnomaliesModalOpen}
         onClose={actions.closeAnomaliesModal}
-        title="Anomalías del Equipo"
-        maxWidth="max-w-6xl"
-      >
-        <div>Anomalías del equipo se mostrarán aquí</div>
-      </CinematicModal>
+        anomalies={teamAnomalies.anomalies}
+        count={teamAnomalies.count}
+        isLoading={teamAnomalies.isLoading}
+        isError={teamAnomalies.isError}
+        onRetry={() => {
+          void teamAnomalies.refetch();
+        }}
+        onAnomalyDoubleClick={handleAnomalyRecordDoubleClick}
+      />
 
       <PresentEmployeesModal
         isOpen={modals.isPresentModalOpen}

@@ -1183,6 +1183,15 @@
           "memoryUsage"
         ]
       },
+      "TeamAnomalies": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer" },
+          "anomalies": { "type": "array", "items": { "nullable": true } },
+          "timestamp": { "type": "string" }
+        },
+        "required": ["count", "anomalies", "timestamp"]
+      },
       "AuditLogCleanup": {
         "type": "object",
         "properties": {
@@ -3025,6 +3034,21 @@
             "description": "Vista general",
             "content": {
               "application/json": { "schema": { "$ref": "#/components/schemas/DashboardOverview" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/kpis/anomalies": {
+      "get": {
+        "summary": "Obtener el detalle de anomalías del equipo",
+        "tags": ["KPIs"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Detalle de anomalías bajo demanda (el overview solo envía el conteo)",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TeamAnomalies" } }
             }
           }
         }

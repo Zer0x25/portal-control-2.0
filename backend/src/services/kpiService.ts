@@ -24,6 +24,10 @@ export class KpiService {
     return this.reportService.getDashboardOverview();
   }
 
+  async getAnomalyRecords() {
+    return this.reportService.getAnomalyRecords();
+  }
+
   async getDailyPlanningSummary() {
     return this.reportService.getDailyPlanningSummary();
   }

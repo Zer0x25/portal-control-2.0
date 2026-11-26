@@ -110,6 +110,19 @@ export const DashboardOverviewSchema = z
   })
   .openapi("DashboardOverview");
 
+/**
+ * Detalle de anomalías del equipo (GET /api/kpis/anomalies). El overview solo
+ * envía el conteo; este contrato sirve el detalle bajo demanda. Cada entrada es
+ * un registro de asistencia anómalo o un virtual `MISSING-*` (sin fila en BD).
+ */
+export const TeamAnomaliesSchema = z
+  .object({
+    count: z.number().int(),
+    anomalies: z.array(z.unknown()),
+    timestamp: z.string(),
+  })
+  .openapi("TeamAnomalies");
+
 export const SeedOptionsSchema = z
   .object({
     clearExisting: z.boolean().optional(),

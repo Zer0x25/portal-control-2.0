@@ -1,7 +1,7 @@
 import { ValidationError } from "../../../utils/AppError";
 import type { KpiDependencies, KpiInput } from "./contracts";
-export function createKpiFlows<Summary, Detailed, Overview, Daily>(
-  deps: KpiDependencies<Summary, Detailed, Overview, Daily>,
+export function createKpiFlows<Summary, Detailed, Overview, Daily, Anomalies>(
+  deps: KpiDependencies<Summary, Detailed, Overview, Daily, Anomalies>,
 ) {
   function normalize(input: KpiInput): KpiInput {
     const {
@@ -53,6 +53,9 @@ export function createKpiFlows<Summary, Detailed, Overview, Daily>(
     },
     async daily() {
       return deps.service.daily();
+    },
+    async anomalies() {
+      return deps.service.anomalies();
     },
   };
 }

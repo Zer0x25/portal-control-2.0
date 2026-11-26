@@ -2427,6 +2427,42 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/kpis/anomalies": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Obtener el detalle de anomalías del equipo */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Detalle de anomalías bajo demanda (el overview solo envía el conteo) */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["TeamAnomalies"];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/kpis/daily-planning": {
     parameters: {
       query?: never;
@@ -5880,6 +5916,11 @@ export interface components {
         heapTotal: number;
         heapUsed: number;
       };
+    };
+    TeamAnomalies: {
+      count: number;
+      anomalies: unknown[];
+      timestamp: string;
     };
     AuditLogCleanup: {
       /** @default 6 */

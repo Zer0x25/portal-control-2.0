@@ -2,7 +2,8 @@ import { DailyReportItem, ReportStat } from "./reports";
 import { KpiDetails, ReportStatKpis } from "./kpi";
 import { ClockingStatus } from "./ui";
 import { Employee } from "./user";
-import { DailyTimeRecord } from "./time";
+import { DailyTimeRecord, TimeRecordStatus } from "./time";
+import { Justification } from "./scheduling";
 import { TeamStatus } from "./dashboard";
 
 export interface KpiWorkerEmployeeRef {
@@ -37,6 +38,22 @@ export interface DashboardOverviewResponse {
   employeeStatuses?: EmployeeWithClockingStatus[];
   teamStatus?: TeamStatus;
   unscheduledPresent?: DailyTimeRecord[];
+}
+
+/** Entrada del detalle de anomalías: registro almacenado o virtual MISSING-*. */
+export interface TeamAnomalyRecord extends Partial<DailyTimeRecord> {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  date: string;
+  status: TimeRecordStatus;
+  justification?: Justification | null;
+}
+
+export interface TeamAnomaliesResponse {
+  count: number;
+  anomalies: TeamAnomalyRecord[];
+  timestamp: string;
 }
 
 export interface DetailedReportRequest {

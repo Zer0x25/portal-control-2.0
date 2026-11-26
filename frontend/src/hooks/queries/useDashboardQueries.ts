@@ -1,8 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardOverview, getDailyPlanningSummary } from "../../services/kpiService";
+import {
+  getDashboardOverview,
+  getDailyPlanningSummary,
+  getTeamAnomalies,
+} from "../../services/kpiService";
 import { timeRecordService } from "../../services/timeRecordService";
 import { useAuth } from "../useAuth";
-import { DashboardOverviewResponse, DailyPlanningSummaryResponse } from "../../types";
+import {
+  DashboardOverviewResponse,
+  DailyPlanningSummaryResponse,
+  TeamAnomaliesResponse,
+} from "../../types";
 import { queryKeys } from "../../lib/queryKeys";
 
 export const useDashboardOverviewQuery = () => {
@@ -15,6 +23,23 @@ export const useDashboardOverviewQuery = () => {
     enabled: isEnabled,
     staleTime: 1000 * 60, // 1 minute (Real-time critical)
     refetchOnWindowFocus: true, // Auto-refresh when supervisor comes back
+  });
+};
+
+/**
+ * Detalle de anomalías del equipo. Bajo demanda: la query solo dispara cuando
+ * el modal está abierto (isOpen) para no cargar el detalle en cada arranque.
+ */
+export const useTeamAnomaliesQuery = (isOpen: boolean) => {
+  const { currentUser } = useAuth();
+  const isEnabled = !!currentUser && isOpen;
+
+  return useQuery({
+    queryKey: queryKeys.dashboardAnomalies(),
+    queryFn: getTeamAnomalies as () => Promise<TeamAnomaliesResponse>,
+    enabled: isEnabled,
+    staleTime: 1000 * 30, // El conteo vivirá en el overview; el detalle es puntual
+    refetchOnWindowFocus: true,
   });
 };
 

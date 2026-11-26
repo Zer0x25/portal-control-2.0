@@ -5,6 +5,7 @@ import {
   DetailedReportResponse,
   KpiWorkerPayload,
   KpiWorkerResult,
+  TeamAnomaliesResponse,
 } from "../types";
 import { apiClient, request as apiRequest, type BinaryResponse } from "./apiClient";
 import { logger } from "../utils/logger";
@@ -52,6 +53,28 @@ export const getDashboardOverview = async (): Promise<DashboardOverviewResponse>
     };
   } catch (error) {
     logger.error("Error calling dashboard overview API:", error);
+    throw error;
+  }
+};
+
+/**
+ * Detalle de anomalías del equipo bajo demanda (el overview solo envía el
+ * conteo). Misma lógica de detección que el backend usa para el conteo.
+ */
+export const getTeamAnomalies = async (): Promise<TeamAnomaliesResponse> => {
+  try {
+    const result = await apiRequest<Partial<TeamAnomaliesResponse>>({
+      method: "GET",
+      url: "/api/kpis/anomalies",
+    });
+
+    return {
+      count: result.count ?? 0,
+      anomalies: result.anomalies ?? [],
+      timestamp: result.timestamp ?? new Date().toISOString(),
+    };
+  } catch (error) {
+    logger.error("Error calling team anomalies API:", error);
     throw error;
   }
 };
