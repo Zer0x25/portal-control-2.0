@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./AddSupplierModal.view";
+import AddSupplierModal from "./AddSupplierModal.view";
 
 const meta = {
   id: "certified-features-logbook-components-add-supplier-modal",
   title: "Design System/features/logbook/components/Add/Supplier/Modal",
-  component: StoryComponent,
+  component: AddSupplierModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -53,7 +53,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof AddSupplierModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

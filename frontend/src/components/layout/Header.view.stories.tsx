@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createRef } from "react";
-import StoryComponent from "./Header.view";
+import Header from "./Header.view";
 
 // El boton de alternar menu declara `aria-controls="app-sidebar"`: en la app
 // el aside vive en PersistentLayout. Para que la historia aislada respete el
@@ -16,7 +16,7 @@ const withSidebarTarget = (Story: () => React.ReactElement) => (
 const meta = {
   id: "certified-components-layout-header",
   title: "Design System/components/layout/Header",
-  component: StoryComponent,
+  component: Header,
   args: {
     toggleSidebar: () => undefined,
     currentUser: { role: "Administrador" },
@@ -54,7 +54,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/layout/Header.view.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Header>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

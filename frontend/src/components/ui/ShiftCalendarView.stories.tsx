@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ScheduleMap } from "../../hooks/useCalendarData";
-import StoryComponent from "./ShiftCalendarView";
+import ShiftCalendarView from "./ShiftCalendarView";
 
 const sampleScheduleMap: ScheduleMap = new Map([
   [
@@ -47,7 +47,7 @@ const sampleScheduleMap: ScheduleMap = new Map([
 const meta = {
   id: "certified-components-ui-shift-calendar-view",
   title: "Design System/components/ui/Shift/Calendar/View",
-  component: StoryComponent,
+  component: ShiftCalendarView,
   args: {
     viewMode: "month",
     currentDisplayDate: new Date("2026-10-23T12:00:00.000Z"),
@@ -69,7 +69,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ShiftCalendarView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

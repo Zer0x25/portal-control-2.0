@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./TopLoadingBar.view";
+import TopLoadingBar from "./TopLoadingBar.view";
 
 const meta = {
   id: "certified-components-layout-top-loading-bar",
   title: "Design System/components/layout/Top/Loading/Bar",
-  component: StoryComponent,
+  component: TopLoadingBar,
   argTypes: {
     loadingProgress: {
       control: { type: "range", min: 0, max: 100, step: 5 },
@@ -27,7 +27,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof TopLoadingBar>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ToastItem";
+import ToastItem from "./ToastItem";
 
 const meta = {
   id: "certified-components-ui-toast-item",
   title: "Design System/components/ui/Toast/Item",
-  component: StoryComponent,
+  component: ToastItem,
   args: {
     toast: { id: "storybook-toast", message: "Cambios guardados", type: "success" },
     onDismiss: () => undefined,
@@ -13,7 +13,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/ToastItem.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ToastItem>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

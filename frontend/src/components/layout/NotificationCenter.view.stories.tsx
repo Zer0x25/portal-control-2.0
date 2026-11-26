@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createRef } from "react";
-import StoryComponent from "./NotificationCenter.view";
+import NotificationCenter from "./NotificationCenter.view";
 
 const meta = {
   id: "certified-components-layout-notification-center",
   title: "Design System/components/layout/Notification/Center",
-  component: StoryComponent,
+  component: NotificationCenter,
   args: {
     isOpen: true,
     unreadCount: 0,
@@ -26,7 +26,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof NotificationCenter>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

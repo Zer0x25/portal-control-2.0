@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Select";
+import Select from "./Select";
 
 const meta = {
   id: "certified-components-ui-select",
   title: "Design System/components/ui/Select",
-  component: StoryComponent,
+  component: Select,
   args: {
     label: "Área",
     value: "operaciones",
@@ -17,7 +17,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Select.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Select>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

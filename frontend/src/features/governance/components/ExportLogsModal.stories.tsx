@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ExportLogsModal";
+import ExportLogsModal from "./ExportLogsModal";
 
 const meta = {
   id: "certified-features-governance-components-export-logs-modal",
   title: "Design System/features/governance/components/Export/Logs/Modal",
-  component: StoryComponent,
+  component: ExportLogsModal,
   args: { isOpen: false, onClose: () => undefined },
   argTypes: {
     isOpen: { control: "boolean" },
@@ -17,7 +17,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ExportLogsModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

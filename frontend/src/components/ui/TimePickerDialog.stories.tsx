@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./TimePickerDialog";
+import TimePickerDialog from "./TimePickerDialog";
 
 const meta = {
   id: "certified-components-ui-time-picker-dialog",
   title: "Design System/components/ui/Time/Picker/Dialog",
-  component: StoryComponent,
+  component: TimePickerDialog,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -25,7 +25,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/TimePickerDialog.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof TimePickerDialog>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

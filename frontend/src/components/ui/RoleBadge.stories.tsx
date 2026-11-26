@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./RoleBadge";
+import RoleBadge from "./RoleBadge";
 
 const meta = {
   id: "certified-components-ui-role-badge",
   title: "Design System/components/ui/Role/Badge",
-  component: StoryComponent,
+  component: RoleBadge,
   args: { role: "Administrador", size: "md" },
   argTypes: {
     role: {
@@ -25,7 +25,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/RoleBadge.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof RoleBadge>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

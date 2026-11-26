@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "./icons/index";
-import StoryComponent from "./IconBox";
+import IconBox from "./IconBox";
 
 const meta = {
   id: "certified-components-ui-icon-box",
   title: "Design System/components/ui/Icon/Box",
-  component: StoryComponent,
+  component: IconBox,
   args: { icon: <CheckCircleIcon className="h-5 w-5" />, variant: "success", size: "md" },
   argTypes: {
     variant: {
@@ -18,7 +18,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/IconBox.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof IconBox>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

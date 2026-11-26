@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./SeedingProgressModal";
+import SeedingProgressModal from "./SeedingProgressModal";
 
 const meta = {
   id: "certified-features-configuration-components-seeding-progress-modal",
   title: "Design System/features/configuration/components/Seeding/Progress/Modal",
-  component: StoryComponent,
+  component: SeedingProgressModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -27,7 +27,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof SeedingProgressModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ImportModal";
+import ImportModal from "./ImportModal";
 
 const meta = {
   id: "certified-features-employee-management-components-import-modal",
   title: "Design System/features/employee-management/components/Import/Modal",
-  component: StoryComponent,
+  component: ImportModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -25,7 +25,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ImportModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

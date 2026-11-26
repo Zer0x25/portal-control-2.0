@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ResponsiveView";
+import ResponsiveView from "./ResponsiveView";
 
 const meta = {
   id: "certified-components-ui-responsive-view",
   title: "Design System/components/ui/Responsive/View",
-  component: StoryComponent,
+  component: ResponsiveView,
   args: {
     mobile: (
       <div className="rounded-xl border border-token-border-subtle bg-token-surface-card p-4">
@@ -35,7 +35,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ResponsiveView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

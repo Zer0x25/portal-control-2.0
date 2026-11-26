@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent, { DatePickerCalendar } from "./DatePicker";
+import DatePicker, { DatePickerCalendar } from "./DatePicker";
 
 const meta = {
   id: "certified-components-ui-date-picker",
   title: "Design System/components/ui/Date/Picker",
-  component: StoryComponent,
+  component: DatePicker,
   args: {
     value: "2026-10-23",
     onChange: () => undefined,
@@ -30,7 +30,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof DatePicker>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

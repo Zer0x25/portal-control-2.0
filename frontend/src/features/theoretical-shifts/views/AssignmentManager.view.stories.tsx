@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createRef } from "react";
-import { AssignmentManagerView as StoryComponent } from "./AssignmentManager.view";
+import { AssignmentManagerView } from "./AssignmentManager.view";
 
 const meta = {
   id: "certified-features-theoretical-shifts-views-assignment-manager",
   title: "Design System/features/theoretical-shifts/views/Assignment/Manager",
-  component: StoryComponent,
+  component: AssignmentManagerView,
   args: {
     shiftPatterns: [],
     assignmentForm: {
@@ -85,7 +85,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof AssignmentManagerView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

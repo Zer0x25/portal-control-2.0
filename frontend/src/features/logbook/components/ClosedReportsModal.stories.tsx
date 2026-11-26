@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ClosedReportsModal";
+import ClosedReportsModal from "./ClosedReportsModal";
 
 const meta = {
   id: "certified-features-logbook-components-closed-reports-modal",
   title: "Design System/features/logbook/components/Closed/Reports/Modal",
-  component: StoryComponent,
+  component: ClosedReportsModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -23,7 +23,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ClosedReportsModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

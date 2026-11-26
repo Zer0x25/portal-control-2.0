@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { HomeIcon } from "../ui/icons/index";
-import StoryComponent from "./SidebarNavItem";
+import SidebarNavItem from "./SidebarNavItem";
 
 // El item es un <li> por contrato: siempre vive dentro del <ul> del sidebar.
 // La historia envuelve el item para respetar ese contrato en aislamiento.
@@ -11,7 +11,7 @@ const NavList = ({ children }: { children: React.ReactNode }) => (
 const meta = {
   id: "certified-components-layout-sidebar-nav-item",
   title: "Design System/components/layout/Sidebar/Nav/Item",
-  component: StoryComponent,
+  component: SidebarNavItem,
   args: {
     to: "/dashboard",
     icon: HomeIcon,
@@ -32,7 +32,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/layout/SidebarNavItem.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof SidebarNavItem>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

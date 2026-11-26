@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Textarea";
+import Textarea from "./Textarea";
 
 const meta = {
   id: "certified-components-ui-textarea",
   title: "Design System/components/ui/Textarea",
-  component: StoryComponent,
+  component: Textarea,
   args: { label: "Comentario", value: "Buen trabajo", rows: 3 },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Textarea.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Textarea>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

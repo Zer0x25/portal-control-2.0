@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Switch";
+import Switch from "./Switch";
 
 const meta = {
   id: "certified-components-ui-switch",
   title: "Design System/components/ui/Switch",
-  component: StoryComponent,
+  component: Switch,
   args: { checked: true, onChange: () => undefined, label: "Activar alertas" },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Switch.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Switch>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

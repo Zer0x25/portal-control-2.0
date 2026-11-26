@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./MetricCard";
+import MetricCard from "./MetricCard";
 
 const meta = {
   id: "certified-components-ui-metric-card",
   title: "Design System/components/ui/Metric/Card",
-  component: StoryComponent,
+  component: MetricCard,
   tags: ["autodocs"],
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof MetricCard>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {

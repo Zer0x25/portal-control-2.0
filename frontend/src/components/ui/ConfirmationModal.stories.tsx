@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ConfirmationModal";
+import ConfirmationModal from "./ConfirmationModal";
 
 const meta = {
   id: "certified-components-ui-confirmation-modal",
   title: "Design System/components/ui/Confirmation/Modal",
-  component: StoryComponent,
+  component: ConfirmationModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -20,7 +20,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/ConfirmationModal.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ConfirmationModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

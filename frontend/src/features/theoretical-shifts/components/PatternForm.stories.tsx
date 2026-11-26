@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./PatternForm";
+import PatternForm from "./PatternForm";
 
 const basePatternForm = {
   editingPattern: null,
@@ -45,7 +45,7 @@ const basePatternForm = {
 const meta = {
   id: "certified-features-theoretical-shifts-components-pattern-form",
   title: "Design System/features/theoretical-shifts/components/Pattern/Form",
-  component: StoryComponent,
+  component: PatternForm,
   args: {
     onCancel: () => undefined,
     patternForm: basePatternForm,
@@ -59,7 +59,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof PatternForm>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

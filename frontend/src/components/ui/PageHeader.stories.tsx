@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./PageHeader";
+import PageHeader from "./PageHeader";
 
 const meta = {
   id: "certified-components-ui-page-header",
   title: "Design System/components/ui/Page/Header",
-  component: StoryComponent,
+  component: PageHeader,
   args: { title: "Personal", subtitle: "Administra el equipo", eyebrow: "Operaciones" },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/PageHeader.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof PageHeader>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

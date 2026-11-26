@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./LiberalitasSignature";
+import LiberalitasSignature from "./LiberalitasSignature";
 
 const meta = {
   id: "certified-components-liberalitas-signature",
   title: "Design System/components/Liberalitas/Signature",
-  component: StoryComponent,
+  component: LiberalitasSignature,
   args: { author: "Portal Control", className: "text-xs" },
   argTypes: {
     author: { control: "text" },
@@ -16,7 +16,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/LiberalitasSignature.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof LiberalitasSignature>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

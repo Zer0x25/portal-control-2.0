@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { READINESS_QUERY_KEY, type HealthReadinessData } from "../../hooks/queries/useHealthQuery";
-import StoryComponent from "./SimpleConnectionIndicator";
+import SimpleConnectionIndicator from "./SimpleConnectionIndicator";
 
 const SeededReadinessProvider = ({
   healthStatus,
@@ -29,7 +29,7 @@ const SeededReadinessProvider = ({
 const meta = {
   id: "certified-components-ui-simple-connection-indicator",
   title: "Design System/components/ui/Simple/Connection/Indicator",
-  component: StoryComponent,
+  component: SimpleConnectionIndicator,
   decorators: [
     (Story) => (
       <div className="inline-flex">
@@ -45,7 +45,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof SimpleConnectionIndicator>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PatternManagerView as StoryComponent } from "./PatternManager.view";
+import { PatternManagerView } from "./PatternManager.view";
 
 const meta = {
   id: "certified-features-theoretical-shifts-views-pattern-manager",
   title: "Design System/features/theoretical-shifts/views/Pattern/Manager",
-  component: StoryComponent,
+  component: PatternManagerView,
   args: {
     searchTerm: "",
     fetchNextPage: () => undefined,
@@ -79,7 +79,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof PatternManagerView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

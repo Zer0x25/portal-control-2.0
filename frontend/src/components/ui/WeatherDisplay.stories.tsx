@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./WeatherDisplay";
+import WeatherDisplay from "./WeatherDisplay";
 
 const meta = {
   id: "certified-components-ui-weather-display",
   title: "Design System/components/ui/Weather/Display",
-  component: StoryComponent,
+  component: WeatherDisplay,
   args: { weather: null, isLoading: true },
   argTypes: {
     isLoading: { control: "boolean" },
@@ -15,7 +15,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/WeatherDisplay.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof WeatherDisplay>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { HolidayManagerView as StoryComponent } from "./HolidayManager.view";
+import { HolidayManagerView } from "./HolidayManager.view";
 
 const meta = {
   id: "certified-features-theoretical-shifts-views-holiday-manager",
   title: "Design System/features/theoretical-shifts/views/Holiday/Manager",
-  component: StoryComponent,
+  component: HolidayManagerView,
   args: {
     showArchived: false,
     fetchNextPage: () => undefined,
@@ -53,7 +53,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof HolidayManagerView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

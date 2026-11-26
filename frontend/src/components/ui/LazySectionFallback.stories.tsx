@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./LazySectionFallback";
+import LazySectionFallback from "./LazySectionFallback";
 
 const meta = {
   id: "certified-components-ui-lazy-section-fallback",
   title: "Design System/components/ui/Lazy/Section/Fallback",
-  component: StoryComponent,
+  component: LazySectionFallback,
   args: {
     rows: 4,
   },
@@ -19,7 +19,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof LazySectionFallback>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

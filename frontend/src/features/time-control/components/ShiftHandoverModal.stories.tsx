@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ShiftHandoverModal";
+import ShiftHandoverModal from "./ShiftHandoverModal";
 
 const meta = {
   id: "certified-features-time-control-components-shift-handover-modal",
   title: "Design System/features/time-control/components/Shift/Handover/Modal",
-  component: StoryComponent,
+  component: ShiftHandoverModal,
   args: { isOpen: false, onClose: () => undefined, data: null },
   argTypes: {
     isOpen: { control: "boolean" },
@@ -18,7 +18,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ShiftHandoverModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

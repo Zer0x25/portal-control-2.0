@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ServerClock";
+import ServerClock from "./ServerClock";
 
 const meta = {
   id: "certified-components-ui-server-clock",
   title: "Design System/components/ui/Server/Clock",
-  component: StoryComponent,
+  component: ServerClock,
   args: { showDate: true },
   argTypes: {
     showDate: { control: "boolean" },
@@ -13,7 +13,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/ServerClock.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ServerClock>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

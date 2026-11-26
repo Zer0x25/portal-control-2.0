@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./HolidayForm";
+import HolidayForm from "./HolidayForm";
 
 const meta = {
   id: "certified-features-theoretical-shifts-components-holiday-form",
   title: "Design System/features/theoretical-shifts/components/Holiday/Form",
-  component: StoryComponent,
+  component: HolidayForm,
   args: {
     values: { date: "2026-12-25", name: "Navidad", type: "Nacional", isRenounceable: false },
     getError: () => undefined,
@@ -34,7 +34,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof HolidayForm>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
