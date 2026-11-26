@@ -428,6 +428,7 @@ export const LeaveManagerView: React.FC<LeaveManagerViewProps> = ({
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
+            aria-label="Filtrar por tipo de permiso"
             className="w-full pl-12 pr-4 py-3 bg-token-surface-card border border-token-border-subtle rounded-xl focus:ring-2 focus:ring-token-border-focus outline-none transition-all text-token-text-primary appearance-none text-sm font-medium"
           >
             <option value="">Tipo: Todos</option>

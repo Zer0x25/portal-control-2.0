@@ -91,9 +91,9 @@ const AboutModalView: React.FC<AboutModalViewProps> = ({
             </div>
 
             <div className="bg-token-surface-card p-6 rounded-xl border border-token-border-subtle space-y-4">
-              <h4 className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] italic border-b border-token-border-subtle pb-2">
+              <h3 className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.2em] italic border-b border-token-border-subtle pb-2">
                 Créditos de Desarrollo
-              </h4>
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-token-text-tertiary uppercase tracking-widest">

@@ -24,6 +24,7 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
       onClose={onClose}
       maxWidth="max-w-3xl"
       showHeader={false}
+      ariaLabelledBy="shift-handover-modal-title"
       panelClassName="max-h-[92vh] flex flex-col relative"
       bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
     >
@@ -36,7 +37,10 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
                 <InformationCircleIcon className="w-6 h-6" />
               </div>
               <div>
-                <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight italic">
+                <h2
+                  id="shift-handover-modal-title"
+                  className="text-xl font-black text-token-text-primary uppercase tracking-tight italic"
+                >
                   Relevo de Turno
                 </h2>
                 <p className="text-[10px] font-black text-token-text-tertiary uppercase tracking-[0.3em] mt-0.5">
@@ -62,9 +66,9 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
                 className={`relative ${Z.sticky} flex flex-col md:flex-row md:items-center justify-between gap-4`}
               >
                 <div>
-                  <h4 className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest mb-1">
+                  <h3 className="text-[10px] font-black text-token-accent-brand uppercase tracking-widest mb-1">
                     Turno Anterior
-                  </h4>
+                  </h3>
                   <p className="text-xl font-black text-token-text-primary italic">
                     {data.responsibleUser}
                   </p>
@@ -87,10 +91,10 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
             {/* Automatic Closures / Alerts */}
             {data.automaticClosures.length > 0 && (
               <div className="bg-token-status-error/5 p-6 rounded-md border border-token-status-error/20">
-                <h4 className="text-[10px] font-black text-token-status-error uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h3 className="text-[10px] font-black text-token-status-error uppercase tracking-widest mb-4 flex items-center gap-2">
                   <ExclamationTriangleIcon className="w-4 h-4 animate-pulse" />
                   Alertas Críticas del Sistema
-                </h4>
+                </h3>
                 <div className="space-y-3">
                   {data.automaticClosures.map((entry) => (
                     <div
@@ -111,9 +115,9 @@ const ShiftHandoverModal: React.FC<ShiftHandoverModalProps> = ({ isOpen, onClose
             <div className="space-y-4">
               <div className="flex items-center gap-2 px-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-token-accent-brand" />
-                <h4 className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em]">
+                <h3 className="text-[10px] font-black text-token-text-secondary uppercase tracking-[0.3em]">
                   Bitácora de Novedades
-                </h4>
+                </h3>
               </div>
 
               {data.logEntries.length > 0 ? (

@@ -7,6 +7,14 @@ import { readFileSync } from "node:fs";
 import { TEST_API_URL } from "./src/tests/mocks/baseUrl.ts";
 import { playwright } from "@vitest/browser-playwright";
 
+// Spec 122: el proyecto Vitest `storybook` (addon-vitest) se activa solo con
+// STORYBOOK_TESTS=1. Sin la variable, `vitest` no ve el cuarto proyecto y las
+// suites existentes (jsdom/browser, coverage ratchets) quedan intactas.
+const storybookTestPlugin = async () => {
+  const { storybookTest } = await import("@storybook/addon-vitest/vitest-plugin");
+  return storybookTest({ configDir: ".storybook", storybookUrl: "http://127.0.0.1:6006" });
+};
+
 // Version de despliegue: release-please la actualiza en package.json. El
 // `buster` del cache persistido de TanStack Query (spec 032) la usa para
 // invalidar datos entre releases.
@@ -87,9 +95,10 @@ const bootstrapCriticalCssPlugin = (): Plugin => ({
   },
 });
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const isStorybook = process.env.PORTAL_SKIP_PWA === "1";
+  const storybookTestsEnabled = process.env.STORYBOOK_TESTS === "1";
 
   return {
     define: {
@@ -330,6 +339,29 @@ export default defineConfig(({ mode }) => {
             include: ["src/tests/browser/**/*.{test,spec}.{ts,tsx}"],
           },
         },
+        // Spec 122, ADR-0033: story tests del catálogo. Solo se agrega con
+        // STORYBOOK_TESTS=1 (script `test:storybook` y `storybook tools test
+        // run`) para que las corridas comunes de Vitest no paguen el costo ni
+        // hereden su config. El addon-vitest toma `include` del campo
+        // `stories` de .storybook/main.ts; browser mode reutiliza el provider
+        // Playwright del proyecto `browser`.
+        ...(storybookTestsEnabled
+          ? [
+              {
+                extends: true,
+                plugins: [await storybookTestPlugin()],
+                test: {
+                  name: "storybook",
+                  browser: {
+                    enabled: true,
+                    provider: playwright(),
+                    instances: [{ browser: "chromium" }],
+                    headless: true,
+                  },
+                },
+              },
+            ]
+          : []),
       ],
       // MSW intercepta la red en el proceso de test (spec 035, T1). El
       // cliente HTTP resuelve su base desde `VITE_API_URL`: aqui se fija al

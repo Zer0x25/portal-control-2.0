@@ -43,13 +43,17 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
       onClose={onClose}
       maxWidth="max-w-2xl"
       showHeader={false}
+      ariaLabelledBy="record-history-modal-title"
       panelClassName="rounded-xl flex flex-col max-h-[80vh]"
       bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
     >
       {/* Header */}
       <div className="px-6 py-4 border-b border-token-border-subtle flex items-center justify-between bg-token-surface-card">
         <div>
-          <h3 className="text-lg font-black text-token-text-primary uppercase tracking-tighter">
+          <h3
+            id="record-history-modal-title"
+            className="text-lg font-black text-token-text-primary uppercase tracking-tighter"
+          >
             Historial de Cambios
           </h3>
           <p className="text-[10px] font-bold text-token-text-secondary uppercase tracking-widest">
@@ -58,6 +62,7 @@ const RecordHistoryModal: React.FC<RecordHistoryModalProps> = ({
         </div>
         <Button
           variant="none"
+          aria-label="Cerrar historial de cambios"
           onClick={onClose}
           className="p-2 hover:bg-token-surface-hover rounded-full transition-colors shadow-none"
         >

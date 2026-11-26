@@ -121,13 +121,17 @@ const ImportModal = <T extends ImportPreviewRow>({
       onClose={handleClose}
       maxWidth="max-w-2xl"
       showHeader={false}
+      ariaLabelledBy="import-modal-title"
       panelClassName="flex flex-col max-h-[90vh]"
       bodyClassName="p-0 flex flex-col flex-1 overflow-hidden"
     >
       {/* Header */}
       <div className="p-6 border-b border-token-border-subtle flex justify-between items-center bg-token-surface-stripe">
         <div>
-          <h2 className="text-xl font-black text-token-text-primary uppercase tracking-tight">
+          <h2
+            id="import-modal-title"
+            className="text-xl font-black text-token-text-primary uppercase tracking-tight"
+          >
             {title}
           </h2>
           <p className="text-xs text-token-text-tertiary font-bold uppercase tracking-widest mt-1">
@@ -136,6 +140,7 @@ const ImportModal = <T extends ImportPreviewRow>({
         </div>
         <Button
           variant="none"
+          aria-label="Cerrar asistente de importación"
           onClick={handleClose}
           className="p-2 hover:bg-token-surface-hover rounded-full transition-colors shadow-none"
         >

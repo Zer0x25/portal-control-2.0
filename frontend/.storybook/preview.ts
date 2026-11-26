@@ -76,7 +76,17 @@ const preview: Preview = {
   },
   decorators: [withProjectTheme],
   parameters: {
-    a11y: { test: "error" },
+    a11y: {
+      test: "error",
+      // Ratchet a11y (spec 122 / ADR-0033): la regla color-contrastqueda
+      // deshabilitada hasta cerrar la deuda sistémica de contrastes de los
+      // tokens de estado (texto `token-status-*` de 10-12px sobre fondos
+      // tenues al 5-10%). El resto de las reglas si rompe el run. La deuda
+      // y su plan de cierre viven en docs/tech-debt-register.md.
+      config: {
+        rules: [{ id: "color-contrast", enabled: false }],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
