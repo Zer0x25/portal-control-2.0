@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import StoryComponent from "./FilterSelect";
 
 const meta = {
-  id: "certified-components-ui-filterselect",
+  id: "certified-components-ui-filter-select",
   title: "Design System/components/ui/FilterSelect",
   component: StoryComponent,
   args: {
