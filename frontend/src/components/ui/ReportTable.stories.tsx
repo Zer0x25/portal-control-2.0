@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ReportTable";
+import ReportTable from "./ReportTable";
 
 const meta = {
   id: "certified-components-ui-report-table",
   title: "Design System/components/ui/Report/Table",
-  component: StoryComponent,
+  component: ReportTable,
   args: {
     reportData: null,
     isSingleEmployeeReport: false,
@@ -18,7 +18,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/ReportTable.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ReportTable>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

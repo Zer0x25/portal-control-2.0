@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PasswordChangeForm as StoryComponent } from "./PasswordChangeForm";
+import { PasswordChangeForm } from "./PasswordChangeForm";
 
 const meta = {
   id: "certified-components-ui-password-change-form",
   title: "Design System/components/ui/Password/Change/Form",
-  component: StoryComponent,
+  component: PasswordChangeForm,
   args: {
     newPassword: "Portal2026!",
     setNewPassword: () => undefined,
@@ -23,7 +23,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/PasswordChangeForm.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof PasswordChangeForm>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

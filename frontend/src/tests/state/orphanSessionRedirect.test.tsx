@@ -89,9 +89,14 @@ describe("orphan session and unauthenticated protected route redirect", () => {
         </QueryClientProvider>,
       );
 
-      await waitFor(() => {
-        expect(screen.getByTestId("login-page")).toBeInTheDocument();
-      });
+      // LoginPage se carga vía React.lazy detrás de Suspense; la resolución del
+      // chunk puede superar el timeout por defecto de waitFor bajo carga paralela.
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("login-page")).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
       expect(screen.getByLabelText("Usuario")).toBeInTheDocument();
       expect(screen.queryByTestId("app-shell")).not.toBeInTheDocument();
       expect(window.location.hash).toMatch(/^#\/(?:\?.*)?$/);
@@ -125,9 +130,12 @@ describe("orphan session and unauthenticated protected route redirect", () => {
       </QueryClientProvider>,
     );
 
-    await waitFor(() => {
-      expect(screen.getByTestId("login-page")).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("login-page")).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
     expect(screen.queryByTestId("app-shell")).not.toBeInTheDocument();
     expect(screen.queryByTestId("not-found-page")).not.toBeInTheDocument();
     expect(window.location.hash).toMatch(/^#\/(?:\?.*)?$/);

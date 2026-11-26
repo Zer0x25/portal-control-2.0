@@ -234,6 +234,7 @@ const SmtpConfigModalView: React.FC<SmtpConfigModalViewProps> = ({
                 <input
                   type="checkbox"
                   name="secure"
+                  aria-label="Usar SSL/TLS implícito (Puerto 465)"
                   className="sr-only peer"
                   checked={values.secure}
                   onChange={(e) => handleFieldChange("secure", e.target.checked)}

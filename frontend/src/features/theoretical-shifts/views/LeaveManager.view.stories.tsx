@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { createRef } from "react";
-import { LeaveManagerView as StoryComponent } from "./LeaveManager.view";
+import { LeaveManagerView } from "./LeaveManager.view";
 
 const meta = {
   id: "certified-features-theoretical-shifts-views-leave-manager",
   title: "Design System/features/theoretical-shifts/views/Leave/Manager",
-  component: StoryComponent,
+  component: LeaveManagerView,
   args: {
     showArchived: false,
     filterType: "",
@@ -74,7 +74,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof LeaveManagerView>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

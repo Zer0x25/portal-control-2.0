@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./TabNav";
+import TabNav from "./TabNav";
 
 const meta = {
   id: "certified-components-ui-tab-nav",
   title: "Design System/components/ui/Tab/Nav",
-  component: StoryComponent,
+  component: TabNav,
   args: {
     tabs: [
       { id: "overview", label: "Resumen" },
@@ -18,7 +18,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/TabNav.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof TabNav>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

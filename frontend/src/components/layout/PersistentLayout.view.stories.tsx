@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./PersistentLayout.view";
+import PersistentLayout from "./PersistentLayout.view";
 
 const meta = {
   id: "certified-components-layout-persistent-layout",
   title: "Design System/components/layout/Persistent/Layout",
-  component: StoryComponent,
+  component: PersistentLayout,
   args: {
     children: "Contenido de la vista",
     currentPath: "/dashboard",
@@ -35,7 +35,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof PersistentLayout>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ShiftHistoryModal";
+import ShiftHistoryModal from "./ShiftHistoryModal";
 
 const meta = {
   id: "certified-features-employee-management-components-shift-history-modal",
   title: "Design System/features/employee-management/components/Shift/History/Modal",
-  component: StoryComponent,
+  component: ShiftHistoryModal,
   args: {
     isOpen: false,
     onClose: () => undefined,
@@ -25,7 +25,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ShiftHistoryModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

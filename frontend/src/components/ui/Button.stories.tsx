@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Button";
+import Button from "./Button";
 const meta = {
   id: "certified-components-ui-button",
   title: "Design System/components/ui/Button",
-  component: StoryComponent,
+  component: Button,
   args: { children: "Guardar cambios" },
   tags: ["autodocs"],
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Button>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = { args: { variant: "primary", size: "md" } };

@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Badge";
+import Badge from "./Badge";
 const meta = {
   id: "certified-components-ui-badge",
   title: "Design System/components/ui/Badge",
-  component: StoryComponent,
+  component: Badge,
   args: { size: "md" },
   tags: ["autodocs"],
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Badge>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = { args: { children: "Activo", variant: "success", showDot: true } };

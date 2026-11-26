@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Skeleton";
+import Skeleton from "./Skeleton";
 
 const meta = {
   id: "certified-components-ui-skeleton",
   title: "Design System/components/ui/Skeleton",
-  component: StoryComponent,
+  component: Skeleton,
   args: { width: "12rem", height: "1rem" },
   argTypes: {
     circle: { control: "boolean" },
@@ -15,7 +15,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Skeleton.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Skeleton>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

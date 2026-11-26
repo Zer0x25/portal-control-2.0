@@ -71,3 +71,4 @@ Reglas:
   | [0030](0030-node-runtime-2613.md) | Propuesto | Runtime de aplicación Node 26.13.0 |
   | [0030](0030-node-runtime-2613.md) | Propuesto | Node Runtime 2613 |
   | [0032](0032-semantica-paneles.md) | Propuesto | Semantica Paneles |
+  | [0033](0033-storybook-agentic-integration.md) | Aceptado | Storybook Agentic Integration |

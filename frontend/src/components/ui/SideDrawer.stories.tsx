@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./SideDrawer";
+import SideDrawer from "./SideDrawer";
 
 const sampleContent = (
   <div className="flex h-full flex-col">
@@ -21,7 +21,7 @@ const sampleContent = (
 const meta = {
   id: "certified-components-ui-side-drawer",
   title: "Design System/components/ui/SideDrawer",
-  component: StoryComponent,
+  component: SideDrawer,
   argTypes: {
     maxWidth: {
       control: "select",
@@ -48,7 +48,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/SideDrawer.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof SideDrawer>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

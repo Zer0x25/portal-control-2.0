@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./SessionExpiredOverlay";
+import SessionExpiredOverlay from "./SessionExpiredOverlay";
 
 const meta = {
   id: "certified-components-ui-session-expired-overlay",
   title: "Design System/components/ui/Session/Expired/Overlay",
-  component: StoryComponent,
+  component: SessionExpiredOverlay,
   tags: ["autodocs"],
   parameters: {
     docs: {
@@ -13,7 +13,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof SessionExpiredOverlay>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

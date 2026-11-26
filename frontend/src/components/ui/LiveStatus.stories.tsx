@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./LiveStatus";
+import LiveStatus from "./LiveStatus";
 
 const meta = {
   id: "certified-components-ui-live-status",
   title: "Design System/components/ui/Live/Status",
-  component: StoryComponent,
+  component: LiveStatus,
   args: { label: "Sistema operativo", status: "online" },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/LiveStatus.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof LiveStatus>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./EmptyState";
+import EmptyState from "./EmptyState";
 
 const meta = {
   id: "certified-components-ui-empty-state",
   title: "Design System/components/ui/Empty/State",
-  component: StoryComponent,
+  component: EmptyState,
   args: { title: "Sin resultados", description: "Prueba con otros filtros." },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/EmptyState.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof EmptyState>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

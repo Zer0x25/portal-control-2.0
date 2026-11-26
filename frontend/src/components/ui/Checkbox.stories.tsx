@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Checkbox";
+import Checkbox from "./Checkbox";
 
 const meta = {
   id: "certified-components-ui-checkbox",
   title: "Design System/components/ui/Checkbox",
-  component: StoryComponent,
+  component: Checkbox,
   args: { label: "Recibir notificaciones", checked: true },
   tags: ["autodocs"],
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Checkbox.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Checkbox>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

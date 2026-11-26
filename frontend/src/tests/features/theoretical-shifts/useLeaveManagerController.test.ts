@@ -63,37 +63,47 @@ describe("useLeaveManagerController", () => {
   });
 
   it("submits leave once via createLeave without calling justifyRecordsForLeave", async () => {
-    createLeaveMock.mockResolvedValue({
-      id: "leave-1",
-      employeeId: "emp-1",
-      type: "Vacaciones",
-      startDate: "2026-11-18",
-      endDate: "2026-11-19",
-      notes: "",
-    });
+    // El schema rechita ausencias con mas de 7 dias habiles de antiguedad:
+    // fijar el reloj mantiene las fechas del caso dentro de la ventana valida
+    // sin importar cuando corra la suite (el 18/19-11 dejo de ser valido al
+    // avanzar el calendario real).
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-21T15:00:00.000Z"));
+    try {
+      createLeaveMock.mockResolvedValue({
+        id: "leave-1",
+        employeeId: "emp-1",
+        type: "Vacaciones",
+        startDate: "2026-11-18",
+        endDate: "2026-11-19",
+        notes: "",
+      });
 
-    const { result } = renderHook(() => useLeaveManagerController());
+      const { result } = renderHook(() => useLeaveManagerController());
 
-    act(() => {
-      result.current.setIsFormVisible(true);
-      result.current.setValue("employeeId", "emp-1");
-      result.current.setValue("type", "Vacaciones");
-      result.current.setValue("startDate", "2026-11-18");
-      result.current.setValue("endDate", "2026-11-19");
-    });
+      act(() => {
+        result.current.setIsFormVisible(true);
+        result.current.setValue("employeeId", "emp-1");
+        result.current.setValue("type", "Vacaciones");
+        result.current.setValue("startDate", "2026-11-18");
+        result.current.setValue("endDate", "2026-11-19");
+      });
 
-    await act(async () => {
-      await result.current.submit();
-    });
+      await act(async () => {
+        await result.current.submit();
+      });
 
-    expect(createLeaveMock).toHaveBeenCalledTimes(1);
-    expect(createLeaveMock).toHaveBeenCalledWith({
-      employeeId: "emp-1",
-      type: "Vacaciones",
-      startDate: "2026-11-18",
-      endDate: "2026-11-19",
-      notes: "",
-    });
-    expect(result.current.isFormVisible).toBe(false);
+      expect(createLeaveMock).toHaveBeenCalledTimes(1);
+      expect(createLeaveMock).toHaveBeenCalledWith({
+        employeeId: "emp-1",
+        type: "Vacaciones",
+        startDate: "2026-11-18",
+        endDate: "2026-11-19",
+        notes: "",
+      });
+      expect(result.current.isFormVisible).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

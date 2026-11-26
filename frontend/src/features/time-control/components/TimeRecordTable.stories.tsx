@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./TimeRecordTable";
+import TimeRecordTable from "./TimeRecordTable";
 
 const meta = {
   id: "certified-features-time-control-components-time-record-table",
   title: "Design System/features/time-control/components/Time/Record/Table",
-  component: StoryComponent,
+  component: TimeRecordTable,
   args: {
     records: [],
     fetchNextPage: () => undefined,
@@ -38,7 +38,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof TimeRecordTable>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

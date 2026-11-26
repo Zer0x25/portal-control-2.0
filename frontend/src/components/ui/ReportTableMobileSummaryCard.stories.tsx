@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ReportTableMobileSummaryCard";
+import ReportTableMobileSummaryCard from "./ReportTableMobileSummaryCard";
 
 const meta = {
   id: "certified-components-ui-report-table-mobile-summary-card",
   title: "Design System/components/ui/Report/Table/Mobile/Summary/Card",
-  component: StoryComponent,
+  component: ReportTableMobileSummaryCard,
   args: {
     stat: {
       employeeId: "emp-001",
@@ -34,7 +34,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ReportTableMobileSummaryCard>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

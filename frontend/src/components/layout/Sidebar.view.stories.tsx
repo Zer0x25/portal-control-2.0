@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { HomeIcon, ClockIcon, UsersIcon } from "../ui/icons/index";
-import StoryComponent from "./Sidebar.view";
+import Sidebar from "./Sidebar.view";
 
 const meta = {
   id: "certified-components-layout-sidebar",
   title: "Design System/components/layout/Sidebar",
-  component: StoryComponent,
+  component: Sidebar,
   args: {
     isOpen: true,
     isExpanded: true,
@@ -32,7 +32,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/layout/Sidebar.view.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Sidebar>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

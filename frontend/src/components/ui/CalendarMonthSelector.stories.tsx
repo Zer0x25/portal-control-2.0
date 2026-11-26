@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./CalendarMonthSelector";
+import CalendarMonthSelector from "./CalendarMonthSelector";
 
 const meta = {
   id: "certified-components-ui-calendar-month-selector",
   title: "Design System/components/ui/Calendar/Month/Selector",
-  component: StoryComponent,
+  component: CalendarMonthSelector,
   args: {
     currentDate: new Date("2026-10-23T12:00:00.000Z"),
     onChange: () => undefined,
@@ -26,7 +26,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof CalendarMonthSelector>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

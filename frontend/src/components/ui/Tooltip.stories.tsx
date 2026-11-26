@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./Tooltip";
+import Tooltip from "./Tooltip";
 
 const meta = {
   id: "certified-components-ui-tooltip",
   title: "Design System/components/ui/Tooltip",
-  component: StoryComponent,
+  component: Tooltip,
   args: {
     content: "Detalle de la acción",
     children: <button type="button">Pasa el cursor</button>,
@@ -17,7 +17,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ui/Tooltip.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof Tooltip>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

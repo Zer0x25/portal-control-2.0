@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./SmtpConfigModal.view";
+import SmtpConfigModal from "./SmtpConfigModal.view";
 
 const meta = {
   id: "certified-features-configuration-components-smtp-config-modal",
   title: "Design System/features/configuration/components/Smtp/Config/Modal",
-  component: StoryComponent,
+  component: SmtpConfigModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -52,7 +52,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof SmtpConfigModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

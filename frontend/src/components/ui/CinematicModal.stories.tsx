@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./CinematicModal";
+import CinematicModal from "./CinematicModal";
 
 const meta = {
   id: "certified-components-ui-cinematic-modal",
   title: "Design System/components/ui/Cinematic/Modal",
-  component: StoryComponent,
+  component: CinematicModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -18,7 +18,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/CinematicModal.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof CinematicModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

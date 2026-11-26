@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./AnomalyResolutionModal";
+import AnomalyResolutionModal from "./AnomalyResolutionModal";
 
 const meta = {
   id: "certified-features-time-control-components-anomaly-resolution-modal",
   title: "Design System/features/time-control/components/Anomaly/Resolution/Modal",
-  component: StoryComponent,
+  component: AnomalyResolutionModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -39,7 +39,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof AnomalyResolutionModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

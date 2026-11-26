@@ -132,6 +132,7 @@ Cada lista incorporada al estándar se registra en `frontend/src/tests/guardrail
   - El presupuesto de desvíos (`totalIssuesBudget`) se encuentra fijado en `0`. Ningún cambio puede elevar este valor.
   - Los ratchets `sapTokenBudget` y `orphanTokenBudget` solo decrecen. `sapTokenBudget` queda bloqueado en `0`; los huérfanos de una escala protegida no autorizan a retirar miembros sueltos.
   - Al certificar nuevos componentes o migrar vistas, actualizar el recuento ejecutando `node scripts/audit-design-system.cjs --update` y validar con `npm run test:guardrails`.
+- **Flujo Agéntico con Storybook (spec 122 / ADR-0033)**: antes de crear UI, consultar el manifiesto (`npx storybook tools docs list/show` o el MCP `:6006/mcp`); tras cambiar UI, `npx storybook tools stories changed` + `npm run test:storybook` (smoke+a11y por historia). Invariantes y runbook: `.agents/rules/storybook-agentic.md` y la skill `.agents/skills/storybook-workflow/`.
 
 ---
 

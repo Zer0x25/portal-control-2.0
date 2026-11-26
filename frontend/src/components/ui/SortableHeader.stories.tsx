@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./SortableHeader";
+import SortableHeader from "./SortableHeader";
 
 function SortableHeaderStory() {
   return (
     <table className="w-full">
       <thead>
         <tr>
-          <StoryComponent<Record<string, unknown>>
+          <SortableHeader<Record<string, unknown>>
             title="Colaborador"
             sortKey="name"
             sortConfig={null}
@@ -22,13 +22,13 @@ function SortableHeaderSortedStory({ direction }: { direction: "ascending" | "de
     <table className="w-full">
       <thead>
         <tr>
-          <StoryComponent<Record<string, unknown>>
+          <SortableHeader<Record<string, unknown>>
             title="Colaborador"
             sortKey="name"
             sortConfig={{ key: "name", direction }}
             onSort={() => undefined}
           />
-          <StoryComponent<Record<string, unknown>>
+          <SortableHeader<Record<string, unknown>>
             title="Área"
             sortKey="area"
             sortConfig={{ key: "name", direction }}

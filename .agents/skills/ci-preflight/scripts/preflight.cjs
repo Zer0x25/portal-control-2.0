@@ -50,6 +50,28 @@ try {
     run('npm run tokens:check', 'Pre-PR Design Tokens Check', path.join(rootDir, 'frontend'));
     run('npm run audit:design-system', 'Pre-PR Design System Audit', path.join(rootDir, 'frontend'));
     run('npm run test:run:ci', 'Pre-PR Frontend Full Tests', path.join(rootDir, 'frontend'));
+    // Spec 122: story tests (smoke render + axe a11y de las historias
+    // certificadas, browser mode) cuando el cambio toca `frontend/src`.
+    // Se mira el arbol de trabajo Y el diff contra origin/main: en pre-PR
+    // los cambios ya estan confirmados y `git status` sale limpio.
+    const feSrcChanged = (function () {
+      try {
+        const st = execSync('git status --porcelain -- frontend/src', { cwd: rootDir, encoding: 'utf8' });
+        if (st.split('\n').some(Boolean)) return true;
+        const diff = execSync('git diff --name-only origin/main...HEAD -- frontend/src', {
+          cwd: rootDir,
+          encoding: 'utf8',
+          stdio: ['pipe', 'pipe', 'ignore'],
+        });
+        return diff.split('\n').some(Boolean);
+      } catch {
+        // Sin origin/main disponible (p. ej. clon fresco sin fetch) no se bloquea.
+        return false;
+      }
+    })();
+    if (feSrcChanged) {
+      run('npm run test:storybook', 'Pre-PR Storybook Story Tests', path.join(rootDir, 'frontend'));
+    }
     run('npm run check:sdk', 'Pre-PR Backend SDK Sync Check', path.join(rootDir, 'backend'));
     run('npm run test:schemas-refactor', 'Pre-PR Backend Schema Tests', path.join(rootDir, 'backend'));
   }

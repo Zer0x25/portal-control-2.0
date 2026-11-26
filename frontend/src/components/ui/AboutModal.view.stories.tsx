@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./AboutModal.view";
+import AboutModal from "./AboutModal.view";
 
 const meta = {
   id: "certified-components-ui-about-modal",
   title: "Design System/components/ui/About/Modal",
-  component: StoryComponent,
+  component: AboutModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -22,7 +22,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/AboutModal.view.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof AboutModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

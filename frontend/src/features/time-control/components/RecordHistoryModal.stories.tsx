@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./RecordHistoryModal";
+import RecordHistoryModal from "./RecordHistoryModal";
 
 const meta = {
   id: "certified-features-time-control-components-record-history-modal",
   title: "Design System/features/time-control/components/Record/History/Modal",
-  component: StoryComponent,
+  component: RecordHistoryModal,
   args: {
     isOpen: true,
     onClose: () => undefined,
@@ -26,7 +26,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof RecordHistoryModal>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

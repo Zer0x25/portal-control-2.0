@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./LoadingOverlay";
+import LoadingOverlay from "./LoadingOverlay";
 
 const meta = {
   id: "certified-components-ui-loading-overlay",
   title: "Design System/components/ui/Loading/Overlay",
-  component: StoryComponent,
+  component: LoadingOverlay,
   args: { message: "Sincronizando datos…", fullScreen: false },
   argTypes: {
     message: { control: "text" },
@@ -16,7 +16,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/LoadingOverlay.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof LoadingOverlay>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

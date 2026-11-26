@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./PaginationControls";
+import PaginationControls from "./PaginationControls";
 
 const meta = {
   id: "certified-components-ui-pagination-controls",
   title: "Design System/components/ui/Pagination/Controls",
-  component: StoryComponent,
+  component: PaginationControls,
   args: { currentPage: 2, totalPages: 5, setCurrentPage: () => undefined },
   argTypes: {
     currentPage: { control: { type: "number", min: 1 } },
@@ -16,7 +16,7 @@ const meta = {
       description: { component: "Archivo certificado: src/components/ui/PaginationControls.tsx" },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof PaginationControls>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

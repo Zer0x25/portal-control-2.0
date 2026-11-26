@@ -89,9 +89,10 @@ tipado generado desde la misma lista certificada.
 npm run catalog:manifest       # Regenera src/features/design-system/certifiedStoryManifest.ts
 npm run catalog:manifest:check # Comprueba que el manifiesto esté sincronizado
 npm run storybook               # Abre http://127.0.0.1:6006
-npm run storybook:build         # Compila las 68 historias
+npm run storybook:build         # Compila las 82 historias
 npm run storybook:visual:update # Actualiza los snapshots claro/oscuro
 npm run storybook:visual        # Compara snapshots con el baseline
+npm run test:storybook          # Story tests: smoke render + axe a11y por historia
 ```
 
 El enlace publicado se configura con `VITE_STORYBOOK_URL`. Storybook reutiliza
@@ -100,6 +101,26 @@ el plugin PWA, que solo pertenece al bundle de la aplicación. Los snapshots
 de `src/components/ui/` se guardan junto a la suite visual de Playwright. El
 ratchet de tokens no considera las stories consumidores para no ocultar
 tokens huérfanos.
+
+#### Flujo agéntico (spec 122 / ADR-0033)
+
+Con el dev server corriendo, Storybook expone un servidor MCP en
+`http://127.0.0.1:6006/mcp` (registrado en `.vscode/mcp.json` para VS Code
+Copilot). Sin server, la CLI equivalente funciona en local:
+
+```bash
+npx storybook tools docs list                       # Componentes documentados (id, nombre)
+npx storybook tools docs show --input '{"id":"certified-components-ui-button"}'
+npx storybook tools stories changed                 # Historias afectadas por el diff actual
+npx storybook tools stories find-by-component --input '{"componentPaths":["src/components/ui/Button.tsx"]}'
+npx storybook tools test run --changed              # Story tests solo de lo cambiado
+npx storybook tools review create                   # Revisión visual con enlaces por historia
+```
+
+El runbook completo (convenciones CSF3, contrato de historias aisladas,
+ratchet de contraste TD-005) vive en la skill
+[`storybook-workflow`](../.agents/skills/storybook-workflow/SKILL.md) y en
+[`.agents/rules/storybook-agentic.md`](../.agents/rules/storybook-agentic.md).
 
 ## Documentacion oficial
 

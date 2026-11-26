@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ToastContainer.view";
+import ToastContainer from "./ToastContainer.view";
 
 const meta = {
   id: "certified-components-layout-toast-container",
   title: "Design System/components/layout/Toast/Container",
-  component: StoryComponent,
+  component: ToastContainer,
   argTypes: {
     toasts: { control: "object" },
   },
@@ -23,7 +23,7 @@ const meta = {
       },
     },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ToastContainer>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

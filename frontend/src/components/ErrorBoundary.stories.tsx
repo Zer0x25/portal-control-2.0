@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import StoryComponent from "./ErrorBoundary";
+import ErrorBoundary from "./ErrorBoundary";
 
 const meta = {
   id: "certified-components-error-boundary",
   title: "Design System/components/Error/Boundary",
-  component: StoryComponent,
+  component: ErrorBoundary,
   args: { children: "The child stays inside the error boundary." },
   argTypes: {
     children: { control: "text" },
@@ -13,7 +13,7 @@ const meta = {
   parameters: {
     docs: { description: { component: "Archivo certificado: src/components/ErrorBoundary.tsx" } },
   },
-} satisfies Meta<typeof StoryComponent>;
+} satisfies Meta<typeof ErrorBoundary>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
