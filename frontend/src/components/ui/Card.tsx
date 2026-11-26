@@ -52,7 +52,9 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
             {badge && <div className="shrink-0">{badge}</div>}
           </div>
         )}
-        <div className={`${paddingClass} text-token-text-primary h-full`}>{children}</div>
+        <div className={`w-full min-w-0 ${paddingClass} text-token-text-primary h-full`}>
+          {children}
+        </div>
       </div>
     );
   },

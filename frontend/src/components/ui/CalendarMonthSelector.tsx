@@ -44,6 +44,7 @@ const YearPicker: React.FC<{
 }> = ({ currentDate, onChange }) => {
   const currentYear = currentDate.getFullYear();
   const slidingYears = [currentYear - 1, currentYear, currentYear + 1];
+  const canGoOlder = currentYear - 1 > 1900;
 
   return (
     <div className="flex flex-col gap-3">
@@ -51,6 +52,14 @@ const YearPicker: React.FC<{
         Años
       </p>
       <div className="flex items-center justify-center gap-1.5 py-1">
+        <button
+          disabled={!canGoOlder}
+          onClick={() => onChange(setYear(currentDate, currentYear - 1))}
+          className="p-1 rounded-sm text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:text-token-accent-brand transition-colors"
+          title="Año anterior"
+        >
+          <ChevronLeftIcon className="w-3 h-3" />
+        </button>
         {slidingYears.map((year) => {
           const isSelected = year === currentYear;
 
@@ -71,6 +80,13 @@ const YearPicker: React.FC<{
             </button>
           );
         })}
+        <button
+          onClick={() => onChange(setYear(currentDate, currentYear + 1))}
+          className="p-1 rounded-sm text-token-text-tertiary hover:text-token-accent-brand transition-colors"
+          title="Año siguiente"
+        >
+          <ChevronRightIcon className="w-3 h-3" />
+        </button>
       </div>
     </div>
   );
@@ -213,44 +229,46 @@ const CalendarMonthSelector: React.FC<CalendarMonthSelectorProps> = ({
         }
       }}
     >
-      {/* Control Bar */}
-      <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
-        <button
-          onClick={handlePrev}
-          aria-label="Mes anterior"
-          className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
-          title="Anterior"
-        >
-          <ChevronLeftIcon className="w-3.5 h-3.5" />
-        </button>
+      {/* Control Bar: el titulo va fuera de la capsula, como los labels de FilterSelect */}
+      <div className="flex flex-col min-w-[160px]">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 ml-1">
+          {label}
+        </p>
+        <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
+          <button
+            onClick={handlePrev}
+            aria-label="Mes anterior"
+            className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
+            title="Anterior"
+          >
+            <ChevronLeftIcon className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          type="button"
-          ref={triggerRef}
-          onClick={() => setIsOpen(!isOpen)}
-          aria-expanded={isOpen}
-          aria-controls={isOpen ? panelId : undefined}
-          className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center cursor-pointer hover:bg-token-surface-active transition-colors group/text py-1 rounded-sm"
-        >
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5 group-hover/text:text-token-accent-brand">
-            {label}
-          </p>
-          <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap flex items-center gap-2">
-            {format(currentDate, "MMMM yyyy", { locale: es })}
+          <button
+            type="button"
+            ref={triggerRef}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-expanded={isOpen}
+            aria-controls={isOpen ? panelId : undefined}
+            className="flex-1 flex items-center justify-between gap-2 px-2 text-center cursor-pointer rounded-sm hover:text-token-accent-brand transition-colors"
+          >
+            <span className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap">
+              {format(currentDate, "MMMM yyyy", { locale: es })}
+            </span>
             <ChevronLeftIcon
-              className={`w-3 h-3 text-token-text-tertiary transition-transform duration-150 ${isOpen ? "rotate-90" : "-rotate-90"}`}
+              className={`w-3.5 h-3.5 text-token-text-tertiary transition-transform duration-150 ${isOpen ? "rotate-90" : "-rotate-90"}`}
             />
-          </p>
-        </button>
+          </button>
 
-        <button
-          onClick={handleNext}
-          aria-label="Mes siguiente"
-          className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
-          title="Siguiente"
-        >
-          <ChevronRightIcon className="w-3.5 h-3.5" />
-        </button>
+          <button
+            onClick={handleNext}
+            aria-label="Mes siguiente"
+            className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
+            title="Siguiente"
+          >
+            <ChevronRightIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Dropdown Panel: portal al body para no ser recortado por tarjetas */}

@@ -149,7 +149,7 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
     );
 
   return (
-    <div className="space-y-8">
+    <div className="w-full min-w-0 space-y-8">
       {/* Search Header and Period Presets */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-token-border-subtle pb-6 gap-6">
         <h2 className="text-[11px] font-black text-token-accent-brand uppercase tracking-[0.2em] flex items-center gap-3">
@@ -225,35 +225,35 @@ const KpiFilterPanel: FC<KpiFilterPanelProps> = ({ onFiltersChange, isLoading })
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle group transition-colors shadow-sm">
-              <button
-                type="button"
-                onClick={() => shiftPresetAnchor(-1)}
-                title="Anterior"
-                className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
-              >
-                <ChevronLeftIcon className="w-3.5 h-3.5" />
-              </button>
-              <div
+            <div className="flex flex-col min-w-[160px]">
+              <p
                 aria-live="polite"
-                className="flex flex-col items-center justify-center px-4 border-x border-token-border-subtle min-w-[160px] text-center py-1 rounded-sm"
+                className="text-[10px] font-black uppercase tracking-[0.2em] text-token-text-secondary mb-2 ml-1"
               >
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-token-text-tertiary leading-none mb-1.5">
-                  Periodo de Consulta
-                </p>
-                <p className="text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap">
+                Periodo de Consulta
+              </p>
+              <div className="flex items-center gap-1.5 bg-token-surface-card p-1 rounded-sm border border-token-border-subtle shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => shiftPresetAnchor(-1)}
+                  title="Anterior"
+                  className="p-2 rounded-sm hover:bg-token-surface-active transition-all active:scale-95 border border-transparent hover:border-token-border-subtle text-token-text-tertiary"
+                >
+                  <ChevronLeftIcon className="w-3.5 h-3.5" />
+                </button>
+                <p className="flex-1 px-2 text-center text-[13px] font-bold capitalize tracking-tight text-token-text-primary leading-none whitespace-nowrap">
                   {presetLabel}
                 </p>
+                <button
+                  type="button"
+                  onClick={() => shiftPresetAnchor(1)}
+                  disabled={presetShiftDisabled}
+                  title="Siguiente"
+                  className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
+                >
+                  <ChevronRightIcon className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => shiftPresetAnchor(1)}
-                disabled={presetShiftDisabled}
-                title="Siguiente"
-                className="p-2 rounded-sm transition-all border border-transparent text-token-text-tertiary disabled:opacity-20 disabled:cursor-not-allowed enabled:hover:bg-token-surface-active enabled:hover:border-token-border-subtle enabled:active:scale-95"
-              >
-                <ChevronRightIcon className="w-3.5 h-3.5" />
-              </button>
             </div>
           )}
         </div>

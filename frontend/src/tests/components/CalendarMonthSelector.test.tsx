@@ -14,7 +14,7 @@ describe("CalendarMonthSelector", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<CalendarMonthSelector currentDate={new Date(2026, 10, 1)} onChange={onChange} />);
-    const trigger = screen.getByRole("button", { name: /periodo de consulta.*noviembre 2026/i });
+    const trigger = screen.getByRole("button", { name: /noviembre 2026/i });
 
     trigger.focus();
     await user.keyboard("{Enter}");
@@ -39,7 +39,7 @@ describe("CalendarMonthSelector", () => {
         <CalendarMonthSelector currentDate={new Date(2026, 10, 1)} onChange={vi.fn()} />
       </div>,
     );
-    const trigger = screen.getByRole("button", { name: /periodo de consulta.*noviembre 2026/i });
+    const trigger = screen.getByRole("button", { name: /noviembre 2026/i });
     await user.click(trigger);
 
     const panel = screen.getByRole("button", { name: /ene/i }).closest("div.fixed");
@@ -64,7 +64,7 @@ describe("CalendarMonthSelector", () => {
       );
     };
     render(<Harness />);
-    const trigger = screen.getByRole("button", { name: /periodo de consulta.*noviembre 2026/i });
+    const trigger = screen.getByRole("button", { name: /noviembre 2026/i });
     await user.click(trigger);
 
     await user.click(screen.getByRole("button", { name: "oct" }));
@@ -101,7 +101,7 @@ describe("AuditMonthSelector", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(<AuditMonthSelector currentDate={new Date(2026, 10, 1)} onChange={onChange} />);
-    const trigger = screen.getByRole("button", { name: /periodo de consulta.*noviembre 2026/i });
+    const trigger = screen.getByRole("button", { name: /noviembre 2026/i });
     trigger.focus();
     await user.keyboard("{Enter}");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
