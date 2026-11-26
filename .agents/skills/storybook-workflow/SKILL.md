@@ -31,8 +31,10 @@ If the dev server is running (`npm run storybook`, port 6006), the same
 tools are available via the MCP server (`storybook` in `.vscode/mcp.json`):
 `docs-list`, `docs-show`, `docs-show-story`,
 `get-storybook-story-instructions`. The MCP server also offers
-`stories-preview`, `stories-changed`, `stories-find-by-component`,
-`review-create` and `test-run`.
+`stories-preview`, `stories-changed`, `stories-find-by-component` and
+`review-create`. `test-run` only appears when the dev server runs with
+`STORYBOOK_TESTS=1` (which also registers `@storybook/addon-vitest` and
+enables the "Component tests" panel).
 
 The authoritative list of certified entries is
 `frontend/design-system-certified.json` (83 files); the audit script and
@@ -90,6 +92,14 @@ unaffected). Failures are real a11y/render bugs — fix them; never lower
 `a11y.test` or remove rules to make a run pass. The `color-contrast` rule
 is currently disabled as a documented ratchet (TD-005 in
 `docs/tech-debt-register.md`); new UI should still meet 4.5:1.
+
+The interactive "Component tests" panel and `npx storybook tools test run`
+need the dev server itself started with the flag
+(`STORYBOOK_TESTS=1 npm run storybook` — `@storybook/addon-vitest` is
+registered in `.storybook/main.ts` only under that flag, so the plain
+dev server shows no panel). Export `STORYBOOK_TESTS=1` for the CLI call
+too; without it the CLI falls back to a local toolset catalog without
+`test`.
 
 For certified primitives also refresh visual baselines if appearance
 changed intentionally: `npm run storybook:visual` (compare) /

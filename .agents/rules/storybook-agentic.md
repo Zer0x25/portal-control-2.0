@@ -17,7 +17,9 @@ description: Agentic Storybook integration invariants — CLI tools, MCP server,
   historias afectadas por el diff (ejecutar desde `frontend/`); correr
   `npm run test:storybook` (smoke render + axe a11y por historia,
   proyecto Vitest `storybook` en browser mode) y arreglar las fallas —
-  nunca bajar niveles ni reglas para pasar.
+  nunca bajar niveles ni reglas para pasar. El panel interactivo
+  "Component tests" y `storybook tools test run` requieren el dev server
+  bajo `STORYBOOK_TESTS=1 npm run storybook` (ver Invariantes).
 - **Runbook completo**: skill `storybook-workflow`
   (`.agents/skills/storybook-workflow/SKILL.md`).
 
@@ -29,7 +31,16 @@ description: Agentic Storybook integration invariants — CLI tools, MCP server,
   services de la app.
 - El proyecto Vitest `storybook` se activa solo con `STORYBOOK_TESTS=1`;
   las suites `jsdom`/`browser` y los ratchets de cobertura no deben verse
-  afectados por su configuración.
+  afectados por su configuración. **`@storybook/addon-vitest` se registra
+  en `main.ts` bajo la misma flag**: el addon arranca un Vitest dentro del
+  dev server filtrado por ese proyecto, así que sin la flag moriría con
+  "No projects were found". Con `npm run storybook` normal el panel
+  "Component tests" no aparece y el MCP/CLI ocultan `test-run`
+  (`testSupported: false`); para usar el panel interactivo o
+  `storybook tools test run` contra el server vivo:
+  `STORYBOOK_TESTS=1 npm run storybook` (y exportar la flag también en la
+  llamada a la CLI). La suite headless `npm run test:storybook` no
+  depende del registro del addon.
 - Historias certificadas: `id: "certified-..."`, título
   `Design System/...`, componente importado con su **nombre real** (el
   manifiesto de agentes deriva nombre y ejemplos JSX del import).
